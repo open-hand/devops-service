@@ -34,4 +34,11 @@ public class DevopsCommandEventRepositoryImpl implements DevopsCommandEventRepos
     public void deletePreInstanceCommandEvent(Long instanceId) {
         devopsCommandEventMapper.deletePreInstanceCommandEvent(instanceId);
     }
+
+    @Override
+    public void deleteByCommandId(Long commandId) {
+        DevopsCommandEventDO devopsCommandEventDO = new DevopsCommandEventDO();
+        devopsCommandEventDO.setCommandId(commandId);
+        devopsCommandEventMapper.delete(devopsCommandEventDO);
+    }
 }

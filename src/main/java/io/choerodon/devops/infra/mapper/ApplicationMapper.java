@@ -1,11 +1,11 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.util.List;
-import java.util.Map;
-
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by younger on 2018/3/28.
@@ -49,5 +49,11 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
 
     void updateAppToSuccess(@Param("appId") Long appId);
 
-    void updateAppHarborConfig(@Param("projectId") Long projectId,@Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId,@Param("harborPrivate") boolean harborPrivate);
+    void updateSql(@Param("appId") Long appId,
+                   @Param("token") String token,
+                   @Param("gitlabProjectId") Integer gitlabProjectId,
+                   @Param("hookId") Long hookId,
+                   @Param("isSynchro") Boolean isSynchro);
+
+    void updateAppHarborConfig(@Param("projectId") Long projectId, @Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId, @Param("harborPrivate") boolean harborPrivate);
 }

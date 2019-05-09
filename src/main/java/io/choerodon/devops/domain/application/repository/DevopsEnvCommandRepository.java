@@ -22,4 +22,8 @@ public interface DevopsEnvCommandRepository {
     List<DevopsEnvCommandE> queryInstanceCommand(String objectType, Long objectId);
 
     Page<DevopsEnvCommandE> listByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime);
+
+    void deleteById(Long commandId);
+
+    List<DevopsEnvCommandE> listByObjectAll(String objectType, Long objectId);
 }

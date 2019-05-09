@@ -1,10 +1,10 @@
 package io.choerodon.devops.domain.application.repository;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 /**
  * Created by younger on 2018/3/28.
@@ -21,6 +21,11 @@ public interface ApplicationRepository {
     ApplicationE queryByCode(String code, Long projectId);
 
     int update(ApplicationE applicationE);
+
+    /**
+     * 修复创建应用偶发失败 乐观锁问题
+     */
+    void updateSql(ApplicationE applicationE);
 
     ApplicationE create(ApplicationE applicationE);
 
