@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
@@ -11,22 +15,39 @@ import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.api.dto.OrgCertificationDTO;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.app.service.CertificationService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.CertificationE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.CertificationRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.GitlabRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
-import io.choerodon.devops.domain.application.valueobject.certification.*;
+import io.choerodon.devops.domain.application.valueobject.certification.CertificationAcme;
+import io.choerodon.devops.domain.application.valueobject.certification.CertificationConfig;
+import io.choerodon.devops.domain.application.valueobject.certification.CertificationExistCert;
+import io.choerodon.devops.domain.application.valueobject.certification.CertificationMetadata;
+import io.choerodon.devops.domain.application.valueobject.certification.CertificationSpec;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.*;
+import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
+import io.choerodon.devops.infra.common.util.enums.CertificationType;
+import io.choerodon.devops.infra.common.util.enums.CommandStatus;
+import io.choerodon.devops.infra.common.util.enums.CommandType;
+import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 /**
  * Created by n!Ck
@@ -38,6 +59,7 @@ import org.springframework.stereotype.Service;
 public class CertificationServiceImpl implements CertificationService {
 
     private static final String CERT_PREFIX = "cert-";
+    private static final String CERTIFICATE_KIND = "certificate";
 
     @Value("${cert.testCert}")
     private Boolean testCert;
@@ -64,6 +86,8 @@ public class CertificationServiceImpl implements CertificationService {
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
+    private DeployMsgHandlerService deployMsgHandlerService;
 
     @Override
     public void create(Long projectId, C7nCertificationDTO certificationDTO,
@@ -270,10 +294,7 @@ public class CertificationServiceImpl implements CertificationService {
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //实例相关对象数据库操作
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .query(certificationE.getCommandId());
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandRepository.listByObjectAll(CERTIFICATE_KIND, certificationE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t));
         certificationRepository.deleteById(certId);
     }
 
@@ -310,7 +331,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public CertificationDTO queryByName(Long envId, String certName) {
-        return ConvertHelper.convert(certificationRepository.queryByEnvAndName(envId,certName),CertificationDTO.class);
+        return ConvertHelper.convert(certificationRepository.queryByEnvAndName(envId, certName), CertificationDTO.class);
     }
 
     @Override

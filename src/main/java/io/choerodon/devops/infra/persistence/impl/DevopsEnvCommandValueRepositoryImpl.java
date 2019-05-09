@@ -27,4 +27,11 @@ public class DevopsEnvCommandValueRepositoryImpl implements DevopsEnvCommandValu
         }
         return ConvertHelper.convert(devopsEnvCommandValueDO, DevopsEnvCommandValueE.class);
     }
+
+    @Override
+    public void deleteById(Long valueId) {
+        DevopsEnvCommandValueDO devopsEnvCommandValueDO = new DevopsEnvCommandValueDO();
+        devopsEnvCommandValueDO.setId(valueId);
+        devopsEnvCommandValueMapper.deleteByPrimaryKey(devopsEnvCommandValueDO);
+    }
 }

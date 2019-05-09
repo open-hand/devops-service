@@ -12,4 +12,6 @@ public interface DevopsCommandEventRepository {
 
     void deletePreInstanceCommandEvent(Long instanceId);
 
+    void deleteByCommandId(Long commandId);
+
 }

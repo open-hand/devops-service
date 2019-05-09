@@ -10,6 +10,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.SecretRepDTO;
 import io.choerodon.devops.api.dto.SecretReqDTO;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
+import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.devops.domain.application.entity.*;
@@ -43,6 +44,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private static final String CREATE = "create";
     private static final String UPDATE = "update";
     private static final String DELETE = "delete";
+    private static final String SECRET_KIND = "secret";
 
     @Autowired
     private DevopsSecretRepository devopsSecretRepository;
@@ -62,6 +64,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private GitlabRepository gitlabRepository;
     @Autowired
     private CheckOptionsHandler checkOptionsHandler;
+    @Autowired
+    private DeployMsgHandlerService deployMsgHandlerService;
 
     @Override
     public SecretRepDTO createOrUpdate(SecretReqDTO secretReqDTO) {
@@ -234,6 +238,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsSecretE.getCommandId());
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandRepository.listByObjectAll(SECRET_KIND, devopsSecretE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t));
         devopsSecretRepository.deleteSecret(secretId);
     }
 
