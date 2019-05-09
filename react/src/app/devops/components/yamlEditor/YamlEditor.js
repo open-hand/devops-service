@@ -1,19 +1,20 @@
-import React, { Component, Fragment } from "react";
-import { injectIntl } from "react-intl";
-import PropTypes from "prop-types";
-import { Icon } from "choerodon-ui";
-import JsYaml from "js-yaml";
-import YAML from "yamljs";
-import "codemirror/addon/merge/merge.css";
-import "codemirror/lib/codemirror.css";
-import "codemirror/addon/lint/lint.css"
-import "./theme-chd.css";
-import CodeMirror from "./editor/CodeMirror";
-import "codemirror/addon/lint/lint.js";
-import "./index.scss";
-import "./yaml-lint";
-import "./yaml-mode";
-import "./merge";
+import React, { Component, Fragment } from 'react';
+import { injectIntl } from 'react-intl';
+import PropTypes from 'prop-types';
+import { Icon } from 'choerodon-ui';
+import JsYaml from 'js-yaml';
+import YAML from 'yamljs';
+
+import 'codemirror/addon/merge/merge.css';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/addon/lint/lint.css';
+import './theme-chd.css';
+import CodeMirror from './editor/CodeMirror';
+import 'codemirror/addon/lint/lint.js';
+import './index.scss';
+import './yaml-lint';
+import './yaml-mode';
+import './merge';
 
 /**
  * YAML 格式校验
@@ -56,15 +57,18 @@ function changedValue(old, value) {
 class YamlEditor extends Component {
   static propTypes = {
     value: PropTypes.string.isRequired,
-    originValue: PropTypes.string,
     readOnly: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
+    originValue: PropTypes.string,
     options: PropTypes.object,
     handleEnableNext: PropTypes.func,
     onValueChange: PropTypes.func,
+    modeChange: PropTypes.bool,
   };
 
   static defaultProps = {
     readOnly: true,
+    originValue: '',
+    modeChange: true,
     handleEnableNext: enable => {
     },
     onValueChange: () => {
@@ -75,18 +79,18 @@ class YamlEditor extends Component {
     super(props);
     this.state = {
       errorTip: false,
-      yamlValue: "",
+      yamlValue: '',
     };
     this.options = {
       // chd 自定制的主题配色
-      theme: "chd",
-      mode: "text/chd-yaml",
+      theme: 'chd',
+      mode: 'text/chd-yaml',
       readOnly: props.readOnly,
       lineNumbers: true,
       lineWrapping: true,
       viewportMargin: Infinity,
       lint: !props.readOnly,
-      gutters: !props.readOnly ? ["CodeMirror-lint-markers"] : [],
+      gutters: !props.readOnly ? ['CodeMirror-lint-markers'] : [],
     };
   }
 
@@ -140,6 +144,7 @@ class YamlEditor extends Component {
       intl: { formatMessage },
       originValue,
       value,
+      modeChange,
     } = this.props;
     const { errorTip, yamlValue } = this.state;
 
@@ -147,12 +152,13 @@ class YamlEditor extends Component {
       <Fragment>
         <div className="c7ncd-yaml-wrapper">
           <CodeMirror
+            modeChange={modeChange}
             options={this.options}
             value={yamlValue || value}
             originValue={originValue}
             onChange={this.onChange}
             ref={instance => {
-              this.yamlEditor = instance
+              this.yamlEditor = instance;
             }}
           />
         </div>
@@ -160,7 +166,7 @@ class YamlEditor extends Component {
           <div className="c7ncd-yaml-error">
             <Icon type="error" className="c7ncd-yaml-error-icon" />
             <span className="c7ncd-yaml-error-msg">
-              {formatMessage({ id: "yaml.error.tooltip" })}
+              {formatMessage({ id: 'yaml.error.tooltip' })}
             </span>
           </div>
         ) : null}

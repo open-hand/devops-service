@@ -1,15 +1,18 @@
 import React, { Component, Fragment } from 'react';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Content, stores } from '@choerodon/boot';
 import _ from 'lodash';
 import { Button, Form, Select, Input, Modal, Icon, Table, Popover } from 'choerodon-ui';
+import { EditableCell, EditableFormRow } from './editableTable';
+import { objToYaml, yamlToObj, takeObject, ConfigNode } from '../utils';
+import YamlEditor from '../../../../components/yamlEditor';
+import EnvOverviewStore from '../../../../stores/project/envOverview';
+import InterceptMask from '../../../../components/interceptMask/InterceptMask';
+
 import '../../../main.scss';
 import './KeyValueSideBar.scss';
-import EnvOverviewStore from "../../../../stores/project/envOverview";
-import InterceptMask from "../../../../components/interceptMask/InterceptMask";
 
-const { AppState } = stores;
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
 const { Option } = Select;
@@ -26,184 +29,24 @@ const formItemLayout = {
   },
 };
 
-// 实现参考 Antd Table组件的可编辑单元格
-const EditableContext = React.createContext();
-
-const EditableRow = ({ form, index, ...props }) => (
-  <EditableContext.Provider value={form}>
-    <tr {...props} />
-  </EditableContext.Provider>
-);
-
-const EditableFormRow = Form.create()(EditableRow);
-
-class EditableCell extends Component {
-  state = {
-    editing: false,
-    pasting: false,
-    oldValue: '',
-  };
-
-  componentDidMount() {
-    if (this.props.editable) {
-      document.addEventListener('click', this.handleClickOutside, true);
-    }
-  }
-
-  componentWillUnmount() {
-    if (this.props.editable) {
-      document.removeEventListener('click', this.handleClickOutside, true);
-    }
-  }
-
-  /**
-   * 切换输入编辑状态
-   */
-  toggleEdit = () => {
-    const editing = !this.state.editing;
-    this.setState({ editing }, () => {
-      if (editing) {
-        this.input.focus();
-      }
-    });
-  };
-
-  /**
-   * 点击外部触发保存切换编辑状态
-   * @param e
-   */
-  handleClickOutside = (e) => {
-    const { editing } = this.state;
-    if (editing && this.cell !== e.target && !this.cell.contains(e.target)) {
-      this.save();
-    }
-  };
-
-  /**
-   * from获取value 保存
-   */
-  save = () => {
-    const { record, handleSave } = this.props;
-    this.form.validateFields((error, values) => {
-      if (error) {
-        return;
-      }
-      this.toggleEdit();
-      if (values.key === '' || values.key === null) {
-        record.keys = '';
-      }
-      handleSave({ ...record, ...values });
-    });
-  };
-
-  /**
-   * input change触发
-   * 判断是否粘贴，处理数据调用add函数
-   * 添加key-value
-   * @param e
-   */
-  onChange = (e) => {
-    const { handleAdd } = this.props;
-    const { oldValue, pasting } = this.state;
-    if (pasting) {
-      const value = oldValue !== '' ? (e.target.value.substring(oldValue.length) || e.target.value) : e.target.value;
-      if (value.indexOf('=') > -1) {
-        const kVlaue = [];
-        _.map(value.split('\n'), s => {
-          if (s) {
-            kVlaue.push(s.split('=').map(a => a.trim()));
-          }
-        });
-        this.save();
-        handleAdd(kVlaue);
-      }
-    }
-    this.setState({ pasting: false })
-  };
-
-  /**
-   * 判断粘贴事件
-   * @param e
-   */
-  onKeyDown = (e) => {
-    if (e.keyCode === 86 && (e.ctrlKey || e.metaKey)) {
-      this.setState({ pasting: true, oldValue: e.target.value });
-    }
-  };
-
-  /**
-   * 校验key
-   * @param rule
-   * @param value
-   * @param callback
-   */
-  checkKey = (rule, value, callback) => {
-    const { intl } = this.props;
-    const pattern = /[^0-9A-Za-z\.\-\_]/;
-    if (pattern.test(value) && rule.field === 'key') {
-      callback(intl.formatMessage({ id: "configMap.keyRule" }));
-    } else {
-      callback();
-    }
-  };
-
-  render() {
-    const { editing } = this.state;
-    const {
-      title,
-      editable,
-      dataIndex,
-      record,
-      intl,
-      ...restProps
-    } = this.props;
-    return (
-      <td ref={node => (this.cell = node)} {...restProps}>
-        {editable ? (
-          <EditableContext.Consumer>
-            {(form) => {
-              this.form = form;
-              return (
-                editing ? (
-                  <FormItem style={{ margin: 0 }}>
-                    {form.getFieldDecorator(dataIndex, {
-                      initialValue: record[dataIndex],
-                      rules: [
-                        {
-                          validator: this.checkKey,
-                        },
-                      ],
-                    })(
-                      <TextArea
-                        label={intl.formatMessage({ id: dataIndex })}
-                        ref={node => (this.input = node)}
-                        autosize
-                        onKeyDown={this.onKeyDown}
-                        onChange={this.onChange}
-                      />
-                    )}
-                  </FormItem>
-                ) : (
-                  <TextArea
-                    autosize
-                    label={intl.formatMessage({ id: dataIndex })}
-                    className="editable-cell-value-wrap"
-                    onClick={this.toggleEdit}
-                    onFocus={this.toggleEdit}
-                    value={title === 'secret' && dataIndex === 'value' && restProps.children.filter(a => typeof(a) === 'string').length ? '******' : restProps.children.filter(a => typeof(a) === 'string')}
-                  />
-                )
-              );
-            }}
-          </EditableContext.Consumer>
-        ) : restProps.children}
-      </td>
-    );
-  }
-}
-
+@Form.create({})
+@injectIntl
+@inject('AppState')
 @observer
-class KeyValueSideBar extends Component {
+export default class KeyValueSideBar extends Component {
+  state = {
+    // 键值对格式
+    dataSource: [new ConfigNode()],
+    // yaml 格式
+    dataYaml: '',
+    counter: 1,
+    submitting: false,
+    warningDisplay: false,
+    warningMes: '',
+    data: false,
+    isYamlEdit: false,
+    hasYamlError: false,
+  };
 
   /**
    * 检查名称唯一性
@@ -212,17 +55,30 @@ class KeyValueSideBar extends Component {
    * @param callback
    */
   checkName = _.debounce((rule, value, callback) => {
-    const { intl, store, form } = this.props;
-    const { id } = AppState.currentMenuType;
+    const {
+      store,
+      intl: {
+        formatMessage,
+      },
+      form: {
+        getFieldValue,
+      },
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+
     const pattern = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
-    const envId = form.getFieldValue("envId");
+    const envId = getFieldValue('envId');
     if (value && !pattern.test(value)) {
-      callback(intl.formatMessage({ id: "network.name.check.failed" }));
+      callback(formatMessage({ id: 'network.name.check.failed' }));
     } else if (value && pattern.test(value)) {
-      store.checkName(id, envId, value)
+      store.checkName(projectId, envId, value)
         .then((data) => {
           if (data && data.failed) {
-            callback(intl.formatMessage({ id: 'template.checkName' }));
+            callback(formatMessage({ id: 'template.checkName' }));
           } else {
             callback();
           }
@@ -232,72 +88,45 @@ class KeyValueSideBar extends Component {
     }
   }, 1000);
 
-  constructor(props) {
-    super(props);
-    this.columns = [{
-      title: 'key',
-      dataIndex: 'key',
-      width: 230,
-      editable: true,
-    }, {
-      title: '',
-      width: 60,
-      className: 'icon-equal',
-      align: 'center',
-      dataIndex: 'temp',
-    }, {
-      title: this.props.title,
-      width: 230,
-      dataIndex: 'value',
-      editable: true,
-    }, {
-      title: '',
-      dataIndex: 'operation',
-      render: (text, record) => (
-        this.state.dataSource.length >= 1 ? (<Icon className="del-btn" type="delete" onClick={this.handleDelete.bind(this, record.keys)} />) : null),
-    }];
-
-    this.state = {
-      dataSource: [{
-        keys: '0',
-        key: null,
-        temp: '=',
-        value: null,
-      }],
-      count: 1,
-      submitting: false,
-      warningDisplay: false,
-      warningMes: '',
-      data: false,
-    };
-  }
-
   componentDidMount() {
-    const { id: projectId } = AppState.currentMenuType;
-    const { store, id } = this.props;
+    const {
+      store,
+      id,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+
     EnvOverviewStore.loadActiveEnv(projectId);
-    if (typeof(id) === 'number') {
+
+    if (typeof id === 'number') {
       store.loadKVById(projectId, id)
         .then((data) => {
-          if (data && data.failed) {
-            Choerodon.prompt(data.message);
-          } else {
-            let temp = [];
-            if (_.isEmpty(data.value)) {
-              this.setState({ data });
+          if (data) {
+
+            if (data.failed) {
+
+              Choerodon.prompt(data.message);
+
             } else {
-              _.map(Object.entries(data.value), d => {
-                temp.push({
-                  keys: d[0],
-                  key: d[0],
-                  temp: '=',
-                  value: d[1],
-                })
-              });
-              this.setState({ data, dataSource: temp });
+
+              let counter = 1;
+
+              if (!_.isEmpty(data.value)) {
+                const dataSource = _.map(data.value, (value, key) => new ConfigNode(key, value, counter++));
+
+                this.setState({
+                  dataSource,
+                  counter,
+                });
+              }
+
+              this.setState({ data });
             }
           }
-        })
+        });
     }
   }
 
@@ -306,13 +135,22 @@ class KeyValueSideBar extends Component {
    * @param value
    */
   handleEnvSelect = (value) => {
-    const { store, title } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
-    if (title === 'configMap') {
-      store.loadConfigMap(true, projectId, value);
-    } else if (title === 'secret') {
-      store.loadSecret(true, projectId, value);
-    }
+    const {
+      store,
+      title,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+
+    const loadFnMap = {
+      configMap: () => store.loadConfigMap(true, projectId, value),
+      secret: () => store.loadSecret(true, projectId, value),
+    };
+
+    loadFnMap[title]();
     EnvOverviewStore.setTpEnvId(value);
   };
 
@@ -321,38 +159,35 @@ class KeyValueSideBar extends Component {
    * @param key
    */
   handleDelete = (key) => {
-    const dataSource = [...this.state.dataSource];
-    this.setState({ dataSource: dataSource.filter(item => item.keys !== key) });
+    const dataSource = [...this.state.dataSource].filter(item => item.index !== key);
+    this.setState({ dataSource });
   };
 
   /**
-   * 添加key-value
-   * @param addData
+   * 添加一组 key/value
+   * @param data
    */
-  handleAdd = (addData) => {
-    const { count, dataSource } = this.state;
-    let newData = [];
-    if (addData.length) {
-      addData.map(a => {
-        newData.push({
-          keys: a[0],
-          key: a[0],
-          temp: '=',
-          value: a[1],
-        })
-      });
-    } else {
-      newData.push({
-        keys: count,
-        key: null,
-        temp: '=',
-        value: null,
-      })
+  handleAdd = (data) => {
+    const { counter, dataSource } = this.state;
+
+    let _data = data;
+
+    if (!Array.isArray(data)) {
+      _data = [[null, null]];
     }
-    const data = _.uniqBy([...dataSource.filter(item => item.keys !== ''), ...newData], 'keys');
+
+    let _counter = counter;
+    let newData = _.map(_data, ([key, value]) => new ConfigNode(key, value, ++_counter));
+
+    if (!newData.length) {
+      const initConfig = new ConfigNode();
+      newData.push(initConfig);
+    }
+
+    const uniqData = _.uniqBy([...dataSource.filter(item => item.index !== ''), ...newData], 'index');
     this.setState({
-      dataSource: data,
-      count: count + newData.length,
+      dataSource: uniqData,
+      counter: _counter,
     });
   };
 
@@ -362,14 +197,67 @@ class KeyValueSideBar extends Component {
    */
   handleSave = (row) => {
     const newData = [...this.state.dataSource];
-    const index = newData.findIndex(item => row.keys === item.keys);
-    const item = newData[index];
+    const index = _.findIndex(newData, ['index', row.index]);
+
     newData.splice(index, 1, {
-      ...item,
+      ...newData[index],
       ...row,
     });
+
     this.setState({ dataSource: newData });
   };
+
+  /**
+   * 校验键值对
+   * @param data
+   * @returns {boolean}
+   */
+  checkErrorData(data = null) {
+    const {
+      intl: {
+        formatMessage,
+      },
+    } = this.props;
+
+    const _data = data || this.state.dataSource;
+    const hasKey = _data.filter(({ key }) => !_.isEmpty(key));
+    const onlyHasValue = _data.filter(({ key, value }) => _.isEmpty(key) && !_.isEmpty(value));
+    const onlyHasKey = hasKey.filter(({ value }) => _.isEmpty(value));
+    const hasErrorItem = onlyHasKey.length || onlyHasValue.length;
+    const hasRepeatKey = hasKey.length !== _.uniqBy(hasKey, 'key').length;
+
+    let hasErrorKey;
+    for (const { key } of hasKey) {
+
+      if (/[^0-9A-Za-z\.\-\_]/.test(key)) {
+        hasErrorKey = true;
+        break;
+      }
+
+    }
+
+    if (!(hasErrorItem || hasErrorKey || hasRepeatKey)) return false;
+
+    const errorMsg = formatMessage({
+      id: hasRepeatKey ? 'configMap.keyRepeat' : 'configMap.keyValueSpan',
+    });
+
+    this.setConfigError(errorMsg);
+
+    return true;
+  }
+
+  /**
+   * 设置键值对模式下的错误提示
+   * @param msg
+   */
+  setConfigError(msg) {
+    this.setState({
+      warningMes: msg,
+      warningDisplay: true,
+      submitting: false,
+    });
+  }
 
   /**
    * form提交函数
@@ -378,68 +266,72 @@ class KeyValueSideBar extends Component {
    */
   handleSubmit = e => {
     e.preventDefault();
-    const { form, store, intl: { formatMessage }, id } = this.props;
-    const { dataSource } = this.state;
-    const { id: projectId } = AppState.currentMenuType;
-    this.setState({ submitting: true, warningDisplay: false });
-    const pattern = /[^0-9A-Za-z\.\-\_]/;
-    const noKey = dataSource.filter(item => _.isEmpty(item.key));
-    const hasKey = dataSource.filter(item => !_.isEmpty(item.key));
-    const onlyValue = noKey.filter(item => !_.isEmpty(item.value));
-    const onlyKey = hasKey.filter(item => _.isEmpty(item.value));
-    const errLength = onlyKey.concat(onlyValue).length;
+    const {
+      form,
+      store,
+      id,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+    const {
+      dataSource,
+      isYamlEdit,
+      hasYamlError,
+      dataYaml,
+    } = this.state;
 
-    if (errLength) {
-      this.setState({
-        warningMes: formatMessage({ id: "configMap.keyValueSpan" }),
-        warningDisplay: true,
-        submitting: false,
-      });
-    } else if (hasKey.length !== _.uniqBy(hasKey, 'key').length) {
-      this.setState({
-        warningMes: formatMessage({ id: "configMap.keyRepeat" }),
-        warningDisplay: true,
-        submitting: false,
-      });
-    } else if (hasKey.map(k => pattern.test(k.key)).indexOf(true) > -1) {
-      this.setState({
-        warningMes: formatMessage({ id: "configMap.keyRuleSpan" }),
-        warningDisplay: true,
-        submitting: false,
-      });
+    let configData = [];
+    let hasKVError = false;
+
+    if (!isYamlEdit) {
+      hasKVError = this.checkErrorData();
+      configData = [...dataSource.filter(item => !_.isEmpty(item.key))];
     } else {
-      const datas = _.uniqBy([...dataSource.filter(item => !_.isEmpty(item.key))], 'keys');
-      form.validateFieldsAndScroll((err, data) => {
-        if (!err) {
-          const temp = {};
-          _.map(datas, d => {
-            temp[d['key']] = d['value'];
-          });
-          const devopsConfigMapDTO = {
-            name: data.name,
-            description: data.description,
-            envId: data.envId,
-            type: id ? 'update' : 'create',
-            id: id || undefined,
-            value: temp,
-          };
-          store.postKV(projectId, devopsConfigMapDTO)
-            .then((res) => {
-              if (res) {
-                if (res && res.failed) {
-                  this.setState({ submitting: false });
-                  Choerodon.prompt(res.message);
-                } else {
-                  this.handleClose();
-                  this.setState({ submitting: false });
-                }
-              }
-            });
-        } else {
-          this.setState({ submitting: false });
-        }
-      });
+      configData = yamlToObj(dataYaml);
     }
+
+    if (hasYamlError || hasKVError) return;
+
+    this.setState({
+      submitting: true,
+      warningDisplay: false,
+    });
+
+    const uniqData = _.uniqBy(configData, 'index');
+
+    form.validateFieldsAndScroll((err, { name, description, envId }) => {
+      if (!err) {
+
+        const _value = takeObject(uniqData);
+
+        const dto = {
+          name,
+          description,
+          envId,
+          type: id ? 'update' : 'create',
+          id: id || undefined,
+          value: _value,
+        };
+
+        store.postKV(projectId, dto)
+          .then((res) => {
+            if (res) {
+              if (res && res.failed) {
+                this.setState({ submitting: false });
+                Choerodon.prompt(res.message);
+              } else {
+                this.handleClose();
+                this.setState({ submitting: false });
+              }
+            }
+          });
+      } else {
+        this.setState({ submitting: false });
+      }
+    });
   };
 
   /**
@@ -451,7 +343,7 @@ class KeyValueSideBar extends Component {
   };
 
   /**
-   * form DOM
+   * 配置信息的名称描述等常规表单项
    * @returns {*}
    */
   getFormContent = () => {
@@ -466,21 +358,21 @@ class KeyValueSideBar extends Component {
 
     return (<Form className="c7n-sidebar-form" layout="vertical">
       <FormItem {...formItemLayout}>
-        {getFieldDecorator("envId", {
+        {getFieldDecorator('envId', {
           initialValue: envData.length ? envId : null,
           rules: [
             {
               required: true,
-              message: formatMessage({ id: "required" }),
+              message: formatMessage({ id: 'required' }),
             },
           ],
         })(
           <Select
-            disabled={Boolean(id)}
+            disabled={!!id}
             className="c7n-select_512"
             label={<FormattedMessage id="ctf.envName" />}
             placeholder={formatMessage({
-              id: "ctf.env.placeholder",
+              id: 'ctf.env.placeholder',
             })}
             optionFilterProp="children"
             onSelect={this.handleEnvSelect}
@@ -505,7 +397,7 @@ class KeyValueSideBar extends Component {
                 </Option>
               );
             })}
-          </Select>
+          </Select>,
         )}
       </FormItem>
       <FormItem
@@ -521,8 +413,8 @@ class KeyValueSideBar extends Component {
           }],
         })(
           <Input
-            autoFocus={!Boolean(id)}
-            disabled={Boolean(id)}
+            autoFocus={!id}
+            disabled={!!id}
             maxLength={100}
             label={<FormattedMessage id="app.name" />}
           />,
@@ -544,77 +436,227 @@ class KeyValueSideBar extends Component {
     </Form>);
   };
 
-  render() {
-    const { visible, intl, id, envId, title } = this.props;
-    const { submitting, dataSource, warningDisplay, warningMes, data } = this.state;
-    const envData = EnvOverviewStore.getEnvcard;
-    const envName = _.find(envData, ["id", envId]).name;
-    const titles = id ? data.name : envName;
-    const components = {
-      body: {
-        row: EditableFormRow,
-        cell: EditableCell,
-      },
-    };
-    const columns = this.columns.map((col) => {
-      if (!col.editable) {
-        return col;
-      }
-      return {
-        ...col,
-        onCell: record => ({
-          record,
-          editable: col.editable,
-          dataIndex: col.dataIndex,
-          title: col.title,
-          handleSave: this.handleSave,
-          handleAdd: this.handleAdd,
-          intl,
-        }),
+  /**
+   * 编辑 configMap 组件节点
+   * 有两种模式：key/value编辑模式、YAML代码编辑模式
+   * @returns {*}
+   */
+  getConfigMap = () => {
+    const { title } = this.props;
+    const {
+      dataSource,
+      isYamlEdit,
+      warningDisplay,
+      warningMes,
+      dataYaml,
+    } = this.state;
+
+    let configMap = null;
+    if (!isYamlEdit) {
+
+      const components = {
+        body: {
+          row: EditableFormRow,
+          cell: EditableCell,
+        },
       };
+      const baseColumns = [{
+        title: 'key',
+        dataIndex: 'key',
+        width: 230,
+        editable: true,
+      }, {
+        title: '',
+        width: 60,
+        className: 'icon-equal',
+        align: 'center',
+        dataIndex: 'temp',
+      }, {
+        title: title,
+        width: 230,
+        dataIndex: 'value',
+        editable: true,
+      }, {
+        title: '',
+        dataIndex: 'operation',
+        render: (text, { index }) => (
+          dataSource.length >= 1 ? (
+            <Icon
+              className="del-btn"
+              type="delete"
+              onClick={this.handleDelete.bind(this, index)}
+            />
+          ) : null),
+      }];
+
+      const columns = baseColumns.map((col) => {
+        if (!col.editable) return col;
+
+        return {
+          ...col,
+          onCell: record => ({
+            record,
+            editable: col.editable,
+            dataIndex: col.dataIndex,
+            title: col.title,
+            save: this.handleSave,
+            add: this.handleAdd,
+          }),
+        };
+      });
+
+      configMap = <Fragment>
+        <Table
+          filterBar={false}
+          showHeader={false}
+          pagination={false}
+          components={components}
+          className="c7n-editable-table"
+          dataSource={dataSource}
+          columns={columns}
+          rowKey={record => record.index}
+        />
+        <Button icon="add" onClick={this.handleAdd} type="primary">
+          <FormattedMessage id={`${title}.add`} />
+        </Button>
+        {warningDisplay ? <div className="c7n-cm-warning">{warningMes}</div> : null}
+      </Fragment>;
+
+    } else {
+      configMap = <YamlEditor
+        readOnly={false}
+        modeChange={false}
+        value={dataYaml}
+        onValueChange={this.changeYamlValue}
+        handleEnableNext={this.checkYamlError}
+      />;
+    }
+
+    return configMap;
+  };
+
+  /**
+   * yaml 值改变
+   * @param value
+   */
+  changeYamlValue = (value) => {
+    this.setState({ dataYaml: value });
+  };
+
+  /**
+   * 校验yaml格式
+   * @param flag
+   */
+  checkYamlError = (flag) => {
+    this.setState({ hasYamlError: flag });
+  };
+
+  /**
+   * 切换配置映射的编辑模式
+   */
+  changeEditMode = () => {
+    const {
+      dataSource,
+      dataYaml,
+      hasYamlError,
+    } = this.state;
+    const hasError = this.checkErrorData();
+
+    if (hasError || hasYamlError) return;
+
+    if (!this.state.isYamlEdit) {
+
+      const yamlValue = objToYaml(dataSource);
+
+      this.setState({
+        warningDisplay: false,
+        warningMes: '',
+        dataSource: [],
+        dataYaml: yamlValue,
+        counter: 1,
+      });
+    } else {
+
+      const kvValue = yamlToObj(dataYaml);
+      const counter = kvValue.length;
+
+      this.checkErrorData(kvValue);
+
+      this.setState({
+        dataSource: kvValue,
+        hasYamlError: false,
+        dataYaml: '',
+        counter,
+      });
+    }
+
+    this.setState({
+      isYamlEdit: !this.state.isYamlEdit,
     });
+  };
+
+  render() {
+    const {
+      intl: { formatMessage },
+      visible,
+      id,
+      envId,
+      title,
+    } = this.props;
+    const {
+      submitting,
+      data,
+      warningDisplay,
+      hasYamlError,
+      isYamlEdit,
+    } = this.state;
+
+    const envName = (_.find(EnvOverviewStore.getEnvcard, ['id', envId]) || {}).name;
+    const titleName = id ? data.name : envName;
+    const titleCode = `${title}.${id ? 'edit' : 'create'}`;
 
     return (
       <div className="c7n-region">
         <Sidebar
           destroyOnClose
-          cancelText={<FormattedMessage id="cancel" />}
-          okText={id ? <FormattedMessage id="save" /> : <FormattedMessage id="create" />}
-          title={id ? <FormattedMessage id={`${title}.edit`} /> : <FormattedMessage id={`${title}.create`} />}
           visible={visible}
+          cancelText={<FormattedMessage id="cancel" />}
+          okText={<FormattedMessage id={id ? 'save' : 'create'} />}
+          title={<FormattedMessage id={titleCode} />}
           onOk={this.handleSubmit}
           onCancel={this.handleClose.bind(this, false)}
           confirmLoading={submitting}
         >
           <Content
-            code={id ? `${title}.edit` : `${title}.create`}
-            values={{ name: titles }}
+            code={titleCode}
+            values={{ name: titleName }}
             className="c7n-ctf-create sidebar-content"
           >
             {this.getFormContent()}
+
             <div className="c7n-sidebar-from-title">
               <FormattedMessage id={`${title}.head`} />
               <Popover
-                overlayStyle={{ maxWidth: '350px' }}
-                content={intl.formatMessage({ id: `${title}.help.tooltip` })}
+                overlayStyle={{ maxWidth: 350 }}
+                content={formatMessage({ id: `${title}.help.tooltip` })}
               >
                 <Icon type="help" />
               </Popover>
+              <Button
+                className="c7n-config-mode-btn"
+                type="primary"
+                funcType="flat"
+                disabled={warningDisplay || hasYamlError}
+                onClick={this.changeEditMode}
+              >
+                <FormattedMessage id={isYamlEdit ? 'configMap.mode.yaml' : 'configMap.mode.kv'} />
+              </Button>
             </div>
-            <Table
-              filterBar={false}
-              showHeader={false}
-              pagination={false}
-              components={components}
-              className="editable"
-              dataSource={dataSource}
-              columns={columns}
-              rowKey={record => record.keys}
-            />
-            <Button icon="add" onClick={this.handleAdd} type="primary">
-              <FormattedMessage id={`${title}.add`} />
-            </Button>
-            {warningDisplay ? <div className="c7n-cm-warning">{warningMes}</div> : null}
+
+            <div className="c7n-config-editor">
+              {this.getConfigMap()}
+            </div>
+
             <InterceptMask visible={submitting} />
           </Content>
         </Sidebar>
@@ -622,5 +664,3 @@ class KeyValueSideBar extends Component {
     );
   }
 }
-
-export default Form.create({})(injectIntl(KeyValueSideBar));

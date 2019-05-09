@@ -21,6 +21,7 @@ class CodeMirror extends React.Component {
     options: PropTypes.object,
     value: PropTypes.string,
     originValue: PropTypes.string,
+    modeChange: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -141,19 +142,27 @@ class CodeMirror extends React.Component {
   }
 
   render() {
-    const { options } = this.props;
-    const { viewMode } = this.state;
+    const { options, modeChange } = this.props;
+
+    const canChangeMode = !options.readOnly && modeChange;
+
+    let editor = null;
+
+    if (canChangeMode) {
+      const { viewMode } = this.state;
+      editor = <div className="c7ncd-editor-tools">
+        <button className="c7ncd-editor-mode" onClick={this.handleChangeView}>
+          <FormattedMessage id="editor.mode.changer" />
+        </button>
+        {viewMode === 'diff' ? (
+          <div className="c7ncd-editor-legend">{this.getLegends}</div>
+        ) : null}
+      </div>;
+    }
 
     return (
       <div className="c7ncd-codemirror">
-        {!options.readOnly ? <div className="c7ncd-editor-tools">
-          <button className="c7ncd-editor-mode" onClick={this.handleChangeView}>
-            <FormattedMessage id="editor.mode.changer" />
-          </button>
-          {viewMode === 'diff' ? (
-            <div className="c7ncd-editor-legend">{this.getLegends}</div>
-          ) : null}
-        </div> : null}
+        {editor}
         <div>
           <textarea
             className="hidden-textarea"

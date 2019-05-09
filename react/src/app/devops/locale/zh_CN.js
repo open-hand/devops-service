@@ -165,6 +165,7 @@ const pageDetail = {
   "branch.app.title": '应用"{name}"的分支',
   "branch.app.description":
     "分支是将您的开发工作从主线上分离开来，以免影响主线。您可在此查看各应用的分支，创建分支，并将代码拉至本地开发后提交代码。",
+  "branch.app.link": `${docServer}/user-guide/development-pipeline/branch/`,
   "branch.create.title": '在应用"{name}"中创建分支',
   "branch.create.description":
     "您在此选择该分支要解决的问题、分支来源，修改默认的分支类型及分支名称，即可创建分支。",
@@ -232,6 +233,7 @@ const pageDetail = {
   "ciPipeline.app.title": '应用"{name}"的持续集成',
   "ciPipeline.app.description":
     "您可在此查看各应用所有持续集成流水线的运行情况。",
+  "ciPipeline.app.link": `${docServer}/user-guide/development-pipeline/continuous-integration/`,
   "ciPipeline.link": `${docServer}/user-guide/development-pipeline/continuous-integration/`,
 
   // merge-request
@@ -241,6 +243,7 @@ const pageDetail = {
   "merge.app.title": '应用"{name}"的合并请求',
   "merge.app.description":
     "合并请求是将某一分支的代码合并至另一分支的操作。您可在此查看各应用的合并请求，及创建合并请求。",
+  "merge.app.link": `${docServer}/user-guide/development-pipeline/merge-request/`,
   "merge.link": `${docServer}/user-guide/development-pipeline/merge-request/`,
 
   // app-tag
@@ -250,6 +253,7 @@ const pageDetail = {
   "apptag.app.description":
     "标记是用于标识某一时间点形成的稳定可发布的代码版本。您可在此查看各应用的所有标记及相关提交信息，还可以基于某一分支创建标记。",
   "apptag.app.title": '应用"{name}"的标记',
+  "apptag.app.link": `${docServer}/user-guide/development-pipeline/tag/`,
   "apptag.link": `${docServer}/user-guide/development-pipeline/tag/`,
   "apptag.createTag": '在应用"{name}"中创建标记',
   "apptag.createDescription":
@@ -449,7 +453,7 @@ const pageDetail = {
   // 代码质量
   "codeQuality.title": "应用“{name}”的代码质量",
   "codeQuality.description": "代码质量页面主要用于展示对应应用的代码质量详情。",
-  "codeQuality.link": `${docServer}/user-guide/system-configuration/project/pipeline`,
+  "codeQuality.link": `${docServer}/user-guide/development-pipeline/code-quality/`,
 };
 
 const zhCN = {
@@ -1436,18 +1440,18 @@ const zhCN = {
   "empty.member.no-env":
     "您当前暂无任何环境的权限，若需查看某个环境的相关内容，请联系项目所有者添加权限。",
   "report.code-quality.type": "对象类型",
-  "report.code-quality.type.question": "问题",
+  "report.code-quality.type.issue": "问题",
   "report.code-quality.type.coverage": "覆盖率",
-  "report.code-quality.type.duplications": "重复度",
+  "report.code-quality.type.duplicate": "重复度",
   "report.code-quality.number": "个数",
   "report.code-quality.rows": "行数",
   "report.code-quality.bugs": "Bugs",
   "report.code-quality.vulnerabilities": "安全漏洞",
   "report.code-quality.codeSmells": "代码异味",
-  "report.code-quality.coverageCodeRows": "代码行",
-  "report.code-quality.coverageRows": "覆盖行",
-  "report.code-quality.duplicationsCodeRows": "代码行",
-  "report.code-quality.duplicationsRows": "重复行",
+  "report.code-quality.linesToCover": "代码行",
+  "report.code-quality.coverLines": "覆盖行",
+  "report.code-quality.nclocs": "代码行",
+  "report.code-quality.duplicatedLines": "重复行",
 
   // 部署总览
   "dpOverview.head": "部署总览",
@@ -1544,6 +1548,8 @@ const zhCN = {
   "configMap.keyRepeat": "存在重复键，请检查输入。",
   "configMap.del": "删除配置映射",
   "configMap.del.tooltip": "确认删除配置映射吗？",
+  "configMap.mode.kv": "编辑 YAML",
+  "configMap.mode.yaml": "编辑键值对",
 
   // 密文
   "secret.head": "密文",
@@ -1750,26 +1756,30 @@ const zhCN = {
   "codeQuality.head": "代码质量",
   "codeQuality.empty": "暂无代码质量详情",
   "codeQuality.content.title": "质量门",
-  "codeQuality.status.success": "正常",
-  "codeQuality.status.failed": "失败",
-  "codeQuality.analysis": "最后一次分析：",
+  "codeQuality.status.OK": "正常",
+  "codeQuality.status.ERROR": "失败",
+  "codeQuality.analysis": "最后一次分析",
   "codeQuality.detail.reliability": "可靠性",
   "codeQuality.detail.maintainability": "可维护性",
   "codeQuality.detail.coverage": "覆盖率",
   "codeQuality.detail.duplications": "重复度",
-  "codeQuality.bugs.new": "新增Bugs",
+  "codeQuality.bugs": "Bugs",
+  "codeQuality.new_bugs": "新增Bugs",
   "codeQuality.vulnerabilities": "安全漏洞",
-  "codeQuality.vulnerabilities.new": "新增安全漏洞",
-  "codeQuality.debt": "技术债务",
-  "codeQuality.debt.new": "新增技术债务",
-  "codeQuality.code.smells": "代码异味",
-  "codeQuality.code.smells.new": "新增代码异味",
+  "codeQuality.new_vulnerabilities": "新增安全漏洞",
+  "codeQuality.sqale_index": "技术债务",
+  "codeQuality.new_technical_debt": "新增技术债务",
+  "codeQuality.code_smells": "代码异味",
+  "codeQuality.new_code_smells": "新增代码异味",
   "codeQuality.coverage": "覆盖率",
-  "codeQuality.unit.tests": "单元测试",
-  "codeQuality.coverage.new": "新增代码部分覆盖率",
-  "codeQuality.duplications": "重复率",
-  "codeQuality.duplications.blocks": "重复部分",
-  "codeQuality.duplications.new": "新增代码部分重复率",
+  "codeQuality.tests": "单元测试",
+  "codeQuality.new_coverage": "新增代码部分覆盖率",
+  "codeQuality.duplicated_lines_density": "重复率",
+  "codeQuality.duplicated_blocks": "重复部分",
+  "codeQuality.new_duplicated_lines_density": "新增代码部分重复率",
+  "codeQuality.empty.title": "暂无详情",
+  "codeQuality.empty.content":
+    "当前应用未使用SonarQube进行代码质量的检测，因此没有相关的代码质量详情。",
 
   ...pageDetail,
 };

@@ -6,7 +6,7 @@
   cursor: pointer;
 }
 
-.editable {
+.c7n-editable-table {
   width: 512px;
 
   .ant-form-item-children {
@@ -73,4 +73,12 @@
     padding-left: 5px;
     height: 20px;
   }
+
+  .c7n-config-mode-btn {
+    margin-left: 12px;
+  }
+}
+
+.c7n-config-editor {
+  width: 512px;
 }
