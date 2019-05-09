@@ -1,15 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.entity.*;
@@ -19,6 +17,10 @@ import io.choerodon.devops.infra.common.util.K8sUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by younger on 2018/4/25.
@@ -94,7 +96,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     /**
      * 判断该资源是否是应用chart包中定义而生成资源
      *
-     * @param message    资源的信息
+     * @param message 资源的信息
      * @return true 如果是chart包定义生成的
      */
     private boolean isReleaseGenerated(String message) {
@@ -344,11 +346,13 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         deploymentDTO.setUpToDate(TypeUtil.objToLong(v1beta2Deployment.getStatus().getUpdatedReplicas()));
         deploymentDTO.setAvailable(TypeUtil.objToLong(v1beta2Deployment.getStatus().getAvailableReplicas()));
         deploymentDTO.setAge(v1beta2Deployment.getMetadata().getCreationTimestamp().toString());
-        v1beta2Deployment.getStatus().getConditions().forEach(v1beta2DeploymentCondition -> {
-            if ("NewReplicaSetAvailable".equals(v1beta2DeploymentCondition.getReason())) {
-                deploymentDTO.setAge(v1beta2DeploymentCondition.getLastUpdateTime().toString());
-            }
-        });
+        if (v1beta2Deployment.getStatus() != null && v1beta2Deployment.getStatus().getConditions() != null) {
+            v1beta2Deployment.getStatus().getConditions().forEach(v1beta2DeploymentCondition -> {
+                if ("NewReplicaSetAvailable".equals(v1beta2DeploymentCondition.getReason())) {
+                    deploymentDTO.setAge(v1beta2DeploymentCondition.getLastUpdateTime().toString());
+                }
+            });
+        }
         devopsEnvResourceDTO.getDeploymentDTOS().add(deploymentDTO);
     }
 
