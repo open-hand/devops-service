@@ -686,8 +686,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.INGRESS.toValue(), ingressE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t)));
         devopsIngressRepository.deleteIngressAndIngressPathByEnvId(envId);
         // 删除环境对应的网络和网络实例
-        devopsServiceRepository.selectByEnvId(envId).forEach(ingressE->
-                devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.SERVICE.toValue(), ingressE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t)));
+        devopsServiceRepository.selectByEnvId(envId).forEach(serviceE->
+                devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.SERVICE.toValue(), serviceE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t)));
         devopsServiceRepository.deleteServiceAndInstanceByEnvId(envId);
         // 删除环境
         devopsEnviromentRepository.deleteById(envId);
