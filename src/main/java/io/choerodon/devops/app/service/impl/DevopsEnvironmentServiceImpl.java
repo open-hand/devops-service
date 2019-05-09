@@ -18,6 +18,7 @@ import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
+import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
@@ -31,6 +32,7 @@ import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.infra.common.util.*;
+import io.choerodon.devops.infra.common.util.enums.HelmObjectKind;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -110,6 +112,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DeployService deployService;
     @Autowired
     private GitlabProjectRepository gitlabProjectRepository;
+    @Autowired
+    private DeployMsgHandlerService deployMsgHandlerService;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
@@ -672,10 +678,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public void deleteDeactivatedEnvironment(Long envId) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
         // 删除环境对应的实例
+        applicationInstanceRepository.selectByEnvId(envId).forEach(instanceE->
+                devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.INSTANCE.toValue(), instanceE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t)));
         applicationInstanceRepository.deleteAppInstanceByEnvId(envId);
         // 删除环境对应的域名、域名路径
+        devopsIngressRepository.listByEnvId(envId).forEach(ingressE->
+                devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.INGRESS.toValue(), ingressE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t)));
         devopsIngressRepository.deleteIngressAndIngressPathByEnvId(envId);
         // 删除环境对应的网络和网络实例
+        devopsServiceRepository.selectByEnvId(envId).forEach(serviceE->
+                devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.SERVICE.toValue(), serviceE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t)));
         devopsServiceRepository.deleteServiceAndInstanceByEnvId(envId);
         // 删除环境
         devopsEnviromentRepository.deleteById(envId);

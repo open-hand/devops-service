@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
@@ -45,6 +46,7 @@ import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
 import io.choerodon.devops.infra.common.util.enums.CertificationType;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
+import io.choerodon.devops.infra.common.util.enums.HelmObjectKind;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -285,6 +287,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void certDeleteByGitOps(Long certId) {
         CertificationE certificationE = certificationRepository.queryById(certId);
 
@@ -294,7 +297,7 @@ public class CertificationServiceImpl implements CertificationService {
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //实例相关对象数据库操作
-        devopsEnvCommandRepository.listByObjectAll(CERTIFICATE_KIND, certificationE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t));
+        devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.CERTIFICATE.toValue(), certificationE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t));
         certificationRepository.deleteById(certId);
     }
 

@@ -606,6 +606,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void resourceDelete(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
@@ -698,6 +699,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void helmReleaseDelete(String key, Long clusterId) {
 
         Long envId = getEnvId(key, clusterId);
@@ -1816,7 +1818,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    @Transactional(rollbackFor = RuntimeException.class)
     public void deleteCommandById(DevopsEnvCommandE commandE) {
         commandValueRepository.deleteById(commandE.getDevopsEnvCommandValueE().getId());
         commandLogRepository.deleteByCommandId(commandE.getId());
