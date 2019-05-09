@@ -537,9 +537,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 //            gitlabRepository.batchAddVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(),
 //                    setVariableDTO(applicationE.getHarborConfigE().getId(), applicationE.getChartConfigE().getId()));
             // 更新并校验
-            if (applicationRepository.update(applicationE) != 1) {
-                throw new CommonException(ERROR_UPDATE_APP);
-            }
+            applicationRepository.updateSql(applicationE);
         } catch (Exception e) {
             throw new CommonException(e.getMessage(), e);
         }

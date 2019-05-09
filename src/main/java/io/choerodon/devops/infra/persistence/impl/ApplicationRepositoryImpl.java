@@ -97,6 +97,13 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
+    public void updateSql(ApplicationE applicationE) {
+        ApplicationDO applicationDO = ConvertHelper.convert(applicationE, ApplicationDO.class);
+        applicationMapper.updateSql(applicationDO.getId(),applicationDO.getToken(),
+                applicationDO.getGitlabProjectId(),applicationDO.getHookId(),applicationDO.getSynchro());
+    }
+
+    @Override
     public ApplicationE query(Long applicationId) {
         ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(applicationId);
         return ConvertHelper.convert(applicationDO, ApplicationE.class);
