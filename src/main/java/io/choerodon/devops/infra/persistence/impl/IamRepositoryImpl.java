@@ -1,5 +1,17 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -20,17 +32,6 @@ import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
 
 /**
  * Created by younger on 2018/3/29.
@@ -261,9 +262,14 @@ public class IamRepositoryImpl implements IamRepository {
         // 项目下所有项目成员
         List<UserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), memberId,
                 projectId, false).getContent();
+        List<Long> memberIds = list.stream().map(UserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
-        list.addAll(this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), ownerId,
-                projectId, false).getContent());
+        this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), ownerId,
+                projectId, false).getContent().forEach(t -> {
+            if (!memberIds.contains(t.getId())) {
+                list.add(t);
+            }
+        });
         return list;
     }
 
