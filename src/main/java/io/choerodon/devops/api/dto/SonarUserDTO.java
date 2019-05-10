@@ -6,27 +6,27 @@ package io.choerodon.devops.api.dto;
  * Description:
  */
 public class SonarUserDTO {
-    private String userName;
-    private String password;
+    private String token;
+    private String url;
 
-    public SonarUserDTO(String userName, String password) {
-        this.userName = userName;
-        this.password = password;
+    public SonarUserDTO(String token, String url) {
+        this.token = token;
+        this.url = url;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getToken() {
+        return token;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setToken(String token) {
+        this.token = token;
     }
 
-    public String getPassword() {
-        return password;
+    public String getUrl() {
+        return url;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

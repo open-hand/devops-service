@@ -8,5 +8,5 @@ import io.choerodon.devops.api.dto.SonarUserDTO;
  * Description:
  */
 public interface SonarService {
-    SonarUserDTO getAdminUser();
+    SonarUserDTO getSonarInfo();
 }

@@ -12,14 +12,14 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SonarServiceImpl implements SonarService {
-    @Value("${sonar.username}")
-    private String userName;
+    @Value("${sonar.privateToken}")
+    private String token;
 
-    @Value("${sonar.password}")
-    private String password;
+    @Value("${sonar.url}")
+    private String url;
 
     @Override
-    public SonarUserDTO getAdminUser() {
-        return new SonarUserDTO(userName, password);
+    public SonarUserDTO getSonarInfo() {
+        return new SonarUserDTO(token, url);
     }
 }

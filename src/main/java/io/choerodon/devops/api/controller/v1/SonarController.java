@@ -30,11 +30,11 @@ public class SonarController {
      * @return
      */
     @ApiOperation(value = "触发自动部署")
-    @GetMapping("/user")
-    public ResponseEntity<SonarUserDTO> getAdminUser() {
-        return Optional.ofNullable(sonarService.getAdminUser())
+    @GetMapping("/info")
+    public ResponseEntity<SonarUserDTO> getSonarInfo() {
+        return Optional.ofNullable(sonarService.getSonarInfo())
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.get.sonar.user"));
+                .orElseThrow(() -> new CommonException("error.get.sonar.info"));
     }
 
 }
