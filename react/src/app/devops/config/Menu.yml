@@ -125,6 +125,23 @@
         sort: 7
         permission:
           - "devops-service.application.getSonarQube"
+    - "application":
+        delete: true
+        icon: widgets
+        Routes: /devops/app
+        sort: 5
+        permission:
+          - "devops-service.application.pageByOptions"
+          - "devops-service.application.update"
+          - "devops-service.application.queryByAppId"
+          - "devops-service.application.queryByAppIdAndActive"
+    - "application-version":
+        delete: true
+        icon: version
+        Routes: /devops/app-version
+        sort: 6
+        permission:
+          - "devops-service.application.getSonarQube"
 
 # 部署流水线
 "deployment-pipeline":
