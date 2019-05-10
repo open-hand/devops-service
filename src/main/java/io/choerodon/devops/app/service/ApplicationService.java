@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
 import java.util.List;
 
 import io.choerodon.core.domain.Page;
@@ -276,4 +277,16 @@ public interface ApplicationService {
      * @return
      */
     List<VariableDTO> setVariableDTO(Long harborConfigId, Long chartConfigId);
+
+
+    /**
+     * 查看sonarqube相关信息
+     *
+     * @param projectId 项目Id
+     * @param appId     应用id
+     * @return
+     */
+    SonarContentsDTO getSonarContent(Long projectId, Long appId);
+
+    SonarTableDTO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime);
 }

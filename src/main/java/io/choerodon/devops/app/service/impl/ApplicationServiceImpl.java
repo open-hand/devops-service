@@ -3,6 +3,9 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -22,6 +25,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.gitlab.VariableDTO;
+import io.choerodon.devops.api.dto.sonar.*;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.domain.application.entity.*;
@@ -39,9 +43,7 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.common.util.*;
-import io.choerodon.devops.infra.common.util.enums.AccessLevel;
-import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
-import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
+import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
@@ -51,6 +53,7 @@ import io.choerodon.devops.infra.dataobject.harbor.ProjectDetail;
 import io.choerodon.devops.infra.dataobject.harbor.User;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.tool.UUIDTool;
 import org.apache.commons.io.FileUtils;
@@ -75,9 +78,13 @@ import retrofit2.Retrofit;
 @Service
 @EnableConfigurationProperties(HarborConfigurationProperties.class)
 public class ApplicationServiceImpl implements ApplicationService {
+    public static final String SEVERITIES = "severities";
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
     private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
     private static final String DOCKER_FILE_NAME = "Dockerfile";
+    public static final String SONAR = "sonar";
+    private static final String ISSUE = "issue";
+    private static final String COVERAGE = "coverage";
     private static final String CHART_DIR = "charts";
     private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
 
@@ -103,6 +110,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String DOCKER_USERNAME = "DOCKER_USERNAME";
     private static final String DOCKER_CODE = "DOCKER_PASSWORD";
     private static final String CHART_REGISTRY = "CHART_REGISTRY";
+    private static final String DUPLICATE = "duplicate";
 
     private Gson gson = new Gson();
 
@@ -114,6 +122,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private String sonarqubeUrl;
     @Value("${services.gateway.url}")
     private String gatewayUrl;
+
 
     @Autowired
     private GitlabRepository gitlabRepository;
@@ -1227,5 +1236,499 @@ public class ApplicationServiceImpl implements ApplicationService {
             variableDTOS.add(new VariableDTO(CHART_REGISTRY, chartUrl, false));
         }
         return variableDTOS;
+    }
+
+    @Override
+    public SonarContentsDTO getSonarContent(Long projectId, Long appId) {
+        SonarContentsDTO sonarContentsDTO = new SonarContentsDTO();
+        List<SonarContentDTO> sonarContentDTOS = new ArrayList<>();
+        ApplicationE applicationE = applicationRepository.query(appId);
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        SonarClient sonarClient = getSonarClient();
+        String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
+        sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
+        try {
+            Map<String, String> queryContentMap = new HashMap<>();
+            queryContentMap.put("additionalFields", "metrics,periods");
+            queryContentMap.put("componentKey", key);
+            queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,new_bugs,new_vulnerabilities,sqale_index,code_smells,new_technical_debt,new_code_smells,coverage,tests,new_coverage,duplicated_lines_density,duplicated_blocks,new_duplicated_lines_density,ncloc,ncloc_language_distribution");
+            Response<SonarComponent> sonarComponentResponse = sonarClient.getSonarComponet(queryContentMap).execute();
+            if (sonarComponentResponse.raw().code() != 200) {
+                if (sonarComponentResponse.raw().code() == 404) {
+                    return new SonarContentsDTO();
+                }
+                throw new CommonException(sonarComponentResponse.errorBody().string());
+            }
+            if (sonarComponentResponse.body() == null) {
+                return new SonarContentsDTO();
+            }
+            sonarContentsDTO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
+            sonarContentsDTO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
+            sonarContentsDTO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
+            sonarComponentResponse.body().getComponent().getMeasures().stream().forEach(measure -> {
+                SonarQubeType sonarQubeType = SonarQubeType.forValue(String.valueOf(measure.getMetric()));
+                switch (sonarQubeType) {
+                    case BUGS:
+                        SonarContentDTO bug = new SonarContentDTO();
+                        bug.setKey(measure.getMetric());
+                        bug.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        bug.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=BUG", sonarqubeUrl, key));
+                        try {
+                            Map<String, String> queryBugMap = getQueryMap(key, "BUG", false);
+                            Response<Bug> bugResponse = sonarClient.getBugs(queryBugMap).execute();
+                            if (bugResponse.raw().code() != 200) {
+                                throw new CommonException(bugResponse.errorBody().string());
+                            }
+                            List<Facet> facets = bugResponse.body().getFacets();
+                            getRate(bug, facets);
+                        } catch (IOException e) {
+                            throw new CommonException(e);
+                        }
+                        sonarContentDTOS.add(bug);
+                        break;
+                    case VULNERABILITIES:
+                        SonarContentDTO vulnerabilities = new SonarContentDTO();
+                        vulnerabilities.setKey(measure.getMetric());
+                        vulnerabilities.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        vulnerabilities.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=VULNERABILITY", sonarqubeUrl, key));
+                        try {
+                            Map<String, String> queryVulnerabilitiesMap = getQueryMap(key, "VULNERABILITY", false);
+                            Response<Vulnerability> vulnerabilityResponse = sonarClient.getVulnerability(queryVulnerabilitiesMap).execute();
+                            if (vulnerabilityResponse.raw().code() != 200) {
+                                throw new CommonException(vulnerabilityResponse.errorBody().string());
+                            }
+                            List<Facet> facets = vulnerabilityResponse.body().getFacets();
+                            getRate(vulnerabilities, facets);
+                        } catch (IOException e) {
+                            throw new CommonException(e);
+                        }
+                        sonarContentDTOS.add(vulnerabilities);
+                        break;
+                    case NEW_BUGS:
+                        SonarContentDTO newBug = new SonarContentDTO();
+                        newBug.setKey(measure.getMetric());
+                        newBug.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        newBug.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=BUG", sonarqubeUrl, key));
+                        try {
+                            Map<String, String> queryNewBugMap = getQueryMap(key, "BUG", true);
+
+                            Response<Bug> newBugResponse = sonarClient.getNewBugs(queryNewBugMap).execute();
+                            if (newBugResponse.raw().code() != 200) {
+                                throw new CommonException(newBugResponse.errorBody().string());
+                            }
+                            List<Facet> facets = newBugResponse.body().getFacets();
+                            getRate(newBug, facets);
+                        } catch (IOException e) {
+                            throw new CommonException(e);
+                        }
+                        sonarContentDTOS.add(newBug);
+                        break;
+                    case NEW_VULNERABILITIES:
+                        SonarContentDTO newVulnerabilities = new SonarContentDTO();
+                        newVulnerabilities.setKey(measure.getMetric());
+                        newVulnerabilities.setValue(measure.getPeriods().get(0).getValue());
+                        newVulnerabilities.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=VULNERABILITY", sonarqubeUrl, key));
+                        try {
+                            Map<String, String> queryNewVulnerabilitiesMap = getQueryMap(key, "VULNERABILITY", true);
+                            Response<Vulnerability> newVulnerabilityResponse = sonarClient.getNewVulnerability(queryNewVulnerabilitiesMap).execute();
+                            if (newVulnerabilityResponse.raw().code() != 200) {
+                                throw new CommonException(newVulnerabilityResponse.errorBody().string());
+                            }
+                            List<Facet> facets = newVulnerabilityResponse.body().getFacets();
+                            getRate(newVulnerabilities, facets);
+                        } catch (IOException e) {
+                            throw new CommonException(e);
+                        }
+                        sonarContentDTOS.add(newVulnerabilities);
+                        break;
+                    case SQALE_INDEX:
+                        SonarContentDTO debt = new SonarContentDTO();
+                        debt.setKey(measure.getMetric());
+                        debt.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        double day = measure.getValue() == null ? 0 : TypeUtil.objTodouble(measure.getValue()) / 480;
+                        double hour = measure.getValue() == null ? 0 : TypeUtil.objTodouble(measure.getValue()) / 60;
+                        if (day >= 1) {
+                            debt.setValue(String.format("%sd", Math.round(day)));
+                        } else if (hour >= 1) {
+                            debt.setValue(String.format("%sh", Math.round(hour)));
+                        } else {
+                            debt.setValue(String.format("%s%s", Math.round(TypeUtil.objTodouble(measure.getValue() == null ? 0 : measure.getValue())), measure.getValue() == null ? "" : "min"));
+                        }
+                        debt.setUrl(String.format("%sproject/issues?facetMode=effort&id=%s&resolved=false&types=CODE_SMELL", sonarqubeUrl, key));
+                        sonarContentDTOS.add(debt);
+                        break;
+                    case CODE_SMELLS:
+                        SonarContentDTO codeSmells = new SonarContentDTO();
+                        codeSmells.setKey(measure.getMetric());
+                        double result = measure.getValue() == null ? 0 : TypeUtil.objToLong(measure.getValue()) / 1000;
+                        if (result > 0) {
+                            if (TypeUtil.objToLong(measure.getValue()) % 1000 == 0) {
+                                codeSmells.setValue(String.format("%sK", result));
+                            } else {
+                                BigDecimal codeSmellDecimal = new BigDecimal(result);
+                                codeSmells.setValue(String.format("%sK", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
+                            }
+                        } else {
+                            codeSmells.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        }
+                        codeSmells.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=CODE_SMELL", sonarqubeUrl, key));
+                        sonarContentDTOS.add(codeSmells);
+                        break;
+                    case NEW_TECHNICAL_DEBT:
+                        SonarContentDTO newDebt = new SonarContentDTO();
+                        newDebt.setKey(measure.getMetric());
+                        double newDay = TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) / 480;
+                        double newHour = TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) / 60;
+                        if (newDay >= 1) {
+                            newDebt.setValue(String.format("%sd", Math.round(newDay)));
+                        } else if (newHour >= 1) {
+                            newDebt.setValue(String.format("%sh", Math.round(newHour)));
+                        } else {
+                            newDebt.setValue(String.format("%s%s", measure.getPeriods().get(0).getValue(), measure.getPeriods().get(0).getValue().equals("0") ? "" : "min"));
+                        }
+                        newDebt.setUrl(String.format("%sproject/issues?facetMode=effort&id=%s&resolved=false&sinceLeakPeriod=true&types=CODE_SMELL", sonarqubeUrl, key));
+                        sonarContentDTOS.add(newDebt);
+                        break;
+                    case NEW_CODE_SMELLS:
+                        SonarContentDTO newCodeSmells = new SonarContentDTO();
+                        newCodeSmells.setKey(measure.getMetric());
+                        double newResult = TypeUtil.objToLong(measure.getPeriods().get(0).getValue()) / 1000;
+                        if (newResult > 0) {
+                            if (TypeUtil.objToLong(measure.getPeriods().get(0).getValue()) % 1000 == 0) {
+                                newCodeSmells.setValue(String.format("%sK", newResult));
+                            } else {
+                                BigDecimal codeSmellDecimal = new BigDecimal(newResult);
+                                newCodeSmells.setValue(String.format("%sK", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
+                            }
+                        } else {
+                            newCodeSmells.setValue(measure.getPeriods().get(0).getValue());
+                        }
+                        newCodeSmells.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=CODE_SMELL", sonarqubeUrl, key));
+                        sonarContentDTOS.add(newCodeSmells);
+                        break;
+                    case COVERAGE:
+                        SonarContentDTO coverage = new SonarContentDTO();
+                        coverage.setKey(measure.getMetric());
+                        coverage.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        coverage.setUrl(String.format("%scomponent_measures?id=%s&metric=coverage", sonarqubeUrl, key));
+                        sonarContentDTOS.add(coverage);
+                        break;
+                    case NEW_COVERAGE:
+                        SonarContentDTO newCoverage = new SonarContentDTO();
+                        newCoverage.setKey(measure.getMetric());
+                        BigDecimal codeSmellDecimal = new BigDecimal(measure.getPeriods().get(0).getValue());
+                        newCoverage.setValue(String.format("%s", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
+                        newCoverage.setUrl(String.format("%scomponent_measures?id=%s&metric=new_coverage", sonarqubeUrl, key));
+                        sonarContentDTOS.add(newCoverage);
+                        break;
+                    case DUPLICATED_LINES_DENSITY:
+                        SonarContentDTO duplicated = new SonarContentDTO();
+                        duplicated.setKey(measure.getMetric());
+                        duplicated.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        duplicated.setUrl(String.format("%scomponent_measures?id=%s&metric=duplicated_lines_density", sonarqubeUrl, key));
+                        if (TypeUtil.objTodouble(measure.getValue()) >= 0 && TypeUtil.objTodouble(measure.getValue()) < 3) {
+                            duplicated.setRate("A");
+                        } else if (TypeUtil.objTodouble(measure.getValue()) >= 3 && TypeUtil.objTodouble(measure.getValue()) < 10) {
+                            duplicated.setRate("B");
+                        } else if (TypeUtil.objTodouble(measure.getValue()) >= 10 && TypeUtil.objTodouble(measure.getValue()) < 20) {
+                            duplicated.setRate("C");
+                        } else {
+                            duplicated.setRate("D");
+                        }
+                        sonarContentDTOS.add(duplicated);
+                        break;
+                    case DUPLICATED_BLOCKS:
+                        SonarContentDTO duplicatedBlocks = new SonarContentDTO();
+                        duplicatedBlocks.setKey(measure.getMetric());
+                        duplicatedBlocks.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        duplicatedBlocks.setUrl(String.format("%scomponent_measures?id=%s&metric=duplicated_blocks", sonarqubeUrl, key));
+                        sonarContentDTOS.add(duplicatedBlocks);
+                        break;
+                    case NEW_DUPLICATED_LINES_DENSITY:
+                        SonarContentDTO newDuplicated = new SonarContentDTO();
+                        newDuplicated.setKey(measure.getMetric());
+                        if (TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) == 0) {
+                            newDuplicated.setValue("0");
+                        } else {
+                            BigDecimal b = new BigDecimal(TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()));
+                            newDuplicated.setValue(TypeUtil.objToString(b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
+                        }
+                        newDuplicated.setUrl(String.format("%scomponent_measures?id=%s&metric=new_duplicated_lines_density", sonarqubeUrl, key));
+                        sonarContentDTOS.add(newDuplicated);
+                        break;
+                    case NCLOC:
+                        SonarContentDTO ncloc = new SonarContentDTO();
+                        ncloc.setKey(measure.getMetric());
+                        double nclocResult = TypeUtil.objTodouble(measure.getValue()) / 1000;
+                        if (nclocResult >= 0) {
+                            if (TypeUtil.objToLong(measure.getValue()) % 1000 == 0) {
+                                ncloc.setValue(String.format("%sK", nclocResult));
+                            } else {
+                                BigDecimal nclocDecimal = new BigDecimal(nclocResult);
+                                ncloc.setValue(String.format("%sK", nclocDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
+                            }
+                        } else {
+                            ncloc.setValue(measure.getValue());
+                        }
+                        if (TypeUtil.objToLong(measure.getValue()) > 0 && TypeUtil.objToLong(measure.getValue()) < 1000) {
+                            ncloc.setRate("XS");
+                        } else if (TypeUtil.objToLong(measure.getValue()) >= 1000 && TypeUtil.objToLong(measure.getValue()) < 10000) {
+                            ncloc.setRate("S");
+                        } else if (TypeUtil.objToLong(measure.getValue()) >= 10000 && TypeUtil.objToLong(measure.getValue()) < 100000) {
+                            ncloc.setRate("M");
+                        } else if (TypeUtil.objToLong(measure.getValue()) >= 100000 && TypeUtil.objToLong(measure.getValue()) < 500000) {
+                            ncloc.setRate("L");
+                        } else {
+                            ncloc.setRate("XL");
+                        }
+                        sonarContentDTOS.add(ncloc);
+                        break;
+                    case TESTS:
+                        SonarContentDTO test = new SonarContentDTO();
+                        test.setKey(measure.getMetric());
+                        test.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        test.setUrl(String.format("%scomponent_measures?id=%s&metric=tests", sonarqubeUrl, key));
+                        sonarContentDTOS.add(test);
+                        break;
+                    case NCLOC_LANGUAGE_DISTRIBUTION:
+                        SonarContentDTO nclocLanguage = new SonarContentDTO();
+                        nclocLanguage.setKey(measure.getMetric());
+                        nclocLanguage.setValue(measure.getValue());
+                        sonarContentDTOS.add(nclocLanguage);
+                        break;
+                    case QUALITY_GATE_DETAILS:
+                        Quality quality = gson.fromJson(measure.getValue(), Quality.class);
+                        sonarContentsDTO.setStatus(quality.getLevel());
+                        break;
+                    default:
+                        break;
+                }
+            });
+            sonarContentsDTO.setSonarContents(sonarContentDTOS);
+        } catch (IOException e) {
+            throw new CommonException(e);
+        }
+        return sonarContentsDTO;
+    }
+
+    @Override
+    public SonarTableDTO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime) {
+        SonarTableDTO sonarTableDTO = new SonarTableDTO();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
+        ApplicationE applicationE = applicationRepository.query(appId);
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        SonarClient sonarClient = getSonarClient();
+        String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
+        sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
+        Map<String, String> queryMap = new HashMap<>();
+        queryMap.put("component", key);
+        queryMap.put("ps", "1000");
+        if (ISSUE.equals(type)) {
+            queryMap.put("metrics", "bugs,code_smells,vulnerabilities");
+            try {
+                Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
+                if (sonarTablesResponse.raw().code() != 200) {
+                    if (sonarTablesResponse.raw().code() == 404) {
+                        return new SonarTableDTO();
+                    }
+                    throw new CommonException(sonarTablesResponse.errorBody().string());
+                }
+                List<String> bugs = new ArrayList<>();
+                List<String> dates = new ArrayList<>();
+                List<String> codeSmells = new ArrayList<>();
+                List<String> vulnerabilities = new ArrayList<>();
+                sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.BUGS.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            bugs.add(sonarHistroy.getValue());
+                            dates.add(sonarHistroy.getDate());
+                        });
+                        sonarTableDTO.setDates(dates);
+                        sonarTableDTO.setBugs(bugs);
+                    }
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.CODE_SMELLS.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            codeSmells.add(sonarHistroy.getValue());
+                        });
+                        sonarTableDTO.setCodeSmells(codeSmells);
+                    }
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.VULNERABILITIES.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            vulnerabilities.add(sonarHistroy.getValue());
+                        });
+                        sonarTableDTO.setVulnerabilities(vulnerabilities);
+                    }
+                });
+            } catch (IOException e) {
+                throw new CommonException(e);
+            }
+        }
+        if (COVERAGE.equals(type)) {
+            queryMap.put("metrics", "lines_to_cover,uncovered_lines,coverage");
+            try {
+                Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
+                if (sonarTablesResponse.raw().code() != 200) {
+                    if (sonarTablesResponse.raw().code() == 404) {
+                        return new SonarTableDTO();
+                    }
+                    throw new CommonException(sonarTablesResponse.errorBody().string());
+                }
+                List<String> linesToCover = new ArrayList<>();
+                List<String> dates = new ArrayList<>();
+                List<String> unCoverLines = new ArrayList<>();
+                List<String> coverLines = new ArrayList<>();
+                List<String> coverage = new ArrayList<>();
+                sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.COVERAGE.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            coverage.add(sonarHistroy.getValue());
+                        });
+                        sonarTableDTO.setCoverage(coverage);
+                    }
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.LINES_TO_COVER.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            linesToCover.add(sonarHistroy.getValue());
+                            dates.add(sonarHistroy.getDate());
+                        });
+                        sonarTableDTO.setDates(dates);
+                        sonarTableDTO.setLinesToCover(linesToCover);
+                    }
+
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.UNCOVERED_LINES.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            unCoverLines.add(sonarHistroy.getValue());
+                        });
+                    }
+                    for (int i = 0; i < linesToCover.size(); i++) {
+                        coverLines.add(TypeUtil.objToString(TypeUtil.objToLong(linesToCover.get(i)) - TypeUtil.objToLong(unCoverLines.get(i))));
+                    }
+                    sonarTableDTO.setCoverLines(coverLines);
+                });
+
+            } catch (IOException e) {
+                throw new CommonException(e);
+            }
+        }
+        if (DUPLICATE.equals(type)) {
+            queryMap.put("metrics", "ncloc,duplicated_lines,duplicated_lines_density");
+            try {
+                Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
+                if (sonarTablesResponse.raw().code() != 200) {
+                    if (sonarTablesResponse.raw().code() == 404) {
+                        return new SonarTableDTO();
+                    }
+                    throw new CommonException(sonarTablesResponse.errorBody().string());
+                }
+                List<String> nclocs = new ArrayList<>();
+                List<String> dates = new ArrayList<>();
+                List<String> duplicatedLines = new ArrayList<>();
+                List<String> duplicatedLinesRate = new ArrayList<>();
+                sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.NCLOC.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            nclocs.add(sonarHistroy.getValue());
+                            dates.add(sonarHistroy.getDate());
+                        });
+                        sonarTableDTO.setNclocs(nclocs);
+                        sonarTableDTO.setDates(dates);
+                    }
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy ->
+                                duplicatedLines.add(sonarHistroy.getValue())
+                        );
+                        sonarTableDTO.setDuplicatedLines(duplicatedLines);
+                    }
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES_DENSITY.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            duplicatedLinesRate.add(sonarHistroy.getValue());
+                        });
+                        sonarTableDTO.setDuplicatedLinesRate(duplicatedLinesRate);
+                    }
+                });
+            } catch (IOException e) {
+                throw new CommonException(e);
+            }
+        }
+        return sonarTableDTO;
+    }
+
+    private boolean getHistory(Date startTime, Date endTime, SimpleDateFormat sdf, SonarHistroy sonarHistroy) {
+        try {
+            return sdf.parse(sonarHistroy.getDate()).compareTo(startTime) >= 0 && sdf.parse(sonarHistroy.getDate()).compareTo(endTime) <= 0;
+        } catch (ParseException e) {
+            throw new CommonException(e);
+        }
+    }
+
+
+    private void getRate(SonarContentDTO sonarContentDTO, List<Facet> facets) {
+        sonarContentDTO.setRate("A");
+        facets.stream().filter(facet -> facet.getProperty().equals(SEVERITIES)).forEach(facet -> {
+            facet.getValues().stream().forEach(value -> {
+                if (value.getVal().equals(Rate.MINOR.getRate()) && value.getCount() >= 1) {
+                    if (sonarContentDTO.getRate().equals("A")) {
+                        sonarContentDTO.setRate("B");
+                    }
+                }
+                if (value.getVal().equals(Rate.MAJOR.getRate()) && value.getCount() >= 1) {
+                    if (!sonarContentDTO.getRate().equals("D") && !sonarContentDTO.getRate().equals("E")) {
+                        sonarContentDTO.setRate("C");
+                    }
+                }
+                if (value.getVal().equals(Rate.CRITICAL.getRate()) && value.getCount() >= 1) {
+                    if (!sonarContentDTO.getRate().equals("E")) {
+                        sonarContentDTO.setRate("D");
+                    }
+                }
+                if (value.getVal().equals(Rate.BLOCKER.getRate()) && value.getCount() >= 1) {
+                    sonarContentDTO.setRate("E");
+                }
+            });
+        });
+    }
+
+
+    public Map<String, String> getQueryMap(String key, String type, Boolean newAdd) {
+        Map<String, String> map = new HashMap<>();
+        map.put("componentKeys", key);
+        map.put("s", "FILE_LINE");
+        map.put("resolved", "false");
+        map.put("types", type);
+        if (newAdd) {
+            map.put("sinceLeakPeriod", "true");
+        }
+        map.put("ps", "100");
+        map.put("facets", "severities,types");
+        map.put("additionalFields", "_all");
+        return map;
+    }
+
+
+    private SonarClient getSonarClient() {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(sonarqubeUrl);
+        configurationProperties.setType(SONAR);
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        return retrofit.create(SonarClient.class);
     }
 }
