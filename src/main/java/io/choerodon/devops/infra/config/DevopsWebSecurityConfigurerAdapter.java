@@ -22,12 +22,12 @@ public class DevopsWebSecurityConfigurerAdapter extends WebSecurityConfigurerAda
     public void configure(WebSecurity web) throws Exception {
         web
                 .ignoring()
-                .antMatchers("/workflow/**","/v1/**", "/ci", "/webhook/**", "/v2/api-docs", "/agent/**", "/ws/**", "/gitlab/email", "/webhook/**", "/v2/choerodon/**", "/choerodon/**", "/actuator/**", "/prometheus");
+                .antMatchers("/workflow/**", "/v1/**", "/ci", "/webhook/**", "/sonar/info", "/v2/api-docs", "/agent/**", "/ws/**", "/gitlab/email", "/webhook/**", "/v2/choerodon/**", "/choerodon/**", "/actuator/**", "/prometheus");
     }
 
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers("/workflow/**","/ci", "/webhook/**", "/v2/api-docs", "/agent/**", "/ws/**", "/gitlab/email").permitAll();
+        http.authorizeRequests().antMatchers("/workflow/**", "/ci", "/webhook/**", "/sonar/info", "/v2/api-docs", "/agent/**", "/ws/**", "/gitlab/email").permitAll();
     }
 }
