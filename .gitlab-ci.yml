@@ -15,7 +15,7 @@ build:
     - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
   only:
     variables:
-      -$COMBINE==null
+      - $COMBINE == null
 
 build-combine:
   stage: build
@@ -32,7 +32,7 @@ build-combine:
     - kaniko -c $PWD/docker -f $PWD/docker/Dockerfile-combine -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
   only:
     variables:
-      -$COMBINE==true
+      - $COMBINE == true
 
 
 release:
