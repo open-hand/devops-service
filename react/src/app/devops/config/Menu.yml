@@ -119,6 +119,12 @@
           - "devops-service.devops-gitlab-pipeline.pagePipeline"
           - "devops-service.project-pipeline.cancel"
           - "devops-service.project-pipeline.retry"
+    - "code-quality":
+        icon: quality
+        Routes: /devops/code-quality
+        sort: 7
+        permission:
+          - "devops-service.application.getSonarQube"
     - "application":
         delete: true
         icon: widgets

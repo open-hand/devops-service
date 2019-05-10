@@ -8,19 +8,27 @@ class Rating extends PureComponent {
     rating: PropTypes.string.isRequired,
     size: PropTypes.string,
     fontSize: PropTypes.string,
+    type: PropTypes.string,
   };
 
   render() {
-    const { rating, size, fontSize } = this.props;
-    const realSize = size || "16px";
-
+    const { rating, size, fontSize, type } = this.props;
+    const realSize = size || (type === "pie" ? "18px" : "16px");
     return (
-      <span
-        className={`c7ncd-rating-wrap c7ncd-rating-wrap-${rating}`}
-        style={{width: realSize, height: realSize, lineHeight: realSize, fontSize: fontSize || "13px"}}
-      >
-        {rating}
-      </span>
+      <div className="c7ncd-rating-wrap">
+        {type === "pie" ? (
+          <div
+            className={`c7ncd-rating-pie c7ncd-rating-pie-${rating}`}
+            style={{width: realSize, height: realSize}}
+          />): (
+          <div
+            className={`c7ncd-rating-letter c7ncd-rating-letter-${rating}`}
+            style={{width: realSize, height: realSize, lineHeight: realSize, fontSize: fontSize || "13px"}}
+          >
+            {rating}
+          </div>
+        )}
+      </div>
     );
   };
 }

@@ -313,7 +313,7 @@ const pageDetail = {
   "report.build-duration.description":
     "构建时长图将从应用的维度为您展示所选时间段某个应用每一次构建的时长，这将帮助您更为直观地了解应用构建的效率。",
   "report.code-quality.description":
-    "代码质量图能展示出项目下所有应用的代码质量详情。能从项目、应用的维度帮助我们查看某个项目或是该项目下某个应用的代码提交情况。",
+    "代码质量图用于直观地展示某个应用代码质量的检测结果。",
   "report.submission.link": `${docServer}/user-guide/report/devops-report/code-commits`,
   "report.build-number.link": `${docServer}/user-guide/report/devops-report/build-frequency`,
   "report.deploy-duration.link": `${docServer}/user-guide/report/devops-report/deploy-duration`,
@@ -452,7 +452,7 @@ const pageDetail = {
 
   // 代码质量
   "codeQuality.title": "应用“{name}”的代码质量",
-  "codeQuality.description": "代码质量页面主要用于展示对应应用的代码质量详情。",
+  "codeQuality.description": "代码质量页面用于直观地展示该应用中代码通过SonarQube检测后的结果详情。",
   "codeQuality.link": `${docServer}/user-guide/development-pipeline/code-quality/`,
 };
 

@@ -13,6 +13,7 @@
 "development-pipeline.repository": "Repository"
 "development-pipeline.merge-request": "Merge Request"
 "development-pipeline.continuous-integration": "Continuous Integration"
+"development-pipeline.code-quality": "Code Quality"
 "development-pipeline.application": "Application"
 "development-pipeline.application-version": "Application Version"
 

@@ -13,6 +13,7 @@
 "development-pipeline.repository": "代码仓库"
 "development-pipeline.merge-request": "合并请求"
 "development-pipeline.continuous-integration": "持续集成"
+"development-pipeline.code-quality": "代码质量"
 "development-pipeline.application": "应用"
 "development-pipeline.application-version": "应用版本"
 

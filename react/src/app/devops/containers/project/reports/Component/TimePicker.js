@@ -12,6 +12,8 @@ function TimePicker(props) {
   const { startTime, endTime, store, func, type, onChange, unlimit } = props;
   const handleClick = (val) => {
     store.setEndTime(moment());
+    store.setStartDate(null);
+    store.setEndDate(null);
     switch (val) {
       case 'today':
         store.setStartTime(moment());

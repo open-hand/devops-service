@@ -32,7 +32,7 @@ class CodeQualityStore {
    */
   loadData = (projectId, appId) => {
     this.changeLoading(true);
-    return axios.get(``)
+    return axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/sonarqube`)
       .then(data => {
         const res = handleProptError(data);
         if (res) {

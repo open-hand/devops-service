@@ -533,7 +533,7 @@ class ReportsStore {
     this.setEchartsLoading(true);
     return axios
       .get(
-        `?appId=${appId}&startTime=${startTime}&endTime=${endTime}`
+        `/devops/v1/projects/${projectId}/apps/${appId}/sonarQubeTable?type=${type}&startTime=${startTime}&endTime=${endTime}`
       )
       .then(data => {
         const res = handleProptError(data);

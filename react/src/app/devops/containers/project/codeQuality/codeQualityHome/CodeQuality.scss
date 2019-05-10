@@ -19,7 +19,7 @@
         padding: 0 6px;
         text-align: center;
 
-        &-failed {
+        &-ERROR {
           background: rgba(244, 67, 54, 0.2);
           border-color: $D;
           color: $D;
@@ -74,72 +74,68 @@
             margin: 0 2px 0 6px;
           }
 
-          .detail-content-block-number {
+          .block-number {
             font-size: 24px;
-            color: #0e1d80;
+            color: #000;
             line-height: 36px;
+
+            &-link {
+              color: #0e1d80;
+              font-size: 24px;
+              line-height: 36px;
+            }
 
             &-percentage {
               font-size: 13px;
               color: #0e1d80;
+              margin-left: 2px;
+            }
+
+            &-noValue {
+              font-size: 13px;
+              color: rgba(0, 0, 0, 0.36);
             }
           }
 
-          .c7ncd-rating-wrap {
-            margin: 0 12px 0 4px;
+          .reports-icon {
+            margin-left: 12px;
+            color: #000;
           }
 
+          .c7ncd-rating-wrap,
           .c7ncd-percentage-wrap {
-            margin: 0 12px 0 4px;
-          }
-
-          .duplications-rating {
-            width: 18px;
-            height: 18px;
-            border: 2px solid $A;
-            border-radius: 50%;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0 12px 0 4px;
-
-            &:after {
-              border-radius: 50%;
-              content: '';
-            }
-
-            &-B {
-              border-color: $B;
-
-              &:after {
-                width: 4px;
-                height: 4px;
-                background-color: $B;
-              }
-            }
-
-            &-C {
-              border-color: $C;
-
-              &:after {
-                width: 8px;
-                height: 8px;
-                background-color: $C;
-              }
-            }
-
-            &-D {
-              border-color: $D;
-
-              &:after {
-                width: 12px;
-                height: 12px;
-                background-color: $D;
-              }
-            }
+            margin-left: 4px;
           }
         }
       }
+    }
+  }
+
+  .c7n-codeQuality-empty {
+    width: 412px;
+    margin: 90px auto;
+
+    .codeQuality-empty-content {
+      color: rgba(0, 0, 0, 0.65);
+    }
+
+    .codeQuality-empty-link {
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      .codeQuality-empty-more {
+        color: #3f51b5;
+      }
+    }
+  }
+
+  a {
+
+    &:focus,
+    &:visited {
+      text-decoration: none;
     }
   }
 }

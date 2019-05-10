@@ -1,15 +1,16 @@
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Page, Header, Content } from '@choerodon/boot';
-import { Select, Button, Tooltip, Icon } from 'choerodon-ui';
+import { Select, Button, Tooltip, Icon, Card } from 'choerodon-ui';
 import _ from 'lodash';
 import LoadingBar from '../../../../components/loadingBar/LoadingBar';
 import DevPipelineStore from "../../../../stores/project/devPipeline";
 import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
 import Percentage from "../../../../components/percentage/Percentage";
 import Rating from "../../../../components/rating/Rating";
+import { QUALITY_LIST, OBJECT_TYPE } from "../components/Constants";
 
 import './CodeQuality.scss';
 import '../../../main.scss';
@@ -29,11 +30,8 @@ class CodeQuality extends Component {
 
   componentDidMount() {
     const {
-      CodeQualityStore,
       AppState: { currentMenuType: { projectId } },
-      location: { state },
     } = this.props;
-    const historyAppId = state || {};
     DevPipelineStore.queryAppData(projectId, "quality");
   }
 
@@ -42,7 +40,7 @@ class CodeQuality extends Component {
       CodeQualityStore,
       AppState: { currentMenuType: { projectId } },
     } = this.props;
-    // CodeQualityStore.loadData(projectId, DevPipelineStore.getSelectApp);
+    CodeQualityStore.loadData(projectId, DevPipelineStore.getSelectApp);
   };
 
   /**
@@ -56,157 +54,92 @@ class CodeQuality extends Component {
     } = this.props;
     DevPipelineStore.setSelectApp(value);
     DevPipelineStore.setRecentApp(value);
-    // CodeQualityStore.loadData(projectId, value)
+    CodeQualityStore.loadData(projectId, value)
   };
 
   getDetail = () => {
     const {
       CodeQualityStore,
       intl: { formatMessage },
-    } = this.props;
-    // const { getData } = CodeQualityStore;
-    const getData = {
-      date: "2019年4月15日 下午21:46",
-      status: "success",
-      DTO: {
-        reliability: [
-          {
-            icon: "bug_report",
-            title: "Bugs：",
-            hasReport: true,
-            number: 12,
-            rating: "B",
-          },
-          {
-            icon: "unlock",
-            title: formatMessage({ id: "codeQuality.vulnerabilities" }),
-            hasReport: true,
-            number: 21,
-            rating: "C",
-          },
-          {
-            icon: "bug_report",
-            title: formatMessage({ id: "codeQuality.bugs.new" }),
-            hasReport: false,
-            number: 2,
-            rating: "A",
-          },
-          {
-            icon: "unlock",
-            title: formatMessage({ id: "codeQuality.vulnerabilities.new" }),
-            hasReport: false,
-            number: 10,
-            rating: "D",
-          },
-        ],
-        maintainability: [
-          {
-            icon: "opacity",
-            title: formatMessage({ id: "codeQuality.debt" }),
-            hasReport: true,
-            number: 36,
-            rating: "B",
-          },
-          {
-            icon: "group_work",
-            title: formatMessage({ id: "codeQuality.code.smells" }),
-            hasReport: false,
-            number: 21,
-            rating: "A",
-          },
-          {
-            icon: "opacity",
-            title: formatMessage({ id: "codeQuality.debt.new" }),
-            hasReport: false,
-            number: 6,
-            rating: "B",
-          },
-          {
-            icon: "group_work",
-            title: formatMessage({ id: "codeQuality.code.smells.new" }),
-            hasReport: false,
-            number: 12,
-            rating: "C",
-          },
-        ],
-        coverage: [
-          {
-            icon: "fiber_smart_record",
-            title: formatMessage({ id: "codeQuality.coverage" }),
-            hasReport: true,
-            number: 25,
-            rating: null,
-          },
-          {
-            icon: "adjust",
-            title: formatMessage({ id: "codeQuality.unit.tests" }),
-            hasReport: false,
-            number: 0,
-            rating: null,
-          },
-          {
-            icon: "fiber_smart_record",
-            title: formatMessage({ id: "codeQuality.coverage.new" }),
-            hasReport: false,
-            number: 12,
-            rating: null,
-          },
-        ],
-        duplications: [
-          {
-            icon: "adjust",
-            title: formatMessage({ id: "codeQuality.duplications" }),
-            hasReport: true,
-            number: 21,
-            rating: null,
-          },
-          {
-            icon: "adjust",
-            title: formatMessage({ id: "codeQuality.duplications.blocks" }),
-            hasReport: false,
-            number: 231,
-            rating: null,
-          },
-          {
-            icon: "adjust",
-            title: formatMessage({ id: "codeQuality.duplications.new" }),
-            hasReport: false,
-            number: 12,
-            rating: null,
-          },
-        ],
+      location: {
+        search,
       },
+    } = this.props;
+    const { getSelectApp } = DevPipelineStore;
+    const { getData } = CodeQualityStore;
+    const { date, status, sonarContents } = getData || {};
+
+    // 合并数据，生成{key, value, icon, url, rate, hasReport}对象数组
+    const qualityList = [];
+    _.map(QUALITY_LIST, item => {
+      const data = _.find(sonarContents, ({ key }) => item.key === key) || {};
+      qualityList.push(Object.assign({}, item, data));
+    });
+    const quality = {
+      reliability: qualityList.slice(0, 4),
+      maintainability: qualityList.slice(4, 8),
+      coverage: qualityList.slice(8, 11),
+      duplications: qualityList.slice(11, 14),
     };
-    const { date, status, DTO } = getData;
+
     return (
-      _.isEmpty(getData) ? <FormattedMessage id="codeQuality.empty" /> : (
+      date || status ? (
         <div className="c7n-codeQuality-content">
           <div className="c7n-codeQuality-content-head">
             <span className="codeQuality-head-title">{formatMessage({ id: "codeQuality.content.title" })}</span>
             <span className={`codeQuality-head-status codeQuality-head-status-${status}`}>{formatMessage({ id: `codeQuality.status.${status}` })}</span>
-            <span className="codeQuality-head-date">{formatMessage({ id: "codeQuality.analysis"})}{date}</span>
+            <span className="codeQuality-head-date">{formatMessage({ id: "codeQuality.analysis"})}：{date.split('+')[0].replace(/T/g, ' ')}</span>
           </div>
-          {_.map(DTO, (value, key) => (
-            <div className="c7n-codeQuality-detail" key={key}>
-              <div className="codeQuality-detail-title"><FormattedMessage id={`codeQuality.detail.${key}`} /></div>
+          {_.map(quality, (value, objKey) => (
+            <div className="c7n-codeQuality-detail" key={objKey}>
+              <div className="codeQuality-detail-title"><FormattedMessage id={`codeQuality.detail.${objKey}`} /></div>
               <div className="codeQuality-detail-content">
                 {
-                  _.map(value, ({ icon, title, hasReport, number, rating }, index) => (
-                    <div className="detail-content-block" key={title}>
+                  _.map(value, ({ icon, key, hasReport, isPercent, value, rate, url }) => (
+                    <div className="detail-content-block" key={key}>
                       <Icon type={icon} />
-                      <span className="detail-content-block-title">{title}：</span>
-                      <span className="detail-content-block-number">{number}</span>
-                      <span className="detail-content-block-number-percentage">{(key === "coverage" || key === "duplications") && index !== 1 ? "%" : ""}</span>
-                      {rating && <Rating rating={rating} />}
-                      {key === "coverage" && index === 0 && <Percentage data={number} />}
-                      {key === "duplications" && index === 0 && <div className="duplications-rating duplications-rating-A" />}
-                      {hasReport && <Icon type="timeline" />}
+                      <span className="detail-content-block-title">{formatMessage({ id: `codeQuality.${key}`})}：</span>
+                      {url ? (
+                        <a href={url} target="_blank">
+                          <span className="block-number-link">{value}</span>
+                          {isPercent && <span className="block-number-percentage">%</span>}
+                        </a>) : (
+                        <span className={`block-number ${!value && "block-number-noValue"}`}>{value || formatMessage({ id: "nodata" })}</span>
+                      )}
+                      {rate && key !== "duplicated_lines_density" && <Rating rating={rate} />}
+                      {key === "coverage" && <Percentage data={Number(value)} />}
+                      {key === "duplicated_lines_density" && <Rating rating={rate} size="18px" type="pie" />}
+                      {hasReport && (
+                        <Link
+                          to={{
+                            pathname: "/devops/reports/code-quality",
+                            search,
+                            state: { appId: getSelectApp, type: OBJECT_TYPE[objKey]},
+                          }}
+                        >
+                          <Icon type="timeline" className="reports-icon" />
+                        </Link>
+                      )}
                     </div>
                   ))
                 }
               </div>
             </div>
           ))}
+        </div>
+      ) : (
+        <div className="c7n-codeQuality-empty">
+          <Card title={formatMessage({ id: "codeQuality.empty.title"})}>
+            <span className="codeQuality-empty-content">{formatMessage({ id: "codeQuality.empty.content"})}</span>
+            <a
+              href={formatMessage({ id: 'codeQuality.link' })}
+              target="_blank"
+              className="codeQuality-empty-link"
+            >
+              <span className="codeQuality-empty-more" >{formatMessage({ id: "learnmore" })}</span>
+              <Icon type="open_in_new" />
+            </a>
+          </Card>
         </div>
       )
     );
@@ -216,15 +149,9 @@ class CodeQuality extends Component {
     const {
       intl: { formatMessage },
       AppState: {
-        currentMenuType: {
-          projectId,
-          type,
-          name,
-          organizationId,
-        },
+        currentMenuType: { name },
       },
       location: {
-        search,
         state,
       },
       CodeQualityStore,
@@ -232,19 +159,19 @@ class CodeQuality extends Component {
     const {
       getLoading,
     } = CodeQualityStore;
-
-    const backPath = "";
-    const appData = DevPipelineStore.getAppData;
-    const appId = DevPipelineStore.getSelectApp;
-    const titleName = _.find(appData, ['id', appId]) ? _.find(appData, ['id', appId]).name : name;
+    const backPath = state && state.backPath ? state.backPath : "";
+    const { getAppData, getRecentApp, getSelectApp } = DevPipelineStore;
+    const app = _.find(getAppData, ['id', getSelectApp]);
+    const titleName =  app? app.name : name;
     return (
       <Page
         className="c7n-region c7n-codeQuality-wrapper"
         service={[
-          'devops-service.application.listByActive',
+          "devops-service.application.listByActive",
+          "devops-service.application.getSonarQube",
         ]}
       >
-        {appData && appData.length && appId ? <Fragment>
+        {getAppData && getAppData.length && getSelectApp ? <Fragment>
           <Header
             title={formatMessage({ id: 'codeQuality.head' })}
             backPath={backPath}
@@ -254,33 +181,37 @@ class CodeQuality extends Component {
               className="c7n-header-select"
               dropdownClassName="c7n-header-select_drop"
               placeholder={formatMessage({ id: 'ist.noApp' })}
-              value={DevPipelineStore.getSelectApp}
-              disabled={appData.length === 0}
+              value={getSelectApp}
+              disabled={getAppData.length === 0}
               filterOption={(input, option) => option.props.children.props.children.props.children
                 .toLowerCase().indexOf(input.toLowerCase()) >= 0}
               onChange={this.handleSelect}
             >
               <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
                 {
-                  _.map(DevPipelineStore.getRecentApp, app => (
+                  _.map(getRecentApp, ({ id, permission, code, name }) => (
                     <Option
-                      key={`recent-${app.id}`}
-                      value={app.id}
-                      disabled={!app.permission}
+                      key={`recent-${id}`}
+                      value={id}
+                      disabled={!permission}
                     >
-                      <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
+                      <Tooltip title={code}>
+                        <span className="c7n-ib-width_100">{name}</span>
+                      </Tooltip>
                     </Option>))
                 }
               </OptGroup>
               <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
                 {
-                  _.map(appData, (app, index) => (
+                  _.map(getAppData, ({ id, code, name, permission }, index) => (
                     <Option
-                      value={app.id}
+                      value={id}
                       key={index}
-                      disabled={!app.permission}
+                      disabled={!permission}
                     >
-                      <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
+                      <Tooltip title={code}>
+                        <span className="c7n-ib-width_100">{name}</span>
+                      </Tooltip>
                     </Option>))
                 }
               </OptGroup>
