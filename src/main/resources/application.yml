@@ -33,7 +33,8 @@ template:
 choerodon:
   saga:
     consumer:
-      thread-num: 5  # 消费线程数
+      core-thread-num: 20
+      max-thread-num:  20 # 消费线程数
       poll-interval: 3 # 拉取消息的间隔(秒)，默认1秒
       enabled: true # 是否启用消费端
   schedule:

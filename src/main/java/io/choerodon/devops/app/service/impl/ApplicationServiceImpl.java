@@ -1417,7 +1417,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                     case NEW_COVERAGE:
                         SonarContentDTO newCoverage = new SonarContentDTO();
                         newCoverage.setKey(measure.getMetric());
-                        newCoverage.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        BigDecimal codeSmellDecimal = new BigDecimal(measure.getPeriods().get(0).getValue());
+                        newCoverage.setValue(String.format("%s", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
                         newCoverage.setUrl(String.format("%scomponent_measures?id=%s&metric=new_coverage", sonarqubeUrl, key));
                         sonarContentDTOS.add(newCoverage);
                         break;
