@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -16,7 +18,6 @@ import io.choerodon.devops.infra.mapper.DevopsEnvCommandLogMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.stereotype.Service;
 
 /**
  * @author crcokitwood
@@ -88,5 +89,20 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
         Page<ApplicationInstanceDO> applicationInstanceDOPage = PageHelper.doPageAndSort(pageRequest, () ->
                 devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
         return ConvertPageHelper.convertPage(applicationInstanceDOPage, DevopsEnvCommandE.class);
+    }
+
+    @Override
+    public void deleteById(Long commandId) {
+        DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO();
+        devopsEnvCommandDO.setId(commandId);
+        devopsEnvCommandMapper.deleteByPrimaryKey(devopsEnvCommandDO);
+    }
+
+    @Override
+    public List<DevopsEnvCommandE> listByObjectAll(String objectType, Long objectId) {
+        DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO();
+        devopsEnvCommandDO.setObjectId(objectId);
+        devopsEnvCommandDO.setObject(objectType);
+        return ConvertHelper.convertList(devopsEnvCommandMapper.select(devopsEnvCommandDO), DevopsEnvCommandE.class);
     }
 }

@@ -4,30 +4,43 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1Secret;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.SecretRepDTO;
 import io.choerodon.devops.api.dto.SecretReqDTO;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsSecretService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.DevopsSecretE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.DevopsSecretRepository;
+import io.choerodon.devops.domain.application.repository.GitlabRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.common.util.Base64Util;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
+import io.choerodon.devops.infra.common.util.enums.HelmObjectKind;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.SecretStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1Secret;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * Created by n!Ck
@@ -43,6 +56,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private static final String CREATE = "create";
     private static final String UPDATE = "update";
     private static final String DELETE = "delete";
+    private static final String SECRET_KIND = "secret";
 
     @Autowired
     private DevopsSecretRepository devopsSecretRepository;
@@ -62,6 +76,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private GitlabRepository gitlabRepository;
     @Autowired
     private CheckOptionsHandler checkOptionsHandler;
+    @Autowired
+    private DeployMsgHandlerService deployMsgHandlerService;
 
     @Override
     public SecretRepDTO createOrUpdate(SecretReqDTO secretReqDTO) {
@@ -113,7 +129,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             devopsSecretRepository.checkName(secretReqDTO.getName(), secretReqDTO.getEnvId());
         }
         // 校验key-name
-        if(!secretReqDTO.getType().equals("kubernetes.io/dockerconfigjson")) {
+        if (!secretReqDTO.getType().equals("kubernetes.io/dockerconfigjson")) {
             DevopsSecretValidator.checkKeyName(secretReqDTO.getValue().keySet());
         }
 
@@ -227,6 +243,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteSecretByGitOps(Long secretId) {
         DevopsSecretE devopsSecretE = devopsSecretRepository.queryBySecretId(secretId);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
@@ -234,6 +251,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsSecretE.getCommandId());
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.SECRET.toValue(), devopsSecretE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t));
         devopsSecretRepository.deleteSecret(secretId);
     }
 
