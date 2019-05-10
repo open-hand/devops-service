@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SonarServiceImpl implements SonarService {
-    @Value("${sonar.privateToken}")
+    @Value("${sonar.privateToken:token}")
     private String token;
 
-    @Value("${sonar.url}")
+    @Value("${sonar.url:url}")
     private String url;
 
     @Override
