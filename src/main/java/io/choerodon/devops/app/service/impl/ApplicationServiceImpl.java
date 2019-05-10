@@ -1353,7 +1353,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         } else if (hour >= 1) {
                             debt.setValue(String.format("%sh", Math.round(hour)));
                         } else {
-                            debt.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                            debt.setValue(String.format("%s%s", Math.round(TypeUtil.objTodouble(measure.getValue() == null ? 0 : measure.getValue())), measure.getValue() == null ? "" : "min"));
                         }
                         debt.setUrl(String.format("%sproject/issues?facetMode=effort&id=%s&resolved=false&types=CODE_SMELL", sonarqubeUrl, key));
                         sonarContentDTOS.add(debt);
@@ -1385,7 +1385,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         } else if (newHour >= 1) {
                             newDebt.setValue(String.format("%sh", Math.round(newHour)));
                         } else {
-                            newDebt.setValue(measure.getPeriods().get(0).getValue());
+                            newDebt.setValue(String.format("%s%s", measure.getPeriods().get(0).getValue(), measure.getPeriods().get(0).getValue().equals("0") ? "" : "min"));
                         }
                         newDebt.setUrl(String.format("%sproject/issues?facetMode=effort&id=%s&resolved=false&sinceLeakPeriod=true&types=CODE_SMELL", sonarqubeUrl, key));
                         sonarContentDTOS.add(newDebt);
