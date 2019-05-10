@@ -67,8 +67,12 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     public void checkCode(DevopsEnvironmentE devopsEnvironmentE) {
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
         devopsEnvironmentDO.setClusterId(devopsEnvironmentE.getClusterE().getId());
-        devopsEnvironmentDO.setProjectId(devopsEnvironmentE.getProjectE().getId());
         devopsEnvironmentDO.setCode(devopsEnvironmentE.getCode());
+        if (!devopsEnvironmentMapper.select(devopsEnvironmentDO).isEmpty()) {
+            throw new CommonException("error.code.exist");
+        }
+        devopsEnvironmentDO.setClusterId(null);
+        devopsEnvironmentDO.setProjectId(devopsEnvironmentE.getProjectE().getId());
         if (!devopsEnvironmentMapper.select(devopsEnvironmentDO).isEmpty()) {
             throw new CommonException("error.code.exist");
         }
