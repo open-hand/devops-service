@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.dto.SonarUserDTO;
+import io.choerodon.devops.api.dto.SonarInfoDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -8,5 +8,5 @@ import io.choerodon.devops.api.dto.SonarUserDTO;
  * Description:
  */
 public interface SonarService {
-    SonarUserDTO getSonarInfo();
+    SonarInfoDTO getSonarInfo();
 }

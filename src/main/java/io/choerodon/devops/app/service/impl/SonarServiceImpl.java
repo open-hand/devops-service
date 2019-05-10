@@ -1,9 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
-import io.choerodon.devops.api.dto.SonarUserDTO;
-import io.choerodon.devops.app.service.SonarService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import io.choerodon.devops.api.dto.SonarInfoDTO;
+import io.choerodon.devops.app.service.SonarService;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -12,14 +13,17 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class SonarServiceImpl implements SonarService {
-    @Value("${sonar.privateToken:token}")
-    private String token;
+    @Value("${services.sonarqube.username:username}")
+    private String userName;
 
-    @Value("${sonar.url:url}")
+    @Value("${services.sonarqube.password:password}")
+    private String password;
+
+    @Value("${services.sonar.url:url}")
     private String url;
 
     @Override
-    public SonarUserDTO getSonarInfo() {
-        return new SonarUserDTO(token, url);
+    public SonarInfoDTO getSonarInfo() {
+        return new SonarInfoDTO(userName, password, url);
     }
 }
