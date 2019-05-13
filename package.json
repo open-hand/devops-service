@@ -1,9 +1,9 @@
 {
-  "name": "@choerodon/c7ncd",
+  "name": "@choerodon/devops",
   "routerName": "devops",
   "description": "",
   "license": "ISC",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "keywords": [],
   "contributors": [
     "choerodon"
@@ -16,7 +16,8 @@
     "start": "choerodon-front-boot start --config ./react/config.js",
     "dist": "choerodon-front-boot dist --config ./react/config.js",
     "lint-staged": "lint-staged",
-    "lint-staged:es": "eslint"
+    "lint-staged:es": "eslint",
+    "compile": "gulp compile"
   },
   "dependencies": {
     "@choerodon/boot": "0.1.x",
@@ -45,8 +46,13 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "babel-preset-env": "^1.7.0",
+    "del": "^4.1.1",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^7.0.1",
     "stylelint": "^9.5.0",
     "stylelint-config-standard": "^18.2.0",
+    "through2": "^2.0.3",
     "webpack-bundle-analyzer": "^3.1.0"
   },
   "lint-staged": {
