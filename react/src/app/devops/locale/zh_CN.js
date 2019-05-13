@@ -1550,6 +1550,7 @@ const zhCN = {
   "configMap.del.tooltip": "确认删除配置映射吗？",
   "configMap.mode.kv": "编辑 YAML",
   "configMap.mode.yaml": "编辑键值对",
+  "configMap.yaml.error": "内容不符合规则。",
 
   // 密文
   "secret.head": "密文",

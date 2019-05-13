@@ -5,7 +5,7 @@ import { Content, stores } from '@choerodon/boot';
 import _ from 'lodash';
 import { Button, Form, Select, Input, Modal, Icon, Table, Popover } from 'choerodon-ui';
 import { EditableCell, EditableFormRow } from './editableTable';
-import { objToYaml, yamlToObj, takeObject, ConfigNode } from '../utils';
+import { objToYaml, yamlToObj, takeObject, ConfigNode, makePostData } from '../utils';
 import YamlEditor from '../../../../components/yamlEditor';
 import EnvOverviewStore from '../../../../stores/project/envOverview';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
@@ -34,6 +34,10 @@ const formItemLayout = {
 @inject('AppState')
 @observer
 export default class KeyValueSideBar extends Component {
+  static defaultProps = {
+    modeSwitch: false,
+  };
+
   state = {
     // 键值对格式
     dataSource: [new ConfigNode()],
@@ -41,11 +45,14 @@ export default class KeyValueSideBar extends Component {
     dataYaml: '',
     counter: 1,
     submitting: false,
-    warningDisplay: false,
+    hasItemError: false,
     warningMes: '',
     data: false,
     isYamlEdit: false,
     hasYamlError: false,
+    // yaml格式的value只能是字符串或null
+    hasValueError: false,
+    valueErrorMsg: '',
   };
 
   /**
@@ -204,15 +211,40 @@ export default class KeyValueSideBar extends Component {
       ...row,
     });
 
+    this.asyncCheckErrorData(newData);
+
     this.setState({ dataSource: newData });
   };
 
   /**
-   * 校验键值对
+   * configMap 规则中value只能是字符串
+   * @param data
+   */
+  checkConfigRuleError = (data = '') => {
+    const yaml = data || this.state.dataYaml;
+    const yamlObj = yamlToObj(yaml) || {};
+    const values = Object.values(yamlObj);
+
+    let error = false;
+    for (let i = 0, len = values.length; i < len; i++) {
+      if (typeof values[i] !== 'string' || values[i] === '') {
+        error = true;
+        break;
+      }
+    }
+
+    this.setState({ hasValueError: error });
+    return error;
+  };
+
+  asyncCheckConfigRuleError = _.debounce(this.checkConfigRuleError, 600);
+
+  /**
+   * 同步校验键值对
    * @param data
    * @returns {boolean}
    */
-  checkErrorData(data = null) {
+  checkErrorData = (data = null) => {
     const {
       intl: {
         formatMessage,
@@ -236,7 +268,13 @@ export default class KeyValueSideBar extends Component {
 
     }
 
-    if (!(hasErrorItem || hasErrorKey || hasRepeatKey)) return false;
+    if (!(hasErrorItem || hasErrorKey || hasRepeatKey)) {
+      this.setState({
+        warningMes: '',
+        hasItemError: false,
+      });
+      return false;
+    }
 
     const errorMsg = formatMessage({
       id: hasRepeatKey ? 'configMap.keyRepeat' : 'configMap.keyValueSpan',
@@ -245,7 +283,14 @@ export default class KeyValueSideBar extends Component {
     this.setConfigError(errorMsg);
 
     return true;
-  }
+  };
+
+  /**
+   * 校验键值对
+   * @param data
+   * @returns {boolean}
+   */
+  asyncCheckErrorData = _.debounce(this.checkErrorData, 600);
 
   /**
    * 设置键值对模式下的错误提示
@@ -254,8 +299,7 @@ export default class KeyValueSideBar extends Component {
   setConfigError(msg) {
     this.setState({
       warningMes: msg,
-      warningDisplay: true,
-      submitting: false,
+      hasItemError: true,
     });
   }
 
@@ -285,19 +329,21 @@ export default class KeyValueSideBar extends Component {
 
     let configData = [];
     let hasKVError = false;
+    let hasConfigRuleError = false;
 
     if (!isYamlEdit) {
       hasKVError = this.checkErrorData();
       configData = [...dataSource.filter(item => !_.isEmpty(item.key))];
     } else {
+      hasConfigRuleError = this.checkConfigRuleError();
       configData = yamlToObj(dataYaml);
     }
 
-    if (hasYamlError || hasKVError) return;
+    if (hasYamlError || hasKVError || hasConfigRuleError) return;
 
     this.setState({
       submitting: true,
-      warningDisplay: false,
+      hasItemError: false,
     });
 
     const uniqData = _.uniqBy(configData, 'index');
@@ -446,9 +492,11 @@ export default class KeyValueSideBar extends Component {
     const {
       dataSource,
       isYamlEdit,
-      warningDisplay,
+      hasItemError,
       warningMes,
       dataYaml,
+      hasValueError,
+      valueErrorMsg,
     } = this.state;
 
     let configMap = null;
@@ -519,17 +567,21 @@ export default class KeyValueSideBar extends Component {
         <Button icon="add" onClick={this.handleAdd} type="primary">
           <FormattedMessage id={`${title}.add`} />
         </Button>
-        {warningDisplay ? <div className="c7n-cm-warning">{warningMes}</div> : null}
+        {hasItemError ? <div className="c7n-cm-warning">{warningMes}</div> : null}
       </Fragment>;
 
     } else {
-      configMap = <YamlEditor
-        readOnly={false}
-        modeChange={false}
-        value={dataYaml}
-        onValueChange={this.changeYamlValue}
-        handleEnableNext={this.checkYamlError}
-      />;
+      configMap = <Fragment>
+        <YamlEditor
+          readOnly={false}
+          modeChange={false}
+          value={dataYaml}
+          onValueChange={this.changeYamlValue}
+          handleEnableNext={this.checkYamlError}
+        />
+        <div className="c7ncd-config-yaml-tip">{hasValueError && (valueErrorMsg ||
+          <FormattedMessage id="configMap.yaml.error" />)}</div>
+      </Fragment>;
     }
 
     return configMap;
@@ -540,6 +592,8 @@ export default class KeyValueSideBar extends Component {
    * @param value
    */
   changeYamlValue = (value) => {
+    this.asyncCheckConfigRuleError(value);
+
     this.setState({ dataYaml: value });
   };
 
@@ -559,40 +613,57 @@ export default class KeyValueSideBar extends Component {
       dataSource,
       dataYaml,
       hasYamlError,
+      isYamlEdit,
+      hasValueError,
+      hasItemError,
     } = this.state;
-    const hasError = this.checkErrorData();
 
-    if (hasError || hasYamlError) return;
+    if (hasYamlError || hasValueError || hasItemError) return;
 
-    if (!this.state.isYamlEdit) {
+    if (!isYamlEdit) {
+
+      const result = this.checkErrorData(dataSource);
+
+      if (result) return;
 
       const yamlValue = objToYaml(dataSource);
 
+      this.checkConfigRuleError(yamlValue);
+
       this.setState({
-        warningDisplay: false,
+        counter: 1,
+        hasItemError: false,
+        isYamlEdit: true,
         warningMes: '',
         dataSource: [],
         dataYaml: yamlValue,
-        counter: 1,
       });
+
     } else {
 
-      const kvValue = yamlToObj(dataYaml);
-      const counter = kvValue.length;
+      const result = this.checkConfigRuleError(dataYaml);
 
-      this.checkErrorData(kvValue);
+      if (result) return;
 
-      this.setState({
-        dataSource: kvValue,
-        hasYamlError: false,
-        dataYaml: '',
-        counter,
-      });
+      try {
+        const kvValue = yamlToObj(dataYaml);
+        const postData = makePostData(kvValue);
+
+        const counter = postData.length;
+        this.setState({
+          dataSource: postData,
+          hasYamlError: false,
+          isYamlEdit: false,
+          dataYaml: '',
+          counter,
+        });
+      } catch (e) {
+        this.setState({
+          hasValueError: true,
+          valueErrorMsg: e.message,
+        });
+      }
     }
-
-    this.setState({
-      isYamlEdit: !this.state.isYamlEdit,
-    });
   };
 
   render() {
@@ -602,30 +673,49 @@ export default class KeyValueSideBar extends Component {
       id,
       envId,
       title,
+      modeSwitch,
     } = this.props;
     const {
       submitting,
       data,
-      warningDisplay,
       hasYamlError,
       isYamlEdit,
+      hasValueError,
+      hasItemError,
     } = this.state;
 
     const envName = (_.find(EnvOverviewStore.getEnvcard, ['id', envId]) || {}).name;
     const titleName = id ? data.name : envName;
     const titleCode = `${title}.${id ? 'edit' : 'create'}`;
+    const disableBtn = hasYamlError || hasValueError || hasItemError;
 
     return (
       <div className="c7n-region">
         <Sidebar
           destroyOnClose
           visible={visible}
-          cancelText={<FormattedMessage id="cancel" />}
-          okText={<FormattedMessage id={id ? 'save' : 'create'} />}
           title={<FormattedMessage id={titleCode} />}
-          onOk={this.handleSubmit}
-          onCancel={this.handleClose.bind(this, false)}
           confirmLoading={submitting}
+          footer={[
+            <Button
+              disabled={disableBtn}
+              key="submit"
+              funcType="raised"
+              type="primary"
+              onClick={this.handleSubmit}
+              loading={submitting}
+            >
+              {formatMessage({ id: id ? 'save' : 'create' })}
+            </Button>,
+            <Button
+              key="back"
+              funcType="raised"
+              onClick={this.handleClose.bind(this, false)}
+              disabled={submitting}
+            >
+              {<FormattedMessage id="cancel" />}
+            </Button>,
+          ]}
         >
           <Content
             code={titleCode}
@@ -636,21 +726,21 @@ export default class KeyValueSideBar extends Component {
 
             <div className="c7n-sidebar-from-title">
               <FormattedMessage id={`${title}.head`} />
-              <Popover
+              {!isYamlEdit && <Popover
                 overlayStyle={{ maxWidth: 350 }}
                 content={formatMessage({ id: `${title}.help.tooltip` })}
               >
                 <Icon type="help" />
-              </Popover>
-              <Button
+              </Popover>}
+              {modeSwitch ? <Button
                 className="c7n-config-mode-btn"
                 type="primary"
                 funcType="flat"
-                disabled={warningDisplay || hasYamlError}
+                disabled={disableBtn}
                 onClick={this.changeEditMode}
               >
                 <FormattedMessage id={isYamlEdit ? 'configMap.mode.yaml' : 'configMap.mode.kv'} />
-              </Button>
+              </Button> : null}
             </div>
 
             <div className="c7n-config-editor">

@@ -50,9 +50,7 @@ function objToYaml(value) {
  * @param value
  */
 function yamlToObj(value) {
-  const _value = jsYaml.load(value);
-
-  return makePostData(_value);
+  return jsYaml.load(value);
 }
 
 /**
@@ -85,14 +83,14 @@ function makePostData(data) {
     return [config];
   }
 
+  const dataEntries = Object.entries(data);
+
   let index = 1;
-  const result = [];
-  for (const key in data) {
-    if (data.hasOwnProperty(key)) {
-      const config = new ConfigNode(key, data[key], index);
-      result.push(config);
-      index++;
-    }
+  let result = [];
+  for (const [key, value] of dataEntries) {
+    const config = new ConfigNode(key, value, index);
+    result.push(config);
+    index++;
   }
 
   return result;

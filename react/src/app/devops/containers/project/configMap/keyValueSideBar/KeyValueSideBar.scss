@@ -81,4 +81,9 @@
 
 .c7n-config-editor {
   width: 512px;
+
+  .c7ncd-config-yaml-tip {
+    margin-top: 20px;
+    color: #d50000;
+  }
 }

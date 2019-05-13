@@ -9,10 +9,10 @@ import KeyValueTable from '../keyValueTable';
 import KeyValueSideBar from '../keyValueSideBar';
 import './ConfigMap.scss';
 import '../../../main.scss';
-import EnvOverviewStore from "../../../../stores/project/envOverview";
-import DevopsStore from "../../../../stores/DevopsStore";
-import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
-import RefreshBtn from "../../../../components/refreshBtn";
+import EnvOverviewStore from '../../../../stores/project/envOverview';
+import DevopsStore from '../../../../stores/DevopsStore';
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import RefreshBtn from '../../../../components/refreshBtn';
 
 const { AppState } = stores;
 const { Option } = Select;
@@ -78,7 +78,7 @@ class ConfigMap extends Component {
    */
   closeSideBar = (isLoad) => {
     this.setState({ sideBarDisplay: false });
-    if(isLoad) {
+    if (isLoad) {
       this.loadConfigMap(true);
     }
   };
@@ -118,11 +118,11 @@ class ConfigMap extends Component {
               <Select
                 className={`${
                   envId
-                    ? "c7n-header-select"
-                    : "c7n-header-select c7n-select_min100"
+                    ? 'c7n-header-select'
+                    : 'c7n-header-select c7n-select_min100'
                   }`}
                 dropdownClassName="c7n-header-env_drop"
-                placeholder={formatMessage({ id: "envoverview.noEnv" })}
+                placeholder={formatMessage({ id: 'envoverview.noEnv' })}
                 value={envData && envData.length ? envId : undefined}
                 disabled={envData && envData.length === 0}
                 onChange={this.handleEnvSelect}
@@ -184,6 +184,7 @@ class ConfigMap extends Component {
         )}
         {sideBarDisplay && (
           <KeyValueSideBar
+            modeSwitch
             title="configMap"
             visible={sideBarDisplay}
             store={ConfigMapStore}
