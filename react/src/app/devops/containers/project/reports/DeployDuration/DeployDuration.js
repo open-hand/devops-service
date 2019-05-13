@@ -404,7 +404,7 @@ class DeployDuration extends Component {
         </Select>
         <Select
           showCheckAll={false}
-          notFoundContent={formatMessage({ id: 'envoverview.unlist' })}
+          notFoundContent={formatMessage({ id: 'report.no.app.tips' })}
           value={this.appIds.length && this.appIds.slice()}
           label={formatMessage({ id: 'deploy.appName' })}
           className={`c7n-select_400 margin-more ${this.appIds.length ? 'c7n-select-multi-top' : ''}`}

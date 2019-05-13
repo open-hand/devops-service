@@ -78,10 +78,6 @@ class CodeQuality extends Component {
       .then((data) => {
         const appData = data && data.length ? _.filter(data, ['permission', true]) : [];
         if (appData.length) {
-          ReportsStore.setAppId(appData[0].id);
-          this.loadCharts();
-        }
-        if (appData.length) {
           const selectApp = appId || appData[0].id;
           ReportsStore.setAppId(selectApp);
           this.loadCharts();

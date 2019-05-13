@@ -93,7 +93,7 @@ class DeployTimes extends Component {
    */
   @action
   loadEnvCards = () => {
-    const { history: { location: { state } } } = this.props;
+    const { history: { location: { state } }, ReportsStore } = this.props;
     const projectId = AppState.currentMenuType.id;
     let historyEnvsId = null;
     if (state && state.envIds) {
@@ -109,8 +109,10 @@ class DeployTimes extends Component {
           }
           this.env = env;
           this.envIds = selectEnv;
+          this.loadCharts();
+        } else {
+          ReportsStore.judgeRole();
         }
-        this.loadCharts();
       });
   };
 
@@ -137,8 +139,6 @@ class DeployTimes extends Component {
           }
           this.app = app;
           this.appId = selectApp;
-        } else {
-          ReportsStore.judgeRole();
         }
       });
   };
@@ -414,6 +414,8 @@ class DeployTimes extends Component {
     const { intl: { formatMessage }, history, location: { search }, ReportsStore } = this.props;
     const { id, name, type, organizationId } = AppState.currentMenuType;
     const echartsLoading = ReportsStore.getEchartsLoading;
+    const envData = ContainerStore.getEnvCard;
+    const envs = _.filter(envData, ['permission', true]);
     const isRefresh = ReportsStore.getIsRefresh;
     const backPath = search.includes("deploy-overview")
       ? "deploy-overview"
@@ -423,7 +425,7 @@ class DeployTimes extends Component {
 
     const appDom = this.app.length ? _.map(this.app, d => (<Option key={d.id} value={d.id}>{d.name}</Option>)) : null;
 
-    const content = (this.app.length ? <React.Fragment>
+    const content = (envs && envs.length ? <React.Fragment>
       <div className="c7n-report-screen c7n-report-select">
         <Select
           notFoundContent={formatMessage({ id: 'envoverview.noEnv' })}
@@ -441,7 +443,7 @@ class DeployTimes extends Component {
           {envDom}
         </Select>
         <Select
-          notFoundContent={formatMessage({ id: 'envoverview.unlist' })}
+          notFoundContent={formatMessage({ id: 'report.no.app.tips' })}
           value={appDom ? this.appId : null}
           className="c7n-select_200 margin-more"
           label={formatMessage({ id: 'deploy.appName' })}
@@ -475,7 +477,7 @@ class DeployTimes extends Component {
       <div className="c7n-report-table">
         {this.renderTable()}
       </div>
-    </React.Fragment> : <NoChart type="app" />);
+    </React.Fragment> : <NoChart type="env" />);
 
     return (<Page
       className="c7n-region"

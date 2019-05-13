@@ -1,9 +1,9 @@
 .c7n-no-chart {
   width: 100%;
   height: 100%;
-  padding: 120px 0;
   display: flex;
   justify-content: center;
+  align-items: center;
 
   .c7n-no-chart-pic {
     div {
@@ -16,7 +16,7 @@
   }
 
   .c7n-no-chart-desc {
-    padding: 65px 40px;
+    margin-left: 40px;
 
     .c7n-no-chart-title {
       font-size: 14px;
@@ -31,7 +31,7 @@
       text-align: left;
       line-height: 34px;
       width: 260px;
-      margin-top: 10px;
+      margin: 10px 0 24px;
     }
   }
 }
