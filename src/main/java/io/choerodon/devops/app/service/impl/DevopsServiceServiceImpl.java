@@ -11,7 +11,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsServiceDTO;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
@@ -461,7 +460,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     projectId,
                     DELETE,
                     userAttrE.getGitlabUserId(),
-                    devopsServiceE.getId(), SERVICE, null, devopsEnvironmentE.getId(), path);
+                    devopsServiceE.getId(), SERVICE, null, false, devopsEnvironmentE.getId(), path);
         }
 
     }
@@ -686,7 +685,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
         objectOperation.setType(service);
         objectOperation.operationEnvGitlabFile("svc-" + devopsServiceE.getName(), TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
-                userAttrE.getGitlabUserId(), devopsServiceE.getId(), SERVICE, v1Endpoints, devopsServiceE.getEnvId(), path);
+                userAttrE.getGitlabUserId(), devopsServiceE.getId(), SERVICE, v1Endpoints, false, devopsServiceE.getEnvId(), path);
 
 
     }
