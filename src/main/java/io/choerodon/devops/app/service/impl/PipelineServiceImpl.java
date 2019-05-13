@@ -868,30 +868,30 @@ public class PipelineServiceImpl implements PipelineService {
                     }
             );
             //获取所有未执行task
-//            List<Long> taskIds = taskRecordDTOS.stream().map(PipelineTaskRecordDTO::getTaskId).collect(Collectors.toList());
-//            pipelineTaskRepository.queryByStageId(stageRecordDTO.getStageId()).forEach(taskE -> {
-//                if (!taskIds.contains(taskE.getId())) {
-//                    PipelineTaskRecordDTO taskRecordDTO = new PipelineTaskRecordDTO();
-//                    BeanUtils.copyProperties(taskE, taskRecordDTO);
-//                    taskRecordDTO.setId(null);
-//                    taskRecordDTO.setTaskType(taskE.getType());
-//                    if (taskE.getType().equals(AUTO)) {
-//                        PipelineAppDeployE appDeployE = appDeployRepository.queryById(taskE.getAppDeployId());
-//                        taskRecordDTO.setAppName(appDeployE.getAppName());
-//                        taskRecordDTO.setEnvName(appDeployE.getEnvName());
-//                    }
-//                    taskRecordDTO.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
-//                    List<IamUserDTO> userDTOS = pipelineUserRelRepository.listByOptions(null, null, taskE.getId())
-//                            .stream().map(PipelineUserRelE::getUserId)
-//                            .map(userId -> {
-//                                IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(userId), IamUserDTO.class);
-//                                userDTO.setAudit(false);
-//                                return userDTO;
-//                            }).collect(Collectors.toList());
-//                    taskRecordDTO.setUserDTOList(userDTOS);
-//                    taskRecordDTOS.add(taskRecordDTO);
-//                }
-//            });
+            List<Long> taskIds = taskRecordDTOS.stream().map(PipelineTaskRecordDTO::getTaskId).collect(Collectors.toList());
+            pipelineTaskRepository.queryByStageId(stageRecordDTO.getStageId()).forEach(taskE -> {
+                if (!taskIds.contains(taskE.getId())) {
+                    PipelineTaskRecordDTO taskRecordDTO = new PipelineTaskRecordDTO();
+                    BeanUtils.copyProperties(taskE, taskRecordDTO);
+                    taskRecordDTO.setId(null);
+                    taskRecordDTO.setTaskType(taskE.getType());
+                    if (taskE.getType().equals(AUTO)) {
+                        PipelineAppDeployE appDeployE = appDeployRepository.queryById(taskE.getAppDeployId());
+                        taskRecordDTO.setAppName(appDeployE.getAppName());
+                        taskRecordDTO.setEnvName(appDeployE.getEnvName());
+                    }
+                    taskRecordDTO.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
+                    List<IamUserDTO> userDTOS = pipelineUserRelRepository.listByOptions(null, null, taskE.getId())
+                            .stream().map(PipelineUserRelE::getUserId)
+                            .map(userId -> {
+                                IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(userId), IamUserDTO.class);
+                                userDTO.setAudit(false);
+                                return userDTO;
+                            }).collect(Collectors.toList());
+                    taskRecordDTO.setUserDTOList(userDTOS);
+                    taskRecordDTOS.add(taskRecordDTO);
+                }
+            });
             stageRecordDTO.setTaskRecordDTOS(taskRecordDTOS);
         }
         recordReqDTO.setStageRecordDTOS(recordDTOList);
