@@ -20,7 +20,7 @@ spec:
         AGENT_SERVICEURL: ws://devops-service-front.staging.saas.hand-china.com/agent/
         SERVICES_SONARQUBE_URL: http://sonarqube.staging.saas.hand-china.com
         AGENT_REPOURL: http://chart.choerodon.com.cn/choerodon/c7ncd/
-        SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**,/webhook/**,/workflow/**
+        SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**,/webhook/**,/workflow/**,/sonar/info
         SPRING_CLOUD_CONFIG_URI: http://config-server.choerodon-framework-staging:8010
         SERVICES_HARBOR_PASSWORD: Handhand123
         SERVICES_HELM_URL: http://helm-charts.staging.saas.hand-china.com

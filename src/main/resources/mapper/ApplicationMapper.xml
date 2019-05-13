@@ -79,6 +79,7 @@
         WHERE
             da.is_active is true
           AND da.is_synchro is true
+          AND da.gitlab_project_id is not null
           AND da.project_id = #{projectId}
     </select>
 
@@ -255,6 +256,16 @@
 
     <update id="updateAppToSuccess" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDO">
         UPDATE devops_application da set da.is_failed = null  where da.id = #{appId}
+    </update>
+
+    <update id="updateSql" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        UPDATE devops_application da
+        set da.is_failed = null
+        and da.token=#{token}
+        and da.gitlab_project_id=#{gitlabProjectId}
+        and da.hook_id=#{hookId}
+        and da.is_synchro=#{isSynchro}
+        where da.id = #{appId}
     </update>
 
 

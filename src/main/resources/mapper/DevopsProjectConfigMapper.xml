@@ -3,6 +3,7 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper">
     <select id="list" resultType="io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO">
+
         SELECT
         dpc.id,
         dpc.project_id,
@@ -12,11 +13,31 @@
         dpc.object_version_number
         FROM devops_project_config dpc
         where dpc.project_id = #{projectId}
-        OR dpc.project_id is null
+        and dpc.name != 'project_harbor_default'
         <include refid="sqlparam"/>
-        <if test="index !=''">
-            ORDER BY dpc.id desc
-        </if>
+        union
+        SELECT
+        dpc.id,
+        dpc.project_id,
+        dpc.name,
+        dpc.type,
+        dpc.config,
+        dpc.object_version_number
+        FROM devops_project_config dpc
+        where dpc.project_id = #{projectId}
+        and dpc.name = 'project_harbor_default'
+        <include refid="sqlparam"/>
+        union
+        SELECT
+        dpc.id,
+        dpc.project_id,
+        dpc.name,
+        dpc.type,
+        dpc.config,
+        dpc.object_version_number
+        FROM devops_project_config dpc
+        where dpc.project_id is null
+        <include refid="sqlparam"/>
     </select>
 
     <sql id="sqlparam">
@@ -24,7 +45,8 @@
             <if test='searchParam.url != null and searchParam.url.size > 0'>
                 AND
                 <foreach collection="searchParam.url" item="url" open="(" separator=" OR " close=")">
-                    REPLACE(json_extract(dpc.config,'$.url'),'"','') LIKE CONCAT(CONCAT('%', #{url, jdbcType=VARCHAR}),'%')
+                    REPLACE(json_extract(dpc.config,'$.url'),'"','') LIKE CONCAT(CONCAT('%',
+                    #{url, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.name != null and searchParam.name.size > 0'>
@@ -35,13 +57,14 @@
             </if>
         </if>
         <if test='param != null and param != ""'>
-            AND (REPLACE(json_extract(dpc.config,'$.url'),'"','') LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            AND (REPLACE(json_extract(dpc.config,'$.url'),'"','') LIKE CONCAT(CONCAT('%',
+            #{param, jdbcType=VARCHAR}),'%')
             OR dpc.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             )
         </if>
     </sql>
 
-    <select id="queryByIdAndType"  resultType="io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO">
+    <select id="queryByIdAndType" resultType="io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO">
             SELECT
                 dpc.id,
                 dpc.project_id,
@@ -61,7 +84,7 @@
                 id ASC
     </select>
 
-    <select id="checkIsUsed"  resultType="java.lang.Integer">
+    <select id="checkIsUsed" resultType="java.lang.Integer">
             SELECT
                 da.id
             FROM
