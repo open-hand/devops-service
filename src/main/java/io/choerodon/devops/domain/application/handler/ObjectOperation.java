@@ -146,18 +146,18 @@ public class ObjectOperation<T> {
     private void handleIngress(T t, Boolean deleteCert, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
         Yaml yaml2 = new Yaml();
         V1beta1Ingress v1beta1Ingress = yaml2.loadAs(jsonObject.toJSONString(), V1beta1Ingress.class);
-        V1beta1Ingress newV1beta1Ingress = (V1beta1Ingress) t;
         if (objectType.equals("Ingress") && v1beta1Ingress.getMetadata().getName().equals(((V1beta1Ingress) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
+                v1beta1Ingress = (V1beta1Ingress) t;
                 if (!deleteCert) {
-                    newV1beta1Ingress.getSpec().setTls(v1beta1Ingress.getSpec().getTls());
+                    v1beta1Ingress.getSpec().setTls(((V1beta1Ingress) t).getSpec().getTls());
                 }
             } else {
                 return;
             }
         }
         Tag tag2 = new Tag(INGTAG);
-        resultBuilder.append("\n").append(getYamlObject(tag2).dump(newV1beta1Ingress).replace(INGTAG, "---"));
+        resultBuilder.append("\n").append(getYamlObject(tag2).dump(v1beta1Ingress).replace(INGTAG, "---"));
     }
 
     private void handleC7nHelmRelease(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
