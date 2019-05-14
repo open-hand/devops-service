@@ -9,7 +9,7 @@ const cwd = process.cwd();
 const libDir = path.join(cwd, 'lib');
 
 function compileAssets() {
-  return gulp.src(['react/**/*.@(jpg|png|svg|scss|less|html|ico)']).pipe(gulp.dest(libDir));
+  return gulp.src(['react/**/*.@(jpg|png|svg|scss|less|css|html|ico)']).pipe(gulp.dest(libDir));
 }
 
 function getBabelCommonConfig() {
