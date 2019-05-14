@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsNotificationDTO;
 import io.choerodon.devops.api.dto.DevopsNotificationUserRelDTO;
 import io.choerodon.devops.app.service.DevopsNotificationService;
@@ -16,6 +17,7 @@ import io.choerodon.devops.domain.application.entity.DevopsNotificationUserRelE;
 import io.choerodon.devops.domain.application.repository.DevopsNotificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsNotificationUserRelRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -71,6 +73,11 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 t.setImageUrl(iamRepository.queryUserByUserId(t.getUserId()).getImageUrl()));
         notificationDTO.setUserRelDTOS(userRelDTOS);
         return notificationDTO;
+    }
+
+    @Override
+    public Page<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest) {
+        return null;
     }
 
     private void updateUserRel(DevopsNotificationDTO notificationDTO) {

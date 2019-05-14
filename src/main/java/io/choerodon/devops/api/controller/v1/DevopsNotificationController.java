@@ -14,13 +14,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.DevopsNotificationDTO;
 import io.choerodon.devops.app.service.DevopsNotificationService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -116,5 +121,33 @@ public class DevopsNotificationController {
         return Optional.ofNullable(notificationService.queryById(notificationId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.notification.query"));
+    }
+
+    /**
+     * 通知列表
+     *
+     * @param projectId
+     * @param envId
+     * @param pageRequest
+     * @param params
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下创建域名")
+    @CustomPageRequest
+    @PostMapping(value = "/list")
+    public ResponseEntity<Page<DevopsNotificationDTO>> listByOptions(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境Id", required = false)
+            @RequestParam(value = "env_id", required = false) Long envId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody String params) {
+        return Optional.ofNullable(notificationService.listByOptions(projectId, envId, params, pageRequest))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.notification.list"));
     }
 }

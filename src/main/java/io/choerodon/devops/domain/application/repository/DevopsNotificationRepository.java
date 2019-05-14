@@ -2,7 +2,9 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.DevopsNotificationE;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -18,4 +20,6 @@ public interface DevopsNotificationRepository {
     List<DevopsNotificationE> listByOptions();
 
     DevopsNotificationE queryById(Long notificationId);
+
+    Page<DevopsNotificationE> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
 }

@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsNotificationDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -15,4 +17,6 @@ public interface DevopsNotificationService {
     void delete(Long notificationId);
 
     DevopsNotificationDTO queryById(Long notificationId);
+
+    Page<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
 }

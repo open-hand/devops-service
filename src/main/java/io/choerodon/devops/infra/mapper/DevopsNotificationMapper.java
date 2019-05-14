@@ -1,5 +1,10 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dataobject.DevopsNotificationDO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -9,4 +14,8 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Description:
  */
 public interface DevopsNotificationMapper extends BaseMapper<DevopsNotificationDO> {
+    List<DevopsNotificationDO> listByOptions(@Param("projectId") Long projectId,
+                                             @Param("envId") Long envId,
+                                             @Param("searchParam") Map<String, Object> searchParam,
+                                             @Param("param") String param);
 }
