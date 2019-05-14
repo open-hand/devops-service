@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -89,6 +90,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             list.add(t);
         });
         Page<DevopsNotificationDTO> dtoPage = new Page<>();
+        BeanUtils.copyProperties(page,dtoPage);
         dtoPage.setContent(list);
         return dtoPage;
     }
@@ -111,7 +113,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             addUserIds.forEach(t -> notificationUserRelRepository.create(notificationDTO.getId(), t));
         }
         if (!oldUserIds.isEmpty()) {
-            addUserIds.forEach(t -> notificationUserRelRepository.delete(notificationDTO.getId(), t));
+            oldUserIds.forEach(t -> notificationUserRelRepository.delete(notificationDTO.getId(), t));
         }
     }
 }
