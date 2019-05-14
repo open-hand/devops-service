@@ -6,7 +6,7 @@ package io.choerodon.devops.api.dto;
  * Description:
  */
 public class DevopsNotificationUserRelDTO {
-    private Long Id;
+    private Long id;
     private Long userId;
     private Long notificationId;
     private String imageUrl;
@@ -16,11 +16,11 @@ public class DevopsNotificationUserRelDTO {
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public void setUserId(Long userId) {

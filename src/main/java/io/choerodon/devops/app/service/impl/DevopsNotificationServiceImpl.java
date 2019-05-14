@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsNotificationDTO;
 import io.choerodon.devops.api.dto.DevopsNotificationUserRelDTO;
@@ -77,8 +78,19 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
     @Override
     public Page<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest) {
-        Page<DevopsNotificationE> page = notificationRepository.listByOptions(projectId, envId, params, pageRequest);
-        return null;
+        Page<DevopsNotificationDTO> page = ConvertPageHelper.convertPage(notificationRepository.listByOptions(projectId, envId, params, pageRequest), DevopsNotificationDTO.class);
+        List<DevopsNotificationDTO> list = new ArrayList<>();
+        page.getContent().forEach(t -> {
+            if ("specifier".equals(t.getNotifyObject())) {
+                List<DevopsNotificationUserRelDTO> userRelDTOS = ConvertHelper.convertList(notificationUserRelRepository.queryByNoticaionId(t.getId()), DevopsNotificationUserRelDTO.class);
+                userRelDTOS = userRelDTOS.stream().peek(u -> u.setImageUrl(iamRepository.queryUserByUserId(u.getUserId()).getImageUrl())).collect(Collectors.toList());
+                t.setUserRelDTOS(userRelDTOS);
+            }
+            list.add(t);
+        });
+        Page<DevopsNotificationDTO> dtoPage = new Page<>();
+        dtoPage.setContent(list);
+        return dtoPage;
     }
 
     private void updateUserRel(DevopsNotificationDTO notificationDTO) {

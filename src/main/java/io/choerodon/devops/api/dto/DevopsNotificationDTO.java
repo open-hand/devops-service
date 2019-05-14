@@ -8,7 +8,7 @@ import java.util.List;
  * Description:
  */
 public class DevopsNotificationDTO {
-    private Long Id;
+    private Long id;
     private Long envId;
     private String envName;
     private Long projectId;
@@ -18,13 +18,12 @@ public class DevopsNotificationDTO {
     private List<DevopsNotificationUserRelDTO> userRelDTOS;
     private Long objectVersionNumber;
 
-
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public Long getEnvId() {
