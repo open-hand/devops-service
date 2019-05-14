@@ -54,10 +54,10 @@ public class DevopsNotificationConvertor implements ConvertorI<DevopsNotificatio
             notificationDTO.setNotifyType(new ArrayList<>());
         }
 
-        if (entity.getNotifyType() != null && !entity.getNotifyType().isEmpty()) {
-            notificationDTO.setNotifyType(Arrays.asList(entity.getNotifyType().split(",")));
+        if (entity.getNotifyTriggerEvent() != null && !entity.getNotifyTriggerEvent().isEmpty()) {
+            notificationDTO.setNotifyTriggerEvent(Arrays.asList(entity.getNotifyTriggerEvent().split(",")));
         } else {
-            notificationDTO.setNotifyType(new ArrayList<>());
+            notificationDTO.setNotifyTriggerEvent(new ArrayList<>());
         }
         return notificationDTO;
     }

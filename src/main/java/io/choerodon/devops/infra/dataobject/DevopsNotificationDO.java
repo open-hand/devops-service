@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dataobject;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -19,20 +20,21 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsNotificationDO extends AuditDomain {
     @Id
     @GeneratedValue
-    private Long Id;
+    private Long id;
     private Long envId;
     private Long projectId;
-    private String envName;
     private String notifyTriggerEvent;
     private String notifyObject;
     private String notifyType;
 
+    @Transient
+    private String envName;
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public Long getEnvId() {

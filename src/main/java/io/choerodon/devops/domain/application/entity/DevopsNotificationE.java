@@ -10,7 +10,7 @@ import io.choerodon.devops.api.dto.DevopsNotificationUserRelDTO;
  * Description:
  */
 public class DevopsNotificationE {
-    private Long Id;
+    private Long id;
     private Long envId;
     private Long projectId;
     private String envName;
@@ -20,11 +20,11 @@ public class DevopsNotificationE {
     private Long objectVersionNumber;
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public Long getEnvId() {

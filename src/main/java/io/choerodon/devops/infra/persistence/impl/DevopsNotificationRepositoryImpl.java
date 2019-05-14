@@ -40,7 +40,7 @@ public class DevopsNotificationRepositoryImpl implements DevopsNotificationRepos
             }
         } else {
             if (notificationMapper.updateByPrimaryKeySelective(notificationDO) != 1) {
-                throw new CommonException("error.notification.create");
+                throw new CommonException("error.notification.update");
             }
         }
         return ConvertHelper.convert(notificationDO, DevopsNotificationE.class);
