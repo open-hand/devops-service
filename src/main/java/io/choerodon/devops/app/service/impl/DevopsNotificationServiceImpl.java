@@ -77,6 +77,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
     @Override
     public Page<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest) {
+        Page<DevopsNotificationE> page = notificationRepository.listByOptions(projectId, envId, params, pageRequest);
         return null;
     }
 

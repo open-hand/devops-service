@@ -4,65 +4,49 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsNotificationMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.DevopsNotificationDO">
         SELECT
-        dad.id,
-        dad.project_id,
-        dad.task_name,
-        da. NAME AS appName,
-        dad.app_id,
-        dad.trigger_version,
-        dad.env_id,
-        de. NAME AS envName,
-        dad.value_id,
-        dad.last_update_date,
-        dad.object_version_number,
-        dad.instance_id,
-        dad.is_enabled
-        FROM devops_auto_deploy dad
-        JOIN devops_application da
-        ON dad.app_id = da.id
-        JOIN devops_env de
-        ON dad.env_id = de.id
-        <if test="userId !=null">
-            JOIN devops_env_user_permission deup ON (
-            deup.iam_user_id = #{userId}
-            AND deup.is_permitted = 1
-            AND dad.env_id = deup.env_id
-            )
-        </if>
-        where dad.project_id = #{projectId}
-        <if test="appId != null">
-            AND dad.app_id = #{appId}
-        </if>
+        dn.id,
+        dn.env_id,
+        dn.notify_object,
+        dn.notify_trigger_event,
+        dn.notify_type,
+        de.`name` as envName
+        FROM
+        devops_notification dn
+        JOIN devops_env de ON dn.env_id = de.id
+        WHERE
+        dn.project_id=#{projectId}
         <if test="envId != null">
-            AND dad.env_id = #{envId}
+            AND de.env_id = #{envId}
         </if>
         <include refid="sqlparam"/>
-        <if test="index !=''">
-            ORDER BY
-            dad.is_enabled DESC,
-            dad.id DESC
-        </if>
     </select>
 
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.taskName != null and searchParam.taskName.size > 0'>
+            <if test='searchParam.notifyObject != null and searchParam.notifyObject.size > 0'>
                 AND
-                <foreach collection="searchParam.taskName" item="taskName" open="(" separator=" OR " close=")">
-                    dad.task_name LIKE CONCAT(CONCAT('%', #{taskName, jdbcType=VARCHAR}),'%')
+                <foreach collection="searchParam.notifyObject" item="notifyObject" open="(" separator=" AND " close=")">
+                    dn.notify_object LIKE CONCAT(CONCAT('%', #{notifyObject, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
-            <if test='searchParam.triggerVersion != null and searchParam.triggerVersion.size > 0'>
+            <if test='searchParam.notifyTriggerEvent != null and searchParam.notifyTriggerEvent.size > 0'>
                 AND
-                <foreach collection="searchParam.triggerVersion" item="triggerVersion">
-                    dad.trigger_version LIKE CONCAT(CONCAT('%', #{triggerVersion, jdbcType=VARCHAR}),'%')
+                <foreach collection="searchParam.notifyTriggerEvent" item="triggerVersion">
+                    dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{notifyTriggerEvent, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.notifyType != null and searchParam.notifyType.size > 0'>
+                AND
+                <foreach collection="searchParam.notifyType" item="triggerVersion">
+                    dn.notify_type=#{notifyType}
                 </foreach>
             </if>
         </if>
         <if test='param != null and param != ""'>
-            AND (dad.task_name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dad.trigger_version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            AND (dn.notify_object LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dn.notify_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             )
         </if>
     </sql>

@@ -52,11 +52,6 @@ public class DevopsNotificationRepositoryImpl implements DevopsNotificationRepos
     }
 
     @Override
-    public List<DevopsNotificationE> listByOptions() {
-        return null;
-    }
-
-    @Override
     public DevopsNotificationE queryById(Long notificationId) {
         return ConvertHelper.convert(notificationMapper.selectByPrimaryKey(notificationId), DevopsNotificationE.class);
     }

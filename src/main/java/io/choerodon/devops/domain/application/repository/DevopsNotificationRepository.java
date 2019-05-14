@@ -17,8 +17,6 @@ public interface DevopsNotificationRepository {
 
     void deleteById(Long notificationId);
 
-    List<DevopsNotificationE> listByOptions();
-
     DevopsNotificationE queryById(Long notificationId);
 
     Page<DevopsNotificationE> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
