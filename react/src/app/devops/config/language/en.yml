@@ -48,36 +48,3 @@
 # 项目设置
 "prosetting": "Project Manage"
 "prosetting.element-settings": "Element Setting"
-
-# 0.8废弃
-"application-market": "Application Market"
-"application-market.application-market": "Application Market"
-"application-market.application-release": "Application Release"
-"devops": "Devops"
-"devops.template": "Application template"
-"devops.app": "App"
-"devops.ci": "CI"
-"devops.version": "App Version"
-"devops.environment": "Environment"
-"devops.deploy": "Deploy"
-"devops.instance": "Instance"
-"devops.service": "Service"
-"devops.domain": "Domain"
-"devops.container": "Container"
-"devops.app-release": "App Release"
-"devops.appstore": "App Store"
-"platform_reports": "Reports"
-"platform_reports.reports": "DevOps Report"
-
-#0.11废弃
-"cluster-management": "Cluster Management"
-"cluster-management.cluster": "Cluster"
-"application-management": "Application Management"
-"application-management.application": "Application"
-"application-management.application-version": "Application Version"
-"application-management.application-release": "Application Release"
-"application-management.application-market": "Application Market"
-"application-management.application-template": "Application Template"
-
-#0.16废弃
-"deployment-pipeline.auto-deploy": "Auto Deploy"

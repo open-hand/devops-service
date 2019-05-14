@@ -48,35 +48,3 @@
 "prosetting": "项目设置"
 "prosetting.element-settings": "组件设置"
 
-# 0.8版本废弃项
-"application-market": "应用市场"
-"application-market.application-market": "应用市场"
-"application-market.application-release": "应用发布"
-"devops": "持续交付"
-"devops.template": "应用模板"
-"devops.app": "应用"
-"devops.ci": "持续集成"
-"devops.version": "应用版本"
-"devops.environment": "环境流水线"
-"devops.deploy": "应用部署"
-"devops.instance": "实例"
-"devops.service": "网络"
-"devops.domain": "域名"
-"devops.container": "容器"
-"devops.app-release": "应用发布"
-"devops.appstore": "应用市场"
-"platform_reports": "报表"
-"platform_reports.reports": "DevOps报表"
-
-#0.12版本废弃项
-"cluster-management": "集群管理"
-"cluster-management.cluster": "集群"
-"application-management": "应用管理"
-"application-management.application": "应用"
-"application-management.application-version": "应用版本"
-"application-management.application-release": "应用发布"
-"application-management.application-market": "应用市场"
-"application-management.application-template": "应用模板"
-
-#0.16废弃
-"deployment-pipeline.auto-deploy": "自动部署"
