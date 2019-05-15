@@ -1,23 +1,23 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-        import java.util.List;
-        import java.util.Map;
+import java.util.List;
+import java.util.Map;
 
-        import com.google.gson.Gson;
-        import org.springframework.beans.factory.annotation.Autowired;
-        import org.springframework.stereotype.Component;
+import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-        import io.choerodon.core.convertor.ConvertHelper;
-        import io.choerodon.core.convertor.ConvertPageHelper;
-        import io.choerodon.core.domain.Page;
-        import io.choerodon.core.exception.CommonException;
-        import io.choerodon.devops.domain.application.entity.DevopsNotificationE;
-        import io.choerodon.devops.domain.application.repository.DevopsNotificationRepository;
-        import io.choerodon.devops.infra.common.util.TypeUtil;
-        import io.choerodon.devops.infra.dataobject.DevopsNotificationDO;
-        import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
-        import io.choerodon.mybatis.pagehelper.PageHelper;
-        import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.domain.application.entity.DevopsNotificationE;
+import io.choerodon.devops.domain.application.repository.DevopsNotificationRepository;
+import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.dataobject.DevopsNotificationDO;
+import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -66,7 +66,10 @@ public class DevopsNotificationRepositoryImpl implements DevopsNotificationRepos
     }
 
     @Override
-    public Integer queryByEnvIdAndEvent(Long projectId, Long envId, List<String> notifyTriggerEvent) {
-        return notificationMapper.queryByEnvIdAndEvent(projectId,envId,notifyTriggerEvent);
+    public List<DevopsNotificationE> queryByEnvId(Long projectId, Long envId) {
+        DevopsNotificationDO notificationDO = new DevopsNotificationDO();
+        notificationDO.setProjectId(projectId);
+        notificationDO.setEnvId(envId);
+        return ConvertHelper.convertList(notificationMapper.select(notificationDO), DevopsNotificationE.class);
     }
 }

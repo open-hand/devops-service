@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -62,9 +65,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Override
     public void delete(Long notificationId) {
         notificationRepository.deleteById(notificationId);
-        notificationUserRelRepository.queryByNoticaionId(notificationId).forEach(t -> {
-            notificationUserRelRepository.delete(notificationId, t.getUserId());
-        });
+        notificationUserRelRepository.delete(notificationId, null);
     }
 
     @Override
@@ -94,8 +95,10 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     }
 
     @Override
-    public Boolean check(Long projectId, Long envId, List<String> notifyTriggerEvent) {
-        return notificationRepository.queryByEnvIdAndEvent(projectId, envId, notifyTriggerEvent) == 0;
+    public Set<String> check(Long projectId, Long envId) {
+        Set<String> hashSet = new HashSet<>();
+        notificationRepository.queryByEnvId(projectId, envId).forEach(t -> Collections.addAll(hashSet, t.getNotifyTriggerEvent().split(",")));
+        return hashSet;
     }
 
     private void updateUserRel(DevopsNotificationDTO notificationDTO) {

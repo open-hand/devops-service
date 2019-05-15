@@ -23,15 +23,15 @@
 
     <select id="queryByEnvIdAndEvent" parameterType="java.util.ArrayList" resultType="java.lang.Integer">
         SELECT
-        conut(1)
+        COUNT(1)
         FROM
         devops_notification dn
         WHERE
         dn.project_id=#{projectId}
-        AND de.env_id = #{envId}
+        AND dn.env_id = #{envId}
         AND
-        <foreach collection="notifyTriggerEvent" item="notifyTriggerEvent" open="(" separator="," close=")">
-            dn.notify_trigger_event in #{notifyObject=}
+        <foreach collection="notifyTriggerEvent" item="notifyTriggerEvent" separator="OR" >
+             dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{notifyTriggerEvent, jdbcType=VARCHAR}),'%')
         </foreach>
     </select>
 
@@ -40,19 +40,19 @@
         <if test='searchParam != null'>
             <if test='searchParam.notifyObject != null and searchParam.notifyObject.size > 0'>
                 AND
-                <foreach collection="searchParam.notifyObject" item="notifyObject" open="(" separator=" AND " close=")">
+                <foreach collection="searchParam.notifyObject" item="notifyObject" separator=" OR " >
                     dn.notify_object LIKE CONCAT(CONCAT('%', #{notifyObject, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.notifyTriggerEvent != null and searchParam.notifyTriggerEvent.size > 0'>
                 AND
-                <foreach collection="searchParam.notifyTriggerEvent" item="triggerVersion">
+                <foreach collection="searchParam.notifyTriggerEvent" item="notifyTriggerEvent" separator=" OR ">
                     dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{notifyTriggerEvent, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.notifyType != null and searchParam.notifyType.size > 0'>
                 AND
-                <foreach collection="searchParam.notifyType" item="triggerVersion">
+                <foreach collection="searchParam.notifyType" item="notifyType">
                     dn.notify_type=#{notifyType}
                 </foreach>
             </if>

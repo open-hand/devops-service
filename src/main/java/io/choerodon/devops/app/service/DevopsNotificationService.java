@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsNotificationDTO;
@@ -22,5 +23,5 @@ public interface DevopsNotificationService {
 
     Page<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
 
-    Boolean check(Long projectId, Long envId, List<String> notifyTriggerEvent);
+    Set<String> check(Long projectId, Long envId);
 }

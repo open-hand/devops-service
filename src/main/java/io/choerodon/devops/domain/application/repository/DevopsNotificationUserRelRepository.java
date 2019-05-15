@@ -15,4 +15,5 @@ public interface DevopsNotificationUserRelRepository {
     void delete(Long notificationId, Long userId);
 
     List<DevopsNotificationUserRelE> queryByNoticaionId(Long notificationId);
+
 }
