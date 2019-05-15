@@ -57,7 +57,7 @@
   },
   "lint-staged": {
     "react/src/**/*.{js,jsx}": [],
-    "react/src/**/*.scss": "stylelint --syntax scss"
+    "react/src/**/*.{scss,less}": "stylelint --syntax scss"
   },
   "husky": {
     "hooks": {

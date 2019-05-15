@@ -23,6 +23,11 @@ const config = {
   },
   //对应 主菜单 | 组织层菜单 | 项目层菜单 | 用户菜单
   resourcesLevel: ['site', 'organization', 'project', 'user'],
+
+  // 指定路由入口文件，不设置则默认选择 master 属性对应路径
+  // routes: [],
+  // 子模块
+  // modules: [],
 };
 
 module.exports = config;
