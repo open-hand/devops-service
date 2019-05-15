@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -48,14 +47,13 @@ public class DevopsNotificationController {
      * @param notificationDTO 通知信息
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建域名")
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下创建通知")
     @PostMapping
     public ResponseEntity<DevopsNotificationDTO> create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "域名信息", required = true)
+            @ApiParam(value = "通知信息", required = true)
             @RequestBody DevopsNotificationDTO notificationDTO) {
         return Optional.ofNullable(notificationService.create(projectId, notificationDTO))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
@@ -69,14 +67,13 @@ public class DevopsNotificationController {
      * @param notificationDTO 通知信息
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建域名")
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下更新通知")
     @PutMapping
     public ResponseEntity<DevopsNotificationDTO> update(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "域名信息", required = true)
+            @ApiParam(value = "通知信息", required = true)
             @RequestBody DevopsNotificationDTO notificationDTO) {
         return Optional.ofNullable(notificationService.update(projectId, notificationDTO))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
@@ -91,9 +88,8 @@ public class DevopsNotificationController {
      * @param notificationId 通知Id
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建域名")
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下删除通知")
     @DeleteMapping(value = "/{notification_id}")
     public ResponseEntity delete(
             @ApiParam(value = "项目ID", required = true)
@@ -111,9 +107,8 @@ public class DevopsNotificationController {
      * @param notificationId 通知Id
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建域名")
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下获取通知详情")
     @GetMapping(value = "/{notification_id}")
     public ResponseEntity<DevopsNotificationDTO> queryById(
             @ApiParam(value = "项目ID", required = true)
@@ -134,9 +129,8 @@ public class DevopsNotificationController {
      * @param params
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建域名")
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "通知列表")
     @CustomPageRequest
     @PostMapping(value = "/list")
     public ResponseEntity<Page<DevopsNotificationDTO>> listByOptions(
@@ -157,13 +151,12 @@ public class DevopsNotificationController {
      * 项目下校验通知
      * 环境下每个触发事件只能有一个通知
      *
-     * @param projectId          项目id
-     * @param envId              通知Id
+     * @param projectId 项目id
+     * @param envId     通知Id
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建域名")
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下校验通知")
     @GetMapping(value = "/check")
     public ResponseEntity<Set<String>> check(
             @ApiParam(value = "项目ID", required = true)
