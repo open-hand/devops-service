@@ -454,6 +454,17 @@ const pageDetail = {
   "codeQuality.title": "应用“{name}”的代码质量",
   "codeQuality.description": "代码质量页面用于直观地展示该应用中代码通过SonarQube检测后的结果详情。",
   "codeQuality.link": `${docServer}/user-guide/development-pipeline/code-quality/`,
+
+  // 通知设置
+  "notification.title": '项目"{name}"的通知设置',
+  "notification.description": "通知设置的描述",
+  "notification.link": `${docServer}/user-guide/`,
+  "notification.create.title": '在项目"{name}"中创建通知',
+  "notification.create.description": "创建通知设置的描述",
+  "notification.create.link": `${docServer}/user-guide/`,
+  "notification.edit.title": '对通知"{name}"进行修改',
+  "notification.edit.description": "修改通知设置的描述",
+  "notification.edit.link": `${docServer}/user-guide/`,
 };
 
 const zhCN = {
@@ -1559,7 +1570,6 @@ const zhCN = {
   "configMap.mode.yaml": "编辑键值对",
   "configMap.yaml.error": "内容不符合规则。",
 
-
   // 密文
   "secret.head": "密文",
   "secret.create": "创建密文",
@@ -1677,7 +1687,7 @@ const zhCN = {
   "pipeline.flow.stopped": "手动终止",
   "pipeline.action.detail": "执行记录",
   "pipeline.action.run": "执行",
-  "pipeline.delete": "删除流水线 ",
+  "pipeline.delete": "删除流水线",
   "pipeline.delete.message": "确定删除该流水线吗？",
   "pipeline.invalid": "停用流水线 ",
   "pipeline.invalid.message": "确定停用该流水线吗？",
@@ -1789,6 +1799,31 @@ const zhCN = {
   "codeQuality.empty.title": "暂无详情",
   "codeQuality.empty.content":
     "当前应用未使用SonarQube进行代码质量的检测，因此没有相关的代码质量详情。",
+
+  // Notifications
+  "notification.header.title": "通知设置",
+  "notification.header.create": "创建通知",
+  "notification.sidebar.create": "创建通知",
+  "notification.sidebar.edit": "修改通知",
+  "notification.delete": "删除通知",
+  "notification.delete.message": "确认删除通知？",
+  "notification.event": "事件",
+  "notification.method": "通知方式",
+  "notification.target": "通知对象",
+  "notification.event.instance": "删除实例",
+  "notification.event.service": "删除网络",
+  "notification.event.ingress": "删除域名",
+  "notification.event.certification": "删除证书",
+  "notification.event.configMap": "删除配置映射",
+  "notification.event.secret": "删除密文",
+  "notification.method.sms": "短信",
+  "notification.method.email": "邮件",
+  "notification.method.pm": "站内信",
+  "notification.target.handler": "操作者",
+  "notification.target.owner": "项目所有者",
+  "notification.target.specifier": "指定用户",
+  "notification.event.tips": "该环境下已创建该事件的通知",
+  "notification.env.select": "选择环境",
 
   ...pageDetail,
 };

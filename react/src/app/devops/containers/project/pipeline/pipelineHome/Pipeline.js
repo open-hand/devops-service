@@ -22,37 +22,26 @@ const EXECUTE_FAILED = 'failed';
 @inject('AppState')
 @observer
 export default class Pipeline extends Component {
-  constructor(props) {
-    super(props);
-    const {
-      PipelineStore: {
-        getPageInfo: {
-          current,
-          pageSize,
-        },
-      },
-    } = props;
-    this.state = {
-      page: current - 1,
-      pageSize: pageSize,
-      param: '',
-      filters: {},
-      sorter: null,
-      showDelete: false,
-      deleteName: '',
-      deleteId: null,
-      deleteLoading: false,
-      showInvalid: false,
-      invalidName: '',
-      invalidId: null,
-      invalidLoading: false,
-      showExecute: false,
-      executeId: null,
-      executeName: '',
-      executeCheck: false,
-      executeLoading: false,
-    };
-  }
+  state = {
+    page: 0,
+    pageSize: NaN,
+    param: '',
+    filters: {},
+    sorter: null,
+    showDelete: false,
+    deleteName: '',
+    deleteId: null,
+    deleteLoading: false,
+    showInvalid: false,
+    invalidName: '',
+    invalidId: null,
+    invalidLoading: false,
+    showExecute: false,
+    executeId: null,
+    executeName: '',
+    executeCheck: false,
+    executeLoading: false,
+  };
 
   componentDidMount() {
     this.loadData();
@@ -124,11 +113,16 @@ export default class Pipeline extends Component {
     } = this.props;
     const { page, pageSize, param, filters, sorter } = this.state;
     const currentPage = (toPage || toPage === 0) ? toPage : page;
+    const {
+      getPageInfo: {
+        pageSize: storePageSize,
+      },
+    } = PipelineStore;
 
     PipelineStore.loadListData(
       projectId,
       currentPage,
-      pageSize,
+      pageSize || storePageSize,
       sorter,
       {
         searchParam: filters,
@@ -493,7 +487,6 @@ export default class Pipeline extends Component {
       ]}
     >
       <Header title={<FormattedMessage id="pipeline.head" />}>
-
         <Permission
           service={['devops-service.pipeline.create']}
           type={type}
