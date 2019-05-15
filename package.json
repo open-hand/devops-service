@@ -1,6 +1,6 @@
 {
   "name": "@choerodon/devops",
-  "routerName": "devops",
+  "routeName": "devops",
   "description": "",
   "license": "ISC",
   "version": "0.1.1",
