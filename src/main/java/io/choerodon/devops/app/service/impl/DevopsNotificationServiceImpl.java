@@ -19,6 +19,7 @@ import io.choerodon.devops.api.dto.DevopsNotificationUserRelDTO;
 import io.choerodon.devops.app.service.DevopsNotificationService;
 import io.choerodon.devops.domain.application.entity.DevopsNotificationE;
 import io.choerodon.devops.domain.application.entity.DevopsNotificationUserRelE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsNotificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsNotificationUserRelRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -83,7 +84,12 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         page.getContent().forEach(t -> {
             if ("specifier".equals(t.getNotifyObject())) {
                 List<DevopsNotificationUserRelDTO> userRelDTOS = ConvertHelper.convertList(notificationUserRelRepository.queryByNoticaionId(t.getId()), DevopsNotificationUserRelDTO.class);
-                userRelDTOS = userRelDTOS.stream().peek(u -> u.setImageUrl(iamRepository.queryUserByUserId(u.getUserId()).getImageUrl())).collect(Collectors.toList());
+                userRelDTOS = userRelDTOS.stream().peek(u ->{
+                    UserE userE=iamRepository.queryUserByUserId(u.getUserId());
+                    u.setImageUrl(userE.getImageUrl());
+                    u.setRealName(userE.getRealName());
+                    u.setLoginName(userE.getLoginName());
+                }).collect(Collectors.toList());
                 t.setUserRelDTOS(userRelDTOS);
             }
             list.add(t);
