@@ -1,0 +1,20 @@
+.env-multi {
+  right: 126px !important;
+  width: 110px !important;
+
+  .ant-select-selection__rendered {
+    margin: 0 !important;
+
+    ul > li {
+      margin: 0 !important;
+    }
+
+    i {
+      line-height: 24px;
+    }
+  }
+}
+
+.env-multi_150 {
+  width: 150px !important;
+}

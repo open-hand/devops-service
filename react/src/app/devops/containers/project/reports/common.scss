@@ -1,0 +1,20 @@
+.c7n-report-maxPlace {
+  font-size: 12px;
+  color: rgba(0, 0, 0, .65);
+  span {
+    word-break: break-all;
+  }
+}
+
+.c7n-report-maxPlace-inner {
+  float: left;
+  padding: 0 8px;
+  margin-bottom: 3px;
+}
+
+.c7n-report-select {
+  .ant-select-selection__max {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}

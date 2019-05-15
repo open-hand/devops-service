@@ -2,22 +2,20 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.app.service.DevopsEnvPodService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
-import io.choerodon.devops.app.service.DevopsEnvPodService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -40,7 +38,7 @@ public class DevopsEnvPodController {
      * @param searchParam 查询参数
      * @return page of devopsEnvPodDTO
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询容器管理")

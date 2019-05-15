@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -519,10 +520,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         List<Long> userIds = gitlabProjectPayload.getUserIds();
         // 获取项目下所有项目成员
-        Page<UserDTO> allProjectMemberPage = getMembersFromProject(new PageRequest(), projectId, "");
+        PageInfo<UserDTO> allProjectMemberPage = getMembersFromProject(new PageRequest(), projectId, "");
         // 所有项目成员中有权限的
         if (userIds != null && !userIds.isEmpty()) {
-            allProjectMemberPage.getContent().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
+            allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
                 Long userId = e.getId();
                 String loginName = e.getLoginName();
                 String realName = e.getRealName();
@@ -574,11 +575,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                                                                       String searchParams, Long envId) {
         if (envId == null) {
             // 根据项目成员id查询项目下所有的项目成员
-            Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
+            PageInfo<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
 
             List<DevopsEnvUserPermissionDTO> allProjectMemberList = new ArrayList<>();
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
-            allProjectMemberPage.getContent().forEach(e -> {
+            allProjectMemberPage.getList().forEach(e -> {
                 DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
                 devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
@@ -591,8 +592,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         } else {
             List<DevopsEnvUserPermissionDTO> retureUsersDTOList = new ArrayList<>();
             // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
-            Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
-            allProjectMemberPage.getContent().forEach(e -> {
+            PageInfo<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
+            allProjectMemberPage.getList().forEach(e -> {
                 DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
                 devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
@@ -617,7 +618,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return updateEnvUserPermissionService.updateUserPermission(null, envId, userIds, null);
     }
 
-    private Page<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
+    private PageInfo<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
         RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
         if (searchParams != null && !"".equals(searchParams)) {
             Map maps = gson.fromJson(searchParams, Map.class);
@@ -640,26 +641,26 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 获取项目成员id
         Long memberId = iamRepository.queryRoleIdByCode(PROJECT_MEMBER);
         // 所有项目成员，可能还带有项目所有者的角色，需要过滤
-        Page<UserDTO> allMemberWithOtherUsersPage = iamRepository
-                .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest, roleAssignmentSearchDTO,
+        PageInfo<UserDTO> allMemberWithOtherUsersPage = iamRepository
+                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), roleAssignmentSearchDTO,
                         memberId, projectId, true);
         // 如果项目成员查出来为空，则直接返回空列表
-        if (allMemberWithOtherUsersPage.getContent().isEmpty()) {
+        if (allMemberWithOtherUsersPage.getList().isEmpty()) {
             return allMemberWithOtherUsersPage;
         }
         // 所有项目所有者
-        Page<UserDTO> allOwnerUsersPage = iamRepository
+        PageInfo<UserDTO> allOwnerUsersPage = iamRepository
                 .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), roleAssignmentSearchDTO,
                         ownerId, projectId, false);
         // 如果项目所有者查出来为空，则返回之前的项目成员列表
-        if (allOwnerUsersPage.getContent().isEmpty()) {
+        if (allOwnerUsersPage.getList().isEmpty()) {
             return allMemberWithOtherUsersPage;
         } else {
             // 否则过滤项目成员中含有项目所有者的人
-            List<UserDTO> returnUserDTOList = allMemberWithOtherUsersPage.stream()
-                    .filter(e -> !allOwnerUsersPage.getContent().contains(e)).collect(Collectors.toList());
+            List<UserDTO> returnUserDTOList = allMemberWithOtherUsersPage.getList().stream()
+                    .filter(e -> !allOwnerUsersPage.getList().contains(e)).collect(Collectors.toList());
             // 设置过滤后的分页显示参数
-            allMemberWithOtherUsersPage.setContent(returnUserDTOList);
+            allMemberWithOtherUsersPage.setList(returnUserDTOList);
             return allMemberWithOtherUsersPage;
         }
     }

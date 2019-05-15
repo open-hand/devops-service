@@ -3,10 +3,10 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.base.annotation.Permission;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.api.dto.OrgCertificationDTO;
@@ -15,7 +15,6 @@ import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,7 @@ public class CertificationController {
      * @param certification 证书名
      * @return 201, "Created"
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建证书")
     @PostMapping
@@ -64,7 +63,7 @@ public class CertificationController {
      * @param certId    证书id
      * @return 204, "No Content"
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除证书")
     @DeleteMapping
@@ -87,7 +86,7 @@ public class CertificationController {
      * @param params      查询参数
      * @return CertificationDTO page
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询")
@@ -115,7 +114,7 @@ public class CertificationController {
      * @param domain    域名
      * @return CertificationDTO list
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "通过域名查询已生效的证书")
     @PostMapping("/active")
@@ -139,7 +138,7 @@ public class CertificationController {
      * @param certName  证书名称
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验证书名称唯一性")
     @GetMapping("/unique")
@@ -164,7 +163,7 @@ public class CertificationController {
      * @param certName  证书名称
      * @return CertificationDTO
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据证书名称查询证书")
     @GetMapping("/query_by_name")
@@ -185,7 +184,7 @@ public class CertificationController {
      *
      * @param projectId 项目id
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下有权限的组织层证书")

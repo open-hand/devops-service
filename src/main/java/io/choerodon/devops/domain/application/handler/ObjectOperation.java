@@ -6,11 +6,6 @@ import java.io.FileNotFoundException;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
-import io.kubernetes.client.models.*;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.nodes.Tag;
-
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
@@ -20,6 +15,10 @@ import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.kubernetes.client.models.*;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
 
 public class ObjectOperation<T> {
 
@@ -52,7 +51,7 @@ public class ObjectOperation<T> {
      */
     public void
     operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType,
-                           Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Long envId, String filePath) {
+                           Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Boolean deleteCert, Long envId, String filePath) {
         GitlabRepository gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag);
@@ -76,7 +75,7 @@ public class ObjectOperation<T> {
             if (devopsEnvFileResourceE == null) {
                 throw new CommonException("error.fileResource.not.exist");
             }
-            gitlabRepository.updateFile(gitlabEnvProjectId, devopsEnvFileResourceE.getFilePath(), getUpdateContent(type,
+            gitlabRepository.updateFile(gitlabEnvProjectId, devopsEnvFileResourceE.getFilePath(), getUpdateContent(type, deleteCert,
                     endpointContent, devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
                     "UPDATE FILE", TypeUtil.objToInteger(userId));
         }
@@ -91,7 +90,7 @@ public class ObjectOperation<T> {
         return new Yaml(skipNullRepresenter, options);
     }
 
-    private String getUpdateContent(T t, String content, String filePath, String objectType, String path, String operationType) {
+    private String getUpdateContent(T t, Boolean deleteCert, String content, String filePath, String objectType, String path, String operationType) {
         Yaml yaml = new Yaml();
         StringBuilder resultBuilder = new StringBuilder();
         File file = new File(String.format("%s/%s", path, filePath));
@@ -103,7 +102,7 @@ public class ObjectOperation<T> {
                         handleC7nHelmRelease(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
                     case "Ingress":
-                        handleIngress(t, objectType, operationType, resultBuilder, jsonObject);
+                        handleIngress(t, deleteCert, objectType, operationType, resultBuilder, jsonObject);
                         break;
                     case "Service":
                         handleService(t, content, objectType, operationType, resultBuilder, jsonObject);
@@ -144,12 +143,15 @@ public class ObjectOperation<T> {
         }
     }
 
-    private void handleIngress(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+    private void handleIngress(T t, Boolean deleteCert, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
         Yaml yaml2 = new Yaml();
         V1beta1Ingress v1beta1Ingress = yaml2.loadAs(jsonObject.toJSONString(), V1beta1Ingress.class);
         if (objectType.equals("Ingress") && v1beta1Ingress.getMetadata().getName().equals(((V1beta1Ingress) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
                 v1beta1Ingress = (V1beta1Ingress) t;
+                if (!deleteCert) {
+                    v1beta1Ingress.getSpec().setTls(((V1beta1Ingress) t).getSpec().getTls());
+                }
             } else {
                 return;
             }

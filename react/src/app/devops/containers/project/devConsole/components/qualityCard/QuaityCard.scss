@@ -1,0 +1,116 @@
+.c7n-dc-card-codeQuality {
+  cursor: pointer;
+
+  .mg-bottom-12 {
+    margin-bottom: 12px;
+  }
+
+  .mg-left-8 {
+    margin-left: 8px;
+  }
+
+  .codeQuality-title-date {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.65);
+    line-height: 20px;
+    letter-spacing: 0;
+    margin-left: auto;
+  }
+
+  .c7n-card-codeQuality-content {
+    display: flex;
+    align-items: center;
+    color: rgba(0, 0, 0, 0.65);
+    margin-top: 16px;
+
+    .codeQuality-content-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 160px;
+      position: relative;
+
+      &:after {
+        content: '';
+        position: absolute;
+        left: auto;
+        top: auto;
+        bottom: 16px;
+        right: 0;
+        height: 30px;
+        width: 1px;
+        background-color: rgba(0, 0, 0, 0.12);
+      }
+
+      &:first-child {
+        align-items: start;
+        width: 115px;
+        padding-left: 30px;
+      }
+
+      &:last-child {
+        color: #000;
+        border: none;
+        width: auto;
+        margin-left: auto;
+
+        .codeQuality-content-number {
+          font-size: 13px;
+          color: #000;
+        }
+
+        &:after {
+          content: none;
+        }
+      }
+
+      .codeQuality-head-status {
+        background: rgba(0, 191, 165, 0.2);
+        border-radius: 2px;
+        border: 1px solid #00bfa5;
+        font-size: 12px;
+        color: #00bfa5;
+        line-height: 18px;
+        padding: 0 6px;
+        text-align: center;
+        margin-bottom: 17px;
+
+        &-ERROR {
+          background: rgba(244, 67, 54, 0.2);
+          border-color: #f44336;
+          color: #f44336;
+        }
+      }
+
+      .codeQuality-content-block-detail {
+        display: flex;
+        align-items: center;
+      }
+
+      .c7ncd-percentage-wrap {
+        margin-right: 8px;
+      }
+
+      .codeQuality-content-number {
+        font-size: 20px;
+        line-height: 30px;
+        color: #000;
+
+        &-link {
+          font-size: 20px;
+          line-height: 30px;
+          color: #303f9f;
+        }
+      }
+
+      .c7ncd-rating-wrap {
+        margin-left: 8px;
+      }
+
+      .content-number-percentage {
+        color: #000;
+        font-size: 12px;
+      }
+    }
+  }
+}

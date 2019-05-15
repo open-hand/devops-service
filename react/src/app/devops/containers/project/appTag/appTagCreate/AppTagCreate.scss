@@ -1,0 +1,35 @@
+.c7n-tag-create {
+  .apptag-branch-icon {
+    margin-right: 6px;
+  }
+
+  .c7n-option-popover {
+    width: 205px;
+    display: inline-flex;
+  }
+
+  .c7n-dom-more {
+    margin: -8px -20px;
+    height: 28px;
+    line-height: 28px;
+    color: #3f51b5;
+    padding-left: 20px;
+  }
+
+  .apptag-formitem {
+    position: relative;
+    padding-left: 26px;
+    .c7n-apptag-icon {
+      position: absolute;
+      left: 0;
+      top: 20px;
+      font-size: 16px;
+      color: rgba(0, 0, 0, .54);
+    }
+  }
+
+  .c7n-apptag-release-title {
+    margin-bottom: 16px;
+    color: #000;
+  }
+}

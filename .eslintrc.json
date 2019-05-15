@@ -1,0 +1,88 @@
+{
+  "root": true,
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": [
+    "react",
+    "jsx-a11y"
+  ],
+  "rules": {
+    "jsx-a11y/interactive-supports-focus": "off",
+    "jsx-a11y/anchor-has-content": "off",
+    "jsx-a11y/href-no-hash": "off",
+    "jsx-a11y/click-events-have-key-events": "off",
+    "jsx-a11y/no-static-element-interactions": "off",
+    "jsx-a11y/anchor-is-valid": [
+      "warn",
+      {
+        "aspects": [
+          "invalidHref"
+        ]
+      }
+    ],
+    "react/jsx-no-bind": [
+      "error",
+      {
+        "ignoreRefs": true,
+        "allowArrowFunctions": true,
+        "allowFunctions": false,
+        "allowBind": true,
+        "ignoreDOMComponents": true
+      }
+    ],
+    "react/prefer-stateless-function": [
+      "off",
+      {
+        "ignorePureComponents": true
+      }
+    ],
+    "comma-dangle": [
+      2,
+      "always-multiline"
+    ],
+    "no-control-regex": "off",
+    "no-param-reassign": "off",
+    "import/no-duplicates": "off",
+    "import/no-named-as-default": "off",
+    "import/no-named-as-default-member": "off",
+    "no-trailing-spaces": "off",
+    "class-methods-use-this": "off",
+    "import/no-extraneous-dependencies": "off",
+    "no-else-return": "off",
+    "linebreak-style": "off",
+    "import/extensions": "off",
+    "import/no-unresolved": "off",
+    "react/prop-types": "off",
+    "react/jsx-filename-extension": "off",
+    "react/require-default-props": "off",
+    "no-unused-vars": "off",
+    "no-console": "error",
+    "no-debugger": "error",
+    "no-unused-expressions": "off",
+    "consistent-return": "off",
+    "global-require": "off",
+    "import/no-dynamic-require": "off",
+    "max-len": "off",
+    "object-curly-newline": "off",
+    "react/destructuring-assignment": "off",
+    "react/jsx-wrap-multilines": "off",
+    "react/jsx-closing-tag-location": "off",
+    "react/jsx-one-expression-per-line": "off",
+    "react/sort-comp": "off",
+    "prefer-destructuring": "off"
+  },
+  "globals": {
+    "Choerodon": true
+  }
+}

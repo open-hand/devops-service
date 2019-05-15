@@ -1,0 +1,39 @@
+.c7n-depPi-empty-card {
+  width: 412px;
+  margin: 90px auto;
+
+  .ant-card-bordered {
+    border: 1px solid #e7e7e7;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  span {
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  .c7n-noEnv-content {
+    margin-bottom: 20px;
+  }
+
+  a {
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    span {
+      color: #3f51b5;
+    }
+  }
+
+  .ant-btn {
+
+    span {
+      color: #fff;
+    }
+  }
+
+  i {
+    font-size: 13px;
+  }
+}

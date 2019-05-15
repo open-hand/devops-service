@@ -1,0 +1,162 @@
+.c7ncd-codemirror {
+  .CodeMirror {
+    // 让高度随内容改变，不会出现纵向滚动条
+    height: auto !important;
+    font-size: 14px;
+    font-family: Monaco,
+    Menlo,
+    "Ubuntu Mono",
+    Consolas,
+    source-code-pro,
+    monospace !important;
+
+    .CodeMirror-gutter-elt {
+      height: 21px;
+      width: 38px;
+    }
+
+    .CodeMirror-scroll {
+      background: #f9f9f9;
+    }
+
+    .CodeMirror-gutters {
+      background: #ebebeb;
+    }
+  }
+
+  .hidden-textarea {
+    display: none;
+  }
+
+  /* .Codemirror-merge-wrap, */
+  .CodeMirror-merge {
+    height: 100%;
+    border: none;
+  }
+
+  .CodeMirror-merge-gap {
+    position: absolute;
+    border: none;
+    background: #fff;
+  }
+
+  .CodeMirror-merge-2pane .CodeMirror-merge-pane {
+    width: 49%;
+  }
+
+  .CodeMirror-merge-2pane .CodeMirror-merge-gap {
+    width: 2%;
+  }
+
+  .CodeMirror-merge-scrolllock-wrap {
+    display: none;
+  }
+
+  .CodeMirror-merge-copybuttons-right {
+    min-width: 13px;
+  }
+
+  .CodeMirror-merge-copybuttons-right .CodeMirror-merge-copy {
+    right: 0;
+  }
+
+  .c7ncd-editor-tools {
+    display: flex;
+    align-items: center;
+    margin: 15px 0 10px;
+    height: 30px;
+
+    .c7ncd-editor-mode {
+      display: inline-block;
+      height: 32px;
+      line-height: 32px;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      background-image: none;
+      border: none;
+      vertical-align: middle;
+      padding: 0;
+      white-space: nowrap;
+      font-size: 13px;
+      border-radius: 2px;
+      user-select: none;
+      transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      position: relative;
+      text-transform: uppercase;
+      letter-spacing: 0.01em;
+      box-sizing: border-box;
+      background-color: transparent;
+      border-color: rgba(0, 0, 0, 0.12);
+      outline: 0;
+      color: #3f51b5;
+    }
+
+    .c7ncd-editor-legend {
+      flex: 1;
+      margin-left: 50px;
+
+      .c7ncd-editor-legend-item {
+        position: relative;
+        margin-right: 50px;
+        padding-left: 26px;
+        font-size: 13px;
+        color: #000;
+      }
+
+      &_new {
+        &::after {
+          content: " ";
+          position: absolute;
+          left: 0;
+          top: 3px;
+          width: 13px;
+          height: 13px;
+          background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGUlEQVQI12MwuCXy3+CWyH8GBgYGJgYkAABZbAQ9ELXurwAAAABJRU5ErkJggg==);
+          background-position: bottom left;
+          background-repeat: repeat-x;
+        }
+      }
+
+      &_delete {
+        &::after {
+          content: " ";
+          position: absolute;
+          left: 0;
+          top: 3px;
+          width: 13px;
+          height: 13px;
+          background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAYAAACddGYaAAAAGUlEQVQI12M4Kyb2/6yY2H8GBgYGJgYkAABURgPz6Ks7wQAAAABJRU5ErkJggg==);
+          background-position: bottom left;
+          background-repeat: repeat-x;
+        }
+      }
+
+      &_modify {
+        &::after {
+          content: " ";
+          position: absolute;
+          left: 0;
+          top: 3px;
+          width: 13px;
+          height: 13px;
+          background: #ee8;
+        }
+      }
+
+      &_error {
+        &::after {
+          content: " ";
+          position: absolute;
+          left: 0;
+          top: 1px;
+          width: 18px;
+          height: 16px;
+          background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAHlBMVEW7AAC7AACxAAC7AAC7AAAAAAC4AAC5AAD///+7AAAUdclpAAAABnRSTlMXnORSiwCK0ZKSAAAATUlEQVR42mWPOQ7AQAgDuQLx/z8csYRmPRIFIwRGnosRrpamvkKi0FTIiMASR3hhKW+hAN6/tIWhu9PDWiTGNEkTtIOucA5Oyr9ckPgAWm0GPBog6v4AAAAASUVORK5CYII=");
+          background-position: left bottom;
+          background-repeat: repeat-x;
+        }
+      }
+    }
+  }
+}

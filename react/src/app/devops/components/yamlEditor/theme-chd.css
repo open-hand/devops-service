@@ -1,0 +1,64 @@
+/* Yaml editor theme
+ * from codemirror/theme/neat.css
+ * By ale
+ */
+
+.cm-s-chd span.cm-comment {
+  color: #236e24;
+}
+
+.cm-s-chd span.cm-keyword {
+  line-height: 1em;
+  font-weight: bold;
+  color: blue;
+}
+
+.cm-s-chd span.cm-string {
+  color: #1a1aa6;
+}
+
+.cm-s-chd span.cm-builtin {
+  line-height: 1em;
+  font-weight: bold;
+  color: #077;
+}
+
+.cm-s-chd span.cm-special {
+  line-height: 1em;
+  font-weight: bold;
+  color: #0aa;
+}
+
+.cm-s-chd span.cm-variable {
+  color: black;
+}
+
+.cm-s-chd span.cm-number {
+  color: #0000cd;
+}
+
+.cm-s-chd span.cm-variable-2,
+.cm-s-chd span.cm-boolean {
+  color: #585cf6;
+}
+
+.cm-s-chd span.cm-atom {
+  color: #930f80;
+}
+
+.cm-s-chd span.cm-meta {
+  color: #b90690;
+}
+
+.cm-s-chd span.cm-link {
+  color: #3a3;
+}
+
+.cm-s-chd .CodeMirror-activeline-background {
+  background: #e8f2ff;
+}
+
+.cm-s-chd .CodeMirror-matchingbracket {
+  outline: 1px solid grey;
+  color: black !important;
+}

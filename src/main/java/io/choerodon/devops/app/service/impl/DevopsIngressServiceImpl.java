@@ -109,7 +109,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1beta1Ingress, true, null, devopsIngressDO, userAttrE, devopsEnvCommandE);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), false, v1beta1Ingress, true, null, devopsIngressDO, userAttrE, devopsEnvCommandE);
     }
 
     private String getCertName(Long certId) {
@@ -151,6 +151,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId) {
 
+        Boolean deleteCert = false;
+
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsIngressDTO.getEnvId());
 
@@ -158,6 +160,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
+        DevopsIngressDO oldDevopsIngressDO = devopsIngressRepository.getIngress(id);
+        if (oldDevopsIngressDO.getCertId() != null && devopsIngressDTO.getCertId() == null) {
+            deleteCert = true;
+        }
 
         //更新域名的时候校验gitops库文件是否存在,处理部署域名时，由于没有创gitops文件导致的部署失败
         checkOptionsHandler.check(devopsEnvironmentE, id, devopsIngressDTO.getName(), INGRESS);
@@ -199,7 +205,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1beta1Ingress, false, path, devopsIngressDO, userAttrE, devopsEnvCommandE);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), deleteCert, v1beta1Ingress, false, path, devopsIngressDO, userAttrE, devopsEnvCommandE);
     }
 
     @Override
@@ -329,7 +335,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     projectId,
                     DELETE,
                     userAttrE.getGitlabUserId(),
-                    ingressDO.getId(), INGRESS, null, devopsEnvironmentE.getId(), path);
+                    ingressDO.getId(), INGRESS, null, false, devopsEnvironmentE.getId(), path);
         }
 
     }
@@ -414,6 +420,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     private void operateEnvGitLabFile(Integer envGitLabProjectId,
+                                      Boolean deleteCert,
                                       V1beta1Ingress ingress,
                                       Boolean isCreate,
                                       String path,
@@ -436,7 +443,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
         objectOperation.setType(ingress);
         objectOperation.operationEnvGitlabFile("ing-" + devopsIngressDO.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
-                userAttrE.getGitlabUserId(), devopsIngressDO.getId(), INGRESS, null, devopsIngressDO.getEnvId(), path);
+                userAttrE.getGitlabUserId(), devopsIngressDO.getId(), INGRESS, null, deleteCert, devopsIngressDO.getEnvId(), path);
 
     }
 

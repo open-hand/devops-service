@@ -8,6 +8,7 @@ import javax.persistence.Transient;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -29,6 +30,7 @@ public class DevopsNotificationDO extends AuditDomain {
 
     @Transient
     private String envName;
+
     public Long getId() {
         return id;
     }

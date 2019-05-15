@@ -130,7 +130,7 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
             @Override
             ClientHttpResponse intercept(HttpRequest httpRequest, byte[] bytes, ClientHttpRequestExecution clientHttpRequestExecution) throws IOException {
                 httpRequest.getHeaders()
-                        .add('JWT_Token', createJWT(key, objectMapper))
+                        .add('Authorization', createJWT(key, objectMapper))
                 return clientHttpRequestExecution.execute(httpRequest, bytes)
             }
         }])

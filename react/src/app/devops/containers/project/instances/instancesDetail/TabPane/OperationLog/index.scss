@@ -1,0 +1,115 @@
+.c7n-operate-log-content {
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 60px;
+
+  .c7n-log-date {
+    text-align: right;
+    width: 85px;
+
+    .c7n-date-year {
+      color: rgba(0, 0, 0, 0.65);
+      font-size: 10px;
+      -webkit-transform: scale(0.8);
+    }
+
+    div {
+      display: inline-block;
+    }
+  }
+
+  .c7n-date-recent {
+    border: 2px solid #5266d4;
+    border-radius: 10px;
+    font-size: 12px;
+    color: #5266d4;
+    width: 42px;
+    text-align: center;
+    margin-left: -20px;
+  }
+
+  .c7n-log-step {
+    margin-left: 6px;
+
+    i {
+      color: #3f51b5;
+    }
+  }
+
+  .c7n-log-line {
+    position: absolute;
+    width: 1px;
+    background-color: rgba(0, 0, 0, 0.26);
+    height: 40px;
+    left: 99px;
+    top: 0;
+    margin-top: 42px;
+  }
+
+  .c7n-log-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0 165px 0 28px;
+  }
+
+  .c7n-log-mbr {
+    display: flex;
+    align-items: center;
+
+    .log-mbr-title {
+      color: rgba(0, 0, 0, 0.65);
+    }
+
+    .ant-avatar-sm {
+      margin: 0 8px 0 6px;
+    }
+  }
+
+  &:last-child {
+    .c7n-log-line {
+      display: none;
+    }
+  }
+}
+
+.c7n-log-item-loading {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.mg-top-43 {
+  margin-top: 43px;
+}
+
+.c7n-log-hasMore {
+  margin-bottom: -30px !important;
+  padding-bottom: 0 !important;
+}
+
+// 修改日期选择器的样式
+.c7n-operation-log-datepicker {
+  margin-bottom: 10px;
+
+  .ant-calendar-picker-input {
+    margin-bottom: 3px;
+    padding-left: 24px;
+  }
+
+  .ant-calendar-range-picker-input {
+    width: 80px;
+  }
+
+  .ant-calendar-picker-icon {
+    left: 0;
+    font-size: 20px;
+  }
+
+  .ant-calendar-underline {
+    display: none;
+  }
+
+  .ant-calendar-picker-clear {
+    margin-right: -40px;
+  }
+}

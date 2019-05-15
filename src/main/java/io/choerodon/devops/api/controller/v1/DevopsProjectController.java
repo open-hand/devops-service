@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.app.service.ProjectService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,16 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Optional;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.ApplicationRepDTO;
-import io.choerodon.devops.app.service.ProjectService;
-import io.choerodon.devops.app.service.impl.ProjectServiceImpl;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author crockitwood
@@ -38,7 +31,7 @@ public class DevopsProjectController {
      *
      * @param projectId     项目id
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目Gitlab Group是否创建成功")
     @GetMapping("/gitlabGroupCheck")

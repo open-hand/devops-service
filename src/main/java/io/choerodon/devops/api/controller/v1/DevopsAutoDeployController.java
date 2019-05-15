@@ -1,34 +1,25 @@
 package io.choerodon.devops.api.controller.v1;
 
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
+
+import io.choerodon.base.annotation.Permission;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.DevopsAutoDeployDTO;
 import io.choerodon.devops.api.dto.DevopsAutoDeployRecordDTO;
 import io.choerodon.devops.app.service.DevopsAutoDeployService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -48,7 +39,7 @@ public class DevopsAutoDeployController {
      * @param devopsAutoDeployDTO 自动部署DTO
      * @return ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建或更新自动部署")
     @PostMapping
     public ResponseEntity<DevopsAutoDeployDTO> createOrUpdate(
@@ -68,7 +59,7 @@ public class DevopsAutoDeployController {
      * @param autoDeployId 自动部署id
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除自动部署")
     @DeleteMapping("/{auto_deploy_id}")
     public ResponseEntity deleteById(
@@ -81,7 +72,7 @@ public class DevopsAutoDeployController {
     }
 
 
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询自动部署")
     @CustomPageRequest
@@ -107,7 +98,7 @@ public class DevopsAutoDeployController {
                 .orElseThrow(() -> new CommonException("error.auto.deploy.get"));
     }
 
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询所有自动部署")
     @GetMapping("/list")
@@ -123,7 +114,7 @@ public class DevopsAutoDeployController {
     }
 
 
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下根据Id查询自动部署")
     @GetMapping("/{auto_deploy_id}/detail")
@@ -138,7 +129,7 @@ public class DevopsAutoDeployController {
                 .orElseThrow(() -> new CommonException("error.auto.deploy.query"));
     }
 
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询自动部署记录")
     @CustomPageRequest
@@ -172,7 +163,7 @@ public class DevopsAutoDeployController {
      * @param projectId 项目Id
      * @param name      名称
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建自动部署校验名称是否存在")
     @GetMapping(value = "/check_name")
     public void checkName(
@@ -191,7 +182,7 @@ public class DevopsAutoDeployController {
      * @param isEnabled    是否启用
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据自动部署ID跟新是否启动")
     @PutMapping(value = "/{auto_deploy_id}")
     public ResponseEntity<DevopsAutoDeployDTO> updateIsEnabled(

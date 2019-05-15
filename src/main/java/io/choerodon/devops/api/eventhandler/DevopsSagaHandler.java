@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.eventhandler;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.SagaDefinition;
@@ -8,33 +10,13 @@ import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.api.dto.PipelineWebHookDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.app.service.ApplicationTemplateService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
-import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
-import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
-import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
-import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
@@ -42,8 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 
 /**
@@ -262,7 +242,7 @@ public class DevopsSagaHandler {
      */
     @SagaTask(code = "devopsCreateGitlabProjectErr",
             description = "set  DevOps app status error",
-            sagaCode = "devops-set-app-err",
+            sagaCode = "devops-create-app-fail",
             maxRetryCount = 3,
             seq = 1)
     public String setAppErr(String data) {

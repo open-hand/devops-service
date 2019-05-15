@@ -5,6 +5,7 @@ import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsNotificationDTO;
+import io.choerodon.devops.api.dto.ResourceCheckDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -23,5 +24,38 @@ public interface DevopsNotificationService {
 
     Page<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
 
+
     Set<String> check(Long projectId, Long envId);
+
+
+    /**
+     * 校验删除对象是否需要发送验证码
+     *
+     * @param envId  环境id
+     * @param objectType  资源对象类型
+     * @return
+     */
+    ResourceCheckDTO checkResourceDelete(Long envId, String objectType);
+
+    /**
+     * 发送验证码
+     *
+     * @param envId   环境Id
+     * @param objectId  对象Id
+     * @param notificationId  通知Id
+     * @param objectType  对象类型
+     */
+    void sendMessage(Long envId,Long notificationId,Long objectId, String objectType);
+
+    /**
+     * 校验验证码
+     *
+     * @param envId   环境Id
+     * @param objectId  对象Id
+     * @param captcha  验证码
+     * @param objectType  对象类型
+     * @return
+     */
+    void validateCaptcha(Long envId, Long objectId, String objectType, String captcha);
+
 }

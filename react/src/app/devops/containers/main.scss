@@ -1,0 +1,670 @@
+/* stylelint-disable no-descending-specificity */
+$WIDTH512: 512px;
+
+.clearfix {
+  &::after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+  }
+
+  zoom: 1;
+}
+
+.c7n-page-height {
+  height: calc(100%);
+}
+
+.c7n-none-des {
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.54);
+  line-height: 24px;
+}
+
+.c7n-space-first {
+  color: #000;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: .005em;
+  line-height: 28px;
+  margin-bottom: 8px;
+  max-width: 512px;
+  text-rendering: auto;
+  word-wrap: break-word;
+}
+
+.c7n-space-first + p {
+  max-width: 512px;
+  color: #000;
+  font-size: 13px;
+  letter-spacing: .01em;
+  line-height: 20px;
+  margin-bottom: 24px;
+}
+
+.c7n-text-title-1-subtle {
+  color: #000;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  line-height: 28px;
+  margin-bottom: 8px;
+  margin-top: 32px;
+}
+
+.c7n-text-title-2 {
+  color: #000;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  line-height: 24px;
+  margin-bottom: 8px;
+  margin-top: 28px;
+}
+
+.c7n-text-title-3 {
+  color: #000;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  line-height: 24px;
+  margin-bottom: 8px;
+  margin-top: 28px;
+}
+
+.c7n-text-title-4 {
+  color: #000;
+  //font-family: "roboto";
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 20px;
+  margin-bottom: 8px;
+  margin-top: 24px;
+}
+
+.c7n-text-title-5,
+.c7n-text-body-large {
+  color: #000;
+  //font-family: "roboto";
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 20px;
+  margin-bottom: 8px;
+  margin-top: 24px;
+}
+
+@media (min-width: 0) and (max-width: 959px) and (orientation: portrait) {
+  .c7n-region .c7n-legacy-toolbar-resize {
+    height: 56px;
+  }
+}
+
+@media (min-width: 0) and (max-width: 959px) and (orientation: landscape) {
+  .c7n-region .c7n-legacy-toolbar-resize {
+    height: 48px;
+  }
+}
+
+table {
+  font-size: 13px;
+}
+
+.c7n-input-readOnly .ant-input {
+  color: rgba(0, 0, 0, 0.26);
+}
+
+.c7n-input-readOnly + .ant-input-border-wrapper {
+  .ant-input-border {
+    height: 0;
+    background: none;
+    border: 1px dashed rgba(0, 0, 0, 0.16);
+  }
+
+  .ant-input-border-active {
+    display: none;
+  }
+}
+
+//form
+
+.c7n-formItem_180 {
+  width: 180px;
+  margin-right: 20px !important;
+  display: inline-block;
+}
+
+.c7n-formItem_312 {
+  width: 312px;
+  // margin-right: 20px;
+  display: inline-block;
+}
+
+//form
+.c7n-sidebar-form {
+  width: 512px;
+}
+
+// 选择器宽度
+.c7n-select {
+  &_512 {
+    width: $WIDTH512;
+  }
+
+  &_480 {
+    width: $WIDTH512 - 32px;
+  }
+
+  &_160 {
+    width: ($WIDTH512 - 32px) /3;
+  }
+}
+
+// 环境、实例连接状态
+.c7ncd-status {
+  display: inline-block;
+  margin-right: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+
+  &-success {
+    background-color: #00bf96;
+  }
+
+  &-error {
+    background-color: #d50000;
+  }
+
+  &-disconnect {
+    background-color: #ff9915;
+  }
+
+  &-update {
+    background-color: #4d90fe;
+    margin: 0;
+    flex-shrink: 0;
+  }
+}
+
+/* 修改UI组件默认样式 */
+.is-required {
+  .ant-select-disabled {
+    .ant-select-selection-label {
+      &:after {
+        color: rgba(0, 0, 0, .36);
+      }
+    }
+  }
+
+  .ant-input-disabled {
+    .ant-input-label {
+      &::after {
+        color: rgba(0, 0, 0, .36);
+      }
+    }
+  }
+}
+
+.c7n-creation-radio {
+  position: relative;
+  padding-left: 73px;
+
+  .creation-radio-label {
+    &_disabled {
+      color: rgba(0, 0, 0, .36);
+    }
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 13px;
+    line-height: 20px;
+    color: #000;
+  }
+
+  .creation-radio-form {
+    margin-bottom: 8px;
+  }
+}
+
+// 创建侧边栏的单选
+.c7n-creation-title {
+  display: flex;
+  margin-bottom: 10px;
+
+  i {
+    line-height: 24px;
+    font-size: 16px;
+    padding-right: 5px;
+  }
+
+  &_disabled {
+    color: rgba(0, 0, 0, .36);
+  }
+
+  span {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    margin-bottom: 10px;
+  }
+
+  .c7n-table-title-tip {
+    align-items: normal;
+
+    i {
+      font-size: 16px;
+      margin-left: 5px;
+    }
+  }
+}
+
+.c7n-domain-create-status {
+  display: inline-block;
+  height: 16px;
+  font-size: 12px;
+  border-radius: 2px;
+  color: white;
+  text-align: center;
+  line-height: 16px;
+  margin-right: 8px;
+
+  div {
+    transform: scale(0.83333);
+    white-space: nowrap;
+  }
+
+  &_running {
+    background: #00bf96;
+  }
+
+  &_failed {
+    background: #f44336;
+  }
+
+  &_operating {
+    background: #4d90fe;
+  }
+
+  &_deleted {
+    background: rgba(0, 0, 0, 0.36);
+  }
+}
+
+// 创建侧边栏中的卡片区域
+.c7n-creation-panel {
+  margin-bottom: 32px;
+  padding: 16px;
+  width: 512px;
+  min-height: 150px;
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.20), 0 0 0 1px rgba(0, 0, 0, 0.12), 0 2px 2px -1px rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+
+  .creation-panel-button {
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .creation-form-name {
+    margin-bottom: 0;
+  }
+
+  .creation-form-item {
+    margin-bottom: 12px;
+  }
+
+  .creation-panel-group {
+    display: flex;
+    justify-content: space-between;
+
+    .c7n-select_454 {
+      width: 454px;
+    }
+  }
+
+  // 多组的删除图标
+  .creation-panel-icon {
+    position: relative;
+    top: 18px;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+
+    &.icon-delete {
+      cursor: pointer;
+    }
+  }
+}
+
+// 覆盖禁用输入的底边样式
+.ant-input-disabled,
+.ant-select-disabled {
+
+  .ant-select-underline,
+  .ant-input-underline {
+    border-bottom-style: dashed;
+  }
+}
+
+// 隐藏Safari自动填充的小图标
+input::-webkit-contacts-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+.c7n-divide-point {
+  padding: 8px;
+  vertical-align: middle;
+}
+
+.c7ncd-link-icon {
+  font-size: 13px;
+}
+
+.c7n-ib-width_100 {
+  width: 100%;
+  display: inline-block;
+}
+
+.c7n-header-select {
+  margin-right: 28px;
+  font-weight: 500;
+
+  .icon-arrow_drop_down {
+    font-size: 18px;
+  }
+
+  .ant-select-selection__rendered {
+    margin-bottom: 0;
+    color: #3f51b5;
+  }
+
+  .ant-select-underline {
+    display: none;
+  }
+}
+
+.c7n-select_min100 {
+  min-width: 100px;
+}
+
+.c7n-header-env_drop {
+  width: auto !important;
+  top: 90px !important;
+
+  .ant-select-dropdown-menu-item {
+    padding: 4px 10px 4px 6px !important;
+  }
+}
+
+.c7n-header-select_drop {
+  width: 200px !important;
+  top: 90px !important;
+}
+
+.c7n-notice-wrap_error {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12), inset 4px 0 0 0 #f44336;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding-left: 14px;
+  margin-bottom: 20px;
+
+  i {
+    color: #f44336;
+    font-size: 20px;
+    margin-right: 14px;
+  }
+}
+
+.c7n-padding-top_8 {
+  padding-top: 8px;
+}
+
+// 步骤条公用样式调整
+.c7ncd-step-bar {
+  .ant-steps-item-title {
+    font-size: 14px;
+  }
+
+  .ant-steps-item-process {
+    .ant-steps-item-title {
+      color: #3f51b5;
+    }
+  }
+}
+
+// 分步骤页面卡片公共样式
+.c7ncd-step-page {
+  padding: 20px 24px 0;
+
+  &::after {
+    display: block;
+    height: 48px;
+    content: " ";
+  }
+}
+
+.c7ncd-step-wrap {
+  padding: 32px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .2);
+  background: #fff;
+
+  .c7ncd-step-card {
+    padding: 32px 4px 0 36px;
+
+    .c7ncd-step-describe {
+      margin: 0;
+      font-size: 13px;
+      color: rgba(0, 0, 0, .65);
+      line-height: 20px;
+    }
+
+    .c7ncd-step-item {
+      margin-top: 32px;
+
+      &.c7ncd-step-item-full {
+        margin-top: 0;
+      }
+
+      .c7ncd-step-item-header {
+        margin-bottom: 16px;
+
+        .c7ncd-step-item-icon {
+          font-size: 18px;
+        }
+
+        .c7ncd-step-item-title {
+          display: inline-block;
+          margin-left: 10px;
+          vertical-align: middle;
+          color: #000;
+        }
+      }
+
+      .c7ncd-step-item-indent {
+        display: flex;
+        flex-wrap: wrap;
+        padding-left: 30px;
+        min-height: 20px;
+        width: 512px;
+
+        .c7ncd-step-input {
+          width: 482px;
+        }
+      }
+
+      .c7ncd-step-item-tip-icon {
+        vertical-align: middle;
+        font-size: 16px;
+        padding: 0 6px 0 12px;
+        color: #f44336;
+      }
+
+      .c7ncd-step-item-tip-text {
+        vertical-align: middle;
+        color: rgba(0, 0, 0, .65);
+      }
+
+      .c7ncd-step-info-item {
+        margin-bottom: 12px;
+
+        .c7ncd-step-info-item-label {
+          display: inline-block;
+          line-height: 20px;
+
+          .c7ncd-step-info-item-icon {
+            margin-right: 8px;
+            vertical-align: text-bottom;
+          }
+        }
+
+        .c7ncd-step-info-item-value {
+          display: inline-block;
+          padding-left: 25px;
+          color: rgba(3, 3, 3, 0.65);
+
+          .c7ncd-step-info-item-text {
+            text-align: left;
+            line-height: 20px;
+            font-size: 13px;
+            color: rgba(0, 0, 0, .65);
+          }
+        }
+      }
+    }
+
+    .c7ncd-step-btn {
+      margin-top: 32px;
+
+      .c7ncd-step-cancel-btn {
+        color: #3f51b5;
+      }
+
+      button {
+        margin-right: 12px;
+
+        &:last-child {
+          margin: 0;
+        }
+      }
+    }
+  }
+}
+
+// 实例和环境总览中查看详情的按钮样式
+.c7ncd-detail-btn {
+  vertical-align: middle;
+  padding: 0;
+  height: 20px;
+  line-height: 20px;
+  color: #3f51b5;
+
+  &.c7ncd-detail-btn-right {
+    margin-left: auto;
+  }
+
+  .icon {
+    width: 13px;
+    height: 13px;
+    font-size: 12px;
+  }
+
+  &.ant-btn-flat:hover {
+    background: transparent;
+  }
+
+  .ant-ripple-wrapper {
+    display: none;
+  }
+
+  & > div.btn-loading > span {
+    background: #3f51b5;
+    border-color: #3f51b5;
+  }
+}
+
+// 放在下拉选择器选项中的加载更多的按钮
+// 需要将完全填充选项，防止触发选项
+.c7ncd-more-btn-wrap {
+  padding: 0 !important;
+
+  .c7ncd-more-btn {
+    @extend .c7ncd-detail-btn;
+    display: block;
+    padding: 4px 12px;
+    width: 100%;
+    height: 28px;
+    text-align: left;
+  }
+}
+
+// 侧边栏的spin和浮层
+.c7ncd-sidebar-spin-blur {
+  opacity: 0.7;
+  filter: blur(0.5px);
+}
+
+.c7ncd-sidebar-spin {
+  position: absolute;
+  width: 512px;
+  z-index: 4;
+  top: 50%;
+  left: 0;
+}
+
+.c7n-expand-table {
+
+  .ant-table-tbody {
+    &>tr {
+      &.ant-table-expanded-row {
+        background: #fff;
+
+        &:hover {
+          background: #fff;
+        }
+      }
+
+      &.ant-table-expanded-row-level-1 {
+        &:hover {
+          &>td {
+            background: transparent;
+          }
+        }
+      }
+    }
+  }
+
+  .ant-table-row-expand-icon-cell {
+    position: relative;
+    padding: 5px 9px;
+    text-align: left;
+
+    &:after {
+      content: ' ';
+      position: absolute;
+      top: 20%;
+      right: 13px;
+      width: 0;
+      height: 60%;
+      border-right: 1px solid rgba(0, 0, 0, .12);
+    }
+
+    .ant-table-row-expand-icon {
+      width: 18px;
+      font-size: 18px;
+
+      &:before {
+        content: '\E5CF';
+      }
+    }
+  }
+}

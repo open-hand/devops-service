@@ -1,0 +1,39 @@
+.editable-cell {
+  position: relative;
+}
+
+.editable-cell-value-wrap {
+  cursor: pointer;
+}
+
+.editable {
+  tr:hover > td {
+    background-color: transparent !important;
+  }
+
+  tr > td:focus {
+    background-color: transparent !important;
+  }
+
+  td {
+    border-bottom: none !important;
+    padding: 0 0 10px 0 !important;
+  }
+
+  textarea.ant-input {
+    min-height: auto;
+  }
+
+  .del-btn {
+    font-size: 18px;
+    margin-left: 13px;
+    top: 6px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .icon-equal {
+    font-size: 28px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+}

@@ -803,10 +803,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    @Saga(code = "devops-set-app-err",
+    @Saga(code = "devops-create-app-fail",
             description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
     public void setAppErrStatus(String input, Long projectId) {
-        sagaClient.startSaga("devops-set-app-err", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
+        sagaClient.startSaga("devops-create-app-fail", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
     }
 
     private void initMasterBranch(DevOpsAppPayload gitlabProjectPayload, ApplicationE applicationE) {
@@ -1133,6 +1133,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
         applicationE.setName(iamAppPayLoad.getName());
         applicationRepository.update(applicationE);
+    }
+
+    @Override
+    public void deleteIamApplication(IamAppPayLoad iamAppPayLoad) {
+        ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        gitlabRepository.deleteProject(applicationE.getGitlabProjectE().getId(), 1);
+        applicationRepository.delete(applicationE.getId());
     }
 
     @Override

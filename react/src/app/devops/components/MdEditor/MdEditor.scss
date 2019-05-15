@@ -1,0 +1,60 @@
+.c7n-mdeditor-wrap {
+  margin-bottom: 32px;
+  padding: 16px;
+  min-height: 330px;
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.20), 0 0 0 1px rgba(0, 0, 0, 0.12), 0 2px 2px -1px rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+
+  .c7n-md-placeholder {
+    margin-bottom: 2px;
+    padding-bottom: 4px;
+    color: #a9a9a9;
+  }
+
+  .CodeMirror {
+    height: auto !important;
+    font-size: 14px;
+    font-family: Monaco,
+    Menlo,
+    "Ubuntu Mono",
+    Consolas,
+    source-code-pro,
+    monospace !important;
+    min-height: 300px;
+    background: rgba(0, 0, 0, .035);
+  }
+}
+
+.c7n-md-preview {
+  margin-bottom: -30px;
+  padding-left: 10px;
+  padding-bottom: 30px;
+
+  &.c7n-md-preview-box {
+    min-height: 330px;
+  }
+
+  p {
+    margin-top: 0;
+    margin-bottom: 1em !important;
+  }
+
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    display: block;
+    overflow: auto;
+    word-break: keep-all;
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
+
+  pre {
+    line-height: 1.6;
+    padding: 10px !important;
+    border: 1px solid #ddd;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background: #f6f6f6;
+  }
+}
