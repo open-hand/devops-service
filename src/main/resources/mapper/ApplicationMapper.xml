@@ -260,11 +260,11 @@
 
     <update id="updateSql" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDO">
         UPDATE devops_application da
-        set da.is_failed = null
-        and da.token=#{token}
-        and da.gitlab_project_id=#{gitlabProjectId}
-        and da.hook_id=#{hookId}
-        and da.is_synchro=#{isSynchro}
+        set da.is_failed = null,
+        da.token=#{token},
+        da.gitlab_project_id=#{gitlabProjectId},
+        da.hook_id=#{hookId},
+        da.is_synchro=#{isSynchro}
         where da.id = #{appId}
     </update>
 
