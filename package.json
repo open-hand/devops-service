@@ -1,9 +1,9 @@
 {
   "name": "@choerodon/devops",
-  "routerName": "devops",
+  "routeName": "devops",
   "description": "",
   "license": "ISC",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "keywords": [],
   "contributors": [
     "choerodon"
@@ -57,7 +57,7 @@
   },
   "lint-staged": {
     "react/src/**/*.{js,jsx}": [],
-    "react/src/**/*.scss": "stylelint --syntax scss"
+    "react/src/**/*.{scss,less}": "stylelint --syntax scss"
   },
   "husky": {
     "hooks": {

@@ -82,6 +82,11 @@ class CodeQuality extends Component {
           ReportsStore.setAppId(selectApp);
           this.loadCharts();
         }
+        if (appData.length) {
+          const selectApp = appId || appData[0].id;
+          ReportsStore.setAppId(selectApp);
+          this.loadCharts();
+        }
       });
     type && this.setState({ objectType: type });
   };

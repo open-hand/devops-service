@@ -1559,6 +1559,7 @@ const zhCN = {
   "configMap.mode.yaml": "编辑键值对",
   "configMap.yaml.error": "内容不符合规则。",
 
+
   // 密文
   "secret.head": "密文",
   "secret.create": "创建密文",

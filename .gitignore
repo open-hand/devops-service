@@ -51,6 +51,7 @@ npm-debug.log
 yarn-error.log
 yarn-lock.json
 package-lock.json
+yarn.lock
 
 # folder
 dist
