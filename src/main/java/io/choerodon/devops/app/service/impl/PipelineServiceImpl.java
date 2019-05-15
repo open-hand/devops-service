@@ -1259,8 +1259,9 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRecordRepository.update(pipelineRecordE);
         //发送请求给workflow，创建流程实例
         try {
+            CustomUserDetails details = DetailsHelper.getUserDetails();
             LOGGER.info("=======自动部署查008========1："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
-            workFlowRepository.create(pipelineE.getProjectId(), devopsPipelineDTO);
+            createWorkFlow(pipelineE.getProjectId(), devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
             LOGGER.info("=======自动部署查009========1："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
         } catch (Exception e) {
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
