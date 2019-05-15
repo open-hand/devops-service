@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.feign.fallback;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.*;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
@@ -52,12 +52,12 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<Page<UserDO>> queryInProjectById(Long projectId, Long id) {
+    public ResponseEntity<PageInfo<UserDO>> queryInProjectById(Long projectId, Long id) {
         return new ResponseEntity("error.userInProject.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<Page<ProjectDO>> queryProjectByOrgId(Long id, int page, int size, String name, String[] params) {
+    public ResponseEntity<PageInfo<ProjectDO>> queryProjectByOrgId(Long id, int page, int size, String name, String[] params) {
         return new ResponseEntity("error.project.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -67,7 +67,7 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<Page<UserDO>> listUsersByEmail(Long projectId, int page, int size, String email) {
+    public ResponseEntity<PageInfo<UserDO>> listUsersByEmail(Long projectId, int page, int size, String email) {
         return new ResponseEntity("error.user.get.byEmail", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -78,7 +78,7 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, Long roleId,
+    public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, Long roleId,
                                                                                 Long sourceId,
                                                                                 Boolean doPage,
                                                                                 RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
@@ -86,18 +86,18 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<Page<UserWithRoleDTO>> queryUserByProjectId(Long projectId, int page, int size,
+    public ResponseEntity<PageInfo<UserWithRoleDTO>> queryUserByProjectId(Long projectId, int page, int size,
                                                                       Boolean doPage, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity("error.user.get.byProjectId", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<Page<ProjectWithRoleDTO>> listProjectWithRole(Long id, int page, int size) {
+    public ResponseEntity<com.github.pagehelper.PageInfo<ProjectWithRoleDTO>> listProjectWithRole(Long id, int page, int size) {
         return new ResponseEntity("error.project.role.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<Page<RoleDTO>> queryRoleIdByCode(RoleSearchDTO roleSearchDTO) {
+    public ResponseEntity<PageInfo<RoleDTO>> queryRoleIdByCode(RoleSearchDTO roleSearchDTO) {
         return new ResponseEntity("error.roleId.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -122,7 +122,7 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<Page<IamAppPayLoad>> getIamApplication(Long organizationId, String code) {
+    public ResponseEntity<PageInfo<IamAppPayLoad>> getIamApplication(Long organizationId, String code) {
         return new ResponseEntity("error.iam.app.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

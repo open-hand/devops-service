@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -91,36 +92,22 @@ public class IamRepositoryImpl implements IamRepository {
     public List<ProjectE> listIamProjectByOrgId(Long organizationId, String name, String[] params) {
         List<ProjectE> returnList = new ArrayList<>();
         int page = 0;
-        int size = 200;
-        ResponseEntity<Page<ProjectDO>> pageResponseEntity =
+        int size = 0;
+        ResponseEntity<PageInfo<ProjectDO>> pageResponseEntity =
                 iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, null);
-        Page<ProjectDO> projectDOPage = pageResponseEntity.getBody();
-        List<ProjectE> projectEList = ConvertHelper.convertList(projectDOPage.getContent(), ProjectE.class);
-        if (ConvertHelper.convertList(projectDOPage.getContent(), ProjectE.class) != null) {
+        PageInfo<ProjectDO> projectDOPage = pageResponseEntity.getBody();
+        List<ProjectE> projectEList = ConvertHelper.convertList(projectDOPage.getList(), ProjectE.class);
+        if (!projectEList.isEmpty()) {
             returnList.addAll(projectEList);
-        }
-        int totalPages = projectDOPage.getTotalPages();
-        if (totalPages > 1) {
-            for (int i = 1; i < totalPages; i++) {
-                page = i;
-                ResponseEntity<Page<ProjectDO>> entity = iamServiceClient
-                        .queryProjectByOrgId(organizationId, page, size, name, null);
-                if (entity != null) {
-                    Page<ProjectDO> project = entity.getBody();
-                    List<ProjectE> projectE = ConvertHelper.convertList(project.getContent(), ProjectE.class);
-                    if (projectE != null) {
-                        returnList.addAll(projectE);
-                    }
-                }
-            }
         }
         return returnList;
     }
 
     @Override
-    public Page<ProjectDO> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params) {
+    public List<ProjectE> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params) {
         try {
-            return iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, params).getBody();
+            ResponseEntity<PageInfo<ProjectDO>> pageInfoResponseEntity = iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, params);
+            return ConvertHelper.convertList(pageInfoResponseEntity.getBody().getList(),ProjectE.class);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -130,26 +117,12 @@ public class IamRepositoryImpl implements IamRepository {
     public List<ProjectWithRoleDTO> listProjectWithRoleDTO(Long userId) {
         List<ProjectWithRoleDTO> returnList = new ArrayList<>();
         int page = 0;
-        int size = 200;
-        ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity =
+        int size = 0;
+        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity =
                 iamServiceClient.listProjectWithRole(userId, page, size);
-        Page<ProjectWithRoleDTO> projectWithRoleDTOPage = pageResponseEntity.getBody();
-        if (projectWithRoleDTOPage.getContent() != null) {
-            returnList.addAll(projectWithRoleDTOPage.getContent());
-        }
-        int totalPages = projectWithRoleDTOPage.getTotalPages();
-        if (totalPages > 1) {
-            for (int i = 1; i < totalPages; i++) {
-                page = i;
-                ResponseEntity<Page<ProjectWithRoleDTO>> entity = iamServiceClient
-                        .listProjectWithRole(userId, page, size);
-                if (entity.getBody() != null) {
-                    Page<ProjectWithRoleDTO> projectWithRolePageNew = entity.getBody();
-                    if (!projectWithRolePageNew.getContent().isEmpty()) {
-                        returnList.addAll(projectWithRolePageNew.getContent());
-                    }
-                }
-            }
+        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = pageResponseEntity.getBody();
+        if (!projectWithRoleDTOPage.getList().isEmpty()) {
+            returnList.addAll(projectWithRoleDTOPage.getList());
         }
         return returnList;
     }
@@ -181,7 +154,7 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
-    public Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
                                                                 RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                                 Long roleId, Long projectId, Boolean doPage) {
         try {
@@ -195,11 +168,11 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
-    public Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,
+    public PageInfo<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,
                                                                 Boolean doPage) {
         try {
             RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
-            ResponseEntity<Page<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient
+            ResponseEntity<PageInfo<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient
                     .queryUserByProjectId(projectId,
                             pageRequest.getPage(), pageRequest.getSize(), doPage, roleAssignmentSearchDTO);
             return userEPageResponseEntity.getBody();
@@ -212,12 +185,12 @@ public class IamRepositoryImpl implements IamRepository {
     @Override
     public UserE queryByEmail(Long projectId, String email) {
         try {
-            ResponseEntity<Page<UserDO>> userDOResponseEntity = iamServiceClient
-                    .listUsersByEmail(projectId, 0, 10, email);
-            if (userDOResponseEntity.getBody().getContent().isEmpty()) {
+            ResponseEntity<PageInfo<UserDO>> userDOResponseEntity = iamServiceClient
+                    .listUsersByEmail(projectId, 0, 0, email);
+            if (userDOResponseEntity.getBody().getList().isEmpty()) {
                 return null;
             }
-            return ConvertHelper.convert(userDOResponseEntity.getBody().getContent().get(0), UserE.class);
+            return ConvertHelper.convert(userDOResponseEntity.getBody().getList().get(0), UserE.class);
         } catch (FeignException e) {
             LOGGER.error("get user by email {} error", email);
             return null;
@@ -229,7 +202,7 @@ public class IamRepositoryImpl implements IamRepository {
         try {
             RoleSearchDTO roleSearchDTO = new RoleSearchDTO();
             roleSearchDTO.setCode(roleCode);
-            return iamServiceClient.queryRoleIdByCode(roleSearchDTO).getBody().getContent().get(0).getId();
+            return iamServiceClient.queryRoleIdByCode(roleSearchDTO).getBody().getList().get(0).getId();
         } catch (FeignException e) {
             LOGGER.error("get role id by code {} error", roleCode);
             return null;
@@ -245,11 +218,11 @@ public class IamRepositoryImpl implements IamRepository {
         // 项目下所有项目成员
         List<Long> memberIds =
                 this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), memberId,
-                        projectId, false).getContent().stream().map(UserDTO::getId).collect(Collectors.toList());
+                        projectId, false).getList().stream().map(UserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         List<Long> ownerIds =
                 this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), ownerId,
-                        projectId, false).getContent().stream().map(UserDTO::getId).collect(Collectors.toList());
+                        projectId, false).getList().stream().map(UserDTO::getId).collect(Collectors.toList());
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
     }
 
@@ -261,11 +234,11 @@ public class IamRepositoryImpl implements IamRepository {
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
         List<UserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), memberId,
-                projectId, false).getContent();
+                projectId, false).getList();
         List<Long> memberIds = list.stream().map(UserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), ownerId,
-                projectId, false).getContent().forEach(t -> {
+                projectId, false).getList().forEach(t -> {
             if (!memberIds.contains(t.getId())) {
                 list.add(t);
             }
@@ -309,12 +282,12 @@ public class IamRepositoryImpl implements IamRepository {
 
     @Override
     public IamAppPayLoad queryIamAppByCode(Long organizationId, String code) {
-        ResponseEntity<Page<IamAppPayLoad>> iamAppPayLoadResponseEntity = null;
+        ResponseEntity<PageInfo<IamAppPayLoad>> iamAppPayLoadResponseEntity = null;
         try {
             iamAppPayLoadResponseEntity = iamServiceClient.getIamApplication(organizationId, code);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        return iamAppPayLoadResponseEntity.getBody().getContent().isEmpty() ? null : iamAppPayLoadResponseEntity.getBody().getContent().get(0);
+        return iamAppPayLoadResponseEntity.getBody().getList().isEmpty() ? null : iamAppPayLoadResponseEntity.getBody().getList().get(0);
     }
 }

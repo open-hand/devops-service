@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -18,6 +19,7 @@ import io.choerodon.devops.infra.dataobject.DevopsNotificationDO;
 import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -54,6 +56,13 @@ public class DevopsNotificationRepositoryImpl implements DevopsNotificationRepos
     @Override
     public DevopsNotificationE queryById(Long notificationId) {
         return ConvertHelper.convert(notificationMapper.selectByPrimaryKey(notificationId), DevopsNotificationE.class);
+    }
+
+    @Override
+    public List<DevopsNotificationE> ListByEnvId(Long envId) {
+        DevopsNotificationDO devopsNotificationDO = new DevopsNotificationDO();
+        devopsNotificationDO.setEnvId(envId);
+        return ConvertHelper.convertList(notificationMapper.select(devopsNotificationDO), DevopsNotificationE.class);
     }
 
     @Override

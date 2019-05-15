@@ -501,7 +501,7 @@ public class ApplicationController {
      * @param appId     应用id
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation("查看sonarqube相关信息")
     @GetMapping("/{app_id}/sonarqube")
     public ResponseEntity<SonarContentsDTO> getSonarQube(
@@ -521,7 +521,7 @@ public class ApplicationController {
      * @param appId     应用id
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation("查看sonarqube相关信息")
     @GetMapping("/{app_id}/sonarQubeTable")
     public ResponseEntity<SonarTableDTO> getSonarQubeTable(

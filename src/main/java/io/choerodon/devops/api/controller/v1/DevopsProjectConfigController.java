@@ -205,7 +205,7 @@ public class DevopsProjectConfigController {
      * @param projectId 项目id
      * @param harborPrivate  是否私有
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "设置项目对应harbor仓库为私有或者公有")
     @GetMapping("/enableProject")
     public ResponseEntity enableProject(
@@ -223,7 +223,7 @@ public class DevopsProjectConfigController {
      * @param projectId 项目id
      * @return ProjectDefaultConfigDTO
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "设置项目对应harbor仓库为私有或者公有")
     @GetMapping("/defaultConfig")
     public ResponseEntity<ProjectDefaultConfigDTO> getProjectDefaultConfig(

@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,7 +15,9 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
@@ -35,6 +38,7 @@ import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
+import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.Msg;
@@ -45,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -61,6 +66,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
+
+
     private static Gson gson = new Gson();
 
     @Value("${agent.version}")
@@ -118,6 +125,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsRegistrySecretRepository devopsRegistrySecretRepository;
     @Autowired
     private PipelineAppDeployRepository appDeployRepository;
+    @Autowired
+    private DevopsNotificationRepository devopsNotificationRepository;
+    @Autowired
+    private DevopsNotificationUserRelRepository devopsNotificationUserRelRepository;
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private NotifyClient notifyClient;
+
 
     @Override
     public Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,

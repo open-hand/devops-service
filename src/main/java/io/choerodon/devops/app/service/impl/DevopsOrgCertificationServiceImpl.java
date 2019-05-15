@@ -124,11 +124,11 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
 
     public Page<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
                                          String[] params) {
-        Page<ProjectDO> projects = iamRepository
+        List<ProjectE> projects = iamRepository
                 .queryProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params);
         Page<ProjectDTO> pageProjectDTOS = new Page<>();
         List<ProjectDTO> projectDTOS = new ArrayList<>();
-        if (projects.getContent() != null) {
+        if (!projects.isEmpty()) {
             BeanUtils.copyProperties(projects, pageProjectDTOS);
             List<Long> projectIds;
             if (clusterId != null) {
@@ -137,7 +137,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
             } else {
                 projectIds = new ArrayList<>();
             }
-            projects.getContent().forEach(projectDO -> {
+            projects.forEach(projectDO -> {
                 ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
                 projectDTOS.add(projectDTO);
             });

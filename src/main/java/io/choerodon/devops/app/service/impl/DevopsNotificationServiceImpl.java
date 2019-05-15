@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,14 +9,36 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import com.github.pagehelper.PageInfo;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.notify.NoticeSendDTO;
+import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.app.service.DevopsConfigMapService;
+import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.enums.ObjectType;
+import io.choerodon.devops.infra.common.util.enums.TriggerObject;
+import io.choerodon.devops.infra.common.util.enums.TriggerType;
+import io.choerodon.devops.infra.dataobject.CertificationDO;
+import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
+import io.choerodon.devops.infra.feign.NotifyClient;
+import org.apache.commons.lang.StringUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.dto.DevopsNotificationDTO;
-import io.choerodon.devops.api.dto.DevopsNotificationUserRelDTO;
 import io.choerodon.devops.app.service.DevopsNotificationService;
 import io.choerodon.devops.domain.application.entity.DevopsNotificationE;
 import io.choerodon.devops.domain.application.entity.DevopsNotificationUserRelE;
@@ -32,12 +55,37 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsNotificationServiceImpl implements DevopsNotificationService {
+
+    public static final String RESOURCE_DELETE_CONFIRMATION = "resourceDeleteConfirmation";
+    private static final String PROJECT_OWNER = "role/project/default/project-owner";
+    private static final Long timeout = 600L;
+
+
+
     @Autowired
     private DevopsNotificationRepository notificationRepository;
     @Autowired
     private DevopsNotificationUserRelRepository notificationUserRelRepository;
     @Autowired
     private IamRepository iamRepository;
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private NotifyClient notifyClient;
+    @Autowired
+    private ApplicationInstanceRepository applicationInstanceRepository;
+    @Autowired
+    private DevopsServiceRepository devopsServiceRepository;
+    @Autowired
+    private DevopsIngressRepository devopsIngressRepository;
+    @Autowired
+    private CertificationRepository certificationRepository;
+    @Autowired
+    private DevopsConfigMapRepository devopsConfigMapRepository;
+    @Autowired
+    private DevopsSecretRepository devopsSecretRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
 
     @Override
     public DevopsNotificationDTO create(Long projectId, DevopsNotificationDTO notificationDTO) {
@@ -105,6 +153,165 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         Set<String> hashSet = new HashSet<>();
         notificationRepository.queryByEnvId(projectId, envId).forEach(t -> Collections.addAll(hashSet, t.getNotifyTriggerEvent().split(",")));
         return hashSet;
+    }
+
+    @Override
+    public ResourceCheckDTO checkResourceDelete(Long envId, String objectType) {
+        ResourceCheckDTO resourceCheckDTO = new ResourceCheckDTO();
+        List<DevopsNotificationE> devopsNotificationES = notificationRepository.ListByEnvId(envId);
+        if (devopsNotificationES.isEmpty()) {
+            return resourceCheckDTO;
+        }
+        //返回删除对象时,获取验证码方式和所通知的目标人群
+        for (DevopsNotificationE devopsNotificationE : devopsNotificationES) {
+            List<String> triggerEvents = Arrays.asList(devopsNotificationE.getNotifyTriggerEvent().split(","));
+            for (String triggerEvent : triggerEvents) {
+                if (triggerEvent.equals(objectType)) {
+                    resourceCheckDTO.setNotificationId(devopsNotificationE.getId());
+                    List<String> triggerTypes = Arrays.asList(devopsNotificationE.getNotifyType().split(","));
+                    resourceCheckDTO.setMethod(StringUtils.join(triggerTypes.stream().map(trigger -> {
+                        if (trigger.equals(TriggerType.EMAIL.getType())) {
+                            return "邮件";
+                        } else if (trigger.equals(TriggerType.PM.getType())) {
+                            return "站内信";
+                        } else {
+                            return "短消息";
+                        }
+                    }).collect(Collectors.toList()).toArray(), ","));
+                    if (devopsNotificationE.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
+                        resourceCheckDTO.setUser(GitUserNameUtil.getRealUsername());
+                    } else if (devopsNotificationE.getNotifyObject().equals(TriggerObject.OWNER.getObject())) {
+                        resourceCheckDTO.setUser("项目所有者");
+                    } else {
+                        List<Long> userIds = notificationUserRelRepository.queryByNoticaionId(devopsNotificationE.getId()).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
+                        iamRepository.listUsersByIds(userIds).stream().map(UserE::getRealName).collect(Collectors.toList());
+                        resourceCheckDTO.setUser(StringUtils.join(iamRepository.listUsersByIds(userIds).stream().map(UserE::getRealName).collect(Collectors.toList()).toArray(), ","));
+                    }
+                    return resourceCheckDTO;
+                }
+            }
+        }
+        return resourceCheckDTO;
+    }
+
+    @Override
+    public void sendMessage(Long envId, Long notificationId, Long objectId, String objectType) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        String objectCode = getObjectCode(objectId,objectType);
+
+        //生成验证码，存放在redis
+        String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentE.getCode(),objectType, objectCode);
+        String Captcha = String.valueOf(new Random().nextInt(899999) + 100000);
+        redisTemplate.opsForValue().set(resendKey, Captcha, timeout, TimeUnit.SECONDS);
+
+
+        //生成发送消息需要的模板对象
+        DevopsNotificationE devopsNotificationE = notificationRepository.queryById(notificationId);
+        List<String> triggerTypes = Arrays.asList(devopsNotificationE.getNotifyType().split(","));
+        NotifyDTO notifyDTO = new NotifyDTO();
+        Map<String, Object> params = new HashMap<>();
+        params.put("user", GitUserNameUtil.getRealUsername());
+        params.put("env", devopsEnvironmentE.getName());
+        params.put("object", ObjectType.INSTANCE.getType());
+        params.put("objectName", objectCode);
+        params.put("verificationCode", Captcha);
+        notifyDTO.setParams(params);
+        notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
+        if (devopsNotificationE.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
+            NoticeSendDTO.User user = new NoticeSendDTO.User();
+            user.setEmail(GitUserNameUtil.getEmail());
+            user.setId(GitUserNameUtil.getUserId().longValue());
+            notifyDTO.setTargetUsers(Arrays.asList(user));
+        } else if (devopsNotificationE.getNotifyObject().equals(TriggerObject.OWNER.getObject())) {
+            Long ownerId = iamRepository.queryRoleIdByCode(PROJECT_OWNER);
+            PageInfo<UserDTO> allOwnerUsersPage = iamRepository
+                    .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(),
+                            ownerId, devopsEnvironmentE.getProjectE().getId(), false);
+            List<NoticeSendDTO.User> users = new ArrayList<>();
+            if (!allOwnerUsersPage.getList().isEmpty()) {
+                allOwnerUsersPage.getList().stream().forEach(userDTO -> {
+                    NoticeSendDTO.User user = new NoticeSendDTO.User();
+                    user.setEmail(userDTO.getEmail());
+                    user.setId(userDTO.getId());
+                    users.add(user);
+                });
+            }
+            notifyDTO.setTargetUsers(users);
+        } else {
+            List<Long> userIds = notificationUserRelRepository.queryByNoticaionId(devopsNotificationE.getId()).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
+            List<NoticeSendDTO.User> users = new ArrayList<>();
+            iamRepository.listUsersByIds(userIds).stream().forEach(userE -> {
+                NoticeSendDTO.User user = new NoticeSendDTO.User();
+                user.setEmail(userE.getEmail());
+                user.setId(userE.getId());
+                users.add(user);
+            });
+            notifyDTO.setTargetUsers(users);
+        }
+        try {
+            //根据不同的通知方式发送验证码
+            triggerTypes.stream().forEach(triggerType -> {
+                if (triggerType.equals(TriggerType.EMAIL.getType())) {
+                    notifyDTO.setCustomizedSendingTypes(Arrays.asList("email"));
+                    notifyClient.postEmail(notifyDTO);
+                } else if (triggerType.equals(TriggerType.PM.getType())) {
+                    notifyDTO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
+                    notifyClient.postEmail(notifyDTO);
+                } else {
+                    notifyDTO.setCustomizedSendingTypes(Arrays.asList("sms"));
+                    notifyClient.postEmail(notifyDTO);
+                }
+            });
+        } catch (Exception e) {
+            redisTemplate.delete(resendKey);
+            throw new CommonException("error.msg.send.failed");
+        }
+    }
+
+
+    @Override
+    public void validateCaptcha(Long envId, Long objectId, String objectType, String captcha) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        String objectCode = getObjectCode(objectId, objectType);
+        String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentE.getCode(),objectType, objectCode);
+        if (!captcha.equals(redisTemplate.opsForValue().get(resendKey))) {
+            throw new CommonException("error.captcha");
+        }
+        redisTemplate.delete(resendKey);
+    }
+
+    private String getObjectCode(Long objectId, String type) {
+        String code = "";
+        ObjectType objectType = ObjectType.forValue(type);
+        switch (objectType) {
+            case INSTANCE:
+                ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(objectId);
+                code =applicationInstanceE.getCode();
+                break;
+            case SERVICE:
+                DevopsServiceE devopsServiceE = devopsServiceRepository.query(objectId);
+                code = devopsServiceE.getName();
+                break;
+            case INGRESS:
+                DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(objectId);
+                code = devopsIngressDO.getName();
+                break;
+            case CERTIFICATE:
+                CertificationE certificationE = certificationRepository.queryById(objectId);
+                code = certificationE.getName();
+                break;
+            case CONFIGMAP:
+                DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryById(objectId);
+                code = devopsConfigMapE.getName();
+                break;
+            case SECRET:
+                DevopsSecretE devopsSecretE = devopsSecretRepository.queryBySecretId(objectId);
+                code = devopsSecretE.getName();
+                break;
+            default:
+                break;
+        }
+        return code;
     }
 
     private void updateUserRel(DevopsNotificationDTO notificationDTO) {

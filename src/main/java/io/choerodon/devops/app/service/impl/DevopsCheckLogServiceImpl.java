@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.github.pagehelper.PageInfo;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
@@ -399,10 +400,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         .getDevopsAppGroupId() != null).map(DevopsProjectDO::getIamProjectId)
                 .collect(Collectors.toList());
         projectIds.forEach(projectId -> {
-            Page<UserWithRoleDTO> allProjectUser = iamRepository
+            PageInfo<UserWithRoleDTO> allProjectUser = iamRepository
                     .queryUserPermissionByProjectId(projectId, new PageRequest(), false);
-            if (!allProjectUser.getContent().isEmpty()) {
-                allProjectUser.forEach(userWithRoleDTO -> {
+            if (!allProjectUser.getList().isEmpty()) {
+                allProjectUser.getList().forEach(userWithRoleDTO -> {
                     // 如果是项目成员
                     if (userWithRoleDTO.getRoles().stream().noneMatch(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))) {
                         CheckLog checkLog = new CheckLog();

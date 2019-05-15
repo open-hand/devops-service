@@ -19,6 +19,8 @@ public interface DevopsNotificationRepository {
 
     DevopsNotificationE queryById(Long notificationId);
 
+    List<DevopsNotificationE> ListByEnvId(Long envId);
+
     Page<DevopsNotificationE> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
 
     List<DevopsNotificationE> queryByEnvId(Long projectId,Long envId);

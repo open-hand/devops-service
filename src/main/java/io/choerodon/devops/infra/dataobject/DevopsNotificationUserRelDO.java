@@ -14,6 +14,7 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @ModifyAudit
 @Table(name = "devops_notification_user_rel")
 public class DevopsNotificationUserRelDO {
+
     private Long userId;
     private Long notificationId;
 
