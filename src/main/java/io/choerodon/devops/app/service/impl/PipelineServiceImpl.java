@@ -1253,12 +1253,15 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRecordE.setBusinessKey(uuid);
         pipelineRecordE = pipelineRecordRepository.create(pipelineRecordE);
         //准备workFlow数据
+        LOGGER.info("=======自动部署查007========1："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
         DevopsPipelineDTO devopsPipelineDTO = setWorkFlowDTO(pipelineRecordE.getId(), pipelineId);
         pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
         pipelineRecordRepository.update(pipelineRecordE);
         //发送请求给workflow，创建流程实例
         try {
+            LOGGER.info("=======自动部署查008========1："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
             workFlowRepository.create(pipelineE.getProjectId(), devopsPipelineDTO);
+            LOGGER.info("=======自动部署查009========1："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
         } catch (Exception e) {
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             pipelineRecordRepository.update(pipelineRecordE);
