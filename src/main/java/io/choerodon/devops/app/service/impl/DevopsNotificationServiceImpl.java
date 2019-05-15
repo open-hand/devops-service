@@ -16,7 +16,6 @@ import io.choerodon.devops.api.dto.DevopsNotificationUserRelDTO;
 import io.choerodon.devops.app.service.DevopsNotificationService;
 import io.choerodon.devops.domain.application.entity.DevopsNotificationE;
 import io.choerodon.devops.domain.application.entity.DevopsNotificationUserRelE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsNotificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsNotificationUserRelRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -41,11 +40,11 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         DevopsNotificationE notificationE = ConvertHelper.convert(notificationDTO, DevopsNotificationE.class);
         notificationE.setProjectId(projectId);
         notificationE = notificationRepository.createOrUpdate(notificationE);
-        if (notificationDTO.getUserRelDTOS() != null && !notificationDTO.getUserRelDTOS().isEmpty()) {
-            List<DevopsNotificationUserRelE> userRelES = ConvertHelper.convertList(notificationDTO.getUserRelDTOS(), DevopsNotificationUserRelE.class);
+        List<Long> userRelIds = notificationDTO.getUserRelIds();
+        if (userRelIds != null && !userRelIds.isEmpty()) {
             Long notificationId = notificationE.getId();
-            userRelES.forEach(t -> {
-                notificationUserRelRepository.create(notificationId, t.getUserId());
+            userRelIds.forEach(t -> {
+                notificationUserRelRepository.create(notificationId, t);
             });
         }
         return notificationDTO;
@@ -71,13 +70,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Override
     public DevopsNotificationDTO queryById(Long notificationId) {
         DevopsNotificationDTO notificationDTO = ConvertHelper.convert(notificationRepository.queryById(notificationId), DevopsNotificationDTO.class);
-        List<DevopsNotificationUserRelDTO> userRelDTOS = ConvertHelper.convertList(notificationUserRelRepository.queryByNoticaionId(notificationId), DevopsNotificationUserRelDTO.class);
-        userRelDTOS.forEach(t -> {
-            UserE userE = iamRepository.queryUserByUserId(t.getUserId());
-            t.setLoginName(userE.getLoginName());
-            t.setRealName(userE.getRealName());
-        });
-        notificationDTO.setUserRelDTOS(userRelDTOS);
+        List<Long> userRelIds = notificationUserRelRepository.queryByNoticaionId(notificationId).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
+        notificationDTO.setUserRelIds(userRelIds);
         return notificationDTO;
     }
 
@@ -109,7 +103,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         List<Long> oldUserIds = notificationUserRelRepository.queryByNoticaionId(notificationDTO.getId())
                 .stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
         if (notificationDTO.getUserRelDTOS() != null) {
-            List<Long> newUserIds = notificationDTO.getUserRelDTOS().stream().map(DevopsNotificationUserRelDTO::getUserId).collect(Collectors.toList());
+            List<Long> newUserIds = notificationDTO.getUserRelIds();
             newUserIds.forEach(t -> {
                 if (oldUserIds.contains(t)) {
                     oldUserIds.remove(t);

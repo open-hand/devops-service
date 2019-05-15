@@ -17,6 +17,15 @@ public class DevopsNotificationDTO {
     private List<String> notifyType;
     private List<DevopsNotificationUserRelDTO> userRelDTOS;
     private Long objectVersionNumber;
+    private List<Long> userRelIds;
+
+    public List<Long> getUserRelIds() {
+        return userRelIds;
+    }
+
+    public void setUserRelIds(List<Long> userRelIds) {
+        this.userRelIds = userRelIds;
+    }
 
     public Long getId() {
         return id;
