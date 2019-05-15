@@ -6,21 +6,30 @@ package io.choerodon.devops.api.dto;
  * Description:
  */
 public class DevopsNotificationUserRelDTO {
-    private Long id;
     private Long userId;
+    private String loginName;
+    private String realName;
     private Long notificationId;
     private String imageUrl;
 
+    public String getLoginName() {
+        return loginName;
+    }
+
+    public void setLoginName(String loginName) {
+        this.loginName = loginName;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
+
     public Long getUserId() {
         return userId;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public void setUserId(Long userId) {

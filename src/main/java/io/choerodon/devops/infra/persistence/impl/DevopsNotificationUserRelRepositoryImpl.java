@@ -38,11 +38,6 @@ public class DevopsNotificationUserRelRepositoryImpl implements DevopsNotificati
     }
 
     @Override
-    public void deleteById(Long userRelId) {
-        notificationUserRelMapper.deleteByPrimaryKey(userRelId);
-    }
-
-    @Override
     public List<DevopsNotificationUserRelE> queryByNoticaionId(Long notificationId) {
         DevopsNotificationUserRelDO userRelDO = new DevopsNotificationUserRelDO();
         userRelDO.setNotificationId(notificationId);

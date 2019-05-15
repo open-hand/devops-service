@@ -21,6 +21,20 @@
         <include refid="sqlparam"/>
     </select>
 
+    <select id="queryByEnvIdAndEvent" parameterType="java.util.ArrayList" resultType="java.lang.Integer">
+        SELECT
+        conut(1)
+        FROM
+        devops_notification dn
+        WHERE
+        dn.project_id=#{projectId}
+        AND de.env_id = #{envId}
+        AND
+        <foreach collection="notifyTriggerEvent" item="notifyTriggerEvent" open="(" separator="," close=")">
+            dn.notify_trigger_event in #{notifyObject=}
+        </foreach>
+    </select>
+
 
     <sql id="sqlparam">
         <if test='searchParam != null'>

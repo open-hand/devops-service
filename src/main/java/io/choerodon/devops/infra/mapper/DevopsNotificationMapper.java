@@ -18,4 +18,8 @@ public interface DevopsNotificationMapper extends BaseMapper<DevopsNotificationD
                                              @Param("envId") Long envId,
                                              @Param("searchParam") Map<String, Object> searchParam,
                                              @Param("param") String param);
+
+    Integer queryByEnvIdAndEvent(@Param("projectId") Long projectId,
+                                                    @Param("envId") Long envId,
+                                                    @Param("notifyTriggerEvent") List<String> notifyTriggerEvent);
 }

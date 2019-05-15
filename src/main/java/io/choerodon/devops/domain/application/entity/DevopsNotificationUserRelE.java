@@ -6,7 +6,6 @@ package io.choerodon.devops.domain.application.entity;
  * Description:
  */
 public class DevopsNotificationUserRelE {
-    private Long Id;
     private Long userId;
     private Long notificationId;
 
@@ -24,13 +23,5 @@ public class DevopsNotificationUserRelE {
 
     public void setNotificationId(Long notificationId) {
         this.notificationId = notificationId;
-    }
-
-    public Long getId() {
-        return Id;
-    }
-
-    public void setId(Long id) {
-        Id = id;
     }
 }

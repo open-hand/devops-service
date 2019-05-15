@@ -20,4 +20,6 @@ public interface DevopsNotificationRepository {
     DevopsNotificationE queryById(Long notificationId);
 
     Page<DevopsNotificationE> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
+
+    Integer queryByEnvIdAndEvent(Long projectId, Long envId, List<String> notifyTriggerEvent);
 }

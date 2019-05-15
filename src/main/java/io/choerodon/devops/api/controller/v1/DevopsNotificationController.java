@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
@@ -150,4 +151,30 @@ public class DevopsNotificationController {
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.notification.list"));
     }
+
+    /**
+     * 项目下校验通知
+     * 环境下每个触发事件只能有一个通知
+     *
+     * @param projectId          项目id
+     * @param envId              通知Id
+     * @param notifyTriggerEvent
+     * @return ResponseEntity
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下创建域名")
+    @PostMapping(value = "/check")
+    public ResponseEntity<Boolean> check(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境ID", required = true)
+            @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "触发事件", required = true)
+            @RequestBody List<String> notifyTriggerEvent) {
+        return Optional.ofNullable(notificationService.check(projectId, envId, notifyTriggerEvent))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.notification.check"));
+    }
+
 }

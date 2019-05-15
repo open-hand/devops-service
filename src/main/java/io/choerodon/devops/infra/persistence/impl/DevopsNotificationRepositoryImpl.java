@@ -64,4 +64,9 @@ public class DevopsNotificationRepositoryImpl implements DevopsNotificationRepos
         Page<DevopsNotificationDO> notificationDOPage = PageHelper.doPageAndSort(pageRequest, () -> notificationMapper.listByOptions(projectId, envId, searchParamMap, paramMap));
         return ConvertPageHelper.convertPage(notificationDOPage, DevopsNotificationE.class);
     }
+
+    @Override
+    public Integer queryByEnvIdAndEvent(Long projectId, Long envId, List<String> notifyTriggerEvent) {
+        return notificationMapper.queryByEnvIdAndEvent(projectId,envId,notifyTriggerEvent);
+    }
 }
