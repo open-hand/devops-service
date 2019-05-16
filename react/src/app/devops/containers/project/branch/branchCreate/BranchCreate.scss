@@ -24,14 +24,14 @@
     width: 312px;
     display: inline-block;
 
-    .ant-input-has-label {
-      .ant-input-content {
+    .c7n-input-has-label {
+      .c7n-input-content {
         padding-top: 18px;
       }
     }
   }
 
-  .ant-input-group-addon {
+  .c7n-input-group-addon {
     padding: 0 !important;
     border: none !important;
     background: #fff !important;
@@ -44,7 +44,7 @@
   padding-right: 5px;
 }
 
-.createBranch-dropdown .ant-select-dropdown-menu-item {
+.createBranch-dropdown .c7n-select-dropdown-menu-item {
   padding: 6px 12px !important;
 }
 

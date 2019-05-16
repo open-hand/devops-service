@@ -61,7 +61,7 @@
       color: rgba(0, 0, 0, 0.65);
     }
 
-    .ant-avatar-sm {
+    .c7n-avatar-sm {
       margin: 0 8px 0 6px;
     }
   }
@@ -91,25 +91,25 @@
 .c7n-operation-log-datepicker {
   margin-bottom: 10px;
 
-  .ant-calendar-picker-input {
+  .c7n-calendar-picker-input {
     margin-bottom: 3px;
     padding-left: 24px;
   }
 
-  .ant-calendar-range-picker-input {
+  .c7n-calendar-range-picker-input {
     width: 80px;
   }
 
-  .ant-calendar-picker-icon {
+  .c7n-calendar-picker-icon {
     left: 0;
     font-size: 20px;
   }
 
-  .ant-calendar-underline {
+  .c7n-calendar-underline {
     display: none;
   }
 
-  .ant-calendar-picker-clear {
+  .c7n-calendar-picker-clear {
     margin-right: -40px;
   }
 }

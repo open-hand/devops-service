@@ -117,11 +117,11 @@
     padding: 0;
     color: #3f51b5;
 
-    &.ant-btn-flat:hover {
+    &.c7n-btn-flat:hover {
       background: transparent;
     }
 
-    .ant-ripple-wrapper {
+    .c7n-ripple-wrapper {
       display: none;
     }
   }
@@ -154,23 +154,23 @@
     }
   }
 
-  .ant-collapse-header {
+  .c7n-collapse-header {
     background: #fff;
     box-shadow: 1px 0 1px 0 rgba(0, 0, 0, .4);
   }
 
-  .ant-collapse-header:hover {
+  .c7n-collapse-header:hover {
     background: #f8f8f8;
   }
 
-  .ant-collapse-content-box {
+  .c7n-collapse-content-box {
     margin-top: -4px;
     padding: 0 0 20px;
   }
 
-  &.ant-collapse-item {
-    &>.ant-collapse-header {
-      .ant-collapse-expand-icon {
+  &.c7n-collapse-item {
+    &>.c7n-collapse-header {
+      .c7n-collapse-expand-icon {
         width: 24px;
         height: 24px;
         font-size: 24px;
