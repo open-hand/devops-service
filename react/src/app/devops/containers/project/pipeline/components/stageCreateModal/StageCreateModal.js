@@ -97,8 +97,8 @@ export default class StageCreateModal extends Component {
     const { flowType } = this.state;
 
     const createOrEdit = (prevId || prevId === 0) ? 'create' : 'edit';
-    const user = _.map(store.getUser, ({ id, realName }) => (
-      <Option key={id} value={String(id)}>{realName}</Option>));
+    const user = _.map(store.getUser, ({ id, realName, loginName }) => (
+      <Option key={id} value={String(id)}>{realName || loginName}</Option>));
 
     let initUsers;
     if (stageUserRelDTOS) {

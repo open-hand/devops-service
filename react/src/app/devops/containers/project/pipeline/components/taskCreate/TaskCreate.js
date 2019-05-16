@@ -536,8 +536,8 @@ export default class TaskCreate extends Component {
 
     const instanceOptions = _.map(getInstance, ({ id, code }) => (<Option value={id} key={id}>{code}</Option>));
 
-    const userOptions = _.map(getUser, ({ id, realName }) => (
-      <Option key={id} value={String(id)}>{realName}</Option>));
+    const userOptions = _.map(getUser, ({ id, realName, loginName }) => (
+      <Option key={id} value={String(id)}>{realName || loginName}</Option>));
 
     const configOptions = _.map(getConfigList, ({ id, name }) => (<Option key={id} value={id}>
       <span>{name}</span>

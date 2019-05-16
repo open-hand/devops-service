@@ -67,12 +67,12 @@ export default class DetailTitle extends PureComponent {
           'c7ncd-manualflow-stop': isStopFlow,
         });
 
-        const { realName, imageUrl } = audit;
+        const { realName, imageUrl, loginName } = audit;
         triggerDom = <Fragment>
-          <Tooltip title={realName}>
+          <Tooltip title={realName || loginName}>
             {imageUrl
               ? <img className="c7ncd-trigger-img" src={imageUrl} alt="avatar" />
-              : <span className="c7ncd-trigger-text">{_.toString(realName).toUpperCase().substring(0, 1)
+              : <span className="c7ncd-trigger-text">{_.toString(realName || loginName).toUpperCase().substring(0, 1)
               }</span>}
           </Tooltip>
           <span className={spanClass}><FormattedMessage id={`pipeline.flow.${messageCode}`} /></span>
@@ -80,7 +80,7 @@ export default class DetailTitle extends PureComponent {
 
       } else {
 
-        const userName = _.map(user, ({ realName }) => realName).join('，');
+        const userName = _.map(user, ({ realName, loginName }) => realName || loginName).join('，');
         const spanClass = classnames({
           'c7ncd-manualflow-pending': !!checking,
         });
