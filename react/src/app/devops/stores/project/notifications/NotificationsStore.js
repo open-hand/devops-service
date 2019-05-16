@@ -170,7 +170,7 @@ class NotificationsStore {
   }
 
   deletePipeline(projectId, id) {
-    return axios.delete(`/devops/v1/projects/${projectId}/pipeline/${id}`);
+    return axios.delete(`/devops/v1/projects/${projectId}/notification/${id}`);
   };
 
   /**

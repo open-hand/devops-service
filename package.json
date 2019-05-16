@@ -17,7 +17,9 @@
     "dist": "choerodon-front-boot dist --config ./react/config.js",
     "lint-staged": "lint-staged",
     "lint-staged:es": "eslint",
-    "compile": "gulp compile"
+    "compile": "gulp compile",
+    "prepublish": "choerodon-front-boot prepublish",
+    "postpublish": "choerodon-front-boot postpublish"
   },
   "dependencies": {
     "@choerodon/boot": "0.1.x",
