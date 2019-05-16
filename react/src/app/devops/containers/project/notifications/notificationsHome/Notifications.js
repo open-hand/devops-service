@@ -38,7 +38,6 @@ export default class Notifications extends Component {
     sidebarType: 'create',
     editId: undefined,
     showDelete: false,
-    deleteName: '',
     deleteId: undefined,
   };
 
@@ -104,10 +103,9 @@ export default class Notifications extends Component {
     this.loadData(page);
   };
 
-  openRemove(id, name) {
+  openRemove(id) {
     this.setState({
       showDelete: true,
-      deleteName: name,
       deleteId: id,
     });
   }
@@ -115,7 +113,6 @@ export default class Notifications extends Component {
   closeRemove = () => {
     this.setState({
       deleteId: undefined,
-      deleteName: '',
       showDelete: false,
     });
   };
@@ -227,7 +224,7 @@ export default class Notifications extends Component {
     return this.renderTags(notifyType, 'method');
   };
 
-  renderAction = ({ id, name }) => {
+  renderAction = ({ id }) => {
     const {
       AppState: {
         currentMenuType: {
@@ -274,7 +271,7 @@ export default class Notifications extends Component {
             size="small"
             funcType="flat"
             icon="delete_forever"
-            onClick={this.openRemove.bind(this, id, name)}
+            onClick={this.openRemove.bind(this, id)}
           />
         </Tooltip>
       </Permission>
@@ -343,7 +340,6 @@ export default class Notifications extends Component {
       param,
       showDelete,
       deleteLoading,
-      deleteName,
       showSidebar,
       sidebarType,
       editId,
@@ -415,7 +411,7 @@ export default class Notifications extends Component {
         </Content>
         {showDelete && (<Modal
           visible={showDelete}
-          title={`${formatMessage({ id: 'notification.delete' })}“${deleteName}”`}
+          title={<FormattedMessage id="notification.delete" />}
           closable={false}
           footer={[
             <Button key="back" onClick={this.closeRemove} disabled={deleteLoading}>

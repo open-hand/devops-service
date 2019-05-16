@@ -457,14 +457,14 @@ const pageDetail = {
 
   // 通知设置
   "notification.title": '项目"{name}"的通知设置',
-  "notification.description": "通知设置的描述",
-  "notification.link": `${docServer}/user-guide/`,
+  "notification.description": "通知设置用于为环境中的删除事件设置特定的通知方式与通知对象，使得平台操作更加安全高效。",
+  "notification.link": `${docServer}/user-guide/system-configuration/project/devops-notifications`,
   "notification.create.title": '在项目"{name}"中创建通知',
-  "notification.create.description": "创建通知设置的描述",
-  "notification.create.link": `${docServer}/user-guide/`,
-  "notification.edit.title": '对通知"{name}"进行修改',
-  "notification.edit.description": "修改通知设置的描述",
-  "notification.edit.link": `${docServer}/user-guide/`,
+  "notification.create.description": "您可在此选择环境，触发事件，通知方式和通知对象，以此来创建一个通知。",
+  "notification.create.link": `${docServer}/user-guide/system-configuration/project/devops-notifications`,
+  "notification.edit.title": '修改项目"{name}"中的通知',
+  "notification.edit.description": "您可在此修改该通知内的环境，触发事件，通知方式以及通知对象。",
+  "notification.edit.link": `${docServer}/user-guide/system-configuration/project/devops-notifications`,
 };
 
 const zhCN = {
