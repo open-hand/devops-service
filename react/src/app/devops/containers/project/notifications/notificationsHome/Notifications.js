@@ -237,39 +237,48 @@ export default class Notifications extends Component {
         },
       },
     } = this.props;
-    return <Permission
-      service={[]}
-      type={type}
-      projectId={projectId}
-      organizationId={organizationId}
-    >
-      <Tooltip
-        trigger="hover"
-        placement="bottom"
-        title={<FormattedMessage id="edit" />}
+    return <Fragment>
+      <Permission
+        service={['devops-service.devops-notification.update']}
+        type={type}
+        projectId={projectId}
+        organizationId={organizationId}
       >
-        <Button
-          shape="circle"
-          size="small"
-          funcType="flat"
-          icon="mode_edit"
-          onClick={this.openEdit.bind(this, id)}
-        />
-      </Tooltip>
-      <Tooltip
-        trigger="hover"
-        placement="bottom"
-        title={<FormattedMessage id="delete" />}
+        <Tooltip
+          trigger="hover"
+          placement="bottom"
+          title={<FormattedMessage id="edit" />}
+        >
+          <Button
+            shape="circle"
+            size="small"
+            funcType="flat"
+            icon="mode_edit"
+            onClick={this.openEdit.bind(this, id)}
+          />
+        </Tooltip>
+      </Permission>
+      <Permission
+        service={['devops-service.devops-notification.delete']}
+        type={type}
+        projectId={projectId}
+        organizationId={organizationId}
       >
-        <Button
-          shape="circle"
-          size="small"
-          funcType="flat"
-          icon="delete_forever"
-          onClick={this.openRemove.bind(this, id, name)}
-        />
-      </Tooltip>
-    </Permission>;
+        <Tooltip
+          trigger="hover"
+          placement="bottom"
+          title={<FormattedMessage id="delete" />}
+        >
+          <Button
+            shape="circle"
+            size="small"
+            funcType="flat"
+            icon="delete_forever"
+            onClick={this.openRemove.bind(this, id, name)}
+          />
+        </Tooltip>
+      </Permission>
+    </Fragment>;
   };
 
   get getColumns() {
@@ -345,11 +354,18 @@ export default class Notifications extends Component {
     return (
       <Page
         className="c7n-devops-notifications"
-        service={[]}
+        service={[
+          'devops-service.devops-notification.create',
+          'devops-service.devops-notification.update',
+          'devops-service.devops-notification.check',
+          'devops-service.devops-notification.listByOptions',
+          'devops-service.devops-notification.queryById',
+          'devops-service.devops-notification.delete',
+        ]}
       >
         <Header title={<FormattedMessage id="notification.header.title" />}>
           <Permission
-            service={[]}
+            service={['devops-service.devops-notification.create']}
             type={type}
             projectId={projectId}
             organizationId={organizationId}
