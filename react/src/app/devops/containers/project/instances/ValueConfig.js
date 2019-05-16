@@ -67,6 +67,9 @@ class ValueConfig extends Component {
         this.setState({ loading: false });
         onClose(true);
       }
+    }).catch(e => {
+      this.setState({ loading: false });
+      Choerodon.handleResponseError(e);
     });
   };
 

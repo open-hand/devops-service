@@ -241,6 +241,9 @@ class AppOverview extends Component {
         this.closeConfirm();
       }
       this.confirmLoading = false;
+    }).catch(e => {
+      this.confirmLoading = false;
+      Choerodon.handleResponseError(e);
     });
   };
 
@@ -339,6 +342,9 @@ class AppOverview extends Component {
         this.closeConfirm();
       }
       this.confirmLoading = false;
+    }).catch(e => {
+      this.confirmLoading = false;
+      Choerodon.handleResponseError(e);
     });
   };
 
