@@ -52,6 +52,12 @@ class KeyValueTable extends Component {
             })
           }
         })
+        .catch(e => {
+          this.setState({
+            deleteStatus: false,
+          });
+          Choerodon.handleResponseError(e);
+        });
     } else if (title === 'secret') {
       store.deleteSecret(projectId, delId, envId)
         .then((data) => {
@@ -76,6 +82,12 @@ class KeyValueTable extends Component {
             })
           }
         })
+        .catch(e => {
+          this.setState({
+            deleteStatus: false,
+          });
+          Choerodon.handleResponseError(e);
+        });
     }
   };
 

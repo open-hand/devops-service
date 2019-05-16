@@ -233,6 +233,12 @@ class Cluster extends Component {
             }
           });
         }
+      })
+      .catch(e => {
+        this.setState({
+          btnLoading: false,
+        });
+        Choerodon.handleResponseError(e);
       });
   };
 
@@ -586,6 +592,12 @@ class Cluster extends Component {
                   });
                 }
               }
+            })
+            .catch(e => {
+              this.setState({
+                submitting: false,
+              });
+              Choerodon.handleResponseError(e);
             });
         } else {
           this.setState({
@@ -612,6 +624,12 @@ class Cluster extends Component {
                 this.loadCluster();
                 this.setState({ show: false, submitting: false });
               }
+            })
+            .catch(e => {
+              this.setState({
+                submitting: false,
+              });
+              Choerodon.handleResponseError(e);
             });
         } else {
           this.setState({

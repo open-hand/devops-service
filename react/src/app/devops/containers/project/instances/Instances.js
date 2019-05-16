@@ -409,6 +409,11 @@ class Instances extends Component {
       this.setState({
         confirmLoading: false,
       });
+    }).catch(e => {
+      this.setState({
+        confirmLoading: false,
+      });
+      Choerodon.handleResponseError(e);
     });
   };
 

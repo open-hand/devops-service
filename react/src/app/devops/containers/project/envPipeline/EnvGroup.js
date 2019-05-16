@@ -80,6 +80,9 @@ class EnvGroup extends Component {
                 this.props.form.resetFields();
               }
             }
+          }).catch(e => {
+            store.setBtnLoading(false);
+            Choerodon.handleResponseError(e);
           });
         }
       });
@@ -106,6 +109,9 @@ class EnvGroup extends Component {
                   this.props.form.resetFields();
                 }
               }
+            }).catch(e => {
+              store.setBtnLoading(false);
+              Choerodon.handleResponseError(e);
             });
           }
         } else {

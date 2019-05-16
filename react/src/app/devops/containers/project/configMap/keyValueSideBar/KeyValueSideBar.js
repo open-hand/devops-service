@@ -373,6 +373,10 @@ export default class KeyValueSideBar extends Component {
                 this.setState({ submitting: false });
               }
             }
+          })
+          .catch(e => {
+            this.setState({ submitting: false });
+            Choerodon.handleResponseError(e);
           });
       } else {
         this.setState({ submitting: false });

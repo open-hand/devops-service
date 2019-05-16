@@ -59,6 +59,9 @@ class UpgradeIst extends Component {
         this.setState({ submitting: false });
         onClose(true);
       }
+    }).catch(e => {
+      this.setState({ loading: false });
+      Choerodon.handleResponseError(e);
     });
   };
 
