@@ -9,19 +9,19 @@
 .c7n-editable-table {
   width: 512px;
 
-  .ant-form-item-children {
-    .ant-input-focus {
-      .ant-input-label {
+  .c7n-form-item-children {
+    .c7n-input-focus {
+      .c7n-input-label {
         transition: none;
       }
     }
   }
 
-  .ant-form-explain {
+  .c7n-form-explain {
     position: absolute;
   }
 
-  .ant-table-empty {
+  .c7n-table-empty {
     display: none;
   }
 
@@ -38,7 +38,7 @@
     padding: 0 0 10px 0 !important;
   }
 
-  textarea.ant-input {
+  textarea.c7n-input {
     min-height: auto;
   }
 

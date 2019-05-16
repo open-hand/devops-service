@@ -6,12 +6,12 @@
 
 .steps-line {
 
-  .ant-steps-item-title {
+  .c7n-steps-item-title {
     font-size: 14px;
   }
 
-  .ant-steps-item-process {
-    .ant-steps-item-title {
+  .c7n-steps-item-process {
+    .c7n-steps-item-title {
       color: #3f51b5 !important;
       font-weight: 500;
     }
@@ -29,7 +29,7 @@
       margin-bottom: 0;
     }
 
-    .ant-btn-cancel {
+    .c7n-btn-cancel {
       color: #3f51b5;
     }
 
@@ -37,14 +37,14 @@
       margin-right: 12px;
     }
 
-    .ant-radio-wrapper {
+    .c7n-radio-wrapper {
       margin-right: 100px;
     }
 
-    .ant-form-item {
+    .c7n-form-item {
       margin-bottom: 30px;
 
-      .ant-select-dropdown-menu-item {
+      .c7n-select-dropdown-menu-item {
         span {
           display: inline-block;
           width: 100%;
@@ -52,7 +52,7 @@
       }
     }
 
-    .ant-form-item:last-child {
+    .c7n-form-item:last-child {
       margin-bottom: 0;
       margin-top: 2px;
     }
@@ -60,7 +60,7 @@
     .authority-radio {
       margin: 20px 0 10px 0;
 
-      .ant-radio-group {
+      .c7n-radio-group {
         padding-top: 21px !important;
       }
     }

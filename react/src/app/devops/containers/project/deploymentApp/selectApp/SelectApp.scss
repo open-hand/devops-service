@@ -6,16 +6,16 @@
   .c7n-store-search {
     margin-bottom: 24px;
 
-    .ant-btn-group {
+    .c7n-btn-group {
       float: right;
       margin-bottom: 10px;
     }
 
-    .ant-input-wrapper {
+    .c7n-input-wrapper {
       width: 100%;
     }
 
-    .ant-input-content {
+    .c7n-input-content {
       width: 50%;
       height: 48px;
       background: #fff;
@@ -27,7 +27,7 @@
       line-height: 48px;
     }
 
-    .ant-input-prefix {
+    .c7n-input-prefix {
       background-color: #fff;
       left: 0;
       z-index: 999;
@@ -41,23 +41,23 @@
       }
     }
 
-    .ant-input-suffix {
+    .c7n-input-suffix {
       font-size: 14px;
       line-height: 48px;
       padding-right: 10px;
     }
 
-    .ant-input-rendered {
+    .c7n-input-rendered {
       margin-bottom: 0 !important;
     }
 
-    .ant-input-placeholder {
+    .c7n-input-placeholder {
       z-index: 999;
       font-size: 14px;
       line-height: 48px;
     }
 
-    .ant-input-underline {
+    .c7n-input-underline {
       display: none;
     }
   }

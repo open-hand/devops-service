@@ -1,5 +1,5 @@
 .c7n-envoverview-tabs {
-  .ant-tabs-bar {
+  .c7n-tabs-bar {
     margin-bottom: 20px;
   }
 }
@@ -38,7 +38,7 @@
     .c7n-envow-sync-icon i {
       font-size: 32px;
       color: #3f51b5;
-      animation: ant-progress-rotate 1.4s linear infinite;
+      animation: c7n-progress-rotate 1.4s linear infinite;
     }
   }
 }
@@ -71,15 +71,15 @@
   line-height: 58px;
   font-weight: 500 !important;
 
-  .ant-select-selection__rendered {
+  .c7n-select-selection__rendered {
     margin-bottom: 0;
   }
 
-  .ant-select-selection {
+  .c7n-select-selection {
     color: #3f51b5;
   }
 
-  .ant-select-underline {
+  .c7n-select-underline {
     display: none;
   }
 
@@ -100,17 +100,17 @@
   margin-bottom: 10px;
   margin-left: 2px;
 
-  .ant-input-wrapper {
+  .c7n-input-wrapper {
     width: 100%;
   }
 
-  .ant-input-content {
+  .c7n-input-content {
     width: 40%;
     height: 38px;
     background: #fff;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
 
-    .ant-input-rendered-wrapper {
+    .c7n-input-rendered-wrapper {
       position: initial;
     }
   }
@@ -120,7 +120,7 @@
     line-height: 38px;
   }
 
-  .ant-input-prefix {
+  .c7n-input-prefix {
     background-color: #fff;
     left: 0;
     z-index: 99;
@@ -134,23 +134,23 @@
     }
   }
 
-  .ant-input-suffix {
+  .c7n-input-suffix {
     font-size: 14px;
     line-height: 38px;
     padding-right: 10px;
   }
 
-  .ant-input-rendered {
+  .c7n-input-rendered {
     margin-bottom: 0 !important;
   }
 
-  .ant-input-placeholder {
+  .c7n-input-placeholder {
     z-index: 99;
     font-size: 14px;
     line-height: 38px;
   }
 
-  .ant-input-underline {
+  .c7n-input-underline {
     display: none;
   }
 }
@@ -169,12 +169,12 @@
 .c7n-envow-app-wrap {
   margin-bottom: 26px;
 
-  .ant-collapse {
+  .c7n-collapse {
     border-left: 0;
     border-right: 0;
   }
 
-  .ant-collapse-item-active>.ant-collapse-header {
+  .c7n-collapse-item-active>.c7n-collapse-header {
     background-color: rgba(0, 0, 0, 0.004) !important;
 
     .c7n-appow-pod-status {
@@ -186,7 +186,7 @@
     }
   }
 
-  .ant-collapse>.ant-collapse-item>.ant-collapse-header {
+  .c7n-collapse>.c7n-collapse-item>.c7n-collapse-header {
     background-color: white;
     padding: 5px 9px;
 
@@ -198,7 +198,7 @@
     }
   }
 
-  .ant-collapse-content {
+  .c7n-collapse-content {
     padding: 0 40px;
   }
 }
@@ -209,7 +209,7 @@
   .c7n-envow-ist-fail {
     display: inline-block;
 
-    .ant-progress {
+    .c7n-progress {
       circle {
         stroke: #3f51b5 !important;
         stroke-width: 7px;
@@ -480,7 +480,7 @@
     }
   }
 
-  .ant-dropdown-menu-item {
+  .c7n-dropdown-menu-item {
     padding: 0;
   }
 }

@@ -2,7 +2,7 @@
   margin-top: 13px;
   .c7n-report-time-btn {
     display: inline-block;
-    .ant-btn {
+    .c7n-btn {
       padding: 0 8px;
     }
   }
@@ -14,21 +14,21 @@
     line-height: 32px;
     border-radius: 0 2px 2px 0;
 
-    .ant-calendar-picker-input {
+    .c7n-calendar-picker-input {
       margin-bottom: 3px;
       padding-left: 24px;
     }
 
-    .ant-calendar-range-picker-input {
+    .c7n-calendar-range-picker-input {
       width: 80px;
     }
 
-    .ant-calendar-picker-icon {
+    .c7n-calendar-picker-icon {
       left: 8px;
       font-size: 20px;
     }
 
-    .ant-calendar-underline {
+    .c7n-calendar-underline {
       display: none;
     }
   }

@@ -256,13 +256,13 @@ class ImportChart extends Component {
         <p>{intl.formatMessage({ id: "appstore.importStep1" })}</p>
         <div className="c7n-step-section-upload">
           <Dragger {...props}>
-            <p className="ant-upload-drag-icon">
+            <p className="c7n-upload-drag-icon">
               <Icon type="inbox" />
             </p>
-            <p className="ant-upload-text">
+            <p className="c7n-upload-text">
               {intl.formatMessage({ id: "appstore.importDesTitle" })}
             </p>
-            <p className="ant-upload-hint">
+            <p className="c7n-upload-hint">
               {intl.formatMessage({ id: "appstore.importDesTip" })}
             </p>
           </Dragger>

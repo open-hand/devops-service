@@ -23,7 +23,7 @@
     box-shadow: rgba(0, 0, 0, 0.12) 0 1px 6px, rgba(0, 0, 0, 0.12) 0 1px 4px;
     border-radius: 2px;
 
-    .ant-steps-item-title {
+    .c7n-steps-item-title {
       cursor: pointer;
 
       .stage-title-text {
@@ -145,17 +145,17 @@
 }
 
 .c7n-deployDetail-ist-step {
-  .ant-steps-icon {
+  .c7n-steps-icon {
     left: 6px;
     top: -3px;
   }
 
-  .ant-progress-inner {
+  .c7n-progress-inner {
     left: -2px;
     top: -2px;
   }
 
-  .ant-steps-item-content {
+  .c7n-steps-item-content {
     .icon-find_in_page {
       display: none;
     }
@@ -169,7 +169,7 @@
     }
   }
 
-  .ant-steps-item-title {
+  .c7n-steps-item-title {
     margin-bottom: 12px;
     font-size: 14px;
     color: #000 !important;
@@ -177,7 +177,7 @@
     font-weight: 500;
   }
 
-  .ant-steps-item-description {
+  .c7n-steps-item-description {
     max-height: 600px;
     overflow: scroll;
     font-size: 12px;

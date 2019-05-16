@@ -16,7 +16,7 @@
   .pipeline-type-tips {
     width: 512px;
 
-    .ant-select-tags.ant-select-allow-clear .ant-select-selection__rendered .ant-select-clear {
+    .c7n-select-tags.c7n-select-allow-clear .c7n-select-selection__rendered .c7n-select-clear {
       right: 20px;
       top: -3px;
     }
@@ -32,7 +32,7 @@
       color: rgba(0, 0, 0, 0.54);
     }
 
-    .ant-radio-wrapper {
+    .c7n-radio-wrapper {
       display: block;
       margin-bottom: 10px;
 
@@ -56,7 +56,7 @@
       color: rgba(0, 0, 0, 0.54);
     }
 
-    .ant-btn > .icon {
+    .c7n-btn > .icon {
       margin-right: -2px;
     }
   }
@@ -88,12 +88,12 @@
 
 .c7n-pipeline-config-select {
 
-  .ant-select-dropdown-footer {
+  .c7n-select-dropdown-footer {
     padding: 8px;
   }
 
-  .ant-select-dropdown-menu-item,
-  .ant-select-dropdown-filter {
+  .c7n-select-dropdown-menu-item,
+  .c7n-select-dropdown-filter {
     padding-left: 23px;
   }
 }

@@ -92,14 +92,14 @@ class StepFour extends Component {
         <Button
           onClick={onPrevious}
           funcType="raised"
-          className="ant-btn-cancel"
+          className="c7n-btn-cancel"
         >
           <FormattedMessage id="previous" />
         </Button>
         <Button
           onClick={onCancel}
           funcType="raised"
-          className="ant-btn-cancel"
+          className="c7n-btn-cancel"
         >
           <FormattedMessage id="cancel" />
         </Button>

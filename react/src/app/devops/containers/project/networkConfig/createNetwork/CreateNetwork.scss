@@ -94,11 +94,11 @@
         }
       }
 
-      .ant-select-selection-label {
+      .c7n-select-selection-label {
         margin-top: 0;
       }
 
-      .ant-select-selection__rendered {
+      .c7n-select-selection__rendered {
         margin-bottom: 0;
       }
 
@@ -131,15 +131,15 @@
 
   // 改变选择器多选时选中项的背景色
   .network-select-instance {
-    &.ant-select-multiple {
-      .ant-select-selection--multiple {
-        .ant-select-selection__choice {
+    &.c7n-select-multiple {
+      .c7n-select-selection--multiple {
+        .c7n-select-selection__choice {
           background-color: #3f51b5;
           border: none;
           color: #fff;
         }
 
-        .ant-select-selection__choice__remove {
+        .c7n-select-selection__choice__remove {
           color: #fff;
         }
       }
