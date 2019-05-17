@@ -107,7 +107,7 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
 
     @PostConstruct
     void init() {
-        liquibaseExecutor.execute(new String()[])
+        liquibaseExecutor.execute()
         initSqlFunction()
         setTestRestTemplateJWT()
     }
@@ -115,6 +115,7 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     void initSqlFunction() {
         //连接H2数据库
         Class.forName("org.h2.Driver")
+//        Class.forName("com.mysql.jdbc.Driver")
         Connection conn = DriverManager.
                 getConnection(dataBaseUrl, dataBaseUsername, dataBasePassword)
         Statement stat = conn.createStatement()

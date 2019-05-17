@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
@@ -111,8 +112,6 @@ class ApplicationVersionControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        Page<ProjectWithRoleDTO> page = new Page<>()
-        page.setTotalPages(1)
         List<ProjectWithRoleDTO> list = new ArrayList<>()
         List<RoleDTO> roleDTOList = new ArrayList<>()
         RoleDTO roleDTO = new RoleDTO()
@@ -123,8 +122,8 @@ class ApplicationVersionControllerSpec extends Specification {
         projectWithRoleDTO.setName("test-name")
         projectWithRoleDTO.setRoles(roleDTOList)
         list.add(projectWithRoleDTO)
-        page.setContent(list)
-        ResponseEntity<Page<ProjectWithRoleDTO>> responseEntity2 = new ResponseEntity<>(page, HttpStatus.OK)
+        PageInfo<ProjectWithRoleDTO> page = new PageInfo(list)
+        ResponseEntity<PageInfo<ProjectWithRoleDTO>> responseEntity2 = new ResponseEntity<>(page, HttpStatus.OK)
         Mockito.when(iamServiceClient.listProjectWithRole(anyLong(), anyInt(), anyInt())).thenReturn(responseEntity2)
         List<UserDO> userDOList = new ArrayList<>()
         UserDO userDO1 = new UserDO()
@@ -155,7 +154,7 @@ class ApplicationVersionControllerSpec extends Specification {
         devopsEnvironmentDO.setProjectId(init_id)
 
         applicationInstanceDO.setId(init_id)
-        applicationInstanceDO.setCode("spock-test")
+        applicationInstanceDO.setCode("spock-test1")
         applicationInstanceDO.setStatus("running")
         applicationInstanceDO.setAppId(init_id)
         applicationInstanceDO.setAppVersionId(init_id)

@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.ExportOctetStream2HttpMessageConverter
@@ -158,11 +159,10 @@ class ApplicationMarketControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(anyLong())
 
-        Page<ProjectDO> projectDOPage = new Page<>()
         List<ProjectDO> projectDOList = new ArrayList<>()
         projectDOList.add(projectDO)
-        projectDOPage.setContent(projectDOList)
-        ResponseEntity<Page<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
+        PageInfo<ProjectDO> projectDOPage = new PageInfo(projectDOList)
+        ResponseEntity<PageInfo<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
         Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), isNull(), isNull())).thenReturn(projectDOPageResponseEntity)
     }
 

@@ -1,15 +1,35 @@
 package io.choerodon.devops.infra.common.util;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,9 +39,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.gson.Gson;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.valueobject.HighlightMarker;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -40,6 +57,10 @@ import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.parser.ParserImpl;
 import org.yaml.snakeyaml.reader.StreamReader;
 import org.yaml.snakeyaml.resolver.Resolver;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.domain.application.valueobject.HighlightMarker;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 
 /**
  * Created by younger on 2018/4/13.
@@ -776,19 +797,30 @@ public class FileUtil {
         res.setHeader("Content-Disposition", "attachment;filename=" + filePath);
         File file = new File(filePath);
         res.setHeader("Content-Length", "" + file.length());
+        BufferedInputStream bis = null;
+        OutputStream os = null;
         try {
-            OutputStream os = res.getOutputStream();
-            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
-                byte[] buff = new byte[bis.available()];
-                int count = bis.read(buff);
-                while (count > 0) {
-                    os.write(buff);
-                    os.flush();
-                    os.close();
-                }
+            os = res.getOutputStream();
+            bis = new BufferedInputStream(new FileInputStream(file));
+            byte[] buff = new byte[bis.available()];
+            int count = bis.read(buff);
+            if (count > 0) {
+                os.write(buff);
+                os.flush();
             }
         } catch (IOException e) {
             throw new CommonException(e);
+        } finally {
+            try {
+                if (os != null) {
+                    os.close();
+                }
+                if (bis != null) {
+                    bis.close();
+                }
+            } catch (IOException e) {
+                throw new CommonException(e);
+            }
         }
 
     }

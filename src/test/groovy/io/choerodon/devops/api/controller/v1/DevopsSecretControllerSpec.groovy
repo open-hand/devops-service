@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
@@ -94,7 +95,6 @@ class DevopsSecretControllerSpec extends Specification {
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
-        devopsSecretServiceImpl.initMockServer(devopsEnvironmentService)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setName("pro")
@@ -111,10 +111,8 @@ class DevopsSecretControllerSpec extends Specification {
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        Page<ProjectWithRoleDTO> projectWithRoleDTOPage = new Page<>()
-        projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
-        projectWithRoleDTOPage.setTotalPages(2)
-        ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         MemberDO memberDO = new MemberDO()
@@ -161,7 +159,7 @@ class DevopsSecretControllerSpec extends Specification {
         secretReqDTO.setValue(valueMap)
 
         and: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         when: '创建密钥'
         restTemplate.put(MAPPING, secretReqDTO, 1L)
@@ -214,7 +212,7 @@ class DevopsSecretControllerSpec extends Specification {
 
     def "DeleteSecret"() {
         given: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         when: '删除密钥'
         restTemplate.delete(MAPPING + "/1/1", 1L)

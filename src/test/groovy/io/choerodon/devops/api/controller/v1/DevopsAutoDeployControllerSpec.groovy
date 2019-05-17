@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
@@ -108,10 +109,8 @@ class DevopsAutoDeployControllerSpec extends Specification {
             projectWithRoleDTO.setName("pro")
             projectWithRoleDTO.setRoles(roleDTOList)
             projectWithRoleDTOList.add(projectWithRoleDTO)
-            Page<ProjectWithRoleDTO> projectWithRoleDTOPage = new Page<>()
-            projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
-            projectWithRoleDTOPage.setTotalPages(2)
-            ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+            PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
+            ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
             Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
             isToInit = false
         }
@@ -218,8 +217,8 @@ class DevopsAutoDeployControllerSpec extends Specification {
         connectedEnvList.add(1L)
         List<Long> updateEnvList = new ArrayList<>()
         updateEnvList.add(1L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> connectedEnvList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> updateEnvList
+        envUtil.getConnectedEnvList() >> connectedEnvList
+        envUtil.getUpdatedEnvList() >> updateEnvList
 
         when: '分页查询应用部署'
         def page = restTemplate.postForObject(MAPPING + "/list_by_options?user_id=1&env_id=1&app_id=1", searchParam, Page.class, 1L)

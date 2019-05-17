@@ -68,7 +68,7 @@ class DevopsEnvGroupControllerSpec extends Specification {
         def envDTO = restTemplate.postForObject("/v1/projects/1/env_groups?devopsEnvGroupName=test2", null, DevopsEnvGroupDTO.class)
 
         then: '校验返回结果'
-        envDTO["id"] == 3
+        envDTO["projectId"] == 1
     }
 
     def "Update"() {
