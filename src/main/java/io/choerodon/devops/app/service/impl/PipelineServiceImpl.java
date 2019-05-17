@@ -1,7 +1,30 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
+import io.reactivex.Observable;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -70,28 +93,6 @@ import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.reactivex.Observable;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -170,12 +171,23 @@ public class PipelineServiceImpl implements PipelineService {
                     .map(PipelineUserRelE::getUserId)
                     .collect(Collectors.toList())
                     .contains(DetailsHelper.getUserDetails().getUserId()));
+            //运行中的流水线不可编辑
             List<PipelineRecordE> list = pipelineRecordRepository.queryByPipelineId(t.getId()).stream()
                     .filter(recordE -> recordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue()) || recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()))
                     .collect(Collectors.toList());
             t.setEdit(true);
             if (list != null && list.size() > 0) {
                 t.setEdit(false);
+            } else {
+                //是否拥有环境权限.没有环境权限不可编辑
+                List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(t.getId());
+                List<Long> envIds = environmentService.listByProjectIdAndActive(projectId, true).stream().map(DevopsEnviromentRepDTO::getId).collect(Collectors.toList());
+                for (PipelineAppDeployE appDeployE : appDeployEList) {
+                    if (!envIds.contains(appDeployE.getEnvId())) {
+                        t.setEdit(false);
+                        break;
+                    }
+                }
             }
         }).collect(Collectors.toList()));
         return page;
@@ -1253,12 +1265,16 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRecordE.setBusinessKey(uuid);
         pipelineRecordE = pipelineRecordRepository.create(pipelineRecordE);
         //准备workFlow数据
+        LOGGER.info("=======自动部署查007========1：" + new java.sql.Timestamp(System.currentTimeMillis()).toString());
         DevopsPipelineDTO devopsPipelineDTO = setWorkFlowDTO(pipelineRecordE.getId(), pipelineId);
         pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
         pipelineRecordRepository.update(pipelineRecordE);
         //发送请求给workflow，创建流程实例
         try {
-            workFlowRepository.create(pipelineE.getProjectId(), devopsPipelineDTO);
+            CustomUserDetails details = DetailsHelper.getUserDetails();
+            LOGGER.info("=======自动部署查008========1：" + new java.sql.Timestamp(System.currentTimeMillis()).toString());
+            createWorkFlow(pipelineE.getProjectId(), devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
+            LOGGER.info("=======自动部署查009========1：" + new java.sql.Timestamp(System.currentTimeMillis()).toString());
         } catch (Exception e) {
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             pipelineRecordRepository.update(pipelineRecordE);

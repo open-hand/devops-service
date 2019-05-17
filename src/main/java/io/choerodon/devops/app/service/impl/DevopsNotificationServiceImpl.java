@@ -318,7 +318,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         List<Long> addUserIds = new ArrayList<>();
         List<Long> oldUserIds = notificationUserRelRepository.queryByNoticaionId(notificationDTO.getId())
                 .stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
-        if (notificationDTO.getUserRelDTOS() != null) {
+        if (notificationDTO.getUserRelIds() != null) {
             List<Long> newUserIds = notificationDTO.getUserRelIds();
             newUserIds.forEach(t -> {
                 if (oldUserIds.contains(t)) {
