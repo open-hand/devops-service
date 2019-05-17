@@ -27,6 +27,7 @@ export default class Elements extends Component {
     editMode: false,
     eleIdForEdit: undefined,
     param: '',
+    page: 0,
     filters: {},
     sorter: null,
     enableDeleteLoading: false,
@@ -335,9 +336,9 @@ export default class Elements extends Component {
       filteredValue: filters.url || [],
     }, {
       title: <FormattedMessage id="elements.origin" />,
-      key: 'origin',
+      key: 'projectId',
       sorter: true,
-      sortOrder: columnKey === 'origin' && order,
+      sortOrder: columnKey === 'projectId' && order,
       render: this.renderOriginColumn,
     }, {
       key: 'action',
