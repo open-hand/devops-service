@@ -33,9 +33,8 @@ public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepos
             if (taskRecordMapper.updateByPrimaryKeySelective(recordDO) != 1) {
                 throw new CommonException("error.update.pipeline.task.record");
             }
-            recordDO.setObjectVersionNumber(null);
         }
-        return ConvertHelper.convert(taskRecordMapper.selectOne(recordDO), PipelineTaskRecordE.class);
+        return ConvertHelper.convert(recordDO, PipelineTaskRecordE.class);
     }
 
     @Override
