@@ -7,7 +7,6 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import ElementsCreate from '../elementsCreate';
 import { handleCheckerProptError } from '../../../../utils';
-import { SORTER_MAP } from '../../../../common/Constants';
 
 import './Element.scss';
 

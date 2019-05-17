@@ -96,11 +96,12 @@ export default class Notifications extends Component {
     });
   };
 
-  closeSidebar = () => {
+  closeSidebar = (reload) => {
     this.setState({
       showSidebar: false,
       sidebarType: 'create',
     });
+    reload ? this.loadData(0) : this.loadData();
   };
 
   handleRefresh = (e, page) => {
