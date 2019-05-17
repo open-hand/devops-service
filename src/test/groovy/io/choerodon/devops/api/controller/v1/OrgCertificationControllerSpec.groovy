@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
@@ -71,11 +72,10 @@ class OrgCertificationControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(anyLong())
 
-        Page<ProjectDO> projectDOPage = new Page<>()
+        PageInfo<ProjectDO> projectDOPage = new PageInfo<>(projectDOList)
         List<ProjectDO> projectDOList = new ArrayList<>()
         projectDOList.add(projectDO)
-        projectDOPage.setContent(projectDOList)
-        ResponseEntity<Page<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
+        ResponseEntity<PageInfo<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
         Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), any(), any())).thenReturn(projectDOPageResponseEntity)
     }
 

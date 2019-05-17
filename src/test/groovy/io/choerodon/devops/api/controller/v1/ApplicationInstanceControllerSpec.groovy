@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
@@ -46,7 +47,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -455,9 +456,9 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def setup() {
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabRepository,"gitlabServiceClient",gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabProjectRepository,"gitlabServiceClient",gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository,"gitlabServiceClient",gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setName("testProject")
@@ -480,17 +481,14 @@ class ApplicationInstanceControllerSpec extends Specification {
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        Page<ProjectWithRoleDTO> projectWithRoleDTOPage = new Page<>()
-        projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
-        projectWithRoleDTOPage.setTotalPages(2)
-        ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
-        Page<ProjectDO> projectDOPage = new Page<>()
         List<ProjectDO> projectDOList = new ArrayList<>()
         projectDOList.add(projectDO)
-        projectDOPage.setContent(projectDOList)
-        ResponseEntity<Page<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
+        PageInfo<ProjectDO> projectDOPage = new PageInfo(projectDOList)
+        ResponseEntity<PageInfo<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
         Mockito.doReturn(projectDOPageResponseEntity).when(iamServiceClient).queryProjectByOrgId(anyLong(), anyInt(), anyInt(), isNull(), isNull())
 
         MemberDO memberDO = new MemberDO()
@@ -526,9 +524,9 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         RepositoryFile repositoryFile = new RepositoryFile();
         repositoryFile.setFilePath("test")
-        ResponseEntity<RepositoryFile> responseEntity8 = new ResponseEntity<>(repositoryFile,HttpStatus.OK)
+        ResponseEntity<RepositoryFile> responseEntity8 = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
 
-        Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(),anyString(), anyInt())).thenReturn(responseEntity8)
+        Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity8)
 
 
         List<UserDO> userDOList = new ArrayList<>()
@@ -548,7 +546,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         applicationMapper.insert(applicationDO)
         devopsEnvPodMapper.insert(devopsEnvPodDO)
         applicationMarketMapper.insert(devopsAppMarketDO)
-        devopsEnvCommandMapper.selectAll().forEach{ devopsEnvCommandMapper.delete(it) }
+        devopsEnvCommandMapper.selectAll().forEach { devopsEnvCommandMapper.delete(it) }
         devopsEnvCommandMapper.insert(devopsEnvCommandDO)
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
         devopsEnvCommandValueMapper.insert(devopsEnvCommandValueDO)
@@ -587,13 +585,11 @@ class ApplicationInstanceControllerSpec extends Specification {
         headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
         HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
 
-        and: 'mock envListener'
-        Map<String, EnvSession> envs = new HashMap<>()
-        EnvSession envSession = new EnvSession()
-        envSession.setVersion("0.10.0")
-        envSession.setClusterId(1L)
-        envs.put("testenv", envSession)
-        envListener.connectedEnv() >> envs
+        and: 'mock envUtil'
+        List<Long> connectedEnvList = new ArrayList<>()
+        connectedEnvList.add(1L)
+        envUtil.getConnectedEnvList() >> connectedEnvList
+        envUtil.getUpdatedEnvList() >> connectedEnvList
 
         when: '分页查询应用部署'
         def page = restTemplate.postForObject("/v1/projects/1/app_instances/list_by_options?envId=1&appId=1&page=0&size=5", strEntity, Page.class)
@@ -984,13 +980,11 @@ class ApplicationInstanceControllerSpec extends Specification {
     }
 
     def "ListByEnv"() {
-        given: 'mock envListener'
-        Map<String, EnvSession> envs = new HashMap<>()
-        EnvSession envSession = new EnvSession()
-        envSession.setVersion("0.5.0")
-        envSession.setClusterId(1L)
-        envs.put("testenv", envSession)
-        envListener.connectedEnv() >> envs
+        given: 'mock envUtil'
+        List<Long> connectedEnvList = new ArrayList<>()
+        connectedEnvList.add(1L)
+        envUtil.getConnectedEnvList() >> connectedEnvList
+        envUtil.getUpdatedEnvList() >> connectedEnvList
 
         when: '环境总览实例查询'
         def dto = restTemplate.postForObject("/v1/projects/1/app_instances/1/listByEnv", "{\"searchParam\":{},\"param\":\"\"}", DevopsEnvPreviewDTO.class)

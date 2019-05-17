@@ -1,11 +1,10 @@
 package io.choerodon.devops.api.controller.v1
 
-
+import com.github.pagehelper.PageInfo
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
-import io.choerodon.core.domain.PageInfo
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO
@@ -224,12 +223,12 @@ class DevopsCheckControllerSpec extends Specification {
 
         RoleDTO roleDTO = new RoleDTO()
         roleDTO.setId(234L)
-        PageInfo pageInfo = new PageInfo(0, 10, true)
+//        PageInfo pageInfo = new PageInfo(0, 10, true)
         List<RoleDTO> roleDTOS = Arrays.asList(roleDTO)
-        Page<RoleDTO> page = new Page(roleDTOS, pageInfo, 1)
+        PageInfo<RoleDTO> page = new PageInfo(roleDTOS)
         when(mockIamServiceClient.queryRoleIdByCode(any(RoleSearchDTO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
 
-        when(mockIamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(new Page<UserDTO>(), HttpStatus.OK))
+        when(mockIamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(new PageInfo(0,0), HttpStatus.OK))
 
         // 准备升级到0.10 的数据
         when(mockGitlabServiceClient.updateProjectHook(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ProjectHook(), HttpStatus.OK))
@@ -238,8 +237,9 @@ class DevopsCheckControllerSpec extends Specification {
         io.choerodon.devops.infra.dataobject.iam.UserDO userDO = new io.choerodon.devops.infra.dataobject.iam.UserDO()
         userDO.setId(234L)
         List<io.choerodon.devops.infra.dataobject.iam.UserDO> users = new ArrayList<>()
-        PageInfo userPageInfo = new PageInfo(1, 10, true)
-        Page<io.choerodon.devops.infra.dataobject.iam.UserDO> userPage = new Page<>(users, userPageInfo, 1)
+        users.add(userDO)
+//        PageInfo userPageInfo = new PageInfo(1, 10, true)
+        PageInfo<io.choerodon.devops.infra.dataobject.iam.UserDO> userPage = new PageInfo(users)
         when(mockIamServiceClient.listUsersByEmail(anyLong(), anyInt(), anyInt(), anyString())).thenReturn(new ResponseEntity<>(userPage, HttpStatus.OK))
 
 

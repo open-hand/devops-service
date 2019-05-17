@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
@@ -186,10 +187,8 @@ class ApplicationControllerSpec extends Specification {
             projectWithRoleDTO.setName("pro")
             projectWithRoleDTO.setRoles(roleDTOList)
             projectWithRoleDTOList.add(projectWithRoleDTO)
-            Page<ProjectWithRoleDTO> projectWithRoleDTOPage = new Page<>()
-            projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
-            projectWithRoleDTOPage.setTotalPages(2)
-            ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+            PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
+            ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
             Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
         }
     }

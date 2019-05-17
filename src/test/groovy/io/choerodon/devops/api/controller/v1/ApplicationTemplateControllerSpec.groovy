@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
+import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
@@ -99,9 +100,9 @@ class ApplicationTemplateControllerSpec extends Specification {
         organizationDO.setCode("orgDO")
         organizationDO.setId(org_id)
 
-        gitlabGroupE.setName("org_template")
-        gitlabGroupE.setPath("org_template")
-        gitlabGroupE.setVisibility(Visibility.PUBLIC)
+//        gitlabGroupE.setName("org_template")
+//        gitlabGroupE.setPath("org_template")
+//        gitlabGroupE.setVisibility(Visibility.PUBLIC)
 
         userAttrE.setIamUserId(init_id)
         userAttrE.setGitlabUserId(init_id)
@@ -124,8 +125,9 @@ class ApplicationTemplateControllerSpec extends Specification {
         applicationTemplateDTO.setOrganizationId(1L)
 
         and: 'mock saga'
-        applicationTemplateService.initMockService(sagaClient)
-        Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), anyObject())
+        DependencyInjectUtil.setAttribute(applicationTemplateService, "sagaClient", sagaClient)
+        Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any(StartInstanceDTO))
+
 
         and: 'mock 查询组织'
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)

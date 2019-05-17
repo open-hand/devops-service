@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
@@ -200,10 +201,8 @@ class IssueControllerSpec extends Specification {
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        Page<ProjectWithRoleDTO> projectWithRoleDTOPage = new Page<>()
-        projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
-        projectWithRoleDTOPage.setTotalPages(2)
-        ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         ResponseEntity<List<CommitDO>> responseEntity5 = new ResponseEntity<>(commitDOS, HttpStatus.OK)

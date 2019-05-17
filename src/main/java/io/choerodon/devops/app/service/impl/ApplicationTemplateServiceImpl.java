@@ -302,8 +302,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         sagaClient.startSaga("devops-set-appTemplate-err", new StartInstanceDTO(input, "", "", ResourceLevel.ORGANIZATION.value(), organizationId));
     }
 
-    @Override
-    public void initMockService(SagaClient sagaClient) {
-        this.sagaClient = sagaClient;
-    }
+//    @Override
+//    public void initMockService(SagaClient sagaClient) {
+//        this.sagaClient = sagaClient;
+//    }
 }
