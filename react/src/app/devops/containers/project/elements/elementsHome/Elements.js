@@ -4,6 +4,7 @@ import { withRouter } from 'react-router-dom';
 import { Content, Header, Page, Permission } from '@choerodon/boot';
 import { Button, Table, Tooltip, Modal, Spin } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import _ from 'lodash';
 import ElementsCreate from '../elementsCreate';
 import { handleCheckerProptError } from '../../../../utils';
 import { SORTER_MAP } from '../../../../common/Constants';
@@ -27,10 +28,7 @@ export default class Elements extends Component {
     eleIdForEdit: undefined,
     param: '',
     filters: {},
-    sorter: {
-      columnKey: 'id',
-      order: 'descend',
-    },
+    sorter: null,
     enableDeleteLoading: false,
     enableDelete: false,
     showTypeModal: false,
@@ -50,23 +48,7 @@ export default class Elements extends Component {
   }
 
   handleRefresh = (e, page) => {
-    const { ElementsStore } = this.props;
-    const { current, pageSize } = ElementsStore.getPageInfo;
-    const { param, filters, sorter } = this.state;
-
-    const currentPage = (page || page === 0) ? page : current - 1;
-    const sort = { field: 'id', order: 'desc' };
-    if (sorter.column) {
-      sort.field = sorter.field || sorter.columnKey;
-      sort.order = SORTER_MAP[sorter.order];
-    }
-
-    const postData = {
-      searchParam: filters,
-      param: param.toString(),
-    };
-
-    this.loadData(currentPage, pageSize, sort, postData);
+    this.loadData(page);
   };
 
   /**
@@ -76,32 +58,56 @@ export default class Elements extends Component {
    * @param sorter
    * @param param 模糊搜索
    */
-  tableChange = (pagination, filters, sorter, param) => {
-    const page = pagination.current - 1;
-    const pageSize = pagination.pageSize;
-    const sort = { field: 'id', order: 'desc' };
-    const postData = {
-      searchParam: filters,
-      param: param.toString(),
-    };
+  tableChange = ({ current, pageSize }, filters, sorter, param) => {
 
-    if (sorter.column) {
-      sort.field = sorter.field || sorter.columnKey;
-      sort.order = SORTER_MAP[sorter.order];
-    }
-
-    this.setState({ param, filters, sorter });
-    this.loadData(page, pageSize, sort, postData);
-  };
-
-  loadData = (page = 0, size = 10, sort = { field: 'id', order: 'desc' }, filter = { searchParam: {}, param: '' }) => {
     const {
       ElementsStore,
       AppState: {
         currentMenuType: { id: projectId },
       },
     } = this.props;
-    ElementsStore.loadListData(projectId, page, size, sort, filter);
+
+    const realSorter = _.isEmpty(sorter) ? null : sorter;
+
+    this.setState({ param, filters, sorter: realSorter });
+
+    ElementsStore.loadListData(
+      projectId,
+      current - 1,
+      pageSize,
+      realSorter,
+      {
+        searchParam: filters,
+        param: param.toString(),
+      });
+  };
+
+  loadData = (toPage) => {
+    const {
+      ElementsStore,
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+
+    const { page, pageSize, param, filters, sorter } = this.state;
+    const currentPage = (toPage || toPage === 0) ? toPage : page;
+    const {
+      getPageInfo: {
+        pageSize: storePageSize,
+      },
+    } = ElementsStore;
+
+    ElementsStore.loadListData(
+      projectId,
+      currentPage,
+      pageSize || storePageSize,
+      sorter,
+      {
+        searchParam: filters,
+        param: param.toString(),
+      },
+    );
   };
 
   /**
@@ -263,7 +269,9 @@ export default class Elements extends Component {
         },
       },
     } = this.props;
-    const { filters, sorter: { columnKey, order } } = this.state;
+    const { filters, sorter } = this.state;
+    const { columnKey, order } = sorter || {};
+
     const _renderAction = ({ type, id, origin, name }) => {
       const isPrivateHarbor = this.isPrivateHarbor(type, name);
       const canModify = !isPrivateHarbor && origin === 'project';

@@ -1,10 +1,10 @@
-import React, { Component, Fragment } from "react";
-import { observer, inject } from "mobx-react";
-import { injectIntl, FormattedMessage } from "react-intl";
-import { Button, Modal, Form, Input, Spin } from "choerodon-ui";
-import PropTypes from "prop-types";
+import React, { Component, Fragment } from 'react';
+import { observer, inject } from 'mobx-react';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import { Button, Modal, Form, Input, Spin } from 'choerodon-ui';
+import PropTypes from 'prop-types';
 import DevopsStore from '../../stores/DevopsStore';
-import EnvOverviewStore from "../../stores/project/envOverview";
+import EnvOverviewStore from '../../stores/project/envOverview';
 
 import './DeleteModal.scss';
 
@@ -32,23 +32,25 @@ class DeleteModal extends Component {
     title: PropTypes.string.isRequired,
   };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      deleteStatus: false,
-      count: 60,
-      cansendMessage: true,
-      method: null,
-      user: null,
-      loading: true,
-      isVerification: false,
-      notificationId: null,
-      isError: false,
-      canDelete: false,
-    };
+  state = {
+    deleteStatus: false,
+    count: 60,
+    canSendMessage: true,
+    method: null,
+    user: null,
+    loading: true,
+    isVerification: false,
+    notificationId: null,
+    isError: false,
+    canDelete: false,
+  };
+
+  componentWillUnmount() {
+    clearInterval(this.timer);
+    this.timer = null;
   }
 
-  componentDidMount () {
+  componentDidMount() {
     const {
       AppState: {
         currentMenuType: { projectId },
@@ -56,7 +58,7 @@ class DeleteModal extends Component {
       objectType,
     } = this.props;
     const envId = EnvOverviewStore.getTpEnvId;
-    // 发送请求判断是否需要验证
+
     DevopsStore.deleteCheck(projectId, envId, objectType)
       .then(data => {
         if (data && data.notificationId) {
@@ -82,21 +84,33 @@ class DeleteModal extends Component {
       objectId,
       objectType,
     } = this.props;
+
     const envId = EnvOverviewStore.getTpEnvId;
-    const { notificationId } = this.state;
+
+    const { notificationId, canSendMessage } = this.state;
     let count = this.state.count;
-    const timer = setInterval(() => {
-      this.setState({ count: (count--), cansendMessage: false }, () => {
+
+    if (this.timer || !canSendMessage) return;
+
+    this.setState({ canSendMessage: false });
+
+    this.timer = setInterval(() => {
+
+      this.setState({ count: --count }, () => {
         if (count === 0) {
-          clearInterval(timer);
+
+          clearInterval(this.timer);
+          this.timer = null;
+
           this.setState({
             count: 60,
-            cansendMessage: true,
-          })
+            canSendMessage: true,
+          });
+
         }
       });
+
     }, 1000);
-    // 点击发送验证码
     DevopsStore.sendMessage(projectId, envId, objectId, notificationId, objectType);
   };
 
@@ -106,7 +120,7 @@ class DeleteModal extends Component {
    */
   checkCaptcha = (e) => {
     const value = e.target.value;
-    value && value.length === 6 && this.setState({ canDelete: true})
+    value && value.length === 6 && this.setState({ canDelete: true });
   };
 
   handleDelete = (e) => {
@@ -130,16 +144,16 @@ class DeleteModal extends Component {
           DevopsStore.validateCaptcha(projectId, envId, objectId, data.captcha, objectType)
             .then(data => {
               if (data) {
-                onOk()
+                onOk();
               } else {
-                this.setState({isError: true})
+                this.setState({ isError: true });
               }
-              this.setState({deleteStatus: false});
+              this.setState({ deleteStatus: false });
             })
             .catch(e => {
-              this.setState({deleteStatus: false});
+              this.setState({ deleteStatus: false });
               Choerodon.handleResponseError(e);
-            })
+            });
         } else {
           this.setState({ deleteStatus: false, isError: true });
         }
@@ -148,7 +162,6 @@ class DeleteModal extends Component {
       }
     });
   };
-
 
   render() {
     const {
@@ -163,7 +176,7 @@ class DeleteModal extends Component {
     const {
       deleteStatus,
       count,
-      cansendMessage,
+      canSendMessage,
       method,
       user,
       isVerification,
@@ -229,9 +242,10 @@ class DeleteModal extends Component {
                     type="primary"
                     funcType="raised"
                     onClick={this.sendMessage}
-                    disabled={!cansendMessage}
+                    disabled={!canSendMessage}
                   >
-                    {cansendMessage ? <FormattedMessage id="send_captcha" /> : <span className="c7ncd-time-span">{count}s</span>}
+                    {canSendMessage ? <FormattedMessage id="send_captcha" /> :
+                      <span className="c7ncd-time-span">{count}s</span>}
                   </Button>
                 </div>
                 {isError && <FormattedMessage id="captcha_error" />}
