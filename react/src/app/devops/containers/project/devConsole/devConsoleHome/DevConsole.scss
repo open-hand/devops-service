@@ -1,0 +1,506 @@
+.c7n-dc-card-wrap {
+  border-radius: 2px;
+  padding: 20px 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px 0 rgba(14, 15, 16, 0.24);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .c7n-tag-empty {
+    box-shadow: none;
+    padding-left: 30px;
+    justify-content: flex-start;
+    align-items: center;
+
+    button {
+      margin-left: auto;
+    }
+  }
+
+  .spin-container {
+    margin: 100px auto;
+  }
+
+  .c7n-dc-line {
+    display: flex;
+    padding: 16px 16px 25px 0;
+    margin-left: 30px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.26);
+
+    .c7n-dc-line-arrow {
+      background-color: #979797;
+      width: 15%;
+      height: 1px;
+      margin: 0 20px;
+      align-self: center;
+
+      &:before {
+        content: '';
+        display: flex;
+        margin-left: auto;
+        margin-top: -5px;
+        margin-right: -1px;
+        width: 0;
+        height: 0;
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        border-left: 7px solid #979797;
+      }
+    }
+
+    .c7n-dc-line_card {
+      cursor: pointer;
+      box-shadow: none;
+      background-color: #f8f8f8;
+      position: relative;
+      width: 220px;
+      padding: 12px 16px;
+      flex-shrink: 0;
+      height: 134px;
+    }
+
+    .c7n-dc-line_card-active {
+      cursor: pointer;
+      flex-shrink: 0;
+      padding: 12px 16px;
+      position: relative;
+      width: 220px;
+      height: 134px;
+      box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+
+      .c7n-dc-line_card-arrow {
+        left: 47%;
+        bottom: -6px;
+        box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.2);
+        transform: translateX(-50%) rotate(45deg);
+        background: #fff;
+        width: 13px;
+        height: 13px;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        position: absolute;
+        display: block;
+        border: none;
+      }
+    }
+
+    .c7n-dc-line_card-title {
+      font-size: 16px;
+      color: #000;
+      font-weight: 500;
+      line-height: 22px;
+      display: flex;
+
+      button {
+        width: 22px;
+        height: 22px;
+        margin-left: auto;
+        line-height: 22px;
+      }
+    }
+
+    .c7n-dc-line_card-content {
+      .c7n-select {
+        margin-top: 16px;
+      }
+
+      .c7n-env-state {
+        margin-left: 0;
+        font-weight: 500;
+        flex-shrink: 1;
+      }
+
+      .c7n-env-des-wrap {
+        margin: 12px 0;
+      }
+
+      .c7n-env-des {
+        width: 100%;
+
+        .c7n-dc-ci {
+          margin-top: 10px;
+          color: rgba(0, 0, 0, 0.54);
+          line-height: 20px;
+
+          i {
+            font-size: 18px;
+          }
+
+          .c7n-split-before {
+            width: 12px;
+            margin-left: 5px;
+            margin-right: 5px;
+            border-top: 2px solid rgba(0, 0, 0, 0.12);
+            display: inline-block;
+          }
+
+          .icon-wait_circle {
+            color: #d3d3d3;
+          }
+
+          .c7n-icon-success {
+            color: #00bf96;
+          }
+
+          .c7n-icon-passed {
+            color: #00bf96;
+          }
+
+          .c7n-icon-pending {
+            color: #ffb100;
+          }
+
+          .c7n-icon-running {
+            color: #4d90fe;
+          }
+
+          .c7n-icon-failed {
+            color: #f44336;
+          }
+
+          .c7n-icon-canceled {
+            color: #d3d3d3;
+          }
+
+          .c7n-icon-skipped {
+            color: rgba(0, 0, 0, 0.26);
+          }
+          .c7n-icon-created {
+            color: #d3d3d3;
+          }
+          .c7n-icon-manual {
+            color: #d3d3d3;
+          }
+        }
+      }
+    }
+
+    .c7n-select {
+      width: 100%;
+    }
+  }
+}
+
+.c7n-dc-card-title {
+  font-size: 18px;
+  color: rgba(0, 0, 0, 0.87);
+  display: flex;
+  line-height: 30px;
+
+  i {
+    margin-right: 6px;
+    font-size: 24px;
+    line-height: 30px;
+  }
+}
+
+.c7n-dc-card-subtitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+  margin: 16px 0 6px 0;
+}
+
+.c7n-dc-collapse-padding {
+  padding-left: 12px;
+}
+
+.c7n-dc-app-code {
+  display: inline-block;
+  margin-top: 13px;
+
+  .c7n-btn-sm {
+    margin-left: 8px;
+  }
+}
+
+.c7n-dc-url-wrap {
+  margin: 13px 0 0 40px;
+  display: inline-block;
+
+  .c7n-btn-sm {
+    margin-left: 8px;
+  }
+}
+
+.c7n-dc-page-content-header {
+  display: flex;
+  margin-bottom: 20px;
+
+  .c7n-tag-empty {
+    box-shadow: none;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .page-content-header {
+    flex: 6;
+    margin-right: 16px;
+    max-width: none;
+  }
+
+  .c7n-dc-card-merge {
+    flex: 4;
+  }
+
+  .c7n-dc-data-wrap {
+    flex: 2;
+    color: rgba(0, 0, 0, 0.65);
+
+    table {
+      border-collapse: separate;
+      border-spacing: 0 4px;
+    }
+
+    .commit-number {
+      margin: 10px 0 8px 30px;
+      font-size: 24px;
+
+      a {
+        color: #303f9f;
+      }
+    }
+
+    .c7n-commit-title {
+      font-size: 12px;
+    }
+
+    .c7n-data-number {
+      margin-bottom: 14px;
+
+      &:last-child {
+        margin: 0;
+      }
+
+      a {
+        font-size: 14px;
+        color: #303f9f;
+      }
+
+      i {
+        margin: 0 2px 0 16px;
+      }
+
+      .c7n-data-number_link {
+        text-align: right;
+      }
+    }
+  }
+}
+
+.c7n-envow-dropdown-link {
+  button {
+    padding: 5px 12px;
+    line-height: 22px;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+
+  .c7n-dropdown-menu-item {
+    padding: 0;
+  }
+}
+
+.c7n-dc-create-select {
+  line-height: 58px;
+  margin-right: 18px;
+  font-weight: 500 !important;
+
+  a {
+    height: 20px;
+    line-height: 20px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+
+    .icon-playlist_add {
+      margin-right: 2px;
+    }
+  }
+}
+
+.c7n-dc-branch {
+  padding-left: 30px;
+
+  .c7n-table-wrapper {
+    margin-top: 16px;
+  }
+}
+
+.c7n-dc-branch-content {
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+
+  .branch-content-title {
+    display: flex;
+
+    .branch-name {
+      max-width: 10%;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+  }
+
+  .c7n-branch-issue {
+    margin-left: auto;
+
+    .c7n-issue-type {
+      display: inline-block;
+      text-align: center;
+      line-height: 14px;
+      margin-right: 8px;
+
+      i {
+        font-size: 20px;
+      }
+    }
+  }
+
+  .c7n-branch-operate {
+    margin-left: auto;
+    align-items: center;
+    display: flex;
+  }
+
+  .c7n-branch-action {
+    margin-left: 20px;
+  }
+
+  .c7n-merge-action {
+    margin-left: 10px;
+  }
+
+  .c7n-branch-avatar {
+    margin: 0 8px 0 12px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+
+    & > * {
+      line-height: 18px !important;
+    }
+  }
+
+  .c7n-branch-commit {
+    margin-left: 10px;
+    color: rgba(0, 0, 0, 0.65);
+    display: flex;
+
+    .branch-column-icon {
+      color: rgba(0, 0, 0, 0.54);
+      line-height: 20px;
+      padding-right: 6px;
+    }
+
+    .branch-col-icon {
+      margin-left: 10px;
+    }
+
+    .branch-sha {
+      width: 60px;
+    }
+  }
+
+  .c7n-merge-title {
+    margin: 0 12px 0 6px;
+  }
+
+  .c7n-merge-branch {
+    color: rgba(0, 0, 0, 0.65);
+    margin-left: 12px;
+    display: flex;
+    align-items: center;
+
+    .c7n-merge-icon {
+      line-height: 20px;
+      margin-right: 6px;
+    }
+
+    .c7n-merge-icon-arrow {
+      line-height: 20px;
+      margin: 0 10px;
+      transform: rotate(180deg);
+    }
+
+    .issue-time {
+      margin: 0 6px 0 10px;
+    }
+
+    .issue-time_content {
+      margin-right: 24px;
+    }
+  }
+}
+
+.c7n-devCs-nomerge {
+  color: rgba(0, 0, 0, 0.65);
+  padding: 18px 0 0 30px;
+}
+
+.c7n-dc-branch-issue-icon-line {
+  display: inline-block;
+  text-align: center;
+  margin-right: 4px;
+
+  i {
+    font-size: 14px !important;
+    padding-bottom: 3px;
+  }
+}
+
+.c7n-dc-branch-issue-icon-list {
+  margin-right: 4px;
+
+  i {
+    font-size: 16px;
+  }
+}
+
+.c7n-dc-branch-issue-content {
+  line-height: 13px;
+}
+
+.c7n-dc-branch-issue {
+  text-align: center;
+  margin-top: -32px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.c7n-dc-card-loading {
+  text-align: center;
+  display: inherit;
+  margin: 20px;
+}
+
+.c7n-dc-version-content {
+  display: flex;
+  align-items: center;
+  padding-top: 16px;
+
+  .c7n-dc-noVersion {
+    margin-right: 16px;
+    width: 70px;
+    height: 71px;
+    background-repeat: no-repeat;
+    background-image: url("../../../../assets/images/pipeline-nover.svg");
+  }
+
+  span {
+    color: rgba(0, 0, 0, 0.54);
+    line-height: 20px;
+  }
+}
+
+.c7n-dc-version-span {
+  display: flex;
+  align-items: center;
+}

@@ -2,6 +2,11 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.app.service.ProjectPipelineService;
+import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +17,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.app.service.ProjectPipelineService;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by Zenger on 2018/4/2.

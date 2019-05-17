@@ -1,0 +1,45 @@
+.c7n-ctf {
+  &-select {
+    margin-bottom: 16px;
+  }
+}
+
+.c7n-ctf-detail-icon {
+  display: inline-block;
+  line-height: 24px;
+  height: 24px;
+  text-align: center;
+  margin-right: 6px;
+  vertical-align: top;
+}
+
+.c7n-ctf-overlay {
+  .c7n-popover-title {
+    border: none;
+    font-weight: bold;
+    padding-top: 15px;
+  }
+
+  .c7n-overlay-content {
+    display: flex;
+
+    .c7n-overlay-title {
+      margin-bottom: 8px;
+      white-space: nowrap;
+      width: 98px;
+      margin-right: 16px;
+    }
+
+    .c7n-overlay-item {
+      flex: 1;
+
+      .c7n-overlay-detail {
+        margin-bottom: 8px;
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+}

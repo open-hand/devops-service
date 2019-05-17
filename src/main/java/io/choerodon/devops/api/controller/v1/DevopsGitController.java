@@ -4,18 +4,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
+import io.choerodon.base.annotation.Permission;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
 import io.choerodon.devops.api.dto.TagDTO;
@@ -25,7 +17,13 @@ import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Creator: Runge
@@ -48,7 +46,7 @@ public class DevopsGitController {
      * @param applicationId 应用ID
      * @return url
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取工程下地址")
     @GetMapping("/url")
@@ -72,7 +70,7 @@ public class DevopsGitController {
      * @param releaseNotes  发布日志
      * @return null
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建标签")
     @PostMapping("/tags")
@@ -102,7 +100,7 @@ public class DevopsGitController {
      * @param releaseNotes  发布日志
      * @return null
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新标签")
     @PutMapping("/tags")
@@ -127,7 +125,7 @@ public class DevopsGitController {
      * @param params        查询参数
      * @return null
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取标签分页列表")
     @PostMapping("/tags_list_options")
@@ -154,7 +152,7 @@ public class DevopsGitController {
      * @param applicationId 应用ID
      * @return null
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取标签列表")
     @GetMapping("/tag_list")
@@ -175,7 +173,7 @@ public class DevopsGitController {
      * @param applicationId 应用ID
      * @return null
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查标签")
     @GetMapping("/tags_check")
@@ -199,7 +197,7 @@ public class DevopsGitController {
      * @param tag           标签名
      * @return null
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除标签")
     @DeleteMapping("/tags")
@@ -221,7 +219,7 @@ public class DevopsGitController {
      * @param applicationId   应用ID
      * @param devopsBranchDTO 分支
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建分支")
     @PostMapping("/branch")
@@ -245,7 +243,7 @@ public class DevopsGitController {
      * @param params        查询参数
      * @return Page
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取工程下所有分支名")
     @CustomPageRequest
@@ -272,7 +270,7 @@ public class DevopsGitController {
      * @param branchName    分支名
      * @return BranchDTO
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个分支")
     @GetMapping("/branch")
@@ -294,7 +292,7 @@ public class DevopsGitController {
      * @param applicationId   应用ID
      * @param devopsBranchDTO 分支
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新分支关联的问题")
     @PutMapping("/branch")
@@ -315,7 +313,7 @@ public class DevopsGitController {
      * @param applicationId 应用ID
      * @param branchName    分支名
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除分支")
     @DeleteMapping("/branch")
@@ -337,7 +335,7 @@ public class DevopsGitController {
      * @param applicationId 应用id
      * @return mergeRequest列表
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查看所有合并请求")
     @GetMapping(value = "/merge_request/list")
@@ -364,7 +362,7 @@ public class DevopsGitController {
      * @param applicationId 应用id
      * @param branchName    分支名
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验分支名唯一性")
     @GetMapping(value = "/check_name")

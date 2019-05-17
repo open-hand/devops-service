@@ -6,6 +6,7 @@ public class UserE {
     private String loginName;
     private String imageUrl;
     private String realName;
+    private String email;
 
     public Long getId() {
         return id;
@@ -37,5 +38,13 @@ public class UserE {
 
     public void setRealName(String realName) {
         this.realName = realName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

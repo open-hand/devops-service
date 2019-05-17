@@ -1,0 +1,24 @@
+$name:template;
+
+.c7n-template-wrapper {
+  .template-icon {
+    color: initial;
+    font-size: 18px;
+  }
+
+  .c7n-template-table {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 250px;
+    overflow: hidden;
+    display: block;
+  }
+
+  .c7n-template-column-text {
+    vertical-align: middle;
+  }
+
+  .c7n-template-btn {
+    float: right;
+  }
+}

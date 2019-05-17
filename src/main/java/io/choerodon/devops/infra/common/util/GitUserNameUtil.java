@@ -29,6 +29,12 @@ public class GitUserNameUtil {
         return TypeUtil.objToInteger(userId);
     }
 
+    public static String getEmail(){
+        CustomUserDetails details = DetailsHelper.getUserDetails();
+        return  details.getEmail();
+
+    }
+
 
     /**
      * 获取登录用户名

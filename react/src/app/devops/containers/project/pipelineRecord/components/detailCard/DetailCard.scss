@@ -1,0 +1,121 @@
+@import "../status";
+
+$normal_color: #000;
+$light_color: rgba(0, 0, 0, .54);
+
+.c7ncd-pipeline-card {
+  flex: 1;
+  padding: 24px 16px;
+  width: 270px;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 2px 1px -1px rgba(0, 0, 0, 0.12), 0 1px 3px 0 rgba(0, 0, 0, 0.20);
+
+  .c7ncd-task-top {
+    margin-bottom: 24px;
+    color: $light_color;
+
+    span {
+      color: $normal_color;
+    }
+  }
+
+  .c7ncd-pipeline-task-empty {
+    padding: 10px;
+    text-align: center;
+    color: rgba(0, 0, 0, .36);
+  }
+
+  .c7ncd-task-header {
+    margin-bottom: 0;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    font-size: 14px;
+    color: $normal_color;
+  }
+
+  .c7ncd-pipeline-collapse {
+    padding: 0;
+
+    .c7ncd-pipeline-panel {
+
+      .c7ncd-pipeline-task {
+        min-height: 22px;
+        color: $normal_color;
+
+        .c7ncd-pipeline-task-label {
+          color: $light_color;
+        }
+
+        .c7ncd-pipeline-tag_delete {
+          display: inline-block;
+          transform: scale(0.8333);
+          padding: 2px;
+          border-radius: 2px;
+          font-size: 12px;
+          color: #fff;
+          background: #d3d3d3;
+        }
+      }
+
+      .c7n-collapse-header {
+        padding: 0;
+        line-height: 36px;
+
+        .c7n-collapse-expand-icon {
+          vertical-align: middle;
+
+          &::before {
+            content: '\E5CF';
+          }
+        }
+
+        .c7ncd-pipeline-panel-title {
+          display: inline-block;
+          width: 216px;
+
+          .c7ncd-pipeline-panel-name {
+            display: inline-block;
+            width: 196px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: middle;
+
+            .c7ncd-stage-name-light {
+              color: $light_color;
+            }
+          }
+
+          .task-status {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+
+            &_running {
+              color: $running;
+            }
+
+            &_pendingcheck {
+              color: $pendingcheck;
+            }
+
+            &_success {
+              color: $success;
+            }
+
+            &_failed {
+              color: $failed;
+            }
+
+            &_stop {
+              color: $stop;
+            }
+
+            &_unexecuted {
+              color: $unexecuted;
+            }
+          }
+        }
+      }
+    }
+  }
+}

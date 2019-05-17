@@ -2,6 +2,7 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
@@ -29,7 +30,7 @@ public interface IamRepository {
 
     List<ProjectE> listIamProjectByOrgId(Long organizationId, String name, String[] params);
 
-    Page<ProjectDO> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
+    List<ProjectE> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
 
     List<UserE> listUsersByIds(List<Long> ids);
 
@@ -37,11 +38,11 @@ public interface IamRepository {
 
     UserE queryByEmail(Long projectId, String email);
 
-    Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
-                                                         RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId,
-                                                         Long projectId, Boolean doPage);
+    PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+                                                             RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId,
+                                                             Long projectId, Boolean doPage);
 
-    Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, Boolean doPage);
+    PageInfo<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, Boolean doPage);
 
     List<ProjectWithRoleDTO> listProjectWithRoleDTO(Long userId);
 

@@ -1,0 +1,17 @@
+.c7ncd-pipeline-empty {
+  width: 412px;
+  margin: 90px auto;
+
+  .c7n-card-bordered {
+    border: 1px solid #e7e7e7;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  .c7ncd-pipeline-empty-msg {
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  .c7ncd-pipeline-empty-btn {
+    margin-top: 32px;
+  }
+}

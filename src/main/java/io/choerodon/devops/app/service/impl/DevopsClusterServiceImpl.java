@@ -19,7 +19,6 @@ import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO;
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,11 +138,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public Page<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
                                          String[] params) {
-        Page<ProjectDO> projects = iamRepository
+        List<ProjectE> projects = iamRepository
                 .queryProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params);
         Page<ProjectDTO> pageProjectDTOS = new Page<>();
         List<ProjectDTO> projectDTOS = new ArrayList<>();
-        if (projects.getContent() != null) {
+        if (!projects.isEmpty()) {
             BeanUtils.copyProperties(projects, pageProjectDTOS);
             List<Long> projectIds;
             if (clusterId != null) {
@@ -152,7 +151,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             } else {
                 projectIds = new ArrayList<>();
             }
-            projects.getContent().forEach(projectDO -> {
+            projects.forEach(projectDO -> {
                 ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
                 projectDTOS.add(projectDTO);
             });
@@ -292,7 +291,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public DevopsClusterRepDTO queryByCode(Long organizationId, String code) {
         devopsClusterRepository.queryByCode(organizationId, code);
-        return ConvertHelper.convert(devopsClusterRepository.queryByCode(organizationId, code),DevopsClusterRepDTO.class);
+        return ConvertHelper.convert(devopsClusterRepository.queryByCode(organizationId, code), DevopsClusterRepDTO.class);
     }
 
     /**

@@ -1,0 +1,150 @@
+$suc: #00bfa5;
+$fal: #ff9915;
+$FAL_ICON: #f86300;
+
+.c7n-cls-disconnect {
+  .c7n-cls-status-line {
+    background-color: $fal !important;
+  }
+
+  .c7n-cls-status-tag {
+    background-color: rgba(248, 99, 0, 0.2) !important;
+    color: $fal !important;
+    border: 1px solid $fal !important;
+  }
+}
+
+.c7n-cls-wrap {
+  margin-bottom: 12px;
+}
+
+.c7n-cls-head {
+  display: flex;
+  align-items: center;
+  padding: 6px 18px;
+  background-color: #f8f8f8;
+
+  .c7n-cls-status-line {
+    height: 24px;
+    width: 5px;
+    border-radius: 5px;
+    background-color: $suc;
+    margin-right: 20px;
+  }
+
+  .c7n-cls-status-tag {
+    padding: 0 2px;
+    background: rgba(0, 191, 165, 0.2);
+    color: $suc;
+    border: 1px solid $suc;
+    border-radius: 2px;
+    font-size: 12px;
+    height: 18px;
+    line-height: 18px;
+    font-weight: 500;
+    margin-right: 80px;
+
+    div {
+      transform: scale(0.83333);
+    }
+  }
+
+  &-name {
+    line-height: 24px;
+    font-size: 16px;
+    color: #000;
+    margin-right: 8px;
+  }
+
+  &-des {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  &-action {
+    margin-left: auto;
+
+    i {
+      font-size: 18px;
+    }
+  }
+}
+
+.c7n-cls-up {
+  width: 0;
+  height: 0;
+  margin-right: 3px;
+  margin-bottom: 5px;
+  border: 5px solid transparent;
+  border-bottom: 10px solid $suc;
+}
+
+.c7n-cls-up-rv {
+  min-width: 120px;
+}
+
+.c7n-cls-down {
+  width: 0;
+  height: 0;
+  margin-right: 3px;
+  margin-top: 5px;
+  border: 5px solid transparent;
+  border-top: 10px solid #57aaf8;
+  margin-left: 10px;
+}
+
+.c7n-cls-table-cm {
+  display: flex;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.c7n-cls-node-table {
+  padding-left: 25px;
+
+  .c7n-table-thead > tr > th {
+    color: #000;
+    font-weight: normal;
+    background-color: transparent;
+    border: none;
+    padding-top: 12px;
+  }
+
+  .c7n-table-tbody > tr > td {
+    color: rgba(0, 0, 0, 0.65);
+    border: none;
+  }
+}
+
+.c7n-cls-node-table-footer {
+  display: flex;
+
+  .c7n-cls-node-pg {
+    line-height: 32px;
+    margin-top: 10px;
+    margin-left: auto;
+  }
+}
+
+.c7n-cls-node-more {
+  margin-top: 12px;
+  margin-left: 40px;
+
+  padding: 0;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  color: #3f51b5;
+  text-align: left;
+
+  line-height: 32px;
+
+  &.c7n-btn-flat:hover {
+    background: transparent;
+  }
+
+  .c7n-ripple-wrapper {
+    display: none;
+  }
+}

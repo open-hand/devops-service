@@ -1,0 +1,42 @@
+.c7n-ctf-create {
+  .c7n-creation-panel {
+    .ctf-upload-head {
+      margin: 32px 0 20px 0;
+      .ctf-upload-title {
+        margin-bottom: 12px;
+        line-height: 20px;
+        font-weight: bold;
+      }
+      .ctf-upload-text {
+        line-height: 16px;
+        color: rgba(0, 0, 0, .65);
+        font-size: 12px;
+        margin-top: 12px;
+      }
+
+      .c7n-table-title-tip {
+
+        span {
+          font-weight: 500;
+        }
+
+        i {
+          margin-left: 11px;
+        }
+      }
+    }
+    .ctf-upload-item {
+      .ctf-upload-button {
+        color: #3f51b5;
+        &:disabled {
+          color: rgba(0, 0, 0, .26);
+        }
+      }
+    }
+    .c7n-form-domains {
+      .c7n-input-suffix {
+        color: rgba(0, 0, 0, 0.36);
+      }
+    }
+  }
+}

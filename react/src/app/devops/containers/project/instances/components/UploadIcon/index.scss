@@ -1,0 +1,46 @@
+.c7n-instance-upload {
+  display: inline-block;
+  vertical-align: middle;
+  padding-top: 2px;
+  .c7n-instance-upload-arrow {
+    stroke: #3f51b5;
+    stroke-width: 0;
+    stroke-linecap: square;
+    fill: #3f51b5;
+    animation: upload 1.5s linear infinite;
+  }
+
+  .c7n-instance-upload-line1,
+  .c7n-instance-upload-line2 {
+    stroke: #fff;
+    stroke-width: 4px;
+    stroke-linecap: square;
+    fill: #fff;
+  }
+
+  .c7n-instance-upload-line2 {
+    fill: #3f51b5;
+    stroke: #3f51b5;
+    stroke-width: 3px;
+  }
+}
+
+.c7n-instance-upload-text {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+.c7n-instance-upload-failed {
+  color: #f44336;
+  vertical-align: middle;
+}
+
+@keyframes upload {
+  0% {
+    transform: translate(0, 14px);
+  }
+  100% {
+    transform: translate(0, -14px);
+  }
+}

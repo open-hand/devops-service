@@ -248,6 +248,12 @@ public interface ApplicationService {
      */
     void updateIamApplication(IamAppPayLoad iamAppPayLoad);
 
+    /**
+     * 处理iam服务删除应用
+     *
+     * @param iamAppPayLoad 应用相关信息
+     */
+    void deleteIamApplication(IamAppPayLoad iamAppPayLoad);
 
     /**
      * 校验harbor配置信息是否正确
@@ -288,5 +294,12 @@ public interface ApplicationService {
      */
     SonarContentsDTO getSonarContent(Long projectId, Long appId);
 
+    /**
+     * 查看sonarqube相关报表
+     *
+     * @param projectId 项目Id
+     * @param appId     应用id
+     * @return
+     */
     SonarTableDTO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime);
 }

@@ -1,0 +1,35 @@
+.c7n-report-date-wrap {
+  margin-top: 13px;
+  .c7n-report-time-btn {
+    display: inline-block;
+    .c7n-btn {
+      padding: 0 8px;
+    }
+  }
+
+  .c7n-report-time-pick {
+    display: inline-block;
+    height: 32px;
+    width: 214px;
+    line-height: 32px;
+    border-radius: 0 2px 2px 0;
+
+    .c7n-calendar-picker-input {
+      margin-bottom: 3px;
+      padding-left: 24px;
+    }
+
+    .c7n-calendar-range-picker-input {
+      width: 80px;
+    }
+
+    .c7n-calendar-picker-icon {
+      left: 8px;
+      font-size: 20px;
+    }
+
+    .c7n-calendar-underline {
+      display: none;
+    }
+  }
+}

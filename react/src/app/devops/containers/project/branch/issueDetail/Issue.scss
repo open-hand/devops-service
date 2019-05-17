@@ -1,0 +1,198 @@
+.c7n-branch-issue {
+  .c7n-progress-status-success .c7n-progress-bg {
+    background-color: #00bfa5;
+  }
+
+  .issue-num {
+    display: inline-block;
+    margin-right: 30px;
+  }
+
+  .issue-summary {
+    display: inline-block;
+    font-size: 14px;
+    color: #000;
+    line-height: 28px;
+    margin-bottom: 16px;
+  }
+
+  .branch-issue-status {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: start;
+    -webkit-justify-content: flex-start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+    -webkit-box-align: start;
+    -webkit-align-items: flex-start;
+    -ms-flex-align: start;
+    align-items: flex-start;
+
+    .issue-status {
+      display: flex;
+      flex: 1 1 0%;
+
+      .issue-status-icon-large {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        margin-right: 12px;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        i {
+          font-size: 33px;
+        }
+      }
+
+      .issue-status-icon-small {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        margin-right: 12px;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        i {
+          font-size: 24px;
+        }
+      }
+    }
+
+    .issue-status-title {
+      font-size: 12px;
+      color: rgba(0, 0, 0, 0.54);
+      margin-bottom: 4px;
+    }
+
+    .issue-status-text {
+      font-size: 13px;
+      color: #000;
+      text-align: left;
+      line-height: 18px;
+    }
+  }
+
+  .issue-detail-head-wrapper {
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    // height: 40px;
+    margin-bottom: 16px;
+    margin-top: 32px;
+  }
+
+  .issue-detail-head {
+    display: inline-block;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+    color: #000;
+    width: 54px;
+    font-size: 14px;
+    line-height: 22px;
+
+    i {
+      width: 18px;
+      margin-right: 8px;
+      font-size: 18px;
+    }
+  }
+
+  .issue-detail-head-hr {
+    display: inline-block;
+    width: 90%;
+    height: 1px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    margin-left: 14px;
+  }
+
+  .branch-issue-detail {
+    margin-top: 32px;
+
+    .issue-detail-content {
+      .issue-detail-tr {
+        display: inline-table;
+        width: 50%;
+      }
+
+      .issue-detail-module-value {
+        font-size: 13px;
+        color: #3f51b5;
+        text-align: left;
+        line-height: 20px;
+      }
+
+      .issue-detail-label-value {
+        border-radius: 100px;
+        // width: 48px;
+        height: 20px;
+        font-size: 12px;
+        color: #000;
+        line-height: 20px;
+      }
+
+      .issue-detail-epic-value {
+        border: 1px solid #4d90fe;
+        border-radius: 2px;
+        height: 20px;
+        font-size: 13px;
+        color: #4d90fe;
+      }
+
+      .issue-detail-time {
+        width: 100px;
+        display: inline-block;
+        margin-right: 5px;
+      }
+
+      .issue-detail-title-bold {
+        font-size: 13px;
+        color: #000;
+        line-height: 20px;
+        margin-bottom: 10px;
+      }
+    }
+  }
+
+  .issue-detail-content-title {
+    display: inline-block;
+    margin: 0 0 10px 30px;
+    width: 120px;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.65);
+    text-align: left;
+    line-height: 20px;
+  }
+
+  .issue-user-img {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: #c5cbe8;
+    background-position: center;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    color: #3f51b5;
+    text-transform: uppercase;
+    text-align: center;
+    vertical-align: middle;
+    margin-right: 5px;
+  }
+}

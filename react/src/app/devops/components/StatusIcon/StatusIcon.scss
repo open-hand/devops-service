@@ -1,0 +1,18 @@
+.c7n-status-failed {
+  color: #f44336;
+  vertical-align: middle;
+  margin-left: 5px;
+}
+
+.c7n-status-progress {
+  margin-left: 5px;
+  circle {
+    stroke: #3f51b5;
+    stroke-width: 7px;
+  }
+}
+
+.c7n-status-text {
+  display: inline-block;
+  vertical-align: middle;
+}

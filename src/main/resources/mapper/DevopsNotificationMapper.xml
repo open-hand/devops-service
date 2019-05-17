@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsNotificationMapper">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.DevopsNotificationDO">
+        SELECT
+        dn.id,
+        dn.env_id,
+        dn.notify_object,
+        dn.notify_trigger_event,
+        dn.notify_type,
+        de.`name` as envName
+        FROM
+        devops_notification dn
+        JOIN devops_env de ON dn.env_id = de.id
+        WHERE
+        dn.project_id=#{projectId}
+        <if test="envId != null">
+            AND de.env_id = #{envId}
+        </if>
+        <include refid="sqlparam"/>
+    </select>
+
+    <select id="queryByEnvIdAndEvent" parameterType="java.util.ArrayList" resultType="java.lang.Integer">
+        SELECT
+        COUNT(1)
+        FROM
+        devops_notification dn
+        WHERE
+        dn.project_id=#{projectId}
+        AND dn.env_id = #{envId}
+        AND
+        <foreach collection="notifyTriggerEvent" item="notifyTriggerEvent" separator="OR" >
+             dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{notifyTriggerEvent, jdbcType=VARCHAR}),'%')
+        </foreach>
+    </select>
+
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.notifyObject != null and searchParam.notifyObject.size > 0'>
+                AND
+                <foreach collection="searchParam.notifyObject" item="notifyObject" separator=" OR " >
+                    dn.notify_object LIKE CONCAT(CONCAT('%', #{notifyObject, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.notifyTriggerEvent != null and searchParam.notifyTriggerEvent.size > 0'>
+                AND
+                <foreach collection="searchParam.notifyTriggerEvent" item="notifyTriggerEvent" separator=" OR ">
+                    dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{notifyTriggerEvent, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.notifyType != null and searchParam.notifyType.size > 0'>
+                AND
+                <foreach collection="searchParam.notifyType" item="notifyType">
+                    dn.notify_type=#{notifyType}
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (dn.notify_object LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dn.notify_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+    </sql>
+
+
+</mapper>

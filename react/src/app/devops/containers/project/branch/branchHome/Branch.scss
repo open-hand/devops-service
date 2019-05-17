@@ -1,0 +1,153 @@
+.c7n-branch {
+  .c7n-header-table {
+    font-size: 16px;
+    font-weight: 500;
+    color: #000;
+    line-height: 28px;
+    margin: 12px 0 16px 0;
+  }
+
+  .c7n-branch-table {
+    margin-bottom: 30px;
+  }
+
+  .c7n-table-column {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+  }
+
+  .c7n-table-column-commit {
+    white-space: nowrap;
+    overflow: hidden;
+    // text-overflow: ellipsis;
+    max-width: 59px;
+  }
+
+  .c7n-tag-column-commit {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 18%;
+  }
+
+  .c7n-paginationWrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+
+  .c7n-table-title {
+    padding: 0;
+    padding-bottom: 8px;
+  }
+
+  .branch-select_512 {
+    width: 512px;
+    margin-bottom: 20px;
+  }
+
+  .branch-user-img {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: #c5cbe8;
+    color: #3f51b5;
+    text-transform: uppercase;
+    text-align: center;
+    margin-right: 5px;
+    float: left;
+    background-size: 100% 100%;
+  }
+}
+
+.branch-icon-help {
+  font-size: 16px;
+  color: rgba(0, 0, 0, 0.36);
+  padding-left: 5px;
+  height: 20px;
+}
+
+.branch-popover {
+  width: 440px;
+  // padding: 12px !important;
+
+  .branch-popover-span {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    overflow: hidden;
+    vertical-align: top;
+    margin-right: 6px;
+    margin-top: 5px;
+  }
+
+  .span-master {
+    background: #45a3fc;
+  }
+
+  .span-bugfix {
+    background: #ffb100;
+  }
+
+  .span-custom {
+    background: #af4cff;
+  }
+
+  .span-feature {
+    background: #f953ba;
+  }
+
+  .span-release {
+    background: #00bf96;
+  }
+
+  .span-hotfix {
+    background: #f44336;
+  }
+
+  .branch-popover-content {
+    width: 88%;
+    display: inline-block;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.65);
+    line-height: 18px;
+    margin-bottom: 10px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .branch-popover-p {
+    margin: 0;
+    line-height: 18px;
+  }
+}
+
+.c7n-branch-modal {
+  text-align: center;
+}
+
+.c7n-branch-modal-title {
+  font-size: 20px;
+  color: #000;
+  text-align: left;
+}
+
+.c7n-branch-progress .c7n-progress-inner {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.branch-col-icon {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.65);
+  line-height: 20px;
+}

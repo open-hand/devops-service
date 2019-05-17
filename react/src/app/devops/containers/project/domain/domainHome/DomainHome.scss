@@ -1,0 +1,86 @@
+.c7n-domain-wrapper {
+  .c7n-deploy-square {
+    background: rgba(0, 0, 0, 0.36);
+    border-radius: 2px;
+    font-size: 10px;
+    color: #fff;
+    line-height: 14px;
+    padding: 1px;
+    margin-right: 8px;
+  }
+
+  .c7n-deploy-circle {
+    background: rgba(255, 177, 0, 0.64);
+    height: 16px;
+    width: 16px;
+    font-size: 10px;
+    color: #fff;
+    line-height: 16px;
+    text-align: center;
+    padding: 1px;
+    border-radius: 50%;
+    margin-right: 8px;
+    margin-left: 8px;
+    display: inline-block;
+  }
+
+  .c7n-deploy-text_gray {
+    color: rgba(0, 0, 0, 0.26);
+  }
+
+  .c7n-network-col_border {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    padding: 5px 0;
+    height: 31px;
+    overflow: hidden;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .c7n-network-service {
+    display: flex;
+    align-items: center;
+  }
+
+  .c7n-network-square {
+    display: inline-block;
+    background: #f3f3f3;
+    border-radius: 2px;
+    font-size: 10px;
+    color: rgba(0, 0, 0, 0.54);
+    line-height: 14px;
+    padding: 1px 6px;
+    margin-right: 8px;
+    margin-bottom: 5px;
+    width: 145px;
+  }
+
+  .c7n-network-action {
+    span {
+      font-size: 18px;
+      margin-right: 12px;
+    }
+  }
+
+  .c7n-network-text_top {
+    width: 84px;
+  }
+
+  .c7n-network-change {
+    font-size: 24px;
+    color: #3f51b5;
+    float: right;
+  }
+
+  .c7n-app-icon-disabled {
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.36);
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    display: inline-block;
+  }
+}
