@@ -10,6 +10,7 @@ import StatusIcon from "../../../../components/StatusIcon";
 import EnvFlag from "../../../../components/envFlag";
 import "./CertTable.scss";
 import Tips from "../../../../components/Tips";
+import DeleteModal from "../../../../components/deleteModal/DeleteModal";
 
 const { AppState } = stores;
 const HEIGHT =
@@ -269,7 +270,7 @@ class CertTable extends Component {
       intl: { formatMessage },
       store,
     } = this.props;
-    const { removeDisplay, deleteStatus, certName } = this.state;
+    const { removeDisplay, deleteStatus, certName, deleteCert } = this.state;
     const {
       filters,
       sorter: { columnKey, order },
@@ -345,33 +346,43 @@ class CertTable extends Component {
           columns={columns}
           rowKey={record => record.id}
         />
-        <Modal
-          confirmLoading={deleteStatus}
-          visible={removeDisplay}
-          title={`${formatMessage({ id: "ctf.delete" })}“${certName}”`}
-          closable={false}
-          footer={[
-            <Button
-              key="back"
-              onClick={this.closeRemoveModal}
-              disabled={deleteStatus}
-            >
-              <FormattedMessage id="cancel" />
-            </Button>,
-            <Button
-              key="submit"
-              loading={deleteStatus}
-              type="danger"
-              onClick={this.handleDelete}
-            >
-              <FormattedMessage id="delete" />
-            </Button>,
-          ]}
-        >
-          <div className="c7n-padding-top_8">
-            <FormattedMessage id="ctf.delete.tooltip" />
-          </div>
-        </Modal>
+        {removeDisplay && (
+          <DeleteModal
+            objectType="ctf"
+            visible={removeDisplay}
+            title={`${formatMessage({ id: "ctf.delete" })}“${certName}”`}
+            onClose={this.closeRemoveModal}
+            onOk={this.handleDelete}
+            objectId={deleteCert}
+          />
+        )}
+        {/*<Modal*/}
+        {/*confirmLoading={deleteStatus}*/}
+        {/*visible={removeDisplay}*/}
+        {/*title={`${formatMessage({ id: "ctf.delete" })}“${certName}”`}*/}
+        {/*closable={false}*/}
+        {/*footer={[*/}
+        {/*<Button*/}
+        {/*key="back"*/}
+        {/*onClick={this.closeRemoveModal}*/}
+        {/*disabled={deleteStatus}*/}
+        {/*>*/}
+        {/*<FormattedMessage id="cancel" />*/}
+        {/*</Button>,*/}
+        {/*<Button*/}
+        {/*key="submit"*/}
+        {/*loading={deleteStatus}*/}
+        {/*type="danger"*/}
+        {/*onClick={this.handleDelete}*/}
+        {/*>*/}
+        {/*<FormattedMessage id="delete" />*/}
+        {/*</Button>,*/}
+        {/*]}*/}
+        {/*>*/}
+        {/*<div className="c7n-padding-top_8">*/}
+        {/*<FormattedMessage id="ctf.delete.tooltip" />*/}
+        {/*</div>*/}
+        {/*</Modal>*/}
       </Fragment>
     );
   }
