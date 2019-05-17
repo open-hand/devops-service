@@ -16,6 +16,7 @@ import io.choerodon.devops.app.service.DevopsCheckLogService
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.ProjectHook
+import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
 import io.choerodon.devops.infra.common.util.TypeUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.common.util.enums.PipelineStatus
@@ -227,8 +228,9 @@ class DevopsCheckControllerSpec extends Specification {
         List<RoleDTO> roleDTOS = Arrays.asList(roleDTO)
         PageInfo<RoleDTO> page = new PageInfo(roleDTOS)
         when(mockIamServiceClient.queryRoleIdByCode(any(RoleSearchDTO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
-
-        when(mockIamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(new PageInfo(0,0), HttpStatus.OK))
+        List<UserDTO> userDTOS = new ArrayList<>()
+        PageInfo<RoleDTO> page1 = new PageInfo(userDTOS)
+        when(mockIamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(page1, HttpStatus.OK))
 
         // 准备升级到0.10 的数据
         when(mockGitlabServiceClient.updateProjectHook(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ProjectHook(), HttpStatus.OK))
@@ -283,9 +285,9 @@ class DevopsCheckControllerSpec extends Specification {
         userWithRoleDTO.setLoginName("userWithRoleDTO")
         userWithRoleDTO.setId(userAttrDO.getIamUserId())
         List<UserWithRoleDTO> userWithRoleDTOList = Arrays.asList(userWithRoleDTO)
-        PageInfo userWithRolePageInfo = new PageInfo(1, 10, true)
-        Page<UserWithRoleDTO> userWithRoleDTOPage = new Page<>(userWithRoleDTOList, userWithRolePageInfo, 1)
-        when(mockIamServiceClient.queryUserByProjectId(eq(devopsProjectDO.getIamProjectId()), anyInt(), anyInt(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(userWithRoleDTOPage, HttpStatus.OK))
+        PageInfo userWithRolePageInfo = new PageInfo(userWithRoleDTOList)
+//        PageInfo<UserWithRoleDTO> userWithRoleDTOPage = new PageInfo<>(userWithRoleDTOList, userWithRolePageInfo, 1)
+        when(mockIamServiceClient.queryUserByProjectId(eq(devopsProjectDO.getIamProjectId()), anyInt(), anyInt(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(userWithRolePageInfo, HttpStatus.OK))
 
         MemberDO memberDO = new MemberDO()
         memberDO.setId(TypeUtil.objToInteger(userAttrDO.getGitlabUserId()))
@@ -376,9 +378,9 @@ class DevopsCheckControllerSpec extends Specification {
         devopsCheckLogMapper.selectAll().forEach { devopsCheckLogMapper.delete(it) }
         devopsGitlabPipelineMapper.selectAll().forEach { devopsGitlabPipelineMapper.delete(it) }
         previousDevopsProjectDOList.forEach { devopsProjectMapper.insert(it) }
-        devopsEnvPodMapper.selectAll().forEach{ devopsEnvPodMapper.delete(it) }
-        devopsEnvResourceMapper.selectAll().forEach{ devopsEnvResourceMapper.delete(it) }
-        devopsEnvResourceDetailMapper.selectAll().forEach{ devopsEnvResourceDetailMapper.delete(it) }
+        devopsEnvPodMapper.selectAll().forEach { devopsEnvPodMapper.delete(it) }
+        devopsEnvResourceMapper.selectAll().forEach { devopsEnvResourceMapper.delete(it) }
+        devopsEnvResourceDetailMapper.selectAll().forEach { devopsEnvResourceDetailMapper.delete(it) }
     }
 
     // 平滑升级到0.8版本

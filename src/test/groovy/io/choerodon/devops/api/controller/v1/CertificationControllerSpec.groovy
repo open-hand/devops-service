@@ -91,9 +91,6 @@ class CertificationControllerSpec extends Specification {
             DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
             DependencyInjectUtil.setAttribute(certificationService, "devopsEnvUserPermissionRepository", mockDevopsEnvUserPermissionRepository)
             DependencyInjectUtil.setAttribute(certificationService, "gitlabGroupMemberService", gitlabGroupMemberService)
-            DependencyInjectUtil.setAttribute(certificationService, "devopsEnvironmentService", devopsEnvironmentService)
-            DependencyInjectUtil.setAttribute(certificationService, "devopsEnvironmentService", devopsEnvironmentService)
-            DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
 
 
             // environment
@@ -143,7 +140,6 @@ class CertificationControllerSpec extends Specification {
             DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
             DependencyInjectUtil.restoreDefaultDependency(certificationService, "devopsEnvUserPermissionRepository")
             DependencyInjectUtil.restoreDefaultDependency(certificationService, "gitlabGroupMemberService")
-            DependencyInjectUtil.restoreDefaultDependency(certificationService, "devopsEnvironmentService")
 
             devopsEnvironmentMapper.delete(devopsEnvironmentDO)
             devopsCertificationMapper.delete(certificationDO)
@@ -173,8 +169,8 @@ class CertificationControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
         def url = BASE_URL + "/list_by_options?page=0&size=10&sort=id,desc&env_id={env_id}"
         def requestBody = "{\"searchParam\":{},\"param\":\"\"}"
 

@@ -266,8 +266,8 @@ class DevopsClusterControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '查询shell脚本'
         def e = restTemplate.getForEntity(MAPPING + "/query_shell/{clusterId}", String.class, 1L, ID)
@@ -284,8 +284,8 @@ class DevopsClusterControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '集群列表查询'
         def e = restTemplate.postForEntity(MAPPING + "/page_cluster?page=0&size=10&doPage=true", str, Page.class, 1L)
@@ -335,7 +335,7 @@ class DevopsClusterControllerSpec extends Specification {
         given: 'mock envUtil'
         List<Long> envList = new ArrayList<>()
         envList.add(999L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
 
         when: '删除集群'
         restTemplate.delete(MAPPING + "/{clusterId}", 1L, devopsClusterMapper.selectByPrimaryKey(ID).getId())

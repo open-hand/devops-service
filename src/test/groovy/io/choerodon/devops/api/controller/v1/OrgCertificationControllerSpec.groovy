@@ -72,9 +72,9 @@ class OrgCertificationControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(anyLong())
 
-        PageInfo<ProjectDO> projectDOPage = new PageInfo<>(projectDOList)
         List<ProjectDO> projectDOList = new ArrayList<>()
         projectDOList.add(projectDO)
+        PageInfo<ProjectDO> projectDOPage = new PageInfo<>(projectDOList)
         ResponseEntity<PageInfo<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
         Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), any(), any())).thenReturn(projectDOPageResponseEntity)
     }

@@ -217,8 +217,8 @@ class DevopsAutoDeployControllerSpec extends Specification {
         connectedEnvList.add(1L)
         List<Long> updateEnvList = new ArrayList<>()
         updateEnvList.add(1L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> connectedEnvList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> updateEnvList
+        envUtil.getConnectedEnvList() >> connectedEnvList
+        envUtil.getUpdatedEnvList() >> updateEnvList
 
         when: '分页查询应用部署'
         def page = restTemplate.postForObject(MAPPING + "/list_by_options?user_id=1&env_id=1&app_id=1", searchParam, Page.class, 1L)

@@ -137,7 +137,7 @@ class GitlabWebHookControllerSpec extends Specification {
             Mockito.when(mockGitlabServiceClient.getCommit(any(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
 
             // mock env util
-            Mockito.when(mockEnvUtil.getConnectedEnvList(Mockito.any(EnvListener))).thenReturn(Arrays.asList(1L))
+            Mockito.when(mockEnvUtil.getConnectedEnvList()).thenReturn(Arrays.asList(1L))
 
             // mock sagaClient
             Mockito.doReturn(new SagaInstanceDTO()).when(mockSagaClient).startSaga(anyString(), Mockito.any(StartInstanceDTO))

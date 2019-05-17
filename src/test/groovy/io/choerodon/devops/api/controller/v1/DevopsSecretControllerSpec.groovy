@@ -95,7 +95,6 @@ class DevopsSecretControllerSpec extends Specification {
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
-        devopsSecretServiceImpl.initMockServer(devopsEnvironmentService)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setName("pro")
@@ -160,7 +159,7 @@ class DevopsSecretControllerSpec extends Specification {
         secretReqDTO.setValue(valueMap)
 
         and: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         when: '创建密钥'
         restTemplate.put(MAPPING, secretReqDTO, 1L)
@@ -213,7 +212,7 @@ class DevopsSecretControllerSpec extends Specification {
 
     def "DeleteSecret"() {
         given: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
 
         when: '删除密钥'
         restTemplate.delete(MAPPING + "/1/1", 1L)

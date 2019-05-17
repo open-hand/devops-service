@@ -360,8 +360,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(2L)
         List<Long> connectedClusterList = new ArrayList<>()
         connectedClusterList.add(3L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> connectedClusterList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> connectedClusterList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下查询存在网络环境'
         def envs = restTemplate.getForObject("/v1/projects/1/envs/deployed", List.class)
@@ -376,8 +376,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下查询环境'
         def envs = restTemplate.getForObject("/v1/projects/1/envs?active=true", List.class)
@@ -401,8 +401,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvGroupDO1.setProjectId(1L)
         devopsEnvGroupMapper.insert(devopsEnvGroupDO)
         devopsEnvGroupMapper.insert(devopsEnvGroupDO1)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下环境流水线查询环境'
         def list = restTemplate.getForObject("/v1/projects/1/envs/groups?active=true", List.class)
@@ -426,8 +426,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(2L)
         List<Long> connectedEnvList = new ArrayList<>()
         connectedEnvList.add(3L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> connectedEnvList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> connectedEnvList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下启用停用环境'
         restTemplate.put("/v1/projects/1/envs/1/active?active=false", Boolean.class)
@@ -467,8 +467,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(1L)
         envList.add(2L)
         Long[] sequence = [2L, 1L]
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下环境流水线排序'
         restTemplate.put("/v1/projects/1/envs/sort", sequence, List.class)
@@ -519,8 +519,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         and: 'mock envUtil方法'
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下查询有正在运行实例的环境'
         def envs = restTemplate.getForObject("/v1/projects/1/envs/instance", List.class)
@@ -643,8 +643,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下查询集群信息'
         def list = restTemplate.getForObject("/v1/projects/1/envs/clusters", List.class)
