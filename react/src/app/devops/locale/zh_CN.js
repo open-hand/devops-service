@@ -552,6 +552,9 @@ const zhCN = {
   ci_created: "创建中",
   ci_skipped: "未执行",
   ci_manual: "未执行",
+  captcha: "验证码",
+  send_captcha: "发送验证码",
+  captcha_error: "验证码错误",
 
   // 刷新
   refresh: "刷新",

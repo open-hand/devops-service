@@ -1,6 +1,7 @@
 import { observable, action, computed } from "mobx";
-import { store } from "@choerodon/boot";
+import { store, axios } from "choerodon-front-boot";
 import { storage } from "../utils";
+import { handleProptError } from "../utils";
 
 const REFRESH_INTERVAL = 1000 * 10;
 const REFRESH_AGE = 7 * 24 * 60 * 60 * 1000;
@@ -84,6 +85,30 @@ class DevopsStore {
       this.clearAutoRefresh();
     }
   }
+
+  deleteCheck = (projectId, envId, objectType) =>
+    axios
+      .get(`/devops/v1/projects/${projectId}/notification/check_delete_resource?env_id=${envId}&objectType=${objectType}`)
+      .then(data => {
+        const res = handleProptError(data);
+        return res;
+      });
+
+  sendMessage = (projectId, envId, objectId, notificationId, objectType) =>
+    axios
+      .get(`/devops/v1/projects/${projectId}/notification/send_message?env_id=${envId}&object_id=${objectId}&notification_id=${notificationId}&objectType=${objectType}`)
+      .then(data => {
+        const res = handleProptError(data);
+        return res;
+      });
+
+  validateCaptcha = (projectId, envId, objectId, captcha, objectType) =>
+    axios
+      .get(`/devops/v1/projects/${projectId}/notification/validate_captcha?env_id=${envId}&object_id=${objectId}&captcha=${captcha}&objectType=${objectType}`)
+      .then(data => {
+        const res = handleProptError(data);
+        return res;
+      });
 }
 
 /**
