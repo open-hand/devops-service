@@ -3,7 +3,6 @@ import { observer, inject } from "mobx-react";
 import { injectIntl, FormattedMessage } from "react-intl";
 import { Button, Modal, Form, Input, Spin } from "choerodon-ui";
 import PropTypes from "prop-types";
-import _ from 'lodash';
 import DevopsStore from '../../stores/DevopsStore';
 import EnvOverviewStore from "../../stores/project/envOverview";
 
@@ -58,25 +57,18 @@ class DeleteModal extends Component {
     } = this.props;
     const envId = EnvOverviewStore.getTpEnvId;
     // 发送请求判断是否需要验证
-    // DevopsStore.deleteCheck(projectId, envId, objectType)
-    //   .then(data => {
-    //     if (data && data.notificationId) {
-    //       this.setState({
-    //         isVerification: true,
-    //         method: data.method,
-    //         user: data.user,
-    //         notificationId: data.notificationId,
-    //       });
-    //     }
-    //     this.setState({ loading: false })
-    //   });
-    this.setState({
-      isVerification: true,
-      method: "短信",
-      user: "20399林岩芳",
-      notificationId: 1,
-      loading: false,
-    });
+    DevopsStore.deleteCheck(projectId, envId, objectType)
+      .then(data => {
+        if (data && data.notificationId) {
+          this.setState({
+            isVerification: true,
+            method: data.method,
+            user: data.user,
+            notificationId: data.notificationId,
+          });
+        }
+        this.setState({ loading: false, canDelete: true });
+      });
   }
 
   /**
@@ -105,9 +97,13 @@ class DeleteModal extends Component {
       });
     }, 1000);
     // 点击发送验证码
-    // DevopsStore.sendMessage(projectId, envId, objectId, notificationId, objectType);
+    DevopsStore.sendMessage(projectId, envId, objectId, notificationId, objectType);
   };
 
+  /**
+   * 判断是否可点击删除
+   * @param e
+   */
   checkCaptcha = (e) => {
     const value = e.target.value;
     value && value.length === 6 && this.setState({ canDelete: true})
@@ -193,7 +189,7 @@ class DeleteModal extends Component {
             key="submit"
             type="danger"
             loading={deleteStatus}
-            disabled={canDelete}
+            disabled={!canDelete}
             onClick={isVerification ? this.handleDelete : onOk}
           >
             <FormattedMessage id="delete" />
@@ -224,6 +220,7 @@ class DeleteModal extends Component {
                         <Input
                           label={<FormattedMessage id="captcha" />}
                           onChange={this.checkCaptcha}
+                          maxLength={6}
                         />,
                       )}
                     </FormItem>

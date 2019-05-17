@@ -1367,6 +1367,8 @@ const zhCN = {
   "ctf.delete": "删除证书",
   "ctf.delete.tooltip":
     "删除证书后，将会导致与此证书相关的域名失效。确定要删除该证书吗？",
+  "ctf.delete.verification.tooltip":
+    "若确认删除，请先点击下方的发送按钮，验证码将会通过{method}发送给{user}，获取后请填入下方，最后点击删除即可。",
   "ctf.column.operating": "申请中",
   "ctf.column.active": "已生效",
   "ctf.column.overdue": "已过期",

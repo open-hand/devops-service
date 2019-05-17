@@ -356,33 +356,6 @@ class CertTable extends Component {
             objectId={deleteCert}
           />
         )}
-        {/*<Modal*/}
-        {/*confirmLoading={deleteStatus}*/}
-        {/*visible={removeDisplay}*/}
-        {/*title={`${formatMessage({ id: "ctf.delete" })}“${certName}”`}*/}
-        {/*closable={false}*/}
-        {/*footer={[*/}
-        {/*<Button*/}
-        {/*key="back"*/}
-        {/*onClick={this.closeRemoveModal}*/}
-        {/*disabled={deleteStatus}*/}
-        {/*>*/}
-        {/*<FormattedMessage id="cancel" />*/}
-        {/*</Button>,*/}
-        {/*<Button*/}
-        {/*key="submit"*/}
-        {/*loading={deleteStatus}*/}
-        {/*type="danger"*/}
-        {/*onClick={this.handleDelete}*/}
-        {/*>*/}
-        {/*<FormattedMessage id="delete" />*/}
-        {/*</Button>,*/}
-        {/*]}*/}
-        {/*>*/}
-        {/*<div className="c7n-padding-top_8">*/}
-        {/*<FormattedMessage id="ctf.delete.tooltip" />*/}
-        {/*</div>*/}
-        {/*</Modal>*/}
       </Fragment>
     );
   }
