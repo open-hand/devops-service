@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
@@ -236,10 +237,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        Page<ProjectWithRoleDTO> projectWithRoleDTOPage = new Page<>()
-        projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
-        projectWithRoleDTOPage.setTotalPages(2)
-        ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         MemberDO memberDO = new MemberDO()
@@ -247,49 +246,43 @@ class DevopsEnvironmentControllerSpec extends Specification {
         ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
 
-        Page<RoleDTO> ownerRoleDTOPage = new Page<>()
-        Page<RoleDTO> memberRoleDTOPage = new Page<>()
         List<RoleDTO> ownerRoleDTOList = new ArrayList<>()
         List<RoleDTO> memberRoleDTOList = new ArrayList<>()
         RoleDTO ownerRoleDTO = new RoleDTO()
         ownerRoleDTO.setId(45L)
         ownerRoleDTO.setCode("role/project/default/project-owner")
         ownerRoleDTOList.add(ownerRoleDTO)
-        ownerRoleDTOPage.setContent(ownerRoleDTOList)
-        ownerRoleDTOPage.setTotalElements(1L)
+        PageInfo<RoleDTO> ownerRoleDTOPage = new PageInfo<>(ownerRoleDTOList)
         RoleDTO memberRoleDTO = new RoleDTO()
         memberRoleDTO.setId(43L)
         memberRoleDTO.setCode("role/project/default/project-member")
         memberRoleDTOList.add(memberRoleDTO)
-        memberRoleDTOPage.setContent(memberRoleDTOList)
-        memberRoleDTOPage.setTotalElements(1L)
-        ResponseEntity<Page<RoleDTO>> responseEntity3 = new ResponseEntity<>(ownerRoleDTOPage, HttpStatus.OK)
+        PageInfo<RoleDTO> memberRoleDTOPage = new PageInfo<>(memberRoleDTOList)
+        ResponseEntity<PageInfo<RoleDTO>> responseEntity3 = new ResponseEntity<>(ownerRoleDTOPage, HttpStatus.OK)
         RoleSearchDTO ownerRoleSearchDTO = new RoleSearchDTO()
         ownerRoleSearchDTO.setCode("role/project/default/project-owner")
-        ResponseEntity<Page<RoleDTO>> responseEntity4 = new ResponseEntity<>(memberRoleDTOPage, HttpStatus.OK)
+        ResponseEntity<PageInfo<RoleDTO>> responseEntity4 = new ResponseEntity<>(memberRoleDTOPage, HttpStatus.OK)
         RoleSearchDTO memberRoleSearchDTO = new RoleSearchDTO()
         memberRoleSearchDTO.setCode("role/project/default/project-member")
         Mockito.when(iamServiceClient.queryRoleIdByCode(any(RoleSearchDTO.class))).thenReturn(responseEntity3).thenReturn(responseEntity4)
 
         and: 'mock查询项目成员和所有者的角色列表'
-        Page<UserDTO> ownerUserDTOPage = new Page<>()
         List<UserDTO> ownerUserDTOList = new ArrayList<>()
-        Page<UserDTO> memberUserDTOPage = new Page<>()
         List<UserDTO> memberUserDTOList = new ArrayList<>()
         UserDTO ownerUserDTO = new UserDTO()
         ownerUserDTO.setId(1L)
         ownerUserDTO.setLoginName("test")
         ownerUserDTO.setRealName("realTest")
         ownerUserDTOList.add(ownerUserDTO)
-        ownerUserDTOPage.setContent(ownerUserDTOList)
+        PageInfo<UserDTO> ownerUserDTOPage = new PageInfo<>(ownerUserDTOList)
         UserDTO memberUserDTO = new UserDTO()
         memberUserDTO.setId(4L)
         memberUserDTO.setLoginName("test4")
         memberUserDTO.setRealName("realTest4")
         memberUserDTOList.add(memberUserDTO)
-        memberUserDTOPage.setContent(memberUserDTOList)
-        ResponseEntity<Page<UserDTO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
-        ResponseEntity<Page<UserDTO>> memberPageResponseEntity = new ResponseEntity<>(memberUserDTOPage, HttpStatus.OK)
+        PageInfo<UserDTO> memberUserDTOPage = new PageInfo<>(memberUserDTOList)
+        ResponseEntity<PageInfo<UserDTO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
+        ResponseEntity<PageInfo<UserDTO>> memberPageResponseEntity = new ResponseEntity<>(memberUserDTOPage, HttpStatus.OK)
         RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
         roleAssignmentSearchDTO.setLoginName("")
         roleAssignmentSearchDTO.setRealName("")
@@ -367,8 +360,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(2L)
         List<Long> connectedClusterList = new ArrayList<>()
         connectedClusterList.add(3L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> connectedClusterList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> connectedClusterList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下查询存在网络环境'
         def envs = restTemplate.getForObject("/v1/projects/1/envs/deployed", List.class)
@@ -383,8 +376,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下查询环境'
         def envs = restTemplate.getForObject("/v1/projects/1/envs?active=true", List.class)
@@ -408,8 +401,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvGroupDO1.setProjectId(1L)
         devopsEnvGroupMapper.insert(devopsEnvGroupDO)
         devopsEnvGroupMapper.insert(devopsEnvGroupDO1)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下环境流水线查询环境'
         def list = restTemplate.getForObject("/v1/projects/1/envs/groups?active=true", List.class)
@@ -433,8 +426,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(2L)
         List<Long> connectedEnvList = new ArrayList<>()
         connectedEnvList.add(3L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> connectedEnvList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> connectedEnvList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下启用停用环境'
         restTemplate.put("/v1/projects/1/envs/1/active?active=false", Boolean.class)
@@ -474,8 +467,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(1L)
         envList.add(2L)
         Long[] sequence = [2L, 1L]
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下环境流水线排序'
         restTemplate.put("/v1/projects/1/envs/sort", sequence, List.class)
@@ -526,8 +519,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         and: 'mock envUtil方法'
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下查询有正在运行实例的环境'
         def envs = restTemplate.getForObject("/v1/projects/1/envs/instance", List.class)
@@ -650,8 +643,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
-        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        envUtil.getConnectedEnvList() >> envList
+        envUtil.getUpdatedEnvList() >> envList
 
         when: '项目下查询集群信息'
         def list = restTemplate.getForObject("/v1/projects/1/envs/clusters", List.class)

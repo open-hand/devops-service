@@ -16,7 +16,7 @@
         WHERE
         dn.project_id=#{projectId}
         <if test="envId != null">
-            AND de.env_id = #{envId}
+            AND dn.env_id = #{envId}
         </if>
         <include refid="sqlparam"/>
     </select>

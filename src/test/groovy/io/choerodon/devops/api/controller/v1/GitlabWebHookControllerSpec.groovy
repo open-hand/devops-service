@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.github.pagehelper.PageInfo
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
@@ -120,9 +121,8 @@ class GitlabWebHookControllerSpec extends Specification {
             // mock list user
             UserDO userDO = new UserDO()
             userDO.setId(1L)
-            Page<UserDO> page = new Page<>()
-            page.setContent(Collections.singletonList(userDO))
-            ResponseEntity<Page<UserDO>> responseEntity = new ResponseEntity<>(page, HttpStatus.OK)
+            PageInfo<UserDO> page = new PageInfo<>(Collections.singletonList(userDO))
+            ResponseEntity<PageInfo<UserDO>> responseEntity = new ResponseEntity<>(page, HttpStatus.OK)
             Mockito.when(iamServiceClient.listUsersByEmail(Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString())).thenReturn(responseEntity)
 
             // mock get commit
@@ -137,7 +137,7 @@ class GitlabWebHookControllerSpec extends Specification {
             Mockito.when(mockGitlabServiceClient.getCommit(any(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
 
             // mock env util
-            Mockito.when(mockEnvUtil.getConnectedEnvList(Mockito.any(EnvListener))).thenReturn(Arrays.asList(1L))
+            Mockito.when(mockEnvUtil.getConnectedEnvList()).thenReturn(Arrays.asList(1L))
 
             // mock sagaClient
             Mockito.doReturn(new SagaInstanceDTO()).when(mockSagaClient).startSaga(anyString(), Mockito.any(StartInstanceDTO))
