@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.CheckAuditDTO;
 import io.choerodon.devops.api.dto.IamUserDTO;
+import io.choerodon.devops.api.dto.PipelineCheckDeployDTO;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
 import io.choerodon.devops.api.dto.PipelineRecordListDTO;
@@ -41,7 +42,7 @@ public interface PipelineService {
 
     List<IamUserDTO> audit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
 
-    String checkDeploy(Long projectId, Long pipelineId);
+    PipelineCheckDeployDTO checkDeploy(Long projectId, Long pipelineId);
 
     DevopsPipelineDTO setWorkFlowDTO(Long pipelineRecordId, Long pipelineId);
 

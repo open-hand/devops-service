@@ -8,6 +8,15 @@ package io.choerodon.devops.api.dto;
 public class PipelineCheckDeployDTO {
     private Boolean permission;
     private Boolean versions;
+    private String envName;
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
 
     public Boolean getPermission() {
         return permission;

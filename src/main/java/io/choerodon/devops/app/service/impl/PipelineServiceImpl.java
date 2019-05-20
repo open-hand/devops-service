@@ -41,6 +41,7 @@ import io.choerodon.devops.api.dto.CheckAuditDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.IamUserDTO;
 import io.choerodon.devops.api.dto.PipelineAppDeployDTO;
+import io.choerodon.devops.api.dto.PipelineCheckDeployDTO;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
 import io.choerodon.devops.api.dto.PipelineRecordListDTO;
@@ -90,7 +91,6 @@ import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
-import io.choerodon.devops.infra.common.util.enums.PipelineCheckDeploy;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineStageDTO;
@@ -656,30 +656,37 @@ public class PipelineServiceImpl implements PipelineService {
      * @return
      */
     @Override
-    public String checkDeploy(Long projectId, Long pipelineId) {
+    public PipelineCheckDeployDTO checkDeploy(Long projectId, Long pipelineId) {
         //判断pipeline是否被禁用
         if (pipelineRepository.queryById(pipelineId).getIsEnabled() == 0) {
             throw new CommonException("error.pipeline.check.deploy");
         }
+        PipelineCheckDeployDTO checkDeployDTO = new PipelineCheckDeployDTO();
         //获取所有appDeploy
         List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(pipelineId);
         //如果全部为人工任务
         if (appDeployEList.isEmpty()) {
-            return PipelineCheckDeploy.SUCCESS.toValue();
+            checkDeployDTO.setPermission(true);
+            checkDeployDTO.setVersions(true);
+            return checkDeployDTO;
         }
         //检测环境权限
         if (projectId != null) {
             List<Long> envIds = environmentService.listByProjectIdAndActive(projectId, true).stream().map(DevopsEnviromentRepDTO::getId).collect(Collectors.toList());
             for (PipelineAppDeployE appDeployE : appDeployEList) {
                 if (!envIds.contains(appDeployE.getEnvId())) {
-                    return PipelineCheckDeploy.PERMISSION.toValue();
+                    checkDeployDTO.setPermission(false);
+                    checkDeployDTO.setEnvName(appDeployE.getEnvName());
+                    return checkDeployDTO;
                 }
             }
         }
+        checkDeployDTO.setVersions(true);
         //检测自动部署是否生成版本
         for (PipelineAppDeployE appDeployE : appDeployEList) {
             if (appDeployE.getCreationDate().getTime() > versionRepository.getLatestVersion(appDeployE.getApplicationId()).getCreationDate().getTime()) {
-                return PipelineCheckDeploy.VERSIONS.toValue();
+                checkDeployDTO.setVersions(false);
+                break;
             } else {
                 if ((appDeployE.getTriggerVersion() != null) && !appDeployE.getTriggerVersion().isEmpty()) {
                     List<String> list = Arrays.asList(appDeployE.getTriggerVersion().split(","));
@@ -695,7 +702,8 @@ public class PipelineServiceImpl implements PipelineService {
                         if (!branch.isPresent()) {
                             i++;
                             if (i == versionES.size()) {
-                                return PipelineCheckDeploy.VERSIONS.toValue();
+                                checkDeployDTO.setVersions(false);
+                                break;
                             } else {
                                 continue;
                             }
@@ -706,7 +714,7 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             }
         }
-        return PipelineCheckDeploy.SUCCESS.toValue();
+        return checkDeployDTO;
     }
 
     /**
@@ -1037,7 +1045,7 @@ public class PipelineServiceImpl implements PipelineService {
             throw new CommonException("error.pipeline.record.status");
         }
         stageRecordRepository.queryByPipeRecordId(recordId, null).forEach(stageRecordE -> {
-            if (stageRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())||stageRecordE.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
+            if (stageRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()) || stageRecordE.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                 updateStatus(recordId, stageRecordE.getId(), WorkFlowStatus.STOP.toValue());
                 taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null).forEach(taskRecordE -> {
                     if (taskRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {

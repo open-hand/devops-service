@@ -271,7 +271,7 @@ public class PipelineController {
     @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "条件校验")
     @GetMapping("/check_deploy")
-    public ResponseEntity<String> checkDeploy(
+    public ResponseEntity<PipelineCheckDeployDTO> checkDeploy(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "记录Id", required = true)
