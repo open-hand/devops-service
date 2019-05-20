@@ -25,6 +25,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.CheckAuditDTO;
 import io.choerodon.devops.api.dto.IamUserDTO;
+import io.choerodon.devops.api.dto.PipelineCheckDeployDTO;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
 import io.choerodon.devops.api.dto.PipelineRecordListDTO;
