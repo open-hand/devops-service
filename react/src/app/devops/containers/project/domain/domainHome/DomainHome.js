@@ -493,7 +493,7 @@ class DomainHome extends Component {
           ]}
         >
           <div className="c7n-padding-top_8">
-            {formatMessage({ id: "domain.delete.des" })}
+            {formatMessage({ id: "ingress.delete.message" })}
           </div>
         </Modal>
       </Page>

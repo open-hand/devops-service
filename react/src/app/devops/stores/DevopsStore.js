@@ -1,14 +1,14 @@
-import { observable, action, computed } from "mobx";
-import { store, axios } from "@choerodon/boot";
-import { storage } from "../utils";
-import { handleProptError } from "../utils";
+import { observable, action, computed } from 'mobx';
+import { store, axios } from '@choerodon/boot';
+import { storage } from '../utils';
+import { handleProptError } from '../utils';
 
 const REFRESH_INTERVAL = 1000 * 10;
 const REFRESH_AGE = 7 * 24 * 60 * 60 * 1000;
 const EMPTY = true;
 const NOT_EMPTY = false;
 
-@store("DevopsStore")
+@store('DevopsStore')
 class DevopsStore {
   @observable timer = null;
 
@@ -29,7 +29,7 @@ class DevopsStore {
   @action setAutoFlag(data) {
     const autoPage = Object.assign(this.isAuto, data);
     this.isAuto = autoPage;
-    storage.setAge(REFRESH_AGE).set("autorefresh", autoPage);
+    storage.setAge(REFRESH_AGE).set('autorefresh', autoPage);
   }
 
   @action setTimer(fn) {
@@ -56,7 +56,7 @@ class DevopsStore {
    */
   initAutoRefresh(name, callback) {
     if (_isEmpty(this.isAuto)) {
-      const saveAutoFlags = storage.get("autorefresh");
+      const saveAutoFlags = storage.get('autorefresh');
       let flags = null;
       if (!_isEmpty(saveAutoFlags)) {
         flags = saveAutoFlags;
@@ -88,27 +88,16 @@ class DevopsStore {
 
   deleteCheck = (projectId, envId, objectType) =>
     axios
-      .get(`/devops/v1/projects/${projectId}/notification/check_delete_resource?env_id=${envId}&objectType=${objectType}`)
-      .then(data => {
-        const res = handleProptError(data);
-        return res;
-      });
+      .get(`/devops/v1/projects/${projectId}/notification/check_delete_resource?env_id=${envId}&objectType=${objectType}`);
 
   sendMessage = (projectId, envId, objectId, notificationId, objectType) =>
     axios
-      .get(`/devops/v1/projects/${projectId}/notification/send_message?env_id=${envId}&object_id=${objectId}&notification_id=${notificationId}&objectType=${objectType}`)
-      .then(data => {
-        const res = handleProptError(data);
-        return res;
-      });
+      .get(`/devops/v1/projects/${projectId}/notification/send_message?env_id=${envId}&object_id=${objectId}&notification_id=${notificationId}&objectType=${objectType}`);
 
   validateCaptcha = (projectId, envId, objectId, captcha, objectType) =>
     axios
-      .get(`/devops/v1/projects/${projectId}/notification/validate_captcha?env_id=${envId}&object_id=${objectId}&captcha=${captcha}&objectType=${objectType}`)
-      .then(data => {
-        const res = handleProptError(data);
-        return res;
-      });
+      .get(`/devops/v1/projects/${projectId}/notification/validate_captcha?env_id=${envId}&object_id=${objectId}&captcha=${captcha}&objectType=${objectType}`);
+
 }
 
 /**

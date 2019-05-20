@@ -1,8 +1,8 @@
-const EVENT = ["instance","ingress","service","certification", "configMap", "secret"];
-const METHOD_OPTIONS = ["sms", "email", "pm"];
-const TARGET_OPTIONS = ["handler", "owner", "specifier"];
+const EVENT = ['instance', 'ingress', 'service', 'certificate', 'configMap', 'secret'];
+const METHOD_OPTIONS = ['sms', 'email', 'pm'];
+const TARGET_OPTIONS = ['handler', 'owner', 'specifier'];
 
-const TARGET_SPECIFIER = "specifier";
+const TARGET_SPECIFIER = 'specifier';
 
 export {
   EVENT,

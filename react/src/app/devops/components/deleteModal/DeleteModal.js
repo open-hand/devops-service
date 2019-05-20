@@ -5,21 +5,11 @@ import { Button, Modal, Form, Input, Spin } from 'choerodon-ui';
 import PropTypes from 'prop-types';
 import DevopsStore from '../../stores/DevopsStore';
 import EnvOverviewStore from '../../stores/project/envOverview';
+import { handleProptError, handleCheckerProptError } from '../../utils';
 
 import './DeleteModal.scss';
 
 const { Item: FormItem } = Form;
-
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 100 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 26 },
-  },
-};
 
 @Form.create({})
 @injectIntl
@@ -33,24 +23,23 @@ class DeleteModal extends Component {
   };
 
   state = {
-    deleteStatus: false,
     count: 60,
-    canSendMessage: true,
-    method: null,
-    user: null,
-    loading: true,
-    isVerification: false,
-    notificationId: null,
+    checkLoading: true,
+    validateLoading: false,
     isError: false,
     canDelete: false,
+    canSendMessage: true,
+    isVerification: false,
+    user: null,
+    method: null,
+    notificationId: null,
   };
 
-  componentWillUnmount() {
-    clearInterval(this.timer);
-    this.timer = null;
+  componentDidMount() {
+    this.initCheck();
   }
 
-  componentDidMount() {
+  async initCheck() {
     const {
       AppState: {
         currentMenuType: { projectId },
@@ -59,24 +48,32 @@ class DeleteModal extends Component {
     } = this.props;
     const envId = EnvOverviewStore.getTpEnvId;
 
-    DevopsStore.deleteCheck(projectId, envId, objectType)
-      .then(data => {
-        if (data && data.notificationId) {
-          this.setState({
-            isVerification: true,
-            method: data.method,
-            user: data.user,
-            notificationId: data.notificationId,
-          });
-        }
-        this.setState({ loading: false, canDelete: true });
+    this.setState({ checkLoading: true });
+    const response = await DevopsStore.deleteCheck(projectId, envId, objectType)
+      .catch((error) => {
+        this.setState({ checkLoading: false });
       });
+
+    const result = handleProptError(response);
+
+    if (result && result.notificationId) {
+      this.setState({
+        isVerification: true,
+        method: result.method,
+        user: result.user,
+        notificationId: result.notificationId,
+        canDelete: false,
+      });
+    } else {
+      this.setState({ canDelete: true });
+    }
+    this.setState({ checkLoading: false });
   }
 
   /**
    * 点击发送验证码
    */
-  sendMessage = () => {
+  sendMessage = async () => {
     const {
       AppState: {
         currentMenuType: { projectId },
@@ -92,26 +89,34 @@ class DeleteModal extends Component {
 
     if (this.timer || !canSendMessage) return;
 
-    this.setState({ canSendMessage: false });
-
-    this.timer = setInterval(() => {
-
-      this.setState({ count: --count }, () => {
-        if (count === 0) {
-
-          clearInterval(this.timer);
-          this.timer = null;
-
-          this.setState({
-            count: 60,
-            canSendMessage: true,
-          });
-
-        }
+    const response = await DevopsStore.sendMessage(projectId, envId, objectId, notificationId, objectType)
+      .catch(e => {
+        Choerodon.handleResponseError(e);
       });
 
-    }, 1000);
-    DevopsStore.sendMessage(projectId, envId, objectId, notificationId, objectType);
+    const result = handleCheckerProptError(response);
+
+    if (result) {
+      this.setState({ canSendMessage: false });
+
+      this.timer = setInterval(() => {
+
+        this.setState({ count: --count }, () => {
+          if (count === 0) {
+
+            clearInterval(this.timer);
+            this.timer = null;
+
+            this.setState({
+              count: 60,
+              canSendMessage: true,
+            });
+
+          }
+        });
+
+      }, 1000);
+    }
   };
 
   /**
@@ -120,11 +125,15 @@ class DeleteModal extends Component {
    */
   checkCaptcha = (e) => {
     const value = e.target.value;
-    value && value.length === 6 && this.setState({ canDelete: true });
+    this.setState({
+      canDelete: value && value.length === 6,
+      isError: false,
+    });
   };
 
   handleDelete = (e) => {
     e.preventDefault();
+
     const {
       form: { validateFields },
       AppState: {
@@ -134,55 +143,122 @@ class DeleteModal extends Component {
       objectId,
       objectType,
     } = this.props;
+
     const envId = EnvOverviewStore.getTpEnvId;
-    this.setState({ deleteStatus: true });
-    validateFields((err, data) => {
+
+    this.setState({ validateLoading: true });
+
+    validateFields((err, { captcha }) => {
       if (!err) {
-        const p = /^\d{6}$/;
-        if (p.test(data.captcha)) {
-          // 判断验证码是否正确
-          DevopsStore.validateCaptcha(projectId, envId, objectId, data.captcha, objectType)
-            .then(data => {
-              if (data) {
-                onOk();
-              } else {
-                this.setState({ isError: true });
-              }
-              this.setState({ deleteStatus: false });
-            })
-            .catch(e => {
-              this.setState({ deleteStatus: false });
-              Choerodon.handleResponseError(e);
-            });
-        } else {
-          this.setState({ deleteStatus: false, isError: true });
-        }
+
+        DevopsStore.validateCaptcha(projectId, envId, objectId, captcha, objectType)
+          .then(data => {
+            if (data && data.failed) {
+              this.setState({ isError: true, canDelete: false });
+            } else {
+              onOk();
+            }
+            this.setState({ validateLoading: false });
+          })
+          .catch(e => {
+            this.setState({ validateLoading: false });
+            Choerodon.handleResponseError(e);
+          });
+
       } else {
-        this.setState({ deleteStatus: false });
+        this.setState({ validateLoading: false });
       }
     });
   };
 
-  render() {
+  closeModal = () => {
+    const {
+      form: { resetFields },
+      onClose,
+    } = this.props;
+    onClose();
+    resetFields(['captcha']);
+    this.setState({ isError: false });
+  };
+
+  get getContent() {
     const {
       intl: { formatMessage },
       form: { getFieldDecorator },
-      visible,
-      onClose,
-      onOk,
-      title,
       objectType,
     } = this.props;
+
     const {
-      deleteStatus,
       count,
       canSendMessage,
       method,
       user,
       isVerification,
-      loading,
+      checkLoading,
       isError,
+    } = this.state;
+
+    let content = <Spin spinning />;
+
+    if (!checkLoading) {
+      content = isVerification ? (
+        <Fragment>
+          <FormattedMessage id={`${objectType}.delete.verify.message`} />
+          <br />
+          <FormattedMessage
+            id="delete.verify.message"
+            values={{ method, user }}
+          />
+          <div className="c7ncd-delete-check">
+            <Form className="c7ncd-captcha-form">
+              <FormItem>
+                {getFieldDecorator('captcha', {
+                  rules: [{
+                    required: true,
+                    message: formatMessage({ id: 'required' }),
+                  }],
+                })(
+                  <Input
+                    label={<FormattedMessage id="captcha" />}
+                    onChange={this.checkCaptcha}
+                    maxLength={6}
+                  />,
+                )}
+              </FormItem>
+            </Form>
+            <Button
+              className="c7ncd-captcha-btn"
+              type="primary"
+              funcType="raised"
+              onClick={this.sendMessage}
+              disabled={!canSendMessage}
+            >
+              {
+                canSendMessage
+                  ? <FormattedMessage id="captcha.send" />
+                  : <div><span>{count}</span> <FormattedMessage id="captcha.resend" /></div>
+              }
+            </Button>
+          </div>
+          {isError && <span className="c7ncd-captcha-error">{formatMessage({ id: 'captcha.error' })}</span>}
+        </Fragment>
+      ) : <FormattedMessage id={`${objectType}.delete.message`} />;
+    }
+
+    return content;
+  }
+
+  render() {
+    const {
+      visible,
+      onOk,
+      title,
+      loading: deleteLoading,
+    } = this.props;
+    const {
+      validateLoading,
       canDelete,
+      isVerification,
     } = this.state;
 
     return (
@@ -193,15 +269,15 @@ class DeleteModal extends Component {
         footer={[
           <Button
             key="back"
-            onClick={onClose}
-            disabled={deleteStatus}
+            onClick={this.closeModal}
+            disabled={validateLoading || deleteLoading}
           >
-            <FormattedMessage id="cancel" />
+            <FormattedMessage id={isVerification ? 'close' : 'cancel'} />
           </Button>,
           <Button
             key="submit"
             type="danger"
-            loading={deleteStatus}
+            loading={validateLoading || deleteLoading}
             disabled={!canDelete}
             onClick={isVerification ? this.handleDelete : onOk}
           >
@@ -210,48 +286,7 @@ class DeleteModal extends Component {
         ]}
       >
         <div className="c7ncd-deleteModal-wrap">
-          {loading ? <Spin spinning /> : (<Fragment>
-            <FormattedMessage id={`${objectType}.delete.tooltip`} />
-            {isVerification && (
-              <div>
-                <FormattedMessage
-                  id={`${objectType}.delete.verification.tooltip`}
-                  values={{ method, user }}
-                />
-                <div className="c7ncd-delete-check">
-                  <Form>
-                    <FormItem
-                      className="c7ncd-formItem_355"
-                      {...formItemLayout}
-                    >
-                      {getFieldDecorator('captcha', {
-                        rules: [{
-                          required: true,
-                          message: formatMessage({ id: 'required' }),
-                        }],
-                      })(
-                        <Input
-                          label={<FormattedMessage id="captcha" />}
-                          onChange={this.checkCaptcha}
-                          maxLength={6}
-                        />,
-                      )}
-                    </FormItem>
-                  </Form>
-                  <Button
-                    type="primary"
-                    funcType="raised"
-                    onClick={this.sendMessage}
-                    disabled={!canSendMessage}
-                  >
-                    {canSendMessage ? <FormattedMessage id="send_captcha" /> :
-                      <span className="c7ncd-time-span">{count}s</span>}
-                  </Button>
-                </div>
-                {isError && <FormattedMessage id="captcha_error" />}
-              </div>
-            )}
-          </Fragment>)}
+          {this.getContent}
         </div>
       </Modal>
     );

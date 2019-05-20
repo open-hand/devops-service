@@ -19,6 +19,7 @@ import PodStatus from './components/PodStatus/PodStatus';
 import DevopsStore from '../../../stores/DevopsStore';
 import InstancesStore from '../../../stores/project/instances/InstancesStore';
 import EnvOverviewStore from '../../../stores/project/envOverview';
+import DeleteModal from '../../../components/deleteModal';
 import '../../main.scss';
 import './Instances.scss';
 
@@ -31,8 +32,8 @@ class Instances extends Component {
     upgradeVisible: false,
     changeVisible: false,
     deleteLoading: false,
-    confirmType: '',
     confirmLoading: false,
+    confirmType: '',
     idArr: {},
   };
 
@@ -327,53 +328,64 @@ class Instances extends Component {
   /**
    * 删除实例
    */
-  handleDelete = id => {
+  handleDelete = async () => {
     const { id: projectId } = AppState.currentMenuType;
-
     const { InstancesStore } = this.props;
-
     const { loadInstanceAll, deleteInstance, getAppId } = InstancesStore;
+    const { deleteId } = this.state;
     const envId = EnvOverviewStore.getTpEnvId;
 
-    this.setState({
-      deleteLoading: true,
-    });
-    deleteInstance(projectId, id)
-      .then(data => {
-        const res = handleProptError(data);
-        if (res) {
-          InstancesStore.setIstTableFilter(null);
-          InstancesStore.setIstPage(null);
-          const time = Date.now();
-          loadInstanceAll(true, projectId, { envId, getAppId }, time).catch(err => {
-            InstancesStore.changeLoading(false);
-            Choerodon.handleResponseError(err);
-          });
-        }
-
-        this.setState({
-          openRemove: false,
-          deleteLoading: false,
-        });
-      })
+    this.setState({ deleteLoading: true });
+    const response = await deleteInstance(projectId, deleteId)
       .catch(error => {
-
         this.setState({
           deleteLoading: false,
         });
         Choerodon.handleResponseError(error);
       });
+
+    const res = handleProptError(response);
+    if (res) {
+      InstancesStore.setIstTableFilter(null);
+      InstancesStore.setIstPage(null);
+
+      const time = Date.now();
+
+      loadInstanceAll(true, projectId, { envId, getAppId }, time)
+        .catch(err => {
+          InstancesStore.changeLoading(false);
+          Choerodon.handleResponseError(err);
+        });
+    }
+
+    this.setState({
+      openRemove: false,
+      deleteLoading: false,
+    });
     InstancesStore.setIstTableFilter(null);
   };
 
   /**
-   * 关闭删除数据的模态框
+   * 打开删除数据模态框
    */
-  closeDeleteModal(id) {
+  handleDeleteModal({ id, code }) {
     this.setState({
-      openRemove: false,
+      openRemove: true,
+      deleteId: id,
+      name: code,
     });
   }
+
+  /**
+   * 关闭删除数据的模态框
+   */
+  closeDeleteModal = () => {
+    this.setState({
+      openRemove: false,
+      deleteId: undefined,
+      name: '',
+    });
+  };
 
   /**
    * 启停用实例
@@ -488,8 +500,8 @@ class Instances extends Component {
       },
       delete: {
         service: ['devops-service.application-instance.delete'],
-        text: formatMessage({ id: 'ist.del' }),
-        action: this.handleOpen.bind(this, record),
+        text: formatMessage({ id: 'ist.delete' }),
+        action: this.handleDeleteModal.bind(this, record),
       },
     };
     let actionItem = [];
@@ -545,14 +557,6 @@ class Instances extends Component {
     );
   }
 
-  /**
-   * 打开删除数据模态框
-   */
-  handleOpen(record) {
-    const { id, code } = record;
-    this.setState({ openRemove: true, id, name: code });
-  }
-
   render() {
     DevopsStore.initAutoRefresh('ist', this.reload);
 
@@ -581,9 +585,10 @@ class Instances extends Component {
       idArr,
       openRemove,
       id,
-      deleteLoading,
+      deleteId,
       confirmType,
       confirmLoading,
+      deleteLoading,
     } = this.state;
 
     const envData = EnvOverviewStore.getEnvcard;
@@ -793,32 +798,15 @@ class Instances extends Component {
                   onClose={this.closeConfigSidebar}
                 />
               )}
-              <Modal
-                title={`${formatMessage({ id: 'ist.del' })}“${name}”`}
+              <DeleteModal
+                title={`${formatMessage({ id: 'ist.delete' })}“${name}”`}
                 visible={openRemove}
-                closable={false}
-                footer={[
-                  <Button
-                    key="back"
-                    onClick={this.closeDeleteModal.bind(this, id)}
-                    disabled={deleteLoading}
-                  >
-                    <FormattedMessage id="cancel" />
-                  </Button>,
-                  <Button
-                    key="submit"
-                    type="danger"
-                    loading={deleteLoading}
-                    onClick={this.handleDelete.bind(this, id)}
-                  >
-                    <FormattedMessage id="delete" />
-                  </Button>,
-                ]}
-              >
-                <div className="c7n-padding-top_8">
-                  <FormattedMessage id="ist.delDes" />
-                </div>
-              </Modal>
+                objectId={deleteId}
+                loading={deleteLoading}
+                objectType="instance"
+                onClose={this.closeDeleteModal}
+                onOk={this.handleDelete}
+              />
               <Modal
                 title={`${formatMessage({ id: 'ist.reDeploy' })}“${name}”`}
                 visible={confirmType === 'reDeploy'}

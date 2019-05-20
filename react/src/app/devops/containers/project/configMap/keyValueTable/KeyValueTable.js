@@ -1,12 +1,13 @@
-import React, { Component, Fragment } from "react";
-import { observer } from "mobx-react";
-import { injectIntl, FormattedMessage } from "react-intl";
-import { Table, Button, Tooltip, Popover, Modal } from "choerodon-ui";
-import { Permission, stores } from "@choerodon/boot";
-import MouserOverWrapper from "../../../../components/MouseOverWrapper";
+import React, { Component, Fragment } from 'react';
+import { observer } from 'mobx-react';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import { Table, Button, Tooltip, Popover, Modal } from 'choerodon-ui';
+import { Permission, stores } from '@choerodon/boot';
+import MouserOverWrapper from '../../../../components/MouseOverWrapper';
 import TimePopover from '../../../../components/timePopover';
 import StatusTags from '../../../../components/StatusTags';
-import EnvOverviewStore from "../../../../stores/project/envOverview";
+import EnvOverviewStore from '../../../../stores/project/envOverview';
+import DeleteModal from '../../../../components/deleteModal';
 
 const { AppState } = stores;
 
@@ -37,7 +38,7 @@ class KeyValueTable extends Component {
             Choerodon.prompt(data.message);
             this.setState({
               deleteStatus: false,
-            })
+            });
           } else {
             this.setState({
               delId: null,
@@ -49,7 +50,7 @@ class KeyValueTable extends Component {
               } else {
                 store.loadConfigMap(true, projectId, envId, page, pagination.pageSize);
               }
-            })
+            });
           }
         })
         .catch(e => {
@@ -67,7 +68,7 @@ class KeyValueTable extends Component {
             Choerodon.prompt(data.message);
             this.setState({
               deleteStatus: false,
-            })
+            });
           } else {
             this.setState({
               delId: null,
@@ -79,7 +80,7 @@ class KeyValueTable extends Component {
               } else {
                 store.loadSecret(true, projectId, envId, page, pagination.pageSize);
               }
-            })
+            });
           }
         })
         .catch(e => {
@@ -105,9 +106,9 @@ class KeyValueTable extends Component {
     let sort = { field: '', order: 'desc' };
     if (sorter.column) {
       sort.field = sorter.field || sorter.columnKey;
-      if(sorter.order === 'ascend') {
+      if (sorter.order === 'ascend') {
         sort.order = 'asc';
-      } else if(sorter.order === 'descend'){
+      } else if (sorter.order === 'descend') {
         sort.order = 'desc';
       }
     }
@@ -147,9 +148,25 @@ class KeyValueTable extends Component {
 
   render() {
     const {
-      intl: { formatMessage }, store, envId, title } = this.props;
-    const { removeDisplay, deleteStatus, delName } = this.state;
-    const { filters, sort: { columnKey, order }, paras } = store.getInfo;
+      intl: { formatMessage },
+      store,
+      envId,
+      title,
+    } = this.props;
+    const {
+      removeDisplay,
+      deleteStatus,
+      delName,
+      delId,
+    } = this.state;
+    const {
+      filters,
+      sort: {
+        columnKey,
+        order,
+      },
+      paras,
+    } = store.getInfo;
     const {
       type,
       id: projectId,
@@ -165,8 +182,9 @@ class KeyValueTable extends Component {
       {
         title: <FormattedMessage id="app.active" />,
         key: 'status',
-        render: record => <StatusTags name={formatMessage({ id: record.commandStatus })} colorCode={record.commandStatus} />,
-      },{
+        render: record => <StatusTags name={formatMessage({ id: record.commandStatus })}
+                                      colorCode={record.commandStatus} />,
+      }, {
         title: <FormattedMessage id="app.name" />,
         key: 'name',
         sorter: true,
@@ -174,7 +192,8 @@ class KeyValueTable extends Component {
         filters: [],
         filteredValue: filters.name || [],
         render: record => (<MouserOverWrapper width={0.3}>
-          <Popover overlayStyle={{ maxWidth: '350px', wordBreak: 'break-word' }} placement="topLeft" content={`${formatMessage({ id: "ist.des" })}${record.description}`}>
+          <Popover overlayStyle={{ maxWidth: '350px', wordBreak: 'break-word' }} placement="topLeft"
+                   content={`${formatMessage({ id: 'ist.des' })}${record.description}`}>
             {record.name}
           </Popover>
         </MouserOverWrapper>),
@@ -183,8 +202,9 @@ class KeyValueTable extends Component {
         dataIndex: 'key',
         key: 'key',
         render: text => (<MouserOverWrapper width={0.5}>
-          <Popover content={text.join(',')} placement="topLeft" overlayStyle={{ maxWidth: '350px', wordBreak: 'break-word' }}>
-              {text.join(',')}
+          <Popover content={text.join(',')} placement="topLeft"
+                   overlayStyle={{ maxWidth: '350px', wordBreak: 'break-word' }}>
+            {text.join(',')}
           </Popover>
         </MouserOverWrapper>),
       }, {
@@ -198,10 +218,12 @@ class KeyValueTable extends Component {
         key: 'action',
         render: record => (
           <Fragment>
-            <Permission type={type} projectId={projectId} organizationId={organizationId} service={['devops-service.devops-config-map.create', 'devops-service.devops-secret.createOrUpdate']}>
+            <Permission type={type} projectId={projectId} organizationId={organizationId}
+                        service={['devops-service.devops-config-map.create', 'devops-service.devops-secret.createOrUpdate']}>
               <Tooltip
                 placement="bottom"
-                title={envState && !envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : <FormattedMessage id="edit" />}
+                title={envState && !envState.connect ? <FormattedMessage id="envoverview.envinfo" /> :
+                  <FormattedMessage id="edit" />}
               >
                 <Button
                   disabled={record.commandStatus === 'operating' || (envState && !envState.connect)}
@@ -212,10 +234,12 @@ class KeyValueTable extends Component {
                 />
               </Tooltip>
             </Permission>
-            <Permission type={type} projectId={projectId} organizationId={organizationId} service={['devops-service.devops-config-map.delete', 'devops-service.devops-secret.deleteSecret']}>
+            <Permission type={type} projectId={projectId} organizationId={organizationId}
+                        service={['devops-service.devops-config-map.delete', 'devops-service.devops-secret.deleteSecret']}>
               <Tooltip
                 placement="bottom"
-                title={envState && !envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : <FormattedMessage id="delete" />}
+                title={envState && !envState.connect ? <FormattedMessage id="envoverview.envinfo" /> :
+                  <FormattedMessage id="delete" />}
               >
                 <Button
                   disabled={record.commandStatus === 'operating' || (envState && !envState.connect)}
@@ -242,33 +266,15 @@ class KeyValueTable extends Component {
           rowKey={record => record.id}
           onChange={this.tableChange}
         />
-        <Modal
-          confirmLoading={deleteStatus}
-          visible={removeDisplay}
+        <DeleteModal
           title={`${formatMessage({ id: `${title}.del` })}“${delName}”`}
-          closable={false}
-          footer={[
-            <Button
-              key="back"
-              onClick={this.closeRemoveModal}
-              disabled={deleteStatus}
-            >
-              <FormattedMessage id="cancel" />
-            </Button>,
-            <Button
-              key="submit"
-              loading={deleteStatus}
-              type="danger"
-              onClick={this.deleteKeyValue}
-            >
-              <FormattedMessage id="delete" />
-            </Button>,
-          ]}
-        >
-          <div className="c7n-padding-top_8">
-            <FormattedMessage id={ `${title}.del.tooltip`} />
-          </div>
-        </Modal>
+          visible={removeDisplay}
+          objectId={delId}
+          loading={deleteStatus}
+          objectType="configMap"
+          onClose={this.closeRemoveModal}
+          onOk={this.deleteKeyValue}
+        />
       </Fragment>
     );
   }
