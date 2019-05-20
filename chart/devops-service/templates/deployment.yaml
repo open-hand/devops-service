@@ -29,6 +29,30 @@ spec:
             value: {{ $value | quote }}
 {{- end }}
 {{- end }}
+          - name: MY_NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: MY_POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: HOST_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: MY_POD_SERVICE_ACCOUNT
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.serviceAccountName
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -48,17 +72,3 @@ spec:
             timeoutSeconds: 60
           resources:
 {{ toYaml .Values.resources | indent 12 }}
-          volumeMounts:
-          - mountPath: /Charts
-            name: data
-{{- if not (empty .Values.persistence.subPath) }}
-            subPath: {{ .Values.persistence.subPath }}
-{{- end }}
-      volumes:
-      - name: data
-        {{- if .Values.persistence.enabled }}
-        persistentVolumeClaim:
-          claimName: {{ .Values.persistence.existingClaim | default ( .Release.Name ) }}
-        {{- else }}
-        emptyDir: {}
-        {{- end }}
