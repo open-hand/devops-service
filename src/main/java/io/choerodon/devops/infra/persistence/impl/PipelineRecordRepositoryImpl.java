@@ -51,16 +51,13 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
 
     @Override
     public PipelineRecordE update(PipelineRecordE pipelineRecordE) {
-        System.out.println(pipelineRecordE.getStatus());
         PipelineRecordDO pipelineRecordDO = ConvertHelper.convert(pipelineRecordE, PipelineRecordDO.class);
         pipelineRecordDO.setObjectVersionNumber(pipelineRecordMapper.selectByPrimaryKey(pipelineRecordDO).getObjectVersionNumber());
         if (pipelineRecordMapper.updateByPrimaryKeySelective(pipelineRecordDO) != 1) {
             throw new CommonException("error.update.pipeline.record");
         }
-        pipelineRecordDO.setObjectVersionNumber(null);
-        return ConvertHelper.convert(pipelineRecordMapper.selectOne(pipelineRecordDO), PipelineRecordE.class);
+        return ConvertHelper.convert(pipelineRecordDO, PipelineRecordE.class);
     }
-
 
     @Override
     public PipelineRecordE queryById(Long recordId) {
@@ -72,5 +69,10 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
         PipelineRecordDO pipelineRecordDO = new PipelineRecordDO();
         pipelineRecordDO.setPipelineId(pipelineId);
         return ConvertHelper.convertList(pipelineRecordMapper.select(pipelineRecordDO), PipelineRecordE.class);
+    }
+
+    @Override
+    public void updateEdited(Long pipelineId) {
+        pipelineRecordMapper.updateEdited(pipelineId);
     }
 }

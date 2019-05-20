@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.CheckAuditDTO;
 import io.choerodon.devops.api.dto.IamUserDTO;
@@ -12,8 +14,6 @@ import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -41,7 +41,7 @@ public interface PipelineService {
 
     List<IamUserDTO> audit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
 
-    Boolean checkDeploy(Long pipelineId);
+    String checkDeploy(Long projectId, Long pipelineId);
 
     DevopsPipelineDTO setWorkFlowDTO(Long pipelineRecordId, Long pipelineId);
 
@@ -51,7 +51,7 @@ public interface PipelineService {
 
     PipelineRecordReqDTO getRecordById(Long projectId, Long pipelineRecordId);
 
-    void retry(Long projectId, Long pipelineRecordId);
+    Boolean retry(Long projectId, Long pipelineRecordId);
 
     List<PipelineRecordListDTO> queryByPipelineId(Long pipelineId);
 
@@ -61,11 +61,11 @@ public interface PipelineService {
 
     List<UserDTO> getAllUsers(Long projectId);
 
-    void test(Long versionId);
-
     void updateStatus(Long pipelineRecordId, Long stageRecordId, String status);
 
     CheckAuditDTO checkAudit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
 
     void executeAppDeploy(Long pipelineId);
+
+    void stop(Long projectId, Long recordId);
 }
