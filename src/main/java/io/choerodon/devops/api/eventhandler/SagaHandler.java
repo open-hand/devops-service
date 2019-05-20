@@ -179,7 +179,7 @@ public class SagaHandler {
      */
     @SagaTask(code = "IamDeleteApplication",
             description = "iam delete application ",
-            sagaCode = "iam-create-application",
+            sagaCode = "iam-delete-application",
             maxRetryCount = 3,
             seq = 1)
     public String deleteApp(String payload) {
