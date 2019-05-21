@@ -3,12 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
@@ -16,12 +11,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1ContainerStatus;
-import io.kubernetes.client.models.V1OwnerReference;
-import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1577,7 +1567,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         String status = K8sUtil.changePodStatus(v1Pod);
         if (status.equals("Running")) {
             PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
-            podUpdateDTO.setConName(v1Pod.getSpec().getContainers().get(0).getName());
+            Optional<V1Container> container = v1Pod.getSpec().getContainers().stream().filter(v1Container -> v1Container.getName().contains("automation")).findFirst();
+            if(container.isPresent()) {
+                podUpdateDTO.setConName(container.get().getName());
+            }
             podUpdateDTO.setPodName(v1Pod.getMetadata().getName());
             podUpdateDTO.setReleaseNames(KeyParseTool.getReleaseName(key));
             podUpdateDTO.setStatus(0L);
