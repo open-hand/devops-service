@@ -62,7 +62,7 @@
     </sql>
     <update id="updateEdited">
         UPDATE devops_pipeline_record dpr
-        SET dpr.edited = 1 ON dpr.pipeline_id = #{pipelineId}
+        SET dpr.edited = 1 where dpr.pipeline_id = #{pipelineId}
     </update>
 
 </mapper>
