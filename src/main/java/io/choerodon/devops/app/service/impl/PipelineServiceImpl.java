@@ -483,7 +483,7 @@ public class PipelineServiceImpl implements PipelineService {
             throw new CommonException("no.version.can.trigger.deploy");
         }
         //保存记录
-        PipelineTaskRecordE pipelineTaskRecordE = taskRecordRepository.queryByStageRecordId(stageRecordId,taskId).get(0);
+        PipelineTaskRecordE pipelineTaskRecordE = taskRecordRepository.queryByStageRecordId(stageRecordId, taskId).get(0);
         pipelineTaskRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
         pipelineTaskRecordE.setName(pipelineTaskE.getName());
         pipelineTaskRecordE.setVersionId(versionES.get(index).getId());
@@ -943,7 +943,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean retry(Long projectId, Long pipelineRecordId) {
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
-        if (pipelineRecordE.getEdited()) {
+        if (pipelineRecordE.getEdited() != null && pipelineRecordE.getEdited()) {
             return false;
         }
         String bpmDefinition = pipelineRecordE.getBpmDefinition();
