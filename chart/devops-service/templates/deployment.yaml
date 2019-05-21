@@ -48,17 +48,3 @@ spec:
             timeoutSeconds: 60
           resources:
 {{ toYaml .Values.resources | indent 12 }}
-          volumeMounts:
-          - mountPath: /Charts
-            name: data
-{{- if not (empty .Values.persistence.subPath) }}
-            subPath: {{ .Values.persistence.subPath }}
-{{- end }}
-      volumes:
-      - name: data
-        {{- if .Values.persistence.enabled }}
-        persistentVolumeClaim:
-          claimName: {{ .Values.persistence.existingClaim | default ( .Release.Name ) }}
-        {{- else }}
-        emptyDir: {}
-        {{- end }}

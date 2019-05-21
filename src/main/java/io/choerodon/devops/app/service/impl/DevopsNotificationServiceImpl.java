@@ -212,7 +212,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         Map<String, Object> params = new HashMap<>();
         params.put("user", GitUserNameUtil.getRealUsername());
         params.put("env", devopsEnvironmentE.getName());
-        params.put("object", ObjectType.INSTANCE.getType());
+        params.put("object", objectType);
         params.put("objectName", objectCode);
         params.put("verificationCode", Captcha);
         notifyDTO.setParams(params);
