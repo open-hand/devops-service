@@ -483,7 +483,7 @@ public class PipelineServiceImpl implements PipelineService {
             throw new CommonException("no.version.can.trigger.deploy");
         }
         //保存记录
-        PipelineTaskRecordE pipelineTaskRecordE = taskRecordRepository.queryByStageRecordId(stageRecordId,taskId).get(0);
+        PipelineTaskRecordE pipelineTaskRecordE = taskRecordRepository.queryByStageRecordId(stageRecordId, taskId).get(0);
         pipelineTaskRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
         pipelineTaskRecordE.setName(pipelineTaskE.getName());
         pipelineTaskRecordE.setVersionId(versionES.get(index).getId());
@@ -657,12 +657,12 @@ public class PipelineServiceImpl implements PipelineService {
             throw new CommonException("error.pipeline.check.deploy");
         }
         PipelineCheckDeployDTO checkDeployDTO = new PipelineCheckDeployDTO();
+        checkDeployDTO.setPermission(true);
+        checkDeployDTO.setVersions(true);
         //获取所有appDeploy
         List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(pipelineId);
         //如果全部为人工任务
         if (appDeployEList.isEmpty()) {
-            checkDeployDTO.setPermission(true);
-            checkDeployDTO.setVersions(true);
             return checkDeployDTO;
         }
         //检测环境权限
@@ -676,7 +676,6 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             }
         }
-        checkDeployDTO.setVersions(true);
         //检测自动部署是否生成版本
         for (PipelineAppDeployE appDeployE : appDeployEList) {
             if (appDeployE.getCreationDate().getTime() > versionRepository.getLatestVersion(appDeployE.getApplicationId()).getCreationDate().getTime()) {
@@ -944,7 +943,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean retry(Long projectId, Long pipelineRecordId) {
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
-        if (pipelineRecordE.getEdited()) {
+        if (pipelineRecordE.getEdited() != null && pipelineRecordE.getEdited()) {
             return false;
         }
         String bpmDefinition = pipelineRecordE.getBpmDefinition();
