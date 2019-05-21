@@ -229,8 +229,10 @@ public class PipelineServiceImpl implements PipelineService {
                     if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.STOP.toValue())) {
                         List<PipelineTaskRecordE> recordEList = taskRecordRepository.queryByStageRecordId(t.getStageDTOList().get(i).getId(), null);
                         Optional<PipelineTaskRecordE> optional = recordEList.stream().filter(recordE -> recordE.getStatus().equals(WorkFlowStatus.STOP.toValue())).findFirst();
-                        t.setType(TASK);
-                        t.setTaskRecordId(optional.get().getId());
+                        if(optional.isPresent()) {
+                            t.setType(TASK);
+                            t.setTaskRecordId(optional.get().getId());
+                        }
                         break;
                     } else if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                         t.setStageRecordId(t.getStageDTOList().get(i).getId());
@@ -895,12 +897,14 @@ public class PipelineServiceImpl implements PipelineService {
                                     });
                                 }
                             } else {
-                                List<String> userIds = Arrays.asList(r.getAuditUser().split(","));
-                                userIds.forEach(userId -> {
-                                    IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(TypeUtil.objToLong(userId)), IamUserDTO.class);
-                                    userDTO.setAudit(false);
-                                    userDTOS.add(userDTO);
-                                });
+                                if (r.getAuditUser() != null) {
+                                    List<String> userIds = Arrays.asList(r.getAuditUser().split(","));
+                                    userIds.forEach(userId -> {
+                                        IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(TypeUtil.objToLong(userId)), IamUserDTO.class);
+                                        userDTO.setAudit(false);
+                                        userDTOS.add(userDTO);
+                                    });
+                                }
                             }
                             taskRecordDTO.setUserDTOList(userDTOS);
                         }
@@ -943,7 +947,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean retry(Long projectId, Long pipelineRecordId) {
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
-        if (pipelineRecordE.getEdited() != null && pipelineRecordE.getEdited()) {
+        if (pipelineRecordE.getEdited() == null || pipelineRecordE.getEdited()) {
             return false;
         }
         String bpmDefinition = pipelineRecordE.getBpmDefinition();

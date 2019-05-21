@@ -33,7 +33,8 @@
         dpr.creation_date,
         dpr.business_key,
         dpr.bpm_definition,
-        dpr.pipeline_name
+        dpr.pipeline_name,
+        dpr.edited
         FROM
         devops_pipeline_record dpr
         WHERE dpr.id = #{pipelineRecordId}
