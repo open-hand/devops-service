@@ -657,12 +657,12 @@ public class PipelineServiceImpl implements PipelineService {
             throw new CommonException("error.pipeline.check.deploy");
         }
         PipelineCheckDeployDTO checkDeployDTO = new PipelineCheckDeployDTO();
+        checkDeployDTO.setPermission(true);
+        checkDeployDTO.setVersions(true);
         //获取所有appDeploy
         List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(pipelineId);
         //如果全部为人工任务
         if (appDeployEList.isEmpty()) {
-            checkDeployDTO.setPermission(true);
-            checkDeployDTO.setVersions(true);
             return checkDeployDTO;
         }
         //检测环境权限
@@ -676,7 +676,6 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             }
         }
-        checkDeployDTO.setVersions(true);
         //检测自动部署是否生成版本
         for (PipelineAppDeployE appDeployE : appDeployEList) {
             if (appDeployE.getCreationDate().getTime() > versionRepository.getLatestVersion(appDeployE.getApplicationId()).getCreationDate().getTime()) {

@@ -38,10 +38,10 @@
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.notifyObject != null and searchParam.notifyObject.size > 0'>
+            <if test='searchParam.notifyType != null and searchParam.notifyType.size > 0'>
                 AND
-                <foreach collection="searchParam.notifyObject" item="notifyObject" separator=" OR " >
-                    dn.notify_object LIKE CONCAT(CONCAT('%', #{notifyObject, jdbcType=VARCHAR}),'%')
+                <foreach collection="searchParam.notifyType" item="notifyType" separator=" OR " >
+                    dn.notify_type LIKE CONCAT(CONCAT('%', #{notifyType, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.notifyTriggerEvent != null and searchParam.notifyTriggerEvent.size > 0'>
@@ -50,10 +50,10 @@
                     dn.notify_trigger_event LIKE CONCAT(CONCAT('%', #{notifyTriggerEvent, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
-            <if test='searchParam.notifyType != null and searchParam.notifyType.size > 0'>
+            <if test='searchParam.notifyObject != null and searchParam.notifyObject.size > 0'>
                 AND
-                <foreach collection="searchParam.notifyType" item="notifyType">
-                    dn.notify_type=#{notifyType}
+                <foreach collection="searchParam.notifyObject" item="notifyObject">
+                    dn.notify_object=#{notifyObject}
                 </foreach>
             </if>
         </if>
