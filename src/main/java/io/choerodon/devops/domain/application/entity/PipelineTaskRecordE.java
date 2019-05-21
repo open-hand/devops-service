@@ -29,6 +29,15 @@ public class PipelineTaskRecordE {
     private String version;
     private String instanceName;
     private String instanceStatus;
+    private String auditUser;
+
+    public String getAuditUser() {
+        return auditUser;
+    }
+
+    public void setAuditUser(String auditUser) {
+        this.auditUser = auditUser;
+    }
 
     public String getInstanceStatus() {
         return instanceStatus;

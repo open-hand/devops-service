@@ -30,7 +30,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
     }
     changeSet(author: 'scp', id: '2019-04-16-devops_pipeline_task-add-column') {
         addColumn(tableName: 'devops_pipeline_task_record') {
-            column(name: 'name', type: 'VARCHAR(50)', remarks: '任务名称')
+            column(name: 'name', type: 'VARCHAR(50)', remarks: '任务名称', afterColumn: "project_id")
         }
     }
     changeSet(author: 'scp', id: '2019-04-18-devops_pipeline_task-drop-column') {
@@ -38,7 +38,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
     }
     changeSet(author: 'scp', id: '2019-04-25-devops_pipeline_task-add-column') {
         addColumn(tableName: 'devops_pipeline_task_record') {
-            column(name: 'instanceName', type: 'VARCHAR(100)', remarks: '实例名称')
+            column(name: 'instanceName', type: 'VARCHAR(100)', remarks: '实例名称', afterColumn: "project_id")
         }
     }
     changeSet(author: 'scp', id: '2019-04-25-devops_pipeline_task-rename-column') {
@@ -48,5 +48,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
     changeSet(author: 'scp', id: '2019-04-30-devops_pipeline_task-modify-column') {
         modifyDataType(tableName: 'devops_pipeline_task_record', columnName: 'status', newDataType: 'VARCHAR(50)')
     }
-
+    changeSet(author: 'scp', id: '2019-05-20-devops_pipeline_task-add-column') {
+        addColumn(tableName: 'devops_pipeline_task_record') {
+            column(name: 'audit_user', type: 'VARCHAR(255)', remarks: '审核人员', afterColumn: "app_deploy_id")
+        }
+    }
 }

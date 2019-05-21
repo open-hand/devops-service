@@ -18,6 +18,7 @@ public class PipelineRecordE {
     private Date lastUpdateDate;
     private Date creationDate;
     private String businessKey;
+    private Boolean edited;
 
     public PipelineRecordE(Long pipelineId, String triggerType, Long projectId, String status, String pipelineName) {
         this.pipelineId = pipelineId;
@@ -29,6 +30,14 @@ public class PipelineRecordE {
 
     public PipelineRecordE() {
 
+    }
+
+    public Boolean getEdited() {
+        return edited;
+    }
+
+    public void setEdited(Boolean edited) {
+        this.edited = edited;
     }
 
     public String getBusinessKey() {

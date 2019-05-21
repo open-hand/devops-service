@@ -3,22 +3,39 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.api.dto.iam.UserDTO;
-import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
+
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.dto.CheckAuditDTO;
+import io.choerodon.devops.api.dto.IamUserDTO;
+import io.choerodon.devops.api.dto.PipelineCheckDeployDTO;
+import io.choerodon.devops.api.dto.PipelineDTO;
+import io.choerodon.devops.api.dto.PipelineRecordDTO;
+import io.choerodon.devops.api.dto.PipelineRecordListDTO;
+import io.choerodon.devops.api.dto.PipelineRecordReqDTO;
+import io.choerodon.devops.api.dto.PipelineReqDTO;
+import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
+import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.app.service.PipelineService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -232,7 +249,7 @@ public class PipelineController {
      * @return
      */
     @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "人工审核")
+    @ApiOperation(value = "校验人工审核")
     @PostMapping("/check_audit")
     public ResponseEntity<CheckAuditDTO> checkAudit(
             @ApiParam(value = "项目Id", required = true)
@@ -255,12 +272,12 @@ public class PipelineController {
     @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "条件校验")
     @GetMapping("/check_deploy")
-    public ResponseEntity<Boolean> checkDeploy(
+    public ResponseEntity<PipelineCheckDeployDTO> checkDeploy(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "记录Id", required = true)
             @RequestParam(value = "pipeline_id") Long pipelineId) {
-        return Optional.ofNullable(pipelineService.checkDeploy(pipelineId))
+        return Optional.ofNullable(pipelineService.checkDeploy(projectId, pipelineId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.check.deploy"));
     }
@@ -295,13 +312,14 @@ public class PipelineController {
     @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "流水线重试")
     @GetMapping(value = "/{pipeline_record_id}/retry")
-    public ResponseEntity retry(
+    public ResponseEntity<Boolean> retry(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录Id", required = true)
             @PathVariable(value = "pipeline_record_id") Long recordId) {
-        pipelineService.retry(projectId, recordId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return Optional.ofNullable(pipelineService.retry(projectId, recordId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.retry"));
     }
 
     /**
@@ -376,21 +394,23 @@ public class PipelineController {
                 .orElseThrow(() -> new CommonException("error.users.all.list"));
     }
 
-//    /**
-//     * 获取所有项目成员和项目所有者
-//     *
-//     * @param projectId 项目id
-//     * @return
-//     */
-//    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-//    @ApiOperation(value = "获取所有项目成员和项目所有者")
-//    @GetMapping(value = "/test")
-//    public void test(
-//            @ApiParam(value = "项目id", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiParam(value = "项目id", required = true)
-//            @RequestParam(value = "version_id") Long versionId) {
-//        pipelineService.test(versionId);
-//    }
+    /**
+     * 获取所有项目成员和项目所有者
+     *
+     * @param projectId 项目id
+     * @return
+     */
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "停止流水线")
+    @GetMapping(value = "/stop")
+    public ResponseEntity stop(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "流水线记录Id", required = true)
+            @RequestParam(value = "pipeline_record_id") Long recordId) {
+        pipelineService.stop(projectId, recordId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
 
 }

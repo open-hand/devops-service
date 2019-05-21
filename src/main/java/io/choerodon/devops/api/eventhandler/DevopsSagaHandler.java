@@ -331,16 +331,18 @@ public class DevopsSagaHandler {
         try {
             ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
             //更新记录表中的实例
-            PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
-            pipelineTaskRecordE.setInstanceName(applicationDeployDTO.getInstanceName());
-            pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
-            taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
-            PipelineAppDeployE appDeployE = appDeployRepository.queryById(applicationDeployDTO.getAutoDeployId());
-            if (appDeployE.getInstanceId() == null) {
-                appDeployE.setInstanceId(applicationInstanceDTO.getId());
-                appDeployRepository.update(appDeployE);
+            if(!taskRecordRepository.queryById( applicationDeployDTO.getRecordId()).getStatus().equals(WorkFlowStatus.STOP.toValue())) {
+                PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
+                pipelineTaskRecordE.setInstanceName(applicationDeployDTO.getInstanceName());
+                pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
+                taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
+                PipelineAppDeployE appDeployE = appDeployRepository.queryById(applicationDeployDTO.getAutoDeployId());
+                if (appDeployE.getInstanceId() == null) {
+                    appDeployE.setInstanceId(applicationInstanceDTO.getId());
+                    appDeployRepository.update(appDeployE);
+                }
+                LOGGER.info("create pipeline auto deploy instance success");
             }
-            LOGGER.info("create pipeline auto deploy instance success");
         } catch (Exception e) {
             //实例创建失败,回写记录表
             Long taskRecordId = applicationDeployDTO.getRecordId();
