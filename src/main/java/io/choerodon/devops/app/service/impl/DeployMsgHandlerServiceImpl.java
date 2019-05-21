@@ -1567,7 +1567,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         String status = K8sUtil.changePodStatus(v1Pod);
         if (status.equals("Running")) {
             PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
-            Optional<V1Container> container = v1Pod.getSpec().getContainers().stream().filter(v1Container -> v1Container.getName().contains("automation")).findFirst();
+            Optional<V1Container> container = v1Pod.getSpec().getContainers().stream().filter(v1Container -> v1Container.getName().contains("automation-test")).findFirst();
             if(container.isPresent()) {
                 podUpdateDTO.setConName(container.get().getName());
             }
