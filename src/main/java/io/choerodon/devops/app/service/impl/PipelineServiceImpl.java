@@ -483,12 +483,7 @@ public class PipelineServiceImpl implements PipelineService {
             throw new CommonException("no.version.can.trigger.deploy");
         }
         //保存记录
-        PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(stageRecordId, pipelineTaskE.getType(),
-                appDeployE.getTriggerVersion(), appDeployE.getApplicationId(),
-                appDeployE.getEnvId(), appDeployE.getInstanceId(),
-                valueRepository.queryById(appDeployE.getValueId()).getValue());
-        pipelineTaskRecordE.setTaskId(taskId);
-        pipelineTaskRecordE.setProjectId(pipelineTaskE.getProjectId());
+        PipelineTaskRecordE pipelineTaskRecordE = taskRecordRepository.queryByStageRecordId(stageRecordId,taskId).get(0);
         pipelineTaskRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
         pipelineTaskRecordE.setName(pipelineTaskE.getName());
         pipelineTaskRecordE.setVersionId(versionES.get(index).getId());
@@ -762,12 +757,19 @@ public class PipelineServiceImpl implements PipelineService {
                 BeanUtils.copyProperties(task, taskRecordE);
                 taskRecordE.setId(null);
                 taskRecordE.setTaskId(task.getId());
+                taskRecordE.setTaskType(task.getType());
                 taskRecordE.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
                 taskRecordE.setStageRecordId(stageRecordId);
+                taskRecordE.setProjectId(task.getProjectId());
+
                 if (task.getAppDeployId() != null) {
                     PipelineAppDeployE appDeployE = appDeployRepository.queryById(task.getAppDeployId());
                     taskRecordE.setApplicationId(appDeployE.getApplicationId());
                     taskRecordE.setEnvId(appDeployE.getEnvId());
+                    taskRecordE.setTriggerVersion(appDeployE.getTriggerVersion());
+                    taskRecordE.setApplicationId(appDeployE.getApplicationId());
+                    taskRecordE.setInstanceId(appDeployE.getInstanceId());
+                    taskRecordE.setValue(valueRepository.queryById(appDeployE.getValueId()).getValue());
                 }
                 List<PipelineUserRelE> taskUserRels = pipelineUserRelRepository.listByOptions(null, null, task.getId());
                 taskRecordE.setAuditUser(StringUtils.join(taskUserRels.stream().map(PipelineUserRelE::getUserId).toArray(), ","));
