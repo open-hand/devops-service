@@ -249,7 +249,7 @@ public class PipelineController {
      * @return
      */
     @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "人工审核")
+    @ApiOperation(value = "校验人工审核")
     @PostMapping("/check_audit")
     public ResponseEntity<CheckAuditDTO> checkAudit(
             @ApiParam(value = "项目Id", required = true)
@@ -401,7 +401,7 @@ public class PipelineController {
      * @return
      */
     @Permission(roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "获取所有项目成员和项目所有者")
+    @ApiOperation(value = "停止流水线")
     @GetMapping(value = "/stop")
     public ResponseEntity stop(
             @ApiParam(value = "项目id", required = true)
