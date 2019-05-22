@@ -204,7 +204,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         params.put("timeout", "10");
         //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
         params.put("instance", objectCode);
-        notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
         if (devopsNotificationE.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             params.put("mobile", userES.get(0).getPhone());
@@ -244,9 +243,13 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             //根据不同的通知方式发送验证码
             triggerTypes.stream().forEach(triggerType -> {
                 if (triggerType.equals(TriggerType.EMAIL.getType())) {
+                    notifyDTO.setSourceId(devopsEnvironmentE.getProjectE().getId());
+                    notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
                     notifyDTO.setCustomizedSendingTypes(Arrays.asList("email"));
                     notifyClient.postEmail(notifyDTO);
                 } else if (triggerType.equals(TriggerType.PM.getType())) {
+                    notifyDTO.setSourceId(devopsEnvironmentE.getProjectE().getId());
+                    notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
                     notifyDTO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
                     notifyClient.postEmail(notifyDTO);
                 } else {
