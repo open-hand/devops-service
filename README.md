@@ -75,7 +75,7 @@ env.open.SERVICES_HARBOR_USERNAME|harbor用户名
 env.open.SERVICES_HARBOR_PASSWORD|harbor密码
 env.open.SERVICES_SONARQUBE_URL|sonarqube地址
 env.open.SERVICES_GATEWAY_URL|gateway地址
-env.open.AGENT_VERSION|agengt版本
+env.open.AGENT_VERSION|agent版本
 env.open.SECURITY_BASIC_ENABLE|安全性验证
 env.open.SECURITY_IGNORED|安全性忽略
 env.open.AGENT_SERVICEURL|agent地址
