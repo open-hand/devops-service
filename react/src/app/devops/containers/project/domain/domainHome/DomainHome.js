@@ -1,51 +1,55 @@
-import React, { Component, Fragment } from "react";
-import { observer } from "mobx-react";
-import { withRouter } from "react-router-dom";
-import { Table, Button, Form, Tooltip, Modal, Select } from "choerodon-ui";
-import { injectIntl, FormattedMessage } from "react-intl";
+import React, { Component, Fragment } from 'react';
+import { observer, inject } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
+import { Table, Button, Form, Tooltip, Select } from 'choerodon-ui';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import {
   Content,
   Header,
   Page,
   Permission,
-  stores,
-} from "@choerodon/boot";
-import _ from "lodash";
-import CreateDomain from "../createDomain";
-import LoadingBar from "../../../../components/loadingBar";
-import "./DomainHome.scss";
-import "../../../main.scss";
-import { commonComponent } from "../../../../components/commonFunction";
-import StatusIcon from "../../../../components/StatusIcon";
-import MouserOverWrapper from "../../../../components/MouseOverWrapper/MouserOverWrapper";
-import EnvOverviewStore from "../../../../stores/project/envOverview";
-import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
-import RefreshBtn from "../../../../components/refreshBtn";
-import EnvFlag from "../../../../components/envFlag";
+} from '@choerodon/boot';
+import _ from 'lodash';
+import CreateDomain from '../createDomain';
+import LoadingBar from '../../../../components/loadingBar';
+import { commonComponent } from '../../../../components/commonFunction';
+import StatusIcon from '../../../../components/StatusIcon';
+import MouserOverWrapper from '../../../../components/MouseOverWrapper/MouserOverWrapper';
+import EnvOverviewStore from '../../../../stores/project/envOverview';
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import RefreshBtn from '../../../../components/refreshBtn';
+import EnvFlag from '../../../../components/envFlag';
+import DeleteModal from '../../../../components/deleteModal';
 
-const { AppState } = stores;
+import './DomainHome.scss';
+import '../../../main.scss';
+
 const { Option } = Select;
 
-@commonComponent("DomainStore")
+@Form.create({})
+@withRouter
+@injectIntl
+@inject('AppState')
+@commonComponent('DomainStore')
 @observer
-class DomainHome extends Component {
-  constructor(props, context) {
-    super(props, context);
-    this.state = {
-      openRemove: false,
-      submitting: false,
-      show: false,
-    };
-    this.opColumn = this.opColumn.bind(this);
-  }
+export default class DomainHome extends Component {
+  state = {
+    submitting: false,
+    deleteArr: [],
+    show: false,
+  };
 
   componentDidMount() {
-    const { id: projectId } = AppState.currentMenuType;
+    const {
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+
     EnvOverviewStore.loadActiveEnv(projectId).then(env => {
       if (env.length) {
         const envId = EnvOverviewStore.getTpEnvId;
         if (envId) {
-          // 这个方法定义在 commonComponent装饰器中
           this.loadAllData(0, envId);
         }
       }
@@ -69,7 +73,7 @@ class DomainHome extends Component {
     if (isload) {
       DomainStore.setInfo({
         filters: {},
-        sort: { columnKey: "id", order: "descend" },
+        sort: { columnKey: 'id', order: 'descend' },
         paras: [],
       });
       const envId = EnvOverviewStore.getTpEnvId;
@@ -80,127 +84,152 @@ class DomainHome extends Component {
   /**
    *打开域名创建弹框
    */
-  showSideBar = (type, id = "") => {
+  showSideBar = (type, id = '') => {
     const { form, DomainStore } = this.props;
     form.resetFields();
     DomainStore.setCertificates([]);
-    if (type === "create") {
+    if (type === 'create') {
       this.setState({
         show: true,
-        title: this.props.intl.formatMessage({ id: "domain.header.create" }),
+        title: this.props.intl.formatMessage({ id: 'domain.header.create' }),
         type,
         id,
       });
     } else {
       this.setState(
         {
-          title: this.props.intl.formatMessage({ id: "domain.header.update" }),
+          title: this.props.intl.formatMessage({ id: 'domain.header.update' }),
           type,
           id,
         },
         () => {
           this.setState({ show: true });
-        }
+        },
       );
     }
   };
 
-  opColumn(record) {
+  opColumn = ({ status, envStatus, id, name }) => {
     const {
       intl: { formatMessage },
+      AppState: {
+        currentMenuType: {
+          type,
+          id: projectId,
+          organizationId,
+        },
+      },
     } = this.props;
 
-    const { type, id: projectId, organizationId } = AppState.currentMenuType;
-
     let editDom = null;
-    let deletDom = null;
-    switch (record.status) {
-      case "operating":
+    let deleteDom = null;
+    switch (status) {
+      case 'operating':
         editDom = (
           <Tooltip
             trigger="hover"
-            placement="bottom"
-            title={formatMessage({ id: `domain_${record.status}` })}
+            placement="bottomRight"
+            arrowPointAtCenter
+            title={formatMessage({ id: `domain_${status}` })}
           >
-            <i className="icon icon-mode_edit c7n-app-icon-disabled" />
+            <Button
+              disabled
+              shape="circle"
+              size="small"
+              funcType="flat"
+              icon="mode_edit"
+            />
           </Tooltip>
         );
-        deletDom = (
+        deleteDom = (
           <Tooltip
             trigger="hover"
-            placement="bottom"
-            title={formatMessage({ id: `domain_${record.status}` })}
+            placement="bottomRight"
+            arrowPointAtCenter
+            title={formatMessage({ id: `domain_${status}` })}
           >
-            <i className="icon icon-delete_forever c7n-app-icon-disabled" />
+            <Button
+              disabled
+              shape="circle"
+              size="small"
+              funcType="flat"
+              icon="delete_forever"
+            />
           </Tooltip>
         );
         break;
       default:
-        editDom = (
-          <Fragment>
-            {record.envStatus ? (
-              <Tooltip
-                trigger="hover"
-                placement="bottom"
-                title={<div>{formatMessage({ id: "edit" })}</div>}
-              >
-                <Button
-                  shape="circle"
-                  size="small"
-                  funcType="flat"
-                  onClick={this.showSideBar.bind(this, "edit", record.id)}
-                >
-                  <i className="icon icon-mode_edit" />
-                </Button>
-              </Tooltip>
-            ) : (
-              <Tooltip
-                trigger="hover"
-                placement="bottom"
-                title={
-                  <div>{formatMessage({ id: "network.env.tooltip" })}</div>
-                }
-              >
-                <i className="icon icon-mode_edit c7n-app-icon-disabled" />
-              </Tooltip>
-            )}
-          </Fragment>
+        editDom = envStatus ? (
+          <Tooltip
+            trigger="hover"
+            placement="bottom"
+            arrowPointAtCenter
+            title={<div>{formatMessage({ id: 'edit' })}</div>}
+          >
+            <Button
+              shape="circle"
+              size="small"
+              funcType="flat"
+              icon="mode_edit"
+              onClick={this.showSideBar.bind(this, 'edit', id)}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip
+            trigger="hover"
+            placement="bottomRight"
+            arrowPointAtCenter
+            title={
+              <div>{formatMessage({ id: 'network.env.tooltip' })}</div>
+            }
+          >
+            <Button
+              disabled
+              shape="circle"
+              size="small"
+              funcType="flat"
+              icon="mode_edit"
+            />
+          </Tooltip>
         );
-        deletDom = (
-          <Fragment>
-            {record.envStatus ? (
-              <Tooltip
-                trigger="hover"
-                placement="bottom"
-                title={<div>{formatMessage({ id: "delete" })}</div>}
-              >
-                <Button
-                  shape="circle"
-                  size="small"
-                  funcType="flat"
-                  onClick={this.openRemove.bind(this, record.id, record.name)}
-                >
-                  <i className="icon icon-delete_forever" />
-                </Button>
-              </Tooltip>
-            ) : (
-              <Tooltip
-                trigger="hover"
-                placement="bottom"
-                title={
-                  <div>{formatMessage({ id: "network.env.tooltip" })}</div>
-                }
-              >
-                <i className="icon icon-delete_forever c7n-app-icon-disabled" />
-              </Tooltip>
-            )}
-          </Fragment>
+        deleteDom = envStatus ? (
+          <Tooltip
+            trigger="hover"
+            placement="bottom"
+            arrowPointAtCenter
+            title={<div>{formatMessage({ id: 'delete' })}</div>}
+          >
+            <Button
+              shape="circle"
+              size="small"
+              funcType="flat"
+              icon="delete_forever"
+              onClick={this.openDeleteModal.bind(this, id, name)}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip
+            trigger="hover"
+            placement="bottomRight"
+            arrowPointAtCenter
+            title={
+              <div>{formatMessage({ id: 'network.env.tooltip' })}</div>
+            }
+          >
+            <Button
+              disabled
+              shape="circle"
+              size="small"
+              funcType="flat"
+              icon="delete_forever"
+            />
+          </Tooltip>
         );
     }
     return (
       <Fragment>
         <Permission
-          service={["devops-service.devops-ingress.update"]}
+          service={['devops-service.devops-ingress.update']}
           type={type}
           projectId={projectId}
           organizationId={organizationId}
@@ -208,16 +237,16 @@ class DomainHome extends Component {
           {editDom}
         </Permission>
         <Permission
-          service={["devops-service.devops-ingress.delete"]}
+          service={['devops-service.devops-ingress.delete']}
           type={type}
           projectId={projectId}
           organizationId={organizationId}
         >
-          {deletDom}
+          {deleteDom}
         </Permission>
       </Fragment>
     );
-  }
+  };
 
   /**
    * 环境选择
@@ -232,7 +261,24 @@ class DomainHome extends Component {
     const {
       DomainStore,
       intl: { formatMessage },
+      AppState: {
+        currentMenuType: {
+          type,
+          id: projectId,
+          organizationId,
+          name,
+        },
+      },
     } = this.props;
+
+    const {
+      deleteArr,
+      show,
+      id,
+      title,
+      type: sidebarType,
+      submitting,
+    } = this.state;
 
     const data = DomainStore.getAllData;
     const envData = EnvOverviewStore.getEnvcard;
@@ -247,20 +293,13 @@ class DomainHome extends Component {
       sort: { columnKey, order },
     } = DomainStore.getInfo;
 
-    const {
-      type,
-      id: projectId,
-      organizationId: orgId,
-      name,
-    } = AppState.currentMenuType;
-
     const columns = [
       {
-        title: formatMessage({ id: "domain.column.name" }),
-        key: "name",
-        dataIndex: "name",
+        title: formatMessage({ id: 'domain.column.name' }),
+        key: 'name',
+        dataIndex: 'name',
         sorter: true,
-        sortOrder: columnKey === "name" && order,
+        sortOrder: columnKey === 'name' && order,
         filters: [],
         filteredValue: filters.name || [],
         render: (text, record) => (
@@ -270,24 +309,24 @@ class DomainHome extends Component {
             </MouserOverWrapper>
             <StatusIcon
               name=""
-              status={record.commandStatus || ""}
-              error={record.error || ""}
+              status={record.commandStatus || ''}
+              error={record.error || ''}
             />
           </div>
         ),
       },
       {
-        title: formatMessage({ id: "domain.column.domain" }),
-        key: "domain",
+        title: formatMessage({ id: 'domain.column.domain' }),
+        key: 'domain',
         filters: [],
         filteredValue: filters.domain || [],
-        dataIndex: "domain",
+        dataIndex: 'domain',
       },
       {
-        title: formatMessage({ id: "domain.column.env" }),
-        key: "envName",
+        title: formatMessage({ id: 'domain.column.env' }),
+        key: 'envName',
         sorter: true,
-        sortOrder: columnKey === "envName" && order,
+        sortOrder: columnKey === 'envName' && order,
         filters: [],
         filteredValue: filters.envName || [],
         render: record => (
@@ -295,9 +334,9 @@ class DomainHome extends Component {
         ),
       },
       {
-        title: formatMessage({ id: "domain.column.path" }),
-        className: "c7n-network-col",
-        key: "path",
+        title: formatMessage({ id: 'domain.column.path' }),
+        className: 'c7n-network-col',
+        key: 'path',
         filters: [],
         filteredValue: filters.path || [],
         render: record =>
@@ -311,9 +350,9 @@ class DomainHome extends Component {
           )),
       },
       {
-        title: formatMessage({ id: "domain.column.network" }),
-        className: "c7n-network-col",
-        key: "serviceName",
+        title: formatMessage({ id: 'domain.column.network' }),
+        className: 'c7n-network-col',
+        key: 'serviceName',
         filters: [],
         filteredValue: filters.serviceName || [],
         render: record => (
@@ -326,7 +365,7 @@ class DomainHome extends Component {
                 <div
                   className={`c7n-domain-create-status c7n-domain-create-status_${
                     instance.serviceStatus
-                  }`}
+                    }`}
                 >
                   <div>{formatMessage({ id: instance.serviceStatus })}</div>
                 </div>
@@ -339,27 +378,27 @@ class DomainHome extends Component {
         ),
       },
       {
-        key: "action",
-        align: "right",
-        className: "c7n-network-text_top",
+        key: 'action',
+        align: 'right',
+        className: 'c7n-network-text_top',
         render: this.opColumn,
       },
     ];
 
     let mainContent = null;
     if (envData && envData.length && envId) {
-      this.initAutoRefresh("domain");
+      this.initAutoRefresh('domain');
       mainContent = (
         <Fragment>
-          <Header title={formatMessage({ id: "domain.header.title" })}>
+          <Header title={formatMessage({ id: 'domain.header.title' })}>
             <Select
               className={`${
                 envId
-                  ? "c7n-header-select"
-                  : "c7n-header-select c7n-select_min100"
-              }`}
+                  ? 'c7n-header-select'
+                  : 'c7n-header-select c7n-select_min100'
+                }`}
               dropdownClassName="c7n-header-env_drop"
-              placeholder={formatMessage({ id: "envoverview.noEnv" })}
+              placeholder={formatMessage({ id: 'envoverview.noEnv' })}
               value={envData && envData.length ? envId : undefined}
               disabled={envData && envData.length === 0}
               onChange={this.handleEnvSelect}
@@ -385,10 +424,10 @@ class DomainHome extends Component {
               ))}
             </Select>
             <Permission
-              service={["devops-service.devops-ingress.create"]}
+              service={['devops-service.devops-ingress.create']}
               type={type}
               projectId={projectId}
-              organizationId={orgId}
+              organizationId={organizationId}
             >
               <Tooltip
                 title={
@@ -398,27 +437,27 @@ class DomainHome extends Component {
                 }
               >
                 <Button
+                  icon="playlist_add"
                   funcType="flat"
                   disabled={envState && !envState.connect}
-                  onClick={this.showSideBar.bind(this, "create", "")}
+                  onClick={this.showSideBar.bind(this, 'create', '')}
                 >
-                  <i className="icon icon-playlist_add icon" />
                   <FormattedMessage id="domain.header.create" />
                 </Button>
               </Tooltip>
             </Permission>
             <Permission
-              service={["devops-service.devops-ingress.listByEnv"]}
+              service={['devops-service.devops-ingress.listByEnv']}
               type={type}
               projectId={projectId}
-              organizationId={orgId}
+              organizationId={organizationId}
             >
               <RefreshBtn name="domain" onFresh={this.handleRefresh} />
             </Permission>
           </Header>
           <Content code="domain" values={{ name }}>
             <Table
-              filterBarPlaceholder={formatMessage({ id: "filter" })}
+              filterBarPlaceholder={formatMessage({ id: 'filter' })}
               loading={DomainStore.loading}
               onChange={this.tableChange}
               pagination={DomainStore.pageInfo}
@@ -434,71 +473,52 @@ class DomainHome extends Component {
     } else {
       mainContent = (
         <DepPipelineEmpty
-          title={formatMessage({ id: "domain.header.title" })}
+          title={formatMessage({ id: 'domain.header.title' })}
           type="env"
         />
       );
     }
 
+    const deleteModals = _.map(deleteArr, ({ name, display, deleteId }) => (<DeleteModal
+      key={deleteId}
+      title={`${formatMessage({ id: 'ingress.delete' })}“${name}”`}
+      visible={display}
+      objectId={deleteId}
+      loading={submitting}
+      objectType="ingress"
+      onClose={this.closeDeleteModal}
+      onOk={this.handleDeleteWithValid}
+    />));
+
     return (
       <Page
         className="c7n-region c7n-domain-wrapper"
         service={[
-          "devops-service.devops-ingress.create",
-          "devops-service.devops-ingress.checkDomain",
-          "devops-service.devops-ingress.checkName",
-          "devops-service.devops-ingress.listByEnv",
-          "devops-service.devops-ingress.queryDomainId",
-          "devops-service.devops-ingress.update",
-          "devops-service.devops-ingress.delete",
-          "devops-service.devops-service.listByEnvId",
-          "devops-service.devops-environment.listByProjectIdAndActive",
+          'devops-service.devops-ingress.create',
+          'devops-service.devops-ingress.checkDomain',
+          'devops-service.devops-ingress.checkName',
+          'devops-service.devops-ingress.listByEnv',
+          'devops-service.devops-ingress.queryDomainId',
+          'devops-service.devops-ingress.update',
+          'devops-service.devops-ingress.delete',
+          'devops-service.devops-service.listByEnvId',
+          'devops-service.devops-environment.listByProjectIdAndActive',
         ]}
       >
         {DomainStore.isRefresh ? <LoadingBar display /> : mainContent}
-
-        {this.state.show && (
+        {show && (
           <CreateDomain
-            id={this.state.id}
+            id={id}
             envId={envId}
-            title={this.state.title}
-            visible={this.state.show}
-            type={this.state.type}
+            title={title}
+            visible={show}
+            type={sidebarType}
             store={DomainStore}
             onClose={this.handleCancelFun}
           />
         )}
-        <Modal
-          visible={this.state.openRemove}
-          title={`${formatMessage({ id: "domain.header.delete" })}“${
-            this.state.name
-          }”`}
-          closable={false}
-          footer={[
-            <Button
-              key="back"
-              onClick={this.closeRemove}
-              disabled={this.state.submitting}
-            >
-              {<FormattedMessage id="cancel" />}
-            </Button>,
-            <Button
-              key="submit"
-              loading={this.state.submitting}
-              type="danger"
-              onClick={this.handleDelete}
-            >
-              {formatMessage({ id: "delete" })}
-            </Button>,
-          ]}
-        >
-          <div className="c7n-padding-top_8">
-            {formatMessage({ id: "domain.delete.des" })}
-          </div>
-        </Modal>
+        {deleteModals}
       </Page>
     );
   }
 }
-
-export default Form.create({})(withRouter(injectIntl(DomainHome)));

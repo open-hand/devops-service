@@ -2,7 +2,7 @@ import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import _ from 'lodash';
 import { handleProptError, handleCheckerProptError } from '../../../utils';
-import { HEIGHT } from '../../../common/Constants';
+import { HEIGHT, SORTER_MAP } from '../../../common/Constants';
 
 const TEST_PASS = 'pass';
 const TEST_FAILED = 'failed';
@@ -96,12 +96,9 @@ class ElementsStore {
   async loadListData(projectId, page, size, sort, param) {
     this.setLoading(true);
     try {
-      let field = sort.field || 'id';
-      if (sort.field === 'origin') {
-        field = 'projectId';
-      }
+      const sortPath = sort ? `&sort=${sort.field || sort.columnKey},${SORTER_MAP[sort.order] || 'desc'}` : '';
       const data = await axios.post(
-        `/devops/v1/projects/${projectId}/project_config/list_by_options?page=${page}&size=${size}&sort=${field},${sort.order}`,
+        `/devops/v1/projects/${projectId}/project_config/list_by_options?page=${page}&size=${size}${sortPath}`,
         JSON.stringify(param),
       );
       const result = handleProptError(data);

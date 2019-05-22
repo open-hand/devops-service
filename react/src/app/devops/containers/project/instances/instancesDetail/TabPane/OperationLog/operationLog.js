@@ -110,7 +110,7 @@ class OperationLog extends Component {
       update: formatMessage({ id: "ist.update" }),
       stop: formatMessage({ id: "ist.stop" }),
       restart: formatMessage({ id: "ist.run" }),
-      delete: formatMessage({ id: "ist.del" }),
+      delete: formatMessage({ id: "ist.delete" }),
     };
     return <span>{operation[type]}</span>;
   };

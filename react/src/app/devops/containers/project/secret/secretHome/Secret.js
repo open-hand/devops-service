@@ -173,7 +173,12 @@ class Secret extends Component {
               <RefreshBtn name="secret" onFresh={this.reload} />
             </Header>
             <Content code={'secret'} values={{ name: title ? title.name : name }}>
-              <KeyValueTable title="secret" store={SecretStore} envId={envId} editOpen={this.openSideBar} />
+              <KeyValueTable
+                title="secret"
+                store={SecretStore}
+                envId={envId}
+                editOpen={this.openSideBar}
+              />
             </Content>
           </Fragment>
         ) : (

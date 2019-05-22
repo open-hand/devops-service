@@ -1,42 +1,41 @@
 /* eslint-disable react/sort-comp */
-import React, { Component, Fragment } from "react";
-import { observer } from "mobx-react";
-import { observable, action } from "mobx";
-import { withRouter } from "react-router-dom";
-import { injectIntl, FormattedMessage } from "react-intl";
+import React, { Component, Fragment } from 'react';
+import { observer, inject } from 'mobx-react';
+import { observable, action } from 'mobx';
+import { withRouter } from 'react-router-dom';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import {
   Table,
   Button,
   Form,
   Tooltip,
-  Modal,
-  Progress,
   Popover,
   Icon,
-} from "choerodon-ui";
-import { Permission, stores } from "@choerodon/boot";
-import _ from "lodash";
-import "../EnvOverview.scss";
-import "../../../main.scss";
-import "../../networkConfig/networkHome/NetworkHome.scss";
-import NetworkConfigStore from "../../../../stores/project/networkConfig";
-import EditNetwork from "../../networkConfig/editNetwork";
-import StatusIcon from "../../../../components/StatusIcon";
+} from 'choerodon-ui';
+import { Permission } from '@choerodon/boot';
+import _ from 'lodash';
+import NetworkConfigStore from '../../../../stores/project/networkConfig';
+import EditNetwork from '../../networkConfig/editNetwork';
+import StatusIcon from '../../../../components/StatusIcon';
+import DeleteModal from '../../../../components/deleteModal';
+import { handleProptError } from '../../../../utils';
 
-const { AppState } = stores;
+import '../EnvOverview.scss';
+import '../../../main.scss';
+import '../../networkConfig/networkHome/NetworkHome.scss';
 
+@Form.create({})
+@withRouter
+@injectIntl
+@inject('AppState')
 @observer
-class NetworkOverview extends Component {
-  @observable openRemove = false;
-
+export default class NetworkOverview extends Component {
   @observable showEdit = false;
 
-  @observable submitting = false;
-
-  constructor(props, context) {
-    super(props, context);
-    this.state = {};
-  }
+  state = {
+    deleteArr: [],
+    deleteLoading: false,
+  };
 
   /**
    * 打开编辑的操作框
@@ -51,64 +50,14 @@ class NetworkOverview extends Component {
     this.id = id;
   };
 
-  /**
-   * 删除数据
-   */
-  @action
-  handleDelete = () => {
-    const { store, envId } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
-    const { total, current, pageSize } = store.getPageInfo;
-    const lastDatas = total % pageSize;
-    const totalPage = Math.ceil(total / pageSize);
-    this.submitting = true;
-    NetworkConfigStore.deleteData(projectId, this.id)
-      .then(() => {
-        this.submitting = false;
-        if (lastDatas === 1 && current === totalPage && current > 1) {
-          store.loadNetwork(
-            true,
-            projectId,
-            envId,
-            current - 2
-          );
-        } else {
-          store.loadNetwork(
-            true,
-            projectId,
-            envId,
-            current - 1
-          );
-        }
-        this.closeRemove();
-      })
-      .catch(error => {
-        this.submitting = false;
-        Choerodon.handleResponseError(error);
-      });
-    store.setInfo({
-      filters: {},
-      sort: { columnKey: "id", order: "descend" },
-      paras: [],
-    });
-  };
-
-  /**
-   * 按环境加载网络
-   * @param envId
-   */
   loadNetwork = (envId, spin = true) => {
-    const { store } = this.props;
-    const projectId = AppState.currentMenuType.id;
+    const {
+      store,
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
     store.loadNetwork(spin, projectId, envId);
-  };
-
-  /**
-   * 关闭删除数据的模态框
-   */
-  @action
-  closeRemove = () => {
-    this.openRemove = false;
   };
 
   /**
@@ -122,20 +71,10 @@ class NetworkOverview extends Component {
       const { store } = this.props;
       store.setInfo({
         filters: {},
-        sort: { columnKey: "id", order: "descend" },
+        sort: { columnKey: 'id', order: 'descend' },
         paras: [],
       });
     }
-  };
-
-  /**
-   * 打开删除网络弹框
-   * @param id
-   */
-  @action
-  openRemoveModal = id => {
-    this.openRemove = true;
-    this.id = id;
   };
 
   /**
@@ -153,8 +92,8 @@ class NetworkOverview extends Component {
         iPArr.push(
           <div key={item} className="network-config-item">
             {item}
-          </div>
-        )
+          </div>,
+        ),
       );
     }
     if (ports && ports.length) {
@@ -163,12 +102,12 @@ class NetworkOverview extends Component {
         portArr.push(
           <div key={port} className="network-config-item">
             {nodePort} {port} {targetPort}
-          </div>
+          </div>,
         );
       });
     }
     const content =
-      type === "NodePort" ? (
+      type === 'NodePort' ? (
         <Fragment>
           <div className="network-config-item">
             <FormattedMessage id="network.node.port" />
@@ -177,12 +116,12 @@ class NetworkOverview extends Component {
         </Fragment>
       ) : (
         <Fragment>
-          {type === "ClusterIP" && (
+          {type === 'ClusterIP' && (
             <div className="network-config-wrap">
               <div className="network-type-title">
                 <FormattedMessage id="network.column.ip" />
               </div>
-              <div>{externalIps ? iPArr : "-"}</div>
+              <div>{externalIps ? iPArr : '-'}</div>
             </div>
           )}
           <div className="network-config-wrap">
@@ -220,26 +159,25 @@ class NetworkOverview extends Component {
    * 生成 目标对象类型 列
    * @param record
    */
-  targetTypeColumn = record => {
-    const { appId, target: { appInstance, labels } } = record;
+  targetTypeColumn = ({ appId, target }) => {
     const { intl: { formatMessage } } = this.props;
-    const tergetType =
-      (appId && appInstance && appInstance.length)
-        ? "instance"
-        : (labels ? "param" : "endPoints");
-    let message = "";
-    switch (tergetType) {
-      case "instance":
-        message = formatMessage({ id: "ist.head" });
-        break;
-      case "param":
-        message = formatMessage({ id: "branch.issue.label" });
-        break;
-      case "endPoints":
-        message = "EndPoints";
-        break;
+
+    const { appInstance, labels } = target || {};
+
+    const message = {
+      instance: formatMessage({ id: 'ist.head' }),
+      param: formatMessage({ id: 'branch.issue.label' }),
+      endPoints: 'EndPoints',
+    };
+
+    let targetType = 'endPoints';
+    if (appId && appInstance && appInstance.length) {
+      targetType = 'instance';
+    } else if (labels) {
+      targetType = 'param';
     }
-    return <div><span>{message}</span></div>
+
+    return <span>{message[targetType]}</span>;
   };
 
   /**
@@ -256,9 +194,9 @@ class NetworkOverview extends Component {
       _.forEach(appInstance, item => {
         const { id, code, instanceStatus } = item;
         const statusStyle =
-          instanceStatus !== "operating" && instanceStatus !== "running"
-            ? "c7n-network-status-failed"
-            : "";
+          instanceStatus !== 'operating' && instanceStatus !== 'running'
+            ? 'c7n-network-status-failed'
+            : '';
         if (code) {
           node.push(
             <div className={`network-column-instance ${statusStyle}`} key={id}>
@@ -274,7 +212,7 @@ class NetworkOverview extends Component {
               >
                 {code}
               </Tooltip>
-            </div>
+            </div>,
           );
         }
       });
@@ -284,8 +222,8 @@ class NetworkOverview extends Component {
         node.push(
           <div className="network-column-instance" key={key}>
             <span>{key}</span>=<span>{value}</span>
-          </div>
-        )
+          </div>,
+        ),
       );
     }
     if (endPoints) {
@@ -295,15 +233,15 @@ class NetworkOverview extends Component {
         node.push(
           <div className="network-column-instance" key={index}>
             <span>{item}</span>
-          </div>
-        )
+          </div>,
+        ),
       );
       _.map(portList, (item, index) => {
         port.push(
           <div className="network-column-instance" key={index}>
             <span>{item.port}</span>
-          </div>
-        )
+          </div>,
+        );
       });
     }
     return (
@@ -323,7 +261,7 @@ class NetworkOverview extends Component {
                   <Icon type="expand_more" className="network-expend-icon" />
                 </Popover>
               )}
-            </div>)
+            </div>),
           )
         }
       </Fragment>
@@ -331,18 +269,25 @@ class NetworkOverview extends Component {
   };
 
   /**
-   * 操作 列
-   * @param record
-   * @param type
-   * @param projectId
-   * @param orgId
+   *
+   * @param status
+   * @param envStatus
+   * @param id
    * @returns {*}
    */
-  opColumn = (record, type, projectId, orgId) => {
-    const { status, envStatus, id } = record;
+  renderActions = ({ status, envStatus, id, name }) => {
+    const {
+      AppState: {
+        currentMenuType: {
+          type,
+          id: projectId,
+          organizationId,
+        },
+      },
+    } = this.props;
     let editDom = null;
     let deleteDom = null;
-    if (status !== "operating" && envStatus) {
+    if (status !== 'operating' && envStatus) {
       editDom = (
         <Tooltip
           trigger="hover"
@@ -353,10 +298,9 @@ class NetworkOverview extends Component {
             shape="circle"
             size="small"
             funcType="flat"
+            icon="mode_edit"
             onClick={this.editNetwork.bind(this, id)}
-          >
-            <i className="icon icon-mode_edit" />
-          </Button>
+          />
         </Tooltip>
       );
       deleteDom = (
@@ -369,33 +313,42 @@ class NetworkOverview extends Component {
             shape="circle"
             size="small"
             funcType="flat"
-            onClick={this.openRemoveModal.bind(this, id)}
-          >
-            <i className="icon icon-delete_forever" />
-          </Button>
+            icon="delete_forever"
+            onClick={this.openDeleteModal.bind(this, id, name)}
+          />
         </Tooltip>
       );
     } else {
-      editDom = <i className="icon icon-mode_edit c7n-app-icon-disabled" />;
-      deleteDom = (
-        <i className="icon icon-delete_forever c7n-app-icon-disabled" />
-      );
+      editDom = <Button
+        disabled
+        shape="circle"
+        size="small"
+        funcType="flat"
+        icon="mode_edit"
+      />;
+      deleteDom = <Button
+        disabled
+        shape="circle"
+        size="small"
+        funcType="flat"
+        icon="delete_forever"
+      />;
     }
     return (
       <Fragment>
         <Permission
-          service={["devops-service.devops-service.update"]}
+          service={['devops-service.devops-service.update']}
           type={type}
           projectId={projectId}
-          organizationId={orgId}
+          organizationId={organizationId}
         >
           {editDom}
         </Permission>
         <Permission
-          service={["devops-service.devops-service.delete"]}
+          service={['devops-service.devops-service.delete']}
           type={type}
           projectId={projectId}
-          organizationId={orgId}
+          organizationId={organizationId}
         >
           {deleteDom}
         </Permission>
@@ -411,15 +364,21 @@ class NetworkOverview extends Component {
    * @param paras
    */
   tableChange = (pagination, filters, sorter, paras) => {
-    const { store, envId } = this.props;
-    const { id } = AppState.currentMenuType;
-    const sort = { field: "", order: "desc" };
+    const {
+      store,
+      envId,
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+
+    const sort = { field: '', order: 'desc' };
     if (sorter.column) {
       sort.field = sorter.field || sorter.columnKey;
-      if (sorter.order === "ascend") {
-        sort.order = "asc";
-      } else if (sorter.order === "descend") {
-        sort.order = "desc";
+      if (sorter.order === 'ascend') {
+        sort.order = 'asc';
+      } else if (sorter.order === 'descend') {
+        sort.order = 'desc';
       }
     }
     let searchParam = {};
@@ -434,76 +393,171 @@ class NetworkOverview extends Component {
     store.setInfo({ filters, sort: sorter, paras });
     store.loadNetwork(
       true,
-      id,
+      projectId,
       envId,
       page,
       pagination.pageSize,
       sort,
-      postData
+      postData,
     );
   };
 
+  handleDelete = async (id, callback) => {
+    const {
+      store,
+      envId,
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+
+    this.setState({ deleteLoading: true });
+
+    const response = await NetworkConfigStore.deleteData(projectId, id)
+      .catch(error => {
+        this.setState({ deleteLoading: false });
+        callback && callback();
+        Choerodon.handleResponseError(error);
+      });
+
+    const result = handleProptError(response);
+
+    if (result) {
+      this.removeDeleteModal(id);
+
+      const { total, current, pageSize } = store.getPageInfo;
+      const lastData = total % pageSize;
+      const totalPage = Math.ceil(total / pageSize);
+      const isLastItem = lastData === 1 && current === totalPage && current > 1;
+
+      store.loadNetwork(
+        true,
+        projectId,
+        envId,
+        isLastItem ? current - 2 : current - 1,
+      );
+      store.setInfo({
+        filters: {},
+        sort: { columnKey: 'id', order: 'descend' },
+        paras: [],
+      });
+    }
+
+    this.setState({ deleteLoading: false });
+  };
+
+  openDeleteModal(id, name) {
+    const deleteArr = [...this.state.deleteArr];
+
+    const currentIndex = _.findIndex(deleteArr, item => id === item.deleteId);
+
+    if (~currentIndex) {
+      const newItem = {
+        ...deleteArr[currentIndex],
+        display: true,
+      };
+      deleteArr.splice(currentIndex, 1, newItem);
+    } else {
+      const newItem = {
+        display: true,
+        deleteId: id,
+        name,
+      };
+      deleteArr.push(newItem);
+    }
+
+    this.setState({ deleteArr });
+  }
+
+  closeDeleteModal = (id) => {
+    const deleteArr = [...this.state.deleteArr];
+
+    const current = _.find(deleteArr, item => id === item.deleteId);
+
+    current.display = false;
+
+    this.setState({ deleteArr });
+  };
+
+  removeDeleteModal(id) {
+    const { deleteArr } = this.state;
+    const newDeleteArr = _.filter(deleteArr, ({ deleteId }) => deleteId !== id);
+    this.setState({ deleteArr: newDeleteArr });
+  }
+
   render() {
-    const { store, intl } = this.props;
+    const {
+      store,
+      intl: {
+        formatMessage,
+      },
+    } = this.props;
+    const { deleteArr, deleteLoading } = this.state;
     const data = store.getNetwork;
     const {
       filters,
       sort: { columnKey, order },
       paras,
     } = store.getInfo;
-    const {
-      type,
-      id: projectId,
-      organizationId: orgId,
-    } = AppState.currentMenuType;
 
     const columns = [
       {
         title: <FormattedMessage id="network.column.name" />,
-        key: "name",
+        key: 'name',
         sorter: true,
-        sortOrder: columnKey === "name" && order,
+        sortOrder: columnKey === 'name' && order,
         filters: [],
         filteredValue: filters.name || [],
         render: record => (
           <StatusIcon
             name={record.name}
-            status={record.commandStatus || ""}
-            error={record.error || ""}
+            status={record.commandStatus || ''}
+            error={record.error || ''}
           />
         ),
       },
       {
         title: <FormattedMessage id="network.target.type" />,
-        key: "targetType",
+        key: 'targetType',
         render: this.targetTypeColumn,
       },
       {
         title: <FormattedMessage id="network.target" />,
-        key: "target",
+        key: 'target',
         render: record => this.targetColumn(record),
       },
       {
         title: <FormattedMessage id="network.config.column" />,
-        key: "type",
+        key: 'type',
         render: record => this.configColumn(record),
       },
       {
-        width: "82px",
-        key: "action",
-        render: record => this.opColumn(record, type, projectId, orgId),
+        width: '82px',
+        key: 'action',
+        render: this.renderActions,
       },
     ];
+
+    const deleteModals = _.map(deleteArr, ({ name, display, deleteId }) => (<DeleteModal
+      key={deleteId}
+      title={`${formatMessage({ id: 'service.delete' })}“${name}”`}
+      visible={display}
+      objectId={deleteId}
+      loading={deleteLoading}
+      objectType="service"
+      onClose={this.closeDeleteModal}
+      onOk={this.handleDelete}
+    />));
 
     return (
       <div className="c7n-network-wrapper">
         <Table
-          filterBarPlaceholder={intl.formatMessage({ id: "filter" })}
+          filterBarPlaceholder={formatMessage({ id: 'filter' })}
           loading={store.isLoading}
           pagination={store.pageInfo}
           columns={columns}
           onChange={this.tableChange}
-          dataSource={data}
+          dataSource={data ? data.slice() : []}
           rowKey={record => record.id}
           filters={paras.slice()}
         />
@@ -515,35 +569,8 @@ class NetworkOverview extends Component {
             onClose={this.handleCancelFun}
           />
         )}
-        <Modal
-          visible={this.openRemove}
-          title={<FormattedMessage id="network.delete" />}
-          closable={false}
-          footer={[
-            <Button
-              key="back"
-              onClick={this.closeRemove}
-              disabled={this.submitting}
-            >
-              <FormattedMessage id="cancel" />
-            </Button>,
-            <Button
-              key="submit"
-              type="danger"
-              onClick={this.handleDelete}
-              loading={this.submitting}
-            >
-              <FormattedMessage id="delete" />
-            </Button>,
-          ]}
-        >
-          <div className="c7n-padding-top_8">
-            <FormattedMessage id="network.delete.tooltip" />
-          </div>
-        </Modal>
+        {deleteModals}
       </div>
     );
   }
 }
-
-export default Form.create({})(withRouter(injectIntl(NetworkOverview)));

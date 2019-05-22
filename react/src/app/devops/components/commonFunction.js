@@ -1,17 +1,16 @@
-import React from "react";
-import { stores } from "@choerodon/boot";
-import EnvOverviewStore from "../stores/project/envOverview";
-import DevopsStore from "../stores/DevopsStore";
-
-// const REFRESH_MANUAL = "manual";
-// const REFRESH_AUTOMATIC = "auto";
+import React from 'react';
+import { stores } from '@choerodon/boot';
+import _ from 'lodash';
+import EnvOverviewStore from '../stores/project/envOverview';
+import DevopsStore from '../stores/DevopsStore';
+import { handleProptError } from '../utils';
 
 const { AppState } = stores;
 
 export const commonComponent = storeName => {
   return component =>
     class extends component {
-      static displayName = "commonComponent";
+      static displayName = 'commonComponent';
 
       clearAutoRefresh() {
         DevopsStore.clearAutoRefresh();
@@ -32,7 +31,7 @@ export const commonComponent = storeName => {
         const store = this.props[storeName];
         store.setInfo({
           filters: {},
-          sort: { columnKey: "id", order: "descend" },
+          sort: { columnKey: 'id', order: 'descend' },
           paras: [],
         });
       }
@@ -57,8 +56,85 @@ export const commonComponent = storeName => {
        */
       openRemove = (id, name) => this.setState({ openRemove: true, id, name });
 
+      /**
+       * 删除时需要进行二次校验
+       * @param id
+       * @param callback
+       * @returns {Promise<void>}
+       */
+      handleDeleteWithValid = async (id, callback) => {
+        const store = this.props[storeName];
+        const { id: projectId } = AppState.currentMenuType;
+
+        this.setState({ submitting: true });
+
+        const response = await store.deleteData(projectId, id)
+          .catch(error => {
+            this.setState({ submitting: false });
+            callback && callback();
+            Choerodon.handleResponseError(error);
+          });
+
+        const result = handleProptError(response);
+
+        if (result) {
+          this.removeDeleteModal(id);
+
+          const { total, current, pageSize } = store.getPageInfo;
+          const envId = EnvOverviewStore.getTpEnvId;
+
+          // 防止最后一页只有一个元素时被删除后页面空白
+          const lastCount = total % pageSize;
+          const totalPage = Math.ceil(total / pageSize);
+          if (lastCount === 1 && current === totalPage && current > 1) {
+            this.loadAllData(current - 2, envId);
+          } else {
+            this.loadAllData(current - 1, envId);
+          }
+        }
+        this.setState({ submitting: false });
+      };
+
+      openDeleteModal(id, name) {
+        const deleteArr = [...this.state.deleteArr];
+
+        const currentIndex = _.findIndex(deleteArr, item => id === item.deleteId);
+
+        if (~currentIndex) {
+          const newItem = {
+            ...deleteArr[currentIndex],
+            display: true,
+          };
+          deleteArr.splice(currentIndex, 1, newItem);
+        } else {
+          deleteArr.push({
+            display: true,
+            deleteId: id,
+            name: name,
+          });
+        }
+
+        this.setState({ deleteArr });
+      }
+
+      closeDeleteModal = (id) => {
+        const deleteArr = [...this.state.deleteArr];
+
+        const current = _.find(deleteArr, item => id === item.deleteId);
+
+        current.display = false;
+
+        this.setState({ deleteArr });
+      };
+
+      removeDeleteModal(id) {
+        const { deleteArr } = this.state;
+        const newDeleteArr = _.filter(deleteArr, ({ deleteId }) => deleteId !== id);
+        this.setState({ deleteArr: newDeleteArr });
+      }
+
       /***
-       * 删除数据
+       * 正常删除数据
        */
       handleDelete = () => {
         const store = this.props[storeName];
@@ -133,13 +209,13 @@ export const commonComponent = storeName => {
         const { id } = AppState.currentMenuType;
         const envId = EnvOverviewStore.getTpEnvId;
         store.setInfo({ filters, sort: sorter, paras });
-        let sort = { field: "", order: "desc" };
+        let sort = { field: '', order: 'desc' };
         if (sorter.column) {
           sort.field = sorter.field || sorter.columnKey;
-          if (sorter.order === "ascend") {
-            sort.order = "asc";
-          } else if (sorter.order === "descend") {
-            sort.order = "desc";
+          if (sorter.order === 'ascend') {
+            sort.order = 'asc';
+          } else if (sorter.order === 'descend') {
+            sort.order = 'desc';
           }
         }
         let searchParam = {};
@@ -159,7 +235,7 @@ export const commonComponent = storeName => {
           current - 1,
           pageSize,
           sort,
-          postData
+          postData,
         );
       };
 

@@ -599,7 +599,7 @@ class AppOverview extends Component {
       },
       delete: {
         service: ['devops-service.application-instance.delete'],
-        text: formatMessage({ id: 'ist.del' }),
+        text: formatMessage({ id: 'ist.delete' }),
         action: this.handleOpen.bind(this, record),
       },
     };
@@ -712,7 +712,7 @@ class AppOverview extends Component {
               />
             )}
             <Modal
-              title={`${formatMessage({ id: 'ist.del' })}“${this.istName}”`}
+              title={`${formatMessage({ id: 'ist.delete' })}“${this.istName}”`}
               visible={this.openRemove}
               closable={false}
               footer={[
@@ -734,7 +734,7 @@ class AppOverview extends Component {
               ]}
             >
               <div className="c7n-padding-top_8">
-                <FormattedMessage id="ist.delDes" />
+                <FormattedMessage id="instance.delete.message" />
               </div>
             </Modal>
             <Modal

@@ -125,7 +125,7 @@ export default class NotificationSidebar extends Component {
           if (data && data.failed) {
             Choerodon.prompt(data.message);
           } else {
-            this.handleClose(true);
+            this.handleClose(null, true);
           }
         })
         .catch(err => {
@@ -138,7 +138,7 @@ export default class NotificationSidebar extends Component {
   /**
    * 关闭弹框
    */
-  handleClose = (reload = false) => {
+  handleClose = (e, reload = false) => {
     const { onClose } = this.props;
     onClose(reload);
   };

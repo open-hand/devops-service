@@ -1,94 +1,69 @@
-import React, { Component, Fragment } from "react";
-import { observer } from "mobx-react";
-import { injectIntl, FormattedMessage } from "react-intl";
-import { Table, Button, Tooltip, Popover, Modal } from "choerodon-ui";
-import { Permission, stores } from "@choerodon/boot";
-import MouserOverWrapper from "../../../../components/MouseOverWrapper";
+import React, { Component, Fragment } from 'react';
+import { observer, inject } from 'mobx-react';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import { Table, Button, Tooltip, Popover } from 'choerodon-ui';
+import { Permission } from '@choerodon/boot';
+import _ from 'lodash';
+import MouserOverWrapper from '../../../../components/MouseOverWrapper';
 import TimePopover from '../../../../components/timePopover';
 import StatusTags from '../../../../components/StatusTags';
-import EnvOverviewStore from "../../../../stores/project/envOverview";
+import EnvOverviewStore from '../../../../stores/project/envOverview';
+import DeleteModal from '../../../../components/deleteModal';
+import { handleProptError } from '../../../../utils';
 
-const { AppState } = stores;
-
+@injectIntl
+@inject('AppState')
 @observer
-class KeyValueTable extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      deleteStatus: false,
-      removeDisplay: false,
-      delName: '',
-      delId: false,
-    };
-  }
+export default class KeyValueTable extends Component {
+  state = {
+    deleteLoading: false,
+    deleteArr: [],
+  };
 
-  deleteKeyValue = () => {
-    const { store, envId, title } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
-    const { delId } = this.state;
-    const datas = store.getData;
-    this.setState({ deleteStatus: true });
-    if (title === 'configMap') {
-      store.deleteConfigMap(projectId, delId)
-        .then((data) => {
-          const pagination = store.getPageInfo;
-          let page = pagination.current - 1;
-          if (data && data.failed) {
-            Choerodon.prompt(data.message);
-            this.setState({
-              deleteStatus: false,
-            })
-          } else {
-            this.setState({
-              delId: null,
-              removeDisplay: false,
-              deleteStatus: false,
-            }, () => {
-              if (datas.length % this.state.size === 1) {
-                store.loadConfigMap(true, projectId, envId, page - 1, pagination.pageSize);
-              } else {
-                store.loadConfigMap(true, projectId, envId, page, pagination.pageSize);
-              }
-            })
-          }
-        })
-        .catch(e => {
-          this.setState({
-            deleteStatus: false,
-          });
-          Choerodon.handleResponseError(e);
-        });
-    } else if (title === 'secret') {
-      store.deleteSecret(projectId, delId, envId)
-        .then((data) => {
-          const pagination = store.getPageInfo;
-          let page = pagination.current - 1;
-          if (data && data.failed) {
-            Choerodon.prompt(data.message);
-            this.setState({
-              deleteStatus: false,
-            })
-          } else {
-            this.setState({
-              delId: null,
-              removeDisplay: false,
-              deleteStatus: false,
-            }, () => {
-              if (datas.length % this.state.size === 1) {
-                store.loadSecret(true, projectId, envId, page - 1, pagination.pageSize);
-              } else {
-                store.loadSecret(true, projectId, envId, page, pagination.pageSize);
-              }
-            })
-          }
-        })
-        .catch(e => {
-          this.setState({
-            deleteStatus: false,
-          });
-          Choerodon.handleResponseError(e);
-        });
+  handleDelete = async (id, callback) => {
+    const {
+      store,
+      envId,
+      title,
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+
+    const {
+      getPageInfo: {
+        current,
+        pageSize,
+      },
+    } = store;
+
+    const deleteFuncMap = {
+      configMap: async () => await store.deleteConfigMap(projectId, id),
+      secret: async () => await store.deleteSecret(projectId, id, envId),
+    };
+
+    const loadDataMap = {
+      configMap: () => store.loadConfigMap(true, projectId, envId, current - 1, pageSize),
+      secret: () => store.loadSecret(true, projectId, envId, current - 1, pageSize),
+    };
+
+    this.setState({ deleteLoading: true });
+
+    const response = await deleteFuncMap[title]()
+      .catch(e => {
+        this.setState({ deleteLoading: false });
+        callback && callback();
+        Choerodon.handleResponseError(e);
+      });
+
+    const result = handleProptError(response);
+
+    if (result) {
+      this.removeDeleteModal(id);
+      loadDataMap[title]();
     }
+
+    this.setState({ deleteLoading: false });
   };
 
   /**
@@ -99,15 +74,23 @@ class KeyValueTable extends Component {
    * @param paras
    */
   tableChange = (pagination, filters, sorter, paras) => {
-    const { store, envId, title } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
+    const {
+      store,
+      envId,
+      title,
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+
     store.setInfo({ filters, sort: sorter, paras });
+
     let sort = { field: '', order: 'desc' };
     if (sorter.column) {
       sort.field = sorter.field || sorter.columnKey;
-      if(sorter.order === 'ascend') {
+      if (sorter.order === 'ascend') {
         sort.order = 'asc';
-      } else if(sorter.order === 'descend'){
+      } else if (sorter.order === 'descend') {
         sort.order = 'desc';
       }
     }
@@ -132,61 +115,169 @@ class KeyValueTable extends Component {
    * @param id
    * @param name
    */
-  openRemove = (id, name) => {
-    this.setState({
-      removeDisplay: true,
-      delId: id,
-      delName: name,
-    });
+  openRemoveModal = (id, name) => {
+    const deleteArr = [...this.state.deleteArr];
+
+    const currentIndex = _.findIndex(deleteArr, item => id === item.deleteId);
+
+    if (~currentIndex) {
+      const newItem = {
+        ...deleteArr[currentIndex],
+        display: true,
+      };
+      deleteArr.splice(currentIndex, 1, newItem);
+    } else {
+      deleteArr.push({
+        display: true,
+        deleteId: id,
+        name,
+      });
+    }
+
+    this.setState({ deleteArr });
   };
 
   /**
    * 关闭删除弹窗
    */
-  closeRemoveModal = () => this.setState({ removeDisplay: false });
+  closeRemoveModal = (id) => {
+    const deleteArr = [...this.state.deleteArr];
 
-  render() {
+    const current = _.find(deleteArr, item => id === item.deleteId);
+
+    current.display = false;
+
+    this.setState({ deleteArr });
+  };
+
+  removeDeleteModal(id) {
+    const { deleteArr } = this.state;
+    const newDeleteArr = _.filter(deleteArr, ({ deleteId }) => deleteId !== id);
+    this.setState({ deleteArr: newDeleteArr });
+  }
+
+  renderStatus = ({ commandStatus }) => <StatusTags
+    name={this.props.intl.formatMessage({ id: commandStatus })}
+    colorCode={commandStatus}
+  />;
+
+  renderName = ({ name, description }) => <MouserOverWrapper width={0.3}>
+    <Popover
+      overlayStyle={{ maxWidth: '350px', wordBreak: 'break-word' }}
+      placement="topLeft"
+      content={`${this.props.intl.formatMessage({ id: 'ist.des' })}${description}`}
+    >
+      {name}
+    </Popover>
+  </MouserOverWrapper>;
+
+  renderKey = (text) => <MouserOverWrapper width={0.5}>
+    <Popover
+      content={text.join(',')}
+      placement="topLeft"
+      overlayStyle={{ maxWidth: '350px', wordBreak: 'break-word' }}
+    >
+      {text.join(',')}
+    </Popover>
+  </MouserOverWrapper>;
+
+  renderActions = ({ id, commandStatus, name }) => {
     const {
-      intl: { formatMessage }, store, envId, title } = this.props;
-    const { removeDisplay, deleteStatus, delName } = this.state;
-    const { filters, sort: { columnKey, order }, paras } = store.getInfo;
-    const {
-      type,
-      id: projectId,
-      organizationId,
-    } = AppState.currentMenuType;
-    const data = store.getData;
+      envId,
+      editOpen,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+          type,
+          organizationId,
+        },
+      },
+    } = this.props;
+
     const envData = EnvOverviewStore.getEnvcard;
     const envState = envData.length
       ? envData.filter(d => d.id === Number(envId))[0]
       : { connect: false };
 
-    const columns = [
+    return <Fragment>
+      <Permission
+        type={type}
+        projectId={projectId}
+        organizationId={organizationId}
+        service={[
+          'devops-service.devops-config-map.create',
+          'devops-service.devops-secret.createOrUpdate',
+        ]}
+      >
+        <Tooltip
+          placement="bottom"
+          title={envState && !envState.connect
+            ? <FormattedMessage id="envoverview.envinfo" />
+            : <FormattedMessage id="edit" />}
+        >
+          <Button
+            disabled={commandStatus === 'operating' || (envState && !envState.connect)}
+            icon="mode_edit"
+            shape="circle"
+            size="small"
+            onClick={() => editOpen(id)}
+          />
+        </Tooltip>
+      </Permission>
+      <Permission
+        type={type}
+        projectId={projectId}
+        organizationId={organizationId}
+        service={[
+          'devops-service.devops-config-map.delete',
+          'devops-service.devops-secret.deleteSecret',
+        ]}>
+        <Tooltip
+          placement="bottom"
+          title={envState && !envState.connect
+            ? <FormattedMessage id="envoverview.envinfo" />
+            : <FormattedMessage id="delete" />}
+        >
+          <Button
+            disabled={commandStatus === 'operating' || (envState && !envState.connect)}
+            icon="delete_forever"
+            shape="circle"
+            size="small"
+            onClick={this.openRemoveModal.bind(this, id, name)}
+          />
+        </Tooltip>
+      </Permission>
+    </Fragment>;
+  };
+
+  getColumns = () => {
+    const { store } = this.props;
+    const {
+      filters,
+      sort: {
+        columnKey,
+        order,
+      },
+    } = store.getInfo;
+
+    return [
       {
         title: <FormattedMessage id="app.active" />,
         key: 'status',
-        render: record => <StatusTags name={formatMessage({ id: record.commandStatus })} colorCode={record.commandStatus} />,
-      },{
+        render: this.renderStatus,
+      }, {
         title: <FormattedMessage id="app.name" />,
         key: 'name',
         sorter: true,
         sortOrder: columnKey === 'name' && order,
         filters: [],
         filteredValue: filters.name || [],
-        render: record => (<MouserOverWrapper width={0.3}>
-          <Popover overlayStyle={{ maxWidth: '350px', wordBreak: 'break-word' }} placement="topLeft" content={`${formatMessage({ id: "ist.des" })}${record.description}`}>
-            {record.name}
-          </Popover>
-        </MouserOverWrapper>),
+        render: this.renderName,
       }, {
         title: <FormattedMessage id="configMap.key" />,
         dataIndex: 'key',
         key: 'key',
-        render: text => (<MouserOverWrapper width={0.5}>
-          <Popover content={text.join(',')} placement="topLeft" overlayStyle={{ maxWidth: '350px', wordBreak: 'break-word' }}>
-              {text.join(',')}
-          </Popover>
-        </MouserOverWrapper>),
+        render: this.renderKey,
       }, {
         title: <FormattedMessage id="configMap.updateAt" />,
         dataIndex: 'lastUpdateDate',
@@ -196,39 +287,35 @@ class KeyValueTable extends Component {
         align: 'right',
         width: 104,
         key: 'action',
-        render: record => (
-          <Fragment>
-            <Permission type={type} projectId={projectId} organizationId={organizationId} service={['devops-service.devops-config-map.create', 'devops-service.devops-secret.createOrUpdate']}>
-              <Tooltip
-                placement="bottom"
-                title={envState && !envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : <FormattedMessage id="edit" />}
-              >
-                <Button
-                  disabled={record.commandStatus === 'operating' || (envState && !envState.connect)}
-                  icon="mode_edit"
-                  shape="circle"
-                  size="small"
-                  onClick={this.props.editOpen.bind(this, record.id)}
-                />
-              </Tooltip>
-            </Permission>
-            <Permission type={type} projectId={projectId} organizationId={organizationId} service={['devops-service.devops-config-map.delete', 'devops-service.devops-secret.deleteSecret']}>
-              <Tooltip
-                placement="bottom"
-                title={envState && !envState.connect ? <FormattedMessage id="envoverview.envinfo" /> : <FormattedMessage id="delete" />}
-              >
-                <Button
-                  disabled={record.commandStatus === 'operating' || (envState && !envState.connect)}
-                  icon="delete_forever"
-                  shape="circle"
-                  size="small"
-                  onClick={this.openRemove.bind(this, record.id, record.name)}
-                />
-              </Tooltip>
-            </Permission>
-          </Fragment>
-        ),
+        render: this.renderActions,
       }];
+  };
+
+  render() {
+    const {
+      intl: { formatMessage },
+      store,
+      title,
+    } = this.props;
+    const {
+      deleteLoading,
+      deleteArr,
+    } = this.state;
+    const { paras } = store.getInfo;
+
+    const columns = this.getColumns();
+
+    const modalTitle = formatMessage({ id: `${title}.delete` });
+    const deleteModals = _.map(deleteArr, ({ name, display, deleteId }) => (<DeleteModal
+      key={deleteId}
+      title={`${modalTitle}“${name}”`}
+      visible={display}
+      objectId={deleteId}
+      loading={deleteLoading}
+      objectType={title}
+      onClose={this.closeRemoveModal}
+      onOk={this.handleDelete}
+    />));
 
     return (
       <Fragment>
@@ -238,40 +325,12 @@ class KeyValueTable extends Component {
           pagination={store.getPageInfo}
           columns={columns}
           filters={paras.slice()}
-          dataSource={data}
+          dataSource={store.getData}
           rowKey={record => record.id}
           onChange={this.tableChange}
         />
-        <Modal
-          confirmLoading={deleteStatus}
-          visible={removeDisplay}
-          title={`${formatMessage({ id: `${title}.del` })}“${delName}”`}
-          closable={false}
-          footer={[
-            <Button
-              key="back"
-              onClick={this.closeRemoveModal}
-              disabled={deleteStatus}
-            >
-              <FormattedMessage id="cancel" />
-            </Button>,
-            <Button
-              key="submit"
-              loading={deleteStatus}
-              type="danger"
-              onClick={this.deleteKeyValue}
-            >
-              <FormattedMessage id="delete" />
-            </Button>,
-          ]}
-        >
-          <div className="c7n-padding-top_8">
-            <FormattedMessage id={ `${title}.del.tooltip`} />
-          </div>
-        </Modal>
+        {deleteModals}
       </Fragment>
     );
   }
 }
-
-export default injectIntl(KeyValueTable);
