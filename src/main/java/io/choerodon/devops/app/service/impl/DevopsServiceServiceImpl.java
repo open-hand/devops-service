@@ -141,11 +141,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
 
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
+//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
         List<String> beforeDevopsServiceAppInstanceES = new ArrayList<>();
@@ -548,7 +548,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     if (t.getTargetPort() != null) {
                         v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort()));
                     }
-                    v1ServicePort.setName(t.getName() == null ? "http" + serialNumber[0]++ : t.getName());
+                    serialNumber[0] = serialNumber[0] + 1;
+                    v1ServicePort.setName(t.getName() == null ? "http" + serialNumber[0] : t.getName());
                     v1ServicePort.setProtocol(t.getProtocol() == null ? "TCP" : t.getProtocol());
                     return v1ServicePort;
                 }).collect(Collectors.toList());
@@ -587,7 +588,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             v1EndpointSubset.setPorts(value.stream().map(port -> {
                 V1EndpointPort v1EndpointPort = new V1EndpointPort();
                 v1EndpointPort.setPort(port.getPort());
-                v1EndpointPort.setName("http" + serialNumber[0]++);
+                serialNumber[0] = serialNumber[0] + 1;
+                v1EndpointPort.setName(port.getName() == null ? "http" + serialNumber[0] : port.getName());
                 return v1EndpointPort;
             }).collect(Collectors.toList()));
             v1EndpointSubsets.add(v1EndpointSubset);

@@ -7,6 +7,7 @@ public class UserE {
     private String imageUrl;
     private String realName;
     private String email;
+    private String phone;
 
     public Long getId() {
         return id;
@@ -46,5 +47,13 @@ public class UserE {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }
