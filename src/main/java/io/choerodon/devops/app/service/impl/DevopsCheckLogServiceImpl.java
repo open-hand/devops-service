@@ -666,6 +666,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         private void syncSonarProject(List<CheckLog> logs) {
             if (!sornarUrl.isEmpty()) {
+                sornarUrl = sornarUrl.endsWith("/") ? sornarUrl : sornarUrl + "/";
                 SonarClient sonarClient = new SonarClientUtil().getSonarClient(sornarUrl, "sonar");
                 applicationMapper.selectAll().forEach(applicationDO -> {
                     if (applicationDO.getGitlabProjectId() != null) {
