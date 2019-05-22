@@ -28,21 +28,39 @@ class DeleteModal extends Component {
     loading: false,
   };
 
-  state = {
-    count: 60,
-    checkLoading: true,
-    validateLoading: false,
-    isError: false,
-    canDelete: false,
-    canSendMessage: true,
-    isVerification: false,
-    user: null,
-    method: null,
-    notificationId: null,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...this.getInitState,
+    };
+  }
+
+  get getInitState() {
+    return {
+      count: 60,
+      checkLoading: true,
+      validateLoading: false,
+      isError: false,
+      canDelete: false,
+      canSendMessage: true,
+      isVerification: false,
+      user: null,
+      method: null,
+      notificationId: null,
+    };
+  }
 
   componentDidMount() {
     this.initCheck();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    // NOTE: 由于删除模态框在未确认删除前不会销毁
+    //       所以每次显示模态框时
+    //       都要校验下是否需要发验证码进行二次校验
+    if (this.props.visible && prevProps.visible !== this.props.visible) {
+      this.initCheck();
+    }
   }
 
   clearTimer() {
@@ -61,7 +79,7 @@ class DeleteModal extends Component {
 
     this.setState({ checkLoading: true });
     const response = await DevopsStore.deleteCheck(projectId, envId, objectType)
-      .catch((error) => {
+      .catch(() => {
         this.setState({ checkLoading: false });
       });
 
@@ -76,7 +94,11 @@ class DeleteModal extends Component {
         canDelete: false,
       });
     } else {
-      this.setState({ canDelete: true });
+      this.clearTimer();
+      this.setState({
+        ...this.getInitState,
+        canDelete: true,
+      });
     }
     this.setState({ checkLoading: false });
   }
