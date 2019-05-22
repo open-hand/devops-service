@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 import java.util.Set;
 
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.devops.api.dto.ResourceCheckDTO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -48,7 +49,7 @@ public class DevopsNotificationController {
      * @param notificationDTO 通知信息
      * @return ResponseEntity
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建通知")
     @PostMapping
     public ResponseEntity<DevopsNotificationDTO> create(
@@ -68,7 +69,7 @@ public class DevopsNotificationController {
      * @param notificationDTO 通知信息
      * @return ResponseEntity
      */
-    @Permission( roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新通知")
     @PutMapping
     public ResponseEntity<DevopsNotificationDTO> update(
@@ -89,7 +90,7 @@ public class DevopsNotificationController {
      * @param notificationId 通知Id
      * @return ResponseEntity
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除通知")
     @DeleteMapping(value = "/{notification_id}")
     public ResponseEntity delete(
@@ -108,7 +109,7 @@ public class DevopsNotificationController {
      * @param notificationId 通知Id
      * @return ResponseEntity
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下获取通知详情")
     @GetMapping(value = "/{notification_id}")
     public ResponseEntity<DevopsNotificationDTO> queryById(
@@ -130,7 +131,7 @@ public class DevopsNotificationController {
      * @param params
      * @return
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "通知列表")
     @CustomPageRequest
     @PostMapping(value = "/list")
@@ -157,7 +158,7 @@ public class DevopsNotificationController {
      * @param envId     通知Id
      * @return ResponseEntity
      */
-    @Permission( roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下校验通知")
     @GetMapping(value = "/check")
     public ResponseEntity<Set<String>> check(
@@ -180,7 +181,7 @@ public class DevopsNotificationController {
      * @param objectType  资源对象类型
      * @return
      */
-    @Permission( roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/check_delete_resource")
     public ResponseEntity<ResourceCheckDTO> checkDeleteResource(
@@ -206,7 +207,7 @@ public class DevopsNotificationController {
      * @param objectType  对象类型
      * @return
      */
-    @Permission( roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/send_message")
     public void sendMessage(
@@ -235,7 +236,7 @@ public class DevopsNotificationController {
      * @param objectType  对象类型
      * @return
      */
-    @Permission( roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/validate_captcha")
     public void validateCaptcha(

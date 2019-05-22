@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -199,8 +200,10 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         params.put("env", devopsEnvironmentE.getName());
         params.put("object", objectType);
         params.put("objectName", objectCode);
-        params.put("verificationCode", Captcha);
-        notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
+        params.put("captcha", Captcha);
+        params.put("timeout", "10");
+        //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
+        params.put("instance", objectCode);
         if (devopsNotificationE.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             params.put("mobile", userES.get(0).getPhone());
@@ -240,9 +243,13 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             //根据不同的通知方式发送验证码
             triggerTypes.stream().forEach(triggerType -> {
                 if (triggerType.equals(TriggerType.EMAIL.getType())) {
+                    notifyDTO.setSourceId(devopsEnvironmentE.getProjectE().getId());
+                    notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
                     notifyDTO.setCustomizedSendingTypes(Arrays.asList("email"));
                     notifyClient.postEmail(notifyDTO);
                 } else if (triggerType.equals(TriggerType.PM.getType())) {
+                    notifyDTO.setSourceId(devopsEnvironmentE.getProjectE().getId());
+                    notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
                     notifyDTO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
                     notifyClient.postEmail(notifyDTO);
                 } else {

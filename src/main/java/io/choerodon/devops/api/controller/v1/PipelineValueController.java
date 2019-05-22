@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -38,7 +39,7 @@ public class PipelineValueController {
      * @param params      查询参数
      * @return
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下获取流水线配置")
     @CustomPageRequest
     @PostMapping("/list_by_options")
@@ -65,7 +66,7 @@ public class PipelineValueController {
      * @param pipelineValueDTO 配置信息
      * @return
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建流水线配置")
     @PostMapping
     public ResponseEntity<PipelineValueDTO> createOrUpdate(
@@ -85,7 +86,7 @@ public class PipelineValueController {
      * @param valueId   配置Id
      * @return
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询配置详情")
     @GetMapping
     public ResponseEntity<PipelineValueDTO> queryById(
@@ -105,7 +106,7 @@ public class PipelineValueController {
      * @param valueId   配置Id
      * @return
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除配置")
     @DeleteMapping
     public ResponseEntity delete(
@@ -125,7 +126,7 @@ public class PipelineValueController {
      * @param name
      * @return
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "名称校验")
     @GetMapping("/check_name")
     public ResponseEntity checkName(
@@ -144,7 +145,7 @@ public class PipelineValueController {
      * @param valueId
      * @return
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "能否删除")
     @GetMapping("/check_delete")
     public ResponseEntity<Boolean> checkDelete(
@@ -165,7 +166,7 @@ public class PipelineValueController {
      * @param envId
      * @return
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据应用Id和环境Id获取配置")
     @GetMapping("/list")
     public ResponseEntity<List<PipelineValueDTO>> queryByAppIdAndEnvId(

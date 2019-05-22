@@ -86,6 +86,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String ISSUE = "issue";
     private static final String COVERAGE = "coverage";
     private static final String CHART_DIR = "charts";
+
     private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
 
     private static final IOFileFilter filenameFilter = new IOFileFilter() {
@@ -118,10 +119,15 @@ public class ApplicationServiceImpl implements ApplicationService {
     private String gitlabUrl;
     @Value("${spring.application.name}")
     private String applicationName;
-    @Value("${services.sonarqube.url}")
+    @Value("${services.sonarqube.url:}")
     private String sonarqubeUrl;
     @Value("${services.gateway.url}")
     private String gatewayUrl;
+    @Value("${services.sonarqube.username:}")
+    private String userName;
+    @Value("${services.sonarqube.password:}")
+    private String password;
+
 
 
     @Autowired
@@ -1255,6 +1261,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public SonarContentsDTO getSonarContent(Long projectId, Long appId) {
+        if(sonarqubeUrl.equals("")) {
+            return new SonarContentsDTO();
+        }
         SonarContentsDTO sonarContentsDTO = new SonarContentsDTO();
         List<SonarContentDTO> sonarContentDTOS = new ArrayList<>();
         ApplicationE applicationE = applicationRepository.query(appId);
@@ -1272,6 +1281,9 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (sonarComponentResponse.raw().code() != 200) {
                 if (sonarComponentResponse.raw().code() == 404) {
                     return new SonarContentsDTO();
+                }
+                if(sonarComponentResponse.raw().code() == 401) {
+                    throw new CommonException("error.sonarqube.user");
                 }
                 throw new CommonException(sonarComponentResponse.errorBody().string());
             }
@@ -1529,6 +1541,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public SonarTableDTO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime) {
+        if(sonarqubeUrl.equals("")) {
+            return new SonarTableDTO();
+        }
         SonarTableDTO sonarTableDTO = new SonarTableDTO();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
         ApplicationE applicationE = applicationRepository.query(appId);
@@ -1547,6 +1562,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                 if (sonarTablesResponse.raw().code() != 200) {
                     if (sonarTablesResponse.raw().code() == 404) {
                         return new SonarTableDTO();
+                    }
+                    if(sonarTablesResponse.raw().code() == 401) {
+                        throw new CommonException("error.sonarqube.user");
                     }
                     throw new CommonException(sonarTablesResponse.errorBody().string());
                 }
@@ -1743,6 +1761,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(sonarqubeUrl);
         configurationProperties.setType(SONAR);
+        configurationProperties.setUsername(userName);
+        configurationProperties.setPassword(password);
+        configurationProperties.setInsecureSkipTlsVerify(false);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         return retrofit.create(SonarClient.class);
     }

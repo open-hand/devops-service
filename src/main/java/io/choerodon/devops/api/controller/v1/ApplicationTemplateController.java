@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO;
@@ -42,7 +44,7 @@ public class ApplicationTemplateController {
      * @param applicationTemplateDTO 模板信息
      * @return ApplicationTemplateDTO
      */
-    @Permission
+    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下创建应用模板")
     @PostMapping
     public ResponseEntity<ApplicationTemplateRepDTO> create(
@@ -62,7 +64,7 @@ public class ApplicationTemplateController {
      * @param applicationTemplateUpdateDTO 模板信息
      * @return ApplicationTemplateDTO
      */
-    @Permission
+    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下更新应用模板")
     @PutMapping
     public ResponseEntity<ApplicationTemplateRepDTO> update(
@@ -82,7 +84,7 @@ public class ApplicationTemplateController {
      * @param appTemplateId  模板id
      * @return ApplicationTemplateDTO
      */
-    @Permission
+    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下删除应用模板")
     @DeleteMapping(value = "/{appTemplateId}")
     public ResponseEntity delete(
@@ -101,7 +103,7 @@ public class ApplicationTemplateController {
      * @param appTemplateId  模板id
      * @return ApplicationTemplateDTO
      */
-    @Permission
+    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR,InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "组织下查询单个应用模板")
     @GetMapping(value = "/{appTemplateId}")
     public ResponseEntity<ApplicationTemplateRepDTO> queryByAppTemplateId(
@@ -122,7 +124,7 @@ public class ApplicationTemplateController {
      * @param params         查询参数
      * @return Page
      */
-    @Permission
+    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR,InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "组织下分页查询应用模板")
     @CustomPageRequest
     @PostMapping("/list_by_options")
@@ -145,7 +147,7 @@ public class ApplicationTemplateController {
      * @param organizationId 组织id
      * @return Page
      */
-    @Permission
+    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR,InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "组织下查询所有应用模板")
     @GetMapping
     public ResponseEntity<List<ApplicationTemplateRepDTO>> listByOrgId(
@@ -162,7 +164,7 @@ public class ApplicationTemplateController {
      * @param organizationId 组织id
      * @param name           模板name
      */
-    @Permission
+    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "创建模板校验名称是否存在")
     @GetMapping(value = "/check_name")
     public void checkName(
@@ -179,7 +181,7 @@ public class ApplicationTemplateController {
      * @param organizationId 组织id
      * @param code           模板code
      */
-    @Permission
+    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "创建模板校验编码是否存在")
     @GetMapping(value = "/check_code")
     public void checkCode(
@@ -196,7 +198,7 @@ public class ApplicationTemplateController {
      * @param organizationId 组织id
      * @param code           模板code
      */
-    @Permission
+    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR,InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "根据模板code查询模板")
     @GetMapping(value = "/query_by_code")
     public ResponseEntity<ApplicationTemplateRepDTO> queryByCode(
