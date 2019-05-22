@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -199,7 +200,10 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         params.put("env", devopsEnvironmentE.getName());
         params.put("object", objectType);
         params.put("objectName", objectCode);
-        params.put("verificationCode", Captcha);
+        params.put("captcha", Captcha);
+        params.put("timeout", 600);
+        //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
+        params.put("instance", objectCode);
         notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
         if (devopsNotificationE.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
             NoticeSendDTO.User user = new NoticeSendDTO.User();
