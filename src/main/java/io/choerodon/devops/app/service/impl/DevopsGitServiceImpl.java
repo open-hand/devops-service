@@ -357,7 +357,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
         final Integer gitLabProjectId = pushWebHookDTO.getProjectId();

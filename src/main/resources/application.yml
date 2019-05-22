@@ -3,6 +3,8 @@ spring:
     url: jdbc:mysql://localhost/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: choerodon
     password: choerodon
+    hikari:
+      maximum-pool-size: 15
   redis:
     host: localhost
   http:
@@ -86,4 +88,5 @@ cert:
 logging:
   level:
     io.choerodon.event.consumer: debug
+    com.zaxxer: debug
   config: classpath:logback-spring.xml

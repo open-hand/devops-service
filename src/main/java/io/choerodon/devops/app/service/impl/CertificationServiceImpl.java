@@ -70,6 +70,7 @@ public class CertificationServiceImpl implements CertificationService {
     private DeployMsgHandlerService deployMsgHandlerService;
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public void create(Long projectId, C7nCertificationDTO certificationDTO,
                        Boolean isGitOps) {
 
@@ -190,6 +191,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public void deleteById(Long certId) {
         CertificationE certificationE = certificationRepository.queryById(certId);
         Long certEnvId = certificationE.getEnvironmentE().getId();

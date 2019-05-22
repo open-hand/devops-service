@@ -28,6 +28,7 @@ import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Creator: Runge
@@ -76,6 +77,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private CheckOptionsHandler checkOptionsHandler;
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId) {
 
         //校验用户是否有环境的权限
@@ -149,6 +151,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId) {
 
         Boolean deleteCert = false;
@@ -263,6 +266,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public void deleteIngress(Long ingressId) {
 
         DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
