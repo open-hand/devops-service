@@ -28,16 +28,23 @@ const commonField = {
 };
 
 const deleteConfirmMessages = {
+  'ist.delete': '删除实例',
+  'secret.delete': '删除密文',
+  'configMap.delete': '删除配置映射',
+  'ingress.delete': '删除域名',
+  'service.delete': '删除网络',
+  'certificate.delete': '删除实例',
+
   captcha: '验证码',
   'captcha.send': '发送验证码',
   'captcha.error': '验证码错误',
   'captcha.resend': '秒后重新发送',
   'instance.delete.verify.message': '实例删除后将不可恢复，同时与之关联的网络也将失效。',
-  'ingress.delete.verify.message': '',
+  'ingress.delete.verify.message': '确定要删除该域名吗？',
   'service.delete.verify.message': '删除网络后，需要您再去修改相关的域名信息。',
   'certificate.delete.verify.message': '删除证书后，将会导致与此证书相关的域名失效。',
-  'configMap.delete.verify.message': '',
-  'secret.delete.verify.message': '',
+  'configMap.delete.verify.message': '确认删除配置映射吗？',
+  'secret.delete.verify.message': '确认删除密文吗？',
   'delete.verify.message': '若确认删除，请先点击下方的发送按钮，验证码将会通过【{method}】发送给【{user}】，获取后请填入下方，最后点击删除即可。',
   'instance.delete.message': '删除实例将不可恢复，其配置网络同时失效，确定要删除该实例吗？',
   'ingress.delete.message': '确定要删除该域名吗？',
@@ -615,7 +622,6 @@ const zhCN = {
   'ist.multiApp': '多应用',
   'ist.detail': '查看实例详情',
   'ist.values': '修改配置信息',
-  'ist.delete': '删除实例',
   'ist.stop': '停止实例',
   'ist.upgrade': '升级实例',
   'ist.noIst': '暂无实例',
@@ -1581,7 +1587,6 @@ const zhCN = {
     '键值不能含空格及-、_、.以外的特殊字符，请检查输入。',
   'configMap.keyValueSpan': '键值对需配对输入，请检查输入。',
   'configMap.keyRepeat': '存在重复键，请检查输入。',
-  'configMap.del': '删除配置映射',
   'configMap.mode.kv': '编辑 YAML',
   'configMap.mode.yaml': '编辑键值对',
   'configMap.yaml.error': '内容不符合规则。',
@@ -1593,7 +1598,6 @@ const zhCN = {
   'secret.add': '添加密文',
   'secret.key': '键',
   'secret.des': '描述',
-  'secret.del': '删除密文',
 
   //组织层证书管理
   'certificate.head': '证书管理',

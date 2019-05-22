@@ -35,6 +35,7 @@ class Instances extends Component {
     confirmLoading: false,
     confirmType: '',
     idArr: {},
+    deleteArr: [],
   };
 
   componentDidMount() {
@@ -327,31 +328,34 @@ class Instances extends Component {
 
   /**
    * 删除实例
+   * @param id
+   * @param callback 当删除请求报错后的处理，用于清除定时器和loading状态
+   * @returns {Promise<void>}
    */
-  handleDelete = async () => {
+  handleDelete = async (id, callback) => {
     const { id: projectId } = AppState.currentMenuType;
     const { InstancesStore } = this.props;
     const { loadInstanceAll, deleteInstance, getAppId } = InstancesStore;
-    const { deleteId } = this.state;
     const envId = EnvOverviewStore.getTpEnvId;
 
     this.setState({ deleteLoading: true });
-    const response = await deleteInstance(projectId, deleteId)
+
+    const response = await deleteInstance(projectId, id)
       .catch(error => {
-        this.setState({
-          deleteLoading: false,
-        });
+        this.setState({ deleteLoading: false });
+
+        callback && callback();
+
         Choerodon.handleResponseError(error);
       });
 
     const res = handleProptError(response);
     if (res) {
+      this.removeDeleteModal(id);
+
       InstancesStore.setIstTableFilter(null);
       InstancesStore.setIstPage(null);
-
-      const time = Date.now();
-
-      loadInstanceAll(true, projectId, { envId, getAppId }, time)
+      loadInstanceAll(true, projectId, { envId, getAppId }, Date.now())
         .catch(err => {
           InstancesStore.changeLoading(false);
           Choerodon.handleResponseError(err);
@@ -359,7 +363,6 @@ class Instances extends Component {
     }
 
     this.setState({
-      openRemove: false,
       deleteLoading: false,
     });
     InstancesStore.setIstTableFilter(null);
@@ -367,25 +370,52 @@ class Instances extends Component {
 
   /**
    * 打开删除数据模态框
+   * NOTE: 删除模态框中存在定时器，只有在发出删除请求后，当前的模态框才能从Dom中移除，所以使用一个数组保存所有的删除模态框
    */
-  handleDeleteModal({ id, code }) {
-    this.setState({
-      openRemove: true,
-      deleteId: id,
-      name: code,
-    });
+  openDeleteModal({ id, code }) {
+    const deleteArr = [...this.state.deleteArr];
+
+    const currentIndex = _.findIndex(deleteArr, item => id === item.deleteId);
+
+    if (~currentIndex) {
+      const newItem = {
+        ...deleteArr[currentIndex],
+        display: true,
+      };
+      deleteArr.splice(currentIndex, 1, newItem);
+    } else {
+      deleteArr.push({
+        display: true,
+        deleteId: id,
+        name: code,
+      });
+    }
+
+    this.setState({ deleteArr });
   }
 
   /**
    * 关闭删除数据的模态框
    */
-  closeDeleteModal = () => {
-    this.setState({
-      openRemove: false,
-      deleteId: undefined,
-      name: '',
-    });
+  closeDeleteModal = (id) => {
+    const deleteArr = [...this.state.deleteArr];
+
+    const current = _.find(deleteArr, item => id === item.deleteId);
+
+    current.display = false;
+
+    this.setState({ deleteArr });
   };
+
+  /**
+   * 从当前模态框列表中移除已经完成的删除模态框
+   * @param id
+   */
+  removeDeleteModal(id) {
+    const { deleteArr } = this.state;
+    const newDeleteArr = _.filter(deleteArr, ({ deleteId }) => deleteId !== id);
+    this.setState({ deleteArr: newDeleteArr });
+  }
 
   /**
    * 启停用实例
@@ -501,7 +531,7 @@ class Instances extends Component {
       delete: {
         service: ['devops-service.application-instance.delete'],
         text: formatMessage({ id: 'ist.delete' }),
-        action: this.handleDeleteModal.bind(this, record),
+        action: this.openDeleteModal.bind(this, record),
       },
     };
     let actionItem = [];
@@ -583,12 +613,11 @@ class Instances extends Component {
       changeVisible,
       upgradeVisible,
       idArr,
-      openRemove,
       id,
-      deleteId,
       confirmType,
       confirmLoading,
       deleteLoading,
+      deleteArr,
     } = this.state;
 
     const envData = EnvOverviewStore.getEnvcard;
@@ -702,6 +731,17 @@ class Instances extends Component {
       state: pipelineDetailState,
     };
 
+    const deleteModals = _.map(deleteArr, ({ name, display, deleteId }) => (<DeleteModal
+      key={deleteId}
+      title={`${formatMessage({ id: 'ist.delete' })}“${name}”`}
+      visible={display}
+      objectId={deleteId}
+      loading={deleteLoading}
+      objectType="instance"
+      onClose={this.closeDeleteModal}
+      onOk={this.handleDelete}
+    />));
+
     return (
       <Page
         className="c7n-region"
@@ -798,15 +838,6 @@ class Instances extends Component {
                   onClose={this.closeConfigSidebar}
                 />
               )}
-              <DeleteModal
-                title={`${formatMessage({ id: 'ist.delete' })}“${name}”`}
-                visible={openRemove}
-                objectId={deleteId}
-                loading={deleteLoading}
-                objectType="instance"
-                onClose={this.closeDeleteModal}
-                onOk={this.handleDelete}
-              />
               <Modal
                 title={`${formatMessage({ id: 'ist.reDeploy' })}“${name}”`}
                 visible={confirmType === 'reDeploy'}
@@ -833,6 +864,7 @@ class Instances extends Component {
                   <FormattedMessage id={`ist.${confirmType}Des`} />
                 </div>
               </Modal>
+              {deleteModals}
             </Content>
           </Fragment>
         ) : (

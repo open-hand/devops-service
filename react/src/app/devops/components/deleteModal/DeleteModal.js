@@ -5,7 +5,7 @@ import { Button, Modal, Form, Input, Spin } from 'choerodon-ui';
 import PropTypes from 'prop-types';
 import DevopsStore from '../../stores/DevopsStore';
 import EnvOverviewStore from '../../stores/project/envOverview';
-import { handleProptError, handleCheckerProptError } from '../../utils';
+import { handleProptError } from '../../utils';
 
 import './DeleteModal.scss';
 
@@ -20,6 +20,12 @@ class DeleteModal extends Component {
     objectType: PropTypes.string.isRequired,
     visible: PropTypes.bool.isRequired,
     title: PropTypes.string.isRequired,
+    objectId: PropTypes.number,
+    loading: PropTypes.bool,
+  };
+
+  static defaultProps = {
+    loading: false,
   };
 
   state = {
@@ -39,10 +45,15 @@ class DeleteModal extends Component {
     this.initCheck();
   }
 
+  clearTimer() {
+    clearInterval(this.timer);
+    this.timer = null;
+  }
+
   async initCheck() {
     const {
       AppState: {
-        currentMenuType: { projectId },
+        currentMenuType: { id: projectId },
       },
       objectType,
     } = this.props;
@@ -89,34 +100,30 @@ class DeleteModal extends Component {
 
     if (this.timer || !canSendMessage) return;
 
-    const response = await DevopsStore.sendMessage(projectId, envId, objectId, notificationId, objectType)
+    this.setState({ canSendMessage: false, isError: false });
+
+    await DevopsStore.sendMessage(projectId, envId, objectId, notificationId, objectType)
       .catch(e => {
         Choerodon.handleResponseError(e);
       });
 
-    const result = handleCheckerProptError(response);
+    // NOTE: 无论验证码是否发送成功，都要经过1分钟后重新发送
+    this.timer = setInterval(() => {
 
-    if (result) {
-      this.setState({ canSendMessage: false });
+      this.setState({ count: --count }, () => {
+        if (count === 0) {
 
-      this.timer = setInterval(() => {
+          this.clearTimer();
 
-        this.setState({ count: --count }, () => {
-          if (count === 0) {
+          this.setState({
+            count: 60,
+            canSendMessage: true,
+          });
 
-            clearInterval(this.timer);
-            this.timer = null;
+        }
+      });
 
-            this.setState({
-              count: 60,
-              canSendMessage: true,
-            });
-
-          }
-        });
-
-      }, 1000);
-    }
+    }, 1000);
   };
 
   /**
@@ -137,12 +144,19 @@ class DeleteModal extends Component {
     const {
       form: { validateFields },
       AppState: {
-        currentMenuType: { projectId },
+        currentMenuType: { id: projectId },
       },
       onOk,
       objectId,
       objectType,
     } = this.props;
+
+    const { isVerification } = this.state;
+
+    if (!isVerification) {
+      onOk(objectId);
+      return;
+    }
 
     const envId = EnvOverviewStore.getTpEnvId;
 
@@ -156,7 +170,15 @@ class DeleteModal extends Component {
             if (data && data.failed) {
               this.setState({ isError: true, canDelete: false });
             } else {
-              onOk();
+              this.clearTimer();
+              onOk(objectId, () => {
+                this.clearTimer();
+                this.setState({
+                  count: 60,
+                  canSendMessage: true,
+                  canDelete: false,
+                });
+              });
             }
             this.setState({ validateLoading: false });
           })
@@ -175,8 +197,9 @@ class DeleteModal extends Component {
     const {
       form: { resetFields },
       onClose,
+      objectId,
     } = this.props;
-    onClose();
+    onClose(objectId);
     resetFields(['captcha']);
     this.setState({ isError: false });
   };
@@ -251,7 +274,6 @@ class DeleteModal extends Component {
   render() {
     const {
       visible,
-      onOk,
       title,
       loading: deleteLoading,
     } = this.props;
@@ -279,7 +301,7 @@ class DeleteModal extends Component {
             type="danger"
             loading={validateLoading || deleteLoading}
             disabled={!canDelete}
-            onClick={isVerification ? this.handleDelete : onOk}
+            onClick={this.handleDelete}
           >
             <FormattedMessage id="delete" />
           </Button>,

@@ -1,4 +1,8 @@
 .c7n-network-wrapper {
+  .c7ncd-network-operator {
+    text-align: right;
+  }
+
   .network-expend-icon {
     line-height: 20px;
     font-size: 18px;
@@ -30,7 +34,7 @@
       }
     }
 
-    &>.network-column-instance {
+    & > .network-column-instance {
       margin-bottom: 0;
     }
 
@@ -49,7 +53,7 @@
       }
     }
 
-    &>.network-column-entry {
+    & > .network-column-entry {
       margin-bottom: 0;
     }
   }

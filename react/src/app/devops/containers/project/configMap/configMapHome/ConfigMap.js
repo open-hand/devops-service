@@ -173,7 +173,12 @@ class ConfigMap extends Component {
               <RefreshBtn name="configMap" onFresh={this.reload} />
             </Header>
             <Content code={'configMap'} values={{ name: title ? title.name : name }}>
-              <KeyValueTable title="configMap" store={ConfigMapStore} envId={envId} editOpen={this.openSideBar} />
+              <KeyValueTable
+                title="configMap"
+                store={ConfigMapStore}
+                envId={envId}
+                editOpen={this.openSideBar}
+              />
             </Content>
           </Fragment>
         ) : (
