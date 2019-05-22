@@ -6,56 +6,20 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.api.dto.gitlab.MemberDTO;
-import io.choerodon.devops.api.dto.gitlab.VariableDTO;
-import io.choerodon.devops.api.dto.sonar.*;
-import io.choerodon.devops.api.validator.ApplicationValidator;
-import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
-import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
-import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
-import io.choerodon.devops.domain.application.event.IamAppPayLoad;
-import io.choerodon.devops.domain.application.factory.ApplicationFactory;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.domain.application.valueobject.ProjectHook;
-import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.common.util.*;
-import io.choerodon.devops.infra.common.util.enums.*;
-import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-import io.choerodon.devops.infra.config.RetrofitHandler;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.dataobject.harbor.ProjectDetail;
-import io.choerodon.devops.infra.dataobject.harbor.User;
-import io.choerodon.devops.infra.feign.ChartClient;
-import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.websocket.tool.UUIDTool;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -72,6 +36,95 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
+import io.choerodon.devops.api.dto.ApplicationCodeDTO;
+import io.choerodon.devops.api.dto.ApplicationImportDTO;
+import io.choerodon.devops.api.dto.ApplicationRepDTO;
+import io.choerodon.devops.api.dto.ApplicationReqDTO;
+import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
+import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
+import io.choerodon.devops.api.dto.ProjectConfigDTO;
+import io.choerodon.devops.api.dto.SonarContentDTO;
+import io.choerodon.devops.api.dto.SonarContentsDTO;
+import io.choerodon.devops.api.dto.SonarTableDTO;
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
+import io.choerodon.devops.api.dto.gitlab.VariableDTO;
+import io.choerodon.devops.api.dto.sonar.Bug;
+import io.choerodon.devops.api.dto.sonar.Facet;
+import io.choerodon.devops.api.dto.sonar.Quality;
+import io.choerodon.devops.api.dto.sonar.SonarComponent;
+import io.choerodon.devops.api.dto.sonar.SonarHistroy;
+import io.choerodon.devops.api.dto.sonar.SonarTables;
+import io.choerodon.devops.api.dto.sonar.Vulnerability;
+import io.choerodon.devops.api.validator.ApplicationValidator;
+import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.domain.application.entity.AppUserPermissionE;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
+import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
+import io.choerodon.devops.domain.application.entity.DevopsBranchE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
+import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
+import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
+import io.choerodon.devops.domain.application.event.IamAppPayLoad;
+import io.choerodon.devops.domain.application.factory.ApplicationFactory;
+import io.choerodon.devops.domain.application.repository.AppUserPermissionRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
+import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
+import io.choerodon.devops.domain.application.repository.GitlabRepository;
+import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.application.valueobject.Variable;
+import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GenerateUUID;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.GitUtil;
+import io.choerodon.devops.infra.common.util.HttpClientUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.AccessLevel;
+import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
+import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
+import io.choerodon.devops.infra.common.util.enums.Rate;
+import io.choerodon.devops.infra.common.util.enums.SonarQubeType;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.config.RetrofitHandler;
+import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.dataobject.harbor.ProjectDetail;
+import io.choerodon.devops.infra.dataobject.harbor.User;
+import io.choerodon.devops.infra.feign.ChartClient;
+import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.websocket.tool.UUIDTool;
+
 /**
  * Created by younger on 2018/3/28.
  */
@@ -79,16 +132,14 @@ import retrofit2.Retrofit;
 @EnableConfigurationProperties(HarborConfigurationProperties.class)
 public class ApplicationServiceImpl implements ApplicationService {
     public static final String SEVERITIES = "severities";
+    public static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
     private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
     private static final String DOCKER_FILE_NAME = "Dockerfile";
-    public static final String SONAR = "sonar";
     private static final String ISSUE = "issue";
     private static final String COVERAGE = "coverage";
     private static final String CHART_DIR = "charts";
-
     private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
-
     private static final IOFileFilter filenameFilter = new IOFileFilter() {
         @Override
         public boolean accept(File file) {
@@ -100,8 +151,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             return DOCKER_FILE_NAME.equals(name);
         }
     };
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String MASTER = "master";
     private static final String APPLICATION = "application";
     private static final String ERROR_UPDATE_APP = "error.application.update";
@@ -127,7 +176,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private String userName;
     @Value("${services.sonarqube.password:}")
     private String password;
-
 
 
     @Autowired
@@ -1261,7 +1309,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public SonarContentsDTO getSonarContent(Long projectId, Long appId) {
-        if(sonarqubeUrl.equals("")) {
+        if (sonarqubeUrl.equals("")) {
             return new SonarContentsDTO();
         }
         SonarContentsDTO sonarContentsDTO = new SonarContentsDTO();
@@ -1269,7 +1317,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationE applicationE = applicationRepository.query(appId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        SonarClient sonarClient = getSonarClient();
+        SonarClient sonarClient = RetrofitHandler.getSonarClient();
         String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         try {
@@ -1282,7 +1330,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 if (sonarComponentResponse.raw().code() == 404) {
                     return new SonarContentsDTO();
                 }
-                if(sonarComponentResponse.raw().code() == 401) {
+                if (sonarComponentResponse.raw().code() == 401) {
                     throw new CommonException("error.sonarqube.user");
                 }
                 throw new CommonException(sonarComponentResponse.errorBody().string());
@@ -1541,7 +1589,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public SonarTableDTO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime) {
-        if(sonarqubeUrl.equals("")) {
+        if (sonarqubeUrl.equals("")) {
             return new SonarTableDTO();
         }
         SonarTableDTO sonarTableDTO = new SonarTableDTO();
@@ -1549,7 +1597,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationE applicationE = applicationRepository.query(appId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        SonarClient sonarClient = getSonarClient();
+        SonarClient sonarClient = RetrofitHandler.getSonarClient();
         String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         Map<String, String> queryMap = new HashMap<>();
@@ -1563,7 +1611,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     if (sonarTablesResponse.raw().code() == 404) {
                         return new SonarTableDTO();
                     }
-                    if(sonarTablesResponse.raw().code() == 401) {
+                    if (sonarTablesResponse.raw().code() == 401) {
                         throw new CommonException("error.sonarqube.user");
                     }
                     throw new CommonException(sonarTablesResponse.errorBody().string());
@@ -1754,17 +1802,5 @@ public class ApplicationServiceImpl implements ApplicationService {
         map.put("facets", "severities,types");
         map.put("additionalFields", "_all");
         return map;
-    }
-
-
-    private SonarClient getSonarClient() {
-        ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setBaseUrl(sonarqubeUrl);
-        configurationProperties.setType(SONAR);
-        configurationProperties.setUsername(userName);
-        configurationProperties.setPassword(password);
-        configurationProperties.setInsecureSkipTlsVerify(false);
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        return retrofit.create(SonarClient.class);
     }
 }

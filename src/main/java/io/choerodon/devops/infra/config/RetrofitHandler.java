@@ -1,30 +1,37 @@
 package io.choerodon.devops.infra.config;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Base64;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
-import io.choerodon.core.exception.CommonException;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import retrofit2.Call;
-import retrofit2.Response;
+import org.springframework.beans.factory.annotation.Value;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.converter.jackson.JacksonConverterFactory;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.feign.SonarClient;
 
 public class RetrofitHandler {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(RetrofitHandler.class);
+    public static final String SONAR = "sonar";
+
+    @Value("${services.sonarqube.url:}")
+    private static String sonarqubeUrl;
+    @Value("${services.sonarqube.username:}")
+    private static String userName;
+    @Value("${services.sonarqube.password:}")
+    private static String password;
 
     /**
      * Retrofit 设置
@@ -134,5 +141,16 @@ public class RetrofitHandler {
         } else {
             return new OkHttpClient.Builder().build();
         }
+    }
+
+    public static SonarClient getSonarClient() {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(sonarqubeUrl);
+        configurationProperties.setType(SONAR);
+        configurationProperties.setUsername(userName);
+        configurationProperties.setPassword(password);
+        configurationProperties.setInsecureSkipTlsVerify(false);
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        return retrofit.create(SonarClient.class);
     }
 }

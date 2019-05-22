@@ -7,6 +7,9 @@ import io.choerodon.devops.api.dto.sonar.SonarComponent;
 import io.choerodon.devops.api.dto.sonar.SonarTables;
 import io.choerodon.devops.api.dto.sonar.Vulnerability;
 import io.choerodon.devops.infra.feign.SonarClient;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import retrofit2.Call;
 
 /**
@@ -44,5 +47,6 @@ public class SonarClientFallback implements SonarClient {
         return null;
     }
 
-
+    @Override
+    public void updateVisibility(Map<String, String> maps) { }
 }
