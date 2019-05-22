@@ -41,6 +41,7 @@ export default class Pipeline extends Component {
     executeName: '',
     executeCheck: false,
     executeLoading: false,
+    executeEnv: null,
   };
 
   componentDidMount() {
@@ -285,11 +286,15 @@ export default class Pipeline extends Component {
       this.setState({ executeCheck: false });
       return;
     }
-    this.setState({ executeCheck: response ? EXECUTE_PASS : EXECUTE_FAILED });
+    if (response && response.permission && response.versions) {
+      this.setState({ executeCheck: EXECUTE_PASS });
+      return;
+    }
+    this.setState({ executeCheck: EXECUTE_FAILED, executeEnv: response.envName });
   }
 
   closeExecuteCheck = () => {
-    this.setState({ showExecute: false, executeName: '', executeId: null, executeCheck: false });
+    this.setState({ showExecute: false, executeName: '', executeId: null, executeCheck: false, executeEnv: null });
   };
 
   /**
@@ -471,6 +476,7 @@ export default class Pipeline extends Component {
       executeName,
       executeCheck,
       executeLoading,
+      executeEnv,
     } = this.state;
 
     return (<Page
@@ -563,7 +569,13 @@ export default class Pipeline extends Component {
       >
         <div className="c7n-padding-top_8">
           {executeCheck
-            ? <FormattedMessage id={`pipeline.execute.${executeCheck}`} />
+            ? (executeEnv
+                ? <FormattedMessage
+                    id={`pipeline.execute.no.permission`}
+                    value={{ envName: executeEnv }}
+                  />
+                : <FormattedMessage id={`pipeline.execute.${executeCheck}`} />
+            )
             : <Fragment>
               <Spin size="small" />
               <span className="c7ncd-pipeline-execute">{formatMessage({ id: 'pipeline.execute.checking' })}</span>

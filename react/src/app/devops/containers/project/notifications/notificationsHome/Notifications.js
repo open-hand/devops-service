@@ -18,6 +18,7 @@ import NotificationSidebar from '../notificationSidebar';
 import UserList from '../components/userList';
 import TableTags from '../components/tableTags';
 import { handleCheckerProptError } from '../../../../utils';
+import { EVENT, METHOD_OPTIONS, TARGET_OPTIONS } from "../Constants";
 
 import './Notifications.scss';
 
@@ -39,6 +40,7 @@ export default class Notifications extends Component {
     editId: undefined,
     showDelete: false,
     deleteId: undefined,
+    envId: null,
   };
 
   componentDidMount() {
@@ -55,6 +57,7 @@ export default class Notifications extends Component {
         },
       },
     } = this.props;
+    const { envId } = this.state;
 
     const realSorter = _.isEmpty(sorter) ? null : sorter;
 
@@ -66,16 +69,17 @@ export default class Notifications extends Component {
       sorter: realSorter,
     });
 
-    NotificationsStore.loadListData(
+    NotificationsStore.loadListData({
       projectId,
-      current - 1,
-      pageSize,
-      realSorter,
-      {
+      page: current - 1,
+      size: pageSize,
+      sort: realSorter,
+      param: {
         searchParam: filters,
         param: param.toString(),
       },
-    );
+      env: envId,
+    });
   };
 
   openCreate = () => {
@@ -155,7 +159,7 @@ export default class Notifications extends Component {
     NotificationsStore.loadEnvironments(projectId);
   }
 
-  loadData(toPage, env) {
+  loadData(toPage) {
     const {
       NotificationsStore,
       AppState: {
@@ -164,7 +168,7 @@ export default class Notifications extends Component {
         },
       },
     } = this.props;
-    const { page, pageSize, param, filters, sorter } = this.state;
+    const { page, pageSize, param, filters, sorter, envId } = this.state;
     const currentPage = (toPage || toPage === 0) ? toPage : page;
     const {
       getPageInfo: {
@@ -181,14 +185,14 @@ export default class Notifications extends Component {
         searchParam: filters,
         param: param.toString(),
       },
-      env,
+      env: envId,
     };
 
     NotificationsStore.loadListData(postData);
   }
 
   handleSelectEnv = (value) => {
-    this.loadData(0, value);
+    this.setState({ envId: value }, () => this.loadData(0));
   };
 
   renderUser = ({ userRelDTOS, notifyObject }) => (
@@ -281,6 +285,7 @@ export default class Notifications extends Component {
   get getColumns() {
     const { filters, sorter } = this.state;
     const { columnKey, order } = sorter || {};
+    const { intl: { formatMessage } } = this.props;
 
     return [{
       title: <FormattedMessage id="environment" />,
@@ -288,25 +293,32 @@ export default class Notifications extends Component {
       dataIndex: 'envName',
       sorter: true,
       sortOrder: columnKey === 'envName' && order,
-      filters: [],
-      filteredValue: filters.envName || [],
     }, {
       title: <FormattedMessage id="notification.event" />,
       key: 'notifyTriggerEvent',
-      filters: [],
+      filters: _.map(EVENT, item => ({
+        text: formatMessage({ id: `notification.event.${item}` }),
+        value: item,
+      })),
       filteredValue: filters.notifyTriggerEvent || [],
       render: this.renderEvent,
     }, {
       title: <FormattedMessage id="notification.method" />,
       key: 'notifyType',
-      filters: [],
+      filters: _.map(METHOD_OPTIONS, item => ({
+        text: formatMessage({ id: `notification.method.${item}` }),
+        value: item,
+      })),
       filteredValue: filters.notifyType || [],
       render: this.renderMethod,
     }, {
       title: <FormattedMessage id="notification.target" />,
-      key: 'userRelDTOS',
-      filters: [],
-      filteredValue: filters.userRelDTOS || [],
+      key: 'notifyObject',
+      filters: _.map(TARGET_OPTIONS, item => ({
+        text: formatMessage({ id: `notification.target.${item}` }),
+        value: item,
+      })),
+      filteredValue: filters.notifyObject || [],
       render: this.renderUser,
     }, {
       key: 'action',
