@@ -34,4 +34,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
         renameColumn(tableName: 'devops_pipeline_record', columnDataType: 'VARCHAR(255)',
                 oldColumnName: 'process_instance_id', newColumnName: 'business_key', remarks: '流程实例')
     }
+    changeSet(author: 'scp', id: '2019-05-20-devops_pipeline_record-rename-column') {
+        addColumn(tableName: 'devops_pipeline_record') {
+            column(name: "edited", type: 'TINYINT UNSIGNED', remarks: "是否编辑", afterColumn: "business_key", defaultValue: "0")
+        }
+    }
 }

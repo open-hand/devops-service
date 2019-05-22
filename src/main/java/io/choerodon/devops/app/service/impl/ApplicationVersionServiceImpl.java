@@ -47,6 +47,7 @@ import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.PipelineCheckDeploy;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,9 +188,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         FileUtil.deleteDirectory(new File(destFilePath));
         FileUtil.deleteDirectory(new File(storeFilePath));
         //流水线
-        LOGGER.info("=======开始触发自动部署："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
         checkAutoDeploy(applicationVersionE);
-        LOGGER.info("=======完成自动部署："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
     }
 
     /**
@@ -198,29 +197,23 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
      * @param versionE
      */
     public void checkAutoDeploy(ApplicationVersionE versionE) {
-        LOGGER.info("=======自动部署查001========1："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
         ApplicationVersionE insertApplicationVersionE = applicationVersionRepository.queryByAppAndVersion(versionE.getApplicationE().getId(), versionE.getVersion());
 
         if (insertApplicationVersionE != null && insertApplicationVersionE.getVersion() != null) {
-            LOGGER.info("=======自动部署查002========1："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
-
             List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByAppId(insertApplicationVersionE.getApplicationE().getId())
                     .stream().map(deployE ->
                             filterAppDeploy(deployE, insertApplicationVersionE.getVersion())
                     ).collect(Collectors.toList());
             appDeployEList.removeAll(Collections.singleton(null));
             if (!appDeployEList.isEmpty()) {
-                LOGGER.info("=======自动部署查003========1："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
                 List<Long> stageList = appDeployEList.stream()
                         .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()))
                         .filter(Objects::nonNull)
                         .map(PipelineTaskE::getStageId)
                         .distinct().collect(Collectors.toList());
-                LOGGER.info("=======自动部署查004========1："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
                 List<Long> pipelineList = stageList.stream()
                         .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
                         .distinct().collect(Collectors.toList());
-                LOGGER.info("=======自动部署查005========1："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
                 pipelineList = pipelineList.stream()
                         .filter(pipelineId -> {
                             PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
@@ -228,9 +221,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                         }).collect(Collectors.toList());
 
                 pipelineList.forEach(pipelineId -> {
-                    if (pipelineService.checkDeploy(pipelineId)) {
+                    if (pipelineService.checkDeploy(null,pipelineId).equals(PipelineCheckDeploy.SUCCESS.toValue())) {
                         LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertApplicationVersionE.getId(), insertApplicationVersionE.getVersion(), pipelineId);
-                        LOGGER.info("=======自动部署查006========1："+new java.sql.Timestamp(System.currentTimeMillis()).toString());
                         pipelineService.executeAppDeploy(pipelineId);
                     }
                 });

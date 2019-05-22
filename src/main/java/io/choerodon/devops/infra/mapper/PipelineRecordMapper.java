@@ -1,11 +1,12 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.PipelineRecordDO;
-import io.choerodon.mybatis.common.BaseMapper;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
 import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dataobject.PipelineRecordDO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -19,4 +20,6 @@ public interface PipelineRecordMapper extends BaseMapper<PipelineRecordDO> {
                                          @Param("param") String param);
 
     PipelineRecordDO queryById(@Param("pipelineRecordId") Long pipelineRecordId);
+
+    void updateEdited(@Param("pipelineId") Long pipelineId);
 }

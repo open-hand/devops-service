@@ -27,6 +27,15 @@ public class PipelineRecordDO extends AuditDomain {
     private Long projectId;
     private String pipelineName;
     private String businessKey;
+    private Boolean edited;
+
+    public Boolean getEdited() {
+        return edited;
+    }
+
+    public void setEdited(Boolean edited) {
+        this.edited = edited;
+    }
 
     public String getBusinessKey() {
         return businessKey;

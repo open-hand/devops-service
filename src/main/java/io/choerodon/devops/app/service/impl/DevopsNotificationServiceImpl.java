@@ -1,25 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.BeanUtils;
-
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.iam.UserDTO;
-import io.choerodon.devops.app.service.DevopsConfigMapService;
+import io.choerodon.devops.app.service.DevopsNotificationService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
@@ -27,26 +21,14 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.TriggerObject;
 import io.choerodon.devops.infra.common.util.enums.TriggerType;
-import io.choerodon.devops.infra.dataobject.CertificationDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.feign.NotifyClient;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.lang.StringUtils;
-
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
-import io.choerodon.devops.app.service.DevopsNotificationService;
-import io.choerodon.devops.domain.application.entity.DevopsNotificationE;
-import io.choerodon.devops.domain.application.entity.DevopsNotificationUserRelE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.DevopsNotificationRepository;
-import io.choerodon.devops.domain.application.repository.DevopsNotificationUserRelRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -59,7 +41,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     public static final String RESOURCE_DELETE_CONFIRMATION = "resourceDeleteConfirmation";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final Long timeout = 600L;
-
+    public static final String DEVOPS_DELETE_INSTANCE_4_SMS = "devopsDeleteInstance4Sms";
 
 
     @Autowired
@@ -132,8 +114,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         page.getContent().forEach(t -> {
             if ("specifier".equals(t.getNotifyObject())) {
                 List<DevopsNotificationUserRelDTO> userRelDTOS = ConvertHelper.convertList(notificationUserRelRepository.queryByNoticaionId(t.getId()), DevopsNotificationUserRelDTO.class);
-                userRelDTOS = userRelDTOS.stream().peek(u ->{
-                    UserE userE=iamRepository.queryUserByUserId(u.getUserId());
+                userRelDTOS = userRelDTOS.stream().peek(u -> {
+                    UserE userE = iamRepository.queryUserByUserId(u.getUserId());
                     u.setImageUrl(userE.getImageUrl());
                     u.setRealName(userE.getRealName());
                     u.setLoginName(userE.getLoginName());
@@ -197,10 +179,10 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Override
     public void sendMessage(Long envId, Long notificationId, Long objectId, String objectType) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        String objectCode = getObjectCode(objectId,objectType);
+        String objectCode = getObjectCode(objectId, objectType);
 
         //生成验证码，存放在redis
-        String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentE.getCode(),objectType, objectCode);
+        String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentE.getCode(), objectType, objectCode);
         String Captcha = String.valueOf(new Random().nextInt(899999) + 100000);
         redisTemplate.opsForValue().set(resendKey, Captcha, timeout, TimeUnit.SECONDS);
 
@@ -210,15 +192,18 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         List<String> triggerTypes = Arrays.asList(devopsNotificationE.getNotifyType().split(","));
         NotifyDTO notifyDTO = new NotifyDTO();
         Map<String, Object> params = new HashMap<>();
-        params.put("user", GitUserNameUtil.getRealUsername());
+        List<UserE> userES = iamRepository.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
+        if (!userES.isEmpty()) {
+            params.put("user", userES.get(0).getRealName());
+        }
         params.put("env", devopsEnvironmentE.getName());
-        params.put("object", ObjectType.INSTANCE.getType());
+        params.put("object", objectType);
         params.put("objectName", objectCode);
         params.put("verificationCode", Captcha);
-        notifyDTO.setParams(params);
         notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
         if (devopsNotificationE.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
             NoticeSendDTO.User user = new NoticeSendDTO.User();
+            params.put("mobile", userES.get(0).getPhone());
             user.setEmail(GitUserNameUtil.getEmail());
             user.setId(GitUserNameUtil.getUserId().longValue());
             notifyDTO.setTargetUsers(Arrays.asList(user));
@@ -229,25 +214,28 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                             ownerId, devopsEnvironmentE.getProjectE().getId(), false);
             List<NoticeSendDTO.User> users = new ArrayList<>();
             if (!allOwnerUsersPage.getList().isEmpty()) {
-                allOwnerUsersPage.getList().stream().forEach(userDTO -> {
+                params.put("mobile", StringUtils.join(allOwnerUsersPage.getList().stream().map(userDTO -> {
                     NoticeSendDTO.User user = new NoticeSendDTO.User();
                     user.setEmail(userDTO.getEmail());
                     user.setId(userDTO.getId());
                     users.add(user);
-                });
+                    return userDTO.getPhone();
+                }).collect(Collectors.toList()), ","));
             }
             notifyDTO.setTargetUsers(users);
         } else {
             List<Long> userIds = notificationUserRelRepository.queryByNoticaionId(devopsNotificationE.getId()).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
             List<NoticeSendDTO.User> users = new ArrayList<>();
-            iamRepository.listUsersByIds(userIds).stream().forEach(userE -> {
+            params.put("mobile", StringUtils.join(iamRepository.listUsersByIds(userIds).stream().map(userE -> {
                 NoticeSendDTO.User user = new NoticeSendDTO.User();
                 user.setEmail(userE.getEmail());
                 user.setId(userE.getId());
                 users.add(user);
-            });
+                return userE.getPhone();
+            }).collect(Collectors.toList()), ","));
             notifyDTO.setTargetUsers(users);
         }
+        notifyDTO.setParams(params);
         try {
             //根据不同的通知方式发送验证码
             triggerTypes.stream().forEach(triggerType -> {
@@ -258,6 +246,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                     notifyDTO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
                     notifyClient.postEmail(notifyDTO);
                 } else {
+                    notifyDTO.setSourceId(0L);
+                    notifyDTO.setCode(DEVOPS_DELETE_INSTANCE_4_SMS);
                     notifyDTO.setCustomizedSendingTypes(Arrays.asList("sms"));
                     notifyClient.postEmail(notifyDTO);
                 }
@@ -273,7 +263,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     public void validateCaptcha(Long envId, Long objectId, String objectType, String captcha) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         String objectCode = getObjectCode(objectId, objectType);
-        String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentE.getCode(),objectType, objectCode);
+        String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentE.getCode(), objectType, objectCode);
         if (!captcha.equals(redisTemplate.opsForValue().get(resendKey))) {
             throw new CommonException("error.captcha");
         }
@@ -286,7 +276,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         switch (objectType) {
             case INSTANCE:
                 ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(objectId);
-                code =applicationInstanceE.getCode();
+                code = applicationInstanceE.getCode();
                 break;
             case SERVICE:
                 DevopsServiceE devopsServiceE = devopsServiceRepository.query(objectId);

@@ -21,4 +21,6 @@ public interface PipelineRecordRepository {
     PipelineRecordE queryById(Long recordId);
 
     List<PipelineRecordE> queryByPipelineId(Long pipelineId);
+
+    void updateEdited(Long pipelineId);
 }
