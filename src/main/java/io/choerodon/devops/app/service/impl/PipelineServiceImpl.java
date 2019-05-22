@@ -61,6 +61,7 @@ import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
 import io.choerodon.devops.domain.application.entity.PipelineE;
 import io.choerodon.devops.domain.application.entity.PipelineRecordE;
@@ -74,6 +75,7 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
 import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
@@ -89,6 +91,7 @@ import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
@@ -154,6 +157,8 @@ public class PipelineServiceImpl implements PipelineService {
     private ApplicationVersionService versionService;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
 
     @Override
     public Page<PipelineDTO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
@@ -669,7 +674,10 @@ public class PipelineServiceImpl implements PipelineService {
         }
         //检测环境权限
         if (projectId != null) {
-            List<Long> envIds = environmentService.listByProjectIdAndActive(projectId, true).stream().map(DevopsEnviromentRepDTO::getId).collect(Collectors.toList());
+            List<Long> envIds=  devopsEnvUserPermissionRepository
+                    .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                    .filter(DevopsEnvUserPermissionE::getPermitted)
+                    .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
             for (PipelineAppDeployE appDeployE : appDeployEList) {
                 if (!envIds.contains(appDeployE.getEnvId())) {
                     checkDeployDTO.setPermission(false);
