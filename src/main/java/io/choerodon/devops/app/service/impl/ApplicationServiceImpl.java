@@ -583,7 +583,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         .map(UserAttrE::getGitlabUserId).collect(Collectors.toList());
                 gitlabUserIds.forEach(e -> {
                     GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
-                    if (gitlabGroupMemberE != null || gitlabGroupMemberE.getId() != null) {
+                    if (gitlabGroupMemberE != null) {
                         gitlabGroupMemberRepository.deleteMember(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
                     }
                     GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository
@@ -603,7 +603,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             gitlabUserIds.forEach(e -> {
                         GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
-                        if (gitlabGroupMemberE != null || gitlabGroupMemberE.getId() != null) {
+                        if (gitlabGroupMemberE != null) {
                             gitlabGroupMemberRepository.deleteMember(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
                         }
                         GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository.getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
