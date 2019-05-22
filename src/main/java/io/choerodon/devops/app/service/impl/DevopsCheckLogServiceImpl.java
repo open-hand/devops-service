@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import com.squareup.okhttp.internal.tls.RealTrustRootIndex;
 import com.zaxxer.hikari.util.UtilityElf;
 import feign.FeignException;
 import io.kubernetes.client.models.V1Pod;
@@ -92,9 +93,9 @@ import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.K8sUtil;
 import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
-import io.choerodon.devops.infra.common.util.SonarClientUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
 import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO;
@@ -666,8 +667,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         private void syncSonarProject(List<CheckLog> logs) {
             if (!sornarUrl.isEmpty()) {
-                sornarUrl = sornarUrl.endsWith("/") ? sornarUrl : sornarUrl + "/";
-                SonarClient sonarClient = new SonarClientUtil().getSonarClient(sornarUrl, "sonar");
+                SonarClient sonarClient = RetrofitHandler.getSonarClient();
                 applicationMapper.selectAll().forEach(applicationDO -> {
                     if (applicationDO.getGitlabProjectId() != null) {
                         LOGGER.info("sonar.project.privatet,applicationId:" + applicationDO.getId());
