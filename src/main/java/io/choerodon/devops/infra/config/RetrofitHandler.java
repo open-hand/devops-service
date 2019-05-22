@@ -51,7 +51,7 @@ public class RetrofitHandler {
     }
 
     private static OkHttpClient getOkHttpClient(Boolean insecureSkipTlsVerify, String type, String token) {
-        if (type.equals("harbor")) {
+        if (!type.equals("chart")) {
             if (insecureSkipTlsVerify) {
                 final TrustManager[] trustAllCerts = new TrustManager[]{
                         new X509TrustManager() {
