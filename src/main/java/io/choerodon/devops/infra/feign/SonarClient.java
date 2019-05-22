@@ -6,8 +6,11 @@ import io.choerodon.devops.api.dto.sonar.Bug;
 import io.choerodon.devops.api.dto.sonar.SonarComponent;
 import io.choerodon.devops.api.dto.sonar.SonarTables;
 import io.choerodon.devops.api.dto.sonar.Vulnerability;
+
+import oracle.jdbc.proxy.annotation.Post;
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.QueryMap;
 
 /**
@@ -32,4 +35,7 @@ public interface SonarClient {
 
     @GET("api/measures/search_history")
     Call<SonarTables> getSonarTables(@QueryMap Map<String, String> maps);
+
+    @POST("api/projects/update_visibility")
+    void updateVisibility(@QueryMap Map<String, String> maps);
 }

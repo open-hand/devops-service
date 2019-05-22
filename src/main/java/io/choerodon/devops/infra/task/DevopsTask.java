@@ -23,15 +23,15 @@ public class DevopsTask {
     @Autowired
     private DevopsCheckLogService devopsCheckLogService;
 
-    @JobTask(maxRetryCount = 3, code = "syncNewVersionApplications", params = {
+    @JobTask(maxRetryCount = 3, code = "synSonarProjectPrivate", params = {
             @JobParam(name = "test", defaultValue = "test")
-    }, description = "升级到0.15.0同步应用到iam,给应用加配置")
-    @TimedTask(name = "syncNewVersionApplications", description = "升级到0.15.0同步应用到iam,给应用加配置", oneExecution = true,
+    }, description = "升级到0.17.0,同步sonar项目为private")
+    @TimedTask(name = "synSonarProjectPrivate", description = "升级到0.17.0,同步sonar项目为private", oneExecution = true,
             repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {
             @TaskParam(name = "test", value = "test")
     })
     public void syncNewVersionApplications(Map<String, Object> map) {
-        logger.info("begin to upgrade 0.14.0 to 0.15.0");
-        devopsCheckLogService.checkLog("0.15.0");
+        logger.info("begin to upgrade 0.16.0 to 0.17.0");
+        devopsCheckLogService.checkLog("0.17.0");
     }
 }
