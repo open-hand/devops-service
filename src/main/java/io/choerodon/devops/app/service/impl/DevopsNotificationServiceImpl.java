@@ -201,7 +201,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         params.put("object", objectType);
         params.put("objectName", objectCode);
         params.put("captcha", Captcha);
-        params.put("timeout", "600");
+        params.put("timeout", "10");
         //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
         params.put("instance", objectCode);
         notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);

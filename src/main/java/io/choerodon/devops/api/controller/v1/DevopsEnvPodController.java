@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -38,7 +39,7 @@ public class DevopsEnvPodController {
      * @param searchParam 查询参数
      * @return page of devopsEnvPodDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询容器管理")

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -48,7 +49,7 @@ public class ApplicationMarketController {
      * @param applicationReleaseDTO 发布应用的信息
      * @return Long
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用发布")
     @PostMapping
     public ResponseEntity<Long> create(
@@ -70,7 +71,7 @@ public class ApplicationMarketController {
      * @param searchParam 搜索参数
      * @return list of ApplicationReleasingDTO
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下分页查询所有发布在应用市场的应用")
     @CustomPageRequest
     @PostMapping(value = "/list")
@@ -95,7 +96,7 @@ public class ApplicationMarketController {
      * @param searchParam 搜索参数
      * @return list of ApplicationReleasingDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询发布级别为全局或者在本组织下的所有应用市场的应用")
     @CustomPageRequest
@@ -119,7 +120,7 @@ public class ApplicationMarketController {
      * @param appMarketId 发布ID
      * @return ApplicationReleasingDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询项目下单个应用市场的应用详情")
     @GetMapping("/{app_market_id}/detail")
@@ -140,7 +141,7 @@ public class ApplicationMarketController {
      * @param appMarketId 发布ID
      * @return ApplicationReleasingDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个应用市场的应用")
     @GetMapping("/{app_market_id}")
@@ -162,7 +163,7 @@ public class ApplicationMarketController {
      * @param appMarketId 发布ID
      * @return List of AppMarketVersionDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下单个应用市场的应用的版本")
     @GetMapping("/{app_market_id}/versions")
@@ -186,7 +187,7 @@ public class ApplicationMarketController {
      * @param appMarketId 发布ID
      * @return Page of AppMarketVersionDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询项目下单个应用市场的应用的版本")
     @CustomPageRequest
@@ -217,7 +218,7 @@ public class ApplicationMarketController {
      * @param versionId   版本ID
      * @return String of readme
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个应用市场的应用的单个版本README")
     @GetMapping("/{app_market_id}/versions/{version_id}/readme")
@@ -240,7 +241,7 @@ public class ApplicationMarketController {
      * @param projectId   项目id
      * @param appMarketId 发布ID
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "更新单个应用市场的应用")
     @PutMapping("/{app_market_id}")
     public ResponseEntity update(
@@ -260,7 +261,7 @@ public class ApplicationMarketController {
      * @param projectId   项目id
      * @param appMarketId 发布ID
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "更新单个应用市场的应用")
     @PutMapping("/{app_market_id}/versions")
     public ResponseEntity updateVersions(
@@ -281,7 +282,7 @@ public class ApplicationMarketController {
      * @param file      文件
      * @return 应用列表
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用市场解析导入应用")
     @PostMapping("/upload")
     public ResponseEntity<AppMarketTgzDTO> uploadApps(
@@ -303,7 +304,7 @@ public class ApplicationMarketController {
      * @param isPublic  是否发布
      * @return 应用列表
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用市场导入应用")
     @PostMapping("/import")
     public ResponseEntity<Boolean> importApps(
@@ -326,7 +327,7 @@ public class ApplicationMarketController {
      * @param fileName  文件名
      * @return 应用列表
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用市场取消导入应用")
     @PostMapping("/import_cancel")
     public ResponseEntity deleteZip(
@@ -345,7 +346,7 @@ public class ApplicationMarketController {
      * @param appMarkets 应用市场应用信息
      * @return ResponseEntity
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "导出应用市场应用信息")
     @PostMapping("/export")
     public ResponseEntity exportFile(

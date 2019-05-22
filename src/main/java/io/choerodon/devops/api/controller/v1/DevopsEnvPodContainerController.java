@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.DevopsEnvPodContainerLogDTO;
@@ -37,7 +38,7 @@ public class DevopsEnvPodContainerController {
      * @param podId     pod ID
      * @return List of DevopsEnvPodContainerLogDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取日志信息 By Pod")
@@ -59,7 +60,7 @@ public class DevopsEnvPodContainerController {
      * @param podId     pod ID
      * @return List of DevopsEnvPodContainerLogDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取日志shell信息 By Pod")

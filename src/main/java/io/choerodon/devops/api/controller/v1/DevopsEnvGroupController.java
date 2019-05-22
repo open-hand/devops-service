@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.DevopsEnvGroupDTO;
@@ -36,7 +37,7 @@ public class DevopsEnvGroupController {
      * @param devopsEnvGroupName 环境组名称
      * @return ApplicationTemplateDTO
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境组")
     @PostMapping
     public ResponseEntity<DevopsEnvGroupDTO> create(
@@ -57,7 +58,7 @@ public class DevopsEnvGroupController {
      * @param devopsEnvGroupDTO 环境组信息
      * @return ApplicationTemplateDTO
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新环境组")
     @PutMapping
     public ResponseEntity<DevopsEnvGroupDTO> update(
@@ -77,7 +78,7 @@ public class DevopsEnvGroupController {
      * @param projectId 项目id
      * @return DevopsEnvGroupDTO
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境组")
     @GetMapping
     public ResponseEntity<List<DevopsEnvGroupDTO>> listByProject(
@@ -94,7 +95,7 @@ public class DevopsEnvGroupController {
      * @param projectId 项目id
      * @return boolean
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验环境组名唯一性")
     @GetMapping(value = "/checkName")
     public ResponseEntity<Boolean> checkName(
@@ -115,7 +116,7 @@ public class DevopsEnvGroupController {
      * @param groupId   实例id
      * @return responseEntity
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境组删除")
     @DeleteMapping(value = "/{groupId}")
     public ResponseEntity delete(

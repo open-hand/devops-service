@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -42,7 +43,7 @@ public class ApplicationVersionController {
      * @param searchParam 查询参数
      * @return ApplicationVersionRepDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询应用版本")
@@ -75,7 +76,7 @@ public class ApplicationVersionController {
      * @return List
      */
     @ApiOperation(value = "应用下查询应用所有版本")
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
@@ -106,7 +107,7 @@ public class ApplicationVersionController {
      * @return List
      */
     @ApiOperation(value = "项目下查询应用所有已部署版本")
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @GetMapping("/list_deployed_by_app/{app_id}")
@@ -128,7 +129,7 @@ public class ApplicationVersionController {
      * @param envId     环境Id
      * @return List
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询部署在某个环境应用的应用版本")
@@ -152,7 +153,7 @@ public class ApplicationVersionController {
      * @param appVersionId 应用版本ID
      * @return ApplicationVersionRepDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "实例下查询可升级版本")
@@ -174,7 +175,7 @@ public class ApplicationVersionController {
      * @param appId     应用ID
      * @return DeployVersionDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询应用最新的版本和各环境下部署的版本")
@@ -197,7 +198,7 @@ public class ApplicationVersionController {
      * @param appVersionId 应用版本ID
      * @return String
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据版本id获取版本values")
@@ -220,7 +221,7 @@ public class ApplicationVersionController {
      * @param appVersionIds 应用版本ID
      * @return ApplicationVersionRepDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据版本id查询版本信息")
@@ -244,7 +245,7 @@ public class ApplicationVersionController {
      * @param appId     应用Id
      * @return ApplicationVersionRepDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据分支名查询版本")
@@ -270,7 +271,7 @@ public class ApplicationVersionController {
      * @param branch     分支
      * @return Boolean
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据pipelineID 查询版本")
@@ -294,7 +295,7 @@ public class ApplicationVersionController {
      * @param appId
      * @return
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询所有自动部署")
     @GetMapping("/value")
@@ -317,7 +318,7 @@ public class ApplicationVersionController {
      * @param version  版本
      * @return ApplicationVersionRepDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据应用和版本号查询应用版本")

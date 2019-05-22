@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.swagger.annotations.ApiOperation;
@@ -25,7 +26,7 @@ public class DevopsCheckController {
      *
      * @param version   版本
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平滑升级")
     @GetMapping

@@ -4,6 +4,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -37,7 +38,7 @@ public class DevopsConfigMapController {
      * @param devopsConfigMapDTO 配置映射信息
      * @return ResponseEntity
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建配置映射")
     @PostMapping
@@ -57,7 +58,7 @@ public class DevopsConfigMapController {
      * @param configMapId 实例id
      * @return responseEntity
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "配置映射删除")
     @DeleteMapping(value = "/{configMap_id}/delete")
@@ -76,7 +77,7 @@ public class DevopsConfigMapController {
      * @param projectId     项目id
      * @param configMapName 配置映射名
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验配置映射名唯一性")
     @GetMapping(value = "/check_name")
@@ -98,7 +99,7 @@ public class DevopsConfigMapController {
      * @param configMapId 配置映射Id
      * @return DevopsConfigMapRepDTO
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建配置映射")
     @GetMapping("/{configMap_id}")
@@ -122,7 +123,7 @@ public class DevopsConfigMapController {
      * @param searchParam 查询参数
      * @return Page of DevopsServiceDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境配置映射查询")
