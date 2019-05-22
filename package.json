@@ -3,14 +3,14 @@
   "routeName": "devops",
   "description": "",
   "license": "ISC",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "keywords": [],
   "contributors": [
     "choerodon"
   ],
   "main": "./react/src/app/devops/containers/DEVOPSIndex.js",
   "files": [
-    "react"
+    "lib"
   ],
   "scripts": {
     "start": "choerodon-front-boot start --config ./react/config.js",
