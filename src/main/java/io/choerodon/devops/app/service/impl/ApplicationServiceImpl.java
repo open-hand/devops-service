@@ -582,9 +582,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                 List<Long> gitlabUserIds = userAttrRepository.listByUserIds(devOpsAppPayload.getUserIds()).stream()
                         .map(UserAttrE::getGitlabUserId).collect(Collectors.toList());
                 gitlabUserIds.forEach(e -> {
-                    GitlabMemberE gitlabMemberE = gitlabProjectRepository
+                    GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
+                    if (gitlabGroupMemberE != null || gitlabGroupMemberE.getId() != null) {
+                        gitlabGroupMemberRepository.deleteMember(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
+                    }
+                    GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository
                             .getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
-                    if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
+                    if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
                         gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
                                 new MemberDTO(TypeUtil.objToInteger(e), 30, ""));
                     }
