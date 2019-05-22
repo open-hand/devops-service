@@ -111,6 +111,11 @@ class AppHome extends Component {
   }
 
   componentDidMount() {
+    const {
+      location: { state },
+    } = this.props;
+    const { show, modeType } = state || {};
+    show && modeType && this.showSideBar("create");
     this.loadAllData(0);
   }
 
@@ -741,7 +746,11 @@ class AppHome extends Component {
       },
     ];
 
-    let initHarbor = getHarborList.length ? getHarborList[0].id : undefined;
+    let initHarbor = undefined;
+    if (getHarborList.length) {
+      const hasProject = _.find(getHarborList, item => item.name.indexOf('project') !== -1);
+      initHarbor = hasProject ? hasProject.id : getHarborList[0].id
+    }
     let initChart = getChartList.length ? getChartList[0].id : undefined;
     if (singleData && singleData.gitlabProjectId) {
       const { harborConfigId, chartConfigId } = singleData;

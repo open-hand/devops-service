@@ -1663,7 +1663,8 @@ const zhCN = {
   "pipelineRecord.check.stage.des": '流水线“{name}”已执行完阶段【{stage}】，需要您进行审核。',
   "pipelineRecord.retry": "重新执行",
   "pipelineRecord.retry.title": "重新执行流水线“{name}”",
-  "pipelineRecord.retry.des": "确定要重新执行该流水线吗？",
+  'pipelineRecord.retry.true': '确定要重新执行该流水线吗？',
+  'pipelineRecord.retry.false': '该条流水线已被修改，无法重试',
   "pipelineRecord.check.tips.button": "我知道了",
   "pipeline.check.tips.text":
     "此任务为会签审核任务，目前【{checkUsers}】已审核通过，还需【{unCheckUsers}】审核通过后，才能执行之后的步骤。",
@@ -1744,6 +1745,10 @@ const zhCN = {
   "pipeline.execute.checking": "正在检查流水线执行条件，请耐心等待！",
   "pipeline.execute.pass": "点击确认后开始执行该流水线。",
   "pipeline.execute.failed": "该流水线不满足执行条件，无法触发执行。",
+  'pipeline.execute.no.permission':
+    '因流水线中包含环境{envName}相关的部署任务，联系项目所有者添此环境的权限后，才能执行该条流水线。',
+  'pipeline.stop.title': '终止流水线“{name}”',
+  'pipeline.stop.des': '手动终止后，当前执行中的流程会被强制停止，确定要终止？',
   "pipeline.edit.error": "出错了",
   "pipeline.edit.error.msg": "信息加载错误，请返回流水线页面，刷新后重试。",
   "pipeline.edit.back": "返回流水线",
@@ -1813,7 +1818,7 @@ const zhCN = {
   "notification.event.instance": "删除实例",
   "notification.event.service": "删除网络",
   "notification.event.ingress": "删除域名",
-  "notification.event.certification": "删除证书",
+  "notification.event.certificate": "删除证书",
   "notification.event.configMap": "删除配置映射",
   "notification.event.secret": "删除密文",
   "notification.method.sms": "短信",
@@ -1822,7 +1827,7 @@ const zhCN = {
   "notification.target.handler": "操作者",
   "notification.target.owner": "项目所有者",
   "notification.target.specifier": "指定用户",
-  "notification.event.tips": "该环境下已创建该事件的通知",
+  "notification.event.tips": "所选环境中的此事件已有通知设置",
   "notification.env.select": "选择环境",
 
   ...pageDetail,
