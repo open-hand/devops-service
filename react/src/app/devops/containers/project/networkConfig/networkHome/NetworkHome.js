@@ -650,7 +650,7 @@ export default class NetworkHome extends Component {
       loading={submitting}
       objectType="service"
       onClose={this.closeDeleteModal}
-      onOk={this.handleDeleteWithValid}
+      onOk={this.handleDelete}
     />));
 
     return (

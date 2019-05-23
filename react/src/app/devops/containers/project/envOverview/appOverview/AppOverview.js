@@ -180,35 +180,38 @@ class AppOverview extends Component {
       error,
     } = data;
 
+    let nameNode = null;
+    switch (status) {
+      case 'running':
+      case 'stopped':
+        nameNode = <span className="c7n-deploy-istCode">{code}</span>;
+        break;
+      case 'operating':
+        nameNode = <div>
+          <span className="c7n-deploy-istCode">{code}</span>
+          <Tooltip title={intl.formatMessage({ id: `ist_${status}` })}>
+            <Progress
+              type="loading"
+              size="small"
+              width={15}
+            />
+          </Tooltip>
+        </div>;
+        break;
+      default:
+        nameNode = <div>
+          <span className="c7n-deploy-istCode">{code}</span>
+          <Tooltip title={`${status}${error || ''}`}>
+            <i className="icon icon-error c7n-deploy-ist-operate" />
+          </Tooltip>
+        </div>;
+    }
+
     return (
       <div className="c7n-envow-ist-header-wrap">
         <Icon type="navigate_next" />
         <div className="c7n-envow-ist-name">
-          {status === 'running' || status === 'stopped' ? (
-            <span className="c7n-deploy-istCode">{code}</span>
-          ) : (
-            <div className="c7n-envow-ist-fail">
-              {status === 'operating' ? (
-                <div>
-                  <span className="c7n-deploy-istCode">{code}</span>
-                  <Tooltip
-                    title={intl.formatMessage({
-                      id: `ist_${status}`,
-                    })}
-                  >
-                    <Progress type="loading" width={15} />
-                  </Tooltip>
-                </div>
-              ) : (
-                <div>
-                  <span className="c7n-deploy-istCode">{code}</span>
-                  <Tooltip title={`${status}${error ? `：${error}` : ''}`}>
-                    <i className="icon icon-error c7n-deploy-ist-operate" />
-                  </Tooltip>
-                </div>
-              )}
-            </div>
-          )}
+          {nameNode}
         </div>
         <span className="c7n-envow-ist-version">
           <span className="c7n-envow-version-text">
