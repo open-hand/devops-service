@@ -33,6 +33,7 @@ import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.infra.common.util.*;
+import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.common.util.enums.HelmObjectKind;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
@@ -117,9 +118,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DeployMsgHandlerService deployMsgHandlerService;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private GitlabGroupMemberRepository gitlabGroupMemberRepository;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
+    @Transactional
     public void create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
         DevopsEnvironmentE devopsEnvironmentE = ConvertHelper.convert(devopsEnviromentDTO, DevopsEnvironmentE.class);
         devopsEnvironmentE.initProjectE(projectId);
@@ -133,6 +137,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentE.initProjectE(projectId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        if (userAttrE == null) {
+            throw new CommonException("error.gitlab.user.sync.failed");
+        }
+
+        // 查询创建应用所在的gitlab应用组
+        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
+        GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()),
+                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+            throw new CommonException("error.user.not.owner");
+        }
+
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
         //创建环境没有选环境组，序列从默认组环境递增，创建环境选了环境组，序列从该环境组环境递增
@@ -151,8 +170,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Long envId = devopsEnviromentRepository.create(devopsEnvironmentE).getId();
         devopsEnvironmentE.setId(envId);
 
-        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
         gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()));
         gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
