@@ -281,9 +281,11 @@ class AppHome extends Component {
                         onClick={this.showSideBar.bind(this, 'edit', record.id)}
                       />
                     ) : (
-                      <Icon
-                        type="mode_edit"
-                        className="c7n-app-icon-disabled"
+                      <Button
+                        disabled
+                        icon="mode_edit"
+                        shape="circle"
+                        size="small"
                       />
                     )}
                   </Tooltip>
@@ -314,32 +316,20 @@ class AppHome extends Component {
                       <Button
                         shape="circle"
                         size="small"
+                        icon={record.active ? 'remove_circle_outline' : 'finished'}
                         onClick={this.changeAppStatus.bind(
                           this,
                           record.id,
                           record.active,
                         )}
-                      >
-                        {record.active ? (
-                          <Icon type="remove_circle_outline" />
-                        ) : (
-                          <Icon type="finished" />
-                        )}
-                      </Button>
+                      />
                     ) : (
-                      <Fragment>
-                        {record.active ? (
-                          <Icon
-                            type="remove_circle_outline"
-                            className="c7n-app-icon-disabled"
-                          />
-                        ) : (
-                          <Icon
-                            type="finished"
-                            className="c7n-app-icon-disabled"
-                          />
-                        )}
-                      </Fragment>
+                      <Button
+                        disabled
+                        icon={record.active ? 'remove_circle_outline' : 'finished'}
+                        shape="circle"
+                        size="small"
+                      />
                     )}
                   </Tooltip>
                 </Permission>
