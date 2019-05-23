@@ -49,4 +49,7 @@ public class SonarClientFallback implements SonarClient {
 
     @Override
     public void updateVisibility(Map<String, String> maps) { }
+
+    @Override
+    public void updateDefaultVisibility(Map<String, String> maps) { }
 }

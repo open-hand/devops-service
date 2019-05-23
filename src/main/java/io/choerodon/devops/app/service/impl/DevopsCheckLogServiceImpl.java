@@ -20,7 +20,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import com.squareup.okhttp.internal.tls.RealTrustRootIndex;
 import com.zaxxer.hikari.util.UtilityElf;
 import feign.FeignException;
 import io.kubernetes.client.models.V1Pod;
@@ -680,6 +679,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         sonarClient.updateVisibility(maps);
                     }
                 });
+                Map<String, String> defaultMaps = new HashMap<>();
+                defaultMaps.put("organization", "default-organization");
+                defaultMaps.put("projectVisibility", "private");
+                sonarClient.updateDefaultVisibility(defaultMaps);
             }
         }
 

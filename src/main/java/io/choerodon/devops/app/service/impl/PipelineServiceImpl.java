@@ -71,6 +71,7 @@ import io.choerodon.devops.domain.application.entity.PipelineTaskE;
 import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
 import io.choerodon.devops.domain.application.entity.PipelineUserRecordRelE;
 import io.choerodon.devops.domain.application.entity.PipelineUserRelE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
@@ -673,16 +674,20 @@ public class PipelineServiceImpl implements PipelineService {
             return checkDeployDTO;
         }
         //检测环境权限
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
         if (projectId != null) {
-            List<Long> envIds=  devopsEnvUserPermissionRepository
-                    .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
-                    .filter(DevopsEnvUserPermissionE::getPermitted)
-                    .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
-            for (PipelineAppDeployE appDeployE : appDeployEList) {
-                if (!envIds.contains(appDeployE.getEnvId())) {
-                    checkDeployDTO.setPermission(false);
-                    checkDeployDTO.setEnvName(appDeployE.getEnvName());
-                    return checkDeployDTO;
+            if(!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+                //判断当前用户是否是项目所有者
+                List<Long> envIds = devopsEnvUserPermissionRepository
+                        .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                        .filter(DevopsEnvUserPermissionE::getPermitted)
+                        .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+                for (PipelineAppDeployE appDeployE : appDeployEList) {
+                    if (!envIds.contains(appDeployE.getEnvId())) {
+                        checkDeployDTO.setPermission(false);
+                        checkDeployDTO.setEnvName(appDeployE.getEnvName());
+                        return checkDeployDTO;
+                    }
                 }
             }
         }

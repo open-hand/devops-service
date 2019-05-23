@@ -38,4 +38,7 @@ public interface SonarClient {
 
     @POST("api/projects/update_visibility")
     void updateVisibility(@QueryMap Map<String, String> maps);
+
+    @POST("api/projects/update_default_visibility")
+    void updateDefaultVisibility(@QueryMap Map<String, String> maps);
 }
