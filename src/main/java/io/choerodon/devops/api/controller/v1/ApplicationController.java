@@ -437,7 +437,7 @@ public class ApplicationController {
      */
     @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验harbor配置信息是否正确")
-    @GetMapping(value = "check_harbor")
+    @GetMapping(value = "/check_harbor")
     public void checkHarbor(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -462,7 +462,7 @@ public class ApplicationController {
      */
     @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验chart配置信息是否正确")
-    @GetMapping(value = "check_chart")
+    @GetMapping(value = "/check_chart")
     public void checkChart(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
