@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -1606,6 +1607,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (sonarqubeUrl.equals("")) {
             return new SonarTableDTO();
         }
+        Calendar c = Calendar.getInstance();
+        c.setTime(endTime);
+        c.add(Calendar.DAY_OF_MONTH, 1);
+        Date tomorrow = c.getTime();
         SonarTableDTO sonarTableDTO = new SonarTableDTO();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
         ApplicationE applicationE = applicationRepository.query(appId);
@@ -1637,7 +1642,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.BUGS.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             bugs.add(sonarHistroy.getValue());
                             dates.add(sonarHistroy.getDate());
@@ -1647,7 +1652,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.CODE_SMELLS.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             codeSmells.add(sonarHistroy.getValue());
                         });
@@ -1655,7 +1660,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.VULNERABILITIES.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             vulnerabilities.add(sonarHistroy.getValue());
                         });
@@ -1684,7 +1689,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.COVERAGE.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             coverage.add(sonarHistroy.getValue());
                         });
@@ -1692,7 +1697,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.LINES_TO_COVER.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             linesToCover.add(sonarHistroy.getValue());
                             dates.add(sonarHistroy.getDate());
@@ -1703,7 +1708,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.UNCOVERED_LINES.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             unCoverLines.add(sonarHistroy.getValue());
                         });
@@ -1735,7 +1740,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.NCLOC.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             nclocs.add(sonarHistroy.getValue());
                             dates.add(sonarHistroy.getDate());
@@ -1745,7 +1750,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy ->
                                 duplicatedLines.add(sonarHistroy.getValue())
                         );
@@ -1753,7 +1758,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES_DENSITY.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             duplicatedLinesRate.add(sonarHistroy.getValue());
                         });
