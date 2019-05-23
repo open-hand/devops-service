@@ -572,7 +572,7 @@ export default class Pipeline extends Component {
             ? (executeEnv
                 ? <FormattedMessage
                     id={`pipeline.execute.no.permission`}
-                    value={{ envName: executeEnv }}
+                    values={{ envName: executeEnv }}
                   />
                 : <FormattedMessage id={`pipeline.execute.${executeCheck}`} />
             )
