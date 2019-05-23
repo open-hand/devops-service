@@ -215,7 +215,7 @@ export default class AppOverview extends Component {
       default:
         nameNode = <div>
           <span className="c7n-deploy-istCode">{code}</span>
-          <Tooltip title={`${status}${error || ''}`}>
+          <Tooltip title={`${status}: ${error || ''}`}>
             <i className="icon icon-error c7n-deploy-ist-operate" />
           </Tooltip>
         </div>;
