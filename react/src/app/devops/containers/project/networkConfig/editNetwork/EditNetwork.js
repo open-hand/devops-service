@@ -503,13 +503,34 @@ class EditNetwork extends Component {
    * @param options
    */
   handleAppSelect = (value, options) => {
-    const { store, form } = this.props;
+    const {
+      store,
+      form: {
+        getFieldValue,
+        resetFields,
+      },
+    } = this.props;
+    const {
+      oldAppData: {
+        initApp,
+        initIst,
+        initIstOption,
+      },
+    } = this.state;
     const { id } = AppState.currentMenuType;
-    const envId = form.getFieldValue("envId");
-    this.setState({
-      initIst: [],
-      initIstOption: [],
-    });
+    const envId = getFieldValue("envId");
+    if (initApp === value) {
+      this.setState({
+        initIst,
+        initIstOption,
+      });
+    } else {
+      this.setState({
+        initIst: [],
+        initIstOption: [],
+      });
+    }
+    resetFields(["appInstance"]);
     store.loadInstance(id, envId, Number(value));
   };
 
