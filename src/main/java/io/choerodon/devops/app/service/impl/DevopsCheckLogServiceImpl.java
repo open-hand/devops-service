@@ -133,6 +133,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String SERIAL_STRING = " serializable to yaml";
     private static final String APPLICATION = "application";
     private static final String YAML_FILE = ".yaml";
+    private static final String PERMISSION = "permission";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
@@ -140,11 +141,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String SERVICE_PATTERN = "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
     private static io.kubernetes.client.JSON json = new io.kubernetes.client.JSON();
     @Value("${services.sonarqube.url:}")
-    private static String sonarqubeUrl;
+    private String sonarqubeUrl;
     @Value("${services.sonarqube.username:}")
-    private static String userName;
+    private String userName;
     @Value("${services.sonarqube.password:}")
-    private static String password;
+    private String password;
     private Gson gson = new Gson();
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -670,6 +671,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         private void syncSonarProject(List<CheckLog> logs) {
             if (!sonarqubeUrl.isEmpty()) {
                 SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
+                //将所有sonar项目设为私有
                 applicationMapper.selectAll().forEach(applicationDO -> {
                     if (applicationDO.getGitlabProjectId() != null) {
                         LOGGER.info("sonar.project.privatet,applicationId:" + applicationDO.getId());
@@ -682,10 +684,26 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         sonarClient.updateVisibility(maps);
                     }
                 });
+                //更改默认新建项目为私有
                 Map<String, String> defaultMaps = new HashMap<>();
                 defaultMaps.put("organization", "default-organization");
                 defaultMaps.put("projectVisibility", "private");
                 sonarClient.updateDefaultVisibility(defaultMaps);
+                //更改默认权限模板
+                Map<String, String> appTemplete = new HashMap<>();
+                defaultMaps.put("templateId", "default_template");
+                defaultMaps.put("groupName", "sonar-administrators");
+                defaultMaps.put(PERMISSION, "codeviewer");
+                sonarClient.addGroupToTemplate(appTemplete);
+                defaultMaps.put(PERMISSION, "user");
+                sonarClient.addGroupToTemplate(appTemplete);
+                Map<String, String> removeTemplete = new HashMap<>();
+                removeTemplete.put("templateId", "default_template");
+                removeTemplete.put("groupName", "sonar-users");
+                removeTemplete.put(PERMISSION, "codeviewer");
+                sonarClient.removeGroupFromTemplate(removeTemplete);
+                removeTemplete.put(PERMISSION, "user");
+                sonarClient.removeGroupFromTemplate(removeTemplete);
             }
         }
 

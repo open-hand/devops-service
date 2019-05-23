@@ -62,6 +62,7 @@ import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.api.dto.sonar.Bug;
 import io.choerodon.devops.api.dto.sonar.Facet;
 import io.choerodon.devops.api.dto.sonar.Quality;
+import io.choerodon.devops.api.dto.sonar.SonarAnalyses;
 import io.choerodon.devops.api.dto.sonar.SonarComponent;
 import io.choerodon.devops.api.dto.sonar.SonarHistroy;
 import io.choerodon.devops.api.dto.sonar.SonarTables;
@@ -1341,9 +1342,19 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (sonarComponentResponse.body() == null) {
                 return new SonarContentsDTO();
             }
-            sonarContentsDTO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
-            sonarContentsDTO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
-            sonarContentsDTO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
+            if (sonarComponentResponse.body().getPeriods() != null && sonarComponentResponse.body().getPeriods().size() > 0) {
+                sonarContentsDTO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
+                sonarContentsDTO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
+                sonarContentsDTO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
+            } else {
+                Map<String, String> analyseMap = new HashMap<>();
+                analyseMap.put("project", key);
+                analyseMap.put("ps", "3");
+                Response<SonarAnalyses> sonarAnalyses = sonarClient.getAnalyses(analyseMap).execute();
+                if (sonarAnalyses.raw().code() == 200 && sonarAnalyses.body().getAnalyses() != null && sonarAnalyses.body().getAnalyses().size() > 0) {
+                    sonarContentsDTO.setDate(sonarAnalyses.body().getAnalyses().get(0).getDate());
+                }
+            }
             sonarComponentResponse.body().getComponent().getMeasures().stream().forEach(measure -> {
                 SonarQubeType sonarQubeType = SonarQubeType.forValue(String.valueOf(measure.getMetric()));
                 switch (sonarQubeType) {
