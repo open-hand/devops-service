@@ -140,6 +140,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String ISSUE = "issue";
     private static final String COVERAGE = "coverage";
     private static final String CHART_DIR = "charts";
+    private static final String SONAR = "sonar";
     private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
     private static final IOFileFilter filenameFilter = new IOFileFilter() {
         @Override
@@ -1319,7 +1320,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationE applicationE = applicationRepository.query(appId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        SonarClient sonarClient = RetrofitHandler.getSonarClient();
+        SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
         String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         try {
@@ -1599,7 +1600,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationE applicationE = applicationRepository.query(appId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        SonarClient sonarClient = RetrofitHandler.getSonarClient();
+        SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
         String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         Map<String, String> queryMap = new HashMap<>();

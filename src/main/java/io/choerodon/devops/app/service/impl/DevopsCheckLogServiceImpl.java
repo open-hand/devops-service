@@ -119,6 +119,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
+    private static final String SONAR = "sonar";
     private static final String SONARQUBE = "sonarqube";
     private static final String TWELVE_VERSION = "0.12.0";
     private static final String APP = "app: ";
@@ -132,17 +133,19 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String SERIAL_STRING = " serializable to yaml";
     private static final String APPLICATION = "application";
     private static final String YAML_FILE = ".yaml";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-upgrade", false));
     private static final String SERVICE_PATTERN = "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
     private static io.kubernetes.client.JSON json = new io.kubernetes.client.JSON();
+    @Value("${services.sonarqube.url:}")
+    private static String sonarqubeUrl;
+    @Value("${services.sonarqube.username:}")
+    private static String userName;
+    @Value("${services.sonarqube.password:}")
+    private static String password;
     private Gson gson = new Gson();
-
-    @Value("${services.sonar.url:}")
-    private String sornarUrl;
     @Value("${services.gateway.url}")
     private String gatewayUrl;
     @Value("${services.helm.url}")
@@ -665,8 +668,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private void syncSonarProject(List<CheckLog> logs) {
-            if (!sornarUrl.isEmpty()) {
-                SonarClient sonarClient = RetrofitHandler.getSonarClient();
+            if (!sonarqubeUrl.isEmpty()) {
+                SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
                 applicationMapper.selectAll().forEach(applicationDO -> {
                     if (applicationDO.getGitlabProjectId() != null) {
                         LOGGER.info("sonar.project.privatet,applicationId:" + applicationDO.getId());
