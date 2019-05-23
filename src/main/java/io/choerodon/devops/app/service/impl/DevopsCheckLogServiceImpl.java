@@ -681,29 +681,38 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         Map<String, String> maps = new HashMap<>();
                         maps.put("project", key);
                         maps.put("visibility", "private");
-                        sonarClient.updateVisibility(maps);
+                        try {
+                            sonarClient.updateVisibility(maps).execute();
+                        } catch (IOException e) {
+                            LOGGER.error(e.getMessage());
+                        }
                     }
                 });
-                //更改默认新建项目为私有
-                Map<String, String> defaultMaps = new HashMap<>();
-                defaultMaps.put("organization", "default-organization");
-                defaultMaps.put("projectVisibility", "private");
-                sonarClient.updateDefaultVisibility(defaultMaps);
-                //更改默认权限模板
-                Map<String, String> appTemplete = new HashMap<>();
-                defaultMaps.put("templateId", "default_template");
-                defaultMaps.put("groupName", "sonar-administrators");
-                defaultMaps.put(PERMISSION, "codeviewer");
-                sonarClient.addGroupToTemplate(appTemplete);
-                defaultMaps.put(PERMISSION, "user");
-                sonarClient.addGroupToTemplate(appTemplete);
-                Map<String, String> removeTemplete = new HashMap<>();
-                removeTemplete.put("templateId", "default_template");
-                removeTemplete.put("groupName", "sonar-users");
-                removeTemplete.put(PERMISSION, "codeviewer");
-                sonarClient.removeGroupFromTemplate(removeTemplete);
-                removeTemplete.put(PERMISSION, "user");
-                sonarClient.removeGroupFromTemplate(removeTemplete);
+                try {
+                    //更改默认新建项目为私有
+                    Map<String, String> defaultMaps = new HashMap<>();
+                    defaultMaps.put("organization", "default-organization");
+                    defaultMaps.put("projectVisibility", "private");
+                    sonarClient.updateDefaultVisibility(defaultMaps).execute();
+                    //更改默认权限模板
+                    Map<String, String> appTemplete = new HashMap<>();
+                    appTemplete.put("templateId", "default_template");
+                    appTemplete.put("groupName", "sonar-administrators");
+                    appTemplete.put(PERMISSION, "codeviewer");
+                    sonarClient.addGroupToTemplate(appTemplete).execute();
+                    appTemplete.put(PERMISSION, "user");
+                    sonarClient.addGroupToTemplate(appTemplete).execute();
+
+                    Map<String, String> removeTemplete = new HashMap<>();
+                    removeTemplete.put("templateId", "default_template");
+                    removeTemplete.put("groupName", "sonar-users");
+                    removeTemplete.put(PERMISSION, "codeviewer");
+                    sonarClient.removeGroupFromTemplate(removeTemplete).execute();
+                    removeTemplete.put(PERMISSION, "user");
+                    sonarClient.removeGroupFromTemplate(removeTemplete).execute();
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage());
+                }
             }
         }
 
