@@ -197,8 +197,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         if (!userES.isEmpty()) {
             params.put("user", userES.get(0).getRealName());
         }
+
         params.put("env", devopsEnvironmentE.getName());
-        params.put("object", objectType);
+        params.put("object", getObjectType(objectType));
         params.put("objectName", objectCode);
         params.put("captcha", Captcha);
         params.put("timeout", "10");
@@ -309,6 +310,35 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 break;
         }
         return code;
+    }
+
+
+    private String getObjectType(String type) {
+        String result = "";
+        ObjectType objectType = ObjectType.forValue(type);
+        switch (objectType) {
+            case INSTANCE:
+                result = "实例";
+                break;
+            case SERVICE:
+                result = "网络";
+                break;
+            case INGRESS:
+                result = "域名";
+                break;
+            case CERTIFICATE:
+                result = "证书";
+                break;
+            case CONFIGMAP:
+                result = "配置映射";
+                break;
+            case SECRET:
+                result = "密钥";
+                break;
+            default:
+                break;
+        }
+        return result;
     }
 
     private void updateUserRel(DevopsNotificationDTO notificationDTO) {
