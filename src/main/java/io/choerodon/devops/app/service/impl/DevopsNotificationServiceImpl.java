@@ -355,7 +355,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 result = "配置映射";
                 break;
             case SECRET:
-                result = "密钥";
+                result = "密文";
                 break;
             default:
                 break;
