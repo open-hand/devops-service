@@ -54,14 +54,20 @@ public class SonarClientFallback implements SonarClient {
     }
 
     @Override
-    public void updateVisibility(Map<String, String> maps) {}
+    public Call<Void> updateVisibility(Map<String, String> maps) {
+        return null;
+    }
 
     @Override
-    public void updateDefaultVisibility(Map<String, String> maps){}
+    public Call<Void> updateDefaultVisibility(Map<String, String> maps){
+        return null;
+    }
 
     @Override
-    public void addGroupToTemplate(Map<String, String> maps) {}
+    public Call<Void> addGroupToTemplate(Map<String, String> maps) {
+        return null;
+    }
 
     @Override
-    public void removeGroupFromTemplate(Map<String, String> maps) {}
+    public Call<Void> removeGroupFromTemplate(Map<String, String> maps) {return null;}
 }

@@ -41,14 +41,14 @@ public interface SonarClient {
     Call<SonarTables> getSonarTables(@QueryMap Map<String, String> maps);
 
     @POST("api/projects/update_visibility")
-    void updateVisibility(@QueryMap Map<String, String> maps);
+    Call<Void> updateVisibility(@QueryMap Map<String, String> maps);
 
     @POST("api/projects/update_default_visibility")
-    void updateDefaultVisibility(@QueryMap Map<String, String> maps);
+    Call<Void> updateDefaultVisibility(@QueryMap Map<String, String> maps);
 
     @POST("api/permissions/add_group_to_template")
-    void addGroupToTemplate(@QueryMap Map<String, String> maps);
+    Call<Void> addGroupToTemplate(@QueryMap Map<String, String> maps);
 
     @POST("api/permissions/remove_group_from_template")
-    void removeGroupFromTemplate(@QueryMap Map<String, String> maps);
+    Call<Void> removeGroupFromTemplate(@QueryMap Map<String, String> maps);
 }
