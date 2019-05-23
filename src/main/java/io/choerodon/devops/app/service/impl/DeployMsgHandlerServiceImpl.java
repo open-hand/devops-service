@@ -10,6 +10,26 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.app.service.ClusterNodeInfoService;
+import io.choerodon.devops.app.service.DeployMsgHandlerService;
+import io.choerodon.devops.app.service.DevopsConfigMapService;
+import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.factory.DevopsInstanceResourceFactory;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.*;
+import io.choerodon.devops.infra.common.util.*;
+import io.choerodon.devops.infra.common.util.enums.*;
+import io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO;
+import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
+import io.choerodon.devops.infra.mapper.ApplicationMarketMapper;
+import io.choerodon.websocket.Msg;
+import io.choerodon.websocket.process.SocketMsgDispatcher;
+import io.choerodon.websocket.tool.KeyParseTool;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -20,106 +40,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.AgentNodeInfoDTO;
-import io.choerodon.devops.api.dto.DevopsConfigMapDTO;
-import io.choerodon.devops.api.dto.GitConfigDTO;
-import io.choerodon.devops.api.dto.JobLogDTO;
-import io.choerodon.devops.api.dto.PodUpdateDTO;
-import io.choerodon.devops.api.dto.TestReleaseStatus;
-import io.choerodon.devops.app.service.ClusterNodeInfoService;
-import io.choerodon.devops.app.service.DeployMsgHandlerService;
-import io.choerodon.devops.app.service.DevopsConfigMapService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
-import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.CertificationE;
-import io.choerodon.devops.domain.application.entity.DevopsClusterE;
-import io.choerodon.devops.domain.application.entity.DevopsClusterProPermissionE;
-import io.choerodon.devops.domain.application.entity.DevopsCommandEventE;
-import io.choerodon.devops.domain.application.entity.DevopsConfigMapE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandLogE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommitE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileErrorE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvResourceDetailE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvResourceE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.DevopsIngressE;
-import io.choerodon.devops.domain.application.entity.DevopsRegistrySecretE;
-import io.choerodon.devops.domain.application.entity.DevopsSecretE;
-import io.choerodon.devops.domain.application.entity.DevopsServiceAppInstanceE;
-import io.choerodon.devops.domain.application.entity.DevopsServiceE;
-import io.choerodon.devops.domain.application.entity.PortMapE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.factory.DevopsInstanceResourceFactory;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.CertificationRepository;
-import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
-import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
-import io.choerodon.devops.domain.application.repository.DevopsCommandEventRepository;
-import io.choerodon.devops.domain.application.repository.DevopsConfigMapRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandLogRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommitRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileErrorRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvPodContainerRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvResourceDetailRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvResourceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
-import io.choerodon.devops.domain.application.repository.DevopsRegistrySecretRepository;
-import io.choerodon.devops.domain.application.repository.DevopsSecretRepository;
-import io.choerodon.devops.domain.application.repository.DevopsServiceInstanceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.valueobject.Command;
-import io.choerodon.devops.domain.application.valueobject.Event;
-import io.choerodon.devops.domain.application.valueobject.GitOpsSync;
-import io.choerodon.devops.domain.application.valueobject.Job;
-import io.choerodon.devops.domain.application.valueobject.Payload;
-import io.choerodon.devops.domain.application.valueobject.ReleasePayload;
-import io.choerodon.devops.domain.application.valueobject.Resource;
-import io.choerodon.devops.domain.application.valueobject.ResourceCommit;
-import io.choerodon.devops.domain.application.valueobject.ResourceSyncPayload;
-import io.choerodon.devops.domain.application.valueobject.UpgradeCluster;
-import io.choerodon.devops.infra.common.util.Base64Util;
-import io.choerodon.devops.infra.common.util.CertificateUtil;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GitUtil;
-import io.choerodon.devops.infra.common.util.K8sUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
-import io.choerodon.devops.infra.common.util.enums.CommandStatus;
-import io.choerodon.devops.infra.common.util.enums.CommandType;
-import io.choerodon.devops.infra.common.util.enums.HelmType;
-import io.choerodon.devops.infra.common.util.enums.IngressStatus;
-import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
-import io.choerodon.devops.infra.common.util.enums.ObjectType;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
-import io.choerodon.devops.infra.common.util.enums.SecretStatus;
-import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
-import io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO;
-import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
-import io.choerodon.devops.infra.mapper.ApplicationMarketMapper;
-import io.choerodon.websocket.Msg;
-import io.choerodon.websocket.process.SocketMsgDispatcher;
-import io.choerodon.websocket.tool.KeyParseTool;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -1568,7 +1488,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (status.equals("Running")) {
             PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
             Optional<V1Container> container = v1Pod.getSpec().getContainers().stream().filter(v1Container -> v1Container.getName().contains("automation-test")).findFirst();
-            if(container.isPresent()) {
+            if (container.isPresent()) {
                 podUpdateDTO.setConName(container.get().getName());
             }
             podUpdateDTO.setPodName(v1Pod.getMetadata().getName());
@@ -1812,7 +1732,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void deleteCommandById(DevopsEnvCommandE commandE) {
-        commandValueRepository.deleteById(commandE.getDevopsEnvCommandValueE().getId());
+        if (commandE.getDevopsEnvCommandValueE() != null) {
+            commandValueRepository.deleteById(commandE.getDevopsEnvCommandValueE().getId());
+        }
         commandLogRepository.deleteByCommandId(commandE.getId());
         devopsCommandEventRepository.deleteByCommandId(commandE.getId());
         devopsEnvCommandRepository.deleteById(commandE.getId());
