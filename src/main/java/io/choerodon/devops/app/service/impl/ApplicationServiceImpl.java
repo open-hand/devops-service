@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -61,6 +62,7 @@ import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.api.dto.sonar.Bug;
 import io.choerodon.devops.api.dto.sonar.Facet;
 import io.choerodon.devops.api.dto.sonar.Quality;
+import io.choerodon.devops.api.dto.sonar.SonarAnalyses;
 import io.choerodon.devops.api.dto.sonar.SonarComponent;
 import io.choerodon.devops.api.dto.sonar.SonarHistroy;
 import io.choerodon.devops.api.dto.sonar.SonarTables;
@@ -139,6 +141,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String ISSUE = "issue";
     private static final String COVERAGE = "coverage";
     private static final String CHART_DIR = "charts";
+    private static final String SONAR = "sonar";
     private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
     private static final IOFileFilter filenameFilter = new IOFileFilter() {
         @Override
@@ -212,6 +215,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Saga(code = "devops-create-application",
             description = "Devops创建应用", inputSchema = "{}")
+    @Transactional
     public ApplicationRepDTO create(Long projectId, ApplicationReqDTO applicationReqDTO) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationReqDTO);
@@ -1317,7 +1321,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationE applicationE = applicationRepository.query(appId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        SonarClient sonarClient = RetrofitHandler.getSonarClient();
+        SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
         String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         try {
@@ -1338,9 +1342,19 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (sonarComponentResponse.body() == null) {
                 return new SonarContentsDTO();
             }
-            sonarContentsDTO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
-            sonarContentsDTO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
-            sonarContentsDTO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
+            if (sonarComponentResponse.body().getPeriods() != null && sonarComponentResponse.body().getPeriods().size() > 0) {
+                sonarContentsDTO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
+                sonarContentsDTO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
+                sonarContentsDTO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
+            } else {
+                Map<String, String> analyseMap = new HashMap<>();
+                analyseMap.put("project", key);
+                analyseMap.put("ps", "3");
+                Response<SonarAnalyses> sonarAnalyses = sonarClient.getAnalyses(analyseMap).execute();
+                if (sonarAnalyses.raw().code() == 200 && sonarAnalyses.body().getAnalyses() != null && sonarAnalyses.body().getAnalyses().size() > 0) {
+                    sonarContentsDTO.setDate(sonarAnalyses.body().getAnalyses().get(0).getDate());
+                }
+            }
             sonarComponentResponse.body().getComponent().getMeasures().stream().forEach(measure -> {
                 SonarQubeType sonarQubeType = SonarQubeType.forValue(String.valueOf(measure.getMetric()));
                 switch (sonarQubeType) {
@@ -1597,7 +1611,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationE applicationE = applicationRepository.query(appId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        SonarClient sonarClient = RetrofitHandler.getSonarClient();
+        SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
         String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         Map<String, String> queryMap = new HashMap<>();

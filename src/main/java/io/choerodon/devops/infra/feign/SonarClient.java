@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.feign;
 import java.util.Map;
 
 import io.choerodon.devops.api.dto.sonar.Bug;
+import io.choerodon.devops.api.dto.sonar.SonarAnalyses;
 import io.choerodon.devops.api.dto.sonar.SonarComponent;
 import io.choerodon.devops.api.dto.sonar.SonarTables;
 import io.choerodon.devops.api.dto.sonar.Vulnerability;
@@ -20,6 +21,9 @@ public interface SonarClient {
 
     @GET("api/measures/component")
     Call<SonarComponent> getSonarComponet(@QueryMap Map<String, String> maps);
+
+    @GET("api/project_analyses/search")
+    Call<SonarAnalyses> getAnalyses(@QueryMap Map<String, String> maps);
 
     @GET("api/issues/search")
     Call<Bug> getBugs(@QueryMap Map<String, String> maps);
@@ -41,4 +45,10 @@ public interface SonarClient {
 
     @POST("api/projects/update_default_visibility")
     void updateDefaultVisibility(@QueryMap Map<String, String> maps);
+
+    @POST("api/permissions/add_group_to_template")
+    void addGroupToTemplate(@QueryMap Map<String, String> maps);
+
+    @POST("api/permissions/remove_group_from_template")
+    void removeGroupFromTemplate(@QueryMap Map<String, String> maps);
 }
