@@ -221,7 +221,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                         }).collect(Collectors.toList());
 
                 pipelineList.forEach(pipelineId -> {
-                    if (pipelineService.checkDeploy(null,pipelineId).equals(PipelineCheckDeploy.SUCCESS.toValue())) {
+                    if (pipelineService.checkDeploy(null,pipelineId).getVersions()) {
                         LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertApplicationVersionE.getId(), insertApplicationVersionE.getVersion(), pipelineId);
                         pipelineService.executeAppDeploy(pipelineId);
                     }
