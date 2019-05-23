@@ -674,8 +674,8 @@ public class PipelineServiceImpl implements PipelineService {
             return checkDeployDTO;
         }
         //检测环境权限
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
         if (projectId != null) {
+            ProjectE projectE = iamRepository.queryIamProject(projectId);
             if(!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
                 //判断当前用户是否是项目所有者
                 List<Long> envIds = devopsEnvUserPermissionRepository
