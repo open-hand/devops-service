@@ -407,20 +407,26 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private void getSonarUrl(ProjectE projectE, Organization organization, ApplicationE t) {
         if (!sonarqubeUrl.equals("")) {
-            Integer result;
+            SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl,"sonar",userName,password);
+            String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), t.getCode());
+
+            Map<String, String> queryContentMap = new HashMap<>();
+            queryContentMap.put("additionalFields", "metrics,periods");
+            queryContentMap.put("componentKey", key);
+            queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,new_bugs,new_vulnerabilities,sqale_index,code_smells,new_technical_debt,new_code_smells,coverage,tests,new_coverage,duplicated_lines_density,duplicated_blocks,new_duplicated_lines_density,ncloc,ncloc_language_distribution");
+            Response<SonarComponent> sonarComponentResponse = null;
             try {
-                result = HttpClientUtil.getSonar(sonarqubeUrl.endsWith("/")
-                        ? sonarqubeUrl
-                        : String
-                        .format("%s/api/project_links/search?projectKey=%s-%s:%s", sonarqubeUrl, organization.getCode(),
-                                projectE.getCode(), t.getCode()));
-                if (result.equals(HttpStatus.OK.value())) {
-                    t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"
-                            + "dashboard?id=" + organization.getCode() + "-" + projectE.getCode() + ":" + t.getCode());
-                }
-            } catch (Exception e) {
+                sonarComponentResponse = sonarClient.getSonarComponet(queryContentMap).execute();
+            } catch (IOException e) {
                 t.initSonarUrl(null);
             }
+            if (sonarComponentResponse.raw().code() != 200) {
+                t.initSonarUrl(null);
+            }else {
+                t.initSonarUrl(sonarqubeUrl);
+            }
+        }else {
+            t.initSonarUrl(null);
         }
     }
 
@@ -1713,12 +1719,11 @@ public class ApplicationServiceImpl implements ApplicationService {
                             unCoverLines.add(sonarHistroy.getValue());
                         });
                     }
-                    for (int i = 0; i < linesToCover.size(); i++) {
-                        coverLines.add(TypeUtil.objToString(TypeUtil.objToLong(linesToCover.get(i)) - TypeUtil.objToLong(unCoverLines.get(i))));
-                    }
-                    sonarTableDTO.setCoverLines(coverLines);
                 });
-
+                for (int i = 0; i < linesToCover.size(); i++) {
+                    coverLines.add(TypeUtil.objToString(TypeUtil.objToLong(linesToCover.get(i)) - TypeUtil.objToLong(unCoverLines.get(i))));
+                }
+                sonarTableDTO.setCoverLines(coverLines);
             } catch (IOException e) {
                 throw new CommonException(e);
             }
