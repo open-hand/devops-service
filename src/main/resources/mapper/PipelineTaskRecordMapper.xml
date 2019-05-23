@@ -19,6 +19,7 @@
         dptr.task_id,
         dptr.instance_name,
         dptr.task_type,
+        dptr.audit_user,
         (
         CASE
         WHEN dptr.instance_id IS NOT NULL

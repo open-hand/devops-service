@@ -174,11 +174,15 @@ public class PipelineServiceImpl implements PipelineService {
             t.setCreateUserName(userE.getLoginName());
             t.setCreateUserUrl(userE.getImageUrl());
             t.setCreateUserRealName(userE.getRealName());
-            t.setExecute(pipelineUserRelRepository.listByOptions(t.getId(), null, null)
-                    .stream()
-                    .map(PipelineUserRelE::getUserId)
-                    .collect(Collectors.toList())
-                    .contains(DetailsHelper.getUserDetails().getUserId()));
+            if (t.getIsEnabled() == 1) {
+                t.setExecute(pipelineUserRelRepository.listByOptions(t.getId(), null, null)
+                        .stream()
+                        .map(PipelineUserRelE::getUserId)
+                        .collect(Collectors.toList())
+                        .contains(DetailsHelper.getUserDetails().getUserId()));
+            }else{
+                t.setExecute(false);
+            }
             //运行中的流水线不可编辑
             List<PipelineRecordE> list = pipelineRecordRepository.queryByPipelineId(t.getId()).stream()
                     .filter(recordE -> recordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue()) || recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()))
@@ -235,7 +239,7 @@ public class PipelineServiceImpl implements PipelineService {
                     if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.STOP.toValue())) {
                         List<PipelineTaskRecordE> recordEList = taskRecordRepository.queryByStageRecordId(t.getStageDTOList().get(i).getId(), null);
                         Optional<PipelineTaskRecordE> optional = recordEList.stream().filter(recordE -> recordE.getStatus().equals(WorkFlowStatus.STOP.toValue())).findFirst();
-                        if(optional.isPresent()) {
+                        if (optional.isPresent()) {
                             t.setType(TASK);
                             t.setTaskRecordId(optional.get().getId());
                         }
@@ -1062,18 +1066,22 @@ public class PipelineServiceImpl implements PipelineService {
         if (!recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
             throw new CommonException("error.pipeline.record.status");
         }
-        stageRecordRepository.queryByPipeRecordId(recordId, null).forEach(stageRecordE -> {
+        List<PipelineStageRecordE> stageRecordES = stageRecordRepository.queryByPipeRecordId(recordId, null);
+
+        for (PipelineStageRecordE stageRecordE : stageRecordES) {
             if (stageRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()) || stageRecordE.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                 updateStatus(recordId, stageRecordE.getId(), WorkFlowStatus.STOP.toValue());
-                taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null).forEach(taskRecordE -> {
+                List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null);
+                for (PipelineTaskRecordE taskRecordE : taskRecordEList) {
                     if (taskRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
                         taskRecordE.setStatus(WorkFlowStatus.STOP.toValue());
                         taskRecordRepository.createOrUpdate(taskRecordE);
-                        return;
+                        break;
                     }
-                });
+                }
+                break;
             }
-        });
+        }
     }
 
     private PipelineTaskE getFirstTask(Long pipelineId) {
