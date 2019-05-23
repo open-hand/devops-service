@@ -162,7 +162,7 @@ class DevPipelineStore {
                 CiPipelineStore.loadPipelines(true, this.selectedApp);
                 break;
               case 'quality':
-                // CodeQualityStore.loadData(this.selectedApp);
+                CodeQualityStore.loadData(projectId, this.selectedApp);
                 break;
               case 'all':
                 DevConsoleStore.loadBranchList(projectId, this.selectedApp);

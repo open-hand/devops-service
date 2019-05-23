@@ -1609,6 +1609,7 @@ const zhCN = {
   'certificate.permission.tip':
     '此操作用于为此证书在该组织下配置公开范围。一般默认选择为组织下所有项目，即该证书可在所有项目下创建证书时使用；若选择组织下特定项目，则只有在被勾选项目下创建证书时才有权限选择此证书。',
   'certificate.public': '证书公开范围',
+  'ctf.delete.tooltip': '确定删除该证书吗？',
   'ctf.sidebar.edit': '编辑证书',
 
   // 组件设置
