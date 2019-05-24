@@ -264,7 +264,7 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             }
 
-            if(t.getIndex()) {
+            if (t.getIndex()) {
                 List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(t.getPipelineId());
                 if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
                     List<Long> envIds = devopsEnvUserPermissionRepository
@@ -926,7 +926,7 @@ public class PipelineServiceImpl implements PipelineService {
                                     userDTOS.add(userDTO);
                                 });
                                 //获取会签未审核人员
-                                if (taskRecordDTO.getIsCountersigned() == 1) {
+                                if (userIds.size() == 0 || taskRecordDTO.getIsCountersigned() == 1) {
                                     List<Long> unExecuteUserIds = pipelineUserRelRepository.listByOptions(null, null, taskRecordDTO.getTaskId())
                                             .stream().map(PipelineUserRelE::getUserId)
                                             .filter(u -> !userIds.contains(u)).collect(Collectors.toList());
@@ -1001,10 +1001,14 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRecordE.setBusinessKey(uuid);
         pipelineRecordRepository.update(pipelineRecordE);
         stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null).forEach(t -> {
-            t.setStatus(null);
+            t.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
             stageRecordRepository.update(t);
             taskRecordRepository.queryByStageRecordId(t.getId(), null).forEach(taskRecordE -> {
-                taskRecordRepository.delete(taskRecordE.getId());
+                taskRecordE.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
+                taskRecordRepository.createOrUpdate(taskRecordE);
+                if (taskRecordE.getTaskType().equals(MANUAL)) {
+                    pipelineUserRelRecordRepository.deleteByIds(pipelineRecordId, t.getId(), taskRecordE.getId());
+                }
             });
         });
         //更新第一阶段
