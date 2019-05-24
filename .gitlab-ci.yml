@@ -21,8 +21,8 @@ build-combine:
   stage: build
   script:
     - update_pom_version
-    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent  test -Dmaven.test.failure.ignore=true -DskipTests=false -U
-    - mvn --batch-mode  verify sonar:sonar  -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
+    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent  test -Dmaven.test.failure.ignore=true -DskipTests=true -U
+#    - mvn --batch-mode  verify sonar:sonar  -Dsonar.host.url=$SONAR_URL -Dsonar.login=$SONAR_LOGIN -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${GROUP_NAME}:${PROJECT_NAME}
     - mvn package spring-boot:repackage
     - mv target/app.jar docker
     - npm install --registry https://nexus.choerodon.com.cn/repository/choerodon-npm/ --sass-binary-site=http://npm.taobao.org/mirrors/node-sass
