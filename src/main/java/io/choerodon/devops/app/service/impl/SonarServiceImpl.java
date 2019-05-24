@@ -19,7 +19,7 @@ public class SonarServiceImpl implements SonarService {
     @Value("${services.sonarqube.password:}")
     private String password;
 
-    @Value("${services.sonar.url:}")
+    @Value("${services.sonarqube.url:}")
     private String url;
 
     @Override
