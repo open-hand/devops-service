@@ -138,7 +138,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public Page<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
                                          String[] params) {
-        List<ProjectE> projects = iamRepository
+        Page<ProjectE> projects = iamRepository
                 .queryProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params);
         Page<ProjectDTO> pageProjectDTOS = new Page<>();
         List<ProjectDTO> projectDTOS = new ArrayList<>();
@@ -156,6 +156,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 projectDTOS.add(projectDTO);
             });
         }
+        BeanUtils.copyProperties(projects, pageProjectDTOS);
         pageProjectDTOS.setContent(projectDTOS);
         return pageProjectDTOS;
     }

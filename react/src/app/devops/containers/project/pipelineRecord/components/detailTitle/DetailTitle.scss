@@ -46,6 +46,7 @@
       color: $stop;
     }
 
+    &_null,
     &_unexecuted {
       color: $unexecuted;
     }
@@ -85,6 +86,7 @@
       color: $stop;
     }
 
+    &_null,
     &_unexecuted {
       color: $unexecuted;
     }
@@ -173,6 +175,7 @@
     }
   }
 
+  &_null,
   &_unexecuted {
     color: $unexecuted;
     background: $bk_unexecuted;
@@ -214,6 +217,7 @@
       color: $stop;
     }
 
+    &_null,
     &_unexecuted {
       color: $unexecuted;
     }
