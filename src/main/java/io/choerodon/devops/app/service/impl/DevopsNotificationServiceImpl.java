@@ -72,14 +72,14 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Override
     public DevopsNotificationDTO create(Long projectId, DevopsNotificationDTO notificationDTO) {
         DevopsNotificationE notificationE = ConvertHelper.convert(notificationDTO, DevopsNotificationE.class);
-        notificationE.setProjectId(projectId);
-        notificationE = notificationRepository.createOrUpdate(notificationE);
         Set<String> resources = check(projectId, notificationDTO.getEnvId());
         notificationDTO.getNotifyTriggerEvent().forEach(event -> {
             if (resources.contains(event)) {
                 throw new CommonException("error.trigger.event.exist");
             }
         });
+        notificationE.setProjectId(projectId);
+        notificationE = notificationRepository.createOrUpdate(notificationE);
         List<Long> userRelIds = notificationDTO.getUserRelIds();
         if (userRelIds != null && !userRelIds.isEmpty()) {
             Long notificationId = notificationE.getId();
