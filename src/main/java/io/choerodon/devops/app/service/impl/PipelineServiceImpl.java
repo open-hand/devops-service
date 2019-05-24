@@ -163,6 +163,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public Page<PipelineDTO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
         Page<PipelineDTO> pipelineDTOS = ConvertPageHelper.convertPage(pipelineRepository.listByOptions(projectId, pageRequest, params), PipelineDTO.class);
         Page<PipelineDTO> page = new Page<>();
         BeanUtils.copyProperties(pipelineDTOS, page);
@@ -193,11 +194,16 @@ public class PipelineServiceImpl implements PipelineService {
             } else {
                 //是否拥有环境权限.没有环境权限不可编辑
                 List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(t.getId());
-                List<Long> envIds = environmentService.listByProjectIdAndActive(projectId, true).stream().map(DevopsEnviromentRepDTO::getId).collect(Collectors.toList());
-                for (PipelineAppDeployE appDeployE : appDeployEList) {
-                    if (!envIds.contains(appDeployE.getEnvId())) {
-                        t.setEdit(false);
-                        break;
+                if(!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+                    List<Long> envIds = devopsEnvUserPermissionRepository
+                            .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                            .filter(DevopsEnvUserPermissionE::getPermitted)
+                            .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+                    for (PipelineAppDeployE appDeployE : appDeployEList) {
+                        if (!envIds.contains(appDeployE.getEnvId())) {
+                            t.setEdit(false);
+                            break;
+                        }
                     }
                 }
             }
