@@ -644,10 +644,7 @@ class Instances extends Component {
         </div>
       ))
     ) : (
-      <div className="c7n-deploy-single_card">
-        <div className="c7n-deploy-square">
-          <div>Application</div>
-        </div>
+      <div className="c7n-deploy-single-noApp">
         <FormattedMessage id="ist.noApp" />
       </div>
     );
