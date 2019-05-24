@@ -181,7 +181,7 @@ public class PipelineServiceImpl implements PipelineService {
                         .map(PipelineUserRelE::getUserId)
                         .collect(Collectors.toList())
                         .contains(DetailsHelper.getUserDetails().getUserId()));
-            }else{
+            } else {
                 t.setExecute(false);
             }
             //运行中的流水线不可编辑
@@ -194,7 +194,7 @@ public class PipelineServiceImpl implements PipelineService {
             } else {
                 //是否拥有环境权限.没有环境权限不可编辑
                 List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(t.getId());
-                if(!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+                if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
                     List<Long> envIds = devopsEnvUserPermissionRepository
                             .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                             .filter(DevopsEnvUserPermissionE::getPermitted)
@@ -213,6 +213,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public Page<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
         Page<PipelineRecordDTO> pageRecordDTOS = ConvertPageHelper.convertPage(
                 pipelineRecordRepository.listByOptions(projectId, pipelineId, pageRequest, params), PipelineRecordDTO.class);
         List<PipelineRecordDTO> pipelineRecordDTOS = pageRecordDTOS.getContent().stream().map(t -> {
@@ -260,6 +261,20 @@ public class PipelineServiceImpl implements PipelineService {
                     t.setIndex(true);
                 } else {
                     t.setIndex(checkTriggerPermission(t.getPipelineId(), null));
+                }
+            }
+
+            List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(t.getPipelineId());
+            if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+                List<Long> envIds = devopsEnvUserPermissionRepository
+                        .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                        .filter(DevopsEnvUserPermissionE::getPermitted)
+                        .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+                for (PipelineAppDeployE appDeployE : appDeployEList) {
+                    if (!envIds.contains(appDeployE.getEnvId())) {
+                        t.setIndex(false);
+                        break;
+                    }
                 }
             }
             return t;
@@ -686,7 +701,7 @@ public class PipelineServiceImpl implements PipelineService {
         //检测环境权限
         if (projectId != null) {
             ProjectE projectE = iamRepository.queryIamProject(projectId);
-            if(!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+            if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
                 //判断当前用户是否是项目所有者
                 List<Long> envIds = devopsEnvUserPermissionRepository
                         .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
@@ -970,7 +985,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean retry(Long projectId, Long pipelineRecordId) {
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
-        if (pipelineRecordE.getEdited() == null || pipelineRecordE.getEdited()) {
+        if (pipelineRecordE.getEdited() != null && pipelineRecordE.getEdited()) {
             return false;
         }
         String bpmDefinition = pipelineRecordE.getBpmDefinition();
