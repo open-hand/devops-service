@@ -740,7 +740,7 @@ public class ApplicationInstanceController {
      * @return ApplicationInstanceDTO
      */
     @ApiOperation(value = "操作pod的数量")
-    @Permission(
+    @Permission(type= io.choerodon.base.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @PutMapping("/operate_pod_count")

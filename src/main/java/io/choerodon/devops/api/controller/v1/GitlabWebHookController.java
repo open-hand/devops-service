@@ -48,9 +48,7 @@ public class GitlabWebHookController {
      * @param testReleases
      */
     @ApiOperation(value = "查询自动化测试应用实例状态")
-    @Permission(
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(permissionPublic = true)
     @PostMapping("/get_test_status")
     public void getTestStatus(
             @ApiParam(value = "releaseName", required = true)
