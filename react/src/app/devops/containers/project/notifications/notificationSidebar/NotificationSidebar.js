@@ -357,6 +357,7 @@ export default class NotificationSidebar extends Component {
                   <Select
                     mode="multiple"
                     label={formatMessage({ id: "notification.target.specifier" })}
+                    className="c7n-notifications-select-userRelIds"
                     optionFilterProp="children"
                     allowClear
                     filter
