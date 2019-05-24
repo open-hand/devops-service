@@ -1767,7 +1767,7 @@ const zhCN = {
   'pipeline.execute.pass': '点击确认后开始执行该流水线。',
   'pipeline.execute.failed': '该流水线不满足执行条件，无法触发执行。',
   'pipeline.execute.no.permission':
-    '因流水线中包含环境【{envName}】相关的部署任务，联系项目所有者添此环境的权限后，才能执行该条流水线。',
+    '因流水线中包含环境【{envName}】相关的部署任务，联系项目所有者添加环境权限后，才能执行该条流水线。',
   'pipeline.stop.title': '终止流水线“{name}”',
   'pipeline.stop.des': '手动终止后，当前执行中的流程会被强制停止，确定要终止？',
   'pipeline.edit.error': '出错了',
