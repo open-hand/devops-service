@@ -420,14 +420,18 @@ public class ApplicationServiceImpl implements ApplicationService {
                 sonarComponentResponse = sonarClient.getSonarComponet(queryContentMap).execute();
             } catch (IOException e) {
                 t.initSonarUrl(null);
+                return;
             }
             if (sonarComponentResponse.raw().code() != 200) {
                 t.initSonarUrl(null);
+                return;
             }else {
                 t.initSonarUrl(sonarqubeUrl);
+                return;
             }
         }else {
             t.initSonarUrl(null);
+            return;
         }
     }
 
