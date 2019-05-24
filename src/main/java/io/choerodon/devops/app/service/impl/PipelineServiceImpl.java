@@ -264,16 +264,18 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             }
 
-            List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(t.getPipelineId());
-            if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
-                List<Long> envIds = devopsEnvUserPermissionRepository
-                        .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
-                        .filter(DevopsEnvUserPermissionE::getPermitted)
-                        .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
-                for (PipelineAppDeployE appDeployE : appDeployEList) {
-                    if (!envIds.contains(appDeployE.getEnvId())) {
-                        t.setIndex(false);
-                        break;
+            if(t.getIndex()) {
+                List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(t.getPipelineId());
+                if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+                    List<Long> envIds = devopsEnvUserPermissionRepository
+                            .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                            .filter(DevopsEnvUserPermissionE::getPermitted)
+                            .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+                    for (PipelineAppDeployE appDeployE : appDeployEList) {
+                        if (!envIds.contains(appDeployE.getEnvId())) {
+                            t.setIndex(false);
+                            break;
+                        }
                     }
                 }
             }
