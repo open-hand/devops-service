@@ -105,7 +105,7 @@ public class IamRepositoryImpl implements IamRepository {
             Page<ProjectE> projectES = new Page<>();
             projectES.setContent(ConvertHelper.convertList(pageInfoResponseEntity.getBody().getList(), ProjectE.class));
             projectES.setSize(size);
-            projectES.setNumber(pageInfoResponseEntity.getBody().getEndRow());
+            projectES.setNumber(pageInfoResponseEntity.getBody().getPageNum());
             projectES.setTotalElements(pageInfoResponseEntity.getBody().getTotal());
             return projectES;
         } catch (FeignException e) {
