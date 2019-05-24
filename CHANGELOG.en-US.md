@@ -295,3 +295,29 @@ Fixed
 
 Removed
 - Removed the auto-deployment page from version 0.15.0 and built it into the pipeline to add the task section
+
+
+
+[0.17.0] - 2019-05-20
+Added
+- Added a code quality page in the development pipeline module to support viewing the inspection results and specific details of the application in SonarQube
+- Added code quality report in DevOps reports to view changes in bugs, security vulnerabilities, code smells, duplication and coverage in application code quality
+- Added DevOps-notification setting function in the element-setting module to support configuring notification mode (mail, station letter or SMS) and notification object for deletion events in various environments.
+- After the notification is successfully created in the DevOps-notification settings, when deleting resources such as instances in the environment, you need to enter the verification code obtained by the notification to perform secondary confirmation of the deletion operation.
+- Added the entry for the setting project Harbor repository type in the element-setting page in the project-setting module.
+- ConfigMap in the deployment pipeline module was allowed to create and edit as YMAL.
+
+
+Fixed
+- Fixed an issue where apps imported into the app market could be selected in the development console
+- Fixed a problem with duplicate staff queries when creating a pipeline
+- Fixed filtering of user selectors in the pipeline
+- Fixed an issue where some applications failed to get the chart package when the app was exported.
+- Fixed an issue where gitops executed saga transaction instances occasionally stuck
+- Fixed an issue where the update application failed in the saga transaction logic that created the application.
+- Fixed an issue where the annotation of objects in gitops was not retained
+Changed
+- Optimized display of unexecuted tasks in the pipeline details
+- Optimized jumps for instances in deployment tasks within the pipeline details
+- Optimized UI for the pipeline details interface
+- Optimized permissions for project members with no environment permissions in the pipeline
