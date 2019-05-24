@@ -165,6 +165,7 @@ public class ApplicationController {
      *
      * @param projectId   项目id
      * @param isActive    项目是否启用
+     * @param appMarket  应用市场导入
      * @param pageRequest 分页参数
      * @param params      参数
      * @return Page
@@ -181,6 +182,8 @@ public class ApplicationController {
             @RequestParam(value = "active", required = false) Boolean isActive,
             @ApiParam(value = "应用是否存在版本")
             @RequestParam(value = "has_version", required = false) Boolean hasVersion,
+            @ApiParam(value = "应用是否存在版本")
+            @RequestParam(value = "app_market", required = false) Boolean appMarket,
             @ApiParam(value = "应用类型")
             @RequestParam(value = "type", required = false) String type,
             @ApiParam(value = "是否分页")
@@ -190,7 +193,7 @@ public class ApplicationController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationService.listByOptions(projectId, isActive, hasVersion, type, doPage, pageRequest, params))
+                applicationService.listByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appTemplate.get"));
     }

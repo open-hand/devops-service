@@ -31,7 +31,7 @@ public interface ApplicationRepository {
 
     ApplicationE query(Long applicationId);
 
-    Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion, String type, Boolean doPage,
+    Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,Boolean appMarket, String type, Boolean doPage,
                                      PageRequest pageRequest, String params);
 
     Page<ApplicationE> listCodeRepository(Long projectId, PageRequest pageRequest, String params, Boolean isProjectId,

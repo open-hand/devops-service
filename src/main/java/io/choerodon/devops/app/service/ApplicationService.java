@@ -68,6 +68,7 @@ public interface ApplicationService {
      *
      * @param projectId   项目id
      * @param isActive    是否启用
+     * @param appMarket  应用市场导入
      * @param hasVersion  是否存在版本
      * @param pageRequest 分页参数
      * @param params      参数
@@ -76,6 +77,7 @@ public interface ApplicationService {
     Page<ApplicationRepDTO> listByOptions(Long projectId,
                                           Boolean isActive,
                                           Boolean hasVersion,
+                                          Boolean appMarket,
                                           String type,
                                           Boolean doPage,
                                           PageRequest pageRequest,

@@ -110,19 +110,19 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
+    public Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,Boolean appMarket,
                                             String type, Boolean doPage, PageRequest pageRequest, String params) {
         Page<ApplicationDO> applicationES = new Page<>();
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         //是否需要分页
         if (doPage != null && !doPage) {
-            applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
+            applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, appMarket, type,
                     (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
                     mapParams.get(TypeUtil.PARAM).toString(), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         } else {
             applicationES = PageHelper
-                    .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, type,
+                    .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, appMarket, type,
                             (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
                             (String) mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         }

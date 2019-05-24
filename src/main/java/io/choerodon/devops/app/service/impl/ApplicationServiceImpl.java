@@ -383,10 +383,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Page<ApplicationRepDTO> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
+                                                 Boolean appMarket,
                                                  String type, Boolean doPage,
                                                  PageRequest pageRequest, String params) {
         Page<ApplicationE> applicationES =
-                applicationRepository.listByOptions(projectId, isActive, hasVersion, type, doPage, pageRequest, params);
+                applicationRepository.listByOptions(projectId, isActive, hasVersion,appMarket, type, doPage, pageRequest, params);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
