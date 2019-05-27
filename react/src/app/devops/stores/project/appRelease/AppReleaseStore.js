@@ -88,6 +88,7 @@ class AppReleaseStore {
                 page = 1,
                 size,
                 sorter = {field: 'id', order: 'desc'},
+
                 postData = {
                   searchParam: {},
                   param: '',
@@ -105,6 +106,7 @@ class AppReleaseStore {
     const url = `/devops/v1/projects/${projectId}/${
         key === '1' ? 'apps/list_unpublish' : 'apps_market/list'
         }?page=${page}&size=${_size}&sort=${sorter.field},${sorter.order}`;
+
     return axios.post(url).then(data => {
       const res = handleProptError(data);
       if (res) {
@@ -116,7 +118,9 @@ class AppReleaseStore {
   };
 
   handleData = (data, type) => {
+
     const {pageNum, pageSize, total, list} = data;
+
     if (type === '1') {
       this.setUnReleaseData(list);
       this.setUnPageInfo({pageNum, pageSize, total});
