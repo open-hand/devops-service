@@ -97,7 +97,7 @@ public class PipelineController {
      * @param pipelineId 流水线Id
      * @return PipelineAppDeployDTO
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除流水线")
     @DeleteMapping(value = "/{pipeline_id}")
     public ResponseEntity delete(
@@ -117,7 +117,7 @@ public class PipelineController {
      * @param isEnabled  是否启用
      * @return PipelineDTO
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "启/停用流水线")
     @PutMapping(value = "/{pipeline_id}")
     public ResponseEntity<PipelineDTO> updateIsEnabled(

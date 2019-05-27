@@ -30,10 +30,19 @@ public class PipelineStageRecordDO extends AuditDomain {
     private Long projectId;
     private Long stageId;
     private String stageName;
+    private String auditUser;
 
     public PipelineStageRecordDO(Long projectId, Long pipelineRecordId) {
         this.pipelineRecordId = pipelineRecordId;
         this.projectId = projectId;
+    }
+
+    public String getAuditUser() {
+        return auditUser;
+    }
+
+    public void setAuditUser(String auditUser) {
+        this.auditUser = auditUser;
     }
 
     public PipelineStageRecordDO() {

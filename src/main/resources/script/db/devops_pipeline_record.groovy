@@ -39,4 +39,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
             column(name: "edited", type: 'TINYINT UNSIGNED', remarks: "是否编辑", afterColumn: "business_key", defaultValue: "0")
         }
     }
+    changeSet(author: 'scp', id: '2019-05-27-devops_pipeline_task-add-column') {
+        addColumn(tableName: 'devops_pipeline_record') {
+            column(name: 'audit_user', type: 'VARCHAR(255)', remarks: '审核人员', afterColumn: "project_id")
+        }
+    }
 }

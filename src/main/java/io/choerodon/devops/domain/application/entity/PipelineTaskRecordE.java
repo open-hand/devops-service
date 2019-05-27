@@ -30,6 +30,48 @@ public class PipelineTaskRecordE {
     private String instanceName;
     private String instanceStatus;
     private String auditUser;
+    private Long createdBy;
+    private java.util.Date creationDate;
+
+    public PipelineTaskRecordE() {
+    }
+
+    public PipelineTaskRecordE(Long stageRecordId, String taskType, Integer isCountersigned) {
+        this.stageRecordId = stageRecordId;
+        this.taskType = taskType;
+        this.isCountersigned = isCountersigned;
+    }
+
+    public PipelineTaskRecordE(Long instanceId, String status) {
+        this.instanceId = instanceId;
+        this.status = status;
+    }
+
+    public PipelineTaskRecordE(Long stageRecordId, String taskType, String triggerVersion, Long applicationId, Long envId, Long instanceId, String value) {
+        this.stageRecordId = stageRecordId;
+        this.taskType = taskType;
+        this.triggerVersion = triggerVersion;
+        this.applicationId = applicationId;
+        this.envId = envId;
+        this.instanceId = instanceId;
+        this.value = value;
+    }
+
+    public java.util.Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(java.util.Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
 
     public String getAuditUser() {
         return auditUser;
@@ -93,29 +135,6 @@ public class PipelineTaskRecordE {
 
     public void setTaskId(Long taskId) {
         this.taskId = taskId;
-    }
-
-    public PipelineTaskRecordE() {
-    }
-
-    public PipelineTaskRecordE(Long stageRecordId, String taskType, Integer isCountersigned) {
-        this.stageRecordId = stageRecordId;
-        this.taskType = taskType;
-        this.isCountersigned = isCountersigned;
-    }
-    public PipelineTaskRecordE(Long instanceId, String status) {
-        this.instanceId = instanceId;
-        this.status = status;
-    }
-
-    public PipelineTaskRecordE(Long stageRecordId, String taskType, String triggerVersion, Long applicationId, Long envId, Long instanceId, String value) {
-        this.stageRecordId = stageRecordId;
-        this.taskType = taskType;
-        this.triggerVersion = triggerVersion;
-        this.applicationId = applicationId;
-        this.envId = envId;
-        this.instanceId = instanceId;
-        this.value = value;
     }
 
     public Long getId() {
