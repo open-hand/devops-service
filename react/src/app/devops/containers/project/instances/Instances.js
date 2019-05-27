@@ -194,37 +194,33 @@ class Instances extends Component {
    * 重新部署
    * @param id
    */
-  reStart = id => {
+  reStart = async (id) => {
     const { id: projectId } = AppState.currentMenuType;
-    const envId = EnvOverviewStore.getTpEnvId;
     const {
       InstancesStore: { reStarts, loadInstanceAll },
     } = this.props;
-    this.setState({
-      confirmLoading: true,
-    });
-    reStarts(projectId, id)
-      .then(data => {
-        const res = handleProptError(data);
-        if (res) {
-          const time = Date.now();
-          loadInstanceAll(true, projectId, { envId }, time).catch(err => {
-            InstancesStore.changeLoading(false);
-            Choerodon.handleResponseError(err);
-          });
-          this.closeConfirm();
-        }
-        this.setState({
-          confirmLoading: false,
-        });
-      })
+
+    const envId = EnvOverviewStore.getTpEnvId;
+
+    this.setState({ confirmLoading: true });
+
+    const response = await reStarts(projectId, id)
       .catch(err => {
         InstancesStore.changeLoading(false);
-        this.setState({
-          confirmLoading: false,
-        });
+        this.setState({ confirmLoading: false });
         Choerodon.handleResponseError(err);
       });
+    const result = handleProptError(response);
+    if (result) {
+      const time = Date.now();
+      loadInstanceAll(true, projectId, { envId }, time)
+        .catch(err => {
+          InstancesStore.changeLoading(false);
+          Choerodon.handleResponseError(err);
+        });
+    }
+    this.closeConfirm();
+    this.setState({ confirmLoading: false });
   };
 
   /**
@@ -296,12 +292,13 @@ class Instances extends Component {
     clear && InstancesStore.setIstTableFilter(null);
 
     const time = Date.now();
-    InstancesStore.loadInstanceAll(spin, projectId, { envId, appId }, time).catch(
-      err => {
-        InstancesStore.changeLoading(false);
-        Choerodon.handleResponseError(err);
-      },
-    );
+    InstancesStore.loadInstanceAll(spin, projectId, { envId, appId }, time)
+      .catch(
+        err => {
+          InstancesStore.changeLoading(false);
+          Choerodon.handleResponseError(err);
+        },
+      );
   };
 
   /**

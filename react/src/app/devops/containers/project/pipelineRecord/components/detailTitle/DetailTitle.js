@@ -141,9 +141,9 @@ export default class DetailTitle extends PureComponent {
           <div className="c7ncd-pipeline-execute-name">{name}</div>
           <div className="c7ncd-pipeline-execute-time">{timeConvert(Number(time))}</div>
         </div>
-        <div className="c7ncd-pipeline-title-trigger">
+        {!tail && <div className="c7ncd-pipeline-title-trigger">
           {triggerDom}
-        </div>
+        </div>}
       </div>
     );
   }
