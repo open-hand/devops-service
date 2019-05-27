@@ -19,6 +19,15 @@ public class PipelineStageRecordE {
     private Long stageId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
+    private String auditUser;
+
+    public String getAuditUser() {
+        return auditUser;
+    }
+
+    public void setAuditUser(String auditUser) {
+        this.auditUser = auditUser;
+    }
 
     public PipelineStageRecordE() {
     }

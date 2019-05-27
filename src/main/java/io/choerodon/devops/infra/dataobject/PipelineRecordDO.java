@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.dataobject;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -28,6 +28,15 @@ public class PipelineRecordDO extends AuditDomain {
     private String pipelineName;
     private String businessKey;
     private Boolean edited;
+    private String auditUser;
+
+    public String getAuditUser() {
+        return auditUser;
+    }
+
+    public void setAuditUser(String auditUser) {
+        this.auditUser = auditUser;
+    }
 
     public Boolean getEdited() {
         return edited;

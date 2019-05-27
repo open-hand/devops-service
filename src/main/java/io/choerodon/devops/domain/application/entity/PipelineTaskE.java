@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.entity;
 
+import java.util.Date;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  9:29 2019/4/8
@@ -15,6 +17,15 @@ public class PipelineTaskE {
     private Long projectId;
     private Long objectVersionNumber;
     private Long createdBy;
+    private Date creationDate;
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
 
     public Long getCreatedBy() {
         return createdBy;
