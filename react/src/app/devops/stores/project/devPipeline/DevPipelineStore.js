@@ -173,6 +173,7 @@ class DevPipelineStore {
                 ReportsStore.loadCommits(projectId, START, END, [this.selectedApp]);
                 AppVersionStore.loadData(projectId, this.selectedApp);
                 CiPipelineStore.loadPipelines(true, this.selectedApp);
+                CodeQualityStore.loadData(projectId, this.selectedApp);
                 break;
               default:
                 break;
