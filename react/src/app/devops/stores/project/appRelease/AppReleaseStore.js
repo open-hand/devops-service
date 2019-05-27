@@ -1,6 +1,6 @@
-import { observable, action, computed } from 'mobx';
-import { axios, store } from '@choerodon/boot';
-import { handleProptError } from '../../../utils';
+import {action, computed, observable} from 'mobx';
+import {axios, store} from '@choerodon/boot';
+import {handleProptError} from '../../../utils';
 
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
@@ -82,32 +82,30 @@ class AppReleaseStore {
     return this.loading;
   }
 
-  loadData = (
-    {
-      isRefresh = false,
-      projectId,
-      page = 0,
-      size,
-      sorter = { field: 'id', order: 'desc' },
-      postData = {
-        searchParam: {},
-        param: '',
-      },
-      key = '1',
-    },
-  ) => {
+  loadData = ({
+                isRefresh = false,
+                projectId,
+                page = 0,
+                size,
+                sorter = {field: 'id', order: 'desc'},
+                postData = {
+                  searchParam: {},
+                  param: '',
+                },
+                key = '1',
+              }) => {
+
     if (isRefresh) {
       this.changeIsRefresh(true);
     }
     this.changeLoading(true);
 
     const pageSize =
-      key === '1' ? this.unPageInfo.pageSize : this.pageInfo.pageSize;
+        key === '1' ? this.unPageInfo.pageSize : this.pageInfo.pageSize;
     const _size = size || pageSize;
     const url = `/devops/v1/projects/${projectId}/${
-      key === '1' ? 'apps/list_unpublish' : 'apps_market/list'
-      }?page=${page}&size=${_size}&sort=${sorter.field},${sorter.order}`;
-
+        key === '1' ? 'apps/list_unpublish' : 'apps_market/list'
+        }?page=${page}&size=${_size}&sort=${sorter.field},${sorter.order}`;
     return axios.post(url).then(data => {
       const res = handleProptError(data);
       if (res) {
@@ -119,13 +117,13 @@ class AppReleaseStore {
   };
 
   handleData = (data, type) => {
-    const { number, size, totalElements, content } = data;
+    const {number, size, totalElements, content} = data;
     if (type === '1') {
       this.setUnReleaseData(content);
-      this.setUnPageInfo({ number, size, totalElements });
+      this.setUnPageInfo({number, size, totalElements});
     } else {
       this.setReleaseData(content);
-      this.setPageInfo({ number, size, totalElements });
+      this.setPageInfo({number, size, totalElements});
     }
   };
 }
