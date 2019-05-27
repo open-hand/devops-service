@@ -123,6 +123,8 @@ export default class NotificationSidebar extends Component {
         .then(data => {
           this.setState({ submitting: false });
           if (data && data.failed) {
+            const { envId } = this.state;
+            this.handleEnvSelect(envId);
             Choerodon.prompt(data.message);
           } else {
             this.handleClose(null, true);
@@ -355,6 +357,7 @@ export default class NotificationSidebar extends Component {
                   <Select
                     mode="multiple"
                     label={formatMessage({ id: "notification.target.specifier" })}
+                    className="c7n-notifications-select-userRelIds"
                     optionFilterProp="children"
                     allowClear
                     filter

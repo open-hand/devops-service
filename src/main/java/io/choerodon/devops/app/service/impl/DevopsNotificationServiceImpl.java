@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -73,6 +72,12 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Override
     public DevopsNotificationDTO create(Long projectId, DevopsNotificationDTO notificationDTO) {
         DevopsNotificationE notificationE = ConvertHelper.convert(notificationDTO, DevopsNotificationE.class);
+        Set<String> resources = check(projectId, notificationDTO.getEnvId());
+        notificationDTO.getNotifyTriggerEvent().forEach(event -> {
+            if (resources.contains(event)) {
+                throw new CommonException("error.trigger.event.exist");
+            }
+        });
         notificationE.setProjectId(projectId);
         notificationE = notificationRepository.createOrUpdate(notificationE);
         List<Long> userRelIds = notificationDTO.getUserRelIds();
@@ -88,6 +93,17 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Override
     public DevopsNotificationDTO update(Long projectId, DevopsNotificationDTO notificationDTO) {
         DevopsNotificationE notificationE = ConvertHelper.convert(notificationDTO, DevopsNotificationE.class);
+        DevopsNotificationE oldNotificationE = notificationRepository.queryById(notificationDTO.getId());
+        Set<String> resources = check(projectId, notificationDTO.getEnvId());
+        List<String> events = notificationDTO.getNotifyTriggerEvent();
+        events.removeAll(Arrays.asList(oldNotificationE.getNotifyTriggerEvent().split(",")));
+        if(!events.isEmpty()) {
+            events.forEach(event -> {
+                if (resources.contains(event)) {
+                    throw new CommonException("error.trigger.event.exist");
+                }
+            });
+        }
         notificationE.setProjectId(projectId);
         notificationRepository.createOrUpdate(notificationE);
         updateUserRel(notificationDTO);
@@ -162,13 +178,26 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                         }
                     }).collect(Collectors.toList()).toArray(), ","));
                     if (devopsNotificationE.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
-                        resourceCheckDTO.setUser(GitUserNameUtil.getRealUsername());
+                        List<UserE> users = iamRepository.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
+                        if (!users.isEmpty()) {
+                            if (users.get(0).getRealName() != null) {
+                                resourceCheckDTO.setUser(users.get(0).getRealName());
+                            } else {
+                                resourceCheckDTO.setUser(users.get(0).getLoginName());
+                            }
+                        }
                     } else if (devopsNotificationE.getNotifyObject().equals(TriggerObject.OWNER.getObject())) {
                         resourceCheckDTO.setUser("项目所有者");
                     } else {
                         List<Long> userIds = notificationUserRelRepository.queryByNoticaionId(devopsNotificationE.getId()).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
                         iamRepository.listUsersByIds(userIds).stream().map(UserE::getRealName).collect(Collectors.toList());
-                        resourceCheckDTO.setUser(StringUtils.join(iamRepository.listUsersByIds(userIds).stream().map(UserE::getRealName).collect(Collectors.toList()).toArray(), ","));
+                        resourceCheckDTO.setUser(StringUtils.join(iamRepository.listUsersByIds(userIds).stream().map(userE -> {
+                            if (userE.getRealName() != null) {
+                                return userE.getRealName();
+                            } else {
+                                return userE.getLoginName();
+                            }
+                        }).collect(Collectors.toList()).toArray(), ","));
                     }
                     return resourceCheckDTO;
                 }
@@ -195,10 +224,15 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         Map<String, Object> params = new HashMap<>();
         List<UserE> userES = iamRepository.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
         if (!userES.isEmpty()) {
-            params.put("user", userES.get(0).getRealName());
+            if (userES.get(0).getRealName() != null) {
+                params.put("user", userES.get(0).getRealName());
+            } else {
+                params.put("user", userES.get(0).getLoginName());
+            }
         }
+
         params.put("env", devopsEnvironmentE.getName());
-        params.put("object", objectType);
+        params.put("object", getObjectType(objectType));
         params.put("objectName", objectCode);
         params.put("captcha", Captcha);
         params.put("timeout", "10");
@@ -309,6 +343,35 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 break;
         }
         return code;
+    }
+
+
+    private String getObjectType(String type) {
+        String result = "";
+        ObjectType objectType = ObjectType.forValue(type);
+        switch (objectType) {
+            case INSTANCE:
+                result = "实例";
+                break;
+            case SERVICE:
+                result = "网络";
+                break;
+            case INGRESS:
+                result = "域名";
+                break;
+            case CERTIFICATE:
+                result = "证书";
+                break;
+            case CONFIGMAP:
+                result = "配置映射";
+                break;
+            case SECRET:
+                result = "密文";
+                break;
+            default:
+                break;
+        }
+        return result;
     }
 
     private void updateUserRel(DevopsNotificationDTO notificationDTO) {

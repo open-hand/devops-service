@@ -487,7 +487,7 @@ export default class DomainHome extends Component {
       loading={submitting}
       objectType="ingress"
       onClose={this.closeDeleteModal}
-      onOk={this.handleDeleteWithValid}
+      onOk={this.handleDelete}
     />));
 
     return (

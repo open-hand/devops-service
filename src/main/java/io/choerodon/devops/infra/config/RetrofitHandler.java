@@ -24,14 +24,6 @@ import io.choerodon.devops.infra.feign.SonarClient;
 public class RetrofitHandler {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(RetrofitHandler.class);
-    public static final String SONAR = "sonar";
-
-    @Value("${services.sonarqube.url:}")
-    private static String sonarqubeUrl;
-    @Value("${services.sonarqube.username:}")
-    private static String userName;
-    @Value("${services.sonarqube.password:}")
-    private static String password;
 
     /**
      * Retrofit 设置
@@ -143,10 +135,10 @@ public class RetrofitHandler {
         }
     }
 
-    public static SonarClient getSonarClient() {
+    public static SonarClient getSonarClient(String sonarqubeUrl, String sonar, String userName, String password) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(sonarqubeUrl);
-        configurationProperties.setType(SONAR);
+        configurationProperties.setType(sonar);
         configurationProperties.setUsername(userName);
         configurationProperties.setPassword(password);
         configurationProperties.setInsecureSkipTlsVerify(false);

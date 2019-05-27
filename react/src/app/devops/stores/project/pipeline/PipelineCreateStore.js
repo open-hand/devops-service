@@ -437,7 +437,7 @@ class PipelineCreateStore {
     this.setLoading('app', true);
     const response = await axios
       .post(
-        `/devops/v1/projects/${projectId}/apps/list_by_options?active=true&type=normal&doPage=false&has_version=true`,
+        `/devops/v1/projects/${projectId}/apps/list_by_options?active=true&type=normal&doPage=false&has_version=true&app_market=false`,
         JSON.stringify({
           searchParam: {},
           param: '',

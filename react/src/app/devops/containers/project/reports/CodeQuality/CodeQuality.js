@@ -290,6 +290,8 @@ class CodeQuality extends Component {
             width: 1,
           },
         },
+        min: dates && dates.length ? null : 0,
+        max: dates && dates.length ? null : 4,
         scale: true,
       },
       series: series,

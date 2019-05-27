@@ -14,8 +14,6 @@
 "development-pipeline.merge-request": "合并请求"
 "development-pipeline.continuous-integration": "持续集成"
 "development-pipeline.code-quality": "代码质量"
-"development-pipeline.application": "应用"
-"development-pipeline.application-version": "应用版本"
 
 # 部署流水线
 "deployment-pipeline": "部署流水线"
@@ -47,4 +45,4 @@
 # 项目设置
 "prosetting": "项目设置"
 "prosetting.element-settings": "组件设置"
-
+"prosetting.devops-notifications": "通知设置"

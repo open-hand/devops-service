@@ -6,10 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.CertificationDTO;
@@ -23,8 +19,10 @@ import io.choerodon.devops.domain.application.repository.CertificationRepository
 import io.choerodon.devops.domain.application.repository.DevopsCertificationProRelRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertificationService {
@@ -124,7 +122,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
 
     public Page<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
                                          String[] params) {
-        List<ProjectE> projects = iamRepository
+        Page<ProjectE> projects = iamRepository
                 .queryProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params);
         Page<ProjectDTO> pageProjectDTOS = new Page<>();
         List<ProjectDTO> projectDTOS = new ArrayList<>();
@@ -142,6 +140,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
                 projectDTOS.add(projectDTO);
             });
         }
+        BeanUtils.copyProperties(projects, pageProjectDTOS);
         pageProjectDTOS.setContent(projectDTOS);
         return pageProjectDTOS;
     }

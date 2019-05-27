@@ -912,7 +912,7 @@ const zhCN = {
   'envPl.cluster.tip':
     '创建环境必须先选择集群，此处集群均是在组织下已经对本项目进行授权的集群。',
   'envPl.envCode.tip':
-    '环境的自定义编码，是集群中产生的namespace的名称，限制为30个字符，且在所选集群下唯一。',
+    '环境的自定义编码，是集群中产生的namespace的名称，限制为30个字符，且在所选集群与当前项目下唯一。',
   'envPl.envName.tip': '平台环境的显示名称。限制为10个字符。',
   'envPl.group.tip':
     '若要使用环境分组，请先创建分组；此处只能从已创建的分组中进行选择，从而将此环境放入该分组中。',
@@ -1609,6 +1609,7 @@ const zhCN = {
   'certificate.permission.tip':
     '此操作用于为此证书在该组织下配置公开范围。一般默认选择为组织下所有项目，即该证书可在所有项目下创建证书时使用；若选择组织下特定项目，则只有在被勾选项目下创建证书时才有权限选择此证书。',
   'certificate.public': '证书公开范围',
+  'ctf.delete.tooltip': '确定删除该证书吗？',
   'ctf.sidebar.edit': '编辑证书',
 
   // 组件设置
@@ -1766,7 +1767,7 @@ const zhCN = {
   'pipeline.execute.pass': '点击确认后开始执行该流水线。',
   'pipeline.execute.failed': '该流水线不满足执行条件，无法触发执行。',
   'pipeline.execute.no.permission':
-    '因流水线中包含环境{envName}相关的部署任务，联系项目所有者添此环境的权限后，才能执行该条流水线。',
+    '因流水线中包含环境【{envName}】相关的部署任务，联系项目所有者添加环境权限后，才能执行该条流水线。',
   'pipeline.stop.title': '终止流水线“{name}”',
   'pipeline.stop.des': '手动终止后，当前执行中的流程会被强制停止，确定要终止？',
   'pipeline.edit.error': '出错了',

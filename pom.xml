@@ -63,6 +63,12 @@
 
         <dependency>
             <groupId>io.choerodon</groupId>
+            <artifactId>choerodon-starter-metric</artifactId>
+            <version>${choerodon.starters.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-feign-replay</artifactId>
             <version>${choerodon.starters.version}</version>
         </dependency>

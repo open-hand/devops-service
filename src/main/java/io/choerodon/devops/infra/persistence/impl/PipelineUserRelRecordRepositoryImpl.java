@@ -1,15 +1,16 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.PipelineUserRecordRelE;
 import io.choerodon.devops.domain.application.repository.PipelineUserRelRecordRepository;
 import io.choerodon.devops.infra.dataobject.PipelineUserRecordRelDO;
 import io.choerodon.devops.infra.mapper.PipelineUserRecordRelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -34,5 +35,11 @@ public class PipelineUserRelRecordRepositoryImpl implements PipelineUserRelRecor
     public List<PipelineUserRecordRelE> queryByRecordId(Long pipelineRecordId, Long stageRecordId, Long taskRecordId) {
         PipelineUserRecordRelDO recordRelDO = new PipelineUserRecordRelDO(pipelineRecordId, stageRecordId, taskRecordId);
         return ConvertHelper.convertList(recordRelMapper.select(recordRelDO), PipelineUserRecordRelE.class);
+    }
+
+    @Override
+    public void deleteByIds(Long pipelineRecordId, Long stageRecordId, Long taskRecordId) {
+        PipelineUserRecordRelDO recordRelDO = new PipelineUserRecordRelDO(pipelineRecordId, stageRecordId, taskRecordId);
+        recordRelMapper.delete(recordRelDO);
     }
 }

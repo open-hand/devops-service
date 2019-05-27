@@ -1,8 +1,7 @@
 import { observable, action, computed } from 'mobx';
-import { axios, store, stores } from '@choerodon/boot';
-import { handleProptError } from '../../../../utils';
+import { axios, store } from '@choerodon/boot';
+import { handleProptError } from '../../../utils';
 
-const { AppState } = stores;
 const HEIGHT =
   window.innerHeight ||
   document.documentElement.clientHeight ||
@@ -204,18 +203,14 @@ class AppStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          this.handleData(data);
+          const { number, size, totalElements, content } = res;
+          const page = { number, size, totalElements };
+          this.setAllData(content);
+          this.setPageInfo(page);
         }
         spin && this.changeLoading(false);
         this.changeIsRefresh(false);
       });
-  };
-
-  handleData = data => {
-    this.setAllData(data.content);
-    const { number, size, totalElements } = data;
-    const page = { number, size, totalElements };
-    this.setPageInfo(page);
   };
 
   loadSelectData = (projectId, isPredefined) => {
@@ -330,21 +325,23 @@ class AppStore {
   queryConfig = async (projectId, type) => await axios.get(`/devops/v1/projects/${projectId}/project_config/type?type=${type}`);
 
   /**
-   * 同时查询 Harbor 和 Chart
+   * 同步查询 Harbor 和 Chart
    * @param projectId
    * @returns {Promise<void>}
    */
   async loadConfig(projectId) {
-    try {
-      const requests = [this.queryConfig(projectId, 'harbor'), this.queryConfig(projectId, 'chart')];
-      const data = await Promise.all(requests);
-      const harbor = handleProptError(data[0]);
-      const chart = handleProptError(data[1]);
-      harbor && this.setHarborList(harbor);
-      chart && this.setChartList(chart);
-    } catch (e) {
-      Choerodon.handleResponseError(e);
-    }
+    const requests = [
+      this.queryConfig(projectId, 'harbor'),
+      this.queryConfig(projectId, 'chart'),
+    ];
+    const data = await Promise.all(requests)
+      .catch(e => {
+        Choerodon.handleResponseError(e);
+      });
+    const harbor = handleProptError(data[0]);
+    const chart = handleProptError(data[1]);
+    harbor && this.setHarborList(harbor);
+    chart && this.setChartList(chart);
   }
 }
 

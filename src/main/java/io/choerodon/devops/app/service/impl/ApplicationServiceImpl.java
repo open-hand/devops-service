@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -61,6 +63,7 @@ import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.api.dto.sonar.Bug;
 import io.choerodon.devops.api.dto.sonar.Facet;
 import io.choerodon.devops.api.dto.sonar.Quality;
+import io.choerodon.devops.api.dto.sonar.SonarAnalyses;
 import io.choerodon.devops.api.dto.sonar.SonarComponent;
 import io.choerodon.devops.api.dto.sonar.SonarHistroy;
 import io.choerodon.devops.api.dto.sonar.SonarTables;
@@ -139,6 +142,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String ISSUE = "issue";
     private static final String COVERAGE = "coverage";
     private static final String CHART_DIR = "charts";
+    private static final String SONAR = "sonar";
     private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
     private static final IOFileFilter filenameFilter = new IOFileFilter() {
         @Override
@@ -212,6 +216,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Saga(code = "devops-create-application",
             description = "Devops创建应用", inputSchema = "{}")
+    @Transactional
     public ApplicationRepDTO create(Long projectId, ApplicationReqDTO applicationReqDTO) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationReqDTO);
@@ -378,10 +383,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Page<ApplicationRepDTO> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
+                                                 Boolean appMarket,
                                                  String type, Boolean doPage,
                                                  PageRequest pageRequest, String params) {
         Page<ApplicationE> applicationES =
-                applicationRepository.listByOptions(projectId, isActive, hasVersion, type, doPage, pageRequest, params);
+                applicationRepository.listByOptions(projectId, isActive, hasVersion,appMarket, type, doPage, pageRequest, params);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
@@ -402,20 +408,30 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private void getSonarUrl(ProjectE projectE, Organization organization, ApplicationE t) {
         if (!sonarqubeUrl.equals("")) {
-            Integer result;
+            SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl,"sonar",userName,password);
+            String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), t.getCode());
+
+            Map<String, String> queryContentMap = new HashMap<>();
+            queryContentMap.put("additionalFields", "metrics,periods");
+            queryContentMap.put("componentKey", key);
+            queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,new_bugs,new_vulnerabilities,sqale_index,code_smells,new_technical_debt,new_code_smells,coverage,tests,new_coverage,duplicated_lines_density,duplicated_blocks,new_duplicated_lines_density,ncloc,ncloc_language_distribution");
+            Response<SonarComponent> sonarComponentResponse = null;
             try {
-                result = HttpClientUtil.getSonar(sonarqubeUrl.endsWith("/")
-                        ? sonarqubeUrl
-                        : String
-                        .format("%s/api/project_links/search?projectKey=%s-%s:%s", sonarqubeUrl, organization.getCode(),
-                                projectE.getCode(), t.getCode()));
-                if (result.equals(HttpStatus.OK.value())) {
-                    t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"
-                            + "dashboard?id=" + organization.getCode() + "-" + projectE.getCode() + ":" + t.getCode());
-                }
-            } catch (Exception e) {
+                sonarComponentResponse = sonarClient.getSonarComponet(queryContentMap).execute();
+            } catch (IOException e) {
                 t.initSonarUrl(null);
+                return;
             }
+            if (sonarComponentResponse.raw().code() != 200) {
+                t.initSonarUrl(null);
+                return;
+            }else {
+                t.initSonarUrl(sonarqubeUrl);
+                return;
+            }
+        }else {
+            t.initSonarUrl(null);
+            return;
         }
     }
 
@@ -1317,7 +1333,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationE applicationE = applicationRepository.query(appId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        SonarClient sonarClient = RetrofitHandler.getSonarClient();
+        SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
         String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         try {
@@ -1338,9 +1354,19 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (sonarComponentResponse.body() == null) {
                 return new SonarContentsDTO();
             }
-            sonarContentsDTO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
-            sonarContentsDTO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
-            sonarContentsDTO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
+            if (sonarComponentResponse.body().getPeriods() != null && sonarComponentResponse.body().getPeriods().size() > 0) {
+                sonarContentsDTO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
+                sonarContentsDTO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
+                sonarContentsDTO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
+            } else {
+                Map<String, String> analyseMap = new HashMap<>();
+                analyseMap.put("project", key);
+                analyseMap.put("ps", "3");
+                Response<SonarAnalyses> sonarAnalyses = sonarClient.getAnalyses(analyseMap).execute();
+                if (sonarAnalyses.raw().code() == 200 && sonarAnalyses.body().getAnalyses() != null && sonarAnalyses.body().getAnalyses().size() > 0) {
+                    sonarContentsDTO.setDate(sonarAnalyses.body().getAnalyses().get(0).getDate());
+                }
+            }
             sonarComponentResponse.body().getComponent().getMeasures().stream().forEach(measure -> {
                 SonarQubeType sonarQubeType = SonarQubeType.forValue(String.valueOf(measure.getMetric()));
                 switch (sonarQubeType) {
@@ -1592,12 +1618,16 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (sonarqubeUrl.equals("")) {
             return new SonarTableDTO();
         }
+        Calendar c = Calendar.getInstance();
+        c.setTime(endTime);
+        c.add(Calendar.DAY_OF_MONTH, 1);
+        Date tomorrow = c.getTime();
         SonarTableDTO sonarTableDTO = new SonarTableDTO();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
         ApplicationE applicationE = applicationRepository.query(appId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        SonarClient sonarClient = RetrofitHandler.getSonarClient();
+        SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
         String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         Map<String, String> queryMap = new HashMap<>();
@@ -1623,7 +1653,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.BUGS.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             bugs.add(sonarHistroy.getValue());
                             dates.add(sonarHistroy.getDate());
@@ -1633,7 +1663,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.CODE_SMELLS.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             codeSmells.add(sonarHistroy.getValue());
                         });
@@ -1641,7 +1671,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.VULNERABILITIES.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             vulnerabilities.add(sonarHistroy.getValue());
                         });
@@ -1670,7 +1700,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.COVERAGE.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             coverage.add(sonarHistroy.getValue());
                         });
@@ -1678,7 +1708,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.LINES_TO_COVER.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             linesToCover.add(sonarHistroy.getValue());
                             dates.add(sonarHistroy.getDate());
@@ -1689,17 +1719,16 @@ public class ApplicationServiceImpl implements ApplicationService {
 
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.UNCOVERED_LINES.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             unCoverLines.add(sonarHistroy.getValue());
                         });
                     }
-                    for (int i = 0; i < linesToCover.size(); i++) {
-                        coverLines.add(TypeUtil.objToString(TypeUtil.objToLong(linesToCover.get(i)) - TypeUtil.objToLong(unCoverLines.get(i))));
-                    }
-                    sonarTableDTO.setCoverLines(coverLines);
                 });
-
+                for (int i = 0; i < linesToCover.size(); i++) {
+                    coverLines.add(TypeUtil.objToString(TypeUtil.objToLong(linesToCover.get(i)) - TypeUtil.objToLong(unCoverLines.get(i))));
+                }
+                sonarTableDTO.setCoverLines(coverLines);
             } catch (IOException e) {
                 throw new CommonException(e);
             }
@@ -1721,7 +1750,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.NCLOC.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             nclocs.add(sonarHistroy.getValue());
                             dates.add(sonarHistroy.getDate());
@@ -1731,7 +1760,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy ->
                                 duplicatedLines.add(sonarHistroy.getValue())
                         );
@@ -1739,7 +1768,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES_DENSITY.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, endTime, sdf, sonarHistroy)
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
                         ).forEach(sonarHistroy -> {
                             duplicatedLinesRate.add(sonarHistroy.getValue());
                         });

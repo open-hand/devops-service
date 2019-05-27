@@ -141,7 +141,7 @@ class DeploymentConfigStore {
    * @param projectId
    */
   loadAppData = projectId =>
-    axios.post(`/devops/v1/projects/${projectId}/apps/list_by_options?active=true&type=normal&doPage=false&has_version=true`
+    axios.post(`/devops/v1/projects/${projectId}/apps/list_by_options?active=true&type=normal&doPage=false&has_version=true&app_market=false`
       , JSON.stringify({searchParam: {}, param: ""})
     )
       .then((data) => {

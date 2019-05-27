@@ -20,7 +20,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import com.squareup.okhttp.internal.tls.RealTrustRootIndex;
 import com.zaxxer.hikari.util.UtilityElf;
 import feign.FeignException;
 import io.kubernetes.client.models.V1Pod;
@@ -120,6 +119,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
+    private static final String SONAR = "sonar";
     private static final String SONARQUBE = "sonarqube";
     private static final String TWELVE_VERSION = "0.12.0";
     private static final String APP = "app: ";
@@ -133,17 +133,20 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String SERIAL_STRING = " serializable to yaml";
     private static final String APPLICATION = "application";
     private static final String YAML_FILE = ".yaml";
-
+    private static final String PERMISSION = "permission";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-upgrade", false));
     private static final String SERVICE_PATTERN = "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
     private static io.kubernetes.client.JSON json = new io.kubernetes.client.JSON();
+    @Value("${services.sonarqube.url:}")
+    private String sonarqubeUrl;
+    @Value("${services.sonarqube.username:}")
+    private String userName;
+    @Value("${services.sonarqube.password:}")
+    private String password;
     private Gson gson = new Gson();
-
-    @Value("${services.sonar.url:}")
-    private String sornarUrl;
     @Value("${services.gateway.url}")
     private String gatewayUrl;
     @Value("${services.helm.url}")
@@ -666,8 +669,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private void syncSonarProject(List<CheckLog> logs) {
-            if (!sornarUrl.isEmpty()) {
-                SonarClient sonarClient = RetrofitHandler.getSonarClient();
+            if (!sonarqubeUrl.isEmpty()) {
+                SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
+                //将所有sonar项目设为私有
                 applicationMapper.selectAll().forEach(applicationDO -> {
                     if (applicationDO.getGitlabProjectId() != null) {
                         LOGGER.info("sonar.project.privatet,applicationId:" + applicationDO.getId());
@@ -677,9 +681,38 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         Map<String, String> maps = new HashMap<>();
                         maps.put("project", key);
                         maps.put("visibility", "private");
-                        sonarClient.updateVisibility(maps);
+                        try {
+                            sonarClient.updateVisibility(maps).execute();
+                        } catch (IOException e) {
+                            LOGGER.error(e.getMessage());
+                        }
                     }
                 });
+                try {
+                    //更改默认新建项目为私有
+                    Map<String, String> defaultMaps = new HashMap<>();
+                    defaultMaps.put("organization", "default-organization");
+                    defaultMaps.put("projectVisibility", "private");
+                    sonarClient.updateDefaultVisibility(defaultMaps).execute();
+                    //更改默认权限模板
+                    Map<String, String> appTemplete = new HashMap<>();
+                    appTemplete.put("templateId", "default_template");
+                    appTemplete.put("groupName", "sonar-administrators");
+                    appTemplete.put(PERMISSION, "codeviewer");
+                    sonarClient.addGroupToTemplate(appTemplete).execute();
+                    appTemplete.put(PERMISSION, "user");
+                    sonarClient.addGroupToTemplate(appTemplete).execute();
+
+                    Map<String, String> removeTemplete = new HashMap<>();
+                    removeTemplete.put("templateId", "default_template");
+                    removeTemplete.put("groupName", "sonar-users");
+                    removeTemplete.put(PERMISSION, "codeviewer");
+                    sonarClient.removeGroupFromTemplate(removeTemplete).execute();
+                    removeTemplete.put(PERMISSION, "user");
+                    sonarClient.removeGroupFromTemplate(removeTemplete).execute();
+                } catch (IOException e) {
+                    LOGGER.error(e.getMessage());
+                }
             }
         }
 

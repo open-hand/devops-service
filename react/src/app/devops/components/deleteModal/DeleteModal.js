@@ -10,6 +10,7 @@ import { handleProptError } from '../../utils';
 import './DeleteModal.scss';
 
 const { Item: FormItem } = Form;
+const HAS_VALID = true;
 
 @Form.create({})
 @injectIntl
@@ -176,7 +177,7 @@ class DeleteModal extends Component {
     const { isVerification } = this.state;
 
     if (!isVerification) {
-      onOk(objectId);
+      onOk(objectId, HAS_VALID);
       return;
     }
 
@@ -193,7 +194,7 @@ class DeleteModal extends Component {
               this.setState({ isError: true, canDelete: false });
             } else {
               this.clearTimer();
-              onOk(objectId, () => {
+              onOk(objectId, HAS_VALID, () => {
                 this.clearTimer();
                 this.setState({
                   count: 60,
@@ -329,7 +330,7 @@ class DeleteModal extends Component {
           </Button>,
         ]}
       >
-        <div className="c7ncd-deleteModal-wrap">
+        <div className="c7ncd-delete-wrap">
           {this.getContent}
         </div>
       </Modal>
