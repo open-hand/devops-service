@@ -31,8 +31,10 @@ class CodeQuality extends Component {
   componentDidMount() {
     const {
       AppState: { currentMenuType: { projectId } },
+      location: { state },
     } = this.props;
-    DevPipelineStore.queryAppData(projectId, "quality");
+    const { appId } = state || {};
+    DevPipelineStore.queryAppData(projectId, "quality", appId);
   }
 
   handleRefresh = () => {
