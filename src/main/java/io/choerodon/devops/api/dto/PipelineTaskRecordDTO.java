@@ -22,7 +22,16 @@ public class PipelineTaskRecordDTO {
     private Long taskId;
     private String instanceStatus;
     private Long instanceId;
+    private Boolean envPermission;
     private List<IamUserDTO> userDTOList;
+
+    public Boolean getEnvPermission() {
+        return envPermission;
+    }
+
+    public void setEnvPermission(Boolean envPermission) {
+        this.envPermission = envPermission;
+    }
 
     public Long getApplicationId() {
         return applicationId;

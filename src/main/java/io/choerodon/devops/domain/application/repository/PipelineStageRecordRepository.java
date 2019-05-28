@@ -19,4 +19,6 @@ public interface PipelineStageRecordRepository {
     PipelineStageRecordE queryById(Long recordId);
 
     PipelineStageRecordE update(PipelineStageRecordE stageRecordE);
+
+    PipelineStageRecordE queryPendingCheck(Long pipelineRecordId);
 }

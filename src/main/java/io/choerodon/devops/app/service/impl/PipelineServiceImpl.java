@@ -3,7 +3,9 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -163,9 +165,13 @@ public class PipelineServiceImpl implements PipelineService {
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
 
     @Override
-    public Page<PipelineDTO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
+    public Page<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, PageRequest pageRequest, String params) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Page<PipelineDTO> pipelineDTOS = ConvertPageHelper.convertPage(pipelineRepository.listByOptions(projectId, pageRequest, params), PipelineDTO.class);
+        Map<String, Object> classifyParam = new HashMap<>();
+        classifyParam.put("creator", creator);
+        classifyParam.put("executor", executor);
+        classifyParam.put("userId", DetailsHelper.getUserDetails().getUserId());
+        Page<PipelineDTO> pipelineDTOS = ConvertPageHelper.convertPage(pipelineRepository.listByOptions(projectId, pageRequest, params, classifyParam), PipelineDTO.class);
         Page<PipelineDTO> page = new Page<>();
         BeanUtils.copyProperties(pipelineDTOS, page);
         page.setContent(pipelineDTOS.getContent().stream().peek(t -> {
@@ -185,26 +191,18 @@ public class PipelineServiceImpl implements PipelineService {
             } else {
                 t.setExecute(false);
             }
-            //运行中的流水线不可编辑
-            List<PipelineRecordE> list = pipelineRecordRepository.queryByPipelineId(t.getId()).stream()
-                    .filter(recordE -> recordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue()) || recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()))
-                    .collect(Collectors.toList());
             t.setEdit(true);
-            if (list != null && list.size() > 0) {
-                t.setEdit(false);
-            } else {
-                //是否拥有环境权限.没有环境权限不可编辑
-                List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(t.getId());
-                if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
-                    List<Long> envIds = devopsEnvUserPermissionRepository
-                            .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
-                            .filter(DevopsEnvUserPermissionE::getPermitted)
-                            .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
-                    for (PipelineAppDeployE appDeployE : appDeployEList) {
-                        if (!envIds.contains(appDeployE.getEnvId())) {
-                            t.setEdit(false);
-                            break;
-                        }
+            //是否拥有环境权限.没有环境权限不可编辑
+            List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(t.getId());
+            if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+                List<Long> envIds = devopsEnvUserPermissionRepository
+                        .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                        .filter(DevopsEnvUserPermissionE::getPermitted)
+                        .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+                for (PipelineAppDeployE appDeployE : appDeployEList) {
+                    if (!envIds.contains(appDeployE.getEnvId())) {
+                        t.setEdit(false);
+                        break;
                     }
                 }
             }
@@ -213,11 +211,16 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public Page<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params) {
+    public Page<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Map<String, Object> classifyParam = new HashMap<>();
+        classifyParam.put("executed", executed);
+        classifyParam.put("reviewed", reviewed);
+        classifyParam.put("pendingcheck", pendingcheck);
+        classifyParam.put("userId", DetailsHelper.getUserDetails().getUserId());
         Page<PipelineRecordDTO> pageRecordDTOS = ConvertPageHelper.convertPage(
-                pipelineRecordRepository.listByOptions(projectId, pipelineId, pageRequest, params), PipelineRecordDTO.class);
-        List<PipelineRecordDTO> pipelineRecordDTOS = pageRecordDTOS.getContent().stream().map(t -> {
+                pipelineRecordRepository.listByOptions(projectId, pipelineId, pageRequest, params, classifyParam), PipelineRecordDTO.class);
+        List<PipelineRecordDTO> pipelineRecordDTOS = pageRecordDTOS.getContent().stream().filter(t -> filterPendingCheck(pendingcheck, t)).map(t -> {
             t.setIndex(false);
             t.setStageDTOList(ConvertHelper.convertList(stageRecordRepository.list(projectId, t.getId()), PipelineStageRecordDTO.class));
             if (t.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
@@ -230,7 +233,7 @@ public class PipelineServiceImpl implements PipelineService {
                             t.setTaskRecordId(taskRecordE.get().getId());
                             t.setStageRecordId(t.getStageDTOList().get(i).getId());
                             t.setType(TASK);
-                            t.setIndex(checkTaskTriggerPermission( taskRecordE.get().getId()));
+                            t.setIndex(checkTaskTriggerPermission(taskRecordE.get().getId()));
                             break;
                         }
                     } else if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
@@ -607,7 +610,7 @@ public class PipelineServiceImpl implements PipelineService {
                             break;
                         }
                     }
-                    updateStatus(recordRelDTO.getPipelineRecordId(), null, WorkFlowStatus.RUNNING.toValue());
+                    updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), WorkFlowStatus.RUNNING.toValue());
                     startNextTask(taskRecordE.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), status);
@@ -880,6 +883,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public PipelineRecordReqDTO getRecordById(Long projectId, Long pipelineRecordId) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
         PipelineRecordReqDTO recordReqDTO = new PipelineRecordReqDTO();
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
         BeanUtils.copyProperties(pipelineRecordE, recordReqDTO);
@@ -954,6 +958,15 @@ public class PipelineServiceImpl implements PipelineService {
                                 }
                             }
                             taskRecordDTO.setUserDTOList(userDTOS);
+                        } else {
+                            taskRecordDTO.setEnvPermission(true);
+                            if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+                                List<Long> envIds = devopsEnvUserPermissionRepository
+                                        .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                                        .filter(DevopsEnvUserPermissionE::getPermitted)
+                                        .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+                                taskRecordDTO.setEnvPermission(envIds.contains(DetailsHelper.getUserDetails().getUserId()));
+                            }
                         }
                         taskRecordDTOS.add(taskRecordDTO);
                     }
@@ -1388,5 +1401,20 @@ public class PipelineServiceImpl implements PipelineService {
                 });
     }
 
+    private Boolean filterPendingCheck(Boolean pendingcheck, PipelineRecordDTO pipelineRecordDTO) {
+        if (pendingcheck) {
+            PipelineStageRecordE stageRecordE = stageRecordRepository.queryPendingCheck(pipelineRecordDTO.getId());
+            List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null);
+            String auditUser = stageRecordE.getAuditUser();
+            for (PipelineTaskRecordE taskRecordE : taskRecordEList) {
+                if (taskRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                    auditUser = taskRecordE.getAuditUser();
+                }
+            }
+            List<String> userIds = Arrays.asList(auditUser.split(","));
+            return userIds.contains(TypeUtil.objToString(DetailsHelper.getUserDetails().getUserId()));
+        }
+        return true;
+    }
 }
 

@@ -20,4 +20,14 @@
         </if>
     </select>
 
+    <select id="queryPendingCheck"  resultType="io.choerodon.devops.infra.dataobject.PipelineStageRecordDO">
+        SELECT
+            dpsr.id
+        FROM
+            devops_pipeline_stage_record dpsr
+        WHERE
+            dpsr.pipeline_record_id = #{pipelineRecordId}
+        AND dpsr.`status` = 'pendingcheck'
+    </select>
+
 </mapper>
