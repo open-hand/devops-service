@@ -1257,6 +1257,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public SonarContentsDTO getSonarContent(Long projectId, Long appId) {
+
+        //没有使用sonarqube直接返回空对象
         if (sonarqubeUrl.equals("")) {
             return new SonarContentsDTO();
         }
@@ -1265,14 +1267,21 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationE applicationE = applicationRepository.query(appId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+
+
+        //初始化sonarClient
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
         String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         try {
+
+            //初始化查询参数
             Map<String, String> queryContentMap = new HashMap<>();
             queryContentMap.put("additionalFields", "metrics,periods");
             queryContentMap.put("componentKey", key);
             queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,new_bugs,new_vulnerabilities,sqale_index,code_smells,new_technical_debt,new_code_smells,coverage,tests,new_coverage,duplicated_lines_density,duplicated_blocks,new_duplicated_lines_density,ncloc,ncloc_language_distribution");
+
+            //根据project-key查询sonarqube项目内容
             Response<SonarComponent> sonarComponentResponse = sonarClient.getSonarComponet(queryContentMap).execute();
             if (sonarComponentResponse.raw().code() != 200) {
                 if (sonarComponentResponse.raw().code() == 404) {
@@ -1294,11 +1303,15 @@ public class ApplicationServiceImpl implements ApplicationService {
                 Map<String, String> analyseMap = new HashMap<>();
                 analyseMap.put("project", key);
                 analyseMap.put("ps", "3");
+
+                //查询上一次的分析时间
                 Response<SonarAnalyses> sonarAnalyses = sonarClient.getAnalyses(analyseMap).execute();
                 if (sonarAnalyses.raw().code() == 200 && sonarAnalyses.body().getAnalyses() != null && sonarAnalyses.body().getAnalyses().size() > 0) {
                     sonarContentsDTO.setDate(sonarAnalyses.body().getAnalyses().get(0).getDate());
                 }
             }
+
+            //分类型对sonarqube project查询返回的结果进行处理
             sonarComponentResponse.body().getComponent().getMeasures().stream().forEach(measure -> {
                 SonarQubeType sonarQubeType = SonarQubeType.forValue(String.valueOf(measure.getMetric()));
                 switch (sonarQubeType) {
