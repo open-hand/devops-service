@@ -1,5 +1,6 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
+import _ from 'lodash';
 import { handleProptError } from '../../../utils';
 import { HEIGHT, SORTER_MAP } from '../../../common/Constants';
 
@@ -67,13 +68,18 @@ class PipelineStore {
     return this.recordDate.slice();
   }
 
-  async loadListData(projectId, page, size, sort, param) {
+  async loadListData(projectId, page, size, sort, param, searchData) {
     this.setLoading(true);
-
+    let searchPath = '';
+    if(searchData && searchData.length) {
+      _.forEach(searchData, item => {
+        searchPath += `&${item}=true`
+      })
+    }
     const sortPath = sort ? `&sort=${sort.field || sort.columnKey},${SORTER_MAP[sort.order] || 'desc'}` : '';
     const data = await axios
       .post(
-        `/devops/v1/projects/${projectId}/pipeline/list_by_options?page=${page}&size=${size}${sortPath}`,
+        `/devops/v1/projects/${projectId}/pipeline/list_by_options?page=${page}&size=${size}${sortPath}${searchPath}`,
         JSON.stringify(param),
       )
       .catch(e => {

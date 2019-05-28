@@ -1691,6 +1691,10 @@ const zhCN = {
     '此任务为会签审核任务，目前【{checkUsers}】已审核通过，还需【{unCheckUsers}】审核通过后，才能执行之后的步骤。',
   'pipeline.canCheck.tips.0': '此任务已被{userName}审核',
   'pipeline.canCheck.tips.1': '此任务已被{userName}终止',
+  'pipelineRecord.search': '与我相关',
+  'pipelineRecord.search.checkPending': '待我审核',
+  'pipelineRecord.search.reviewed': '我审核过的',
+  'pipelineRecord.search.executed': '我执行过的',
 
   // pipeline
   'pipeline.head': '流水线',
@@ -1796,6 +1800,10 @@ const zhCN = {
   'pipeline.before.leave': '离开当前页面？__@.@__离开后，系统将不会保存您所做的修改。',
   'pipeline.create.error-1': '请检查任务类型是否正确！',
   'pipeline.create.error-2': '自动触发类型的流水线需要以部署任务作为触发器！',
+  'pipeline.search': '快速搜索',
+  'pipeline.search.creator': '我创建的',
+  'pipeline.search.executor': '我能执行的',
+  'pipeline.process.status': '流程状态 - ',
 
   // 代码质量
   'codeQuality.head': '代码质量',

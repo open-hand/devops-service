@@ -21,16 +21,9 @@ import '../../../main.scss';
 import './PipelineRecord.scss';
 import StatusTags from '../../../../components/StatusTags/StatusTags';
 import { HEIGHT } from '../../../../common/Constants';
+import { RELATED_TO_ME, STATUS_COLOR } from "../components/Constants";
 
 const { Option } = Select;
-const STATUS_COLOR = {
-  success: '#00BFA5',
-  running: '#4D90FE',
-  failed: '#F44336',
-  stop: '#FF7043',
-  deleted: '#D3D3D3',
-  pendingcheck: '#FFB100',
-};
 
 @injectIntl
 @withRouter
@@ -52,6 +45,7 @@ class PipelineRecord extends Component {
       canCheck: false,
       checkTips: null,
       canRetry: true,
+      searchData: null,
     };
   }
 
@@ -62,12 +56,9 @@ class PipelineRecord extends Component {
       location: { state },
     } = this.props;
     PipelineRecordStore.loadPipelineData(projectId);
-    if (state && state.pipelineId) {
-      this.setState({ pipelineId: state.pipelineId });
-      PipelineRecordStore.loadRecordList(projectId, state.pipelineId, 0, HEIGHT < 900 ? 10 : 15);
-    } else {
-      PipelineRecordStore.loadRecordList(projectId, null, 0, HEIGHT < 900 ? 10 : 15);
-    }
+    const { pipelineId } = state || {};
+    PipelineRecordStore.loadRecordList(projectId, pipelineId, 0, HEIGHT < 900 ? 10 : 15);
+    pipelineId && this.setState({ pipelineId });
   }
 
   /**
@@ -78,13 +69,13 @@ class PipelineRecord extends Component {
       PipelineRecordStore,
       AppState: { currentMenuType: { projectId } },
     } = this.props;
-    const { pipelineId } = this.state;
+    const { pipelineId, searchData } = this.state;
     PipelineRecordStore.setInfo({
       filters: {},
       sort: { columnKey: 'id', order: 'descend' },
       paras: [],
     });
-    PipelineRecordStore.loadRecordList(projectId, pipelineId, 0, HEIGHT < 900 ? 10 : 15);
+    PipelineRecordStore.loadRecordList(projectId, pipelineId, 0, HEIGHT < 900 ? 10 : 15, searchData);
   };
 
   /**
@@ -109,7 +100,7 @@ class PipelineRecord extends Component {
       PipelineRecordStore,
       AppState: { currentMenuType: { projectId } },
     } = this.props;
-    const { pipelineId } = this.state;
+    const { pipelineId, searchData } = this.state;
     PipelineRecordStore.setInfo({ filters, sort: sorter, paras });
     const sort = { field: 'id', order: 'desc' };
     if (sorter.column) {
@@ -133,6 +124,7 @@ class PipelineRecord extends Component {
       pipelineId,
       pagination.current - 1,
       pagination.pageSize,
+      searchData,
       sort,
       postData,
     );
@@ -513,6 +505,14 @@ class PipelineRecord extends Component {
     this.setState({ show: false, id: null, name: null, checkData: {}, canCheck: false, checkTips: null });
   };
 
+  /**
+   * 与我相关搜索
+   * @param value
+   */
+  handleSearch = (value) => {
+    this.setState({ searchData: value }, () => this.loadData());
+  };
+
   render() {
     const {
       PipelineRecordStore,
@@ -575,31 +575,51 @@ class PipelineRecord extends Component {
           </Button>
         </Header>
         <Content code="pipelineRecord" values={{ name }}>
-          <Select
-            label={formatMessage({ id: 'pipelineRecord.pipeline.name' })}
-            className="c7n-pipelineRecord-select"
-            optionFilterProp="children"
-            onChange={this.handleSelect}
-            value={pipelineId || undefined}
-            filter
-            allowClear
-            filterOption={(input, option) =>
-              option.props.children
-                .toLowerCase()
-                .indexOf(input.toLowerCase()) >= 0
-            }
-          >
-            {
-              _.map(pipelineData, ({ id, name }) => (
-                <Option
-                  key={id}
-                  value={id}
-                >
-                  {name}
-                </Option>
-              ))
-            }
-          </Select>
+          <div className="c7n-pipelineRecord-select">
+            <Select
+              label={formatMessage({ id: 'pipelineRecord.pipeline.name' })}
+              className="c7n-pipelineRecord-select-200 mg-right-16"
+              optionFilterProp="children"
+              onChange={this.handleSelect}
+              value={pipelineId || undefined}
+              filter
+              allowClear
+              filterOption={(input, option) =>
+                option.props.children
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {
+                _.map(pipelineData, ({ id, name }) => (
+                  <Option
+                    key={id}
+                    value={id}
+                  >
+                    {name}
+                  </Option>
+                ))
+              }
+            </Select>
+            <Select
+              mode="multiple"
+              label={formatMessage({ id: "pipelineRecord.search" })}
+              allowClear
+              className="c7n-pipelineRecord-select-380"
+              onChange={this.handleSearch}
+            >
+              {
+                _.map(RELATED_TO_ME, item => (
+                  <Option
+                    key={item}
+                    value={item}
+                  >
+                    {formatMessage({ id: `pipelineRecord.search.${item}` })}
+                  </Option>
+                ))
+              }
+            </Select>
+          </div>
           <Table
             filterBarPlaceholder={formatMessage({ id: 'filter' })}
             loading={loading}

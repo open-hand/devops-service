@@ -245,7 +245,13 @@ export default class PipelineDetail extends Component {
             <span className="c7ncd-pipeline-detail-label">{formatMessage({ id: 'pipeline.trigger.people' })}</span>
             <UserInfo avatar={imageUrl} name={realName || ''} id={loginName} />
           </div>}
-          {status === STATUS_RUNNING && <div className="c7ncd-pipeline-detail-item">
+          <div className="c7ncd-pipeline-detail-item">
+            <span className="c7ncd-pipeline-detail-label">{formatMessage({ id: 'pipeline.process.status' })}</span>
+            <span className={`c7ncd-pipeline-status-tag c7ncd-pipeline-status-tag_${status}`}>
+              <FormattedMessage id={`pipelineRecord.status.${status}`} />
+            </span>
+          </div>
+          {status === STATUS_RUNNING && <div className="c7ncd-pipeline-manual-stop">
             <Permission
               type={type}
               projectId={projectId}
