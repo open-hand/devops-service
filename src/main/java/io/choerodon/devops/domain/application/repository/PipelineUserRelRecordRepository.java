@@ -1,8 +1,8 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.domain.application.entity.PipelineUserRecordRelE;
-
 import java.util.List;
+
+import io.choerodon.devops.domain.application.entity.PipelineUserRecordRelE;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -13,4 +13,6 @@ public interface PipelineUserRelRecordRepository {
     PipelineUserRecordRelE create(PipelineUserRecordRelE recordRelE);
 
     List<PipelineUserRecordRelE> queryByRecordId(Long pipelineRecordId, Long stageRecordId, Long taskRecordId);
+
+    void deleteByIds(Long pipelineRecordId, Long stageRecordId, Long taskRecordId);
 }

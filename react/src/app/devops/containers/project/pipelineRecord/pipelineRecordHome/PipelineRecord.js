@@ -51,6 +51,7 @@ class PipelineRecord extends Component {
       submitting: false,
       canCheck: false,
       checkTips: null,
+      canRetry: true,
     };
   }
 
@@ -359,12 +360,18 @@ class PipelineRecord extends Component {
       .then(data => {
         if (data && data.failed) {
           Choerodon.prompt(data.message);
-        } else {
-          this.setState({ showRetry: false, id: null });
+        } else if (data) {
+          this.setState({ showRetry: false, id: null, canRetry: true });
           this.loadData();
+        } else {
+          this.setState({ canRetry: false });
         }
         this.setState({ submitting: false });
-      });
+      })
+      .catch(e => {
+        Choerodon.handleResponseError(e);
+        this.setState({ submitting: false });
+      })
   };
 
   /**
@@ -436,7 +443,7 @@ class PipelineRecord extends Component {
    * 关闭重试弹窗
    */
   closeRetry = () => {
-    this.setState({ showRetry: false, id: null, name: null });
+    this.setState({ showRetry: false, id: null, name: null, canRetry: true });
   };
 
   /**
@@ -534,6 +541,7 @@ class PipelineRecord extends Component {
       submitting,
       canCheck,
       checkTips,
+      canRetry,
     } = this.state;
 
     const { loading, pageInfo } = PipelineRecordStore;
@@ -611,9 +619,34 @@ class PipelineRecord extends Component {
             closable={false}
             onOk={this.handleRetry}
             onCancel={this.closeRetry}
+            footer={canRetry ? [
+              <Button
+                key="back"
+                onClick={this.closeRetry}
+                disabled={submitting}
+              >
+                <FormattedMessage id="cancel" />
+              </Button>,
+              <Button
+                key="submit"
+                loading={submitting}
+                type="primary"
+                onClick={this.handleRetry}
+              >
+                <FormattedMessage id="ok" />
+              </Button>,
+            ] : [
+              <Button
+                key="back"
+                type="primary"
+                onClick={this.closeRetry}
+              >
+                <FormattedMessage id="pipelineRecord.check.tips.button" />
+              </Button>,
+            ]}
           >
             <div className="c7n-padding-top_8">
-              <FormattedMessage id="pipelineRecord.retry.des" />
+              <FormattedMessage id={`pipelineRecord.retry.${canRetry}`} />
             </div>
           </Modal>
         )}

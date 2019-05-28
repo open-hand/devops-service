@@ -51,6 +51,7 @@ import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -721,6 +722,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS, statefulSetName);
     }
 
+    @Override
+    @Transactional(rollbackFor=Exception.class)
     public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
 
         //校验用户是否有环境的权限
@@ -1017,6 +1020,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public void instanceDelete(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限

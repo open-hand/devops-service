@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -41,7 +42,7 @@ public class DevopsSecretController {
      * @param secretReqDTO 请求体
      * @return SecretRepDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建或更新密钥")
     @PutMapping
@@ -62,7 +63,7 @@ public class DevopsSecretController {
      * @param secretId 密钥id
      * @return Boolean
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除密钥")
     @DeleteMapping("/{env_id}/{secret_id}")
@@ -86,7 +87,7 @@ public class DevopsSecretController {
      * @param params      查询参数
      * @return Page
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "分页查询secret")
@@ -111,7 +112,7 @@ public class DevopsSecretController {
      * @param secretId 密钥id
      * @return SecretRepDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据密钥id查询密钥")
     @GetMapping("/{secret_id}")
@@ -131,7 +132,7 @@ public class DevopsSecretController {
      * @param envId      环境id
      * @param secretName 密钥名
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验名字唯一性")
     @GetMapping("/{env_id}/check_name")

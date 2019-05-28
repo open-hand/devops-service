@@ -19,6 +19,7 @@ public class PipelineRecordE {
     private Date creationDate;
     private String businessKey;
     private Boolean edited;
+    private String auditUser;
 
     public PipelineRecordE(Long pipelineId, String triggerType, Long projectId, String status, String pipelineName) {
         this.pipelineId = pipelineId;
@@ -26,6 +27,14 @@ public class PipelineRecordE {
         this.projectId = projectId;
         this.status = status;
         this.pipelineName = pipelineName;
+    }
+
+    public String getAuditUser() {
+        return auditUser;
+    }
+
+    public void setAuditUser(String auditUser) {
+        this.auditUser = auditUser;
     }
 
     public PipelineRecordE() {

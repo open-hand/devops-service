@@ -3,14 +3,14 @@
   "routeName": "devops",
   "description": "",
   "license": "ISC",
-  "version": "0.1.2",
+  "version": "0.17.0",
   "keywords": [],
   "contributors": [
     "choerodon"
   ],
   "main": "./react/src/app/devops/containers/DEVOPSIndex.js",
   "files": [
-    "react"
+    "lib"
   ],
   "scripts": {
     "start": "choerodon-front-boot start --config ./react/config.js",
@@ -22,8 +22,8 @@
     "postpublish": "choerodon-front-boot postpublish"
   },
   "dependencies": {
-    "@choerodon/boot": "0.1.x",
-    "@choerodon/master": "0.1.x",
+    "@choerodon/boot": "0.17.x",
+    "@choerodon/master": "0.17.x",
     "diff-match-patch": "^1.0.4",
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.12",

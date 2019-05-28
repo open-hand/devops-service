@@ -3,10 +3,14 @@ package io.choerodon.devops.infra.feign.fallback;
 import java.util.Map;
 
 import io.choerodon.devops.api.dto.sonar.Bug;
+import io.choerodon.devops.api.dto.sonar.SonarAnalyses;
 import io.choerodon.devops.api.dto.sonar.SonarComponent;
 import io.choerodon.devops.api.dto.sonar.SonarTables;
 import io.choerodon.devops.api.dto.sonar.Vulnerability;
 import io.choerodon.devops.infra.feign.SonarClient;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import retrofit2.Call;
 
 /**
@@ -16,6 +20,11 @@ public class SonarClientFallback implements SonarClient {
 
     @Override
     public Call<SonarComponent> getSonarComponet(Map<String, String> maps) {
+        return null;
+    }
+
+    @Override
+    public Call<SonarAnalyses> getAnalyses(Map<String, String> maps) {
         return null;
     }
 
@@ -44,5 +53,21 @@ public class SonarClientFallback implements SonarClient {
         return null;
     }
 
+    @Override
+    public Call<Void> updateVisibility(Map<String, String> maps) {
+        return null;
+    }
 
+    @Override
+    public Call<Void> updateDefaultVisibility(Map<String, String> maps){
+        return null;
+    }
+
+    @Override
+    public Call<Void> addGroupToTemplate(Map<String, String> maps) {
+        return null;
+    }
+
+    @Override
+    public Call<Void> removeGroupFromTemplate(Map<String, String> maps) {return null;}
 }

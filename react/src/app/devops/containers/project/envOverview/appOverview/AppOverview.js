@@ -1,11 +1,10 @@
 /* eslint-disable react/sort-comp */
 import React, { Component } from 'react';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import { observable, action } from 'mobx';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import {
-  Button,
   Form,
   Collapse,
   Icon,
@@ -13,41 +12,42 @@ import {
   Tooltip,
   Modal,
   Progress,
-  Select,
 } from 'choerodon-ui';
-import { Permission, Content, Action, stores } from '@choerodon/boot';
+import { Action } from '@choerodon/boot';
 import _ from 'lodash';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/base16-dark.css';
-import ValueConfig from '../../instances/ValueConfig';
-import UpgradeIst from '../../instances/UpgradeIst';
-import '../EnvOverview.scss';
-import '../../instances/Instances.scss';
-import '../../../main.scss';
 import InstancesStore from '../../../../stores/project/instances/InstancesStore';
 import DomainStore from '../../../../stores/project/domain';
+import NetworkConfigStore from '../../../../stores/project/networkConfig';
+import ValueConfig from '../../instances/ValueConfig';
+import UpgradeIst from '../../instances/UpgradeIst';
 import CreateDomain from '../../domain/createDomain';
 import CreateNetwork from '../../networkConfig/createNetwork';
-import NetworkConfigStore from '../../../../stores/project/networkConfig';
 import LoadingBar from '../../../../components/loadingBar';
 import ExpandRow from '../../instances/components/ExpandRow';
 import UploadIcon from '../../instances/components/UploadIcon';
 import PodStatus from '../../instances/components/PodStatus/PodStatus';
+import DeleteModal from '../../../../components/deleteModal';
 import { handleProptError } from '../../../../utils';
 
-const { AppState } = stores;
-const Option = Select.Option;
+import '../EnvOverview.scss';
+import '../../instances/Instances.scss';
+import '../../../main.scss';
+
 const Panel = Collapse.Panel;
 
+@Form.create({})
+@withRouter
+@injectIntl
+@inject('AppState')
 @observer
-class AppOverview extends Component {
+export default class AppOverview extends Component {
   @observable pageSize = 10;
 
   @observable visible = false;
 
   @observable visibleUp = false;
-
-  @observable openRemove = false;
 
   @observable page = 0;
 
@@ -91,6 +91,11 @@ class AppOverview extends Component {
 
   @observable confirmLoading = false;
 
+  state = {
+    deleteArr: [],
+    deleteLoading: false,
+  };
+
   componentDidMount() {
     const { store } = this.props;
     const refresh = store.getRefresh;
@@ -108,8 +113,15 @@ class AppOverview extends Component {
    */
   onSearch = () => {
     this.searchInput.focus();
-    const { store, envId } = this.props;
-    const projectId = AppState.currentMenuType.id;
+    const {
+      store,
+      envId,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
     const val = store.getVal;
     const searchParam = {};
     const postData = {
@@ -135,35 +147,37 @@ class AppOverview extends Component {
   };
 
   /**
-   * 处理页面跳转
-   * @param url 跳转地址
-   */
-  linkToChange = url => {
-    const { history } = this.props;
-    history.push(url);
-  };
-
-  /**
    * 加载实例总览列表
    */
   loadIstOverview = (spin = true) => {
-    const { store, envId } = this.props;
-    const projectId = AppState.currentMenuType.id;
+    const {
+      store,
+      envId,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
     store.loadIstOverview(spin, projectId, envId);
   };
 
   /**
    * 查看部署详情
    */
-  linkDeployDetail = record => {
-    const { id, status, code } = record;
-    const { history } = this.props;
+  linkDeployDetail = ({ id, status, code }) => {
     const {
-      id: projectId,
-      name: projectName,
-      type,
-      organizationId,
-    } = AppState.currentMenuType;
+      history,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+          name: projectName,
+          type,
+          organizationId,
+        },
+      },
+    } = this.props;
+
     history.push({
       pathname: `/devops/instance/${id}/${status}/${code}/detail`,
       search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(
@@ -180,35 +194,38 @@ class AppOverview extends Component {
       error,
     } = data;
 
+    let nameNode = null;
+    switch (status) {
+      case 'running':
+      case 'stopped':
+        nameNode = <span className="c7n-deploy-istCode">{code}</span>;
+        break;
+      case 'operating':
+        nameNode = <div>
+          <span className="c7n-deploy-istCode">{code}</span>
+          <Tooltip title={intl.formatMessage({ id: `ist_${status}` })}>
+            <Progress
+              type="loading"
+              size="small"
+              width={15}
+            />
+          </Tooltip>
+        </div>;
+        break;
+      default:
+        nameNode = <div>
+          <span className="c7n-deploy-istCode">{code}</span>
+          <Tooltip title={`${status}: ${error || ''}`}>
+            <i className="icon icon-error c7n-deploy-ist-operate" />
+          </Tooltip>
+        </div>;
+    }
+
     return (
       <div className="c7n-envow-ist-header-wrap">
         <Icon type="navigate_next" />
         <div className="c7n-envow-ist-name">
-          {status === 'running' || status === 'stopped' ? (
-            <span className="c7n-deploy-istCode">{code}</span>
-          ) : (
-            <div className="c7n-envow-ist-fail">
-              {status === 'operating' ? (
-                <div>
-                  <span className="c7n-deploy-istCode">{code}</span>
-                  <Tooltip
-                    title={intl.formatMessage({
-                      id: `ist_${status}`,
-                    })}
-                  >
-                    <Progress type="loading" width={15} />
-                  </Tooltip>
-                </div>
-              ) : (
-                <div>
-                  <span className="c7n-deploy-istCode">{code}</span>
-                  <Tooltip title={`${status}${error ? `：${error}` : ''}`}>
-                    <i className="icon icon-error c7n-deploy-ist-operate" />
-                  </Tooltip>
-                </div>
-              )}
-            </div>
-          )}
+          {nameNode}
         </div>
         <span className="c7n-envow-ist-version">
           <span className="c7n-envow-version-text">
@@ -231,7 +248,13 @@ class AppOverview extends Component {
    * @param id
    */
   reStart = id => {
-    const projectId = parseInt(AppState.currentMenuType.id, 10);
+    const {
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
     this.confirmLoading = true;
     InstancesStore.reStarts(projectId, id).then(error => {
       if (error && error.failed) {
@@ -251,9 +274,14 @@ class AppOverview extends Component {
    * 修改配置实例信息
    */
   @action
-  updateConfig = async (record) => {
-    const { code, id, envId, commandVersionId, appId } = record;
-    const { id: projectId } = AppState.currentMenuType;
+  updateConfig = async ({ code, id, envId, commandVersionId, appId }) => {
+    const {
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
 
     this.id = id;
     this.name = code;
@@ -274,9 +302,15 @@ class AppOverview extends Component {
    */
   @action
   upgradeIst = async record => {
-    const { intl } = this.props;
+    const {
+      intl,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
     const { code, id, envId, commandVersionId, appId } = record;
-    const { id: projectId } = AppState.currentMenuType;
 
     InstancesStore.setValue(null);
     try {
@@ -332,7 +366,14 @@ class AppOverview extends Component {
    * @param status 状态
    */
   activeIst = (id, status) => {
-    const projectId = parseInt(AppState.currentMenuType.id, 10);
+    const {
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+
     this.confirmLoading = true;
     InstancesStore.changeIstActive(projectId, id, status).then(error => {
       if (error && error.failed) {
@@ -397,44 +438,70 @@ class AppOverview extends Component {
     }
   };
 
-  closeDeleteModal(id) {
-    this.openRemove = false;
-  }
+  handleDelete = async (id, callback) => {
+    const {
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
 
-  /**
-   * 打开删除数据模态框
-   */
-  @action
-  handleOpen(record) {
-    const { id, code } = record;
-    this.openRemove = true;
-    this.id = id;
-    this.istName = code;
-  }
+    this.setState({ deleteLoading: true });
 
-  /**
-   * 删除数据
-   */
-  @action
-  handleDelete = id => {
-    const projectId = parseInt(AppState.currentMenuType.id, 10);
-    this.loading = true;
-    InstancesStore.deleteInstance(projectId, id)
-      .then(res => {
-        if (res && res.failed) {
-          Choerodon.prompt(res.message);
-          this.loading = false;
-        } else {
-          this.openRemove = false;
-          this.loading = false;
-          this.loadIstOverview();
-        }
-      })
+    const response = await InstancesStore.deleteInstance(projectId, id)
       .catch(error => {
-        this.loading = false;
+        this.setState({ deleteLoading: false });
+        callback && callback();
         Choerodon.handleResponseError(error);
       });
+
+    const result = handleProptError(response);
+
+    if (result) {
+      this.removeDeleteModal(id);
+      this.loadIstOverview();
+    }
+
+    this.setState({ deleteLoading: false });
   };
+
+  openDeleteModal(id, name) {
+    const deleteArr = [...this.state.deleteArr];
+
+    const currentIndex = _.findIndex(deleteArr, item => id === item.deleteId);
+
+    if (~currentIndex) {
+      const newItem = {
+        ...deleteArr[currentIndex],
+        display: true,
+      };
+      deleteArr.splice(currentIndex, 1, newItem);
+    } else {
+      const newItem = {
+        display: true,
+        deleteId: id,
+        name,
+      };
+      deleteArr.push(newItem);
+    }
+
+    this.setState({ deleteArr });
+  }
+
+  closeDeleteModal = (id) => {
+    const deleteArr = [...this.state.deleteArr];
+
+    const current = _.find(deleteArr, item => id === item.deleteId);
+
+    current.display = false;
+
+    this.setState({ deleteArr });
+  };
+
+  removeDeleteModal(id) {
+    const { deleteArr } = this.state;
+    const newDeleteArr = _.filter(deleteArr, ({ deleteId }) => deleteId !== id);
+    this.setState({ deleteArr: newDeleteArr });
+  }
 
   /**
    *打开域名创建弹框
@@ -484,11 +551,14 @@ class AppOverview extends Component {
    * @returns {*}
    */
   panelDom = () => {
-    const { store } = this.props;
     const {
-      id: currentProjectId,
-      organizationId: orgId,
-    } = AppState.currentMenuType;
+      store,
+      AppState: {
+        currentMenuType: {
+          id: currentProjectId,
+        },
+      },
+    } = this.props;
     const ist = store.getIst;
     if (ist) {
       if (ist.devopsEnvPreviewAppDTOS && ist.devopsEnvPreviewAppDTOS.length) {
@@ -556,12 +626,20 @@ class AppOverview extends Component {
    * @param record 行数据
    * @returns {*}
    */
-  columnAction = record => {
-    const { id: projectId, type, organizationId } = AppState.currentMenuType;
+  columnAction = (record) => {
     const {
       intl: { formatMessage },
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+          type,
+          organizationId,
+        },
+      },
     } = this.props;
-    const { id, status, connect, appVersionId } = record;
+
+    const { id, code, status, connect, appVersionId } = record;
+
     const actionType = {
       detail: {
         service: ['devops-service.application-instance.listResources'],
@@ -599,8 +677,8 @@ class AppOverview extends Component {
       },
       delete: {
         service: ['devops-service.application-instance.delete'],
-        text: formatMessage({ id: 'ist.del' }),
-        action: this.handleOpen.bind(this, record),
+        text: formatMessage({ id: 'ist.delete' }),
+        action: this.openDeleteModal.bind(this, id, code),
       },
     };
     let actionItem = [];
@@ -646,31 +724,26 @@ class AppOverview extends Component {
       intl: { formatMessage },
       store,
     } = this.props;
+
     const {
-      type,
-      id: projectId,
-      organizationId: orgId,
-      name,
-    } = AppState.currentMenuType;
+      deleteArr,
+      deleteLoading,
+    } = this.state;
+
     const val = store.getVal;
     const prefix = <Icon type="search" onClick={this.onSearch} />;
     const suffix = val ? <Icon type="close" onClick={this.emitEmpty} /> : null;
 
-    const containerDom =
-      this.containerArr.length &&
-      _.map(this.containerArr, c => (
-        <Option key={c.logId} value={`${c.logId}+${c.containerName}`}>
-          {c.containerName}
-        </Option>
-      ));
-
-    const options = {
-      readOnly: true,
-      lineNumbers: true,
-      autofocus: true,
-      lineWrapping: true,
-      theme: 'base16-dark',
-    };
+    const deleteModals = _.map(deleteArr, ({ name, display, deleteId }) => (<DeleteModal
+      key={deleteId}
+      title={`${formatMessage({ id: 'ist.delete' })}“${name}”`}
+      visible={display}
+      objectId={deleteId}
+      loading={deleteLoading}
+      objectType="instance"
+      onClose={this.closeDeleteModal}
+      onOk={this.handleDelete}
+    />));
 
     return (
       <div>
@@ -711,32 +784,7 @@ class AppOverview extends Component {
                 onClose={this.handleCancelUp}
               />
             )}
-            <Modal
-              title={`${formatMessage({ id: 'ist.del' })}“${this.istName}”`}
-              visible={this.openRemove}
-              closable={false}
-              footer={[
-                <Button
-                  key="back"
-                  onClick={this.closeDeleteModal.bind(this, this.id)}
-                  disabled={this.loading}
-                >
-                  <FormattedMessage id="cancel" />
-                </Button>,
-                <Button
-                  key="submit"
-                  type="danger"
-                  loading={this.loading}
-                  onClick={this.handleDelete.bind(this, this.id)}
-                >
-                  <FormattedMessage id="delete" />
-                </Button>,
-              ]}
-            >
-              <div className="c7n-padding-top_8">
-                <FormattedMessage id="ist.delDes" />
-              </div>
-            </Modal>
+            {deleteModals}
             <Modal
               title={`${formatMessage({ id: 'ist.reDeploy' })}“${
                 this.istName
@@ -795,5 +843,3 @@ class AppOverview extends Component {
     );
   }
 }
-
-export default Form.create({})(withRouter(injectIntl(AppOverview)));

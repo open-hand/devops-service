@@ -26,12 +26,13 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { commonComponent } from '../../../../components/commonFunction';
 import LoadingBar from '../../../../components/loadingBar';
 import RefreshBtn from '../../../../components/refreshBtn';
-import './AppHome.scss';
-import '../../../main.scss';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
-import '../../envPipeline/EnvPipeLineHome.scss';
 import Tips from '../../../../components/Tips/Tips';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
+
+import '../../envPipeline/EnvPipeLineHome.scss';
+import './AppHome.scss';
+import '../../../main.scss';
 import '../index.scss';
 
 const { AppState } = stores;
@@ -111,6 +112,11 @@ class AppHome extends Component {
   }
 
   componentDidMount() {
+    const {
+      location: { state },
+    } = this.props;
+    const { show, modeType } = state || {};
+    show && modeType && this.showSideBar('create');
     this.loadAllData(0);
   }
 
@@ -275,9 +281,11 @@ class AppHome extends Component {
                         onClick={this.showSideBar.bind(this, 'edit', record.id)}
                       />
                     ) : (
-                      <Icon
-                        type="mode_edit"
-                        className="c7n-app-icon-disabled"
+                      <Button
+                        disabled
+                        icon="mode_edit"
+                        shape="circle"
+                        size="small"
                       />
                     )}
                   </Tooltip>
@@ -308,32 +316,20 @@ class AppHome extends Component {
                       <Button
                         shape="circle"
                         size="small"
+                        icon={record.active ? 'remove_circle_outline' : 'finished'}
                         onClick={this.changeAppStatus.bind(
                           this,
                           record.id,
                           record.active,
                         )}
-                      >
-                        {record.active ? (
-                          <Icon type="remove_circle_outline" />
-                        ) : (
-                          <Icon type="finished" />
-                        )}
-                      </Button>
+                      />
                     ) : (
-                      <Fragment>
-                        {record.active ? (
-                          <Icon
-                            type="remove_circle_outline"
-                            className="c7n-app-icon-disabled"
-                          />
-                        ) : (
-                          <Icon
-                            type="finished"
-                            className="c7n-app-icon-disabled"
-                          />
-                        )}
-                      </Fragment>
+                      <Button
+                        disabled
+                        icon={record.active ? 'remove_circle_outline' : 'finished'}
+                        shape="circle"
+                        size="small"
+                      />
                     )}
                   </Tooltip>
                 </Permission>
@@ -684,7 +680,6 @@ class AppHome extends Component {
       type: modeType,
       show,
       submitting,
-      id,
       checked,
       createSelectedRowKeys,
       createSelected,
@@ -741,7 +736,11 @@ class AppHome extends Component {
       },
     ];
 
-    let initHarbor = getHarborList.length ? getHarborList[0].id : undefined;
+    let initHarbor = undefined;
+    if (getHarborList.length) {
+      const hasProject = _.find(getHarborList, item => item.name.indexOf('project') !== -1);
+      initHarbor = hasProject ? hasProject.id : getHarborList[0].id;
+    }
     let initChart = getChartList.length ? getChartList[0].id : undefined;
     if (singleData && singleData.gitlabProjectId) {
       const { harborConfigId, chartConfigId } = singleData;

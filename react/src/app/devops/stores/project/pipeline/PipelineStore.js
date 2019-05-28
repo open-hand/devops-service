@@ -132,6 +132,16 @@ class PipelineStore {
   }
 
   /**
+   * 手动终止流水线
+   * @param projectId
+   * @param id
+   * @returns {*}
+   */
+  manualStop(projectId, id) {
+    return axios.get(`/devops/v1/projects/${projectId}/pipeline/stop?pipeline_record_id=${id}`);
+  }
+
+  /**
    * 加载记录详情
    * @param projectId
    * @param id 执行记录 id

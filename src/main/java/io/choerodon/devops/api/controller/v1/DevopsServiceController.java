@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -44,7 +45,7 @@ public class DevopsServiceController {
      * @param name      网络名
      * @return Boolean
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查网络唯一性")
     @GetMapping(value = "/check")
@@ -67,7 +68,7 @@ public class DevopsServiceController {
      * @param devopsServiceReqDTO 部署网络参数
      * @return Boolean
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "部署网络")
     @PostMapping
@@ -89,7 +90,7 @@ public class DevopsServiceController {
      * @param devopsServiceReqDTO 部署网络参数
      * @return Boolean
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新网络")
     @PutMapping(value = "/{id}")
@@ -112,7 +113,7 @@ public class DevopsServiceController {
      * @param id        网络ID
      * @return ResponseEntity
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除网络")
     @DeleteMapping(value = "/{id}")
@@ -132,7 +133,7 @@ public class DevopsServiceController {
      * @param envId     参数
      * @return List of DevopsServiceDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境查询网络列表")
@@ -154,7 +155,7 @@ public class DevopsServiceController {
      * @param id        网络id
      * @return DevopsServiceDTO
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个网络")
     @GetMapping(value = "/{id}")
@@ -177,7 +178,7 @@ public class DevopsServiceController {
      * @param name  网络名
      * @return DevopsServiceDTO
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据网络名查询网络")
     @GetMapping(value = "/query_by_name")
@@ -202,7 +203,7 @@ public class DevopsServiceController {
      * @param searchParam 查询参数
      * @return Page of DevopsServiceDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境总览网络查询")

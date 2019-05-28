@@ -72,6 +72,12 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Override
     public DevopsNotificationDTO create(Long projectId, DevopsNotificationDTO notificationDTO) {
         DevopsNotificationE notificationE = ConvertHelper.convert(notificationDTO, DevopsNotificationE.class);
+        Set<String> resources = check(projectId, notificationDTO.getEnvId());
+        notificationDTO.getNotifyTriggerEvent().forEach(event -> {
+            if (resources.contains(event)) {
+                throw new CommonException("error.trigger.event.exist");
+            }
+        });
         notificationE.setProjectId(projectId);
         notificationE = notificationRepository.createOrUpdate(notificationE);
         List<Long> userRelIds = notificationDTO.getUserRelIds();
@@ -87,6 +93,17 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Override
     public DevopsNotificationDTO update(Long projectId, DevopsNotificationDTO notificationDTO) {
         DevopsNotificationE notificationE = ConvertHelper.convert(notificationDTO, DevopsNotificationE.class);
+        DevopsNotificationE oldNotificationE = notificationRepository.queryById(notificationDTO.getId());
+        Set<String> resources = check(projectId, notificationDTO.getEnvId());
+        List<String> events = notificationDTO.getNotifyTriggerEvent();
+        events.removeAll(Arrays.asList(oldNotificationE.getNotifyTriggerEvent().split(",")));
+        if(!events.isEmpty()) {
+            events.forEach(event -> {
+                if (resources.contains(event)) {
+                    throw new CommonException("error.trigger.event.exist");
+                }
+            });
+        }
         notificationE.setProjectId(projectId);
         notificationRepository.createOrUpdate(notificationE);
         updateUserRel(notificationDTO);
@@ -161,13 +178,26 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                         }
                     }).collect(Collectors.toList()).toArray(), ","));
                     if (devopsNotificationE.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
-                        resourceCheckDTO.setUser(GitUserNameUtil.getRealUsername());
+                        List<UserE> users = iamRepository.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
+                        if (!users.isEmpty()) {
+                            if (users.get(0).getRealName() != null) {
+                                resourceCheckDTO.setUser(users.get(0).getRealName());
+                            } else {
+                                resourceCheckDTO.setUser(users.get(0).getLoginName());
+                            }
+                        }
                     } else if (devopsNotificationE.getNotifyObject().equals(TriggerObject.OWNER.getObject())) {
                         resourceCheckDTO.setUser("项目所有者");
                     } else {
                         List<Long> userIds = notificationUserRelRepository.queryByNoticaionId(devopsNotificationE.getId()).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
                         iamRepository.listUsersByIds(userIds).stream().map(UserE::getRealName).collect(Collectors.toList());
-                        resourceCheckDTO.setUser(StringUtils.join(iamRepository.listUsersByIds(userIds).stream().map(UserE::getRealName).collect(Collectors.toList()).toArray(), ","));
+                        resourceCheckDTO.setUser(StringUtils.join(iamRepository.listUsersByIds(userIds).stream().map(userE -> {
+                            if (userE.getRealName() != null) {
+                                return userE.getRealName();
+                            } else {
+                                return userE.getLoginName();
+                            }
+                        }).collect(Collectors.toList()).toArray(), ","));
                     }
                     return resourceCheckDTO;
                 }
@@ -194,13 +224,20 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         Map<String, Object> params = new HashMap<>();
         List<UserE> userES = iamRepository.listUsersByIds(Arrays.asList(GitUserNameUtil.getUserId().longValue()));
         if (!userES.isEmpty()) {
-            params.put("user", userES.get(0).getRealName());
+            if (userES.get(0).getRealName() != null) {
+                params.put("user", userES.get(0).getRealName());
+            } else {
+                params.put("user", userES.get(0).getLoginName());
+            }
         }
+
         params.put("env", devopsEnvironmentE.getName());
-        params.put("object", objectType);
+        params.put("object", getObjectType(objectType));
         params.put("objectName", objectCode);
-        params.put("verificationCode", Captcha);
-        notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
+        params.put("captcha", Captcha);
+        params.put("timeout", "10");
+        //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
+        params.put("instance", objectCode);
         if (devopsNotificationE.getNotifyObject().equals(TriggerObject.HANDLER.getObject())) {
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             params.put("mobile", userES.get(0).getPhone());
@@ -240,9 +277,13 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             //根据不同的通知方式发送验证码
             triggerTypes.stream().forEach(triggerType -> {
                 if (triggerType.equals(TriggerType.EMAIL.getType())) {
+                    notifyDTO.setSourceId(devopsEnvironmentE.getProjectE().getId());
+                    notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
                     notifyDTO.setCustomizedSendingTypes(Arrays.asList("email"));
                     notifyClient.postEmail(notifyDTO);
                 } else if (triggerType.equals(TriggerType.PM.getType())) {
+                    notifyDTO.setSourceId(devopsEnvironmentE.getProjectE().getId());
+                    notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
                     notifyDTO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
                     notifyClient.postEmail(notifyDTO);
                 } else {
@@ -302,6 +343,35 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 break;
         }
         return code;
+    }
+
+
+    private String getObjectType(String type) {
+        String result = "";
+        ObjectType objectType = ObjectType.forValue(type);
+        switch (objectType) {
+            case INSTANCE:
+                result = "实例";
+                break;
+            case SERVICE:
+                result = "网络";
+                break;
+            case INGRESS:
+                result = "域名";
+                break;
+            case CERTIFICATE:
+                result = "证书";
+                break;
+            case CONFIGMAP:
+                result = "配置映射";
+                break;
+            case SECRET:
+                result = "密文";
+                break;
+            default:
+                break;
+        }
+        return result;
     }
 
     private void updateUserRel(DevopsNotificationDTO notificationDTO) {

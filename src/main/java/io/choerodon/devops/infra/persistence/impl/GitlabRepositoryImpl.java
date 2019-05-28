@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import feign.FeignException;
+import feign.RetryableException;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.DevopsProjectE;
+
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
@@ -20,6 +22,8 @@ import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +32,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class GitlabRepositoryImpl implements GitlabRepository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitlabRepositoryImpl.class);
 
     private GitlabServiceClient gitlabServiceClient;
     private GitUtil gitUtil;
@@ -107,29 +113,41 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
-        ResponseEntity<RepositoryFile> result = gitlabServiceClient
-                .createFile(projectId, path, content, commitMessage, userId);
-        if (result.getBody().getFilePath() == null) {
-            throw new CommonException("error.file.create");
+        try {
+            ResponseEntity<RepositoryFile> result = gitlabServiceClient
+                    .createFile(projectId, path, content, commitMessage, userId);
+            if (result.getBody().getFilePath() == null) {
+                throw new CommonException("error.file.create");
+            }
+        }catch (RetryableException e) {
+            LOGGER.info(e.getMessage(),e);
         }
     }
 
 
     @Override
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branch) {
-        ResponseEntity<RepositoryFile> result = gitlabServiceClient
-                .createFile(projectId, path, content, commitMessage, userId, branch);
-        if (result.getBody().getFilePath() == null) {
-            throw new CommonException("error.file.create");
+        try {
+            ResponseEntity<RepositoryFile> result = gitlabServiceClient
+                    .createFile(projectId, path, content, commitMessage, userId, branch);
+            if (result.getBody().getFilePath() == null) {
+                throw new CommonException("error.file.create");
+            }
+        }catch (RetryableException e) {
+            LOGGER.info(e.getMessage(),e);
         }
     }
 
     @Override
     public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
-        ResponseEntity<RepositoryFile> result = gitlabServiceClient
-                .updateFile(projectId, path, content, commitMessage, userId);
-        if (result.getBody().getFilePath() == null) {
-            throw new CommonException("error.file.update");
+        try {
+            ResponseEntity<RepositoryFile> result = gitlabServiceClient
+                    .updateFile(projectId, path, content, commitMessage, userId);
+            if (result.getBody().getFilePath() == null) {
+                throw new CommonException("error.file.update");
+            }
+        }catch (RetryableException e) {
+            LOGGER.info(e.getMessage(),e);
         }
     }
 

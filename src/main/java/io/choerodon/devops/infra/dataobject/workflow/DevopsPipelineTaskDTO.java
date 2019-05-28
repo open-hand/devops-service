@@ -7,19 +7,19 @@ import java.util.List;
  * Created by Sheep on 2019/4/2.
  */
 public class DevopsPipelineTaskDTO {
-    private Long taskId;
+    private Long taskRecordId;
     private String taskName;
     private List<String> usernames;
     private String taskType;
     private Boolean multiAssign;
     private Long sign;
 
-    public Long getTaskId() {
-        return taskId;
+    public Long getTaskRecordId() {
+        return taskRecordId;
     }
 
-    public void setTaskId(Long taskId) {
-        this.taskId = taskId;
+    public void setTaskRecordId(Long taskRecordId) {
+        this.taskRecordId = taskRecordId;
     }
 
     public Long getSign() {

@@ -30,7 +30,7 @@ public class WorkFlowController {
      * 触发自动部署
      *
      * @param stageRecordId 阶段记录Id
-     * @param taskId        任务Id
+     * @param taskRecordId        任务Id
      * @return
      */
     @ApiOperation(value = "触发自动部署")
@@ -39,8 +39,8 @@ public class WorkFlowController {
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
             @ApiParam(value = "任务Id", required = true)
-            @RequestParam(value = "task_id") Long taskId) {
-        pipelineService.autoDeploy(stageRecordId, taskId);
+            @RequestParam(value = "task_record_id") Long taskRecordId) {
+        pipelineService.autoDeploy(stageRecordId, taskRecordId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -49,7 +49,7 @@ public class WorkFlowController {
      *
      * @param pipelineRecordId 流水线记录Id
      * @param stageRecordId    阶段记录Id
-     * @param taskId           任务Id
+     * @param taskRecordId           任务Id
      * @return
      */
     @ApiOperation(value = "接收任务状态")
@@ -60,17 +60,17 @@ public class WorkFlowController {
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
             @ApiParam(value = "任务Id", required = true)
-            @RequestParam(value = "task_id") Long taskId,
+            @RequestParam(value = "task_record_id") Long taskRecordId,
             @ApiParam(value = "状态", required = true)
             @RequestParam(value = "status") Boolean status) {
-        pipelineService.setAppDeployStatus(pipelineRecordId, stageRecordId, taskId, status);
+        pipelineService.setAppDeployStatus(pipelineRecordId, stageRecordId, taskRecordId, status);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     /**
      * 检测部署任务生成实例状态
      *
-     * @param taskId
+     * @param taskRecordId
      * @param stageRecordId
      * @return
      */
@@ -80,8 +80,8 @@ public class WorkFlowController {
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
             @ApiParam(value = "任务Id", required = true)
-            @RequestParam(value = "task_id") Long taskId) {
-        return Optional.ofNullable(pipelineService.getAppDeployStatus(stageRecordId, taskId))
+            @RequestParam(value = "task_record_id") Long taskRecordId) {
+        return Optional.ofNullable(pipelineService.getAppDeployStatus(stageRecordId, taskRecordId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.get.deploy.status"));
     }

@@ -1,13 +1,13 @@
-import React, { Component, Fragment } from "react";
-import { observer } from "mobx-react";
-import { withRouter } from "react-router-dom";
-import { injectIntl } from "react-intl";
-import { Modal, Button } from "choerodon-ui";
-import { Content, stores } from "@choerodon/boot";
-import YamlEditor from "../../../components/yamlEditor";
-import InterceptMask from "../../../components/interceptMask/InterceptMask";
-import "./Instances.scss";
-import "../../main.scss";
+import React, { Component, Fragment } from 'react';
+import { observer } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
+import { injectIntl } from 'react-intl';
+import { Modal, Button } from 'choerodon-ui';
+import { Content, stores } from '@choerodon/boot';
+import YamlEditor from '../../../components/yamlEditor';
+import InterceptMask from '../../../components/interceptMask/InterceptMask';
+import './Instances.scss';
+import '../../main.scss';
 
 const { Sidebar } = Modal;
 const { AppState } = stores;
@@ -45,7 +45,7 @@ class ValueConfig extends Component {
   /**
    * 修改配置重新部署
    */
-  reDeploy = () => {
+  reDeploy = async () => {
     const { store, id, idArr, onClose } = this.props;
     const { value, hasChanged } = this.state;
     const { id: projectId } = AppState.currentMenuType;
@@ -55,22 +55,23 @@ class ValueConfig extends Component {
       isNotChange: !hasChanged,
       values: value || oldValue,
       appInstanceId: id,
-      type: "update",
+      type: 'update',
     };
 
     this.setState({ modalDisplay: false, loading: true });
-    store.reDeploy(projectId, data).then(res => {
-      if (res && res.failed) {
-        this.setState({ loading: false });
-        Choerodon.prompt(res.message);
-      } else {
+    const res = await store.reDeploy(projectId, data)
+      .catch(e => {
         this.setState({ loading: false });
         onClose(true);
-      }
-    }).catch(e => {
-      this.setState({ loading: false });
-      Choerodon.handleResponseError(e);
-    });
+        Choerodon.handleResponseError(e);
+      });
+
+    if (res && res.failed) {
+      Choerodon.prompt(res.message);
+    }
+
+    this.setState({ loading: false });
+    onClose(true);
   };
 
   /**
@@ -78,7 +79,7 @@ class ValueConfig extends Component {
    * @param value 内容改变
    * @param changed 有效值的变动
    */
-  handleChangeValue = (value, changed=false) => this.setState({ value, hasChanged: changed });
+  handleChangeValue = (value, changed = false) => this.setState({ value, hasChanged: changed });
 
   /**
    * 可以进行下一步操作
@@ -115,7 +116,7 @@ class ValueConfig extends Component {
     return (
       <Fragment>
         <Sidebar
-          title={formatMessage({ id: "ist.values" })}
+          title={formatMessage({ id: 'ist.values' })}
           visible={visible}
           footer={
             [<Button
@@ -126,7 +127,7 @@ class ValueConfig extends Component {
               loading={loading}
               disabled={hasEditorError}
             >
-              {formatMessage({ id: "deploy.btn.deploy" })}
+              {formatMessage({ id: 'deploy.btn.deploy' })}
             </Button>,
               <Button
                 funcType="raised"
@@ -134,7 +135,7 @@ class ValueConfig extends Component {
                 onClick={this.onClose}
                 disabled={loading}
               >
-                {formatMessage({ id: "cancel" })}
+                {formatMessage({ id: 'cancel' })}
               </Button>]
           }
         >
@@ -149,10 +150,10 @@ class ValueConfig extends Component {
           closable={false}
         >
           <div className="c7n-deploy-modal-content">
-            {formatMessage({ id: "envOverview.confirm.reDeploy" })}
+            {formatMessage({ id: 'envOverview.confirm.reDeploy' })}
           </div>
           <span>
-            {formatMessage({ id: "envOverview.confirm.content.reDeploy" })}
+            {formatMessage({ id: 'envOverview.confirm.content.reDeploy' })}
           </span>
         </Modal>
       </Fragment>

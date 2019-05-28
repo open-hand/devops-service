@@ -105,7 +105,7 @@ class Cluster extends Component {
       delId: null,
       clsName: '',
       page: 0,
-      size: HEIGHT <= 900 ? 5 : 8,
+      size: 10,
     };
   }
 

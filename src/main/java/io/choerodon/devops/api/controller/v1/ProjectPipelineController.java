@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.app.service.ProjectPipelineService;
@@ -41,7 +42,7 @@ public class ProjectPipelineController {
      * @param pipelineId      流水线id
      * @return Boolean
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "Retry jobs in a pipeline")
     @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipelineId}/retry")
     public ResponseEntity<Boolean> retry(
@@ -64,7 +65,7 @@ public class ProjectPipelineController {
      * @param pipelineId      流水线id
      * @return Boolean
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "Cancel jobs in a pipeline")
     @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipelineId}/cancel")
     public ResponseEntity<Boolean> cancel(

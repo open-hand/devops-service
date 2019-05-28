@@ -56,8 +56,4 @@ yarn.lock
 # folder
 dist
 lib
-# 自动更新目录，不要修改此目录里面的内容
-src/app
 
-# 菜单配置
-config.yml

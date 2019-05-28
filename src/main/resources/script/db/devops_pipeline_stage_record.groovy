@@ -29,4 +29,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_stage_record.groovy') {
     changeSet(author: 'scp', id: '2019-04-18-devops_pipeline_stage-modify-column') {
         sql("ALTER TABLE devops_pipeline_stage_record MODIFY COLUMN `execution_time` VARCHAR(255) BINARY")
     }
+    changeSet(author: 'scp', id: '2019-05-27-devops_pipeline_task-add-column') {
+        addColumn(tableName: 'devops_pipeline_stage_record') {
+            column(name: 'audit_user', type: 'VARCHAR(255)', remarks: '审核人员', afterColumn: "project_id")
+        }
+    }
 }

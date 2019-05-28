@@ -1,56 +1,59 @@
-import React, { Component, Fragment } from "react";
-import { observer, inject } from "mobx-react";
-import { withRouter } from "react-router-dom";
-import { injectIntl, FormattedMessage } from "react-intl";
+import React, { Component, Fragment } from 'react';
+import { observer, inject } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import {
   Table,
   Button,
   Form,
   Tooltip,
-  Modal,
   Popover,
   Icon,
   Select,
-} from "choerodon-ui";
+} from 'choerodon-ui';
 import {
   Permission,
   Content,
   Header,
   Page,
-  stores,
-} from "@choerodon/boot";
-import _ from "lodash";
-import "./NetworkHome.scss";
-import "../../../main.scss";
-import LoadingBar from "../../../../components/loadingBar";
-import CreateNetwork from "../createNetwork";
-import EditNetwork from "../editNetwork";
-import { commonComponent } from "../../../../components/commonFunction";
-import StatusIcon from "../../../../components/StatusIcon";
-import EnvOverviewStore from "../../../../stores/project/envOverview";
-import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
-import RefreshBtn from "../../../../components/refreshBtn";
-import EnvFlag from "../../../../components/envFlag";
+} from '@choerodon/boot';
+import _ from 'lodash';
+import LoadingBar from '../../../../components/loadingBar';
+import CreateNetwork from '../createNetwork';
+import EditNetwork from '../editNetwork';
+import { commonComponent } from '../../../../components/commonFunction';
+import StatusIcon from '../../../../components/StatusIcon';
+import EnvOverviewStore from '../../../../stores/project/envOverview';
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import RefreshBtn from '../../../../components/refreshBtn';
+import EnvFlag from '../../../../components/envFlag';
+import DeleteModal from '../../../../components/deleteModal';
 
-const { AppState } = stores;
+import './NetworkHome.scss';
+import '../../../main.scss';
+
 const { Option } = Select;
-@commonComponent("NetworkConfigStore")
+
+@Form.create({})
+@withRouter
+@injectIntl
+@inject('AppState')
+@commonComponent('NetworkConfigStore')
 @observer
-class NetworkHome extends Component {
-  constructor(props, context) {
-    super(props, context);
-    this.state = {
-      show: false,
-      openRemove: false,
-      submitting: false,
-    };
-    this.opColumn = this.opColumn.bind(this);
-    this.configColumn = this.configColumn.bind(this);
-    this.targetColumn = this.targetColumn.bind(this);
-  }
+export default class NetworkHome extends Component {
+  state = {
+    show: false,
+    submitting: false,
+    deleteArr: [],
+  };
 
   componentDidMount() {
-    const { id: projectId } = AppState.currentMenuType;
+    const {
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+
     EnvOverviewStore.loadActiveEnv(projectId).then(env => {
       if (env.length) {
         const envId = EnvOverviewStore.getTpEnvId;
@@ -77,7 +80,7 @@ class NetworkHome extends Component {
     if (isload) {
       NetworkConfigStore.setInfo({
         filters: {},
-        sort: { columnKey: "id", order: "descend" },
+        sort: { columnKey: 'id', order: 'descend' },
         paras: [],
       });
       const envId = EnvOverviewStore.getTpEnvId;
@@ -117,7 +120,7 @@ class NetworkHome extends Component {
    * @param record
    * @returns {Array}
    */
-  configColumn(record) {
+  configColumn = (record) => {
     const { config, type, loadBalanceIp } = record;
     const { externalIps, ports } = config;
     const iPArr = [];
@@ -127,8 +130,8 @@ class NetworkHome extends Component {
         iPArr.push(
           <div key={item} className="network-config-item">
             {item}
-          </div>
-        )
+          </div>,
+        ),
       );
     }
     if (ports && ports.length) {
@@ -136,13 +139,13 @@ class NetworkHome extends Component {
         const { nodePort, port, targetPort } = item;
         portArr.push(
           <div key={port} className="network-config-item">
-            {nodePort || (type === "NodePort" && <FormattedMessage id="null" />)} {port} {targetPort}
-          </div>
+            {nodePort || (type === 'NodePort' && <FormattedMessage id="null" />)} {port} {targetPort}
+          </div>,
         );
       });
     }
     const content =
-      type === "NodePort" ? (
+      type === 'NodePort' ? (
         <Fragment>
           <div className="network-config-item">
             <FormattedMessage id="network.node.port" />
@@ -151,12 +154,12 @@ class NetworkHome extends Component {
         </Fragment>
       ) : (
         <Fragment>
-          {type === "ClusterIP" && (
+          {type === 'ClusterIP' && (
             <div className="network-config-wrap">
               <div className="network-type-title">
                 <FormattedMessage id="network.column.ip" />
               </div>
-              <div>{externalIps ? iPArr : "-"}</div>
+              <div>{externalIps ? iPArr : '-'}</div>
             </div>
           )}
           <div className="network-config-wrap">
@@ -188,32 +191,31 @@ class NetworkHome extends Component {
         </Popover>
       </div>
     );
-  }
+  };
 
   /**
    * 生成 目标对象类型 列
    * @param record
    */
-  targetTypeColumn = record => {
-    const { appId, target: { appInstance, labels } } = record;
+  targetTypeColumn = ({ appId, target }) => {
     const { intl: { formatMessage } } = this.props;
-    const tergetType =
-      (appId && appInstance && appInstance.length)
-        ? "instance"
-        : (labels ? "param" : "endPoints");
-    let message = "";
-    switch (tergetType) {
-      case "instance":
-        message = formatMessage({ id: "ist.head" });
-        break;
-      case "param":
-        message = formatMessage({ id: "branch.issue.label" });
-        break;
-      case "endPoints":
-        message = "EndPoints";
-        break;
+
+    const { appInstance, labels } = target || {};
+
+    let targetType = 'endPoints';
+    if (appId && appInstance && appInstance.length) {
+      targetType = 'instance';
+    } else if (labels) {
+      targetType = 'param';
     }
-    return <div><span>{message}</span></div>
+
+    const message = {
+      instance: formatMessage({ id: 'ist.head' }),
+      param: formatMessage({ id: 'branch.issue.label' }),
+      endPoints: 'EndPoints',
+    };
+
+    return <span>{message[targetType]}</span>;
   };
 
   /**
@@ -221,7 +223,7 @@ class NetworkHome extends Component {
    * @param record
    * @returns {Array}
    */
-  targetColumn(record) {
+  targetColumn = (record) => {
     const { appInstance, labels, endPoints } = record.target;
     const node = [];
     const port = [];
@@ -230,9 +232,9 @@ class NetworkHome extends Component {
       _.forEach(appInstance, item => {
         const { id, code, instanceStatus } = item;
         const statusStyle =
-          instanceStatus !== "operating" && instanceStatus !== "running"
-            ? "c7n-network-status-failed"
-            : "";
+          instanceStatus !== 'operating' && instanceStatus !== 'running'
+            ? 'c7n-network-status-failed'
+            : '';
         if (code) {
           node.push(
             <div className={`network-column-instance ${statusStyle}`} key={id}>
@@ -248,7 +250,7 @@ class NetworkHome extends Component {
               >
                 {code}
               </Tooltip>
-            </div>
+            </div>,
           );
         }
       });
@@ -258,8 +260,8 @@ class NetworkHome extends Component {
         node.push(
           <div className="network-column-instance" key={key}>
             <span>{key}</span>=<span>{value}</span>
-          </div>
-        )
+          </div>,
+        ),
       );
     }
     if (endPoints) {
@@ -269,15 +271,15 @@ class NetworkHome extends Component {
         node.push(
           <div className="network-column-instance" key={index}>
             <span>{item}</span>
-          </div>
-        )
+          </div>,
+        ),
       );
       _.map(portList, (item, index) => {
         port.push(
           <div className="network-column-instance" key={index}>
             <span>{item.port}</span>
-          </div>
-        )
+          </div>,
+        );
       });
     }
     return (
@@ -297,80 +299,99 @@ class NetworkHome extends Component {
                   <Icon type="expand_more" className="network-expend-icon" />
                 </Popover>
               )}
-            </div>)
+            </div>),
           )
         }
       </Fragment>
     );
-  }
+  };
 
   /**
-   * 操作 列
-   * @param record
+   *
+   * @param status
+   * @param envStatus
+   * @param id
+   * @param name
    * @returns {*}
    */
-  opColumn(record) {
-    const { status, envStatus, id, name } = record;
+  opColumn = ({ status, envStatus, id, name }) => {
     const {
-      type,
-      id: projectId,
-      organizationId,
-      name: projectName,
-    } = AppState.currentMenuType;
-    const { intl } = this.props;
+      intl: { formatMessage },
+      AppState: {
+        currentMenuType: {
+          type,
+          id: projectId,
+          organizationId,
+        },
+      },
+    } = this.props;
     let editDom = null;
     let deleteDom = null;
     if (envStatus) {
-      if (status !== "operating") {
+      if (status !== 'operating') {
         editDom = (
           <Tooltip
             trigger="hover"
             placement="bottom"
+            arrowPointAtCenter
             title={<FormattedMessage id="edit" />}
           >
             <Button
               shape="circle"
               size="small"
               funcType="flat"
+              icon="mode_edit"
               onClick={this.editNetwork.bind(this, id)}
-            >
-              <i className="icon icon-mode_edit" />
-            </Button>
+            />
           </Tooltip>
         );
         deleteDom = (
           <Tooltip
             trigger="hover"
             placement="bottom"
+            arrowPointAtCenter
             title={<FormattedMessage id="delete" />}
           >
             <Button
               shape="circle"
               size="small"
               funcType="flat"
-              onClick={this.openRemove.bind(this, id, name)}
-            >
-              <i className="icon icon-delete_forever" />
-            </Button>
+              icon="delete_forever"
+              onClick={this.openDeleteModal.bind(this, id, name)}
+            />
           </Tooltip>
         );
       } else {
         editDom = (
           <Tooltip
             trigger="hover"
-            placement="bottom"
-            title={intl.formatMessage({ id: `network_${status}` })}
+            placement="bottomRight"
+            arrowPointAtCenter
+            title={formatMessage({ id: `network_${status}` })}
           >
-            <i className="icon icon-mode_edit c7n-app-icon-disabled" />
+            <Button
+              disabled
+              shape="circle"
+              size="small"
+              funcType="flat"
+              icon="mode_edit"
+            />
           </Tooltip>
         );
         deleteDom = (
           <Tooltip
             trigger="hover"
-            placement="bottom"
-            title={intl.formatMessage({ id: `network_${status}` })}
+            placement="bottomRight"
+            arrowPointAtCenter
+            title={formatMessage({ id: `network_${status}` })}
           >
-            <i className="icon icon-delete_forever c7n-app-icon-disabled" />
+            <Button
+              disabled
+              shape="circle"
+              size="small"
+              funcType="flat"
+              icon="delete_forever"
+            />
           </Tooltip>
         );
       }
@@ -378,26 +399,41 @@ class NetworkHome extends Component {
       editDom = (
         <Tooltip
           trigger="hover"
-          placement="bottom"
-          title={intl.formatMessage({ id: "network.env.tooltip" })}
+          placement="bottomRight"
+          arrowPointAtCenter
+          title={formatMessage({ id: 'network.env.tooltip' })}
         >
-          <i className="icon icon-mode_edit c7n-app-icon-disabled" />
+          <Button
+            disabled
+            shape="circle"
+            size="small"
+            funcType="flat"
+            icon="mode_edit"
+          />
         </Tooltip>
       );
       deleteDom = (
         <Tooltip
           trigger="hover"
-          placement="bottom"
-          title={intl.formatMessage({ id: "network.env.tooltip" })}
+          placement="bottomRight"
+          arrowPointAtCenter
+          title={formatMessage({ id: 'network.env.tooltip' })}
         >
-          <i className="icon icon-delete_forever c7n-app-icon-disabled" />
+          <Button
+            disabled
+            shape="circle"
+            size="small"
+            funcType="flat"
+            icon="delete_forever"
+          />
         </Tooltip>
       );
     }
+
     return (
-      <Fragment>
+      <div className="c7ncd-network-operator">
         <Permission
-          service={["devops-service.devops-service.update"]}
+          service={['devops-service.devops-service.update']}
           type={type}
           projectId={projectId}
           organizationId={organizationId}
@@ -405,16 +441,16 @@ class NetworkHome extends Component {
           {editDom}
         </Permission>
         <Permission
-          service={["devops-service.devops-service.delete"]}
+          service={['devops-service.devops-service.delete']}
           type={type}
           projectId={projectId}
           organizationId={organizationId}
         >
           {deleteDom}
         </Permission>
-      </Fragment>
+      </div>
     );
-  }
+  };
 
   /**
    * 环境选择
@@ -429,22 +465,29 @@ class NetworkHome extends Component {
     const {
       NetworkConfigStore,
       intl: { formatMessage },
+      AppState: {
+        currentMenuType: {
+          type,
+          id: projectId,
+          organizationId,
+          name: projectName,
+        },
+      },
     } = this.props;
 
-    const { show, showEdit, id, openRemove, submitting, name } = this.state;
+    const {
+      show,
+      showEdit,
+      id,
+      deleteArr,
+      submitting,
+    } = this.state;
 
     const {
       filters,
       paras,
       sort: { columnKey, order },
     } = NetworkConfigStore.getInfo;
-
-    const {
-      type,
-      id: projectId,
-      organizationId: orgId,
-      name: projectName,
-    } = AppState.currentMenuType;
 
     const data = NetworkConfigStore.getAllData;
     const envData = EnvOverviewStore.getEnvcard;
@@ -457,24 +500,24 @@ class NetworkHome extends Component {
     const columns = [
       {
         title: <FormattedMessage id="network.column.name" />,
-        key: "name",
+        key: 'name',
         sorter: true,
-        sortOrder: columnKey === "name" && order,
+        sortOrder: columnKey === 'name' && order,
         filters: [],
         filteredValue: filters.name || [],
         render: record => (
           <StatusIcon
             name={record.name}
-            status={record.status || ""}
-            error={record.error || ""}
+            status={record.status || ''}
+            error={record.error || ''}
           />
         ),
       },
       {
         title: <FormattedMessage id="network.column.env" />,
-        key: "envName",
+        key: 'envName',
         sorter: true,
-        sortOrder: columnKey === "envName" && order,
+        sortOrder: columnKey === 'envName' && order,
         filters: [],
         filteredValue: filters.envName || [],
         render: record => (
@@ -483,41 +526,41 @@ class NetworkHome extends Component {
       },
       {
         title: <FormattedMessage id="network.target.type" />,
-        key: "targetType",
+        key: 'targetType',
         render: this.targetTypeColumn,
       },
       {
         title: <FormattedMessage id="network.target" />,
-        key: "target",
+        key: 'target',
         render: this.targetColumn,
       },
       {
         width: 108,
         title: <FormattedMessage id="network.config.column" />,
-        key: "type",
+        key: 'type',
         render: this.configColumn,
       },
       {
         width: 82,
-        key: "action",
+        key: 'action',
         render: this.opColumn,
       },
     ];
 
     let mainContent = null;
     if (envData && envData.length && envId) {
-      this.initAutoRefresh("network");
+      this.initAutoRefresh('network');
       mainContent = (
         <Fragment>
           <Header title={<FormattedMessage id="network.header.title" />}>
             <Select
               className={`${
                 envId
-                  ? "c7n-header-select"
-                  : "c7n-header-select c7n-select_min100"
-              }`}
+                  ? 'c7n-header-select'
+                  : 'c7n-header-select c7n-select_min100'
+                }`}
               dropdownClassName="c7n-header-env_drop"
-              placeholder={formatMessage({ id: "envoverview.noEnv" })}
+              placeholder={formatMessage({ id: 'envoverview.noEnv' })}
               value={envData && envData.length ? envId : undefined}
               disabled={envData && envData.length === 0}
               onChange={this.handleEnvSelect}
@@ -543,10 +586,10 @@ class NetworkHome extends Component {
               ))}
             </Select>
             <Permission
-              service={["devops-service.devops-service.create"]}
+              service={['devops-service.devops-service.create']}
               type={type}
               projectId={projectId}
-              organizationId={orgId}
+              organizationId={organizationId}
             >
               <Tooltip
                 title={
@@ -568,17 +611,17 @@ class NetworkHome extends Component {
               </Tooltip>
             </Permission>
             <Permission
-              service={["devops-service.devops-service.listByEnv"]}
+              service={['devops-service.devops-service.listByEnv']}
               type={type}
               projectId={projectId}
-              organizationId={orgId}
+              organizationId={organizationId}
             >
               <RefreshBtn name="network" onFresh={this.handleRefresh} />
             </Permission>
           </Header>
           <Content code="network" values={{ name: projectName }}>
             <Table
-              filterBarPlaceholder={formatMessage({ id: "filter" })}
+              filterBarPlaceholder={formatMessage({ id: 'filter' })}
               loading={NetworkConfigStore.getLoading}
               pagination={NetworkConfigStore.getPageInfo}
               columns={columns}
@@ -599,20 +642,31 @@ class NetworkHome extends Component {
       );
     }
 
+    const deleteModals = _.map(deleteArr, ({ name, display, deleteId }) => (<DeleteModal
+      key={deleteId}
+      title={`${formatMessage({ id: 'service.delete' })}“${name}”`}
+      visible={display}
+      objectId={deleteId}
+      loading={submitting}
+      objectType="service"
+      onClose={this.closeDeleteModal}
+      onOk={this.handleDelete}
+    />));
+
     return (
       <Page
         service={[
-          "devops-service.devops-service.create",
-          "devops-service.devops-service.checkName",
-          "devops-service.devops-service.listByEnv",
-          "devops-service.devops-service.query",
-          "devops-service.devops-service.update",
-          "devops-service.devops-service.delete",
-          "devops-service.devops-service.listByEnvId",
-          "devops-service.devops-environment.listByProjectIdAndActive",
-          "devops-service.application.listByEnvIdAndStatus",
-          "devops-service.application-version.queryByAppIdAndEnvId",
-          "devops-service.application-instance.listByAppVersionId",
+          'devops-service.devops-service.create',
+          'devops-service.devops-service.checkName',
+          'devops-service.devops-service.listByEnv',
+          'devops-service.devops-service.query',
+          'devops-service.devops-service.update',
+          'devops-service.devops-service.delete',
+          'devops-service.devops-service.listByEnvId',
+          'devops-service.devops-environment.listByProjectIdAndActive',
+          'devops-service.application.listByEnvIdAndStatus',
+          'devops-service.application-version.queryByAppIdAndEnvId',
+          'devops-service.application-instance.listByAppVersionId',
         ]}
         className="c7n-region c7n-network-wrapper"
       >
@@ -634,36 +688,8 @@ class NetworkHome extends Component {
             onClose={this.handleCancelFun}
           />
         )}
-        <Modal
-          confirmLoading={submitting}
-          visible={openRemove}
-          title={`${formatMessage({ id: "network.delete" })}“${name}”`}
-          closable={false}
-          footer={[
-            <Button
-              key="back"
-              onClick={this.closeRemove}
-              disabled={this.state.submitting}
-            >
-              <FormattedMessage id="cancel" />
-            </Button>,
-            <Button
-              key="submit"
-              loading={this.state.submitting}
-              type="danger"
-              onClick={this.handleDelete}
-            >
-              <FormattedMessage id="delete" />
-            </Button>,
-          ]}
-        >
-          <div className="c7n-padding-top_8">
-            <FormattedMessage id="network.delete.tooltip" />
-          </div>
-        </Modal>
+        {deleteModals}
       </Page>
     );
   }
 }
-
-export default Form.create({})(withRouter(injectIntl(NetworkHome)));

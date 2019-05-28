@@ -30,7 +30,7 @@ export default function EnvFlag(props) {
   );
 }
 
-EnvFlag.PropTypes = {
+EnvFlag.propTypes = {
   status: PropTypes.bool.isRequired,
   name: PropTypes.string.isRequired,
 };

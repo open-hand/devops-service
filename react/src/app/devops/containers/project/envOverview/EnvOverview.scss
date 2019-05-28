@@ -206,17 +206,6 @@
 .c7n-envow-ist-header-wrap {
   display: flex;
 
-  .c7n-envow-ist-fail {
-    display: inline-block;
-
-    .c7n-progress {
-      circle {
-        stroke: #3f51b5 !important;
-        stroke-width: 7px;
-      }
-    }
-  }
-
   .c7n-envow-ist-name {
     width: 50%;
     border-left: 1px solid rgba(0, 0, 0, 0.12);
@@ -236,6 +225,7 @@
 
   .c7n-envow-ist-action {
     margin-left: auto;
+    padding-top: 4px;
   }
 }
 

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -38,7 +39,7 @@ public class DevopsGitlabPipelineController {
      * @param endTime   结束时间
      * @return List
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取pipeline时长报表")
@@ -67,7 +68,7 @@ public class DevopsGitlabPipelineController {
      * @param endTime   结束时间
      * @return
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取pipeline次数报表")
@@ -96,7 +97,7 @@ public class DevopsGitlabPipelineController {
      * @param endTime   结束时间
      * @return List
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页获取pipeline")

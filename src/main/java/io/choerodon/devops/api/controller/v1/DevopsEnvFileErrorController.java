@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -43,7 +44,7 @@ public class DevopsEnvFileErrorController {
      * @param envId     环境 ID
      * @return list of DevopsEnvFileErrorDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境文件错误列表")
     @GetMapping(value = "/list")
@@ -64,7 +65,7 @@ public class DevopsEnvFileErrorController {
      * @param envId     环境 ID
      * @return list of DevopsEnvFileErrorDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境文件错误列表")
     @CustomPageRequest

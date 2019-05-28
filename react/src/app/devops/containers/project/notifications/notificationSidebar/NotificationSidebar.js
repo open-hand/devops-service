@@ -123,9 +123,11 @@ export default class NotificationSidebar extends Component {
         .then(data => {
           this.setState({ submitting: false });
           if (data && data.failed) {
+            const { envId } = this.state;
+            this.handleEnvSelect(envId);
             Choerodon.prompt(data.message);
           } else {
-            this.handleClose(true);
+            this.handleClose(null, true);
           }
         })
         .catch(err => {
@@ -138,7 +140,7 @@ export default class NotificationSidebar extends Component {
   /**
    * 关闭弹框
    */
-  handleClose = (reload = false) => {
+  handleClose = (e, reload = false) => {
     const { onClose } = this.props;
     onClose(reload);
   };
@@ -355,6 +357,7 @@ export default class NotificationSidebar extends Component {
                   <Select
                     mode="multiple"
                     label={formatMessage({ id: "notification.target.specifier" })}
+                    className="c7n-notifications-select-userRelIds"
                     optionFilterProp="children"
                     allowClear
                     filter

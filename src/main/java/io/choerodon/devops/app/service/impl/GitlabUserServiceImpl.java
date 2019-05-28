@@ -41,15 +41,13 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                     gitlabConfigurationProperties.getProjectLimit(),
                     ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
         }
-        if (gitlabUserE != null) {
-            UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(gitlabUserE.getId().longValue());
-            if (userAttrE == null) {
-                userAttrE = new UserAttrE();
-                userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
-                userAttrE.setGitlabUserId(gitlabUserE.getId().longValue());
-                userAttrE.setGitlabUserName(gitlabUserE.getUsername());
-                userAttrRepository.insert(userAttrE);
-            }
+        UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(gitlabUserE.getId().longValue());
+        if (userAttrE == null) {
+            userAttrE = new UserAttrE();
+            userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
+            userAttrE.setGitlabUserId(gitlabUserE.getId().longValue());
+            userAttrE.setGitlabUserName(gitlabUserE.getUsername());
+            userAttrRepository.insert(userAttrE);
         }
     }
 

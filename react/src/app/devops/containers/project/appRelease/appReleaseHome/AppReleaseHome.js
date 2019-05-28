@@ -1,7 +1,7 @@
-import React, { Component, Fragment } from "react";
-import { observer, inject } from "mobx-react";
-import { withRouter } from "react-router-dom";
-import { injectIntl, FormattedMessage } from "react-intl";
+import React, { Component, Fragment } from 'react';
+import { observer, inject } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import {
   Button,
   Table,
@@ -10,18 +10,18 @@ import {
   Tabs,
   Tooltip,
   Icon,
-} from "choerodon-ui";
+} from 'choerodon-ui';
 import {
   Content,
   Header,
   Page,
   Permission,
   stores,
-} from "@choerodon/boot";
-import "../../../main.scss";
-import editReleaseStore from "../../../../stores/project/appRelease/editRelease";
-import AppVersionStore from "../../../../stores/project/applicationVersion";
-import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
+} from '@choerodon/boot';
+import '../../../main.scss';
+import editReleaseStore from '../../../../stores/project/appRelease/editRelease';
+import AppVersionStore from '../../../../stores/project/applicationVersion';
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
 
 const TabPane = Tabs.TabPane;
 const { AppState } = stores;
@@ -29,6 +29,7 @@ const HEIGHT =
   window.innerHeight ||
   document.documentElement.clientHeight ||
   document.body.clientHeight;
+
 @observer
 class AppReleaseHome extends Component {
   constructor(props) {
@@ -36,12 +37,12 @@ class AppReleaseHome extends Component {
     super(props);
     this.state = {
       projectId: menu.id,
-      key: props.match.params.key === "2" ? "2" : "1",
+      key: props.match.params.key === '2' ? '2' : '1',
       paras: [],
       filters: {},
       sorter: {
-        columnKey: "id",
-        order: "descend",
+        columnKey: 'id',
+        order: 'descend',
       },
       pageSize: HEIGHT <= 900 ? 10 : 15,
     };
@@ -63,34 +64,34 @@ class AppReleaseHome extends Component {
     return [
       {
         title: <FormattedMessage id="app.name" />,
-        dataIndex: "name",
-        key: "name",
+        dataIndex: 'name',
+        key: 'name',
         sorter: true,
-        sortOrder: columnKey === "name" && order,
+        sortOrder: columnKey === 'name' && order,
         filters: [],
         filteredValue: filters.name || [],
       },
       {
         title: <FormattedMessage id="app.code" />,
-        dataIndex: "code",
-        key: "code",
+        dataIndex: 'code',
+        key: 'code',
         sorter: true,
-        sortOrder: columnKey === "code" && order,
+        sortOrder: columnKey === 'code' && order,
         filters: [],
         filteredValue: filters.code || [],
       },
       {
         title: <FormattedMessage id="release.column.level" />,
-        key: "publishLevel",
+        key: 'publishLevel',
         sorter: true,
-        sortOrder: columnKey === "publishLevel" && order,
+        sortOrder: columnKey === 'publishLevel' && order,
         filters: [
           {
-            text: this.props.intl.formatMessage({ id: "public" }),
+            text: this.props.intl.formatMessage({ id: 'public' }),
             value: 2,
           },
           {
-            text: this.props.intl.formatMessage({ id: "organization" }),
+            text: this.props.intl.formatMessage({ id: 'organization' }),
             value: 1,
           },
         ],
@@ -104,20 +105,20 @@ class AppReleaseHome extends Component {
         ),
       },
       {
-        align: "right",
-        key: "action",
+        align: 'right',
+        key: 'action',
         render: record => (
           <div>
             <Permission
               type={type}
               organizationId={organizationId}
-              service={["devops-service.application-market.update"]}
+              service={['devops-service.application-market.update']}
             >
               <Tooltip
                 trigger="hover"
                 placement="bottom"
                 title={
-                  <div>{this.props.intl.formatMessage({ id: "edit" })}</div>
+                  <div>{this.props.intl.formatMessage({ id: 'edit' })}</div>
                 }
               >
                 <Button
@@ -132,7 +133,7 @@ class AppReleaseHome extends Component {
             <Permission
               type={type}
               organizationId={organizationId}
-              service={["devops-service.application-market.updateVersions"]}
+              service={['devops-service.application-market.updateVersions']}
             >
               <Tooltip
                 trigger="hover"
@@ -140,7 +141,7 @@ class AppReleaseHome extends Component {
                 title={
                   <div>
                     {this.props.intl.formatMessage({
-                      id: "release.action.version",
+                      id: 'release.action.version',
                     })}
                   </div>
                 }
@@ -167,7 +168,7 @@ class AppReleaseHome extends Component {
   handleEdit = ids => {
     const { name, id, organizationId } = AppState.currentMenuType;
     this.props.history.push(
-      `/devops/app-release/edit/${ids}?type=project&id=${id}&name=${name}&organizationId=${organizationId}`
+      `/devops/app-release/edit/${ids}?type=project&id=${id}&name=${name}&organizationId=${organizationId}`,
     );
   };
 
@@ -181,7 +182,7 @@ class AppReleaseHome extends Component {
     this.props.history.push(
       `/devops/app-release/add/${
         record.id
-      }?type=project&id=${id}&name=${name}&organizationId=${organizationId}`
+        }?type=project&id=${id}&name=${name}&organizationId=${organizationId}`,
     );
   };
 
@@ -194,7 +195,7 @@ class AppReleaseHome extends Component {
     this.props.history.push(
       `/devops/app-release/app/${ids.name}/edit-version/${
         ids.id
-      }?type=project&id=${id}&name=${name}&organizationId=${organizationId}`
+        }?type=project&id=${id}&name=${name}&organizationId=${organizationId}`,
     );
   };
 
@@ -214,28 +215,28 @@ class AppReleaseHome extends Component {
     const column = [
       {
         title: <FormattedMessage id="app.name" />,
-        dataIndex: "name",
-        key: "name",
+        dataIndex: 'name',
+        key: 'name',
         sorter: true,
-        sortOrder: columnKey === "name" && order,
+        sortOrder: columnKey === 'name' && order,
         filters: [],
         filteredValue: filters.name || [],
       },
       {
         title: <FormattedMessage id="app.code" />,
-        dataIndex: "code",
-        key: "code",
+        dataIndex: 'code',
+        key: 'code',
         sorter: true,
-        sortOrder: columnKey === "code" && order,
+        sortOrder: columnKey === 'code' && order,
         filters: [],
         filteredValue: filters.code || [],
       },
       {
         width: 64,
-        key: "action",
+        key: 'action',
         render: (test, record) => (
           <div>
-            <Permission service={["devops-service.application-market.create"]}>
+            <Permission service={['devops-service.application-market.create']}>
               <Tooltip
                 placement="bottom"
                 title={<FormattedMessage id="release.action.publish" />}
@@ -254,7 +255,7 @@ class AppReleaseHome extends Component {
     ];
     return (
       <Table
-        filterBarPlaceholder={this.props.intl.formatMessage({ id: "filter" })}
+        filterBarPlaceholder={this.props.intl.formatMessage({ id: 'filter' })}
         loading={AppReleaseStore.loading}
         pagination={AppReleaseStore.getUnPageInfo}
         columns={column}
@@ -282,7 +283,7 @@ class AppReleaseHome extends Component {
       key: value,
       paras: [],
       filters: {},
-      sorter: { columnKey: "id", order: "descend" },
+      sorter: { columnKey: 'id', order: 'descend' },
     });
   };
 
@@ -291,19 +292,20 @@ class AppReleaseHome extends Component {
    * @param pagination 分页
    * @param filters 过滤
    * @param sorter 排序
+   * @param paras
    */
   tableChange = (pagination, filters, sorter, paras) => {
     const { AppReleaseStore } = this.props;
     const menu = AppState.currentMenuType;
     const organizationId = menu.id;
-    const sort = { field: "id", order: "desc" };
+    const sort = { field: 'id', order: 'desc' };
     this.setState({ paras, filters, sorter });
     if (sorter.column) {
       sort.field = sorter.field || sorter.columnKey;
-      if (sorter.order === "ascend") {
-        sort.order = "asc";
-      } else if (sorter.order === "descend") {
-        sort.order = "desc";
+      if (sorter.order === 'ascend') {
+        sort.order = 'asc';
+      } else if (sorter.order === 'descend') {
+        sort.order = 'desc';
       }
     }
     const page = pagination.current - 1;
@@ -341,10 +343,10 @@ class AppReleaseHome extends Component {
     return (
       <Page
         service={[
-          "devops-service.application-market.pageListMarketAppsByProjectId",
-          "devops-service.application.listByActiveAndPubAndVersion",
-          "devops-service.application-market.updateVersions",
-          "devops-service.application-market.update",
+          'devops-service.application-market.pageListMarketAppsByProjectId',
+          'devops-service.application.listByActiveAndPubAndVersion',
+          'devops-service.application-market.updateVersions',
+          'devops-service.application-market.update',
         ]}
         className="c7n-region"
       >
@@ -374,7 +376,7 @@ class AppReleaseHome extends Component {
                 >
                   <Table
                     filterBarPlaceholder={this.props.intl.formatMessage({
-                      id: "filter",
+                      id: 'filter',
                     })}
                     loading={AppReleaseStore.loading}
                     pagination={AppReleaseStore.getPageInfo}

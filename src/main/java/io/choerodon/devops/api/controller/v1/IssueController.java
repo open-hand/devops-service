@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.CustomMergeRequestDTO;
@@ -34,7 +35,7 @@ public class IssueController {
      * @param issueId issueID
      * @return commit列表
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的commit列表")
     @GetMapping("/commit/list")
     public ResponseEntity<List<DevopsBranchDTO>> getCommitsByIssueId(
@@ -54,7 +55,7 @@ public class IssueController {
      * @param issueId issueID
      * @return 返回mergerequest列表
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest列表")
     @GetMapping("/merge_request/list")
     public ResponseEntity<List<CustomMergeRequestDTO>> getMergeRequestsByIssueId(
@@ -74,7 +75,7 @@ public class IssueController {
      * @param issueId issueID
      * @return 返回mergerequest和commit数量
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest和commit数量")
     @GetMapping("/commit_and_merge_request/count")
     public ResponseEntity<IssueDTO> countCommitAndMergeRequest(

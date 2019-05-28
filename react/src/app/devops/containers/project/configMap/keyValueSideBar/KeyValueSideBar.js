@@ -167,6 +167,9 @@ export default class KeyValueSideBar extends Component {
    */
   handleDelete = (key) => {
     const dataSource = [...this.state.dataSource].filter(item => item.index !== key);
+
+    this.asyncCheckErrorData(dataSource);
+
     this.setState({ dataSource });
   };
 
@@ -211,7 +214,7 @@ export default class KeyValueSideBar extends Component {
       ...row,
     });
 
-    this.asyncCheckErrorData(newData);
+    this.checkErrorData(newData);
 
     this.setState({ dataSource: newData });
   };
@@ -290,7 +293,7 @@ export default class KeyValueSideBar extends Component {
    * @param data
    * @returns {boolean}
    */
-  asyncCheckErrorData = _.debounce(this.checkErrorData, 600);
+  asyncCheckErrorData = _.debounce(this.checkErrorData, 500);
 
   /**
    * 设置键值对模式下的错误提示

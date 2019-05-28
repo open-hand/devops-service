@@ -14,6 +14,7 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
     List<ApplicationDO> list(@Param("projectId") Long projectId,
                              @Param("isActive") Boolean isActive,
                              @Param("hasVersion") Boolean hasVersion,
+                             @Param("appMarket") Boolean appMarket,
                              @Param("type") String type,
                              @Param("searchParam") Map<String, Object> searchParam,
                              @Param("param") String param,

@@ -1,26 +1,25 @@
 package io.choerodon.devops.infra.config;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Base64;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
-import io.choerodon.core.exception.CommonException;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import retrofit2.Call;
-import retrofit2.Response;
+import org.springframework.beans.factory.annotation.Value;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.converter.jackson.JacksonConverterFactory;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.feign.SonarClient;
 
 public class RetrofitHandler {
 
@@ -51,7 +50,7 @@ public class RetrofitHandler {
     }
 
     private static OkHttpClient getOkHttpClient(Boolean insecureSkipTlsVerify, String type, String token) {
-        if (type.equals("harbor")) {
+        if (!type.equals("chart")) {
             if (insecureSkipTlsVerify) {
                 final TrustManager[] trustAllCerts = new TrustManager[]{
                         new X509TrustManager() {
@@ -134,5 +133,16 @@ public class RetrofitHandler {
         } else {
             return new OkHttpClient.Builder().build();
         }
+    }
+
+    public static SonarClient getSonarClient(String sonarqubeUrl, String sonar, String userName, String password) {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(sonarqubeUrl);
+        configurationProperties.setType(sonar);
+        configurationProperties.setUsername(userName);
+        configurationProperties.setPassword(password);
+        configurationProperties.setInsecureSkipTlsVerify(false);
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        return retrofit.create(SonarClient.class);
     }
 }

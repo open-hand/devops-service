@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import io.choerodon.base.annotation.Permission;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.SonarInfoDTO;
 import io.choerodon.devops.app.service.SonarService;
@@ -29,6 +30,7 @@ public class SonarController {
      *
      * @return
      */
+    @Permission(permissionPublic = true)
     @ApiOperation(value = "触发自动部署")
     @GetMapping("/info")
     public ResponseEntity<SonarInfoDTO> getSonarInfo() {

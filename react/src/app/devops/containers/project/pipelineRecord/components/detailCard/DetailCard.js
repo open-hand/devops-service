@@ -1,6 +1,6 @@
 import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 import _ from 'lodash';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { Collapse, Icon, Tooltip } from 'choerodon-ui';

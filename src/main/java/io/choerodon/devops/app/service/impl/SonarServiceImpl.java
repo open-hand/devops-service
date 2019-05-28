@@ -13,13 +13,13 @@ import io.choerodon.devops.app.service.SonarService;
  */
 @Component
 public class SonarServiceImpl implements SonarService {
-    @Value("${services.sonarqube.username:username}")
+    @Value("${services.sonarqube.username:}")
     private String userName;
 
-    @Value("${services.sonarqube.password:password}")
+    @Value("${services.sonarqube.password:}")
     private String password;
 
-    @Value("${services.sonar.url:url}")
+    @Value("${services.sonarqube.url:}")
     private String url;
 
     @Override

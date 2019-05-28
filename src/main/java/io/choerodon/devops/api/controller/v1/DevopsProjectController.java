@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.app.service.ProjectService;
 import io.swagger.annotations.ApiOperation;
@@ -31,7 +32,7 @@ public class DevopsProjectController {
      *
      * @param projectId     项目id
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目Gitlab Group是否创建成功")
     @GetMapping("/gitlabGroupCheck")

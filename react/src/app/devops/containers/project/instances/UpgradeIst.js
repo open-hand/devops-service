@@ -1,15 +1,16 @@
-import React, { Component, Fragment } from "react";
-import { observer } from "mobx-react";
-import { withRouter } from "react-router-dom";
-import { Modal, Select, Icon } from "choerodon-ui";
-import { stores, Content } from "@choerodon/boot";
-import { injectIntl, FormattedMessage } from "react-intl";
-import _ from "lodash";
-import YamlEditor from "../../../components/yamlEditor";
-import InterceptMask from "../../../components/interceptMask/InterceptMask";
-import LoadingBar from "../../../components/loadingBar";
-import "./Instances.scss";
-import "../../main.scss";
+import React, { Component } from 'react';
+import { observer } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
+import { Modal, Select, Icon } from 'choerodon-ui';
+import { stores, Content } from '@choerodon/boot';
+import { injectIntl } from 'react-intl';
+import _ from 'lodash';
+import YamlEditor from '../../../components/yamlEditor';
+import InterceptMask from '../../../components/interceptMask/InterceptMask';
+import LoadingBar from '../../../components/loadingBar';
+
+import './Instances.scss';
+import '../../main.scss';
 
 const { Sidebar } = Modal;
 const { AppState } = stores;
@@ -36,35 +37,42 @@ class UpgradeIst extends Component {
   /**
    * 修改配置升级实例
    */
-  handleOk = () => {
+  handleOk = async () => {
     const { id: projectId } = AppState.currentMenuType;
-    const { store, appInstanceId, idArr, onClose } = this.props;
+    const {
+      store,
+      appInstanceId,
+      idArr,
+      onClose,
+    } = this.props;
+
     const { values, versionId } = this.state;
     const verValue = store.getVerValue;
     const verId = versionId || verValue[0].id;
+
     const data = {
       ...idArr,
       values,
       appInstanceId,
       appVersionId: verId,
-      type: "update",
+      type: 'update',
     };
 
     this.setState({ submitting: true });
-    store.reDeploy(projectId, data).then(res => {
-      if (res && res.failed) {
-        this.setState({ submitting: false });
-        Choerodon.prompt(res.message);
-      } else {
+    const res = await store.reDeploy(projectId, data)
+      .catch(e => {
         this.setState({ submitting: false });
         onClose(true);
-      }
-    }).catch(e => {
-      this.setState({ loading: false });
-      Choerodon.handleResponseError(e);
-    });
-  };
+        Choerodon.handleResponseError(e);
+      });
 
+    if (res && res.failed) {
+      Choerodon.prompt(res.message);
+    }
+
+    this.setState({ submitting: false });
+    onClose(true);
+  };
 
   /**
    * 切换实例版本，加载该版本下的配置内容
@@ -77,7 +85,7 @@ class UpgradeIst extends Component {
     store.setValue(null);
     store.loadValue(projectId, appInstanceId, id).then(() => {
       this.setState({ loading: false });
-    })
+    });
   };
 
   render() {
@@ -102,12 +110,12 @@ class UpgradeIst extends Component {
 
     return (
       <Sidebar
-        title={formatMessage({ id: "ist.upgrade" })}
+        title={formatMessage({ id: 'ist.upgrade' })}
         visible={visible}
         onOk={this.handleOk}
         onCancel={this.onClose}
-        cancelText={formatMessage({ id: "cancel" })}
-        okText={formatMessage({ id: "ist.upgrade" })}
+        cancelText={formatMessage({ id: 'cancel' })}
+        okText={formatMessage({ id: 'ist.upgrade' })}
         confirmLoading={submitting}
       >
         <Content
@@ -118,8 +126,8 @@ class UpgradeIst extends Component {
           <Select
             filter
             className="c7n-app-select_512"
-            label={formatMessage({ id: "deploy.step.one.version.title" })}
-            notFoundContent={formatMessage({ id: "ist.noUpVer" })}
+            label={formatMessage({ id: 'deploy.step.one.version.title' })}
+            notFoundContent={formatMessage({ id: 'ist.noUpVer' })}
             filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0}
             onChange={this.handleVersionChange}
             value={versionId || (getVerValue.length ? getVerValue[0].id : undefined)}
@@ -130,7 +138,7 @@ class UpgradeIst extends Component {
           {getVerValue.length === 0 ? (
             <div>
               <Icon type="error" className="c7n-noVer-waring" />
-              {formatMessage({ id: "ist.noUpVer" })}
+              {formatMessage({ id: 'ist.noUpVer' })}
             </div>
           ) : null}
 

@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.UserAttrDTO;
@@ -29,7 +30,7 @@ public class DevopsUserController {
      *
      * @return UserAttrDTO
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据用户Id查询gitlab用户Id")
     @GetMapping("/{user_id}")
     public ResponseEntity<UserAttrDTO> createOrUpdate(

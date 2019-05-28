@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -41,7 +42,7 @@ public class DevopsGitlabCommitController {
      * @param appIds    应用id
      * @return DevopsGitlabCommitDTO
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取应用下的代码提交")
     @PostMapping
@@ -67,7 +68,7 @@ public class DevopsGitlabCommitController {
      * @param pageRequest 分页参数
      * @return List
      */
-    @Permission(
+    @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "获取应用下的代码提交历史记录")

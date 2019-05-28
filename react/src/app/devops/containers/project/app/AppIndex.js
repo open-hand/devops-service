@@ -6,8 +6,8 @@ import {
 
 import { asyncRouter, nomatch } from '@choerodon/boot';
 
-const App = asyncRouter(() => import('./appHome'), () => import('../../../stores/project/app/appHome'));
-const AppImport = asyncRouter(() => import('./appImport'), () => import('../../../stores/project/app/appHome'));
+const App = asyncRouter(() => import('./appHome'), () => import('../../../stores/project/app'));
+const AppImport = asyncRouter(() => import('./appImport'), () => import('../../../stores/project/app'));
 
 const EnvironmentIndex = ({ match }) => (
   <Switch>

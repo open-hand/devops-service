@@ -1,9 +1,9 @@
-import React from "react";
-import { injectIntl } from "react-intl";
-import PropTypes from "prop-types";
-import { Tooltip, Progress, Icon } from "choerodon-ui";
-import MouseOverWrapper from "../../components/MouseOverWrapper";
-import "./StatusIcon.scss";
+import React from 'react';
+import { injectIntl } from 'react-intl';
+import PropTypes from 'prop-types';
+import { Tooltip, Progress, Icon } from 'choerodon-ui';
+import MouseOverWrapper from '../../components/MouseOverWrapper';
+import './StatusIcon.scss';
 
 function StatusIcon(props) {
   const {
@@ -14,27 +14,35 @@ function StatusIcon(props) {
   } = props;
   let statusDom = null;
   switch (status) {
-    case "failed":
-      const msg = error ? `: ${error}` : "";
+    case 'failed':
+      const msg = error ? `: ${error}` : '';
       statusDom = (
         <Tooltip title={`failed ${msg}`}>
           <Icon type="error" className="c7n-status-failed" />
         </Tooltip>
       );
       break;
-    case "operating":
+    case 'operating':
       statusDom = (
         <Tooltip title={formatMessage({ id: `ist_operating` })}>
-          <Progress type="loading" width={15} className="c7n-status-progress" />
+          <Progress
+            type="loading"
+            size="small"
+            width={15}
+          />
         </Tooltip>
       );
       break;
     default:
-      statusDom = null;
   }
+
   return (
     <React.Fragment>
-      <MouseOverWrapper className="c7n-status-text" text={name} width={0.15}>
+      <MouseOverWrapper
+        text={name}
+        width={0.15}
+        className="c7n-status-text"
+      >
         {name}
       </MouseOverWrapper>
       {statusDom}

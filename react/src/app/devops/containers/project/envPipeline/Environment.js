@@ -131,6 +131,9 @@ class Environment extends Component {
   }
 
   componentDidMount() {
+    const { EnvPipelineStore } = this.props;
+    const { getShow } = EnvPipelineStore;
+    getShow && this.showSideBar("create");
     this.reload();
   }
 

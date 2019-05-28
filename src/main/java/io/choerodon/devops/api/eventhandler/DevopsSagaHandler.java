@@ -333,14 +333,8 @@ public class DevopsSagaHandler {
             //更新记录表中的实例
             if(!taskRecordRepository.queryById( applicationDeployDTO.getRecordId()).getStatus().equals(WorkFlowStatus.STOP.toValue())) {
                 PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
-                pipelineTaskRecordE.setInstanceName(applicationDeployDTO.getInstanceName());
                 pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
                 taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
-                PipelineAppDeployE appDeployE = appDeployRepository.queryById(applicationDeployDTO.getAutoDeployId());
-                if (appDeployE.getInstanceId() == null) {
-                    appDeployE.setInstanceId(applicationInstanceDTO.getId());
-                    appDeployRepository.update(appDeployE);
-                }
                 LOGGER.info("create pipeline auto deploy instance success");
             }
         } catch (Exception e) {

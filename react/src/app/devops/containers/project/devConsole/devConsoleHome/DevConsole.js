@@ -1013,45 +1013,6 @@ class DevConsole extends Component {
     const empty = appData && appData.length ? 'tag' : 'app';
     const noRepoUrl = formatMessage({ id: 'repository.noUrl' });
 
-    const qualityData = [
-      {
-        icon: "fiber_smart_record",
-        title: formatMessage({ id: "codeQuality.coverage" }),
-        number: 70,
-        rating: null,
-      },
-      {
-        icon: "bug_report",
-        title: "Bugs",
-        number: 12,
-        rating: "A",
-      },
-      {
-        icon: "unlock",
-        title: formatMessage({ id: "codeQuality.vulnerabilities" }),
-        number: 4,
-        rating: "B",
-      },
-      {
-        icon: "opacity",
-        title: formatMessage({ id: "codeQuality.debt" }),
-        number: "10天",
-        rating: "C",
-      },
-      {
-        icon: "group_work",
-        title: formatMessage({ id: "codeQuality.code.smells" }),
-        number: 125,
-        rating: "D",
-      },
-      {
-        icon: null,
-        title: "Java,XML",
-        number: 552,
-        rating: "S",
-      },
-    ];
-
     return (
       <Page
         className="c7n-tag-wrapper"

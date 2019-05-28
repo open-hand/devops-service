@@ -12,7 +12,6 @@ import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -30,7 +29,7 @@ public interface IamRepository {
 
     List<ProjectE> listIamProjectByOrgId(Long organizationId, String name, String[] params);
 
-    List<ProjectE> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
+    Page<ProjectE> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
 
     List<UserE> listUsersByIds(List<Long> ids);
 
