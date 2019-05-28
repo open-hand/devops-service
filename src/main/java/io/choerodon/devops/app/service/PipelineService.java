@@ -24,7 +24,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface PipelineService {
     Page<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, PageRequest pageRequest, String params);
 
-    Page<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params);
+    Page<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed);
 
     PipelineReqDTO create(Long projectId, PipelineReqDTO pipelineReqDTO);
 

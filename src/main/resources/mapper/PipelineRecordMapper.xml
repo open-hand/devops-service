@@ -13,10 +13,17 @@
         dpr.pipeline_id
         FROM
         devops_pipeline_record dpr
+        <include refid="classifySql"/>
         WHERE
         dpr.project_id = #{projectId}
         <if test="pipelineId != null">
             AND dpr.pipeline_id = #{pipelineId}
+        </if>
+        <if test="classifyParam.executed != null">
+            AND dpr.created_by = #{classifyParam.userId} AND dpr.trigger_type = 'manual'
+        </if>
+        <if test="classifyParam.pendingcheck != null">
+            and dpr.`status`='pendingcheck'
         </if>
         <include refid="sqlparam"/>
     </select>
@@ -61,9 +68,32 @@
             OR dpr.pipeline_name= #{param, jdbcType=VARCHAR})
         </if>
     </sql>
+
+    <sql id="classifySql">
+        <if test='classifyParam.reviewed'>
+            JOIN devops_pipeline_stage_record dpsr ON dpsr.pipeline_record_id = dpr.id
+            JOIN devops_pipeline_task_record dptr ON dptr.stage_record_id = dpsr.id
+            JOIN devops_pipeline_user_record_rel dpurr ON (
+            dpurr.task_record_id = dptr.id
+            OR dpurr.stage_record_id = dpsr.id
+            ) AND dpurr.user_id = #{classifyParam.userId}
+        </if>
+    </sql>
+
     <update id="updateEdited">
         UPDATE devops_pipeline_record dpr
         SET dpr.edited = 1 where dpr.pipeline_id = #{pipelineId}
     </update>
 
+    <select id="queryAllRecordUserIds" resultType="java.lang.Long">
+        SELECT
+            dpurr.user_id
+        FROM
+            devops_pipeline_user_record_rel dpurr
+        JOIN devops_pipeline_stage_record dpsr ON dpsr.pipeline_record_id = #{pipelineRecordId}
+        JOIN devops_pipeline_task_record dptr ON dptr.stage_record_id = dpsr.id
+        WHERE
+            dpurr.task_record_id = dptr.id
+        OR dpurr.stage_record_id = dpsr.id
+    </select>
 </mapper>

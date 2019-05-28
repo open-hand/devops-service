@@ -197,11 +197,17 @@ public class PipelineController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = false)
             @RequestParam(value = "pipeline_id", required = false) Long pipelineId,
+            @ApiParam(value = "待审核", required = false)
+            @RequestParam(value = "pendingcheck", required = false) Boolean pendingcheck,
+            @ApiParam(value = "执行过", required = false)
+            @RequestParam(value = "executed", required = false) Boolean executed,
+            @ApiParam(value = "审核过", required = false)
+            @RequestParam(value = "reviewed", required = false) Boolean reviewed,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(pipelineService.listRecords(projectId, pipelineId, pageRequest, params))
+        return Optional.ofNullable(pipelineService.listRecords(projectId, pipelineId, pageRequest, params, pendingcheck, executed, reviewed))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.list.record"));
     }

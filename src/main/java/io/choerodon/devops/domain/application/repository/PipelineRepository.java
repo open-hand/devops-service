@@ -1,10 +1,11 @@
 package io.choerodon.devops.domain.application.repository;
 
+import java.util.List;
+import java.util.Map;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.PipelineE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -12,7 +13,7 @@ import java.util.List;
  * Description:
  */
 public interface PipelineRepository {
-    Page<PipelineE> listByOptions(Long projectId, PageRequest pageRequest, String params);
+    Page<PipelineE> listByOptions(Long projectId, PageRequest pageRequest, String params, Map<String, Object> classifyParam);
 
     PipelineE create(Long projectId, PipelineE pipelineE);
 

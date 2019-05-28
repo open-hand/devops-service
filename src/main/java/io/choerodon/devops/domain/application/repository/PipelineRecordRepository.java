@@ -1,10 +1,11 @@
 package io.choerodon.devops.domain.application.repository;
 
+import java.util.List;
+import java.util.Map;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.PipelineRecordE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -12,7 +13,7 @@ import java.util.List;
  * Description:
  */
 public interface PipelineRecordRepository {
-    Page<PipelineRecordE> listByOptions(Long projectId, Long pipelineId, PageRequest pageRequest, String params);
+    Page<PipelineRecordE> listByOptions(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Map<String, Object> classifyParam);
 
     PipelineRecordE create(PipelineRecordE pipelineRecordE);
 
@@ -23,4 +24,7 @@ public interface PipelineRecordRepository {
     List<PipelineRecordE> queryByPipelineId(Long pipelineId);
 
     void updateEdited(Long pipelineId);
+
+    List<Long> queryAllRecordUserIds(Long pipelineRecordId);
+
 }
