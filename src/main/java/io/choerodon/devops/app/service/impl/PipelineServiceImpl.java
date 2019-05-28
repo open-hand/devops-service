@@ -1108,7 +1108,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public void stop(Long projectId, Long recordId) {
+    public void failed(Long projectId, Long recordId) {
         PipelineRecordE recordE = pipelineRecordRepository.queryById(recordId);
         if (!recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
             throw new CommonException("error.pipeline.record.status");
@@ -1117,11 +1117,11 @@ public class PipelineServiceImpl implements PipelineService {
 
         for (PipelineStageRecordE stageRecordE : stageRecordES) {
             if (stageRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()) || stageRecordE.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
-                updateStatus(recordId, stageRecordE.getId(), WorkFlowStatus.STOP.toValue());
+                updateStatus(recordId, stageRecordE.getId(), WorkFlowStatus.FAILED.toValue());
                 List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null);
                 for (PipelineTaskRecordE taskRecordE : taskRecordEList) {
                     if (taskRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
-                        taskRecordE.setStatus(WorkFlowStatus.STOP.toValue());
+                        taskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
                         taskRecordRepository.createOrUpdate(taskRecordE);
                         break;
                     }

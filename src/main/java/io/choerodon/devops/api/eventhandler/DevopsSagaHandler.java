@@ -331,7 +331,7 @@ public class DevopsSagaHandler {
         try {
             ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
             //更新记录表中的实例
-            if(!taskRecordRepository.queryById( applicationDeployDTO.getRecordId()).getStatus().equals(WorkFlowStatus.STOP.toValue())) {
+            if(!taskRecordRepository.queryById( applicationDeployDTO.getRecordId()).getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                 PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
                 pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
                 taskRecordRepository.createOrUpdate(pipelineTaskRecordE);

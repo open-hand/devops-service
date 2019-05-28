@@ -68,5 +68,5 @@ public interface PipelineService {
 
     void executeAppDeploy(Long pipelineId);
 
-    void stop(Long projectId, Long recordId);
+    void failed(Long projectId, Long recordId);
 }

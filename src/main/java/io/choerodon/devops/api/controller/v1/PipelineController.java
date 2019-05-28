@@ -413,13 +413,13 @@ public class PipelineController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "停止流水线")
-    @GetMapping(value = "/stop")
-    public ResponseEntity stop(
+    @GetMapping(value = "/failed")
+    public ResponseEntity failed(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "pipeline_record_id") Long recordId) {
-        pipelineService.stop(projectId, recordId);
+        pipelineService.failed(projectId, recordId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
