@@ -29,6 +29,15 @@ public class PipelineRecordDO extends AuditDomain {
     private String businessKey;
     private Boolean edited;
     private String auditUser;
+    private String errorInfo;
+
+    public String getErrorInfo() {
+        return errorInfo;
+    }
+
+    public void setErrorInfo(String errorInfo) {
+        this.errorInfo = errorInfo;
+    }
 
     public String getAuditUser() {
         return auditUser;

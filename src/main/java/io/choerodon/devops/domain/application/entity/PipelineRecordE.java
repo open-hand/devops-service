@@ -20,6 +20,7 @@ public class PipelineRecordE {
     private String businessKey;
     private Boolean edited;
     private String auditUser;
+    private String errorInfo;
 
     public PipelineRecordE(Long pipelineId, String triggerType, Long projectId, String status, String pipelineName) {
         this.pipelineId = pipelineId;
@@ -27,6 +28,14 @@ public class PipelineRecordE {
         this.projectId = projectId;
         this.status = status;
         this.pipelineName = pipelineName;
+    }
+
+    public String getErrorInfo() {
+        return errorInfo;
+    }
+
+    public void setErrorInfo(String errorInfo) {
+        this.errorInfo = errorInfo;
     }
 
     public String getAuditUser() {

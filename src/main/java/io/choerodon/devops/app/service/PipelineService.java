@@ -62,7 +62,7 @@ public interface PipelineService {
 
     List<UserDTO> getAllUsers(Long projectId);
 
-    void updateStatus(Long pipelineRecordId, Long stageRecordId, String status);
+    void updateStatus(Long pipelineRecordId, Long stageRecordId, String status, String errorInfo);
 
     CheckAuditDTO checkAudit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
 

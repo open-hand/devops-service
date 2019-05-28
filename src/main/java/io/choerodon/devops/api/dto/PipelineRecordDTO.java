@@ -23,6 +23,15 @@ public class PipelineRecordDTO {
     private Long stageRecordId;
     private String type;
     private Boolean index;
+    private String errorInfo;
+
+    public String getErrorInfo() {
+        return errorInfo;
+    }
+
+    public void setErrorInfo(String errorInfo) {
+        this.errorInfo = errorInfo;
+    }
 
     public String getPipelineName() {
         return pipelineName;

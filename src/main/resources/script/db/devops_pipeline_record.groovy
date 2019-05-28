@@ -44,4 +44,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
             column(name: 'audit_user', type: 'VARCHAR(255)', remarks: '审核人员', afterColumn: "project_id")
         }
     }
+    changeSet(author: 'scp', id: '2019-05-28-devops_pipeline_task-add-column') {
+        addColumn(tableName: 'devops_pipeline_record') {
+            column(name: 'error_info', type: 'VARCHAR(255)', remarks: '错误信息', afterColumn: "audit_user")
+        }
+    }
 }
