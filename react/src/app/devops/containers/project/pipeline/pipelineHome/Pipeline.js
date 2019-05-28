@@ -2,15 +2,18 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Table, Button, Modal, Spin } from 'choerodon-ui';
+import { Table, Button, Modal, Spin, Select } from 'choerodon-ui';
 import { Permission, Content, Header, Page, Action } from '@choerodon/boot';
 import _ from 'lodash';
 import StatusTags from '../../../../components/StatusTags';
 import TimePopover from '../../../../components/timePopover';
 import UserInfo from '../../../../components/userInfo';
 import { handleCheckerProptError } from '../../../../utils';
+import { FAST_SEARCH } from "../components/Constants";
 
 import './Pipeline.scss';
+
+const { Option } = Select;
 
 const STATUS_INVALID = 0;
 const STATUS_ACTIVE = 1;
@@ -42,6 +45,7 @@ export default class Pipeline extends Component {
     executeCheck: false,
     executeLoading: false,
     executeEnv: null,
+    searchData: null,
   };
 
   componentDidMount() {
@@ -78,6 +82,7 @@ export default class Pipeline extends Component {
         },
       },
     } = this.props;
+    const { searchData } = this.state;
 
     const realSorter = _.isEmpty(sorter) ? null : sorter;
     this.setState({
@@ -96,6 +101,7 @@ export default class Pipeline extends Component {
         searchParam: filters,
         param: param.toString(),
       },
+      searchData,
     );
   };
 
@@ -112,7 +118,7 @@ export default class Pipeline extends Component {
         },
       },
     } = this.props;
-    const { page, pageSize, param, filters, sorter } = this.state;
+    const { page, pageSize, param, filters, sorter, searchData } = this.state;
     const currentPage = (toPage || toPage === 0) ? toPage : page;
     const {
       getPageInfo: {
@@ -129,6 +135,7 @@ export default class Pipeline extends Component {
         searchParam: filters,
         param: param.toString(),
       },
+      searchData,
     );
   };
 
@@ -336,6 +343,14 @@ export default class Pipeline extends Component {
     this.linkToChange(`${match.url}/edit/${id}`);
   }
 
+  /**
+   * 快速搜索
+   * @param value
+   */
+  handleSearch = (value) => {
+    this.setState({ searchData: value }, () => this.loadData(0));
+  };
+
   renderAction = (record) => {
     const {
       intl: { formatMessage },
@@ -515,6 +530,24 @@ export default class Pipeline extends Component {
         </Button>
       </Header>
       <Content code="pipeline" values={{ name }}>
+        <Select
+          mode="multiple"
+          label={formatMessage({ id: "pipeline.search" })}
+          allowClear
+          className="c7ncd-pipeline-search"
+          onChange={this.handleSearch}
+        >
+          {
+            _.map(FAST_SEARCH, item => (
+              <Option
+                key={item}
+                value={item}
+              >
+                {formatMessage({ id: `pipeline.search.${item}` })}
+              </Option>
+            ))
+          }
+        </Select>
         <Table
           filterBarPlaceholder={formatMessage({ id: 'filter' })}
           loading={getLoading || executeLoading}

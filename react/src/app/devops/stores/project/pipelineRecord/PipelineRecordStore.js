@@ -75,15 +75,22 @@ class PipelineRecordStore {
     pipelineId,
     page = this.pageInfo.current - 1,
     size = this.pageInfo.pageSize,
+    searchData,
     sort = { field: "id", order: "desc" },
     postData = {
       searchParam: {},
       param: "",
-    }
+    },
   ) => {
     this.changeLoading(true);
+    let searchPath = '';
+    if(searchData && searchData.length) {
+      _.forEach(searchData, item => {
+        searchPath += `&${item}=true`
+      })
+    }
     const url = pipelineId ? `pipeline_id=${pipelineId}&` : "";
-    return axios.post(`/devops/v1/projects/${projectId}/pipeline/list_record?${url}page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(postData))
+    return axios.post(`/devops/v1/projects/${projectId}/pipeline/list_record?${url}page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}${searchPath}`, JSON.stringify(postData))
       .then(data => {
         const res = handleProptError(data);
         if (res) {

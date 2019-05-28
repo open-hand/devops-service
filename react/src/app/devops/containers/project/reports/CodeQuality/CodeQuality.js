@@ -10,7 +10,6 @@ import ChartSwitch from '../Component/ChartSwitch';
 import TimePicker from '../Component/TimePicker';
 import NoChart from '../Component/NoChart';
 import LoadingBar from '../../../../components/loadingBar/LoadingBar';
-import { HEIGHT} from "../../../../common/Constants";
 
 import "./CodeQuality.scss";
 
@@ -53,12 +52,10 @@ class CodeQuality extends Component {
 
   componentWillUnmount() {
     const { ReportsStore } = this.props;
-    ReportsStore.setAllData([]);
     ReportsStore.setCodeQuality({});
     ReportsStore.setStartTime(moment().subtract(6, 'days'));
     ReportsStore.setEndTime(moment());
     ReportsStore.setAppId(null);
-    ReportsStore.setPageInfo({ number: 0, totalElements: 0, size: HEIGHT <= 900 ? 10 : 15 });
     ReportsStore.setStartDate();
     ReportsStore.setEndDate();
     ReportsStore.setAllApps([]);
