@@ -687,7 +687,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         projectHook.setUrl(uri);
         List<ProjectHook> projectHooks = gitlabRepository
                 .getHooks(projectId, userId);
-        if (projectHooks == null) {
+        if (projectHooks.isEmpty()) {
             applicationE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
                     projectId, userId, projectHook)
                     .getId()));

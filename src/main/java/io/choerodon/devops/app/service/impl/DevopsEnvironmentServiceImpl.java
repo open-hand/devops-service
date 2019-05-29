@@ -515,7 +515,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         projectHook.setUrl(uri);
         List<ProjectHook> projectHooks = gitlabRepository.getHooks(gitlabProjectDO.getId(),
                 gitlabProjectPayload.getUserId());
-        if (!projectHooks.isEmpty()) {
+        if (projectHooks.isEmpty()) {
             devopsEnvironmentE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
                     gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHook).getId()));
         } else {
