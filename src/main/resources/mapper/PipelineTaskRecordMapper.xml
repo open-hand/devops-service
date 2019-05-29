@@ -20,6 +20,7 @@
         dptr.instance_name,
         dptr.task_type,
         dptr.audit_user,
+        dptr.stage_record_id,
         (
         CASE
         WHEN dptr.instance_id IS NOT NULL

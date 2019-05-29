@@ -470,7 +470,7 @@ public class PipelineServiceImpl implements PipelineService {
             //发送请求给workflow，创建流程实例
             CustomUserDetails details = DetailsHelper.getUserDetails();
             createWorkFlow(projectId, devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
-            updateFirstStage(pipelineRecordE.getId(), pipelineId);
+            updateFirstStage(pipelineRecordE.getId());
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
@@ -506,6 +506,7 @@ public class PipelineServiceImpl implements PipelineService {
             }
         }
         if (index == -1) {
+            setPipelineFailed(stageRecordId, taskRecordE, "No version");
             throw new CommonException("no.version.can.trigger.deploy");
         }
         //保存记录
@@ -533,10 +534,11 @@ public class PipelineServiceImpl implements PipelineService {
             String input = gson.toJson(applicationDeployDTO);
             sagaClient.startSaga("devops-pipeline-auto-deploy-instance", new StartInstanceDTO(input, "env", taskRecordE.getEnvId().toString(), ResourceLevel.PROJECT.value(), taskRecordE.getProjectId()));
         } catch (Exception e) {
-            taskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
-            taskRecordRepository.createOrUpdate(taskRecordE);
-            Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
-            updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), e.getMessage());
+            setPipelineFailed(stageRecordId, taskRecordE, e.getMessage());
+//            taskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
+//            taskRecordRepository.createOrUpdate(taskRecordE);
+//            Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
+//            updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), e.getMessage());
             throw new CommonException("error.create.pipeline.auto.deploy.instance", e);
         }
     }
@@ -1037,7 +1039,7 @@ public class PipelineServiceImpl implements PipelineService {
         });
         //更新第一阶段
         if (pipelineRecordE.getTriggerType().equals(MANUAL)) {
-            updateFirstStage(pipelineRecordId, pipelineRecordE.getPipelineId());
+            updateFirstStage(pipelineRecordId);
         }
     }
 
@@ -1152,15 +1154,14 @@ public class PipelineServiceImpl implements PipelineService {
         return appDeployEList;
     }
 
-    private void updateFirstStage(Long pipelineRecordId, Long pipelineId) {
-        PipelineStageRecordE stageRecordE = stageRecordRepository.queryByPipeRecordId(pipelineRecordId,
-                stageRepository.queryByPipelineId(pipelineId).get(0).getId()).get(0);
+    private void updateFirstStage(Long pipelineRecordId) {
+        PipelineStageRecordE stageRecordE = stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null).get(0);
         updateStatus(null, stageRecordE.getId(), WorkFlowStatus.RUNNING.toValue(), null);
         //更新第一个阶段状态
         if (isEmptyStage(stageRecordE.getStageId())) {
             startEmptyStage(pipelineRecordId, stageRecordE.getId());
         } else {
-            PipelineTaskRecordE taskRecordE = getFirstTask(pipelineId);
+            PipelineTaskRecordE taskRecordE = getFirstTask(pipelineRecordId);
             if (taskRecordE.getTaskType().equals(MANUAL)) {
                 startNextTask(taskRecordE, pipelineRecordId, stageRecordE.getId());
             }
@@ -1266,7 +1267,6 @@ public class PipelineServiceImpl implements PipelineService {
     private void startNextTask(PipelineTaskRecordE taskRecordE, Long pipelineRecordId, Long stageRecordId) {
         if (!taskRecordE.getTaskType().equals(AUTO)) {
             taskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
-            taskRecordE.setTaskId(taskRecordE.getId());
             taskRecordRepository.createOrUpdate(taskRecordE);
             updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.PENDINGCHECK.toValue(), null);
         }
@@ -1454,6 +1454,13 @@ public class PipelineServiceImpl implements PipelineService {
             }
         }
         return index;
+    }
+
+    private void setPipelineFailed(Long stageRecordId, PipelineTaskRecordE taskRecordE, String errorInfo) {
+        taskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
+        taskRecordRepository.createOrUpdate(taskRecordE);
+        Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
+        updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), errorInfo);
     }
 }
 
