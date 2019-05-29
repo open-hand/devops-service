@@ -639,7 +639,7 @@ public class PipelineServiceImpl implements PipelineService {
                         startEmptyStage(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                     }
                 } else {
-                    updateStatus(recordRelDTO.getPipelineRecordId(), null, status,null);
+                    updateStatus(recordRelDTO.getPipelineRecordId(), null, status, null);
                 }
                 break;
             }
@@ -1404,7 +1404,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private Boolean filterPendingCheck(Boolean pendingcheck, PipelineRecordDTO pipelineRecordDTO) {
-        if (pendingcheck) {
+        if (pendingcheck != null) {
             PipelineStageRecordE stageRecordE = stageRecordRepository.queryPendingCheck(pipelineRecordDTO.getId());
             List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null);
             String auditUser = stageRecordE.getAuditUser();
