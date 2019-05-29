@@ -1,81 +1,165 @@
-import React, { Component, Fragment } from 'react';
-import { observer } from 'mobx-react';
+import React, { Component } from 'react';
+import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import _ from 'lodash';
 import { Steps } from 'choerodon-ui';
-import { Content, Header, Page, stores } from '@choerodon/boot';
+import { Content, Header, Page } from '@choerodon/boot';
+import { Step0, Step1, Step2, Step3 } from './steps/index';
+import { STEP_FLAG, REPO_TYPE } from './Constants';
+import { handleCheckerProptError } from '../../../../utils';
+
 import '../../../main.scss';
 import './AppImport.scss';
-import { Step0, Step1, Step2, Step3 } from './steps/index';
 
-const { AppState } = stores;
-const Step = Steps.Step;
+const { Step } = Steps;
 
+@withRouter
+@injectIntl
+@inject('AppState')
 @observer
-class AppImport extends Component {
-  constructor() {
-    super(...arguments);
-    this.state = {
-      data: {},
-      current: 0,
-    };
-  }
+export default class AppImport extends Component {
+  state = {
+    data: {},
+    current: STEP_FLAG.IMPORT_ORIGIN,
+  };
 
-  next = (values, current) => {
-    const data = this.state.data;
-    switch (values.key) {
-      case 'step0':
-        data.repositoryUrl = values.repositoryUrl;
-        data.platformType = values.platformType;
-        if (values.platformType === 'gitlab') {
-          data.accessToken = values.accessToken;
+  /**
+   * 下一步
+   * @param key
+   * @param platformType
+   * @param isSkipCheckPermission
+   * @param repositoryUrl
+   * @param accessToken
+   * @param code
+   * @param name
+   * @param applicationTemplateId
+   * @param template
+   * @param harborConfigId
+   * @param chartConfigId
+   * @param harborName
+   * @param chartName
+   * @param userIds
+   * @param membersInfo
+   * @param current
+   */
+  nextStep = (
+    {
+      key,
+      platformType,
+      isSkipCheckPermission,
+      repositoryUrl,
+      accessToken,
+      code,
+      name,
+      applicationTemplateId,
+      template,
+      harborConfigId,
+      chartConfigId,
+      harborName,
+      chartName,
+      userIds,
+      membersInfo,
+    },
+    current,
+  ) => {
+    const { data } = this.state;
+    const { IMPORT_ORIGIN, LANGUAGE_SELECT, PERMISSION_RULE } = STEP_FLAG;
+
+    let stepData = null;
+
+    switch (key) {
+      case IMPORT_ORIGIN:
+        stepData = {
+          repositoryUrl,
+          platformType,
+        };
+
+        if (platformType === REPO_TYPE.REPO_GITLAB) {
+          stepData.accessToken = accessToken;
         }
         break;
-      case 'step1':
-        data.code = values.code;
-        data.name = values.name;
-        data.applicationTemplateId = values.applicationTemplateId;
-        data.template = values.template;
+      case LANGUAGE_SELECT:
+        stepData = {
+          code,
+          name,
+          applicationTemplateId,
+          template,
+        };
+
         break;
-      case 'step2':
-        data.isSkipCheckPermission = values.isSkipCheckPermission;
-        data.harborConfigId = values.harborConfigId;
-        data.chartConfigId = values.chartConfigId;
-        data.harborName = values.harborName;
-        data.chartName = values.chartName;
-        if (values.isSkipCheckPermission === 'part') {
-          data.userIds = values.userIds;
-          data.membersInfo = values.membersInfo;
+      case PERMISSION_RULE:
+        stepData = {
+          isSkipCheckPermission,
+          harborConfigId,
+          chartConfigId,
+          harborName,
+          chartName,
+        };
+
+        if (isSkipCheckPermission === 'part') {
+          stepData.userIds = userIds;
+          stepData.membersInfo = membersInfo;
         }
         break;
       default:
-        break;
     }
-    this.setState({ current, data });
+    this.setState({ current, data: { ...data, ...stepData } });
   };
 
-  prev = () => {
-    const current = this.state.current - 1;
-    this.setState({ current });
+  prevStep = target => {
+    this.setState({ current: target });
   };
 
-  cancel = () => {
-    const current = this.state.current;
-    if (current === 0) {
-      const { type, id: projectId, organizationId: orgId, name } = AppState.currentMenuType;
-      const { history } = this.props;
-      const url = `/devops/app?type=${type}&id=${projectId}&name=${name}&organizationId=${orgId}`;
+  handleCancel = () => {
+    const { current } = this.state;
+
+    if (current === STEP_FLAG.IMPORT_ORIGIN) {
+      const {
+        AppState: {
+          currentMenuType: {
+            id: projectId,
+            name,
+            organizationId,
+            type,
+          },
+        },
+        history,
+      } = this.props;
+
+      const url = `/devops/app?type=${type}&id=${projectId}&name=${name}&organizationId=${organizationId}`;
       history.push(url);
     } else {
-      this.setState({ current: 0 });
+      this.setState({ current: STEP_FLAG.IMPORT_ORIGIN });
     }
   };
 
-  importApp = () => {
-    const { AppStore, history } = this.props;
-    const { type, id: projectId, organizationId: orgId, name: proName } = AppState.currentMenuType;
+  handleImport = async () => {
+    const {
+      AppStore,
+      history,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+          name: projectName,
+          organizationId,
+          type,
+        },
+      },
+    } = this.props;
     const { data } = this.state;
-    const { platformType, repositoryUrl, accessToken, name, code, applicationTemplateId, isSkipCheckPermission, userIds, harborConfigId, chartConfigId } = data;
+    const {
+      platformType,
+      repositoryUrl,
+      accessToken,
+      name,
+      code,
+      applicationTemplateId,
+      isSkipCheckPermission,
+      userIds,
+      harborConfigId,
+      chartConfigId,
+    } = data;
     const value = {
       platformType,
       accessToken,
@@ -86,52 +170,88 @@ class AppImport extends Component {
       userIds,
       harborConfigId,
       chartConfigId,
+      isSkipCheckPermission: isSkipCheckPermission !== 'part',
+      type: 'normal',
     };
-    value.isSkipCheckPermission = isSkipCheckPermission !== 'part';
-    value.type = 'normal';
+
     AppStore.setImportBtnLoading(true);
-    AppStore.importApp(projectId, value)
-      .then((data) => {
-        if (data && data.failed) {
-          Choerodon.prompt(data.message);
-          AppStore.setImportBtnLoading(false);
-        } else {
-          const url = `/devops/app?type=${type}&id=${projectId}&name=${proName}&organizationId=${orgId}`;
-          history.push(url);
-          AppStore.setImportBtnLoading(false);
-        }
-      })
+
+    const response = await AppStore.importApp(projectId, value)
       .catch(e => {
-        Choerodon.prompt(e);
         AppStore.setImportBtnLoading(false);
+        Choerodon.handleResponseError(e);
       });
+
+    const result = handleCheckerProptError(response);
+
+    if (result) {
+      const url = `/devops/app?type=${type}&id=${projectId}&name=${projectName}&organizationId=${organizationId}`;
+      history.push(url);
+    }
+
+    AppStore.setImportBtnLoading(false);
   };
 
   render() {
-    const { type, id: projectId, organizationId, name } = AppState.currentMenuType;
     const { current, data } = this.state;
-    const { AppStore } = this.props;
+    const {
+      AppStore,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+          name,
+          organizationId,
+          type,
+        },
+      },
+    } = this.props;
 
-    const steps = [{
-      key: 'step0',
-      title: <FormattedMessage id="app.import.step1" />,
-      content: <Step0 onNext={this.next} onCancel={this.cancel} store={AppStore} values={data} />,
-    }, {
-      key: 'step1',
-      title: <FormattedMessage id="app.import.step2" />,
-      content: <Step1 onNext={this.next} onPrevious={this.prev} onCancel={this.cancel} store={AppStore}
-                      values={data} />,
-    }, {
-      key: 'step2',
-      title: <FormattedMessage id="app.import.step3" />,
-      content: <Step2 onNext={this.next} onPrevious={this.prev} onCancel={this.cancel} store={AppStore}
-                      values={data} />,
-    }, {
-      key: 'step3',
-      title: <FormattedMessage id="app.import.step4" />,
-      content: <Step3 onImport={this.importApp} onPrevious={this.prev} onCancel={this.cancel} store={AppStore}
-                      values={data} />,
-    }];
+    const {
+      IMPORT_ORIGIN,
+      LANGUAGE_SELECT,
+      PERMISSION_RULE,
+      CONFORM_INFO,
+    } = STEP_FLAG;
+
+    const steps = _.map(STEP_FLAG, key =>
+      <Step
+        key={key}
+        title={<FormattedMessage id={`app.import.${key}`} />}
+      />);
+
+    const stepNum = [IMPORT_ORIGIN, LANGUAGE_SELECT, PERMISSION_RULE, CONFORM_INFO];
+
+    const stepContents = {
+      [IMPORT_ORIGIN]: <Step0
+        onNext={this.nextStep}
+        onCancel={this.handleCancel}
+        store={AppStore}
+        values={data}
+      />,
+      [LANGUAGE_SELECT]: <Step1
+        onNext={this.nextStep}
+        onPrevious={this.prevStep}
+        onCancel={this.handleCancel}
+        store={AppStore}
+        values={data}
+      />,
+      [PERMISSION_RULE]: <Step2
+        onNext={this.nextStep}
+        onPrevious={this.prevStep}
+        onCancel={this.handleCancel}
+        store={AppStore}
+        values={data}
+      />,
+      [CONFORM_INFO]: <Step3
+        onImport={this.handleImport}
+        onPrevious={this.prevStep}
+        onCancel={this.handleCancel}
+        store={AppStore}
+        values={data}
+      />,
+    };
+
+    const backPath = `/devops/app?type=${type}&id=${projectId}&name=${name}&organizationId=${organizationId}`;
 
     return (
       <Page
@@ -142,19 +262,19 @@ class AppImport extends Component {
           'devops-service.application-market.update',
         ]}
       >
-        <Header title={<FormattedMessage id="app.import" />}
-                backPath={`/devops/app?type=${type}&id=${projectId}&name=${name}&organizationId=${organizationId}`} />
+        <Header
+          title={<FormattedMessage id="app.import" />}
+          backPath={backPath}
+        />
         <Content code="app.import" values={{ name }}>
           <div className="c7n-app-import-wrap">
-            <Steps current={current} className="steps-line">
-              {steps.map(item => <Step key={item.key} title={item.title} />)}
+            <Steps current={stepNum.indexOf(current)} className="steps-line">
+              {steps}
             </Steps>
-            <div className="steps-content">{steps[current].content}</div>
+            <div className="steps-content">{stepContents[current]}</div>
           </div>
         </Content>
       </Page>
     );
   }
 }
-
-export default withRouter(injectIntl(AppImport));
