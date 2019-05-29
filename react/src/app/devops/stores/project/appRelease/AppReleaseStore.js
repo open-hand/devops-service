@@ -94,7 +94,6 @@ class AppReleaseStore {
                 },
                 key = '1',
               }) => {
-
     if (isRefresh) {
       this.changeIsRefresh(true);
     }
