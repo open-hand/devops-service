@@ -73,7 +73,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                                 memberHelper,
                                 gitlabGroupMemberDTO.getUserId());
                     } catch (Exception e) {
-                        if(e.getMessage().equals(ERROR_GITLAB_GROUP_ID_SELECT)) {
+                        if (e.getMessage().equals(ERROR_GITLAB_GROUP_ID_SELECT)) {
                             LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                             return;
                         }
@@ -204,6 +204,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             }
             // 为当前项目下所有跳过权限检查的应用加上gitlab用户权限
             List<Integer> gitlabProjectIds = applicationRepository.listByProjectIdAndSkipCheck(resourceId).stream()
+                    .filter(e -> e.getGitlabProjectE() != null)
                     .map(e -> e.getGitlabProjectE().getId()).collect(Collectors.toList());
             gitlabProjectIds.forEach(e -> {
                 GitlabProjectDO gitlabProjectDO = new GitlabProjectDO();
