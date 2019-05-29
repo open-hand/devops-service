@@ -907,6 +907,11 @@ public class PipelineServiceImpl implements PipelineService {
                         stageRecordDTO.setIndex(true);
                     }
                 }
+                if (stageRecordDTO.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                    recordReqDTO.setType(STAGE);
+                    recordReqDTO.setStageRecordId(stageRecordDTO.getId());
+                    recordReqDTO.setStageName(recordDTOList.get(i - 1).getStageName());
+                }
             }
 
             List<PipelineTaskRecordDTO> taskRecordDTOS = new ArrayList<>();
@@ -946,6 +951,12 @@ public class PipelineServiceImpl implements PipelineService {
                                 }
                             }
                             taskRecordDTO.setUserDTOList(userDTOS);
+                            if (r.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                                recordReqDTO.setType(TASK);
+                                recordReqDTO.setStageRecordId(r.getStageRecordId());
+                                recordReqDTO.setTaskRecordId(r.getId());
+                                recordReqDTO.setStageName(stageRecordRepository.queryById(r.getStageRecordId()).getStageName());
+                            }
                         } else {
                             taskRecordDTO.setEnvPermission(true);
                             if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
