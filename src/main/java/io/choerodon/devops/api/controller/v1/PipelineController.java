@@ -323,14 +323,13 @@ public class PipelineController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "流水线重试")
     @GetMapping(value = "/{pipeline_record_id}/retry")
-    public ResponseEntity<Boolean> retry(
+    public ResponseEntity retry(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录Id", required = true)
             @PathVariable(value = "pipeline_record_id") Long recordId) {
-        return Optional.ofNullable(pipelineService.retry(projectId, recordId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.retry"));
+        pipelineService.retry(projectId, recordId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     /**

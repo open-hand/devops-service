@@ -16,6 +16,7 @@ public class PipelineRecordReqDTO {
     private Date creationDate;
     private IamUserDTO userDTO;
     private String status;
+    private Boolean execute;
     private List<PipelineStageRecordDTO> stageRecordDTOS;
 
     public IamUserDTO getUserDTO() {
@@ -80,5 +81,13 @@ public class PipelineRecordReqDTO {
 
     public void setStageRecordDTOS(List<PipelineStageRecordDTO> stageRecordDTOS) {
         this.stageRecordDTOS = stageRecordDTOS;
+    }
+
+    public Boolean getExecute() {
+        return execute;
+    }
+
+    public void setExecute(Boolean execute) {
+        this.execute = execute;
     }
 }

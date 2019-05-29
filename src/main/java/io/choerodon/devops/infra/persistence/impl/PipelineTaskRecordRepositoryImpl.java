@@ -1,15 +1,16 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
 import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
 import io.choerodon.devops.infra.dataobject.PipelineTaskRecordDO;
 import io.choerodon.devops.infra.mapper.PipelineTaskRecordMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -54,5 +55,10 @@ public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepos
         PipelineTaskRecordDO recordDO = new PipelineTaskRecordDO();
         recordDO.setId(recordId);
         taskRecordMapper.deleteByPrimaryKey(recordDO);
+    }
+
+    @Override
+    public List<PipelineTaskRecordE> queryAllAutoTaskRecord(Long pipelineRecordId) {
+        return ConvertHelper.convertList(taskRecordMapper.queryAllAutoTaskRecord(pipelineRecordId), PipelineTaskRecordE.class);
     }
 }

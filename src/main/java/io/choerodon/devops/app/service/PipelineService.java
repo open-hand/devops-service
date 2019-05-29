@@ -52,7 +52,7 @@ public interface PipelineService {
 
     PipelineRecordReqDTO getRecordById(Long projectId, Long pipelineRecordId);
 
-    Boolean retry(Long projectId, Long pipelineRecordId);
+    void retry(Long projectId, Long pipelineRecordId);
 
     List<PipelineRecordListDTO> queryByPipelineId(Long pipelineId);
 
