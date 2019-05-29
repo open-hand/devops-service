@@ -981,20 +981,18 @@ const zhCN = {
   // 应用导入
   'app.import': '导入应用',
   'app.import.ok': '导入',
-  'app.import.step1': '选择应用导入来源',
-  'app.import.step2': '选择应用模板',
-  'app.import.step3': '应用权限分配',
-  'app.import.step4': '确认信息',
-  'app.import.step1.des':
+  'app.import.step0': '选择应用导入来源',
+  'app.import.step1': '选择应用模板',
+  'app.import.step2': '应用权限分配',
+  'app.import.step3': '确认信息',
+  'app.import.step0.des':
     '目前GitHub仅支持从公库导入应用。仓库为空时均不可导入。',
-  'app.import.step1-1.des':
-    '导入应用后，仅保留master分支，请确保已将需要的代码合并至master分支。',
-  'app.import.step2.des':
+  'app.import.step1.des':
     '您可在此自定义导入应用的编码与名称，同时选择一个应用模板。',
-  'app.import.step2-1.des': '请选择与导入应用的开发语言相对应的应用模板。',
-  'app.import.step3.des':
+  'app.import.step1.warn': '请选择与导入应用的开发语言相对应的应用模板。',
+  'app.import.step2.des':
     '您可在此为此应用配置特定的开发操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此应用进行开发操作；若选择项目下特定成员，则只有被勾选的项目成员才有权限对此应用进行开发。',
-  'app.import.step4.des':
+  'app.import.step3.des':
     '您可在此确认应用发布的信息，如需修改请返回相应步骤。',
   'app.import.github': 'GitHub地址',
   'app.import.gitlab': 'GitLab地址',

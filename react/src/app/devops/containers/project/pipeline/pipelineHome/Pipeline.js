@@ -9,7 +9,7 @@ import StatusTags from '../../../../components/StatusTags';
 import TimePopover from '../../../../components/timePopover';
 import UserInfo from '../../../../components/userInfo';
 import { handleCheckerProptError } from '../../../../utils';
-import { FAST_SEARCH } from "../components/Constants";
+import { FAST_SEARCH } from '../components/Constants';
 
 import './Pipeline.scss';
 
@@ -162,10 +162,12 @@ export default class Pipeline extends Component {
     } = this.props;
     const { deleteId } = this.state;
     this.setState({ deleteLoading: true });
-    const response = await PipelineStore.deletePipeline(projectId, deleteId).catch(e => {
-      this.setState({ deleteLoading: false });
-      Choerodon.handleResponseError(e);
-    });
+    const response = await PipelineStore.deletePipeline(projectId, deleteId)
+      .catch(e => {
+        this.setState({ deleteLoading: false });
+        Choerodon.handleResponseError(e);
+      });
+
     if (handleCheckerProptError(response)) {
       this.closeRemove();
       this.handleRefresh(null, 0);
@@ -532,7 +534,7 @@ export default class Pipeline extends Component {
       <Content code="pipeline" values={{ name }}>
         <Select
           mode="multiple"
-          label={formatMessage({ id: "pipeline.search" })}
+          label={formatMessage({ id: 'pipeline.search' })}
           allowClear
           className="c7ncd-pipeline-search"
           onChange={this.handleSearch}
@@ -604,9 +606,9 @@ export default class Pipeline extends Component {
           {executeCheck
             ? (executeEnv
                 ? <FormattedMessage
-                    id={`pipeline.execute.no.permission`}
-                    values={{ envName: executeEnv }}
-                  />
+                  id={`pipeline.execute.no.permission`}
+                  values={{ envName: executeEnv }}
+                />
                 : <FormattedMessage id={`pipeline.execute.${executeCheck}`} />
             )
             : <Fragment>

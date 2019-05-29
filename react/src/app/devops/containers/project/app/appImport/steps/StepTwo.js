@@ -1,14 +1,15 @@
 import React, { Component, Fragment } from 'react';
-import _ from "lodash";
-import { observer } from 'mobx-react';
+import _ from 'lodash';
+import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Form, Input, Select, Tooltip, Icon } from 'choerodon-ui';
-import { stores } from '@choerodon/boot';
+import { STEP_FLAG } from '../Constants';
+
 import '../AppImport.scss';
 
-const FormItem = Form.Item;
-const Option = Select.Option;
-const { AppState } = stores;
+const { Item: FormItem } = Form;
+const { Option } = Select;
+
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
@@ -20,38 +21,69 @@ const formItemLayout = {
   },
 };
 
+@Form.create({})
+@injectIntl
+@inject('AppState')
 @observer
-class StepTwo extends Component {
-  constructor() {
-    super(...arguments);
-    this.state = {
-      template: this.props.values.template || '',
-    }
-  }
+export default class StepTwo extends Component {
+  state = {
+    template: '',
+  };
 
   componentDidMount() {
-    const { store } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
+    const {
+      store,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+      values,
+    } = this.props;
+
+    if (values && values.template) {
+      this.setState({
+        template: values.template,
+      });
+    }
     store.loadSelectData(projectId, true);
   }
 
   handleSubmit = (e) => {
     e.preventDefault();
-    const { onNext, form: { validateFields, isModifiedFields, getFieldsValue } } = this.props;
+    const {
+      onNext,
+      form: {
+        validateFields,
+        isModifiedFields,
+        getFieldsValue,
+      },
+    } = this.props;
+
+    const { template } = this.state;
+
     const isModified = isModifiedFields(['code', 'name', 'applicationTemplateId']);
+
     if (isModified) {
       validateFields((err, values) => {
         if (!err) {
-          values.key = 'step1';
-          values.template = this.state.template;
-          onNext(values, 2);
+          const data = {
+            ...values,
+            key: STEP_FLAG.LANGUAGE_SELECT,
+            template,
+          };
+
+          onNext(data, STEP_FLAG.PERMISSION_RULE);
         }
       });
     } else {
-      const values = getFieldsValue();
-      values.key = 'step1';
-      values.template = this.state.template;
-      onNext(values, 2);
+      const values = {
+        ...getFieldsValue(),
+        key: STEP_FLAG.LANGUAGE_SELECT,
+        template,
+      };
+
+      onNext(values, STEP_FLAG.PERMISSION_RULE);
     }
   };
 
@@ -62,23 +94,31 @@ class StepTwo extends Component {
    * @param callback
    */
   checkCode = _.debounce((rule, value, callback) => {
-    const { store, intl: { formatMessage } } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
+    const {
+      store,
+      intl: { formatMessage },
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
+
     if (value && pa.test(value)) {
       store.checkCode(projectId, value)
         .then(data => {
           if (data && data.failed) {
-            callback(formatMessage({ id: "template.checkCode" }));
+            callback(formatMessage({ id: 'template.checkCode' }));
           } else {
             callback();
           }
         });
     } else {
-      callback(formatMessage({ id: "template.checkCodeReg" }));
+      callback(formatMessage({ id: 'template.checkCodeReg' }));
     }
   }, 600);
-
 
   /**
    * 校验应用名称规则
@@ -87,20 +127,29 @@ class StepTwo extends Component {
    * @param callback
    */
   checkName = _.debounce((rule, value, callback) => {
-    const { store, intl: { formatMessage } } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
+    const {
+      store,
+      intl: { formatMessage },
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+
     const pa = /^\S+$/;
+
     if (value && pa.test(value)) {
       store.checkName(projectId, value)
         .then(data => {
           if (data && data.failed) {
-            callback(formatMessage({ id: "template.checkName" }));
+            callback(formatMessage({ id: 'template.checkName' }));
           } else {
             callback();
           }
         });
     } else {
-      callback(formatMessage({ id: "template.checkName" }));
+      callback(formatMessage({ id: 'template.checkName' }));
     }
   }, 600);
 
@@ -109,26 +158,41 @@ class StepTwo extends Component {
    * @param id
    */
   onChange = (id) => {
-    const { store: { selectData } } = this.props;
+    const {
+      store: {
+        selectData,
+      },
+    } = this.props;
     const template = selectData.filter((e) => e.id === parseInt(id))[0].name;
-    this.setState({ template })
+    this.setState({ template });
   };
 
-  hasErrors(fieldsError) { return Object.keys(fieldsError).some(field => fieldsError[field]);}
+  hasErrors(fieldsError) {
+    return Object.keys(fieldsError).some(field => fieldsError[field]);
+  }
 
-  hasValues(fieldsValue) { return Object.values(fieldsValue).some(field => field === ''); }
+  hasValues(fieldsValue) {
+    return Object.values(fieldsValue).some(field => field === '');
+  }
 
   render() {
-    const { onPrevious, onCancel, form: { getFieldDecorator }, intl: { formatMessage }, values, store: { selectData } } = this.props;
+    const {
+      onPrevious,
+      onCancel,
+      form: { getFieldDecorator },
+      intl: { formatMessage },
+      values,
+      store: { selectData },
+    } = this.props;
     const { getFieldsError, getFieldsValue } = this.props.form;
 
     return (
       <Fragment>
         <div className="steps-content-des">
-          <FormattedMessage id="app.import.step2.des" />
+          <FormattedMessage id="app.import.step1.des" />
           <div>
             <Icon type="error" />
-            <FormattedMessage id="app.import.step2-1.des" />
+            <FormattedMessage id="app.import.step1.warn" />
           </div>
         </div>
         <div className="steps-content-section">
@@ -138,14 +202,14 @@ class StepTwo extends Component {
             >
               {getFieldDecorator('code', {
                 rules: [
-                  { required: true, message: formatMessage({ id: "app.import.code.required" }),  whitespace: true },
+                  { required: true, message: formatMessage({ id: 'app.import.code.required' }), whitespace: true },
                   { validator: this.checkCode },
                 ],
                 initialValue: values.code || '',
               })(
                 <Input
                   label={<FormattedMessage id="ciPipeline.appCode" />}
-                />
+                />,
               )}
             </FormItem>
             <FormItem
@@ -153,21 +217,21 @@ class StepTwo extends Component {
             >
               {getFieldDecorator('name', {
                 rules: [
-                  { required: true, message: formatMessage({ id: "app.import.name.required" }),  whitespace: true },
+                  { required: true, message: formatMessage({ id: 'app.import.name.required' }), whitespace: true },
                   { validator: this.checkName },
                 ],
                 initialValue: values.name || '',
               })(
                 <Input
                   label={<FormattedMessage id="ciPipeline.appName" />}
-                />
+                />,
               )}
             </FormItem>
             <FormItem
               {...formItemLayout}
             >
               {getFieldDecorator('applicationTemplateId', {
-                rules: [{ required: true, message: formatMessage({ id: "app.import.template.required" }) }],
+                rules: [{ required: true, message: formatMessage({ id: 'app.import.template.required' }) }],
                 initialValue: values.applicationTemplateId || '',
               })(
                 <Select
@@ -187,7 +251,7 @@ class StepTwo extends Component {
                       </Tooltip>
                     </Option>
                   ))}
-                </Select>
+                </Select>,
               )}
             </FormItem>
             <FormItem>
@@ -200,7 +264,7 @@ class StepTwo extends Component {
                 <FormattedMessage id="next" />
               </Button>
               <Button
-                onClick={onPrevious}
+                onClick={() => onPrevious(STEP_FLAG.IMPORT_ORIGIN)}
                 funcType="raised"
                 className="c7n-btn-cancel"
               >
@@ -217,8 +281,6 @@ class StepTwo extends Component {
           </Form>
         </div>
       </Fragment>
-    )
+    );
   }
 }
-
-export default Form.create({})(injectIntl(StepTwo));

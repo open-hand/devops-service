@@ -1,16 +1,16 @@
 import React, { Component, Fragment } from 'react';
 import _ from 'lodash';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Radio, Table, Tag, Popover, Icon, Select, Form } from 'choerodon-ui';
-import { stores } from '@choerodon/boot';
+import { STEP_FLAG } from '../Constants';
+
 import '../AppImport.scss';
 import '../../index.scss';
 
 const RadioGroup = Radio.Group;
 const FormItem = Form.Item;
 const { Option } = Select;
-const { AppState } = stores;
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
@@ -22,22 +22,37 @@ const formItemLayout = {
   },
 };
 
-
+@Form.create({})
+@injectIntl
+@inject('AppState')
 @observer
 class StepThree extends Component {
-  constructor() {
-    super(...arguments);
-    this.state = {
-      checked: this.props.values.isSkipCheckPermission || 'all',
-      selectedTemp: [],
-      selectedRowKeys: this.props.values.userIds || [],
-      selected: this.props.values.membersInfo || [],
-    };
-  }
+  state = {
+    checked: 'all',
+    selectedTemp: [],
+    selectedRowKeys: [],
+    selected: [],
+  };
 
   componentDidMount() {
-    const { store } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
+    const {
+      store,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+      values,
+    } = this.props;
+
+    if (values) {
+      this.setState({
+        checked: values.isSkipCheckPermission || 'all',
+        selectedRowKeys: values.userIds || [],
+        selected: values.membersInfo || [],
+      });
+    }
+
     store.loadPrm(projectId);
     store.loadConfig(projectId);
   }
@@ -45,15 +60,23 @@ class StepThree extends Component {
   onChange = e => this.setState({ checked: e.target.value });
 
   onSelectChange = (keys, selected) => {
-    let s = [];
-    const a = this.state.selectedTemp.concat(selected);
-    this.setState({ selectedTemp: a });
-    _.map(keys, o => {
-      if (_.filter(a, ['iamUserId', o]).length) {
-        s.push(_.filter(a, ['iamUserId', o])[0]);
+    const { selectedTemp } = this.state;
+    const allSelected = selectedTemp.concat(selected);
+
+    let _selected = [];
+
+    _.forEach(keys, key => {
+      const user = _.find(allSelected, ['iamUserId', key]);
+      if (user) {
+        _selected.push(user);
       }
     });
-    this.setState({ selectedRowKeys: keys, selected: s });
+
+    this.setState({
+      selectedRowKeys: keys,
+      selectedTemp: allSelected,
+      selected: _selected,
+    });
   };
 
   /**
@@ -64,8 +87,15 @@ class StepThree extends Component {
    * @param paras
    */
   mbrTableChange = (pagination, filters, sorter, paras) => {
-    const { store } = this.props;
-    const { id } = AppState.currentMenuType;
+    const {
+      store,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+
     store.setMbrInfo({ filters, sort: sorter, paras });
     let sort = { field: '', order: 'desc' };
     if (sorter.column) {
@@ -85,10 +115,10 @@ class StepThree extends Component {
       searchParam,
       param: paras.toString(),
     };
-    store.loadPrm(id, page, pagination.pageSize, sort, postData);
+    store.loadPrm(projectId, page, pagination.pageSize, sort, postData);
   };
 
-  next = () => {
+  handleNextStep = () => {
     const {
       onNext,
       store: {
@@ -98,13 +128,14 @@ class StepThree extends Component {
       form,
     } = this.props;
     const { checked, selectedRowKeys, selected } = this.state;
-    form.validateFields((err, data) => {
+
+    form.validateFields((err, { harborConfigId, chartConfigId }) => {
       if (!err) {
-        const { harborConfigId, chartConfigId } = data;
         const harborName = _.find(getHarborList, ['id', harborConfigId]).name;
         const chartName = _.find(getChartList, ['id', chartConfigId]).name;
+
         const values = {
-          key: 'step2',
+          key: STEP_FLAG.PERMISSION_RULE,
           isSkipCheckPermission: checked,
           userIds: selectedRowKeys,
           membersInfo: selected,
@@ -113,7 +144,8 @@ class StepThree extends Component {
           harborName,
           chartName,
         };
-        onNext(values, 3);
+
+        onNext(values, STEP_FLAG.CONFORM_INFO);
       }
     });
   };
@@ -138,17 +170,37 @@ class StepThree extends Component {
       },
     } = this.props;
     const { checked, selectedRowKeys, selected } = this.state;
-    const tagDom = _.map(selected, t => (
-      <Tag className="c7n-import-tag" key={t.iamUserId}>
-        {t.loginName} {t.realName}
+
+    const tagDom = _.map(selected, ({ iamUserId, loginName, realName }) => (
+      <Tag className="c7n-import-tag" key={iamUserId}>
+        {loginName} {realName}
       </Tag>
     ));
+
     const rowSelection = {
       selectedRowKeys,
       onChange: this.onSelectChange,
     };
-    const defaultHarbor = getHarborList.length ? getHarborList[0].id : undefined;
+
     const defaultChart = getChartList.length ? getChartList[0].id : undefined;
+
+    let defaultHarbor;
+    if (getHarborList.length) {
+      const privateHarbor = _.find(getHarborList, ['projectId', null]);
+      if (privateHarbor) {
+        defaultHarbor = privateHarbor.id;
+      } else {
+        defaultHarbor = getHarborList[0].id;
+      }
+    }
+
+    const harborOptions = _.map(getHarborList, ({ id, name }) => (<Option value={id} key={id}>
+      {name}
+    </Option>));
+
+    const chartOptions = _.map(getChartList, ({ id, name }) => (<Option value={id} key={id}>
+      {name}
+    </Option>));
 
     const columns = [
       {
@@ -174,7 +226,7 @@ class StepThree extends Component {
     return (
       <Fragment>
         <div className="steps-content-des">
-          <FormattedMessage id="app.import.step3.des" />
+          <FormattedMessage id="app.import.step2.des" />
         </div>
         <div className="steps-content-section">
           <div className="authority-radio">
@@ -251,9 +303,7 @@ class StepThree extends Component {
                     option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
-                  {_.map(getHarborList, item => (<Option value={item.id} key={item.id}>
-                    {item.name}
-                  </Option>))}
+                  {harborOptions}
                 </Select>,
               )}
             </FormItem>
@@ -280,9 +330,7 @@ class StepThree extends Component {
                     option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
-                  {_.map(getChartList, item => (<Option value={item.id} key={item.id}>
-                    {item.name}
-                  </Option>))}
+                  {chartOptions}
                 </Select>,
               )}
             </FormItem>
@@ -296,12 +344,12 @@ class StepThree extends Component {
           <Button
             type="primary"
             funcType="raised"
-            onClick={this.next}
+            onClick={this.handleNextStep}
           >
             <FormattedMessage id="next" />
           </Button>
           <Button
-            onClick={onPrevious}
+            onClick={() => onPrevious(STEP_FLAG.LANGUAGE_SELECT)}
             funcType="raised"
             className="c7n-btn-cancel"
           >
@@ -320,4 +368,4 @@ class StepThree extends Component {
   }
 }
 
-export default Form.create({})(injectIntl(StepThree));
+export default (injectIntl(StepThree));
