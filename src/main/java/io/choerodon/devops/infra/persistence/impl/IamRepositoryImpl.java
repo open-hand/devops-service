@@ -235,10 +235,10 @@ public class IamRepositoryImpl implements IamRepository {
         // 项目下所有项目成员
         List<UserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), memberId,
                 projectId, false).getList();
-        List<Long> memberIds = list.stream().map(UserDTO::getId).collect(Collectors.toList());
+        List<Long> memberIds = list.stream().filter(userDTO -> userDTO.getEnabled()).map(UserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), ownerId,
-                projectId, false).getList().forEach(t -> {
+                projectId, false).getList().stream().filter(userDTO -> userDTO.getEnabled()).forEach(t -> {
             if (!memberIds.contains(t.getId())) {
                 list.add(t);
             }
