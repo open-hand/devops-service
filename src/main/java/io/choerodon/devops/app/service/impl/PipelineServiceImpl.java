@@ -470,7 +470,6 @@ public class PipelineServiceImpl implements PipelineService {
             //发送请求给workflow，创建流程实例
             CustomUserDetails details = DetailsHelper.getUserDetails();
             createWorkFlow(projectId, devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
-            pipelineRecordRepository.update(pipelineRecordE);
             updateFirstStage(pipelineRecordE.getId(), pipelineId);
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
@@ -817,6 +816,7 @@ public class PipelineServiceImpl implements PipelineService {
                 taskRecordE = taskRecordRepository.createOrUpdate(taskRecordE);
                 //task
                 DevopsPipelineTaskDTO devopsPipelineTaskDTO = new DevopsPipelineTaskDTO();
+                devopsPipelineTaskDTO.setTaskRecordId(taskRecordE.getId());
                 devopsPipelineTaskDTO.setTaskName(task.getName());
                 devopsPipelineTaskDTO.setTaskType(task.getType());
                 devopsPipelineTaskDTO.setMultiAssign(taskUserRels.size() > 1);
@@ -1244,8 +1244,8 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private Boolean isEmptyStage(Long stageRecordId) {
-        PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(stageRecordId);
-        return taskRecordE != null && taskRecordE.getId() != null;
+        List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordId, null);
+        return taskRecordEList != null && taskRecordEList.size() > 0;
     }
 
     private void startEmptyStage(Long pipelineRecordId, Long stageRecordId) {
