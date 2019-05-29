@@ -1,8 +1,8 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
-
 import java.util.List;
+
+import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -17,4 +17,6 @@ public interface PipelineTaskRecordRepository {
     List<PipelineTaskRecordE> queryByStageRecordId(Long stageRecordId, Long taskId);
 
     void delete(Long recordId);
+
+    List<PipelineTaskRecordE> queryAllAutoTaskRecord(Long pipelineRecordId);
 }
