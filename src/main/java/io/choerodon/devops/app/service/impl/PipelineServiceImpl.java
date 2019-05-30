@@ -454,7 +454,10 @@ public class PipelineServiceImpl implements PipelineService {
         //保存pipeline 和 pipelineUserRel
         PipelineRecordE pipelineRecordE = new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), projectId, WorkFlowStatus.RUNNING.toValue(), pipelineE.getName());
         pipelineRecordE.setBusinessKey(GenerateUUID.generateUUID());
-        pipelineRecordE.setAuditUser(TypeUtil.objToString(DetailsHelper.getUserDetails().getUserId()));
+        if (pipelineE.getTriggerType().equals(MANUAL)) {
+            List<PipelineUserRelE> taskRelEList = pipelineUserRelRepository.listByOptions(pipelineId, null, null);
+            pipelineRecordE.setAuditUser(StringUtils.join(taskRelEList.stream().map(PipelineUserRelE::getUserId).toArray(), ","));
+        }
         pipelineRecordE = pipelineRecordRepository.create(pipelineRecordE);
         PipelineUserRecordRelE pipelineUserRecordRelE = new PipelineUserRecordRelE();
         pipelineUserRecordRelE.setPipelineRecordId(pipelineRecordE.getId());
@@ -753,11 +756,6 @@ public class PipelineServiceImpl implements PipelineService {
         devopsPipelineDTO.setBusinessKey(pipelineRecordRepository.queryById(pipelineRecordId).getBusinessKey());
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
         PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
-        PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
-        if (pipelineE.getTriggerType().equals(MANUAL)) {
-            List<PipelineUserRelE> taskRelEList = pipelineUserRelRepository.listByOptions(pipelineId, null, null);
-            pipelineRecordE.setAuditUser(StringUtils.join(taskRelEList.stream().map(PipelineUserRelE::getUserId).toArray(), ","));
-        }
         //stage
         List<PipelineStageE> stageES = stageRepository.queryByPipelineId(pipelineId);
         for (int i = 0; i < stageES.size(); i++) {
@@ -771,7 +769,7 @@ public class PipelineServiceImpl implements PipelineService {
             recordE.setId(null);
             List<PipelineUserRelE> stageRelEList = pipelineUserRelRepository.listByOptions(null, stageE.getId(), null);
             if (stageE.getTriggerType().equals(MANUAL)) {
-                pipelineRecordE.setAuditUser(StringUtils.join(stageRelEList.stream().map(PipelineUserRelE::getUserId).toArray(), ","));
+                recordE.setAuditUser(StringUtils.join(stageRelEList.stream().map(PipelineUserRelE::getUserId).toArray(), ","));
             }
             recordE = stageRecordRepository.createOrUpdate(recordE);
 
