@@ -17,7 +17,14 @@
         dptr.instance_id,
         dptr.status,
         dptr.task_id,
-        dptr.instance_name,
+        (
+        CASE
+        WHEN dptr.instance_id IS NOT NULL
+        THEN dptr.instance_name
+        ELSE
+        NULL
+        END
+        ) instanceName,
         dptr.task_type,
         dptr.audit_user,
         dptr.stage_record_id,

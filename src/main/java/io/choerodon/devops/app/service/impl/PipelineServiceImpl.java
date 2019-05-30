@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -455,6 +454,7 @@ public class PipelineServiceImpl implements PipelineService {
         //保存pipeline 和 pipelineUserRel
         PipelineRecordE pipelineRecordE = new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), projectId, WorkFlowStatus.RUNNING.toValue(), pipelineE.getName());
         pipelineRecordE.setBusinessKey(GenerateUUID.generateUUID());
+        pipelineRecordE.setAuditUser(TypeUtil.objToString(DetailsHelper.getUserDetails().getUserId()));
         pipelineRecordE = pipelineRecordRepository.create(pipelineRecordE);
         PipelineUserRecordRelE pipelineUserRecordRelE = new PipelineUserRecordRelE();
         pipelineUserRecordRelE.setPipelineRecordId(pipelineRecordE.getId());
@@ -487,9 +487,7 @@ public class PipelineServiceImpl implements PipelineService {
         //获取数据
         PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(taskRecordId);
         CutomerContextUtil.setUserId(taskRecordE.getCreatedBy());
-        Date creationDate = taskRecordE.getCreationDate();
         List<ApplicationVersionE> versionES = versionRepository.listByAppId(taskRecordE.getApplicationId(), null);
-//                .stream().filter(t -> t.getCreationDate().getTime() > creationDate.getTime()).collect(Collectors.toList());
         Integer index = -1;
         for (int i = 0; i < versionES.size(); i++) {
             ApplicationVersionE versionE = versionES.get(i);
@@ -516,9 +514,10 @@ public class PipelineServiceImpl implements PipelineService {
         taskRecordE = taskRecordRepository.createOrUpdate(taskRecordE);
         try {
             ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(taskRecordE.getInstanceName(), taskRecordE.getEnvId());
-            String type = instanceE == null ? CommandType.CREATE.getType() : CommandType.UPDATE.getType();
+            Long instanceId = instanceE == null ? null : instanceE.getId();
+            String type = instanceId == null ? CommandType.CREATE.getType() : CommandType.UPDATE.getType();
             ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(versionES.get(index).getId(), taskRecordE.getEnvId(),
-                    taskRecordE.getValue(), taskRecordE.getApplicationId(), type, instanceE.getId(),
+                    taskRecordE.getValue(), taskRecordE.getApplicationId(), type, instanceId,
                     taskRecordE.getInstanceName(), taskRecordE.getId());
             if (type.equals(CommandType.UPDATE.getType())) {
                 ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
@@ -794,7 +793,6 @@ public class PipelineServiceImpl implements PipelineService {
                 //创建task记录
                 PipelineTaskRecordE taskRecordE = new PipelineTaskRecordE();
                 BeanUtils.copyProperties(task, taskRecordE);
-                taskRecordE.setId(null);
                 taskRecordE.setTaskId(task.getId());
                 taskRecordE.setTaskType(task.getType());
                 taskRecordE.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
@@ -802,15 +800,12 @@ public class PipelineServiceImpl implements PipelineService {
                 if (task.getAppDeployId() != null) {
                     PipelineAppDeployE appDeployE = appDeployRepository.queryById(task.getAppDeployId());
                     BeanUtils.copyProperties(appDeployE, taskRecordE);
-//                    taskRecordE.setApplicationId(appDeployE.getApplicationId());
-//                    taskRecordE.setEnvId(appDeployE.getEnvId());
-//                    taskRecordE.setTriggerVersion(appDeployE.getTriggerVersion());
-//                    taskRecordE.setInstanceId(appDeployE.getInstanceId());
-//                    taskRecordE.setInstanceName(appDeployE.getInstanceName());
+                    taskRecordE.setInstanceId(null);
                     taskRecordE.setValue(valueRepository.queryById(appDeployE.getValueId()).getValue());
                 }
                 List<PipelineUserRelE> taskUserRels = pipelineUserRelRepository.listByOptions(null, null, task.getId());
                 taskRecordE.setAuditUser(StringUtils.join(taskUserRels.stream().map(PipelineUserRelE::getUserId).toArray(), ","));
+                taskRecordE.setId(null);
                 taskRecordE = taskRecordRepository.createOrUpdate(taskRecordE);
                 //task
                 DevopsPipelineTaskDTO devopsPipelineTaskDTO = new DevopsPipelineTaskDTO();
