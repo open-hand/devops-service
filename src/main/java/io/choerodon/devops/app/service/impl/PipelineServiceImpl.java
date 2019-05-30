@@ -910,7 +910,6 @@ public class PipelineServiceImpl implements PipelineService {
                         PipelineTaskRecordDTO taskRecordDTO = ConvertHelper.convert(r, PipelineTaskRecordDTO.class);
                         if (taskRecordDTO.getTaskType().equals(MANUAL)) {
                             List<IamUserDTO> userDTOS = new ArrayList<>();
-                            if (!taskRecordDTO.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                                 //获取已经审核人员
                                 List<Long> userIds = pipelineUserRelRecordRepository.queryByRecordId(null, null, r.getId())
                                         .stream().map(PipelineUserRecordRelE::getUserId).collect(Collectors.toList());
@@ -919,27 +918,15 @@ public class PipelineServiceImpl implements PipelineService {
                                     userDTO.setAudit(true);
                                     userDTOS.add(userDTO);
                                 });
-                                //获取会签未审核人员
-                                if (userIds.size() == 0 || taskRecordDTO.getIsCountersigned() == 1) {
-                                    List<Long> unExecuteUserIds = pipelineUserRelRepository.listByOptions(null, null, taskRecordDTO.getTaskId())
-                                            .stream().map(PipelineUserRelE::getUserId)
-                                            .filter(u -> !userIds.contains(u)).collect(Collectors.toList());
-                                    unExecuteUserIds.forEach(userId -> {
-                                        IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(userId), IamUserDTO.class);
-                                        userDTO.setAudit(false);
-                                        userDTOS.add(userDTO);
-                                    });
-                                }
-                            } else {
+                                //获取指定审核人员
                                 if (r.getAuditUser() != null) {
-                                    List<String> userIds = Arrays.asList(r.getAuditUser().split(","));
-                                    userIds.forEach(userId -> {
+                                    List<String> auditUserIds = Arrays.asList(r.getAuditUser().split(","));
+                                    auditUserIds.forEach(userId -> {
                                         IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(TypeUtil.objToLong(userId)), IamUserDTO.class);
                                         userDTO.setAudit(false);
                                         userDTOS.add(userDTO);
                                     });
                                 }
-                            }
                             taskRecordDTO.setUserDTOList(userDTOS);
                             if (r.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                                 recordReqDTO.setType(TASK);
