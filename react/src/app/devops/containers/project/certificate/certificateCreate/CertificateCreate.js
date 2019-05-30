@@ -1,8 +1,8 @@
-import React, { Component, Fragment } from "react";
-import { observer } from "mobx-react";
-import { injectIntl, FormattedMessage } from "react-intl";
-import { stores, Content } from "@choerodon/boot";
-import _ from "lodash";
+import React, { Component, Fragment } from 'react';
+import { observer } from 'mobx-react';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import { stores, Content } from '@choerodon/boot';
+import _ from 'lodash';
 import {
   Button,
   Form,
@@ -11,11 +11,11 @@ import {
   Modal,
   Icon,
   Radio,
-} from "choerodon-ui";
-import "../../../main.scss";
-import "./CertificateCreate.scss";
-import Tips from "../../../../components/Tips/Tips";
-import InterceptMask from "../../../../components/interceptMask/InterceptMask";
+} from 'choerodon-ui';
+import '../../../main.scss';
+import './CertificateCreate.scss';
+import Tips from '../../../../components/Tips/Tips';
+import InterceptMask from '../../../../components/interceptMask/InterceptMask';
 
 const HEIGHT =
   window.innerHeight ||
@@ -25,7 +25,7 @@ const HEIGHT =
 const { AppState } = stores;
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
-const { Option, OptGroup } = Select;
+const { Option } = Select;
 const { Group: RadioGroup } = Radio;
 const { TextArea } = Input;
 const formItemLayout = {
@@ -38,6 +38,7 @@ const formItemLayout = {
     sm: { span: 26 },
   },
 };
+
 @observer
 class CertificateCreate extends Component {
   /**
@@ -49,19 +50,19 @@ class CertificateCreate extends Component {
     if (p.test(value)) {
       const { store, form } = this.props;
       const { id: projectId } = AppState.currentMenuType;
-      const envId = form.getFieldValue("envId");
+      const envId = form.getFieldValue('envId');
       store
         .checkCertName(projectId, value, envId)
         .then(data => {
           if (data) {
             callback();
           } else {
-            callback(intl.formatMessage({ id: "ctf.name.check.exist" }));
+            callback(intl.formatMessage({ id: 'ctf.name.check.exist' }));
           }
         })
         .catch(() => callback());
     } else {
-      callback(intl.formatMessage({ id: "ctf.names.check.failed" }));
+      callback(intl.formatMessage({ id: 'ctf.names.check.failed' }));
     }
   }, 1000);
 
@@ -69,7 +70,7 @@ class CertificateCreate extends Component {
     super(props);
     this.state = {
       submitting: false,
-      type: "request",
+      type: 'request',
       keyLoad: false,
       certLoad: false,
       suffix: null,
@@ -125,11 +126,11 @@ class CertificateCreate extends Component {
           const filter = {
             page: 0,
             pageSize: initSize,
-            postData: { searchParam: {}, param: "" },
+            postData: { searchParam: {}, param: '' },
             sorter: {
-              field: "id",
-              columnKey: "id",
-              order: "descend",
+              field: 'id',
+              columnKey: 'id',
+              order: 'descend',
             },
             param: [],
             createDisplay: false,
@@ -140,9 +141,9 @@ class CertificateCreate extends Component {
             projectId,
             0,
             initSize,
-            { field: "id", order: "descend" },
-            { searchParam: {}, param: "" },
-            envId
+            { field: 'id', order: 'descend' },
+            { searchParam: {}, param: '' },
+            envId,
           );
           this.handleClose(true);
         }
@@ -173,17 +174,17 @@ class CertificateCreate extends Component {
     const { getFieldValue } = form;
     let p = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+)$/;
     if (type === 'choose') {
-      p = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)$/
+      p = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)$/;
     }
-    const keyCount = _.countBy(getFieldValue("domains"));
+    const keyCount = _.countBy(getFieldValue('domains'));
     if (p.test(value)) {
       if (keyCount[value] < 2) {
         callback();
       } else {
-        callback(intl.formatMessage({ id: "ctf.domain.check.repeat" }));
+        callback(intl.formatMessage({ id: 'ctf.domain.check.repeat' }));
       }
     } else {
-      callback(intl.formatMessage({ id: "ctf.domain.check.failed" }));
+      callback(intl.formatMessage({ id: 'ctf.domain.check.failed' }));
     }
   };
 
@@ -192,7 +193,7 @@ class CertificateCreate extends Component {
    */
   addDomain = () => {
     const { getFieldValue, setFieldsValue } = this.props.form;
-    const keys = getFieldValue("domainArr");
+    const keys = getFieldValue('domainArr');
     const uuid = this.domainCount;
     const nextKeys = _.concat(keys, uuid);
     this.domainCount = uuid + 1;
@@ -207,7 +208,7 @@ class CertificateCreate extends Component {
    */
   removeGroup = k => {
     const { getFieldValue, setFieldsValue } = this.props.form;
-    const keys = getFieldValue("domainArr");
+    const keys = getFieldValue('domainArr');
     if (keys.length === 1) {
       return;
     }
@@ -234,13 +235,13 @@ class CertificateCreate extends Component {
     const { store, form } = this.props;
     const { resetFields, setFieldsValue } = form;
     const { projectId } = AppState.currentMenuType;
-    const type =  e.target.value;
+    const type = e.target.value;
     if (type === 'choose') {
       store.loadCert(projectId);
     }
     this.setState({ type, suffix: null, certId: null });
-    resetFields(["domainArr"]);
-    setFieldsValue({"domains[0]": ''});
+    resetFields(['domainArr']);
+    setFieldsValue({ 'domains[0]': '' });
   };
 
   /**
@@ -262,21 +263,21 @@ class CertificateCreate extends Component {
     const { getFieldDecorator, getFieldValue } = form;
     const { submitting, type, suffix, certId } = this.state;
     const { name: menuName, id: projectId } = AppState.currentMenuType;
-    getFieldDecorator("domainArr", { initialValue: [0] });
-    const domainArr = getFieldValue("domainArr");
+    getFieldDecorator('domainArr', { initialValue: [0] });
+    const domainArr = getFieldValue('domainArr');
     const domainItems = _.map(domainArr, (k, index) => (
       <div key={`domains-${k}`} className="creation-panel-group c7n-form-domains">
         <FormItem
           className={`c7n-select_${
             domainArr.length > 1 ? 454 : 480
-          } creation-form-item`}
+            } creation-form-item`}
           {...formItemLayout}
         >
           {getFieldDecorator(`domains[${k}]`, {
             rules: [
               {
                 required: true,
-                message: intl.formatMessage({ id: "required" }),
+                message: intl.formatMessage({ id: 'required' }),
               },
               {
                 validator: this.checkDomain,
@@ -289,7 +290,7 @@ class CertificateCreate extends Component {
               label={<FormattedMessage id="ctf.config.domain" />}
               suffix={suffix}
               disabled={type === 'choose' && !certId}
-            />
+            />,
           )}
         </FormItem>
         {domainArr.length > 1 ? (
@@ -322,12 +323,12 @@ class CertificateCreate extends Component {
           >
             <Form layout="vertical" className="c7n-sidebar-form">
               <FormItem className="c7n-select_512" {...formItemLayout}>
-                {getFieldDecorator("envId", {
+                {getFieldDecorator('envId', {
                   initialValue: env.length ? envId : undefined,
                   rules: [
                     {
                       required: true,
-                      message: intl.formatMessage({ id: "required" }),
+                      message: intl.formatMessage({ id: 'required' }),
                     },
                   ],
                 })(
@@ -336,7 +337,7 @@ class CertificateCreate extends Component {
                     className="c7n-select_512"
                     label={<FormattedMessage id="ctf.envName" />}
                     placeholder={intl.formatMessage({
-                      id: "ctf.env.placeholder",
+                      id: 'ctf.env.placeholder',
                     })}
                     optionFilterProp="children"
                     onSelect={this.handleEnvSelect}
@@ -362,15 +363,15 @@ class CertificateCreate extends Component {
                         </Option>
                       );
                     })}
-                  </Select>
+                  </Select>,
                 )}
               </FormItem>
               <FormItem className="c7n-select_512" {...formItemLayout}>
-                {getFieldDecorator("certName", {
+                {getFieldDecorator('certName', {
                   rules: [
                     {
                       required: true,
-                      message: intl.formatMessage({ id: "required" }),
+                      message: intl.formatMessage({ id: 'required' }),
                     },
                     {
                       validator: this.checkName,
@@ -379,11 +380,11 @@ class CertificateCreate extends Component {
                 })(
                   <Input
                     autoFocus
-                    disabled={!getFieldValue("envId")}
+                    disabled={!getFieldValue('envId')}
                     maxLength={40}
                     type="text"
                     label={<FormattedMessage id="ctf.name" />}
-                  />
+                  />,
                 )}
               </FormItem>
               <div className="c7n-creation-title">
@@ -399,8 +400,8 @@ class CertificateCreate extends Component {
                   label={<FormattedMessage id="ctf.target.type" />}
                   {...formItemLayout}
                 >
-                  {getFieldDecorator("type", {
-                    initialValue: "request",
+                  {getFieldDecorator('type', {
+                    initialValue: 'request',
                   })(
                     <RadioGroup name="type" onChange={this.handleTypeChange}>
                       <Radio value="request">
@@ -412,7 +413,7 @@ class CertificateCreate extends Component {
                       <Radio value="choose">
                         <FormattedMessage id="ctf.choose" />
                       </Radio>
-                    </RadioGroup>
+                    </RadioGroup>,
                   )}
                 </FormItem>
               </div>
@@ -422,11 +423,11 @@ class CertificateCreate extends Component {
                     className="c7n-select_480"
                     {...formItemLayout}
                   >
-                    {getFieldDecorator("certId", {
+                    {getFieldDecorator('certId', {
                       rules: [
                         {
                           required: true,
-                          message: intl.formatMessage({ id: "required" }),
+                          message: intl.formatMessage({ id: 'required' }),
                         },
                       ],
                     })(
@@ -434,7 +435,7 @@ class CertificateCreate extends Component {
                         className="c7n-select_480"
                         label={<FormattedMessage id="ctf.choose" />}
                         placeholder={intl.formatMessage({
-                          id: "ctf.choose",
+                          id: 'ctf.choose',
                         })}
                         optionFilterProp="children"
                         onChange={this.handleCertSelect}
@@ -453,7 +454,7 @@ class CertificateCreate extends Component {
                             </Option>
                           );
                         })}
-                      </Select>
+                      </Select>,
                     )}
                   </FormItem>
                   <Tips type="form" data="ctf.choose.tips" />
@@ -472,7 +473,7 @@ class CertificateCreate extends Component {
                     <FormattedMessage id="ctf.config.add" />
                   </Button>
                 </FormItem>
-                {type === "upload" ? (
+                {type === 'upload' ? (
                   <Fragment>
                     <div className="ctf-upload-head">
                       <Tips type="title" data="certificate.file.add" />
@@ -482,11 +483,11 @@ class CertificateCreate extends Component {
                       {...formItemLayout}
                       label={<FormattedMessage id="certificate.cert.content" />}
                     >
-                      {getFieldDecorator("certValue",{
+                      {getFieldDecorator('certValue', {
                         rules: [
                           {
                             required: true,
-                            message: intl.formatMessage({ id: "required" }),
+                            message: intl.formatMessage({ id: 'required' }),
                           },
                         ],
                       })(
@@ -495,7 +496,7 @@ class CertificateCreate extends Component {
                             minRows: 2,
                           }}
                           label={<FormattedMessage id="certificate.cert.content" />}
-                        />
+                        />,
                       )}
                     </FormItem>
                     <FormItem
@@ -503,11 +504,11 @@ class CertificateCreate extends Component {
                       {...formItemLayout}
                       label={<FormattedMessage id="certificate.key.content" />}
                     >
-                      {getFieldDecorator("keyValue",{
+                      {getFieldDecorator('keyValue', {
                         rules: [
                           {
                             required: true,
-                            message: intl.formatMessage({ id: "required" }),
+                            message: intl.formatMessage({ id: 'required' }),
                           },
                         ],
                       })(
@@ -516,7 +517,7 @@ class CertificateCreate extends Component {
                             minRows: 2,
                           }}
                           label={<FormattedMessage id="certificate.key.content" />}
-                        />
+                        />,
                       )}
                     </FormItem>
                   </Fragment>

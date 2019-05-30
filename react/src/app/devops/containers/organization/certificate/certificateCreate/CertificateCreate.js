@@ -1,27 +1,29 @@
-import React, { Component, Fragment } from "react";
-import { observer, inject } from "mobx-react";
-import { injectIntl, FormattedMessage } from "react-intl";
-import { Content } from "@choerodon/boot";
-import _ from "lodash";
+import React, { Component, Fragment } from 'react';
+import { observer, inject } from 'mobx-react';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import { Content } from '@choerodon/boot';
+import _ from 'lodash';
 import {
   Form,
-  Select,
   Input,
   Modal,
   Radio,
   Table,
   Tag,
-} from "choerodon-ui";
-import "../../../main.scss";
-import "./CertificateCreate.scss";
+  Upload,
+  Icon,
+  Button,
+} from 'choerodon-ui';
+import Tips from '../../../../components/Tips/Tips';
+import InterceptMask from '../../../../components/interceptMask/InterceptMask';
+import { HEIGHT } from '../../../../common/Constants';
+
+import '../../../main.scss';
+import './CertificateCreate.scss';
 import '../../../project/envPipeline/EnvPipeLineHome.scss';
-import Tips from "../../../../components/Tips/Tips";
-import InterceptMask from "../../../../components/interceptMask/InterceptMask";
-import { HEIGHT } from "../../../../common/Constants";
 
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
-const { Option, OptGroup } = Select;
 const { Group: RadioGroup } = Radio;
 const { TextArea } = Input;
 const formItemLayout = {
@@ -39,7 +41,7 @@ const formItemLayout = {
 @injectIntl
 @inject('AppState')
 @observer
-class CertificateCreate extends Component {
+export default class CertificateCreate extends Component {
   /**
    * 校验证书名称唯一性
    */
@@ -52,7 +54,7 @@ class CertificateCreate extends Component {
     store.checkCertName(organizationId, value)
       .then(data => {
         if (data && data.failed) {
-          callback(formatMessage({ id: "ctf.name.check.exist" }));
+          callback(formatMessage({ id: 'ctf.name.check.exist' }));
         } else {
           callback();
         }
@@ -64,7 +66,7 @@ class CertificateCreate extends Component {
     super(props);
     this.state = {
       submitting: false,
-      type: "request",
+      type: 'request',
       keyLoad: false,
       certLoad: false,
       checked: true,
@@ -72,6 +74,7 @@ class CertificateCreate extends Component {
       createSelected: [],
       selected: [],
       createSelectedTemp: [],
+      uploadMode: false,
     };
     this.domainCount = 1;
   }
@@ -91,7 +94,7 @@ class CertificateCreate extends Component {
           if (data && data.failed) {
             Choerodon.prompt(data.message);
           } else {
-            this.setState({checked: data.skipCheckProjectPermission});
+            this.setState({ checked: data.skipCheckProjectPermission });
           }
         });
       store.loadPro(organizationId, id);
@@ -107,7 +110,7 @@ class CertificateCreate extends Component {
       showType,
       AppState: { currentMenuType: { organizationId } },
     } = this.props;
-    const {  checked, createSelectedRowKeys } = this.state;
+    const { checked, createSelectedRowKeys } = this.state;
     this.setState({ submitting: true });
     if (showType === 'create') {
       form.validateFieldsAndScroll((err, data) => {
@@ -117,7 +120,7 @@ class CertificateCreate extends Component {
           const p = store.createCert(organizationId, data);
           this.handleResponse(p);
         } else {
-          this.setState({submitting: false});
+          this.setState({ submitting: false });
         }
       });
     } else if (showType === 'edit') {
@@ -130,7 +133,7 @@ class CertificateCreate extends Component {
           const p = store.updateCert(organizationId, getCert.id, data);
           this.handleResponse(p);
         } else {
-          this.setState({submitting: false});
+          this.setState({ submitting: false });
         }
       });
     }
@@ -157,11 +160,11 @@ class CertificateCreate extends Component {
             pageSize: HEIGHT <= 900 ? 10 : 15,
             param: [],
             filters: {},
-            postData: { searchParam: {}, param: "" },
+            postData: { searchParam: {}, param: '' },
             sorter: {
-              field: "id",
-              columnKey: "id",
-              order: "descend",
+              field: 'id',
+              columnKey: 'id',
+              order: 'descend',
             },
           };
           store.setTableFilter(filter);
@@ -169,8 +172,8 @@ class CertificateCreate extends Component {
             organizationId,
             0,
             initSize,
-            { field: "id", order: "descend" },
-            { searchParam: {}, param: "" },
+            { field: 'id', order: 'descend' },
+            { searchParam: {}, param: '' },
           );
           this.handleClose();
         }
@@ -207,12 +210,11 @@ class CertificateCreate extends Component {
    */
   checkDomain = (rule, value, callback) => {
     const { intl: { formatMessage }, form } = this.props;
-    const { getFieldValue } = form;
     const p = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+)$/;
     if (p.test(value)) {
       callback();
     } else {
-      callback(formatMessage({ id: "ctf.domain.check.failed" }));
+      callback(formatMessage({ id: 'ctf.domain.check.failed' }));
     }
   };
 
@@ -222,7 +224,7 @@ class CertificateCreate extends Component {
     this.setState({ createSelectedTemp: a });
     _.map(keys, o => {
       if (_.filter(a, ['id', o]).length) {
-        s.push(_.filter(a, ['id', o])[0])
+        s.push(_.filter(a, ['id', o])[0]);
       }
     });
     this.setState({
@@ -246,7 +248,7 @@ class CertificateCreate extends Component {
     this.setState({ selected: a });
     _.map(keys, o => {
       if (_.filter(a, ['id', o]).length) {
-        s.push(_.filter(a, ['id', o])[0])
+        s.push(_.filter(a, ['id', o])[0]);
       }
     });
     store.setTagKeys(s);
@@ -263,7 +265,7 @@ class CertificateCreate extends Component {
    * @param sorter
    * @param paras
    */
-  tableChange =(pagination, filters, sorter, paras) => {
+  tableChange = (pagination, filters, sorter, paras) => {
     const {
       store,
       showType,
@@ -273,9 +275,9 @@ class CertificateCreate extends Component {
     let sort = { field: '', order: 'desc' };
     if (sorter.column) {
       sort.field = sorter.field || sorter.columnKey;
-      if(sorter.order === 'ascend') {
+      if (sorter.order === 'ascend') {
         sort.order = 'asc';
-      } else if(sorter.order === 'descend'){
+      } else if (sorter.order === 'descend') {
         sort.order = 'desc';
       }
     }
@@ -289,9 +291,124 @@ class CertificateCreate extends Component {
     }
   };
 
+  changeUploadMode = () => {
+    this.setState({ uploadMode: !this.state.uploadMode });
+  };
+
+  beforeUploadFile = file => {
+    const {
+      intl: { formatMessage },
+    } = this.props;
+
+    const fileType = ['crt', 'cer', 'key'];
+    const fileSuffix = _.last(_.split(file.name, '.'));
+
+    if (!_.includes(fileType, fileSuffix)) {
+      Choerodon.prompt(formatMessage({ id: 'file.type.error' }));
+    } else {
+      Choerodon.prompt(`${file.name} ${formatMessage({ id: 'file.uploaded.success' })}`);
+    }
+
+    return false;
+  };
+
+  get getUploadContent() {
+    const {
+      form: { getFieldDecorator },
+      intl: { formatMessage },
+    } = this.props;
+    const {
+      uploadMode,
+      certLoading,
+      keyLoading,
+    } = this.state;
+
+    const uploadProps = {
+      listType: 'text',
+      className: 'c7n-upload c7n-upload-select c7n-upload-select-picture-card',
+      action: '//jsonplaceholder.typicode.com/posts/',
+      multiple: false,
+      beforeUpload: this.beforeUploadFile,
+    };
+
+    return uploadMode ? (
+      <Fragment>
+        <FormItem
+          className="c7n-select_480"
+          {...formItemLayout}
+          label={<FormattedMessage id="certificate.cert.content" />}
+        >
+          {getFieldDecorator('certValue', {
+            rules: [
+              {
+                required: true,
+                message: formatMessage({ id: 'required' }),
+              },
+            ],
+          })(
+            <TextArea
+              autosize={{
+                minRows: 2,
+              }}
+              label={<FormattedMessage id="certificate.cert.content" />}
+            />,
+          )}
+        </FormItem>
+        <FormItem
+          className="c7n-select_480"
+          {...formItemLayout}
+          label={<FormattedMessage id="certificate.key.content" />}
+        >
+          {getFieldDecorator('keyValue', {
+            rules: [
+              {
+                required: true,
+                message: formatMessage({ id: 'required' }),
+              },
+            ],
+          })(
+            <TextArea
+              autosize={{
+                minRows: 2,
+              }}
+              label={<FormattedMessage id="certificate.key.content" />}
+            />,
+          )}
+        </FormItem>
+      </Fragment>
+    ) : (
+      <div className="c7ncd-cert-upload">
+        <div className="c7ncd-cert-upload-item">
+          <h4>Cert 文件</h4>
+          <Upload
+            {...uploadProps}
+            // onChange={this.handleChange}
+          >
+            <div>
+              <Icon type={certLoading ? 'loading' : 'add'} />
+              <div className="c7n-upload-text">Upload</div>
+            </div>
+          </Upload>
+        </div>
+        <div className="c7ncd-cert-upload-item">
+          <h4>Key 文件</h4>
+          <Upload
+            {...uploadProps}
+            // onChange={this.handleChange}
+          >
+            <div>
+              <Icon type={keyLoading ? 'loading' : 'add'} />
+              <div className="c7n-upload-text">Upload</div>
+            </div>
+          </Upload>
+        </div>
+      </div>
+    );
+  }
+
   render() {
     const {
-      form,
+      form: { getFieldDecorator },
       intl: { formatMessage },
       store,
       showType,
@@ -300,10 +417,9 @@ class CertificateCreate extends Component {
     const {
       getCert,
     } = store;
-    const { getFieldDecorator } = form;
-    const { submitting, checked, createSelectedRowKeys, createSelected} = this.state;
+    const { submitting, checked, createSelectedRowKeys, createSelected } = this.state;
     const {
-      getInfo: { filters, sort: { columnKey, order }, paras },
+      getInfo: { paras },
       getProPageInfo,
       getProData: proData,
       getTagKeys: tagKeys,
@@ -326,13 +442,27 @@ class CertificateCreate extends Component {
       title: formatMessage({ id: 'cluster.project.code' }),
       dataIndex: 'code',
     }];
-    const tagCreateDom = _.map(createSelected, t => <Tag className="c7n-env-tag" key={t.id}>{t.name} {t.code}</Tag>);
+
+    const tagCreateDom = _.map(createSelected, ({ id, name, code }) =>
+      <Tag
+        className="c7n-env-tag"
+        key={id}>
+        {name} {code}
+      </Tag>,
+    );
+
     const tagDom = _.map(tagKeys, (t) => {
       if (t) {
-        return <Tag className="c7n-env-tag" key={t.id}>{t.name} {t.code}</Tag>;
+        return <Tag
+          className="c7n-env-tag"
+          key={t.id}
+        >
+          {t.name} {t.code}
+        </Tag>;
       }
       return null;
     });
+
     return (
       <div className="c7n-region">
         <Sidebar
@@ -352,11 +482,11 @@ class CertificateCreate extends Component {
           >
             <Form layout="vertical">
               <FormItem className="c7n-select_512" {...formItemLayout}>
-                {getFieldDecorator("name", {
+                {getFieldDecorator('name', {
                   rules: [
                     {
                       required: true,
-                      message: formatMessage({ id: "required" }),
+                      message: formatMessage({ id: 'required' }),
                     },
                     {
                       validator: showType === 'create' ? this.checkName : null,
@@ -369,22 +499,22 @@ class CertificateCreate extends Component {
                     type="text"
                     label={<FormattedMessage id="ctf.name" />}
                     disabled={showType === 'edit'}
-                  />
+                  />,
                 )}
               </FormItem>
               {showType === 'create' && <div className="c7n-creation-ctf-title">
                 <FormattedMessage id="ctf.upload" />
               </div>}
-              <div className={showType === 'create' ? "c7n-creation-panel" : ''}>
+              <div className={showType === 'create' ? 'c7n-creation-panel' : ''}>
                 <FormItem
                   className={`c7n-select_${showType === 'create' ? '480' : '512'}`}
                   {...formItemLayout}
                 >
-                  {getFieldDecorator("domain", {
+                  {getFieldDecorator('domain', {
                     rules: [
                       {
                         required: true,
-                        message: formatMessage({ id: "required" }),
+                        message: formatMessage({ id: 'required' }),
                       },
                       {
                         validator: showType === 'create' ? this.checkDomain : null,
@@ -397,55 +527,21 @@ class CertificateCreate extends Component {
                       maxLength={50}
                       label={<FormattedMessage id="ctf.config.domain" />}
                       disabled={showType === 'edit'}
-                    />
+                    />,
                   )}
                 </FormItem>
                 {showType === 'create' && <Fragment>
                   <div className="c7n-creation-add-title">
                     <Tips type="title" data="certificate.file.add" />
+                    <Button
+                      type="primary"
+                      funcType="flat"
+                      onClick={this.changeUploadMode}
+                    >
+                      切换上传模式
+                    </Button>
                   </div>
-                  <FormItem
-                    className="c7n-select_480"
-                    {...formItemLayout}
-                    label={<FormattedMessage id="certificate.cert.content" />}
-                  >
-                    {getFieldDecorator("certValue",{
-                      rules: [
-                        {
-                          required: true,
-                          message: formatMessage({ id: "required" }),
-                        },
-                      ],
-                    })(
-                      <TextArea
-                        autosize={{
-                          minRows: 2,
-                        }}
-                        label={<FormattedMessage id="certificate.cert.content" />}
-                      />
-                    )}
-                  </FormItem>
-                  <FormItem
-                    className="c7n-select_480"
-                    {...formItemLayout}
-                    label={<FormattedMessage id="certificate.key.content" />}
-                  >
-                    {getFieldDecorator("keyValue",{
-                      rules: [
-                        {
-                          required: true,
-                          message: formatMessage({ id: "required" }),
-                        },
-                      ],
-                    })(
-                      <TextArea
-                        autosize={{
-                          minRows: 2,
-                        }}
-                        label={<FormattedMessage id="certificate.key.content" />}
-                      />
-                    )}
-                  </FormItem>
+                  {this.getUploadContent}
                 </Fragment>}
               </div>
               <div className="c7n-creation-ctf-title">
@@ -490,5 +586,3 @@ class CertificateCreate extends Component {
     );
   }
 }
-
-export default CertificateCreate;
