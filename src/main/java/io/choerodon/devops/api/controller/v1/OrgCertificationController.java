@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
@@ -41,8 +42,12 @@ public class OrgCertificationController {
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "证书信息", required = true)
-            @RequestBody OrgCertificationDTO orgCertificationDTO) {
-        devopsOrgCertificationService.insert(organizationId, orgCertificationDTO);
+            @RequestBody OrgCertificationDTO orgCertificationDTO,
+            @ApiParam(value = "key文件")
+            @RequestParam(value = "key", required = false) MultipartFile key,
+            @ApiParam(value = "cert文件")
+            @RequestParam(value = "cert", required = false) MultipartFile cert) {
+        devopsOrgCertificationService.insert(organizationId, key, cert, orgCertificationDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

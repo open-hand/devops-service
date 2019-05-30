@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,9 +19,7 @@ import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
-import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -28,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Created by n!Ck
@@ -39,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CertificationServiceImpl implements CertificationService {
 
     private static final String CERT_PREFIX = "cert-";
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     private static final String CERTIFICATE_KIND = "certificate";
 
     @Value("${cert.testCert}")
@@ -70,18 +71,38 @@ public class CertificationServiceImpl implements CertificationService {
     private DeployMsgHandlerService deployMsgHandlerService;
 
     @Override
-    @Transactional(rollbackFor=Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void create(Long projectId, C7nCertificationDTO certificationDTO,
-                       Boolean isGitOps) {
+                       MultipartFile key, MultipartFile cert, Boolean isGitOps) {
+
+        Long envId = certificationDTO.getEnvId();
 
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certificationDTO.getEnvId());
+//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certificationDTO.getEnvId());
+
+        //校验环境是否链接
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+
+//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+
+
+        //如果是选择上传文件方式
+        if (key != null && cert != null) {
+            ProjectE projectE = iamRepository.queryIamProject(projectId);
+            String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectE.getCode(), FILE_SEPARATOR, devopsEnvironmentE.getCode());
+            certificationDTO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
+            certificationDTO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
+            File certPath = new File(path + FILE_SEPARATOR + cert.getOriginalFilename());
+            File keyPath = new File(path + FILE_SEPARATOR + key.getOriginalFilename());
+            SslUtil.validate(certPath, keyPath);
+            certPath.deleteOnExit();
+            keyPath.deleteOnExit();
+        }
 
         String certName = certificationDTO.getCertName();
         String type = certificationDTO.getType();
         List<String> domains = certificationDTO.getDomains();
 
-        Long envId = certificationDTO.getEnvId();
 
         CertificationFileDO certificationFileDO = null;
         //如果创建的时候选择证书
@@ -89,11 +110,6 @@ public class CertificationServiceImpl implements CertificationService {
             CertificationE certificationE = certificationRepository.queryById(certificationDTO.getCertId());
             certificationFileDO = certificationRepository.getCertFile(certificationE.getId());
         }
-
-        //校验环境是否链接
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         devopsCertificationValidator.checkCertification(envId, certName);
 
@@ -191,7 +207,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    @Transactional(rollbackFor=Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void deleteById(Long certId) {
         CertificationE certificationE = certificationRepository.queryById(certId);
         Long certEnvId = certificationE.getEnvironmentE().getId();
@@ -327,5 +343,4 @@ public class CertificationServiceImpl implements CertificationService {
         devopsEnvCommandE.setObjectId(certId);
         return devopsEnvCommandRepository.create(devopsEnvCommandE).getId();
     }
-
 }
