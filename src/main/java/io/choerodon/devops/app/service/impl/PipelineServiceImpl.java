@@ -903,7 +903,10 @@ public class PipelineServiceImpl implements PipelineService {
                 if (stageRecordDTO.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                     recordReqDTO.setType(STAGE);
                     recordReqDTO.setStageRecordId(stageRecordDTO.getId());
-                    recordReqDTO.setStageName(recordDTOList.get(i - 1).getStageName());
+                    if (i != 0) {
+                        recordReqDTO.setStageName(recordDTOList.get(i - 1).getStageName());
+                    }
+                    recordReqDTO.setExecute(checkRecordTriggerPermission(null, stageRecordDTO.getId()));
                 }
             }
 
@@ -949,6 +952,7 @@ public class PipelineServiceImpl implements PipelineService {
                                 recordReqDTO.setStageRecordId(r.getStageRecordId());
                                 recordReqDTO.setTaskRecordId(r.getId());
                                 recordReqDTO.setStageName(stageRecordRepository.queryById(r.getStageRecordId()).getStageName());
+                                recordReqDTO.setExecute(checkTaskTriggerPermission(r.getId()));
                             }
                         } else {
                             taskRecordDTO.setEnvPermission(true);
@@ -963,10 +967,7 @@ public class PipelineServiceImpl implements PipelineService {
                         taskRecordDTOS.add(taskRecordDTO);
                     }
             );
-            recordReqDTO.setExecute(false);
-            if (pipelineRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
-                recordReqDTO.setExecute(filterPendingCheck(true, pipelineRecordE.getId()));
-            } else if (pipelineRecordE.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
+            if (pipelineRecordE.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                 if (checkRecordTriggerPermission(pipelineRecordE.getId(), null) && checkTaskRecordEnvPermission(projectE, pipelineRecordE.getId())) {
                     recordReqDTO.setExecute(true);
                 }
@@ -1202,7 +1203,7 @@ public class PipelineServiceImpl implements PipelineService {
                 pipelineRecordRepository.update(recordE);
             } else {
                 //更新下一个阶段状态
-                startNextStageRecord(nextStageRecord.getId(), recordE);
+                startNextStageRecord(stageRecordId, recordE);
             }
         } else {
             startNextTask(nextTaskRecord, pipelineRecordId, stageRecordId);
@@ -1212,14 +1213,13 @@ public class PipelineServiceImpl implements PipelineService {
     /**
      * 开始下一个阶段
      *
-     * @param nextStageRecordId 下一个阶段记录Id
+     * @param stageRecordId 阶段记录Id
      * @param recordE
-     * @param nextStageRecordId 已完成的阶段记录
      */
-    private void startNextStageRecord(Long nextStageRecordId, PipelineRecordE recordE) {
-        PipelineStageRecordE nextStageRecordE = stageRecordRepository.queryById(nextStageRecordId);
-        if (nextStageRecordE.getTriggerType().equals(AUTO)) {
-            if (!isEmptyStage(nextStageRecordId)) {
+    private void startNextStageRecord(Long stageRecordId, PipelineRecordE recordE) {
+        PipelineStageRecordE nextStageRecordE = getNextStage(stageRecordId);
+        if (stageRecordRepository.queryById(stageRecordId).getTriggerType().equals(AUTO)) {
+            if (!isEmptyStage(nextStageRecordE.getId())) {
                 nextStageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
                 List<PipelineTaskRecordE> list = taskRecordRepository.queryByStageRecordId(nextStageRecordE.getId(), null);
                 if (list != null && list.size() > 0) {
@@ -1228,7 +1228,7 @@ public class PipelineServiceImpl implements PipelineService {
                     }
                 }
             } else {
-                startEmptyStage(recordE.getId(), nextStageRecordId);
+                startEmptyStage(recordE.getId(), nextStageRecordE.getId());
             }
         } else {
             updateStatus(recordE.getId(), null, WorkFlowStatus.PENDINGCHECK.toValue(), null);
