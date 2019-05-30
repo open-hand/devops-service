@@ -138,14 +138,22 @@ class PipelineStore {
   }
 
   /**
-   * 手动终止流水线
+   * 强制失败流水线
    * @param projectId
    * @param id
    * @returns {*}
    */
   manualStop(projectId, id) {
-    return axios.get(`/devops/v1/projects/${projectId}/pipeline/stop?pipeline_record_id=${id}`);
+    return axios.get(`/devops//v1/projects/${projectId}/pipeline/failed?pipeline_record_id=${id}`);
   }
+
+  /**
+   ** 流水线重试
+   * @param projectId
+   * @param id 执行记录id
+   */
+  retry = (projectId, id) =>
+    axios.get(`/devops/v1/projects/${projectId}/pipeline/${id}/retry`);
 
   /**
    * 加载记录详情

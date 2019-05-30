@@ -9,7 +9,8 @@ import LoadingBar from '../../../../components/loadingBar';
 import UserInfo from '../../../../components/userInfo';
 import DetailTitle from '../components/detailTitle';
 import DetailCard from '../components/detailCard';
-import { TRIGGER_TYPE_MANUAL, STATUS_RUNNING } from '../components/Constants';
+import PendingCheckModal from '../components/pendingCheckModal';
+import { TRIGGER_TYPE_MANUAL } from '../components/Constants';
 
 import '../../../main.scss';
 import './PipelineDetail.scss';
@@ -23,8 +24,10 @@ const { Option } = Select;
 export default class PipelineDetail extends Component {
   state = {
     recordId: null,
-    showStop: false,
-    stopLoading: false,
+    submitting: false,
+    showPendingCheck: false,
+    checkData: {},
+    show: false,
   };
 
   componentDidMount() {
@@ -74,16 +77,60 @@ export default class PipelineDetail extends Component {
   }
 
   /**
-   * 开关手动终止弹窗
-   * @param flag 开或关
-   * @returns {void|*}
+   * 打开强制失败或重试弹窗
+   * @param type
    */
-  showStop = (flag) => this.setState({ showStop: flag });
+  openModal = (type) => {
+    this.setState({ show: type });
+  };
 
   /**
-   * 手动终止
+   * 关闭强制失败或重试弹窗
+   * @param flag 是否加载数据
    */
-  handleStop = () => {
+  closeModal = ( flag) => {
+    this.setState({ show: false });
+    flag && this.loadingData();
+  };
+
+  /**
+   * 关闭人工审核弹窗
+   * @param flag 是否重新加载列表数据
+   */
+  closePendingCheck = (flag) => {
+    flag && this.loadingData();
+    this.setState({ showPendingCheck: false,  checkData: {} });
+  };
+
+  /**
+   * 打开人工审核弹窗
+   */
+  openPendingCheck = () => {
+    const {
+      PipelineStore: {
+        getDetail: {
+          type,
+          stageRecordId,
+          taskRecordId,
+          stageName,
+        },
+      },
+    } = this.props;
+    this.setState({
+      showPendingCheck: true,
+      checkData: {
+        checkType: type,
+        stageRecordId,
+        taskRecordId,
+        stageName,
+      },
+    });
+  };
+
+  /**
+   * 处理强制失败或重试
+   */
+  handleSubmit = (type) => {
     const {
       match: {
         params,
@@ -94,21 +141,116 @@ export default class PipelineDetail extends Component {
       },
     } = this.props;
     const { recordId } = this.state;
-    this.setState({ stopLoading: true });
-    PipelineStore.manualStop(projectId, recordId || params.rId)
-      .then(data => {
-        if (data && data.failed) {
-          Choerodon.prompt(data.message);
-        } else {
-          this.showStop(false);
-          this.loadingData();
-        }
-        this.setState({ stopLoading: false });
-      })
-      .catch(e => {
-        Choerodon.handleResponseError(e);
-        this.setState({ stopLoading: false });
-      })
+    this.setState({ submitting: true });
+    let promise = null;
+    if (type === 'stop') {
+      promise = PipelineStore.manualStop(projectId, recordId || params.rId);
+    } else if (type === 'retry') {
+      promise = PipelineStore.retry(projectId, recordId || params.rId);
+    }
+    this.handleResponse(promise);
+  };
+
+  handleResponse = (promise) => {
+    if (promise) {
+      promise
+        .then(data => {
+          if (data && data.failed) {
+            Choerodon.prompt(data.message);
+          } else {
+            this.closeModal(true);
+          }
+          this.setState({ submitting: false });
+        })
+        .catch(err => {
+          this.setState({ submitting: false });
+          Choerodon.handleResponseError(err);
+        });
+    }
+  };
+
+  /**
+   * 获取右侧按钮
+   */
+  getButton = () => {
+    const {
+      PipelineStore: {
+        getDetail: {
+          status,
+          execute,
+        },
+      },
+      AppState: {
+        currentMenuType: {
+          projectId,
+          type,
+          organizationId,
+        },
+      },
+    } = this.props;
+    let dom = null;
+    switch (status) {
+      case 'running':
+        dom = (
+          <Permission
+            type={type}
+            projectId={projectId}
+            organizationId={organizationId}
+            service={['devops-service.pipeline.failed']}
+          >
+            <Button
+              onClick={this.openModal.bind(this, 'stop')}
+              icon='power_settings_new'
+              type='primary'
+              className='c7ncd-pipeline-manual-stop'
+            >
+              <FormattedMessage id='pipeline.flow.stopped' />
+            </Button>
+          </Permission>
+        );
+        break;
+      case 'failed':
+        execute && (dom = (
+          <Permission
+            type={type}
+            projectId={projectId}
+            organizationId={organizationId}
+            service={['devops-service.pipeline.retry']}
+          >
+            <Button
+              onClick={this.openModal.bind(this, 'retry')}
+              icon='replay'
+              type='primary'
+              className='c7ncd-pipeline-manual-stop'
+            >
+              <FormattedMessage id='pipelineRecord.retry' />
+            </Button>
+          </Permission>
+        ));
+        break;
+      case 'pendingcheck':
+        execute && (dom = (
+          <Permission
+            type={type}
+            projectId={projectId}
+            organizationId={organizationId}
+            service={['devops-service.pipeline.audit']}
+          >
+            <Button
+              onClick={this.openPendingCheck}
+              icon='replay'
+              type='primary'
+              className='c7ncd-pipeline-manual-stop'
+            >
+              <FormattedMessage id="pipelineRecord.check.manual" />
+            </Button>
+          </Permission>
+        ));
+        break;
+      default:
+        break;
+    }
+    return dom;
   };
 
   get renderPipeline() {
@@ -176,16 +318,15 @@ export default class PipelineDetail extends Component {
         getDetailLoading,
         getRecordDate,
       },
-      AppState: {
-        currentMenuType: {
-          projectId,
-          type,
-          organizationId,
-        },
-      },
     } = this.props;
     const { loginName, realName, imageUrl } = userDTO || {};
-    const { recordId, showStop, stopLoading } = this.state;
+    const {
+      recordId,
+      submitting,
+      showPendingCheck,
+      checkData,
+      show,
+    } = this.state;
 
     const { isFilter, pipelineId, fromPipeline } = state || {};
     const backPath = {
@@ -206,7 +347,9 @@ export default class PipelineDetail extends Component {
       service={[
         'devops-service.pipeline.queryByPipelineId',
         'devops-service.pipeline.queryByPipelineId',
-        'devops-service.pipeline.stop',
+        'devops-service.pipeline.failed',
+        'devops-service.pipeline.retry',
+        'devops-service.pipeline.audit',
       ]}
     >
       <Header
@@ -247,47 +390,39 @@ export default class PipelineDetail extends Component {
           </div>}
           <div className="c7ncd-pipeline-detail-item">
             <span className="c7ncd-pipeline-detail-label">{formatMessage({ id: 'pipeline.process.status' })}</span>
-            <span className={`c7ncd-pipeline-status-tag c7ncd-pipeline-status-tag_${status}`}>
+            {status && <span className={`c7ncd-pipeline-status-tag c7ncd-pipeline-status-tag_${status}`}>
               <FormattedMessage id={`pipelineRecord.status.${status}`} />
-            </span>
+            </span>}
           </div>
-          {status === STATUS_RUNNING && <div className="c7ncd-pipeline-manual-stop">
-            <Permission
-              type={type}
-              projectId={projectId}
-              organizationId={organizationId}
-              service={['devops-service.pipeline.stop']}
-            >
-              <Button
-                onClick={this.showStop.bind(this, true)}
-                icon="power_settings_new"
-                type="primary"
-              >
-                <FormattedMessage id="pipeline.flow.stopped" />
-              </Button>
-            </Permission>
-          </div>}
+          {this.getButton()}
         </div>
         <div className="c7ncd-pipeline-main">
           {getDetailLoading ? <LoadingBar display /> :
             <div className="c7ncd-pipeline-scroll">{this.renderPipeline}</div>}
         </div>
       </Content>
-      {showStop && (
+      {show && (
         <Modal
-          confirmLoading={stopLoading}
-          visible={showStop}
-          title={`${formatMessage({ id: 'pipeline.stop.title' }, { name: pipelineName })}`}
+          confirmLoading={submitting}
+          visible={show}
+          title={formatMessage({ id: `pipeline.${show}.title` })}
           closable={false}
-          onOk={this.handleStop}
-          onCancel={this.showStop.bind(this, false)}
+          onOk={this.handleSubmit.bind(this, show)}
+          onCancel={this.closeModal.bind(this, false)}
         >
           <div className="c7n-padding-top_8">
-            <FormattedMessage id={`pipeline.stop.des`} />
+            <FormattedMessage id={`pipeline.${show}.des`} />
           </div>
         </Modal>
       )}
+      {showPendingCheck && (
+        <PendingCheckModal
+          id={Number(recordId || params.rId)}
+          name={pipelineName}
+          checkData={checkData}
+          onClose={this.closePendingCheck}
+        />
+      )}
     </Page>);
   }
-
 }
