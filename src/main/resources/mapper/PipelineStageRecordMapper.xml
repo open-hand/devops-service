@@ -7,14 +7,13 @@
             dpsr.id,
             dpsr. STATUS,
             dpsr.trigger_type,
-            dps.stage_name,
+            dpsr.stage_name,
             dpsr.last_update_date,
             dpsr.stage_id
         FROM
-            devops_pipeline_stage_record dpsr
-        JOIN devops_pipeline_stage dps ON dps.id = dpsr.stage_id
+             devops_pipeline_stage_record dpsr
         WHERE
-        dpsr.project_id = #{projectId}
+             dpsr.project_id = #{projectId}
         <if test="pipelineRecordId != null">
             AND dpsr.pipeline_record_id = #{pipelineRecordId}
         </if>
