@@ -897,9 +897,7 @@ public class PipelineServiceImpl implements PipelineService {
                 if (recordDTOList.get(i).getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                     recordReqDTO.setType(STAGE);
                     recordReqDTO.setStageRecordId(recordDTOList.get(i + 1).getId());
-                    if (i != 0) {
-                        recordReqDTO.setStageName(stageRecordDTO.getStageName());
-                    }
+                    recordReqDTO.setStageName(stageRecordDTO.getStageName());
                     recordReqDTO.setExecute(checkRecordTriggerPermission(null, stageRecordDTO.getId()));
                 }
             }
@@ -910,23 +908,23 @@ public class PipelineServiceImpl implements PipelineService {
                         PipelineTaskRecordDTO taskRecordDTO = ConvertHelper.convert(r, PipelineTaskRecordDTO.class);
                         if (taskRecordDTO.getTaskType().equals(MANUAL)) {
                             List<IamUserDTO> userDTOS = new ArrayList<>();
-                                //获取已经审核人员
-                                List<Long> userIds = pipelineUserRelRecordRepository.queryByRecordId(null, null, r.getId())
-                                        .stream().map(PipelineUserRecordRelE::getUserId).collect(Collectors.toList());
-                                userIds.forEach(userId -> {
-                                    IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(userId), IamUserDTO.class);
-                                    userDTO.setAudit(true);
+                            //获取已经审核人员
+                            List<Long> userIds = pipelineUserRelRecordRepository.queryByRecordId(null, null, r.getId())
+                                    .stream().map(PipelineUserRecordRelE::getUserId).collect(Collectors.toList());
+                            userIds.forEach(userId -> {
+                                IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(userId), IamUserDTO.class);
+                                userDTO.setAudit(true);
+                                userDTOS.add(userDTO);
+                            });
+                            //获取指定审核人员
+                            if (r.getAuditUser() != null) {
+                                List<String> auditUserIds = Arrays.asList(r.getAuditUser().split(","));
+                                auditUserIds.forEach(userId -> {
+                                    IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(TypeUtil.objToLong(userId)), IamUserDTO.class);
+                                    userDTO.setAudit(false);
                                     userDTOS.add(userDTO);
                                 });
-                                //获取指定审核人员
-                                if (r.getAuditUser() != null) {
-                                    List<String> auditUserIds = Arrays.asList(r.getAuditUser().split(","));
-                                    auditUserIds.forEach(userId -> {
-                                        IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(TypeUtil.objToLong(userId)), IamUserDTO.class);
-                                        userDTO.setAudit(false);
-                                        userDTOS.add(userDTO);
-                                    });
-                                }
+                            }
                             taskRecordDTO.setUserDTOList(userDTOS);
                             if (r.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                                 recordReqDTO.setType(TASK);
