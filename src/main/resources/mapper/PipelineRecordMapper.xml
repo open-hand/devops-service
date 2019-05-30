@@ -42,7 +42,8 @@
         dpr.business_key,
         dpr.bpm_definition,
         dpr.pipeline_name,
-        dpr.edited
+        dpr.edited,
+        dpr.audit_user
         FROM
         devops_pipeline_record dpr
         WHERE dpr.id = #{pipelineRecordId}
