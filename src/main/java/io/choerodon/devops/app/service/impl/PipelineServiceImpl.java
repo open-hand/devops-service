@@ -852,7 +852,7 @@ public class PipelineServiceImpl implements PipelineService {
                     startNextTask(taskRecordRepository.queryByStageRecordId(stageRecordId, taskRecordId).get(0).getId(), pipelineRecordId, stageRecordId);
                 }
             } else {
-                startNextTask(taskRecordRepository.queryByStageRecordId(stageRecordId, taskRecordId).get(0).getId(), pipelineRecordId, stageRecordId);
+                startNextTask(taskRecordRepository.queryById(taskRecordId).getId(), pipelineRecordId, stageRecordId);
             }
         } else {
             //停止实例
@@ -1015,6 +1015,7 @@ public class PipelineServiceImpl implements PipelineService {
         //清空之前数据
         pipelineRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
         pipelineRecordE.setBusinessKey(uuid);
+        pipelineRecordE.setErrorInfo("");
         pipelineRecordRepository.update(pipelineRecordE);
         stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null).forEach(t -> {
             t.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
