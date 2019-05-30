@@ -878,7 +878,7 @@ public class PipelineServiceImpl implements PipelineService {
             //获取触发人员
             if (stageRecordDTO.getTriggerType().equals(MANUAL)) {
                 //不是最后一个阶段
-                if (getNextStage(stageRecordDTO.getId()) == null) {
+                if (getNextStage(stageRecordDTO.getId()) != null) {
                     List<IamUserDTO> userDTOS = new ArrayList<>();
                     List<Long> userIds = pipelineUserRelRecordRepository.queryByRecordId(null, recordDTOList.get(i + 1).getId(), null)
                             .stream().map(PipelineUserRecordRelE::getUserId).collect(Collectors.toList());
