@@ -1,8 +1,7 @@
 export const TRIGGER_TYPE_MANUAL = 'manual';
 export const STAGE_FLOW_MANUAL = 'manual';
-export const STATUS_RUNNING = 'running';
 
-export const RELATED_TO_ME = ['checkPending', 'reviewed', 'executed'];
+export const RELATED_TO_ME = ['pendingcheck', 'reviewed', 'executed'];
 
 export const STATUS_COLOR = {
   success: '#00BFA5',
