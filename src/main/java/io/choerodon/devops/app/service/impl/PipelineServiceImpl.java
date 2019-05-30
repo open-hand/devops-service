@@ -611,8 +611,7 @@ public class PipelineServiceImpl implements PipelineService {
                 pipelineUserRelRecordRepository.create(userRelE);
                 if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), status, null);
-                    PipelineStageE stageE = stageRepository.queryById(stageRecordRepository.queryById(recordRelDTO.getStageRecordId()).getStageId());
-                    if (!isEmptyStage(stageE.getId())) {
+                    if (!isEmptyStage(recordRelDTO.getStageRecordId())) {
                         //阶段中的第一个任务为人工任务时
                         List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(recordRelDTO.getStageRecordId(), null);
                         if (taskRecordEList != null && taskRecordEList.size() > 0) {
@@ -894,15 +893,12 @@ public class PipelineServiceImpl implements PipelineService {
                         userDTOS.add(userDTO);
                     });
                     stageRecordDTO.setUserDTOS(userDTOS);
-                    if (recordDTOList.get(i).getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
-                        stageRecordDTO.setIndex(true);
-                    }
                 }
-                if (stageRecordDTO.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                if (recordDTOList.get(i).getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                     recordReqDTO.setType(STAGE);
-                    recordReqDTO.setStageRecordId(stageRecordDTO.getId());
+                    recordReqDTO.setStageRecordId(recordDTOList.get(i + 1).getId());
                     if (i != 0) {
-                        recordReqDTO.setStageName(recordDTOList.get(i - 1).getStageName());
+                        recordReqDTO.setStageName(stageRecordDTO.getStageName());
                     }
                     recordReqDTO.setExecute(checkRecordTriggerPermission(null, stageRecordDTO.getId()));
                 }
