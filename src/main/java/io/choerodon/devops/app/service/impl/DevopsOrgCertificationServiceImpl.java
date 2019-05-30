@@ -49,17 +49,35 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
 
 
         //如果是选择上传文件方式
+        Organization organization = iamRepository.queryOrganizationById(organizationId);
+        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organization.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
+        String certFileName;
+        String keyFileName;
+
         if (key != null && cert != null) {
-            Organization organization = iamRepository.queryOrganizationById(organizationId);
-            String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organization.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
+            certFileName = cert.getOriginalFilename();
+            keyFileName = cert.getOriginalFilename();
             orgCertificationDTO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
             orgCertificationDTO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
-            File certPath = new File(path + FILE_SEPARATOR + cert.getOriginalFilename());
-            File keyPath = new File(path + FILE_SEPARATOR + key.getOriginalFilename());
-            SslUtil.validate(certPath, keyPath);
-            certPath.deleteOnExit();
-            keyPath.deleteOnExit();
+        } else {
+            certFileName = String.format("%s.%s",GenerateUUID.generateUUID().substring(0, 5),"crt");
+            keyFileName = String.format("%s.%s",GenerateUUID.generateUUID().substring(0, 5),"key");
+            FileUtil.saveDataToFile(path, certFileName, orgCertificationDTO.getCertValue());
+            FileUtil.saveDataToFile(path, keyFileName, orgCertificationDTO.getKeyValue());
         }
+        File certPath = new File(path + FILE_SEPARATOR + certFileName);
+        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
+        try {
+            SslUtil.validate(certPath, keyPath);
+        }catch (Exception e) {
+            FileUtil.deleteFile(certPath);
+            FileUtil.deleteFile(keyPath);
+            throw new CommonException(e);
+        }
+        FileUtil.deleteFile(certPath);
+        FileUtil.deleteFile(keyPath);
+
+
 
         CertificationE certificationE = new CertificationE();
         certificationE.setName(orgCertificationDTO.getName());

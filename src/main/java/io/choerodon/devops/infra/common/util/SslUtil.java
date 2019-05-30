@@ -56,9 +56,10 @@ public class SslUtil {
 
 
     public static PublicKey getPublicKey(File cert) {
+        FileInputStream in = null;
         try {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            FileInputStream in = new FileInputStream(cert);
+            in = new FileInputStream(cert);
             Certificate crt = cf.generateCertificate(in);
             PublicKey publicKey = crt.getPublicKey();
             return publicKey;
@@ -66,6 +67,14 @@ public class SslUtil {
             logger.info(e.getMessage(), e);
         } catch (FileNotFoundException e) {
             logger.info(e.getMessage(), e);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    logger.info(e.getMessage(), e);
+                }
+            }
         }
         return null;
     }
@@ -258,7 +267,7 @@ public class SslUtil {
      * @param cert
      * @return
      */
-    public static void validateCert(File cert) {
+    public static PublicKey validateCert(File cert) {
         if (cert == null) {
             throw new CommonException("err.crt.file.not.exist");
         }
@@ -266,41 +275,41 @@ public class SslUtil {
         if (publicKey == null) {
             throw new CommonException("err.crt.file.format.error");
         }
+        return publicKey;
     }
 
     /**
      * 验证私钥
      *
-     * @param privateKey
+     * @param Key
      * @return
      */
-    public static void validatePrivateKey(File privateKey) {
-        if (privateKey == null) {
+    public static PrivateKey validatePrivateKey(File Key) {
+        if (Key == null) {
             throw new CommonException("err.key.file.not.exist");
         }
-        PrivateKey privKey = getPrivateKey(privateKey);
-        if (privKey == null) {
+        PrivateKey privateKey = getPrivateKey(Key);
+        if (privateKey == null) {
             throw new CommonException("err.key.file.format.error");
         }
+        return privateKey;
     }
 
     /**
      * 验证证书私钥是否匹配,如果不匹配返回错误消息
      *
      * @param cert
-     * @param privateKey
+     * @param key
      * @return 错误消息
      */
-    public static void validate(File cert, File privateKey) {
-        validateCert(cert);//验证证书
+    public static void validate(File cert, File key) {
 
-        validatePrivateKey(privateKey);//验证私钥
+        PublicKey publicKey = validateCert(cert);//验证证书
+        PrivateKey privateKey = validatePrivateKey(key);//验证私钥
 
-        PublicKey publicKey = getPublicKey(cert);
-        PrivateKey privKey = getPrivateKey(privateKey);
         String str = "testCert";//测试字符串
         String encryptStr = encrypt(publicKey, str);//根据证书公钥对字符串进行加密
-        String decryptStr = decrypt(privKey, encryptStr);//根据证书私钥对加密字符串进行解密
+        String decryptStr = decrypt(privateKey, encryptStr);//根据证书私钥对加密字符串进行解密
         if (!str.equals(decryptStr)) {//字符串根据证书公钥加密，私钥解密后不能还原说明证书与私钥不匹配
             throw new CommonException("err.key.crt.not.equal");
         }

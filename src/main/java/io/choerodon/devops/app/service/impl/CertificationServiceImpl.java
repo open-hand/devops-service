@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.api.dto.OrgCertificationDTO;
@@ -23,6 +24,7 @@ import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.nutz.lang.ComboException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -86,18 +88,36 @@ public class CertificationServiceImpl implements CertificationService {
 //        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
 
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectE.getCode(), FILE_SEPARATOR, devopsEnvironmentE.getCode());
+
+        String certFileName;
+        String keyFileName;
+
         //如果是选择上传文件方式
         if (key != null && cert != null) {
-            ProjectE projectE = iamRepository.queryIamProject(projectId);
-            String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectE.getCode(), FILE_SEPARATOR, devopsEnvironmentE.getCode());
+            certFileName = cert.getOriginalFilename();
+            keyFileName = cert.getOriginalFilename();
             certificationDTO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
             certificationDTO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
-            File certPath = new File(path + FILE_SEPARATOR + cert.getOriginalFilename());
-            File keyPath = new File(path + FILE_SEPARATOR + key.getOriginalFilename());
-            SslUtil.validate(certPath, keyPath);
-            certPath.deleteOnExit();
-            keyPath.deleteOnExit();
+        } else {
+            certFileName = String.format("%s.%s",GenerateUUID.generateUUID().substring(0, 5),"crt");
+            keyFileName = String.format("%s.%s",GenerateUUID.generateUUID().substring(0, 5),"key");
+            FileUtil.saveDataToFile(path, certFileName, certificationDTO.getCertValue());
+            FileUtil.saveDataToFile(path, keyFileName, certificationDTO.getKeyValue());
         }
+        File certPath = new File(path + FILE_SEPARATOR + certFileName);
+        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
+        try {
+            SslUtil.validate(certPath, keyPath);
+        }catch (Exception e) {
+            FileUtil.deleteFile(certPath);
+            FileUtil.deleteFile(keyPath);
+            throw new CommonException(e);
+        }
+        FileUtil.deleteFile(certPath);
+        FileUtil.deleteFile(keyPath);
+
 
         String certName = certificationDTO.getCertName();
         String type = certificationDTO.getType();
