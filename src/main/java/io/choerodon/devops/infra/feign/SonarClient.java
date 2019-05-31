@@ -2,13 +2,7 @@ package io.choerodon.devops.infra.feign;
 
 import java.util.Map;
 
-import io.choerodon.devops.api.dto.sonar.Bug;
-import io.choerodon.devops.api.dto.sonar.SonarAnalyses;
-import io.choerodon.devops.api.dto.sonar.SonarComponent;
-import io.choerodon.devops.api.dto.sonar.SonarTables;
-import io.choerodon.devops.api.dto.sonar.Vulnerability;
-
-import oracle.jdbc.proxy.annotation.Post;
+import io.choerodon.devops.api.dto.sonar.*;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -51,4 +45,8 @@ public interface SonarClient {
 
     @POST("api/permissions/remove_group_from_template")
     Call<Void> removeGroupFromTemplate(@QueryMap Map<String, String> maps);
+
+    @GET("api/components/search_projects?ps=50")
+    Call<Projects> listProject();
+
 }

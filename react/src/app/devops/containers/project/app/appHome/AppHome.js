@@ -238,13 +238,12 @@ class AppHome extends Component {
                 title={<FormattedMessage id="app.quality" />}
                 placement="bottom"
               >
-                <a
-                  href={record.sonarUrl}
-                  rel="nofollow me noopener noreferrer"
-                  target="_blank"
-                >
-                  <Button icon="quality" shape="circle" size="small" />
-                </a>
+                <Button
+                  icon="quality"
+                  shape="circle"
+                  size="small"
+                  onClick={this.linkToQuatity.bind(this, record.id)}
+                />
               </Tooltip>
             ) : null}
             {!record.fail && (
@@ -378,6 +377,26 @@ class AppHome extends Component {
         <FormattedMessage id={`app.${msg}`} />
       </span>
     );
+  };
+
+  /**
+   * 跳转到代码质量页面
+   */
+  linkToQuatity = (appId) => {
+    const {
+      history,
+      location: {
+        search,
+      },
+    } = this.props;
+    history.push({
+      pathname: "/devops/code-quality",
+      search,
+      state: {
+        backPath: `/devops/app${search}`,
+        appId,
+      },
+    });
   };
 
   /**

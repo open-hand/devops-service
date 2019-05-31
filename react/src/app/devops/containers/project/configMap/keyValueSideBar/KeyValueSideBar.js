@@ -336,9 +336,11 @@ export default class KeyValueSideBar extends Component {
 
     if (!isYamlEdit) {
       hasKVError = this.checkErrorData();
-      configData = [...dataSource.filter(item => !_.isEmpty(item.key))];
+      const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
+      configData = _.uniqBy(allData, 'index');
     } else {
       hasConfigRuleError = this.checkConfigRuleError();
+      // TODO: yaml 转对象的错误处理
       configData = yamlToObj(dataYaml);
     }
 
@@ -349,12 +351,10 @@ export default class KeyValueSideBar extends Component {
       hasItemError: false,
     });
 
-    const uniqData = _.uniqBy(configData, 'index');
-
     form.validateFieldsAndScroll((err, { name, description, envId }) => {
       if (!err) {
 
-        const _value = takeObject(uniqData);
+        const _value = takeObject(configData);
 
         const dto = {
           name,

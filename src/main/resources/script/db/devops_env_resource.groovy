@@ -32,4 +32,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_resource.groovy') {
         }
     }
 
+    changeSet(author: 'younger', id: '2019-05-27-add-index') {
+        createIndex(indexName: "idx_appinstanceid ", tableName: "devops_env_resource") {
+            column(name: "app_instance_id")
+        }
+    }
 }
