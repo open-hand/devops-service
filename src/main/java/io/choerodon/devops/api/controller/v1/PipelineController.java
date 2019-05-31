@@ -68,8 +68,7 @@ public class PipelineController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.create"));
     }
-
-
+    
     /**
      * 项目下更新流水线
      *
@@ -212,7 +211,6 @@ public class PipelineController {
                 .orElseThrow(() -> new CommonException("error.pipeline.list.record"));
     }
 
-
     /**
      * 执行流水线
      *
@@ -271,7 +269,6 @@ public class PipelineController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.audit.check"));
     }
-
 
     /**
      * 条件校验
@@ -386,7 +383,6 @@ public class PipelineController {
                 .orElseThrow(() -> new CommonException("error.pipeline.all.list"));
     }
 
-
     /**
      * 获取所有项目成员和项目所有者
      *
@@ -421,6 +417,4 @@ public class PipelineController {
         pipelineService.failed(projectId, recordId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
-
-
 }
