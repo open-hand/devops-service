@@ -348,10 +348,13 @@ public class DevopsSagaHandler {
     public void pipelineAutoDeployInstance(String data) {
         //创建或更新实例
         ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
+        Long taskRecordId = applicationDeployDTO.getRecordId();
+        Long stageRecordId = taskRecordRepository.queryById(taskRecordId).getStageRecordId();
+        Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
         try {
             ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
             //更新记录表中的实例
-            if (!taskRecordRepository.queryById(applicationDeployDTO.getRecordId()).getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
+            if (!pipelineRecordRepository.queryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                 PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
                 pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
                 taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
@@ -359,9 +362,6 @@ public class DevopsSagaHandler {
             }
         } catch (Exception e) {
             //实例创建失败,回写记录表
-            Long taskRecordId = applicationDeployDTO.getRecordId();
-            Long stageRecordId = taskRecordRepository.queryById(taskRecordId).getStageRecordId();
-            Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
             pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
             pipelineTaskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
