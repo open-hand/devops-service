@@ -73,8 +73,9 @@ export default class DetailCard extends PureComponent {
         _.forEach(userDTOList, ({ audit, realName, loginName }) => {
           if (audit) {
             auditUsers.push(realName || loginName);
+          } else {
+            allAuditUsers.push(realName || loginName);
           }
-          allAuditUsers.push(realName || loginName);
         });
 
         let instanceNode = null;
