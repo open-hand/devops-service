@@ -138,7 +138,7 @@ class DevopsIngressControllerSpec extends Specification {
         devopsIngressDTO.setCertId(1L)
         devopsIngressDTO.setName("test.ing")
         devopsIngressDTO.setPathList(pathList)
-        devopsIngressDTO.setDomain("test.hand-china.com")
+        devopsIngressDTO.setDomain("test.test.com")
 
         devopsServiceDO.setId(1L)
         devopsServiceDO.setEnvId(1L)
@@ -161,7 +161,7 @@ class DevopsIngressControllerSpec extends Specification {
         devopsIngressDO.setCommandType("create")
         devopsIngressDO.setObjectVersionNumber(1L)
         devopsIngressDO.setCommandStatus("success")
-        devopsIngressDO.setDomain("test.hand-china.com")
+        devopsIngressDO.setDomain("test.test.com")
 
         devopsEnvCommandDO.setId(1L)
         devopsEnvCommandDO.setStatus("success")

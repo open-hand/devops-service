@@ -131,7 +131,7 @@ class ApplicationMarketControllerSpec extends Specification {
         applicationVersionDO.setIsPublish(1L)
         applicationVersionDO.setVersion("0.0")
         applicationVersionDO.setReadmeValueId(1L)
-        applicationVersionDO.setRepository("http://helm-charts.saas.hand-china.com/ystest/ystest/")
+        applicationVersionDO.setRepository("http://helm-charts.saas.test.com/ystest/ystest/")
 
         // dai
         applicationInstanceDO.setId(1L)

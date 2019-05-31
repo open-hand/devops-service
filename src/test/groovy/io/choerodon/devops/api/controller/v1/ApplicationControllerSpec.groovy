@@ -564,19 +564,19 @@ class ApplicationControllerSpec extends Specification {
         result.getBody() == "true"
 
         when: "校验gitlab, 无token访问私有库"
-        result = restTemplate.getForEntity(url, String, 1L, "gitlab", "", "http://git.staging.saas.hand-china.com/code-x-code-x/code-i.git")
+        result = restTemplate.getForEntity(url, String, 1L, "gitlab", "", "http://git.staging.saas.test.com/code-x-code-x/code-i.git")
 
         then:
         result.getBody() == "false"
 
         when: "校验gitlab, 带token访问私有库"
-        result = restTemplate.getForEntity(url, String, 1L, "gitlab", "munijNHhNBEh7BRNhwrV", "http://git.staging.saas.hand-china.com/code-x-code-x/code-i.git")
+        result = restTemplate.getForEntity(url, String, 1L, "gitlab", "munijNHhNBEh7BRNhwrV", "http://git.staging.saas.test.com/code-x-code-x/code-i.git")
 
         then:
         result.getBody() == "true"
 
         when: "校验gitlab, 带token访问私有空库"
-        result = restTemplate.getForEntity(url, String, 1L, "gitlab", "munijNHhNBEh7BRNhwrV", "http://git.staging.saas.hand-china.com/code-x-code-x/test-empty.git")
+        result = restTemplate.getForEntity(url, String, 1L, "gitlab", "munijNHhNBEh7BRNhwrV", "http://git.staging.saas.test.com/code-x-code-x/test-empty.git")
 
         then:
         result.getBody() == "null"
@@ -622,7 +622,7 @@ class ApplicationControllerSpec extends Specification {
         when: '导入一个空的仓库'
         applicationDTO.setName("test-import-empty")
         applicationDTO.setCode("test-import-empty")
-        applicationDTO.setRepositoryUrl("http://git.staging.saas.hand-china.com/code-x-code-x/test-empty.git")
+        applicationDTO.setRepositoryUrl("http://git.staging.saas.test.com/code-x-code-x/test-empty.git")
         applicationDTO.setPlatformType("gitlab")
         applicationDTO.setAccessToken("munijNHhNBEh7BRNhwrV")
         entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepDTO.class, project_id)
@@ -634,7 +634,7 @@ class ApplicationControllerSpec extends Specification {
         when: '导入一个gitlab的私有仓库'
         applicationDTO.setName("test-import-gitlab")
         applicationDTO.setCode("test-import-gitlab")
-        applicationDTO.setRepositoryUrl("http://git.staging.saas.hand-china.com/code-x-code-x/code-i.git")
+        applicationDTO.setRepositoryUrl("http://git.staging.saas.test.com/code-x-code-x/code-i.git")
         applicationDTO.setPlatformType("gitlab")
         applicationDTO.setAccessToken("munijNHhNBEh7BRNhwrV")
         searchCondition.setCode(applicationDTO.getCode())
