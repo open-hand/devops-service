@@ -34,4 +34,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_gitlab_pipeline.groovyovy') {
             column(name: "commit_id")
         }
     }
+
+    changeSet(author: 'younger', id: '2019-05-27-add-index') {
+        createIndex(indexName: "idx_commitid ", tableName: "devops_gitlab_pipeline") {
+            column(name: "commit_id")
+        }
+    }
 }

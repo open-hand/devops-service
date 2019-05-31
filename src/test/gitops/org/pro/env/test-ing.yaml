@@ -8,7 +8,7 @@ metadata:
   name: devops-service
 spec:
   rules:
-  - host: devops-service-front.staging.saas.hand-china.com
+  - host: devops-service-front.staging.saas.test.com
     http:
       paths:
       - backend:

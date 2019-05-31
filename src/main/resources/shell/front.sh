@@ -46,9 +46,6 @@ fi
 
 export CI_COMMIT_TAG=$C7N_VERSION
 
-function node_config(){
-    npm config set registry ${NODE_REGISTRY:-"http://nexus3.deploy.saas.hand-china.com/repository/handnpm/"}
-}
 function node_module(){
     mkdir -p /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
     python ./boot/structure/configAuto.py ${1}
