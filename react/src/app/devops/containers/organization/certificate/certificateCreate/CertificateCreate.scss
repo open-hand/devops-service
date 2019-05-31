@@ -16,7 +16,7 @@
     margin-bottom: 20px;
 
     .c7n-table-title-tip {
-      margin-right: 80px;
+      margin-right: 20px;
 
       span {
         font-weight: 500;
@@ -39,14 +39,5 @@
 
   .c7n-env-tag-title {
     font-size: 14px;
-  }
-}
-
-.c7ncd-cert-upload {
-  display: flex;
-
-  .c7ncd-cert-upload-item {
-    flex: 1;
-    padding: 0 20px;
   }
 }

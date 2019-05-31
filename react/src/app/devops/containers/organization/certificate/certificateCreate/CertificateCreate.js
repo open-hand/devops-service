@@ -10,13 +10,13 @@ import {
   Radio,
   Table,
   Tag,
-  Upload,
-  Icon,
   Button,
 } from 'choerodon-ui';
+import CertConfig from '../../../../components/certConfig';
 import Tips from '../../../../components/Tips/Tips';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
 import { HEIGHT } from '../../../../common/Constants';
+import { handleCheckerProptError } from '../../../../utils';
 
 import '../../../main.scss';
 import './CertificateCreate.scss';
@@ -42,6 +42,19 @@ const formItemLayout = {
 @inject('AppState')
 @observer
 export default class CertificateCreate extends Component {
+  state = {
+    submitting: false,
+    type: 'request',
+    keyLoad: false,
+    certLoad: false,
+    checked: true,
+    createSelectedRowKeys: [],
+    createSelected: [],
+    selected: [],
+    createSelectedTemp: [],
+    uploadMode: false,
+  };
+
   /**
    * 校验证书名称唯一性
    */
@@ -62,47 +75,33 @@ export default class CertificateCreate extends Component {
       .catch(() => callback());
   }, 1000);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      submitting: false,
-      type: 'request',
-      keyLoad: false,
-      certLoad: false,
-      checked: true,
-      createSelectedRowKeys: [],
-      createSelected: [],
-      selected: [],
-      createSelectedTemp: [],
-      uploadMode: false,
-    };
-    this.domainCount = 1;
-  }
-
-  componentDidMount() {
+  async componentDidMount() {
     const {
       showType,
       store,
       id,
       AppState: { currentMenuType: { organizationId } },
     } = this.props;
-    if (showType === 'create') {
-      store.loadPro(organizationId, null);
-    } else if (showType === 'edit') {
-      store.loadCertById(organizationId, id)
-        .then((data) => {
-          if (data && data.failed) {
-            Choerodon.prompt(data.message);
-          } else {
-            this.setState({ checked: data.skipCheckProjectPermission });
-          }
-        });
+
+    if (showType === 'edit') {
       store.loadPro(organizationId, id);
       store.loadTagKeys(organizationId, id);
+      const response = await store.loadCertById(organizationId, id)
+        .catch(e => {
+          Choerodon.handleResponseError(e);
+        });
+
+      if (handleCheckerProptError(response)) {
+        this.setState({
+          checked: data.skipCheckProjectPermission,
+        });
+      }
+    } else {
+      store.loadPro(organizationId, null);
     }
   }
 
-  handleSubmit = e => {
+  handleSubmit = async e => {
     e.preventDefault();
     const {
       form,
@@ -110,78 +109,93 @@ export default class CertificateCreate extends Component {
       showType,
       AppState: { currentMenuType: { organizationId } },
     } = this.props;
-    const { checked, createSelectedRowKeys } = this.state;
+
+    const {
+      checked,
+      createSelectedRowKeys,
+    } = this.state;
+
     this.setState({ submitting: true });
-    if (showType === 'create') {
-      form.validateFieldsAndScroll((err, data) => {
-        if (!err) {
-          data.skipCheckProjectPermission = checked;
-          data.projects = createSelectedRowKeys;
-          const p = store.createCert(organizationId, data);
-          this.handleResponse(p);
-        } else {
-          this.setState({ submitting: false });
-        }
-      });
-    } else if (showType === 'edit') {
-      const { getCert, getTagKeys } = store;
-      const proIds = _.map(getTagKeys, t => t.id);
-      form.validateFieldsAndScroll((err, data) => {
-        if (!err) {
-          data.skipCheckProjectPermission = checked;
-          data.projects = proIds;
-          const p = store.updateCert(organizationId, getCert.id, data);
-          this.handleResponse(p);
-        } else {
-          this.setState({ submitting: false });
-        }
-      });
-    }
+
+    let p = null;
+    const submitFunc = {
+      create: data => {
+        const _data = {
+          ...data,
+          skipCheckProjectPermission: checked,
+          projects: createSelectedRowKeys,
+        };
+
+        p = store.createCert(organizationId, _data);
+      },
+      edit: (data) => {
+        const { getCert, getTagKeys } = store;
+        const proIds = _.map(getTagKeys, t => t.id);
+
+        const _data = {
+          ...data,
+          skipCheckProjectPermission: checked,
+          projects: proIds,
+        };
+
+        p = store.updateCert(organizationId, getCert.id, _data);
+      },
+    };
+
+    form.validateFieldsAndScroll((err, data) => {
+      if (!err) {
+        submitFunc[showType](data);
+        this.handleResponse(p);
+      } else {
+        this.setState({ submitting: false });
+      }
+    });
+
   };
 
   /**
    * 处理创建证书请求所返回的数据
    * @param promise
    */
-  handleResponse = promise => {
+  handleResponse = async promise => {
+    if (!promise) return;
+
     const {
       store,
       AppState: { currentMenuType: { organizationId } },
     } = this.props;
-    promise
-      .then(res => {
-        this.setState({ submitting: false });
-        if (res && res.failed) {
-          Choerodon.prompt(res.message);
-        } else {
-          const initSize = HEIGHT <= 900 ? 10 : 15;
-          const filter = {
-            page: 0,
-            pageSize: HEIGHT <= 900 ? 10 : 15,
-            param: [],
-            filters: {},
-            postData: { searchParam: {}, param: '' },
-            sorter: {
-              field: 'id',
-              columnKey: 'id',
-              order: 'descend',
-            },
-          };
-          store.setTableFilter(filter);
-          store.loadCertData(
-            organizationId,
-            0,
-            initSize,
-            { field: 'id', order: 'descend' },
-            { searchParam: {}, param: '' },
-          );
-          this.handleClose();
-        }
-      })
-      .catch(error => {
-        Choerodon.handleResponseError(error);
-        this.setState({ submitting: false });
-      });
+
+    const result = await promise.catch(error => {
+      Choerodon.handleResponseError(error);
+      this.setState({ submitting: false });
+    });
+
+    this.setState({ submitting: false });
+
+    if (handleCheckerProptError(result)) {
+      const initSize = HEIGHT <= 900 ? 10 : 15;
+      const filter = {
+        page: 0,
+        pageSize: initSize,
+        param: [],
+        filters: {},
+        postData: { searchParam: {}, param: '' },
+        sorter: {
+          field: 'id',
+          columnKey: 'id',
+          order: 'descend',
+        },
+      };
+      store.setTableFilter(filter);
+      store.loadCertData(
+        organizationId,
+        0,
+        initSize,
+        { field: 'id', order: 'descend' },
+        { searchParam: {}, param: '' },
+      );
+      this.handleClose();
+    }
   };
 
   /**
@@ -209,7 +223,7 @@ export default class CertificateCreate extends Component {
    * @param callback
    */
   checkDomain = (rule, value, callback) => {
-    const { intl: { formatMessage }, form } = this.props;
+    const { intl: { formatMessage } } = this.props;
     const p = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+)$/;
     if (p.test(value)) {
       callback();
@@ -295,136 +309,30 @@ export default class CertificateCreate extends Component {
     this.setState({ uploadMode: !this.state.uploadMode });
   };
 
-  beforeUploadFile = file => {
-    const {
-      intl: { formatMessage },
-    } = this.props;
-
-    const fileType = ['crt', 'cer', 'key'];
-    const fileSuffix = _.last(_.split(file.name, '.'));
-
-    if (!_.includes(fileType, fileSuffix)) {
-      Choerodon.prompt(formatMessage({ id: 'file.type.error' }));
-    } else {
-      Choerodon.prompt(`${file.name} ${formatMessage({ id: 'file.uploaded.success' })}`);
-    }
-
-    return false;
-  };
-
-  get getUploadContent() {
-    const {
-      form: { getFieldDecorator },
-      intl: { formatMessage },
-    } = this.props;
-    const {
-      uploadMode,
-      certLoading,
-      keyLoading,
-    } = this.state;
-
-    const uploadProps = {
-      listType: 'text',
-      className: 'c7n-upload c7n-upload-select c7n-upload-select-picture-card',
-      action: '//jsonplaceholder.typicode.com/posts/',
-      multiple: false,
-      beforeUpload: this.beforeUploadFile,
-    };
-
-    return uploadMode ? (
-      <Fragment>
-        <FormItem
-          className="c7n-select_480"
-          {...formItemLayout}
-          label={<FormattedMessage id="certificate.cert.content" />}
-        >
-          {getFieldDecorator('certValue', {
-            rules: [
-              {
-                required: true,
-                message: formatMessage({ id: 'required' }),
-              },
-            ],
-          })(
-            <TextArea
-              autosize={{
-                minRows: 2,
-              }}
-              label={<FormattedMessage id="certificate.cert.content" />}
-            />,
-          )}
-        </FormItem>
-        <FormItem
-          className="c7n-select_480"
-          {...formItemLayout}
-          label={<FormattedMessage id="certificate.key.content" />}
-        >
-          {getFieldDecorator('keyValue', {
-            rules: [
-              {
-                required: true,
-                message: formatMessage({ id: 'required' }),
-              },
-            ],
-          })(
-            <TextArea
-              autosize={{
-                minRows: 2,
-              }}
-              label={<FormattedMessage id="certificate.key.content" />}
-            />,
-          )}
-        </FormItem>
-      </Fragment>
-    ) : (
-      <div className="c7ncd-cert-upload">
-        <div className="c7ncd-cert-upload-item">
-          <h4>Cert 文件</h4>
-          <Upload
-            {...uploadProps}
-            // onChange={this.handleChange}
-          >
-            <div>
-              <Icon type={certLoading ? 'loading' : 'add'} />
-              <div className="c7n-upload-text">Upload</div>
-            </div>
-          </Upload>
-        </div>
-        <div className="c7ncd-cert-upload-item">
-          <h4>Key 文件</h4>
-          <Upload
-            {...uploadProps}
-            // onChange={this.handleChange}
-          >
-            <div>
-              <Icon type={keyLoading ? 'loading' : 'add'} />
-              <div className="c7n-upload-text">Upload</div>
-            </div>
-          </Upload>
-        </div>
-      </div>
-    );
-  }
-
   render() {
     const {
+      showType,
       form: { getFieldDecorator },
       intl: { formatMessage },
-      store,
-      showType,
       AppState: { currentMenuType: { name } },
+      store: {
+        getCert,
+        getInfo: { paras },
+        getProPageInfo,
+        getProData: proData,
+        getTagKeys: tagKeys,
+        getTableLoading: tableLoading,
+      },
     } = this.props;
+
     const {
-      getCert,
-    } = store;
-    const { submitting, checked, createSelectedRowKeys, createSelected } = this.state;
-    const {
-      getInfo: { paras },
-      getProPageInfo,
-      getProData: proData,
-      getTagKeys: tagKeys,
-      getTableLoading: tableLoading,
-    } = store;
+      submitting,
+      checked,
+      createSelectedRowKeys,
+      createSelected,
+      uploadMode,
+    } = this.state;
+
     const rowCreateSelection = {
       selectedRowKeys: createSelectedRowKeys,
       onChange: this.onCreateSelectChange,
@@ -433,6 +341,7 @@ export default class CertificateCreate extends Component {
       selectedRowKeys: _.map(tagKeys, s => s.id),
       onChange: this.onSelectChange,
     };
+
     const columns = [{
       key: 'name',
       title: formatMessage({ id: 'cluster.project.name' }),
@@ -444,24 +353,17 @@ export default class CertificateCreate extends Component {
     }];
 
     const tagCreateDom = _.map(createSelected, ({ id, name, code }) =>
-      <Tag
-        className="c7n-env-tag"
-        key={id}>
+      <Tag className="c7n-env-tag" key={id}>
         {name} {code}
       </Tag>,
     );
 
-    const tagDom = _.map(tagKeys, (t) => {
-      if (t) {
-        return <Tag
-          className="c7n-env-tag"
-          key={t.id}
-        >
-          {t.name} {t.code}
-        </Tag>;
-      }
-      return null;
-    });
+    const tagDom = _.map(tagKeys, (t) => t
+      ? <Tag className="c7n-env-tag" key={t.id}>
+        {t.name} {t.code}
+      </Tag>
+      : null,
+    );
 
     return (
       <div className="c7n-region">
@@ -538,10 +440,12 @@ export default class CertificateCreate extends Component {
                       funcType="flat"
                       onClick={this.changeUploadMode}
                     >
-                      切换上传模式
+                      <FormattedMessage id="ctf.upload.mode" />
                     </Button>
                   </div>
-                  {this.getUploadContent}
+                  <CertConfig
+                    isUploadMode={uploadMode}
+                  />
                 </Fragment>}
               </div>
               <div className="c7n-creation-ctf-title">
