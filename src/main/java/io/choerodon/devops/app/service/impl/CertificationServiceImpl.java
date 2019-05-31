@@ -80,12 +80,12 @@ public class CertificationServiceImpl implements CertificationService {
         Long envId = certificationDTO.getEnvId();
 
         //校验用户是否有环境的权限
-//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certificationDTO.getEnvId());
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certificationDTO.getEnvId());
 
         //校验环境是否链接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
 
-//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
 
         ProjectE projectE = iamRepository.queryIamProject(projectId);

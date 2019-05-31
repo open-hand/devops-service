@@ -126,11 +126,10 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     }
 
     @Override
-    public List<CommitDO> listCommits(Integer projectId, Integer userId) {
+    public List<CommitDO> listCommits(Integer projectId, Integer userId, Integer page , Integer size) {
         try {
             List<CommitDO> commitDOS = new LinkedList<>();
-            commitDOS.addAll(gitlabServiceClient.listCommits(projectId, 1, 100, userId).getBody());
-            commitDOS.addAll(gitlabServiceClient.listCommits(projectId, 2, 100, userId).getBody());
+            commitDOS.addAll(gitlabServiceClient.listCommits(projectId, page, size, userId).getBody());
             return commitDOS;
         } catch (FeignException e) {
             throw new CommonException(e.getMessage(), e);

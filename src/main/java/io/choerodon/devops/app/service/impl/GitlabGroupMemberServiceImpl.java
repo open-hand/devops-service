@@ -112,9 +112,11 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         // 删除用户时同时清除gitlab的权限
                         List<Integer> gitlabProjectIds = applicationRepository
                                 .listByProjectId(gitlabGroupMemberDTO.getResourceId()).stream()
+                                .filter(e -> e.getGitlabProjectE() != null)
                                 .map(e -> e.getGitlabProjectE().getId()).map(TypeUtil::objToInteger)
                                 .collect(Collectors.toList());
                         // gitlab
+
                         gitlabProjectIds.forEach(e -> {
                             GitlabMemberE memberE = gitlabProjectRepository.getProjectMember(e, gitlabUserId);
                             if (memberE != null && memberE.getId() != null) {
@@ -124,6 +126,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         // devops
                         appUserPermissionRepository.deleteByUserIdWithAppIds(
                                 applicationRepository.listByProjectId(gitlabGroupMemberDTO.getResourceId()).stream()
+                                        .filter(applicationE -> applicationE.getGitlabProjectE() != null)
                                         .map(ApplicationE::getId).collect(Collectors.toList()),
                                 userAttrE.getIamUserId());
                     } else {
@@ -225,7 +228,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 try {
                     // 删除用户时同时清除gitlab的权限
                     List<Integer> gitlabProjectIds = applicationRepository
-                            .listByProjectId(resourceId).stream().filter(e -> e.getGitlabProjectE().getId() != null)
+                            .listByProjectId(resourceId).stream().filter(e -> e.getGitlabProjectE() != null)
                             .map(e -> e.getGitlabProjectE().getId()).map(TypeUtil::objToInteger)
                             .collect(Collectors.toList());
                     gitlabProjectIds.forEach(e -> {

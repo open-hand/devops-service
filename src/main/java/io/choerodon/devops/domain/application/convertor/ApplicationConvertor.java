@@ -20,7 +20,7 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
         ApplicationE applicationE = ApplicationFactory.createApplicationE();
         BeanUtils.copyProperties(applicationDO, applicationE);
         applicationE.initProjectE(applicationDO.getProjectId());
-        if (applicationDO != null) {
+        if (applicationDO.getGitlabProjectId() != null) {
             applicationE.initGitlabProjectE(applicationDO.getGitlabProjectId());
         }
         if (applicationDO.getAppTemplateId() != null) {

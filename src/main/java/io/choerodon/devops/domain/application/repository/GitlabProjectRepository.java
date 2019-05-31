@@ -29,7 +29,7 @@ public interface GitlabProjectRepository {
 
     List<CommitStatuseDO> getCommitStatuse(Integer projectId, String sha, Integer useId);
 
-    List<CommitDO> listCommits(Integer projectId, Integer userId);
+    List<CommitDO> listCommits(Integer projectId, Integer userId, Integer page, Integer size);
 
     GitlabMemberE getProjectMember(Integer projectId, Integer userId);
 

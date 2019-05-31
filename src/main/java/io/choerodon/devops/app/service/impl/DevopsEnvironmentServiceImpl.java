@@ -21,6 +21,7 @@ import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -36,6 +37,7 @@ import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.common.util.enums.HelmObjectKind;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
@@ -120,6 +122,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
+    @Autowired
+    private DevopsGitService devopsGitService;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
@@ -439,6 +443,35 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             t.initConnect(true);
         } else {
             t.initConnect(false);
+        }
+    }
+
+
+
+    @Override
+    public void retryGitOps(Long envId) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
+        UserAttrE userAttrE = userAttrRepository.queryById(GitUserNameUtil.getUserId().longValue());
+        if (userAttrE == null) {
+            throw new CommonException("error.gitlab.user.sync.failed");
+        }
+        CommitDO commitDO = gitlabProjectRepository.listCommits(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), userAttrE.getGitlabUserId().intValue(), 1,1).get(0);
+        PushWebHookDTO pushWebHookDTO = new PushWebHookDTO();
+        pushWebHookDTO.setCheckoutSha(commitDO.getId());
+        pushWebHookDTO.setUserId(userAttrE.getGitlabUserId().intValue());
+        CommitDTO commitDTO = new CommitDTO();
+        commitDTO.setId(commitDO.getId());
+        commitDTO.setTimestamp(commitDO.getTimestamp());
+        pushWebHookDTO.setCommits(Arrays.asList(commitDTO));
+
+        //当环境总览第一阶段为空，第一阶段的commit不是最新commit, 第一阶段和第二阶段commit不一致时，可以重新触发gitOps
+        if (devopsEnvironmentE.getSagaSyncCommit() == null) {
+            devopsGitService.fileResourceSyncSaga(pushWebHookDTO,devopsEnvironmentE.getToken());
+        } else {
+            DevopsEnvCommitE sagaSyncCommit = devopsEnvCommitRepository.query(devopsEnvironmentE.getSagaSyncCommit());
+            if (!devopsEnvironmentE.getSagaSyncCommit().equals(devopsEnvironmentE.getDevopsSyncCommit()) || !sagaSyncCommit.getCommitSha().equals(commitDO.getId())) {
+                devopsGitService.fileResourceSyncSaga(pushWebHookDTO,devopsEnvironmentE.getToken());
+            }
         }
     }
 
