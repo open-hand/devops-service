@@ -1394,13 +1394,21 @@ public class PipelineServiceImpl implements PipelineService {
 
     private Boolean filterPendingCheck(Boolean pendingcheck, Long pipelineRecordId) {
         if (pendingcheck != null && pendingcheck) {
-            PipelineStageRecordE stageRecordE = stageRecordRepository.queryPendingCheck(pipelineRecordId);
-            List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null);
-            String auditUser = stageRecordE.getAuditUser();
-            for (PipelineTaskRecordE taskRecordE : taskRecordEList) {
-                if (taskRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
-                    auditUser = taskRecordE.getAuditUser();
+            List<PipelineStageRecordE> stageRecordEList = stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null);
+            String auditUser = "";
+            for (int i = 0; i < stageRecordEList.size(); i++) {
+                PipelineStageRecordE stageRecordE = stageRecordEList.get(i);
+                if (stageRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                    List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null);
+                    for (PipelineTaskRecordE taskRecordE : taskRecordEList) {
+                        if (taskRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                            auditUser = taskRecordE.getAuditUser();
+                            break;
+                        }
+                    }
                     break;
+                } else if (stageRecordE.getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && stageRecordEList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
+                    auditUser=stageRecordE.getAuditUser();
                 }
             }
             List<String> userIds = Arrays.asList(auditUser.split(","));
