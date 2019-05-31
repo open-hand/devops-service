@@ -38,6 +38,8 @@ $light_color: rgba(0, 0, 0, .54);
     .c7ncd-pipeline-panel {
 
       .c7ncd-pipeline-task {
+        margin: 0 0.03rem;
+        padding: 0.03rem 0.02rem;
         min-height: 22px;
         color: $normal_color;
 

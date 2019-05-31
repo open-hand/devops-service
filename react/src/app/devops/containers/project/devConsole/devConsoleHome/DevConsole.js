@@ -541,7 +541,7 @@ class DevConsole extends Component {
     const { type, projectId, organizationId: orgId, name } = AppState.currentMenuType;
     history.push({
       pathname: "/devops/reports/build-number",
-      search: `?type=${type}&id=${projectId}&name=${name}&organizationId=${orgId}`,
+      search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(name)}&organizationId=${orgId}`,
       state: {
         appId: DevPipelineStore.getSelectApp,
         backPath: "dev-console",
