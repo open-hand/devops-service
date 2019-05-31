@@ -507,8 +507,8 @@ public class PipelineServiceImpl implements PipelineService {
             }
         }
         if (index == -1) {
-            setPipelineFailed(stageRecordId, taskRecordE, "No version");
-            throw new CommonException("no.version.can.trigger.deploy");
+            setPipelineFailed(stageRecordId, taskRecordE, "No version can trigger deploy");
+            throw new CommonException("error.version.can.trigger.deploy");
         }
         //保存记录
         taskRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
@@ -754,7 +754,6 @@ public class PipelineServiceImpl implements PipelineService {
         devopsPipelineDTO.setPipelineRecordId(pipelineRecordId);
         devopsPipelineDTO.setBusinessKey(pipelineRecordRepository.queryById(pipelineRecordId).getBusinessKey());
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
-        PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
         //stage
         List<PipelineStageE> stageES = stageRepository.queryByPipelineId(pipelineId);
         for (int i = 0; i < stageES.size(); i++) {

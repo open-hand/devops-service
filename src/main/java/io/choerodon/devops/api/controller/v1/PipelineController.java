@@ -128,7 +128,7 @@ public class PipelineController {
             @RequestParam Integer isEnabled) {
         return Optional.ofNullable(pipelineService.updateIsEnabled(projectId, pipelineId, isEnabled))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.update.enable "));
+                .orElseThrow(() -> new CommonException("error.pipeline.update.enable"));
     }
 
     /**
@@ -148,7 +148,7 @@ public class PipelineController {
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return Optional.ofNullable(pipelineService.queryById(projectId, pipelineId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.query"));
+                .orElseThrow(() -> new CommonException("error.pipeline.query.detail"));
     }
 
     /**
@@ -247,7 +247,7 @@ public class PipelineController {
             @RequestBody PipelineUserRecordRelDTO userRecordRelDTO) {
         return Optional.ofNullable(pipelineService.audit(projectId, userRecordRelDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.audit.check"));
+                .orElseThrow(() -> new CommonException("error.pipeline.audit"));
     }
 
     /**
