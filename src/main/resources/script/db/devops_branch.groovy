@@ -54,7 +54,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_branch.groovy') {
 
     changeSet(author: 'younger', id: '2019-05-27-add-index') {
         createIndex(indexName: "idx_branchname_appid_isdeleted_creationdate ", tableName: "devops_branch") {
-            column(name: "app_id,is_deleted,creation_date")
+            column(name: "branch_name")
+            column(name: "app_id")
+            column(name: "is_deleted")
+            column(name: "creation_date")
         }
     }
 }
