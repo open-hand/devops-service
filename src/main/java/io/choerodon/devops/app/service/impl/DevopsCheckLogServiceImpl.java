@@ -281,7 +281,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             CheckLog checkLog = new CheckLog();
                             checkLog.setContent(APP + applicationDO.getName() + "sync gitlab commit");
                             try {
-                                List<CommitDO> commitDOS = gitlabProjectRepository.listCommits(applicationDO.getGitlabProjectId(), ADMIN);
+                                List<CommitDO> commitDOS = gitlabProjectRepository.listCommits(applicationDO.getGitlabProjectId(), ADMIN, 1, 100);
                                 commitDOS.forEach(commitDO -> {
                                     DevopsGitlabCommitE devopsGitlabCommitE = new DevopsGitlabCommitE();
                                     devopsGitlabCommitE.setAppId(applicationDO.getId());

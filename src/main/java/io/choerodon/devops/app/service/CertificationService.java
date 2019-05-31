@@ -8,6 +8,7 @@ import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.api.dto.OrgCertificationDTO;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Created by n!Ck
@@ -24,7 +25,7 @@ public interface CertificationService {
      * @param certificationDTO 证书
      */
     void create(Long projectId, C7nCertificationDTO certificationDTO,
-                Boolean isGitOps);
+                MultipartFile key, MultipartFile cert, Boolean isGitOps);
 
     C7nCertification getC7nCertification(String name, String type, List<String> domains,
                                          String keyContent, String certContent, String envCode);
