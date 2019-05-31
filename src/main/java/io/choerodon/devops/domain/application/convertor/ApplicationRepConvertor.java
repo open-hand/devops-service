@@ -31,8 +31,8 @@ public class ApplicationRepConvertor implements ConvertorI<ApplicationE, Object,
         }
         if (applicationE.getGitlabProjectE() != null) {
             applicationRepDTO.setGitlabProjectId(TypeUtil.objToLong(applicationE.getGitlabProjectE().getId()));
+            applicationRepDTO.setRepoUrl(applicationE.getGitlabProjectE().getRepoURL());
         }
-        applicationRepDTO.setRepoUrl(applicationE.getGitlabProjectE().getRepoURL());
         applicationRepDTO.setFail(applicationE.getFailed());
         applicationRepDTO.setProjectId(applicationE.getProjectE().getId());
         return applicationRepDTO;
