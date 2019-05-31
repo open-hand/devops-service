@@ -507,8 +507,8 @@ public class PipelineServiceImpl implements PipelineService {
             }
         }
         if (index == -1) {
-            setPipelineFailed(stageRecordId, taskRecordE, "No version");
-            throw new CommonException("no.version.can.trigger.deploy");
+            setPipelineFailed(stageRecordId, taskRecordE, "No version can trigger deploy");
+            throw new CommonException("error.version.can.trigger.deploy");
         }
         //保存记录
         taskRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
@@ -754,7 +754,6 @@ public class PipelineServiceImpl implements PipelineService {
         devopsPipelineDTO.setPipelineRecordId(pipelineRecordId);
         devopsPipelineDTO.setBusinessKey(pipelineRecordRepository.queryById(pipelineRecordId).getBusinessKey());
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
-        PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
         //stage
         List<PipelineStageE> stageES = stageRepository.queryByPipelineId(pipelineId);
         for (int i = 0; i < stageES.size(); i++) {
@@ -1394,13 +1393,21 @@ public class PipelineServiceImpl implements PipelineService {
 
     private Boolean filterPendingCheck(Boolean pendingcheck, Long pipelineRecordId) {
         if (pendingcheck != null && pendingcheck) {
-            PipelineStageRecordE stageRecordE = stageRecordRepository.queryPendingCheck(pipelineRecordId);
-            List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null);
-            String auditUser = stageRecordE.getAuditUser();
-            for (PipelineTaskRecordE taskRecordE : taskRecordEList) {
-                if (taskRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
-                    auditUser = taskRecordE.getAuditUser();
+            List<PipelineStageRecordE> stageRecordEList = stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null);
+            String auditUser = "";
+            for (int i = 0; i < stageRecordEList.size(); i++) {
+                PipelineStageRecordE stageRecordE = stageRecordEList.get(i);
+                if (stageRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                    List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null);
+                    for (PipelineTaskRecordE taskRecordE : taskRecordEList) {
+                        if (taskRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                            auditUser = taskRecordE.getAuditUser();
+                            break;
+                        }
+                    }
                     break;
+                } else if (stageRecordE.getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && stageRecordEList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
+                    auditUser=stageRecordE.getAuditUser();
                 }
             }
             List<String> userIds = Arrays.asList(auditUser.split(","));

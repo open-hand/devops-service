@@ -4,7 +4,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineRecordMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
         SELECT
-        dpr.id,
+        distinct dpr.id,
         dpr. STATUS,
         dpr.trigger_type,
         dpr.pipeline_name,
