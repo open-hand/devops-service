@@ -2,15 +2,15 @@
  * @author ale0720@163.com
  * @date 2019-05-30 15:37
  */
-import React, { Component, Fragment } from 'react';
+import React, { PureComponent, Fragment } from 'react';
 import {
   Form,
   Upload,
   Icon,
 } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import _ from 'lodash';
 import classnames from 'classnames';
+import { Consumer } from '../certContext';
 
 import './CertUploader.scss';
 
@@ -26,98 +26,71 @@ const formItemLayout = {
   },
 };
 
-@Form.create({})
+const uploadProps = {
+  listType: 'text',
+  // TODO: 安全起见，该处应该替换为系统内地址，而不是使用公共地址
+  action: '//jsonplaceholder.typicode.com/posts/',
+  multiple: false,
+};
+
 @injectIntl
-export default class CertUploader extends Component {
+export default class CertUploader extends PureComponent {
   state = {
     keyDisabled: false,
     crtDisabled: false,
   };
 
-  beforeUploadCertFile = file => {
-    this.beforeUploadFile(file, 'crt');
-  };
-
-  beforeUploadKeyFile = file => {
-    this.beforeUploadFile(file, 'key');
-  };
-
   /**
    * 始终返回false，阻止自动上传
-   * @param name
+   * @param file
    * @param type
    * @returns {boolean}
    */
-  beforeUploadFile = ({ name }, type) => {
-    const { intl: { formatMessage } } = this.props;
+  beforeUpload = (file, type) => {
+    this.setState({ [`${type}Disabled`]: true });
 
-    const isTypeRight = name.endsWith(type);
-
-    const msg = isTypeRight
-      ? `${name} ${formatMessage({ id: 'file.uploaded.success' })}`
-      : formatMessage({ id: 'file.type.error' });
-
-    Choerodon.prompt(msg);
-
+    // beforeUpload 需要返回一个bool值
     return false;
   };
 
-  handleUploadCertFile = e => this.handleUpload(e, 'crt');
+  checkKeyFile = (...arg) => {
+    this.checkFile('key', ...arg);
+  };
 
-  handleUploadKeyFile = e => this.handleUpload(e, 'key');
+  checkCrtFile = (...arg) => {
+    this.checkFile('crt', ...arg);
+  };
 
-  /**
-   * 表单中Upload的onChange
-   * 响应 上传、删除
-   * @param e
-   * @param type
-   * @returns {*}
-   */
-  handleUpload = (e, type) => {
+  checkFile = (type, rule, value, callback) => {
+    const { intl: { formatMessage } } = this.props;
 
-    if (_.isArray(e)) return e;
-
-    const fileType = `${type}Disabled`;
-
-    this.setState({ [fileType]: true });
-
-    const { file, fileList } = e;
-    const keyFileList = [];
-
-    if (fileList.length) {
-
-      const isType = file.name.endsWith(type);
-
-      if (!isType) {
-        this.setState({ [fileType]: false });
-      } else {
-        keyFileList.push(file);
-        this.setState({ [fileType]: true });
-      }
+    if (!value) {
+      callback(formatMessage({ id: `ctf.${type}.required` }));
     } else {
-      // 移除
-      this.setState({ [fileType]: false });
+      const { file: { name }, fileList } = value;
+      if (!fileList.length) {
+        callback(formatMessage({ id: `ctf.${type}.required` }));
+      } else if (!name.endsWith(`.${type}`)) {
+        callback(formatMessage({ id: 'file.type.error' }));
+      } else {
+        callback();
+      }
     }
+  };
 
-    return keyFileList;
+  removeCert = () => {
+    this.setState({ crtDisabled: false });
+  };
+
+  removeKey = () => {
+    this.setState({ keyDisabled: false });
   };
 
   render() {
     const {
-      form: { getFieldDecorator },
-      intl: { formatMessage },
-    } = this.props;
-
-    const {
       keyDisabled,
       crtDisabled,
     } = this.state;
-
-    const uploadProps = {
-      listType: 'text',
-      action: '//jsonplaceholder.typicode.com/posts/',
-      multiple: false,
-    };
 
     const crtUploadClass = classnames({
       'c7ncd-upload-select': !crtDisabled,
@@ -137,61 +110,51 @@ export default class CertUploader extends Component {
       <div className="c7n-upload-text">Upload</div>
     </Fragment>;
 
-    return <div className="c7ncd-cert-upload">
-      <div className="c7ncd-cert-upload-item">
-        <h4><FormattedMessage id="ctf.certFile" /></h4>
-        <FormItem{...formItemLayout}>
-          {getFieldDecorator('cert', {
-            // valuePropName: 'fileList',
-            getValueFromEvent: this.handleUploadCertFile,
-            rules: [
-              {
-                required: true,
-                message: formatMessage({
-                  id: 'ctf.cert.required',
-                }),
-              },
-            ],
-          })(
-            <Upload
-              {...uploadProps}
-              disabled={crtDisabled}
-              beforeUpload={this.beforeUploadCertFile}
-            >
-              <div className={crtUploadClass}>
-                {uploadBtn}
-              </div>
-            </Upload>,
-          )}
-        </FormItem>
-      </div>
-      <div className="c7ncd-cert-upload-item">
-        <h4><FormattedMessage id="ctf.keyFile" /></h4>
-        <FormItem{...formItemLayout}>
-          {getFieldDecorator('key', {
-            // valuePropName: 'fileList',
-            getValueFromEvent: this.handleUploadKeyFile,
-            rules: [
-              {
-                required: true,
-                message: formatMessage({
-                  id: 'ctf.key.required',
-                }),
-              },
-            ],
-          })(
-            <Upload
-              {...uploadProps}
-              disabled={keyDisabled}
-              beforeUpload={this.beforeUploadKeyFile}
-            >
-              <div className={keyUploadClass}>
-                {uploadBtn}
-              </div>
-            </Upload>,
-          )}
-        </FormItem>
-      </div>
-    </div>;
+    return <Consumer>
+      {(form) => (<div className="c7ncd-cert-upload">
+        <div className="c7ncd-cert-upload-item">
+          <h4><FormattedMessage id="ctf.certFile" /></h4>
+          <FormItem{...formItemLayout}>
+            {form.getFieldDecorator('cert', {
+              rules: [{
+                validator: this.checkCrtFile,
+              }],
+            })(
+              <Upload
+                {...uploadProps}
+                disabled={crtDisabled}
+                beforeUpload={file => this.beforeUpload(file, 'crt')}
+                onRemove={this.removeCert}
+              >
+                <div className={crtUploadClass}>
+                  {uploadBtn}
+                </div>
+              </Upload>,
+            )}
+          </FormItem>
+        </div>
+        <div className="c7ncd-cert-upload-item">
+          <h4><FormattedMessage id="ctf.keyFile" /></h4>
+          <FormItem{...formItemLayout}>
+            {form.getFieldDecorator('key', {
+              rules: [{
+                validator: this.checkKeyFile,
+              }],
+            })(
+              <Upload
+                {...uploadProps}
+                disabled={keyDisabled}
+                beforeUpload={file => this.beforeUpload(file, 'key')}
+                onRemove={this.removeKey}
+              >
+                <div className={keyUploadClass}>
+                  {uploadBtn}
+                </div>
+              </Upload>,
+            )}
+          </FormItem>
+        </div>
+      </div>)}
+    </Consumer>;
   };
 }

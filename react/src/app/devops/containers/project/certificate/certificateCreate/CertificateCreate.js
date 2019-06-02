@@ -14,6 +14,7 @@ import {
   Radio,
 } from 'choerodon-ui';
 import CertConfig from '../../../../components/certConfig';
+import { Provider } from '../../../../components/certConfig/certContext';
 import Tips from '../../../../components/Tips/Tips';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
 import { HEIGHT } from '../../../../common/Constants';
@@ -122,20 +123,36 @@ export default class CertificateCreate extends Component {
       },
     } = this.props;
 
-    const { suffix } = this.state;
+    const {
+      suffix,
+      uploadMode,
+    } = this.state;
 
     this.setState({ submitting: true });
 
     form.validateFieldsAndScroll(async (err, data) => {
       if (!err) {
         const _data = { ...data };
+        const formData = new FormData();
+        const excludeProps = ['domainArr', 'cert', 'key'];
 
         if (_data.type === CERT_TYPE_CHOOSE) {
           _data.type = CERT_TYPE_UPLOAD;
           _data.domains = _.map(data.domains, item => `${item}${suffix}`);
+        } else if (_data.type === CERT_TYPE_UPLOAD && uploadMode) {
+          const { key, cert } = data;
+
+          formData.append('key', key.file);
+          formData.append('cert', cert.file);
         }
 
-        const response = await store.createCert(projectId, _data)
+        _.forEach(_data, (value, k) => {
+          if (!_.includes(excludeProps, k)) {
+            formData.append(k, value);
+          }
+        });
+
+        const response = await store.createCert(projectId, formData)
           .catch(error => {
             Choerodon.handleResponseError(error);
             this.setState({ submitting: false });
@@ -146,7 +163,7 @@ export default class CertificateCreate extends Component {
         if (handleCheckerProptError(response)) {
           const initSize = HEIGHT <= 900 ? 10 : 15;
 
-          store.initTableFilter(filter);
+          store.initTableFilter();
           store.loadCertData(true, projectId, 0, initSize,
             { field: 'id', order: 'descend' },
             { searchParam: {}, param: '' },
@@ -163,7 +180,7 @@ export default class CertificateCreate extends Component {
   /**
    * 关闭弹框
    */
-  handleClose = (isload = true) => {
+  handleClose = (isload = false) => {
     const { onClose } = this.props;
     onClose(isload);
   };
@@ -340,10 +357,7 @@ export default class CertificateCreate extends Component {
   render() {
     const {
       visible,
-      form: {
-        getFieldDecorator,
-        getFieldValue,
-      },
+      form,
       intl: { formatMessage },
       store: {
         getEnvData: envs,
@@ -363,6 +377,11 @@ export default class CertificateCreate extends Component {
       certId,
       uploadMode,
     } = this.state;
+
+    const {
+      getFieldDecorator,
+      getFieldValue,
+    } = form;
 
     getFieldDecorator('domainArr', { initialValue: [0] });
 
@@ -436,7 +455,7 @@ export default class CertificateCreate extends Component {
           title={<FormattedMessage id="ctf.sidebar.create" />}
           visible={visible}
           onOk={this.handleSubmit}
-          onCancel={this.handleClose.bind(this, false)}
+          onCancel={this.handleClose}
           confirmLoading={submitting}
         >
           <Content
@@ -555,9 +574,9 @@ export default class CertificateCreate extends Component {
                       <FormattedMessage id="ctf.upload.mode" />
                     </Button>
                   </div>
-                  <CertConfig
-                    isUploadMode={uploadMode}
-                  />
+                  <Provider value={form}>
+                    <CertConfig isUploadMode={uploadMode} />
+                  </Provider>
                 </Fragment>}
               </div>
             </Form>
@@ -567,4 +586,12 @@ export default class CertificateCreate extends Component {
       </div>
     );
   }
+}
+
+function isFile(value) {
+  return Object.prototype.toString.call(value) === '[object File]';
+}
+
+function transToFile(value) {
+  return isFile(value) ? value : new File(value, value.name);
 }

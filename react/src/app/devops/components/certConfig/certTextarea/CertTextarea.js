@@ -12,6 +12,7 @@ import {
   Input,
 } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import { Consumer } from '../certContext';
 
 const { TextArea } = Input;
 const { Item: FormItem } = Form;
@@ -28,17 +29,22 @@ const formItemLayout = {
 
 function CertTextarea(props) {
   const {
-    form: { getFieldDecorator },
     intl: { formatMessage },
   } = props;
 
-  return <Fragment>
+  /**
+   * form 通过 Context API 传递
+   * 为了将表单项注册在同一个 form 中
+   * @param form
+   * @returns {*}
+   */
+  const contents = form => (<Fragment>
     <FormItem
       className="c7n-select_480"
       {...formItemLayout}
       label={<FormattedMessage id="certificate.cert.content" />}
     >
-      {getFieldDecorator('certValue', {
+      {form.getFieldDecorator('certValue', {
         rules: [
           {
             required: true,
@@ -57,7 +63,7 @@ function CertTextarea(props) {
       {...formItemLayout}
       label={<FormattedMessage id="certificate.key.content" />}
     >
-      {getFieldDecorator('keyValue', {
+      {form.getFieldDecorator('keyValue', {
         rules: [
           {
             required: true,
@@ -71,7 +77,11 @@ function CertTextarea(props) {
         />,
       )}
     </FormItem>
-  </Fragment>;
+  </Fragment>);
+
+  return <Consumer>
+    {contents}
+  </Consumer>;
 }
 
-export default Form.create({})(injectIntl(CertTextarea));
+export default injectIntl(CertTextarea);
