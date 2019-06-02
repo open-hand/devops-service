@@ -1,6 +1,6 @@
-import { observable, action, computed } from "mobx";
-import { axios, store, stores } from "@choerodon/boot";
-import { handleProptError } from "../../../utils/index";
+import { observable, action, computed } from 'mobx';
+import { axios, store, stores } from '@choerodon/boot';
+import { handleProptError } from '../../../utils';
 
 const { AppState } = stores;
 
@@ -8,7 +8,8 @@ const HEIGHT =
   window.innerHeight ||
   document.documentElement.clientHeight ||
   document.body.clientHeight;
-@store("ConfigMapStore")
+
+@store('ConfigMapStore')
 class ConfigMapStore {
   @observable data = [];
 
@@ -26,7 +27,7 @@ class ConfigMapStore {
 
   @observable Info = {
     filters: {},
-    sort: { columnKey: "id", order: "descend" },
+    sort: { columnKey: 'id', order: 'descend' },
     paras: [],
   };
 
@@ -92,11 +93,11 @@ class ConfigMapStore {
     envId,
     page = this.pageInfo.current - 1,
     size = this.pageInfo.pageSize,
-    sort = { field: "id", order: "desc" },
+    sort = { field: 'id', order: 'desc' },
     postData = {
       searchParam: {},
-      param: "",
-    }
+      param: '',
+    },
   ) => {
     if (Number(this.preProId) !== Number(projectId)) {
       this.setData([]);
@@ -134,12 +135,11 @@ class ConfigMapStore {
     return axios.post(`/devops/v1/projects/${projectId}/config_maps`, JSON.stringify(data));
   }
 
-
   deleteConfigMap(projectId, id) {
     return axios.delete(`/devops/v1/projects/${projectId}/config_maps/${id}/delete`);
   }
 
-  checkName(projectId, envId, name){
+  checkName(projectId, envId, name) {
     return axios.get(`/devops/v1/projects/${projectId}/config_maps/check_name?configMapName=${name}&envId=${envId}`);
   }
 }

@@ -595,7 +595,7 @@ const zhCN = {
   'md.placeholder': '在下面编辑您的发布日志，支持MarkDown格式',
   'file.uploaded.failed': '上传失败！',
   'file.uploaded.success': '上传成功！',
-  'file.type.error': '文件格式类型错误！',
+  'file.type.error': '文件类型错误！',
 
   // ist
   ist_stop: '停止中',
@@ -629,7 +629,7 @@ const zhCN = {
   'ist.n': '不可用',
   'ist.noAdd': '未添加',
   'ist.noAddEnv': '未添加环境',
-  'ist.run': '重启实例',
+  'ist.run': '启用实例',
   'ist.reDeploy': '重新部署',
   'ist.nolog': '没有日志信息。',
   'ist.noApp': '暂无应用',
@@ -1407,10 +1407,11 @@ const zhCN = {
   'ctf.add.cert': '添加证书文件',
   'ctf.add.describe': '您可以在此选择相应的文件，并进行上传。',
   'ctf.target.type': '选择类型',
-  'ctf.keyFile': '上传 Key 文件',
-  'ctf.certFile': '上传 Cert 文件',
+  'ctf.keyFile': 'KEY 文件',
+  'ctf.certFile': 'CERT 文件',
+  'ctf.upload.mode': '切换上传模式',
   'ctf.key.required': '请上传Key格式的文件',
-  'ctf.cert.required': '请上传Cert格式的文件',
+  'ctf.crt.required': '请上传Cert格式的文件',
   'validDate.tip': '证书的可用期限',
 
   // 报表

@@ -12,14 +12,16 @@
   }
 
   .c7n-creation-add-title {
+    display: flex;
     margin-bottom: 20px;
 
-    span {
-      font-weight: 500;
-    }
+    .c7n-table-title-tip {
+      margin-right: 20px;
 
-    i {
-      margin-left: 11px;
+      span {
+        font-weight: 500;
+        margin-right: 11px;
+      }
     }
   }
 

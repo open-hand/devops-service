@@ -1,20 +1,28 @@
-import { observable, action, computed } from "mobx";
-import { axios, store, stores } from "@choerodon/boot";
-import _ from "lodash";
-import { handleProptError } from "../../../utils";
+import { observable, action, computed } from 'mobx';
+import { axios, store } from '@choerodon/boot';
+import _ from 'lodash';
+import { handleProptError } from '../../../utils';
+import { SORTER_MAP } from '../../../common/Constants';
 
-const ORDER = {
-  ascend: "asc",
-  descend: "desc",
-};
 const HEIGHT =
   window.innerHeight ||
   document.documentElement.clientHeight ||
   document.body.clientHeight;
 
-const { AppState } = stores;
+const INIT_TABLE_FILTER = {
+  page: 0,
+  pageSize: HEIGHT <= 900 ? 10 : 15,
+  param: [],
+  filters: {},
+  postData: { searchParam: {}, param: '' },
+  sorter: {
+    field: 'id',
+    columnKey: 'id',
+    order: 'descend',
+  },
+};
 
-@store("CertificateStore")
+@store('CertificateStore')
 class CertificateStore {
   @observable envData = [];
 
@@ -30,18 +38,11 @@ class CertificateStore {
     pageSize: HEIGHT <= 900 ? 10 : 15,
   };
 
-  @observable tableFilter = {
-    page: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
-    param: [],
-    filters: {},
-    postData: { searchParam: {}, param: "" },
-    sorter: {
-      field: "id",
-      columnKey: "id",
-      order: "descend",
-    },
-  };
+  @observable tableFilter = _.cloneDeep(INIT_TABLE_FILTER);
+
+  @action initTableFilter() {
+    this.tableFilter = _.cloneDeep(INIT_TABLE_FILTER);
+  }
 
   @action setTableFilter(data) {
     this.tableFilter = { ...this.tableFilter, ...data };
@@ -97,10 +98,10 @@ class CertificateStore {
    */
   loadEnvData = projectId => {
     const activeEnv = axios.get(
-      `/devops/v1/projects/${projectId}/envs?active=true`
+      `/devops/v1/projects/${projectId}/envs?active=true`,
     );
     const invalidEnv = axios.get(
-      `/devops/v1/projects/${projectId}/envs?active=false`
+      `/devops/v1/projects/${projectId}/envs?active=false`,
     );
     Promise.all([activeEnv, invalidEnv])
       .then(values => {
@@ -123,13 +124,13 @@ class CertificateStore {
    */
   loadCertData = (spin, projectId, page, sizes, sort, filter, envId) => {
     spin && this.setCertLoading(true);
-    const url = envId ? `&env_id=${envId}` : "";
+    const url = envId ? `&env_id=${envId}` : '';
     axios
       .post(
         `/devops/v1/projects/${projectId}/certifications/list_by_options?page=${page}&size=${sizes}&sort=${
           sort.field
-        },${ORDER[sort.order]}${url}`,
-        JSON.stringify(filter)
+          },${SORTER_MAP[sort.order]}${url}`,
+        JSON.stringify(filter),
       )
       .then(data => {
         spin && this.setCertLoading(false);
@@ -161,7 +162,7 @@ class CertificateStore {
         if (res) {
           this.setCert(res);
         }
-      })
+      });
   };
 
   /**
@@ -172,7 +173,7 @@ class CertificateStore {
    */
   checkCertName = (projectId, value, envId) =>
     axios.get(
-      `/devops/v1/projects/${projectId}/certifications/unique?env_id=${envId}&cert_name=${value}`
+      `/devops/v1/projects/${projectId}/certifications/unique?env_id=${envId}&cert_name=${value}`,
     );
 
   /**
@@ -182,7 +183,7 @@ class CertificateStore {
    */
   createCert = (projectId, data) =>
     axios.post(`/devops/v1/projects/${projectId}/certifications`, data, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
 
   /**
@@ -193,7 +194,7 @@ class CertificateStore {
    */
   deleteCertById = (projectId, certId) =>
     axios.delete(
-      `/devops/v1/projects/${projectId}/certifications?cert_id=${certId}`
+      `/devops/v1/projects/${projectId}/certifications?cert_id=${certId}`,
     );
 }
 

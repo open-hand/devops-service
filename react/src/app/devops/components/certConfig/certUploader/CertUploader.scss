@@ -1,0 +1,43 @@
+.c7ncd-cert-upload {
+  display: flex;
+
+  .c7ncd-cert-upload-item {
+    flex: 0 0 240px;
+    width: 240px;
+    padding-right: 10px;
+
+    .c7ncd-upload-disabled,
+    .c7ncd-upload-select {
+      display: table-cell;
+      vertical-align: middle;
+      color: #666;
+      border: 0.01rem dashed #e0e0e0;
+      width: 1.04rem;
+      height: 1.04rem;
+      border-radius: 0.02rem;
+      background-color: rgba(0, 0, 0, 0.04);
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.3s ease;
+      margin-right: .08rem;
+      margin-bottom: .08rem;
+
+      .c7ncd-cert-upload-icon {
+        font-size: 30px;
+        font-weight: bold;
+      }
+
+      .c7n-upload-text {
+        margin-top: 8px;
+      }
+    }
+
+    .c7ncd-upload-select:hover {
+      border-color: #6374c2;
+    }
+
+    .c7ncd-upload-disabled {
+      cursor: not-allowed;
+    }
+  }
+}
