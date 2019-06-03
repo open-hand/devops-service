@@ -1097,11 +1097,6 @@ class DevConsole extends Component {
               {appData && appData.length ? <Fragment>
                 <div className="c7n-dc-app-code">
                   <FormattedMessage id="ciPipeline.appCode" />：{currentApp ? currentApp.code : ''}
-                  {currentApp && currentApp.sonarUrl ? <Tooltip title={<FormattedMessage id="repository.quality" />} placement="bottom">
-                    <a className="repo-copy-btn" href={currentApp.sonarUrl} rel="nofollow me noopener noreferrer" target="_blank">
-                      <Button shape="circle" size="small" icon="quality" />
-                    </a>
-                  </Tooltip> : null }
                 </div>
                 <div className="c7n-dc-url-wrap">
                   <FormattedMessage id="app.url" />：

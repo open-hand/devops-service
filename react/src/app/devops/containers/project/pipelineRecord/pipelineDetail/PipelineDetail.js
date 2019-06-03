@@ -238,7 +238,7 @@ export default class PipelineDetail extends Component {
           >
             <Button
               onClick={this.openPendingCheck}
-              icon='replay'
+              icon='authorize'
               type='primary'
               className='c7ncd-pipeline-manual-stop'
             >

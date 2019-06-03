@@ -371,6 +371,10 @@ class EnvOverviewStore {
         this.setSync(null);
         Choerodon.prompt(error);
       });
+
+  retry = (projectId, envId) =>
+    axios
+      .get(`/devops//v1/projects/${projectId}/envs/${envId}/retry`)
 }
 
 const envOverviewStore = new EnvOverviewStore();

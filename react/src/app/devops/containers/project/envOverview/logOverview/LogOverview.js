@@ -3,8 +3,8 @@ import React, { Component, Fragment } from "react";
 import { observer } from "mobx-react";
 import { withRouter } from "react-router-dom";
 import { injectIntl, FormattedMessage } from "react-intl";
-import { Table, Form, Icon, Popover } from "choerodon-ui";
-import { stores } from "@choerodon/boot";
+import { Table, Form, Icon, Popover, Tooltip, Button, Modal } from "choerodon-ui";
+import { stores, Permission } from "@choerodon/boot";
 import TimePopover from "../../../../components/timePopover";
 import "../EnvOverview.scss";
 import "../../../main.scss";
@@ -16,7 +16,10 @@ const { AppState } = stores;
 class LogOverview extends Component {
   constructor(props, context) {
     super(props, context);
-    this.state = {};
+    this.state = {
+      submitting: false,
+      showRetry: false,
+    };
   }
 
   /**
@@ -30,8 +33,41 @@ class LogOverview extends Component {
     store.loadLog(true, id, envId, page, pagination.pageSize);
   };
 
+  /**
+   * 打开或关闭重试弹窗
+   */
+  showRetry = (flag) => {
+    this.setState({ showRetry: flag });
+  };
+
+  /**
+   * 重试gitOps
+   */
+  handleRetry = () => {
+    const { store, envId } = this.props;
+    const { projectId } = AppState.currentMenuType;
+    this.setState({ submitting: true });
+    store.retry(projectId, envId)
+      .then(data => {
+        if (data && data.failed) {
+          Choerodon.prompt(data.message);
+        } else {
+          store.loadSync(projectId, envId);
+          store.loadLog(true, projectId, envId);
+          this.setState({ showRetry: false });
+        }
+        this.setState({ submitting: false });
+      })
+      .catch(err => {
+        this.setState({ submitting: false });
+        Choerodon.handleResponseError(err);
+      });
+  };
+
   render() {
-    const { store, intl } = this.props;
+    const { store, intl: { formatMessage } } = this.props;
+    const { type, projectId, organizationId: orgId } = AppState.currentMenuType;
+    const { showRetry, submitting } = this.state;
     const log = store.getLog;
     const sync = store.getSync;
 
@@ -111,7 +147,7 @@ class LogOverview extends Component {
     );
 
     const tableLocale = {
-      emptyText: intl.formatMessage({ id: "envoverview.log.table" }),
+      emptyText: formatMessage({ id: "envoverview.log.table" }),
     };
 
     return (
@@ -149,8 +185,23 @@ class LogOverview extends Component {
                 </a>
               </div>
             </div>
-            <div className="c7n-envow-sync-arrow">
-              <div>→</div>
+            <div className="c7n-envow-sync-arrow c7n-envow-sync-retry">
+              <Permission
+                service={['devops-service.devops-environment.queryByCode']}
+                organizationId={orgId}
+                projectId={projectId}
+                type={type}
+              >
+                <Tooltip title={<FormattedMessage id="envoverview.log.retry.title" />}>
+                  <Button
+                    shape='circle'
+                    icon='replay'
+                    type='primary'
+                    onClick={this.showRetry.bind(this, true)}
+                  />
+                </Tooltip>
+              </Permission>
+              <div className="c7n-envow-sync-arrow-detail">→</div>
             </div>
             <div className="c7n-envow-sync-card">
               <div className="c7n-envow-sync-step">
@@ -170,7 +221,7 @@ class LogOverview extends Component {
               </div>
             </div>
             <div className="c7n-envow-sync-arrow">
-              <div>→</div>
+              <div className="c7n-envow-sync-arrow-detail">→</div>
             </div>
             <div className="c7n-envow-sync-card">
               <div className="c7n-envow-sync-step">
@@ -204,6 +255,20 @@ class LogOverview extends Component {
           dataSource={log}
           rowKey={record => record.id}
         />
+        {showRetry && (
+          <Modal
+            confirmLoading={submitting}
+            visible={showRetry}
+            title={`${formatMessage({ id: 'envoverview.log.retry.title' })}`}
+            closable={false}
+            onOk={this.handleRetry}
+            onCancel={this.showRetry.bind(this, false)}
+          >
+            <div className="c7n-padding-top_8">
+              <FormattedMessage id={`envoverview.log.retry.des`} />
+            </div>
+          </Modal>
+        )}
       </div>
     );
   }
