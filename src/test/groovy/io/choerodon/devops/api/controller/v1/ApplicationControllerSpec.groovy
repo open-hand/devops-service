@@ -42,7 +42,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -247,7 +247,7 @@ class ApplicationControllerSpec extends Specification {
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(memberDOResponseEntity)
 
         and: 'mock iam创建用户'
-        IamAppPayLoad iamAppPayLoad =new IamAppPayLoad()
+        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad()
         iamAppPayLoad.setProjectId(init_id)
         iamAppPayLoad.setOrganizationId(init_id)
         ResponseEntity<IamAppPayLoad> iamAppPayLoadResponseEntity = new ResponseEntity<>(iamAppPayLoad, HttpStatus.OK)
@@ -284,6 +284,11 @@ class ApplicationControllerSpec extends Specification {
         applicationUpdateDTO.setId(init_id)
         applicationUpdateDTO.setName("updatename")
         applicationUpdateDTO.setIsSkipCheckPermission(true)
+
+        and: "初始化gitlab数据"
+        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
+        applicationDO.setGitlabProjectId(1)
+        applicationMapper.updateByPrimaryKeySelective(applicationDO)
 
         and: 'mock启动sagaClient'
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any(StartInstanceDTO))

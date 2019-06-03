@@ -3,7 +3,6 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.C7nCertificationDTO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.app.service.GitlabGroupMemberService
 import io.choerodon.devops.app.service.impl.CertificationServiceImpl
@@ -22,7 +21,6 @@ import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
-import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -30,6 +28,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.*
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -89,15 +89,16 @@ class CertificationControllerSpec extends Specification {
     def setup() {
         if (isToInit) {
             DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+            DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
             DependencyInjectUtil.setAttribute(certificationService, "devopsEnvUserPermissionRepository", mockDevopsEnvUserPermissionRepository)
             DependencyInjectUtil.setAttribute(certificationService, "gitlabGroupMemberService", gitlabGroupMemberService)
-
 
             // environment
             devopsEnvironmentDO.setProjectId(projectId)
             devopsEnvironmentDO.setName("env-test")
             devopsEnvironmentDO.setClusterId(1L)
             devopsEnvironmentDO.setCode("env-test")
+            devopsEnvironmentDO.setGitlabEnvProjectId(1L)
             devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
             // devops env command
@@ -117,6 +118,7 @@ class CertificationControllerSpec extends Specification {
             ProjectDO projectDO = new ProjectDO()
             projectDO.setId(projectId)
             projectDO.setOrganizationId(organizationId)
+            projectDO.setCode("cert")
             ResponseEntity<ProjectDO> iamPro = new ResponseEntity<>(projectDO, HttpStatus.OK)
             Mockito.when(iamServiceClient.queryIamProject(Mockito.anyLong())).thenReturn(iamPro)
 
@@ -129,6 +131,7 @@ class CertificationControllerSpec extends Specification {
             repositoryFile.setFilePath("test")
             ResponseEntity<RepositoryFile> repositoryFileEntity = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
             Mockito.when(gitlabServiceClient.createFile(Mockito.anyInt(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyInt())).thenReturn(repositoryFileEntity)
+//            Mockito.doReturn(repositoryFileEntity).when(gitlabServiceClient).createFile( null, anyString(), anyString(), anyString(), anyInt())
 
         }
 
@@ -150,15 +153,45 @@ class CertificationControllerSpec extends Specification {
     def "Create"() {
         given: "插入数据"
         isToInit = false
-        C7nCertificationDTO c7nCertificationDTO = new C7nCertificationDTO()
-        c7nCertificationDTO.setEnvId(devopsEnvironmentDO.getId())
-        c7nCertificationDTO.setEnvName(certificationDO.getName())
-        c7nCertificationDTO.setCertName("pro-cert-name")
-        c7nCertificationDTO.setDomains(Arrays.asList("cd.as.aa.aa"))
-        c7nCertificationDTO.setType("request")
+        MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>()
+        map.add("envId", devopsEnvironmentDO.getId())
+        map.add("envName", certificationDO.getName())
+        map.add("certName", "pro-cert-name")
+        map.add("domains", Arrays.asList("cd.as.aa.aa"))
+        map.add("type", "request")
+        map.add("certValue", "-----BEGIN CERTIFICATE-----\n" +
+                "MIICYTCCAcoCCQCs45mePIbzRTANBgkqhkiG9w0BAQUFADB1MQswCQYDVQQGEwJV\n" +
+                "UzENMAsGA1UECAwETWFyczETMBEGA1UEBwwKaVRyYW5zd2FycDETMBEGA1UECgwK\n" +
+                "aVRyYW5zd2FycDETMBEGA1UECwwKaVRyYW5zd2FycDEYMBYGA1UEAwwPd3d3LjU5\n" +
+                "MXdpZmkuY29tMB4XDTE4MTAxNzAyMTA0OFoXDTI4MTAxNDAyMTA0OFowdTELMAkG\n" +
+                "A1UEBhMCVVMxDTALBgNVBAgMBE1hcnMxEzARBgNVBAcMCmlUcmFuc3dhcnAxEzAR\n" +
+                "BgNVBAoMCmlUcmFuc3dhcnAxEzARBgNVBAsMCmlUcmFuc3dhcnAxGDAWBgNVBAMM\n" +
+                "D3d3dy41OTF3aWZpLmNvbTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAtxtP\n" +
+                "cxgppTHrbzWloh26fXfIyLZI+YpNMCnJ+4wcv3jnZZ6OZsvnoo0z/yl/A9kDY9r5\n" +
+                "Rft9fwE4WKMSPNKlGd4psPLw1XNHAXhi8RAy1cHgkBMuwor6ZJhFgnsqKk4Xp68D\n" +
+                "jaCI2oxu2SYIBU67Fxy+h7G5BsWKwARtj5kP8NECAwEAATANBgkqhkiG9w0BAQUF\n" +
+                "AAOBgQC2Pko8q1NicJ0oPuhFTPm7n03LtPhCaV/aDf3mqtGxraYifg8iFTxVyZ1c\n" +
+                "ol0eEJFsibrQrPEwdSuSVqzwif5Tab9dV92PPFm+Sq0D1Uc0xI4ziXQ+a55K9wrV\n" +
+                "TKXxS48TOpnTA8fVFNkUkFNB54Lhh9AwKsx123kJmyaWccbt9Q==\n" +
+                "-----END CERTIFICATE-----")
+        map.add("keyValue", "-----BEGIN RSA PRIVATE KEY-----\n" +
+                "MIICXgIBAAKBgQC3G09zGCmlMetvNaWiHbp9d8jItkj5ik0wKcn7jBy/eOdlno5m\n" +
+                "y+eijTP/KX8D2QNj2vlF+31/AThYoxI80qUZ3imw8vDVc0cBeGLxEDLVweCQEy7C\n" +
+                "ivpkmEWCeyoqThenrwONoIjajG7ZJggFTrsXHL6HsbkGxYrABG2PmQ/w0QIDAQAB\n" +
+                "AoGBAIxvTcggSBCC8OciZh6oXlfMfxoxdFavU/QUmO1s0L+pow+1Q9JjoQxy7+ZL\n" +
+                "lTcGQitbzsN11xKJhQW2TE6J4EVimJZQSAE4DDmYpMOrkjnBQhkUlaZkkukvDSRS\n" +
+                "JqwBI/04G7se+RouHyXjRS9U76HnPM8+/IS2h+T6CbXLOpYBAkEA2j0JmyGVs+WV\n" +
+                "I9sG5glamJqTBa4CfTORrdFW4EULoGkUc24ZFFqn9W4e5yfl/pCkPptCenvIrAWp\n" +
+                "/ymnHeLn6QJBANbKGO9uBizAt4+o+kHYdANcbU/Cs3PLj8yOOtjkuMbH4tPNQmB6\n" +
+                "/u3npiVk7/Txfkg0BjRzDDZib109eKbvGKkCQBgMneBghRS7+gFng40Z/sfOUOFR\n" +
+                "WajeY/FZnk88jJlyuvQ1b8IUc2nSZslmViwFWHQlu9+vgF+kiCU8O9RJSvECQQCl\n" +
+                "Vkx7giYerPqgC2MY7JXhQHSkwSuCJ2A6BgImk2npGlTw1UATJJq4Z2jtwBU2Z+7d\n" +
+                "ha6BEU6FTqCLFZaaadKBAkEAxko4hrgBsX9BKpFJE3aUIUcMTJfJQdiAhq0k4DV8\n" +
+                "5GVrcp8zl6mUTPZDaOmDhuAjGdAQJqj0Xo0PZ0fOZPtR+w==\n" +
+                "-----END RSA PRIVATE KEY-----")
 
         when: "创建证书"
-        restTemplate.postForEntity(BASE_URL, c7nCertificationDTO, Object, projectId)
+        restTemplate.postForEntity(BASE_URL, map, Object, projectId)
 
         then: "校验证书是否创建成功"
         devopsCertificationMapper.selectAll().size() == 2

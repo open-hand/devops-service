@@ -227,9 +227,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ApplicationE applicationE = applicationRepository.query(applicationId);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        applicationE.initGitlabProjectEByUrl(gitlabUrl + urlSlash
-                + organization.getCode() + "-" + projectE.getCode() + "/"
-                + applicationE.getCode() + ".git");
+        if (applicationE.getGitlabProjectE() != null && applicationE.getGitlabProjectE().getId() != null) {
+            applicationE.initGitlabProjectEByUrl(gitlabUrl + urlSlash
+                    + organization.getCode() + "-" + projectE.getCode() + "/"
+                    + applicationE.getCode() + ".git");
+        }
         ApplicationRepDTO applicationRepDTO = ConvertHelper.convert(applicationE, ApplicationRepDTO.class);
         if (applicationE.getIsSkipCheckPermission()) {
             applicationRepDTO.setPermission(true);

@@ -8,6 +8,7 @@ import io.choerodon.devops.api.dto.DevopsIngressDTO
 import io.choerodon.devops.api.dto.DevopsIngressPathDTO
 import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.dto.iam.RoleDTO
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
@@ -36,7 +37,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -269,8 +270,11 @@ class DevopsIngressControllerSpec extends Specification {
         newDevopsIngressDTO.setPathList(pathList)
         newDevopsIngressDTO.setDomain("test.test-test.test")
 
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
         gitUtil.cloneBySsh(_ as String, _ as String) >> null
+
+        and: "mock handDevopsEnvGitRepository"
+        envUtil.handDevopsEnvGitRepository(_ as DevopsEnvironmentE) >> "src/test/gitops/org/pro/env"
 
         when: '项目下更新域名'
         restTemplate.put("/v1/projects/1/ingress/1", newDevopsIngressDTO, Object.class)
