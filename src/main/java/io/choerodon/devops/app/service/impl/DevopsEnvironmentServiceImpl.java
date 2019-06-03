@@ -547,6 +547,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 UserAttrE userAttrE = userAttrRepository.queryById(userId);
                 Long gitlabUserId = userAttrE.getGitlabUserId();
 
+
+                GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(gitlabProjectPayload.getGroupId(), TypeUtil.objToInteger(e));
+                if (gitlabGroupMemberE != null) {
+                    gitlabGroupMemberRepository.deleteMember(gitlabProjectPayload.getGroupId(), TypeUtil.objToInteger(e));
+                }
+
                 // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
                 GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectId.intValue(), TypeUtil.objToInteger(gitlabUserId));
                 if (gitlabMemberE == null || gitlabMemberE.getId() == null) {

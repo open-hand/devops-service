@@ -5,9 +5,12 @@ import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -22,6 +25,8 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
     private DevopsEnvironmentRepository devopsEnviromentRepository;
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     private UserAttrRepository userAttrRepository;
+    private DevopsProjectRepository devopsProjectRepository;
+
 
     public UpdateEnvUserPermissionServiceImpl() {
         this.devopsEnviromentRepository = ApplicationContextHelper.getSpringFactory()
@@ -29,6 +34,8 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         this.devopsEnvUserPermissionRepository = ApplicationContextHelper.getSpringFactory()
                 .getBean(DevopsEnvUserPermissionRepository.class);
         this.userAttrRepository = ApplicationContextHelper.getSpringFactory().getBean(UserAttrRepository.class);
+        this.devopsProjectRepository = ApplicationContextHelper.getSpringFactory()
+                .getBean(DevopsProjectRepository.class);
     }
 
     @Override
@@ -47,10 +54,14 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         List<Integer> deleteGitlabUserIds = userAttrRepository.listByUserIds(deleteIamUserIds).stream()
                 .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
         // 更新gitlab权限
-        Integer gitlabProjectId = TypeUtil
-                .objToInteger(devopsEnviromentRepository.queryById(id).getGitlabEnvProjectId());
 
-        super.updateGitlabUserPermission("env", gitlabProjectId, addgitlabUserIds, deleteGitlabUserIds);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(id);
+
+        Integer gitlabProjectId = devopsEnvironmentE.getGitlabEnvProjectId().intValue();
+        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
+        Integer gitlabGroupId = devopsProjectE.getDevopsAppGroupId().intValue();
+
+        super.updateGitlabUserPermission("env", gitlabGroupId, gitlabProjectId, addgitlabUserIds, deleteGitlabUserIds);
         devopsEnvUserPermissionRepository.updateEnvUserPermission(id, addIamUserIds, deleteIamUserIds);
         return true;
     }

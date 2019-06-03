@@ -6,12 +6,11 @@ import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 
@@ -27,6 +26,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
     private IamRepository iamRepository;
     private UserAttrRepository userAttrRepository;
     private GitlabProjectRepository gitlabProjectRepository;
+    private DevopsProjectRepository devopsProjectRepository;
 
     public UpdateAppUserPermissionServiceImpl() {
         this.applicationRepository = ApplicationContextHelper.getSpringFactory().getBean(ApplicationRepository.class);
@@ -34,6 +34,8 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
         this.userAttrRepository = ApplicationContextHelper.getSpringFactory().getBean(UserAttrRepository.class);
         this.gitlabProjectRepository = ApplicationContextHelper.getSpringFactory()
                 .getBean(GitlabProjectRepository.class);
+        this.devopsProjectRepository = ApplicationContextHelper.getSpringFactory()
+                .getBean(DevopsProjectRepository.class);
     }
 
     @Override
@@ -44,7 +46,10 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
         List<Integer> deleteGitlabUserIds;
         List<Integer> updateGitlabUserIds;
 
-        Integer gitlabProjectId = applicationRepository.query(appId).getGitlabProjectE().getId();
+        ApplicationE applicationE = applicationRepository.query(appId);
+        Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
+        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
+        Integer gitlabGroupId = devopsProjectE.getDevopsAppGroupId().intValue();
 
         // 如果之前对应的gitlab project同步失败时，不进行后续操作
         if (gitlabProjectId == null) {
@@ -65,7 +70,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
                 deleteGitlabUserIds = new ArrayList<>(allMemberGitlabIdsWithoutOwner);
                 deleteGitlabUserIds.removeAll(updateGitlabUserIds);
 
-                super.updateGitlabUserPermission("app", gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
+                super.updateGitlabUserPermission("app", gitlabGroupId, gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
                 return true;
             // 原来不跳过，现在跳过，需要删除权限表中的所有人，然后把项目下所有项目成员加入gitlab权限
             case 2:
@@ -77,7 +82,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
                                 .map(GitlabMemberE::getId).collect(Collectors.toList()).contains(e))
                         .collect(Collectors.toList());
 
-                super.updateGitlabUserPermission("app", gitlabProjectId, addGitlabUserIds, new ArrayList<>());
+                super.updateGitlabUserPermission("app", gitlabGroupId,gitlabProjectId, addGitlabUserIds, new ArrayList<>());
                 return true;
             // 原来不跳过，现在也不跳过，需要更新权限表
             case 3:
@@ -92,7 +97,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
                 deleteGitlabUserIds = new ArrayList<>(currentGitlabUserIds);
                 deleteGitlabUserIds.removeAll(updateGitlabUserIds);
 
-                super.updateGitlabUserPermission("app", gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
+                super.updateGitlabUserPermission("app",gitlabGroupId, gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
                 return true;
             default:
                 return true;
