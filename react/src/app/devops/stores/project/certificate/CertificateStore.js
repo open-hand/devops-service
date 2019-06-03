@@ -2,12 +2,9 @@ import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import _ from 'lodash';
 import { handleProptError } from '../../../utils';
-import { SORTER_MAP } from '../../../common/Constants';
+import { SORTER_MAP, getWindowHeight } from '../../../common/Constants';
 
-const HEIGHT =
-  window.innerHeight ||
-  document.documentElement.clientHeight ||
-  document.body.clientHeight;
+const HEIGHT = getWindowHeight();
 
 const INIT_TABLE_FILTER = {
   page: 0,
@@ -22,6 +19,12 @@ const INIT_TABLE_FILTER = {
   },
 };
 
+const INIT_PAGE = {
+  current: 0,
+  total: 0,
+  pageSize: HEIGHT <= 900 ? 10 : 15,
+};
+
 @store('CertificateStore')
 class CertificateStore {
   @observable envData = [];
@@ -32,11 +35,19 @@ class CertificateStore {
 
   @observable loading = false;
 
-  @observable pageInfo = {
-    current: 0,
-    total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
-  };
+  @observable pageInfo = _.cloneDeep(INIT_PAGE);
+
+  @action initPageInfo() {
+    this.pageInfo = _.cloneDeep(INIT_PAGE);
+  }
+
+  @action setPageInfo(pages) {
+    this.pageInfo = pages;
+  }
+
+  @computed get getPageInfo() {
+    return this.pageInfo;
+  }
 
   @observable tableFilter = _.cloneDeep(INIT_TABLE_FILTER);
 
@@ -44,8 +55,15 @@ class CertificateStore {
     this.tableFilter = _.cloneDeep(INIT_TABLE_FILTER);
   }
 
+  /**
+   * 可以只修改部分属性
+   * @param data
+   */
   @action setTableFilter(data) {
-    this.tableFilter = { ...this.tableFilter, ...data };
+    this.tableFilter = {
+      ...this.tableFilter,
+      ...data,
+    };
   }
 
   @computed get getTableFilter() {
@@ -60,7 +78,7 @@ class CertificateStore {
     return this.envData.slice();
   }
 
-  @action setCertData(data) {
+  @action setCertData(data = []) {
     this.certData = data;
   }
 
@@ -84,71 +102,59 @@ class CertificateStore {
     return this.loading;
   }
 
-  @action setPageInfo(pages) {
-    this.pageInfo = pages;
-  }
-
-  @computed get getPageInfo() {
-    return this.pageInfo;
-  }
-
   /**
    * 加载项目下所有环境
    * @param projectId
    */
   loadEnvData = projectId => {
-    const activeEnv = axios.get(
-      `/devops/v1/projects/${projectId}/envs?active=true`,
-    );
-    const invalidEnv = axios.get(
-      `/devops/v1/projects/${projectId}/envs?active=false`,
-    );
-    Promise.all([activeEnv, invalidEnv])
-      .then(values => {
-        this.setEnvData(_.concat(values[0], values[1]));
-      })
+    const activeEnv = () => axios.get(`/devops/v1/projects/${projectId}/envs?active=true`);
+    const invalidEnv = () => axios.get(`/devops/v1/projects/${projectId}/envs?active=false`);
+
+    axios.all([activeEnv(), invalidEnv()])
+      .then(axios.spread((active, invalid) => {
+        this.setEnvData(_.concat(active, invalid));
+      }))
       .catch(err => {
         Choerodon.handleResponseError(err);
       });
   };
 
   /**
-   * 加载证书列表
-   * @param spin
+   *
+   * @param spin 刷新动画
    * @param projectId
-   * @param page
-   * @param sizes
-   * @param sort
-   * @param filter
-   * @param envId 根据环境查询时填写的环境id，否则传null
+   * @param envId
+   * @returns {Promise<void>}
    */
-  loadCertData = (spin, projectId, page, sizes, sort, filter, envId) => {
+  loadCertData = async (spin, projectId, envId) => {
     spin && this.setCertLoading(true);
-    const url = envId ? `&env_id=${envId}` : '';
-    axios
-      .post(
-        `/devops/v1/projects/${projectId}/certifications/list_by_options?page=${page}&size=${sizes}&sort=${
-          sort.field
-          },${SORTER_MAP[sort.order]}${url}`,
-        JSON.stringify(filter),
-      )
-      .then(data => {
-        spin && this.setCertLoading(false);
-        const res = handleProptError(data);
-        if (res) {
-          const { content, totalElements, number, size } = res;
-          this.setPageInfo({
-            current: number + 1,
-            pageSize: size,
-            total: totalElements,
-          });
-          this.setCertData(content);
-        }
-      })
-      .catch(err => {
-        this.setCertLoading(false);
-        Choerodon.handleResponseError(err);
+
+    // 将表格筛选状态放在store中，每次请求前可以调用 setTableFilter 进行修改
+    const { page, pageSize, sorter, postData } = this.tableFilter;
+
+    const envParam = envId ? `&env_id=${envId}` : '';
+    const search = `?page=${page}&size=${pageSize}&sort=${sorter.columnKey},${SORTER_MAP[sorter.order]}${envParam}`;
+
+    const response = await axios.post(
+      `/devops/v1/projects/${projectId}/certifications/list_by_options${search}`,
+      JSON.stringify(postData),
+    ).catch(err => {
+      this.setCertLoading(false);
+      Choerodon.handleResponseError(err);
+    });
+
+    spin && this.setCertLoading(false);
+
+    const result = handleProptError(response);
+    if (result) {
+      const { content, totalElements, number, size } = result;
+      this.setPageInfo({
+        current: number + 1,
+        pageSize: size,
+        total: totalElements,
       });
+      this.setCertData(content);
+    }
   };
 
   /**
@@ -158,9 +164,8 @@ class CertificateStore {
   loadCert = (projectId) => {
     axios.get(`/devops/v1/projects/${projectId}/certifications/list_org_cert`)
       .then((data) => {
-        const res = handleProptError(data);
-        if (res) {
-          this.setCert(res);
+        if (handleProptError(data)) {
+          this.setCert(data);
         }
       });
   };

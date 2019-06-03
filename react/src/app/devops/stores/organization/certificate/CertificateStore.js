@@ -1,20 +1,25 @@
-import { observable, action, computed } from "mobx";
-import { axios, store, stores } from "@choerodon/boot";
-import _ from "lodash";
-import { handleProptError } from "../../../utils";
+import { observable, action, computed } from 'mobx';
+import { axios, store } from '@choerodon/boot';
+import _ from 'lodash';
+import { handleProptError } from '../../../utils';
+import { SORTER_MAP, getWindowHeight } from '../../../common/Constants';
 
-const ORDER = {
-  ascend: "asc",
-  descend: "desc",
+const HEIGHT = getWindowHeight();
+
+const INIT_TABLE_FILTER = {
+  page: 0,
+  pageSize: HEIGHT <= 900 ? 10 : 15,
+  param: [],
+  filters: {},
+  postData: { searchParam: {}, param: '' },
+  sorter: {
+    field: 'id',
+    columnKey: 'id',
+    order: 'descend',
+  },
 };
-const HEIGHT =
-  window.innerHeight ||
-  document.documentElement.clientHeight ||
-  document.body.clientHeight;
 
-const { AppState } = stores;
-
-@store("CertificateStore")
+@store('CertificateStore')
 class CertificateStore {
   @observable envData = [];
 
@@ -44,22 +49,15 @@ class CertificateStore {
 
   @observable Info = {
     filters: {},
-    sort: { columnKey: "id", order: "descend" },
+    sort: { columnKey: 'id', order: 'descend' },
     paras: [],
   };
 
-  @observable tableFilter = {
-    page: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
-    param: [],
-    filters: {},
-    postData: { searchParam: {}, param: "" },
-    sorter: {
-      field: "id",
-      columnKey: "id",
-      order: "descend",
-    },
-  };
+  @observable tableFilter = _.cloneDeep(INIT_TABLE_FILTER);
+
+  @action initTableFilter() {
+    this.tableFilter = _.cloneDeep(INIT_TABLE_FILTER);
+  }
 
   @action setTableFilter(data) {
     this.tableFilter = data;
@@ -157,8 +155,8 @@ class CertificateStore {
       .post(
         `/devops/v1/organizations/${orgId}/certs/page_cert?page=${page}&size=${sizes}&sort=${
           sort.field
-        },${ORDER[sort.order]}`,
-        JSON.stringify(filter)
+          },${SORTER_MAP[sort.order]}`,
+        JSON.stringify(filter),
       )
       .then(data => {
         this.setCertLoading(false);
@@ -203,15 +201,15 @@ class CertificateStore {
     certId,
     page = this.proPageInfo.current - 1,
     size = this.proPageInfo.pageSize,
-    sort = { field: "id", order: "desc" },
-    postData = []
+    sort = { field: 'id', order: 'desc' },
+    postData = [],
   ) => {
     this.setTableLoading(true);
     const url = certId
       ? `/devops/v1/organizations/${orgId}/certs/page_projects?certId=${certId}&page=${page}&size=${size}&sort=${sort.field ||
-      "id"},${sort.order}`
+      'id'},${sort.order}`
       : `/devops/v1/organizations/${orgId}/certs/page_projects?page=${page}&size=${size}&sort=${sort.field ||
-      "id"},${sort.order}`;
+      'id'},${sort.order}`;
     return axios.post(url, JSON.stringify(postData)).then(data => {
       if (data && data.failed) {
         Choerodon.prompt(data.message);
@@ -247,20 +245,22 @@ class CertificateStore {
    */
   checkCertName = (orgId, name) =>
     axios.get(
-      `/devops/v1/organizations/${orgId}/certs/check_name?name=${name}`
+      `/devops/v1/organizations/${orgId}/certs/check_name?name=${name}`,
     );
 
   /**
    * 创建证书
-   * @param projectId
+   * @param orgId
    * @param data
    */
   createCert = (orgId, data) =>
-    axios.post(`/devops/v1/organizations/${orgId}/certs`, data);
+    axios.post(`/devops/v1/organizations/${orgId}/certs`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
 
   /**
    * 编辑证书
-   * @param projectId
+   * @param orgId
    * @param id
    * @param data
    */
@@ -269,13 +269,13 @@ class CertificateStore {
 
   /**
    * 删除证书
-   * @param projectId
+   * @param orgId
    * @param id
    * @returns {*}
    */
   deleteCertById = (orgId, id) =>
     axios.delete(
-      `/devops/v1/organizations/${orgId}/certs/${id}`
+      `/devops/v1/organizations/${orgId}/certs/${id}`,
     );
 }
 

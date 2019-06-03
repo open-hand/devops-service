@@ -206,6 +206,11 @@
 .c7n-envow-ist-header-wrap {
   display: flex;
 
+  .c7n-progress-inner {
+    width: 15px !important;
+    height: 15px !important;
+  }
+
   .c7n-envow-ist-name {
     width: 50%;
     border-left: 1px solid rgba(0, 0, 0, 0.12);

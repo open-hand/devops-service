@@ -26,6 +26,7 @@ function StatusIcon(props) {
       statusDom = (
         <Tooltip title={formatMessage({ id: `ist_operating` })}>
           <Progress
+            className="c7ncd-status-progress"
             type="loading"
             size="small"
             width={15}
