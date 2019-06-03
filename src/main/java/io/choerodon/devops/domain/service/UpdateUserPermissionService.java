@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
 import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -18,18 +19,26 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 public abstract class UpdateUserPermissionService {
     private GitlabProjectRepository gitlabProjectRepository;
     private GitlabRepository gitlabRepository;
+    private GitlabGroupMemberRepository gitlabGroupMemberRepository;
 
     protected UpdateUserPermissionService() {
         this.gitlabProjectRepository = ApplicationContextHelper.getSpringFactory()
                 .getBean(GitlabProjectRepository.class);
         this.gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
+        this.gitlabGroupMemberRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabGroupMemberRepository.class);
     }
 
     public abstract Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option);
 
-    protected void updateGitlabUserPermission(String type, Integer gitlabProjectId, List<Integer> addGitlabUserIds,
+    protected void updateGitlabUserPermission(String type, Integer gitlabGroupId, Integer gitlabProjectId, List<Integer> addGitlabUserIds,
                                               List<Integer> deleteGitlabUserIds) {
-        addGitlabUserIds.forEach(e -> addGitlabMember(type, TypeUtil.objToInteger(gitlabProjectId), e));
+        addGitlabUserIds.forEach(e -> {
+            GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(gitlabGroupId, TypeUtil.objToInteger(e));
+            if (gitlabGroupMemberE != null) {
+                gitlabGroupMemberRepository.deleteMember(gitlabGroupId, TypeUtil.objToInteger(e));
+            }
+            addGitlabMember(type, TypeUtil.objToInteger(gitlabProjectId), e);
+        });
         deleteGitlabUserIds.forEach(e -> deleteGitlabMember(TypeUtil.objToInteger(gitlabProjectId), e));
     }
 
