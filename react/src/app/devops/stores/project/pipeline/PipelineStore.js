@@ -1,5 +1,6 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
+import _ from 'lodash';
 import { handleProptError } from '../../../utils';
 import { HEIGHT, SORTER_MAP } from '../../../common/Constants';
 
@@ -67,13 +68,18 @@ class PipelineStore {
     return this.recordDate.slice();
   }
 
-  async loadListData(projectId, page, size, sort, param) {
+  async loadListData(projectId, page, size, sort, param, searchData) {
     this.setLoading(true);
-
+    let searchPath = '';
+    if(searchData && searchData.length) {
+      _.forEach(searchData, item => {
+        searchPath += `&${item}=true`
+      })
+    }
     const sortPath = sort ? `&sort=${sort.field || sort.columnKey},${SORTER_MAP[sort.order] || 'desc'}` : '';
     const data = await axios
       .post(
-        `/devops/v1/projects/${projectId}/pipeline/list_by_options?page=${page}&size=${size}${sortPath}`,
+        `/devops/v1/projects/${projectId}/pipeline/list_by_options?page=${page}&size=${size}${sortPath}${searchPath}`,
         JSON.stringify(param),
       )
       .catch(e => {
@@ -132,14 +138,22 @@ class PipelineStore {
   }
 
   /**
-   * 手动终止流水线
+   * 强制失败流水线
    * @param projectId
    * @param id
    * @returns {*}
    */
   manualStop(projectId, id) {
-    return axios.get(`/devops/v1/projects/${projectId}/pipeline/stop?pipeline_record_id=${id}`);
+    return axios.get(`/devops//v1/projects/${projectId}/pipeline/failed?pipeline_record_id=${id}`);
   }
+
+  /**
+   ** 流水线重试
+   * @param projectId
+   * @param id 执行记录id
+   */
+  retry = (projectId, id) =>
+    axios.get(`/devops/v1/projects/${projectId}/pipeline/${id}/retry`);
 
   /**
    * 加载记录详情

@@ -6,10 +6,11 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.OrgCertificationDTO;
 import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface DevopsOrgCertificationService {
 
-    void insert(Long organizationId, OrgCertificationDTO orgCertificationDTO);
+    void insert(Long organizationId, MultipartFile key, MultipartFile cert, OrgCertificationDTO orgCertificationDTO);
 
     void update(Long certId, OrgCertificationDTO orgCertificationDTO);
 

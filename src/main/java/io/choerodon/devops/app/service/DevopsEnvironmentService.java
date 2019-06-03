@@ -162,4 +162,6 @@ public interface DevopsEnvironmentService {
 
     void initMockService(SagaClient sagaClient);
 
+
+    void retryGitOps(Long envId);
 }

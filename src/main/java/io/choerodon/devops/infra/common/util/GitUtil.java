@@ -329,7 +329,7 @@ public class GitUtil {
      * @return the git instance of local repository
      */
     public Git cloneRepository(String dirName, String remoteUrl, String accessToken) {
-        Git git;
+        Git git = null;
         String workingDirectory = getWorkingDirectory(dirName);
         File localPathFile = new File(workingDirectory);
         deleteDirectory(localPathFile);
@@ -340,9 +340,10 @@ public class GitUtil {
                     .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
                     .setDirectory(localPathFile)
                     .call();
-            FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
-            git = Git.init().setDirectory(localPathFile).call();
+            git = Git.open(new File(localPathFile + GIT_SUFFIX));
         } catch (GitAPIException e) {
+            throw new CommonException(ERROR_GIT_CLONE, e);
+        } catch (IOException e) {
             throw new CommonException(ERROR_GIT_CLONE, e);
         }
         return git;
@@ -356,7 +357,7 @@ public class GitUtil {
      * @param accessToken token
      * @throws CommonException 异常发生时，应捕获此异常，关闭资源
      */
-    public void commitAndPush(Git git, String repoUrl, String accessToken) throws CommonException {
+    public void commitAndPush(Git git, String repoUrl, String accessToken, String refName) throws CommonException {
         try {
             String[] url = repoUrl.split("://");
             git.add().addFilepattern(".").call();
@@ -365,7 +366,9 @@ public class GitUtil {
             List<Ref> refs = git.branchList().call();
             PushCommand pushCommand = git.push();
             for (Ref ref : refs) {
-                pushCommand.add(ref);
+                if (ref.getName().equals(refName)) {
+                    pushCommand.add(ref);
+                }
             }
             pushCommand.setRemote(repoUrl);
             pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(
@@ -484,8 +487,6 @@ public class GitUtil {
             git.close();
         }
     }
-
-
 
 
     public GitConfigDTO getGitConfig(Long clusterId) {

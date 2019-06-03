@@ -17,9 +17,13 @@ public interface PipelineRecordMapper extends BaseMapper<PipelineRecordDO> {
     List<PipelineRecordDO> listByOptions(@Param("projectId") Long projectId,
                                          @Param("pipelineId") Long pipelineId,
                                          @Param("searchParam") Map<String, Object> searchParam,
-                                         @Param("param") String param);
+                                         @Param("param") String param,
+                                         @Param("classifyParam") Map<String, Object> classifyParam);
 
     PipelineRecordDO queryById(@Param("pipelineRecordId") Long pipelineRecordId);
 
     void updateEdited(@Param("pipelineId") Long pipelineId);
+
+    List<Long> queryAllRecordUserIds(@Param("pipelineRecordId") Long pipelineRecordId);
+
 }

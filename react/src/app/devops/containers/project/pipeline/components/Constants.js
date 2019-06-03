@@ -18,6 +18,8 @@ const AUDIT_MODE_ORSING = 'orSign';
 const TASK_PARALLEL = 1;
 const TASK_SERIAL = 0;
 
+const FAST_SEARCH = ['creator', 'executor'];
+
 export {
   STAGE_FLOW_AUTO,
   STAGE_FLOW_MANUAL,
@@ -32,4 +34,5 @@ export {
   TASK_SERIAL,
   TRIGGER_TYPE_AUTO,
   TRIGGER_TYPE_MANUAL,
+  FAST_SEARCH,
 };

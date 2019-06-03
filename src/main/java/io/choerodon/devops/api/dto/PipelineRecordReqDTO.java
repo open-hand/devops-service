@@ -16,7 +16,44 @@ public class PipelineRecordReqDTO {
     private Date creationDate;
     private IamUserDTO userDTO;
     private String status;
+    private Boolean execute;
+    private String type;
+    private Long stageRecordId;
+    private Long taskRecordId;
+    private String stageName;
     private List<PipelineStageRecordDTO> stageRecordDTOS;
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Long getStageRecordId() {
+        return stageRecordId;
+    }
+
+    public void setStageRecordId(Long stageRecordId) {
+        this.stageRecordId = stageRecordId;
+    }
+
+    public Long getTaskRecordId() {
+        return taskRecordId;
+    }
+
+    public void setTaskRecordId(Long taskRecordId) {
+        this.taskRecordId = taskRecordId;
+    }
 
     public IamUserDTO getUserDTO() {
         return userDTO;
@@ -80,5 +117,13 @@ public class PipelineRecordReqDTO {
 
     public void setStageRecordDTOS(List<PipelineStageRecordDTO> stageRecordDTOS) {
         this.stageRecordDTOS = stageRecordDTOS;
+    }
+
+    public Boolean getExecute() {
+        return execute;
+    }
+
+    public void setExecute(Boolean execute) {
+        this.execute = execute;
     }
 }

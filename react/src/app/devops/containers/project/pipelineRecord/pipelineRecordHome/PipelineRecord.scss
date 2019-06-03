@@ -1,8 +1,19 @@
+@import '../components/status';
+
 .c7n-pipelineRecord-wrapper {
 
   .c7n-pipelineRecord-select {
-    width: 512px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-end;
+
+    &-200 {
+      width: 200px;
+    }
+
+    &-380 {
+      width: 380px;
+    }
   }
 
   .c7n-pipelineRecord-process {
@@ -20,23 +31,23 @@
         background-color: #d3d3d3;
 
         &-success {
-          background-color: #00bfa5;
+          background-color: $success;
         }
 
         &-failed {
-          background-color: #f44336;
+          background-color: $failed;
         }
 
         &-running {
-          background-color: #4d90fe;
+          background-color: $running;
         }
 
         &-stop {
-          background-color: #ff7043;
+          background-color: $stop;
         }
 
         &-pendingcheck {
-          background-color: #ffb100;
+          background-color: $pendingcheck;
         }
       }
 
@@ -47,12 +58,12 @@
 
         &-stop {
           width: 13px;
-          border-bottom: 3px dotted #ff7043;
+          border-bottom: 3px dotted $stop;
         }
 
         &-pendingcheck {
           width: 13px;
-          border-bottom: 3px dotted #ffb100;
+          border-bottom: 3px dotted $pendingcheck;
         }
       }
 
@@ -69,5 +80,14 @@
         }
       }
     }
+  }
+
+  .mg-right-16 {
+    margin-right: 16px;
+  }
+
+  .c7n-name-error-icon {
+    color: #f44336;
+    margin-left: 5px;
   }
 }

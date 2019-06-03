@@ -1,15 +1,16 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.PipelineStageRecordE;
 import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
 import io.choerodon.devops.infra.dataobject.PipelineStageRecordDO;
 import io.choerodon.devops.infra.mapper.PipelineStageRecordMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -64,5 +65,10 @@ public class PipelineStageRecordRepositoryImpl implements PipelineStageRecordRep
             throw new CommonException("error.update.pipeline.stage.record");
         }
         return ConvertHelper.convert(stageRecordMapper.selectByPrimaryKey(stageRecordDO), PipelineStageRecordE.class);
+    }
+
+    @Override
+    public PipelineStageRecordE queryPendingCheck(Long pipelineRecordId) {
+        return ConvertHelper.convert(stageRecordMapper.queryPendingCheck(pipelineRecordId), PipelineStageRecordE.class);
     }
 }

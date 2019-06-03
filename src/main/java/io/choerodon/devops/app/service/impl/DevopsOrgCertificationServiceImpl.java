@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,14 +19,22 @@ import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsCertificationProRelRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GenerateUUID;
+import io.choerodon.devops.infra.common.util.SslUtil;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertificationService {
+
+
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     private Gson gson = new Gson();
     @Autowired
@@ -35,7 +44,41 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
     @Autowired
     private IamRepository iamRepository;
 
-    public void insert(Long organizationId, OrgCertificationDTO orgCertificationDTO) {
+    @Override
+    public void insert(Long organizationId, MultipartFile key, MultipartFile cert, OrgCertificationDTO orgCertificationDTO) {
+
+
+        //如果是选择上传文件方式
+        Organization organization = iamRepository.queryOrganizationById(organizationId);
+        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organization.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
+        String certFileName;
+        String keyFileName;
+
+        if (key != null && cert != null) {
+            certFileName = cert.getOriginalFilename();
+            keyFileName = cert.getOriginalFilename();
+            orgCertificationDTO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
+            orgCertificationDTO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
+        } else {
+            certFileName = String.format("%s.%s",GenerateUUID.generateUUID().substring(0, 5),"crt");
+            keyFileName = String.format("%s.%s",GenerateUUID.generateUUID().substring(0, 5),"key");
+            FileUtil.saveDataToFile(path, certFileName, orgCertificationDTO.getCertValue());
+            FileUtil.saveDataToFile(path, keyFileName, orgCertificationDTO.getKeyValue());
+        }
+        File certPath = new File(path + FILE_SEPARATOR + certFileName);
+        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
+        try {
+            SslUtil.validate(certPath, keyPath);
+        }catch (Exception e) {
+            FileUtil.deleteFile(certPath);
+            FileUtil.deleteFile(keyPath);
+            throw new CommonException(e);
+        }
+        FileUtil.deleteFile(certPath);
+        FileUtil.deleteFile(keyPath);
+
+
+
         CertificationE certificationE = new CertificationE();
         certificationE.setName(orgCertificationDTO.getName());
         certificationE.setOrganizationId(organizationId);

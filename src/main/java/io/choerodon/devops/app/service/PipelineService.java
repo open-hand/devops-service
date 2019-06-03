@@ -22,9 +22,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Description:
  */
 public interface PipelineService {
-    Page<PipelineDTO> listByOptions(Long projectId, PageRequest pageRequest, String params);
+    Page<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, PageRequest pageRequest, String params);
 
-    Page<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params);
+    Page<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed);
 
     PipelineReqDTO create(Long projectId, PipelineReqDTO pipelineReqDTO);
 
@@ -52,7 +52,7 @@ public interface PipelineService {
 
     PipelineRecordReqDTO getRecordById(Long projectId, Long pipelineRecordId);
 
-    Boolean retry(Long projectId, Long pipelineRecordId);
+    void retry(Long projectId, Long pipelineRecordId);
 
     List<PipelineRecordListDTO> queryByPipelineId(Long pipelineId);
 
@@ -62,11 +62,11 @@ public interface PipelineService {
 
     List<UserDTO> getAllUsers(Long projectId);
 
-    void updateStatus(Long pipelineRecordId, Long stageRecordId, String status);
+    void updateStatus(Long pipelineRecordId, Long stageRecordId, String status, String errorInfo);
 
     CheckAuditDTO checkAudit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
 
     void executeAppDeploy(Long pipelineId);
 
-    void stop(Long projectId, Long recordId);
+    void failed(Long projectId, Long recordId);
 }

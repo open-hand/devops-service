@@ -92,7 +92,7 @@ persistence:
 
 service:
   name: devops-service
-  enable: false
+  enabled: false
   type: ClusterIP
   port: 8060
 
@@ -109,5 +109,5 @@ resources:
     memory: 2Gi
 
 ingress:
-  enable: false
+  enabled: false
   host: devops-service.choerodon.com.cn

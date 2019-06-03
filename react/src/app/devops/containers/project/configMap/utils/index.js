@@ -5,6 +5,16 @@
 import jsYaml from 'js-yaml';
 
 /**
+ *
+ * @param value
+ * @returns {boolean}
+ * @private
+ */
+function _isObject(value) {
+  return Object.prototype.toString.call(value) === '[object Object]';
+}
+
+/**
  * 判断对象是否为空
  * @param value
  * @returns {boolean}
@@ -59,6 +69,8 @@ function yamlToObj(value) {
  */
 function takeObject(data) {
   const _value = {};
+
+  if (_isObject(data)) return data;
 
   if (!Array.isArray(data)) return _value;
 

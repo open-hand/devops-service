@@ -1,8 +1,9 @@
-import React, { Component, Fragment } from "react";
-import { observer } from "mobx-react";
-import { injectIntl, FormattedMessage } from "react-intl";
-import { stores, Content } from "@choerodon/boot";
-import _ from "lodash";
+import React, { Component, Fragment } from 'react';
+import { observer, inject } from 'mobx-react';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import { Content } from '@choerodon/boot';
+import _ from 'lodash';
+import classnames from 'classnames';
 import {
   Button,
   Form,
@@ -11,23 +12,22 @@ import {
   Modal,
   Icon,
   Radio,
-} from "choerodon-ui";
-import "../../../main.scss";
-import "./CertificateCreate.scss";
-import Tips from "../../../../components/Tips/Tips";
-import InterceptMask from "../../../../components/interceptMask/InterceptMask";
+} from 'choerodon-ui';
+import CertConfig from '../../../../components/certConfig';
+import { Provider } from '../../../../components/certConfig/certContext';
+import Tips from '../../../../components/Tips/Tips';
+import InterceptMask from '../../../../components/interceptMask/InterceptMask';
+import { HEIGHT } from '../../../../common/Constants';
+import { handleCheckerProptError } from '../../../../utils';
 
-const HEIGHT =
-  window.innerHeight ||
-  document.documentElement.clientHeight ||
-  document.body.clientHeight;
+import '../../../main.scss';
+import './CertificateCreate.scss';
 
-const { AppState } = stores;
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
-const { Option, OptGroup } = Select;
+const { Option } = Select;
 const { Group: RadioGroup } = Radio;
-const { TextArea } = Input;
+
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
@@ -38,70 +38,139 @@ const formItemLayout = {
     sm: { span: 26 },
   },
 };
+
+const CERT_TYPE_REQUEST = 'request';
+const CERT_TYPE_UPLOAD = 'upload';
+const CERT_TYPE_CHOOSE = 'choose';
+
+@Form.create({})
+@injectIntl
+@inject('AppState')
 @observer
-class CertificateCreate extends Component {
+export default class CertificateCreate extends Component {
+  state = {
+    type: CERT_TYPE_REQUEST,
+    submitting: false,
+    keyLoad: false,
+    certLoad: false,
+    suffix: null,
+    certId: null,
+    uploadMode: false,
+  };
+
+  domainCount = 1;
+
   /**
    * 与域名相同的校验
    */
   checkName = _.debounce((rule, value, callback) => {
-    const p = /^([a-z0-9]([-a-z0-9]?[a-z0-9])*)$/;
-    const { intl } = this.props;
-    if (p.test(value)) {
-      const { store, form } = this.props;
-      const { id: projectId } = AppState.currentMenuType;
-      const envId = form.getFieldValue("envId");
+    const {
+      intl: { formatMessage },
+    } = this.props;
+
+    const pattern = /^([a-z0-9]([-a-z0-9]?[a-z0-9])*)$/;
+
+    if (!pattern.test(value)) {
+      callback(formatMessage({ id: 'ctf.names.check.failed' }));
+    } else {
+      const {
+        store,
+        form,
+        AppState: {
+          currentMenuType: {
+            id: projectId,
+          },
+        },
+      } = this.props;
+
+      const envId = form.getFieldValue('envId');
+
       store
         .checkCertName(projectId, value, envId)
         .then(data => {
           if (data) {
             callback();
           } else {
-            callback(intl.formatMessage({ id: "ctf.name.check.exist" }));
+            callback(formatMessage({ id: 'ctf.name.check.exist' }));
           }
         })
         .catch(() => callback());
-    } else {
-      callback(intl.formatMessage({ id: "ctf.names.check.failed" }));
     }
   }, 1000);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      submitting: false,
-      type: "request",
-      keyLoad: false,
-      certLoad: false,
-      suffix: null,
-      certId: null,
-    };
-    this.domainCount = 1;
-  }
-
   componentDidMount() {
-    const { store } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
+    const {
+      store,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
     store.loadEnvData(projectId);
   }
 
   handleSubmit = e => {
     e.preventDefault();
-    const { form, store } = this.props;
-    const { suffix } = this.state;
-    const { id: projectId } = AppState.currentMenuType;
+    const {
+      form,
+      store,
+      envId,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+
+    const {
+      suffix,
+      uploadMode,
+    } = this.state;
+
     this.setState({ submitting: true });
-    form.validateFieldsAndScroll((err, data) => {
+
+    form.validateFieldsAndScroll(async (err, data) => {
       if (!err) {
-        if (data.type === 'choose') {
-          data.type = 'upload';
-          let list = [];
-          _.map(data.domains, item => {
-            list.push(`${item}${suffix}`);
-          });
-          data.domains = list;
+        const _data = { ...data };
+        const formData = new FormData();
+        const excludeProps = ['domainArr', 'cert', 'key'];
+
+        if (_data.type === CERT_TYPE_CHOOSE) {
+          _data.type = CERT_TYPE_UPLOAD;
+          _data.domains = _.map(data.domains, item => `${item}${suffix}`);
+        } else if (_data.type === CERT_TYPE_UPLOAD && uploadMode) {
+          const { key, cert } = data;
+
+          formData.append('key', key.file);
+          formData.append('cert', cert.file);
         }
-        const p = store.createCert(projectId, data);
-        this.handleResponse(p);
+
+        _.forEach(_data, (value, k) => {
+          if (!_.includes(excludeProps, k)) {
+            formData.append(k, value);
+          }
+        });
+
+        const response = await store.createCert(projectId, formData)
+          .catch(error => {
+            Choerodon.handleResponseError(error);
+            this.setState({ submitting: false });
+          });
+
+        this.setState({ submitting: false });
+
+        if (handleCheckerProptError(response)) {
+          const initSize = HEIGHT <= 900 ? 10 : 15;
+
+          store.initTableFilter();
+          store.loadCertData(true, projectId, 0, initSize,
+            { field: 'id', order: 'descend' },
+            { searchParam: {}, param: '' },
+            envId,
+          );
+          this.handleClose(true);
+        }
       } else {
         this.setState({ submitting: false });
       }
@@ -109,54 +178,9 @@ class CertificateCreate extends Component {
   };
 
   /**
-   * 处理创建证书请求所返回的数据
-   * @param promise
-   */
-  handleResponse = promise => {
-    const { store, envId } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
-    promise
-      .then(res => {
-        this.setState({ submitting: false });
-        if (res && res.failed) {
-          Choerodon.prompt(res.message);
-        } else {
-          const initSize = HEIGHT <= 900 ? 10 : 15;
-          const filter = {
-            page: 0,
-            pageSize: initSize,
-            postData: { searchParam: {}, param: "" },
-            sorter: {
-              field: "id",
-              columnKey: "id",
-              order: "descend",
-            },
-            param: [],
-            createDisplay: false,
-          };
-          store.setTableFilter(filter);
-          store.loadCertData(
-            true,
-            projectId,
-            0,
-            initSize,
-            { field: "id", order: "descend" },
-            { searchParam: {}, param: "" },
-            envId
-          );
-          this.handleClose(true);
-        }
-      })
-      .catch(error => {
-        Choerodon.handleResponseError(error);
-        this.setState({ submitting: false });
-      });
-  };
-
-  /**
    * 关闭弹框
    */
-  handleClose = (isload = true) => {
+  handleClose = (isload = false) => {
     const { onClose } = this.props;
     onClose(isload);
   };
@@ -171,19 +195,21 @@ class CertificateCreate extends Component {
     const { intl, form } = this.props;
     const { type } = this.state;
     const { getFieldValue } = form;
-    let p = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+)$/;
+
+    let pattern = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+)$/;
     if (type === 'choose') {
-      p = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)$/
+      pattern = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)$/;
     }
-    const keyCount = _.countBy(getFieldValue("domains"));
-    if (p.test(value)) {
+
+    const keyCount = _.countBy(getFieldValue('domains'));
+    if (pattern.test(value)) {
       if (keyCount[value] < 2) {
         callback();
       } else {
-        callback(intl.formatMessage({ id: "ctf.domain.check.repeat" }));
+        callback(intl.formatMessage({ id: 'ctf.domain.check.repeat' }));
       }
     } else {
-      callback(intl.formatMessage({ id: "ctf.domain.check.failed" }));
+      callback(intl.formatMessage({ id: 'ctf.domain.check.failed' }));
     }
   };
 
@@ -191,8 +217,13 @@ class CertificateCreate extends Component {
    * 添加域名
    */
   addDomain = () => {
-    const { getFieldValue, setFieldsValue } = this.props.form;
-    const keys = getFieldValue("domainArr");
+    const {
+      form: {
+        getFieldValue,
+        setFieldsValue,
+      },
+    } = this.props;
+    const keys = getFieldValue('domainArr');
     const uuid = this.domainCount;
     const nextKeys = _.concat(keys, uuid);
     this.domainCount = uuid + 1;
@@ -206,24 +237,19 @@ class CertificateCreate extends Component {
    * @param k
    */
   removeGroup = k => {
-    const { getFieldValue, setFieldsValue } = this.props.form;
-    const keys = getFieldValue("domainArr");
-    if (keys.length === 1) {
-      return;
-    }
+    const {
+      form: {
+        getFieldValue,
+        setFieldsValue,
+      },
+    } = this.props;
+
+    const keys = getFieldValue('domainArr');
+    if (keys.length === 1) return;
+
     setFieldsValue({
       domainArr: _.filter(keys, key => key !== k),
     });
-  };
-
-  /**
-   * 获取环境选择器的元素节点
-   * @param node
-   */
-  envSelectRef = node => {
-    if (node) {
-      this.envSelect = node.rcSelect;
-    }
   };
 
   /**
@@ -231,16 +257,29 @@ class CertificateCreate extends Component {
    * @param e
    */
   handleTypeChange = e => {
-    const { store, form } = this.props;
-    const { resetFields, setFieldsValue } = form;
-    const { projectId } = AppState.currentMenuType;
-    const type =  e.target.value;
-    if (type === 'choose') {
+    const {
+      store,
+      form: {
+        resetFields,
+        setFieldsValue,
+      },
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+
+    const type = e.target.value;
+
+    if (type === CERT_TYPE_CHOOSE) {
       store.loadCert(projectId);
     }
+
     this.setState({ type, suffix: null, certId: null });
-    resetFields(["domainArr"]);
-    setFieldsValue({"domains[0]": ''});
+
+    resetFields(['domainArr']);
+    setFieldsValue({ 'domains[0]': '' });
   };
 
   /**
@@ -252,31 +291,122 @@ class CertificateCreate extends Component {
     const cert = store.getCert;
     const data = _.filter(cert, ['id', value]);
     this.setState({
-      suffix: data && data.length ? `.${data[0].domain}` : null,
+      suffix: data.length ? `.${data[0].domain}` : null,
       certId: value,
     });
   };
 
-  render() {
-    const { visible, form, intl, store, envId } = this.props;
-    const { getFieldDecorator, getFieldValue } = form;
-    const { submitting, type, suffix, certId } = this.state;
-    const { name: menuName, id: projectId } = AppState.currentMenuType;
-    getFieldDecorator("domainArr", { initialValue: [0] });
-    const domainArr = getFieldValue("domainArr");
-    const domainItems = _.map(domainArr, (k, index) => (
-      <div key={`domains-${k}`} className="creation-panel-group c7n-form-domains">
+  changeUploadMode = () => {
+    this.setState({
+      uploadMode: !this.state.uploadMode,
+    });
+  };
+
+  get getChooseContent() {
+    const {
+      form: {
+        getFieldDecorator,
+      },
+      intl: { formatMessage },
+      store: {
+        getCert: certs,
+      },
+    } = this.props;
+
+    const certOptions = _.map(certs, ({ id, name }) =>
+      <Option key={id} value={id}>
+        {name}
+      </Option>);
+
+    return (
+      <div className="c7ncd-sidebar-select">
         <FormItem
-          className={`c7n-select_${
-            domainArr.length > 1 ? 454 : 480
-          } creation-form-item`}
+          className="c7n-select_480"
+          {...formItemLayout}
+        >
+          {getFieldDecorator('certId', {
+            rules: [
+              {
+                required: true,
+                message: formatMessage({ id: 'required' }),
+              },
+            ],
+          })(
+            <Select
+              className="c7n-select_480"
+              label={<FormattedMessage id="ctf.choose" />}
+              placeholder={formatMessage({ id: 'ctf.choose' })}
+              optionFilterProp="children"
+              onChange={this.handleCertSelect}
+              filterOption={(input, option) =>
+                option.props.children
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0
+              }
+              filter
+            >
+              {certOptions}
+            </Select>,
+          )}
+        </FormItem>
+        <Tips type="form" data="ctf.choose.tips" />
+      </div>
+    );
+  }
+
+  render() {
+    const {
+      visible,
+      form,
+      intl: { formatMessage },
+      store: {
+        getEnvData: envs,
+      },
+      envId,
+      AppState: {
+        currentMenuType: {
+          name: menuName,
+        },
+      },
+    } = this.props;
+
+    const {
+      submitting,
+      type,
+      suffix,
+      certId,
+      uploadMode,
+    } = this.state;
+
+    const {
+      getFieldDecorator,
+      getFieldValue,
+    } = form;
+
+    getFieldDecorator('domainArr', { initialValue: [0] });
+
+    const domainArr = getFieldValue('domainArr');
+    const isDomainGroup = domainArr.length > 1;
+    const domainClass = classnames({
+      'creation-form-item': true,
+      'c7n-select_454': isDomainGroup,
+      'c7n-select_480': !isDomainGroup,
+    });
+
+    const domainItems = _.map(domainArr, k => (
+      <div
+        key={`domains-${k}`}
+        className="creation-panel-group c7n-form-domains"
+      >
+        <FormItem
+          className={domainClass}
           {...formItemLayout}
         >
           {getFieldDecorator(`domains[${k}]`, {
             rules: [
               {
                 required: true,
-                message: intl.formatMessage({ id: "required" }),
+                message: formatMessage({ id: 'required' }),
               },
               {
                 validator: this.checkDomain,
@@ -289,10 +419,10 @@ class CertificateCreate extends Component {
               label={<FormattedMessage id="ctf.config.domain" />}
               suffix={suffix}
               disabled={type === 'choose' && !certId}
-            />
+            />,
           )}
         </FormItem>
-        {domainArr.length > 1 ? (
+        {isDomainGroup ? (
           <Icon
             className="creation-panel-icon"
             type="delete"
@@ -301,8 +431,21 @@ class CertificateCreate extends Component {
         ) : null}
       </div>
     ));
-    const env = store.getEnvData;
-    const cert = store.getCert;
+
+    const envOptions = _.map(envs, ({ id, connect, name }) => {
+      const statusClass = classnames({
+        'c7ncd-status': true,
+        'c7ncd-status-success': connect,
+        'c7ncd-status-disconnect': !connect,
+      });
+      return (
+        <Option key={id} value={id} disabled={!connect}>
+          <span className={statusClass} />
+          {name}
+        </Option>
+      );
+    });
+
     return (
       <div className="c7n-region">
         <Sidebar
@@ -312,7 +455,7 @@ class CertificateCreate extends Component {
           title={<FormattedMessage id="ctf.sidebar.create" />}
           visible={visible}
           onOk={this.handleSubmit}
-          onCancel={this.handleClose.bind(this, false)}
+          onCancel={this.handleClose}
           confirmLoading={submitting}
         >
           <Content
@@ -321,23 +464,23 @@ class CertificateCreate extends Component {
             className="c7n-ctf-create sidebar-content"
           >
             <Form layout="vertical" className="c7n-sidebar-form">
-              <FormItem className="c7n-select_512" {...formItemLayout}>
-                {getFieldDecorator("envId", {
-                  initialValue: env.length ? envId : undefined,
+              <FormItem
+                className="c7n-select_512"
+                {...formItemLayout}
+              >
+                {getFieldDecorator('envId', {
+                  initialValue: envs.length ? envId : undefined,
                   rules: [
                     {
                       required: true,
-                      message: intl.formatMessage({ id: "required" }),
+                      message: formatMessage({ id: 'required' }),
                     },
                   ],
                 })(
                   <Select
-                    ref={this.envSelectRef}
                     className="c7n-select_512"
                     label={<FormattedMessage id="ctf.envName" />}
-                    placeholder={intl.formatMessage({
-                      id: "ctf.env.placeholder",
-                    })}
+                    placeholder={formatMessage({ id: 'ctf.env.placeholder' })}
                     optionFilterProp="children"
                     onSelect={this.handleEnvSelect}
                     getPopupContainer={triggerNode => triggerNode.parentNode}
@@ -349,28 +492,16 @@ class CertificateCreate extends Component {
                     filter
                     showSearch
                   >
-                    {_.map(env, item => {
-                      const { id, connect, name } = item;
-                      return (
-                        <Option key={id} value={id} disabled={!connect}>
-                          {connect ? (
-                            <span className="c7ncd-status c7ncd-status-success" />
-                          ) : (
-                            <span className="c7ncd-status c7ncd-status-disconnect" />
-                          )}
-                          {name}
-                        </Option>
-                      );
-                    })}
-                  </Select>
+                    {envOptions}
+                  </Select>,
                 )}
               </FormItem>
               <FormItem className="c7n-select_512" {...formItemLayout}>
-                {getFieldDecorator("certName", {
+                {getFieldDecorator('certName', {
                   rules: [
                     {
                       required: true,
-                      message: intl.formatMessage({ id: "required" }),
+                      message: formatMessage({ id: 'required' }),
                     },
                     {
                       validator: this.checkName,
@@ -379,11 +510,11 @@ class CertificateCreate extends Component {
                 })(
                   <Input
                     autoFocus
-                    disabled={!getFieldValue("envId")}
+                    disabled={!getFieldValue('envId')}
                     maxLength={40}
                     type="text"
                     label={<FormattedMessage id="ctf.name" />}
-                  />
+                  />,
                 )}
               </FormItem>
               <div className="c7n-creation-title">
@@ -399,65 +530,25 @@ class CertificateCreate extends Component {
                   label={<FormattedMessage id="ctf.target.type" />}
                   {...formItemLayout}
                 >
-                  {getFieldDecorator("type", {
-                    initialValue: "request",
+                  {getFieldDecorator('type', {
+                    initialValue: CERT_TYPE_REQUEST,
                   })(
                     <RadioGroup name="type" onChange={this.handleTypeChange}>
-                      <Radio value="request">
+                      <Radio value={CERT_TYPE_REQUEST}>
                         <FormattedMessage id="ctf.apply" />
                       </Radio>
-                      <Radio value="upload">
+                      <Radio value={CERT_TYPE_UPLOAD}>
                         <FormattedMessage id="ctf.upload" />
                       </Radio>
-                      <Radio value="choose">
+                      <Radio value={CERT_TYPE_CHOOSE}>
                         <FormattedMessage id="ctf.choose" />
                       </Radio>
-                    </RadioGroup>
+                    </RadioGroup>,
                   )}
                 </FormItem>
               </div>
               <div className="c7n-creation-panel">
-                {type === 'choose' && <div className="c7ncd-sidebar-select">
-                  <FormItem
-                    className="c7n-select_480"
-                    {...formItemLayout}
-                  >
-                    {getFieldDecorator("certId", {
-                      rules: [
-                        {
-                          required: true,
-                          message: intl.formatMessage({ id: "required" }),
-                        },
-                      ],
-                    })(
-                      <Select
-                        className="c7n-select_480"
-                        label={<FormattedMessage id="ctf.choose" />}
-                        placeholder={intl.formatMessage({
-                          id: "ctf.choose",
-                        })}
-                        optionFilterProp="children"
-                        onChange={this.handleCertSelect}
-                        filterOption={(input, option) =>
-                          option.props.children
-                            .toLowerCase()
-                            .indexOf(input.toLowerCase()) >= 0
-                        }
-                        filter
-                      >
-                        {_.map(cert, item => {
-                          const { id, name } = item;
-                          return (
-                            <Option key={id} value={id}>
-                              {name}
-                            </Option>
-                          );
-                        })}
-                      </Select>
-                    )}
-                  </FormItem>
-                  <Tips type="form" data="ctf.choose.tips" />
-                </div>}
+                {type === 'choose' && this.getChooseContent}
                 {domainItems}
                 <FormItem
                   className="c7n-select_480 creation-panel-button"
@@ -472,55 +563,21 @@ class CertificateCreate extends Component {
                     <FormattedMessage id="ctf.config.add" />
                   </Button>
                 </FormItem>
-                {type === "upload" ? (
-                  <Fragment>
-                    <div className="ctf-upload-head">
-                      <Tips type="title" data="certificate.file.add" />
-                    </div>
-                    <FormItem
-                      className="c7n-select_480"
-                      {...formItemLayout}
-                      label={<FormattedMessage id="certificate.cert.content" />}
+                {type === CERT_TYPE_UPLOAD && <Fragment>
+                  <div className="ctf-upload-head">
+                    <Tips type="title" data="certificate.file.add" />
+                    <Button
+                      type="primary"
+                      funcType="flat"
+                      onClick={this.changeUploadMode}
                     >
-                      {getFieldDecorator("certValue",{
-                        rules: [
-                          {
-                            required: true,
-                            message: intl.formatMessage({ id: "required" }),
-                          },
-                        ],
-                      })(
-                        <TextArea
-                          autosize={{
-                            minRows: 2,
-                          }}
-                          label={<FormattedMessage id="certificate.cert.content" />}
-                        />
-                      )}
-                    </FormItem>
-                    <FormItem
-                      className="c7n-select_480"
-                      {...formItemLayout}
-                      label={<FormattedMessage id="certificate.key.content" />}
-                    >
-                      {getFieldDecorator("keyValue",{
-                        rules: [
-                          {
-                            required: true,
-                            message: intl.formatMessage({ id: "required" }),
-                          },
-                        ],
-                      })(
-                        <TextArea
-                          autosize={{
-                            minRows: 2,
-                          }}
-                          label={<FormattedMessage id="certificate.key.content" />}
-                        />
-                      )}
-                    </FormItem>
-                  </Fragment>
-                ) : null}
+                      <FormattedMessage id="ctf.upload.mode" />
+                    </Button>
+                  </div>
+                  <Provider value={form}>
+                    <CertConfig isUploadMode={uploadMode} />
+                  </Provider>
+                </Fragment>}
               </div>
             </Form>
             <InterceptMask visible={submitting} />
@@ -531,4 +588,10 @@ class CertificateCreate extends Component {
   }
 }
 
-export default Form.create({})(injectIntl(CertificateCreate));
+function isFile(value) {
+  return Object.prototype.toString.call(value) === '[object File]';
+}
+
+function transToFile(value) {
+  return isFile(value) ? value : new File(value, value.name);
+}

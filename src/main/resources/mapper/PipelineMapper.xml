@@ -14,8 +14,10 @@
         dp.id
         FROM
         devops_pipeline dp
+        <include refid="executorSql"/>
         where dp.project_id=#{projectId}
         <include refid="sqlparam"/>
+        <include refid="creatorSql"/>
         <if test="index !=''">
             ORDER BY
             dp.is_enabled DESC,
@@ -42,6 +44,19 @@
             AND (dp.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR dp.trigger_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             )
+        </if>
+    </sql>
+
+    <sql id="executorSql">
+        <if test='classifyParam.executor != null and classifyParam.userId != null'>
+            JOIN devops_pipeline_user_rel dpur ON dpur.pipeline_id = dp.id
+            AND dpur.user_id = #{classifyParam.userId}
+        </if>
+    </sql>
+
+    <sql id="creatorSql">
+        <if test='classifyParam.creator != null and classifyParam.userId != null'>
+            AND dp.created_by = #{classifyParam.userId}
         </if>
     </sql>
 

@@ -155,13 +155,15 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
         applicationVersionE.setRepository(helmUrl.endsWith("/") ? helmUrl : helmUrl + "/" + organization.getCode() + "/" + projectE.getCode() + "/");
         String storeFilePath = STOREPATH + version;
-        if (newApplicationVersionE != null) {
-            return;
-        }
+
         String destFilePath = DESTPATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
         //上传chart包到chartmusume
         chartUtil.uploadChart(organization.getCode(), projectE.getCode(), new File(path));
+
+        if (newApplicationVersionE != null) {
+            return;
+        }
         FileUtil.unTarGZ(path, destFilePath);
         String values;
         try (FileInputStream fis = new FileInputStream(new File(Objects.requireNonNull(FileUtil.queryFileFromFiles(

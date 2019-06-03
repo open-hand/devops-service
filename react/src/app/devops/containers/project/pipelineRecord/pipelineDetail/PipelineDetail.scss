@@ -1,3 +1,5 @@
+@import "../components/status";
+
 .c7n-pipeline-detail {
   .c7ncd-pipeline-detail-select {
     margin-bottom: 32px;
@@ -16,6 +18,10 @@
         margin-right: 6px;
         color: rgba(0, 0, 0, 0.54);
       }
+    }
+
+    .c7ncd-pipeline-manual-stop {
+      float: right;
     }
   }
 
@@ -41,5 +47,42 @@
     flex-direction: column;
     flex: 0 0 272px;
     padding: 0 5px;
+  }
+
+  .c7ncd-pipeline-status-tag {
+    padding: 0 6px;
+    text-align: center;
+    font-size: 12px;
+    line-height: 20px;
+
+    &_running {
+      color: $running;
+      background: $bk_running;
+      border: 1px solid $running;
+    }
+
+    &_pendingcheck {
+      color: $pendingcheck;
+      background: $bk_pendingcheck;
+      border: 1px solid $pendingcheck;
+    }
+
+    &_success {
+      color: $success;
+      background: $bk_success;
+      border: 1px solid $success;
+    }
+
+    &_failed {
+      color: $failed;
+      background: $bk_failed;
+      border: 1px solid $failed;
+    }
+
+    &_stop {
+      color: $stop;
+      background: $bk_stop;
+      border: 1px solid $stop;
+    }
   }
 }

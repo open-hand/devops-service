@@ -580,6 +580,7 @@ const zhCN = {
   ci_created: '创建中',
   ci_skipped: '未执行',
   ci_manual: '未执行',
+  retry: '重新执行',
 
   // 刷新
   refresh: '刷新',
@@ -595,7 +596,7 @@ const zhCN = {
   'md.placeholder': '在下面编辑您的发布日志，支持MarkDown格式',
   'file.uploaded.failed': '上传失败！',
   'file.uploaded.success': '上传成功！',
-  'file.type.error': '文件格式类型错误！',
+  'file.type.error': '文件类型错误！',
 
   // ist
   ist_stop: '停止中',
@@ -629,7 +630,7 @@ const zhCN = {
   'ist.n': '不可用',
   'ist.noAdd': '未添加',
   'ist.noAddEnv': '未添加环境',
-  'ist.run': '重启实例',
+  'ist.run': '启用实例',
   'ist.reDeploy': '重新部署',
   'ist.nolog': '没有日志信息。',
   'ist.noApp': '暂无应用',
@@ -981,20 +982,18 @@ const zhCN = {
   // 应用导入
   'app.import': '导入应用',
   'app.import.ok': '导入',
-  'app.import.step1': '选择应用导入来源',
-  'app.import.step2': '选择应用模板',
-  'app.import.step3': '应用权限分配',
-  'app.import.step4': '确认信息',
-  'app.import.step1.des':
+  'app.import.step0': '选择应用导入来源',
+  'app.import.step1': '选择应用模板',
+  'app.import.step2': '应用权限分配',
+  'app.import.step3': '确认信息',
+  'app.import.step0.des':
     '目前GitHub仅支持从公库导入应用。仓库为空时均不可导入。',
-  'app.import.step1-1.des':
-    '导入应用后，仅保留master分支，请确保已将需要的代码合并至master分支。',
-  'app.import.step2.des':
+  'app.import.step1.des':
     '您可在此自定义导入应用的编码与名称，同时选择一个应用模板。',
-  'app.import.step2-1.des': '请选择与导入应用的开发语言相对应的应用模板。',
-  'app.import.step3.des':
+  'app.import.step1.warn': '请选择与导入应用的开发语言相对应的应用模板。',
+  'app.import.step2.des':
     '您可在此为此应用配置特定的开发操作人员。一般默认选择为项目下所有成员，即该项目下的所有成员均能对此应用进行开发操作；若选择项目下特定成员，则只有被勾选的项目成员才有权限对此应用进行开发。',
-  'app.import.step4.des':
+  'app.import.step3.des':
     '您可在此确认应用发布的信息，如需修改请返回相应步骤。',
   'app.import.github': 'GitHub地址',
   'app.import.gitlab': 'GitLab地址',
@@ -1374,6 +1373,8 @@ const zhCN = {
     'DevOps 平台会对部署文件进行解析，并在平台上生成相应的对象',
   'envoverview.commit.carr': '执行后，k8s 平台也会生成相应的对象',
   'envoverview.log.table': '目前部署同步正常，暂无错误信息',
+  'envoverview.log.retry.title': '重试GitOps',
+  'envoverview.log.retry.des': '确定要重试GitOps吗？',
 
   // 证书管理
   'ctf.head': '证书',
@@ -1409,10 +1410,11 @@ const zhCN = {
   'ctf.add.cert': '添加证书文件',
   'ctf.add.describe': '您可以在此选择相应的文件，并进行上传。',
   'ctf.target.type': '选择类型',
-  'ctf.keyFile': '上传 Key 文件',
-  'ctf.certFile': '上传 Cert 文件',
+  'ctf.keyFile': 'KEY 文件',
+  'ctf.certFile': 'CERT 文件',
+  'ctf.upload.mode': '切换上传模式',
   'ctf.key.required': '请上传Key格式的文件',
-  'ctf.cert.required': '请上传Cert格式的文件',
+  'ctf.crt.required': '请上传Cert格式的文件',
   'validDate.tip': '证书的可用期限',
 
   // 报表
@@ -1682,8 +1684,6 @@ const zhCN = {
   'pipelineRecord.check.task.des': '流水线“{name}”目前暂停于阶段【{stage}】，需要您进行审核。',
   'pipelineRecord.check.stage.des': '流水线“{name}”已执行完阶段【{stage}】，需要您进行审核。',
   'pipelineRecord.retry': '重新执行',
-  'pipelineRecord.retry.true': '确定要重新执行该流水线吗？',
-  'pipelineRecord.retry.false': '该条流水线已被修改，无法重试',
   'pipelineRecord.retry.title': '重新执行流水线“{name}”',
   'pipelineRecord.retry.des': '确定要重新执行该流水线吗？',
   'pipelineRecord.check.tips.button': '我知道了',
@@ -1691,6 +1691,10 @@ const zhCN = {
     '此任务为会签审核任务，目前【{checkUsers}】已审核通过，还需【{unCheckUsers}】审核通过后，才能执行之后的步骤。',
   'pipeline.canCheck.tips.0': '此任务已被{userName}审核',
   'pipeline.canCheck.tips.1': '此任务已被{userName}终止',
+  'pipelineRecord.search': '与我相关',
+  'pipelineRecord.search.pendingcheck': '待我审核',
+  'pipelineRecord.search.reviewed': '我审核过的',
+  'pipelineRecord.search.executed': '我执行过的',
 
   // pipeline
   'pipeline.head': '流水线',
@@ -1706,7 +1710,7 @@ const zhCN = {
   'pipeline.trigger.manual': '手动触发',
   'pipeline.flow.auto': '自动流转',
   'pipeline.flow.manual': '手动流转',
-  'pipeline.flow.stopped': '手动终止',
+  'pipeline.flow.stopped': '强制失败',
   'pipeline.action.detail': '执行记录',
   'pipeline.action.run': '执行',
   'pipeline.delete': '删除流水线',
@@ -1768,8 +1772,10 @@ const zhCN = {
   'pipeline.execute.failed': '该流水线不满足执行条件，无法触发执行。',
   'pipeline.execute.no.permission':
     '因流水线中包含环境【{envName}】相关的部署任务，联系项目所有者添加环境权限后，才能执行该条流水线。',
-  'pipeline.stop.title': '终止流水线“{name}”',
-  'pipeline.stop.des': '手动终止后，当前执行中的流程会被强制停止，确定要终止？',
+  'pipeline.stop.title': '强制失败',
+  'pipeline.stop.des': '确定要将此流程置为失败状态？强制失败后，您可继续重试当前流程。',
+  'pipeline.retry.title': '重新执行',
+  'pipeline.retry.des': '确定要重新执行该流水线吗？',
   'pipeline.edit.error': '出错了',
   'pipeline.edit.error.msg': '信息加载错误，请返回流水线页面，刷新后重试。',
   'pipeline.edit.back': '返回流水线',
@@ -1796,6 +1802,10 @@ const zhCN = {
   'pipeline.before.leave': '离开当前页面？__@.@__离开后，系统将不会保存您所做的修改。',
   'pipeline.create.error-1': '请检查任务类型是否正确！',
   'pipeline.create.error-2': '自动触发类型的流水线需要以部署任务作为触发器！',
+  'pipeline.search': '快速搜索',
+  'pipeline.search.creator': '我创建的',
+  'pipeline.search.executor': '我能执行的',
+  'pipeline.process.status': '流程状态 - ',
 
   // 代码质量
   'codeQuality.head': '代码质量',

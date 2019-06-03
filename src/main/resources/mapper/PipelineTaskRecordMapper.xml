@@ -17,9 +17,17 @@
         dptr.instance_id,
         dptr.status,
         dptr.task_id,
-        dptr.instance_name,
+        (
+        CASE
+        WHEN dptr.instance_id IS NOT NULL
+        THEN dptr.instance_name
+        ELSE
+        NULL
+        END
+        ) instanceName,
         dptr.task_type,
         dptr.audit_user,
+        dptr.stage_record_id,
         (
         CASE
         WHEN dptr.instance_id IS NOT NULL
@@ -40,4 +48,26 @@
         </if>
     </select>
 
+    <select id="queryAllAutoTaskRecord" resultType="io.choerodon.devops.infra.dataobject.PipelineTaskRecordDO">
+        SELECT
+            dptr.id,
+            dptr.`name`,
+            dptr.is_countersigned,
+            dptr.task_type,
+            dptr.application_id,
+            dptr.app_deploy_id,
+            dptr.env_id,
+            dptr.instance_id,
+            dptr. STATUS,
+            dptr.task_id,
+            dptr.instance_name,
+            dptr.task_type,
+            dptr.audit_user
+        FROM
+            devops_pipeline_task_record dptr
+        JOIN devops_pipeline_stage_record dpsr ON dpsr.pipeline_record_id = #{pipelineRecordId}
+        WHERE
+            dptr.stage_record_id = dpsr.id
+        AND dptr.task_type = 'auto'
+    </select>
 </mapper>

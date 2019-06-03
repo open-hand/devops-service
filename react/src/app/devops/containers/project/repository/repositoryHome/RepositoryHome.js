@@ -114,13 +114,36 @@ class RepositoryHome extends Component {
     });
   };
 
+  /**
+   * 跳转到代码质量页面
+   */
+  linkToQuatity = (appId) => {
+    const {
+      history,
+      location: {
+        search,
+      },
+    } = this.props;
+    history.push({
+      pathname: "/devops/code-quality",
+      search,
+      state: {
+        backPath: `/devops/repository${search}`,
+        appId,
+      },
+    });
+  };
+
   renderAction = (text, record) => {
     const noRepoUrl = this.props.intl.formatMessage({ id: 'repository.noUrl' });
     return (<div>
       { record.sonarUrl ? <Tooltip title={<FormattedMessage id="repository.quality" />} placement="bottom">
-        <a className="repo-copy-btn" href={record.sonarUrl} rel="nofollow me noopener noreferrer" target="_blank">
-          <Button shape="circle" size="small" icon="quality" />
-        </a>
+        <Button
+          shape="circle"
+          size="small"
+          icon="quality"
+          onClick={this.linkToQuatity.bind(this, record.id)}
+        />
       </Tooltip> : null }
       <Tooltip title={<FormattedMessage id="repository.report" />} placement="bottom">
         <Button

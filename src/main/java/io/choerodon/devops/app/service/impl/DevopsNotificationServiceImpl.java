@@ -97,7 +97,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         Set<String> resources = check(projectId, notificationDTO.getEnvId());
         List<String> events = notificationDTO.getNotifyTriggerEvent();
         events.removeAll(Arrays.asList(oldNotificationE.getNotifyTriggerEvent().split(",")));
-        if(!events.isEmpty()) {
+        if (!events.isEmpty()) {
             events.forEach(event -> {
                 if (resources.contains(event)) {
                     throw new CommonException("error.trigger.event.exist");
@@ -133,9 +133,11 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 List<DevopsNotificationUserRelDTO> userRelDTOS = ConvertHelper.convertList(notificationUserRelRepository.queryByNoticaionId(t.getId()), DevopsNotificationUserRelDTO.class);
                 userRelDTOS = userRelDTOS.stream().peek(u -> {
                     UserE userE = iamRepository.queryUserByUserId(u.getUserId());
-                    u.setImageUrl(userE.getImageUrl());
-                    u.setRealName(userE.getRealName());
-                    u.setLoginName(userE.getLoginName());
+                    if (userE != null) {
+                        u.setImageUrl(userE.getImageUrl());
+                        u.setRealName(userE.getRealName());
+                        u.setLoginName(userE.getLoginName());
+                    }
                 }).collect(Collectors.toList());
                 t.setUserRelDTOS(userRelDTOS);
             }
