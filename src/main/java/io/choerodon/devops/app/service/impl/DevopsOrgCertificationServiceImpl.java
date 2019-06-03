@@ -56,7 +56,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
 
         if (key != null && cert != null) {
             certFileName = cert.getOriginalFilename();
-            keyFileName = cert.getOriginalFilename();
+            keyFileName = key.getOriginalFilename();
             orgCertificationDTO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
             orgCertificationDTO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
         } else {

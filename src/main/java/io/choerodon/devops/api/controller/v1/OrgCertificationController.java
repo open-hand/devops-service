@@ -42,7 +42,7 @@ public class OrgCertificationController {
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "证书信息", required = true)
-            @RequestBody OrgCertificationDTO orgCertificationDTO,
+            @ModelAttribute OrgCertificationDTO orgCertificationDTO,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")

@@ -43,6 +43,7 @@ public class CertificationServiceImpl implements CertificationService {
     private static final String CERT_PREFIX = "cert-";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     private static final String CERTIFICATE_KIND = "certificate";
+    public static final String UPLOAD = "upload";
 
     @Value("${cert.testCert}")
     private Boolean testCert;
@@ -95,29 +96,30 @@ public class CertificationServiceImpl implements CertificationService {
         String keyFileName;
 
         //如果是选择上传文件方式
-        if (key != null && cert != null) {
-            certFileName = cert.getOriginalFilename();
-            keyFileName = cert.getOriginalFilename();
-            certificationDTO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
-            certificationDTO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
-        } else {
-            certFileName = String.format("%s.%s",GenerateUUID.generateUUID().substring(0, 5),"crt");
-            keyFileName = String.format("%s.%s",GenerateUUID.generateUUID().substring(0, 5),"key");
-            FileUtil.saveDataToFile(path, certFileName, certificationDTO.getCertValue());
-            FileUtil.saveDataToFile(path, keyFileName, certificationDTO.getKeyValue());
-        }
-        File certPath = new File(path + FILE_SEPARATOR + certFileName);
-        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
-        try {
-            SslUtil.validate(certPath, keyPath);
-        }catch (Exception e) {
+        if(certificationDTO.getType().equals(UPLOAD)) {
+            if (key != null && cert != null) {
+                certFileName = cert.getOriginalFilename();
+                keyFileName = key.getOriginalFilename();
+                certificationDTO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
+                certificationDTO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
+            } else {
+                certFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "crt");
+                keyFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "key");
+                FileUtil.saveDataToFile(path, certFileName, certificationDTO.getCertValue());
+                FileUtil.saveDataToFile(path, keyFileName, certificationDTO.getKeyValue());
+            }
+            File certPath = new File(path + FILE_SEPARATOR + certFileName);
+            File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
+            try {
+                SslUtil.validate(certPath, keyPath);
+            } catch (Exception e) {
+                FileUtil.deleteFile(certPath);
+                FileUtil.deleteFile(keyPath);
+                throw new CommonException(e);
+            }
             FileUtil.deleteFile(certPath);
             FileUtil.deleteFile(keyPath);
-            throw new CommonException(e);
         }
-        FileUtil.deleteFile(certPath);
-        FileUtil.deleteFile(keyPath);
-
 
         String certName = certificationDTO.getCertName();
         String type = certificationDTO.getType();
