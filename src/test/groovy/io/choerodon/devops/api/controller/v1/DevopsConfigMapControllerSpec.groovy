@@ -18,7 +18,6 @@ import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.DevopsConfigMapDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileResourceDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
@@ -42,7 +41,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -141,11 +140,11 @@ class DevopsConfigMapControllerSpec extends Specification {
 //        DependencyInjectUtil.restoreDefaultDependency(devopsConfigMapServiceImpl, "devopsEnvironmentService")
 
         // 删除secret
-        devopsConfigMapMapper.selectAll().forEach{devopsConfigMapMapper.delete(it)}
+        devopsConfigMapMapper.selectAll().forEach { devopsConfigMapMapper.delete(it) }
         // 删除envFileResource
-        devopsEnvFileResourceMapper.selectAll().forEach{devopsEnvFileResourceMapper.delete(it)}
+        devopsEnvFileResourceMapper.selectAll().forEach { devopsEnvFileResourceMapper.delete(it) }
         // 删除env
-        devopsEnvironmentMapper.selectAll().forEach{devopsEnvironmentMapper.delete(it)}
+        devopsEnvironmentMapper.selectAll().forEach { devopsEnvironmentMapper.delete(it) }
         // 删除gitops
         FileUtil.deleteDirectory(new File("gitops"))
     }
@@ -183,7 +182,8 @@ class DevopsConfigMapControllerSpec extends Specification {
         devopsConfigMapDTO.setValue(valueMap)
 
         and: 'mock envUtil'
-        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+        envUtil.checkEnvConnection(_ as Long) >> null
+        envUtil.handDevopsEnvGitRepository(_ as DevopsEnvironmentE) >> "src/test/gitops/testConfigMap"
 
         when: '创建'
         restTemplate.postForObject(MAPPING, devopsConfigMapDTO, Object.class, 1L)

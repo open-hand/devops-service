@@ -21,6 +21,7 @@ import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.EnvUtil
+import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO
@@ -102,6 +103,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
     @Autowired
     @Qualifier("mockEnvUtil")
     private EnvUtil envUtil
+
+    @Autowired
+    @Qualifier("mockGitUtil")
+    private GitUtil gitUtil
 
     @Autowired
     private UserAttrRepository userAttrRepository
@@ -332,8 +337,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
         and: 'mock envUtil'
         GitConfigDTO gitConfigDTO = new GitConfigDTO()
-        envUtil.getGitConfig(_ as Long) >> gitConfigDTO
-
+        gitUtil.getGitConfig(_ as Long) >> gitConfigDTO
         when: '项目下创建环境'
         restTemplate.postForObject("/v1/projects/1/envs", devopsEnviromentDTO, String.class)
 

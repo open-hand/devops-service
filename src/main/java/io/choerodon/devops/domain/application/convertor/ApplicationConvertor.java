@@ -73,4 +73,17 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
         return applicationE;
     }
 
+    @Override
+    public ApplicationReqDTO entityToDto(ApplicationE applicationE) {
+        ApplicationReqDTO applicationReqDTO = new ApplicationReqDTO();
+        BeanUtils.copyProperties(applicationE, applicationReqDTO);
+        if (applicationE.getProjectE() != null) {
+            applicationReqDTO.setProjectId(applicationE.getProjectE().getId());
+        }
+        if (applicationE.getApplicationTemplateE() != null) {
+            applicationReqDTO.setApplicationTemplateId(applicationE.getApplicationTemplateE().getId());
+        }
+        return applicationReqDTO;
+    }
+
 }

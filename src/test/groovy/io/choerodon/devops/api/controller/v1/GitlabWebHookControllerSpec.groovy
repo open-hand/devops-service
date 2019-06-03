@@ -111,6 +111,7 @@ class GitlabWebHookControllerSpec extends Specification {
             // do preparation
             applicationDO.setToken(token)
             applicationDO.setProjectId(1L)
+            applicationDO.setGitlabProjectId(1)
             applicationMapper.insert(applicationDO)
 
             devopsEnvironmentDO.setToken(token)
@@ -134,7 +135,7 @@ class GitlabWebHookControllerSpec extends Specification {
             commit.setUrl("http://www.baidu.com")
             commit.setCommittedDate(new Date())
             ResponseEntity<CommitDO> res = new ResponseEntity<>(commit, HttpStatus.OK)
-            Mockito.when(mockGitlabServiceClient.getCommit(any(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
+            Mockito.when(mockGitlabServiceClient.getCommit(Mockito.anyInt(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
 
             // mock env util
             Mockito.when(mockEnvUtil.getConnectedEnvList()).thenReturn(Arrays.asList(1L))
