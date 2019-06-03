@@ -3,25 +3,19 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineDO">
-        SELECT
-        dp.is_enabled,
-        dp. NAME,
-        dp.trigger_type,
-        dp.created_by,
-        dp.last_update_date,
-        dp.object_version_number,
-        dp.created_by,
-        dp.id
-        FROM
-        devops_pipeline dp
-        <include refid="executorSql"/>
-        where dp.project_id=#{projectId}
-        <include refid="sqlparam"/>
-        <include refid="creatorSql"/>
+        <if test='classifyParam.executor != null and classifyParam.userId != null'>
+            <include refid="executorSql"/>
+        </if>
+        <if test='classifyParam.creator != null and classifyParam.userId != null'>
+        <if test='classifyParam.executor != null and classifyParam.userId != null'>
+            UNION
+        </if>
+            <include refid="creatorSql"/>
+        </if>
         <if test="index !=''">
             ORDER BY
-            dp.is_enabled DESC,
-            dp.id DESC
+            is_enabled DESC,
+            id DESC
         </if>
     </select>
 
@@ -48,16 +42,38 @@
     </sql>
 
     <sql id="executorSql">
-        <if test='classifyParam.executor != null and classifyParam.userId != null'>
-            JOIN devops_pipeline_user_rel dpur ON dpur.pipeline_id = dp.id
-            AND dpur.user_id = #{classifyParam.userId}
-        </if>
+        SELECT
+        dp.is_enabled,
+        dp. NAME,
+        dp.trigger_type,
+        dp.created_by,
+        dp.last_update_date,
+        dp.object_version_number,
+        dp.id
+        FROM
+        devops_pipeline dp
+        JOIN devops_pipeline_user_rel dpur ON dpur.pipeline_id = dp.id
+        AND dpur.user_id =#{classifyParam.userId}
+        WHERE
+        dp.project_id = #{projectId}
+        <include refid="sqlparam"/>
     </sql>
 
     <sql id="creatorSql">
-        <if test='classifyParam.creator != null and classifyParam.userId != null'>
-            AND dp.created_by = #{classifyParam.userId}
-        </if>
+        SELECT
+        dp.is_enabled,
+        dp. NAME,
+        dp.trigger_type,
+        dp.created_by,
+        dp.last_update_date,
+        dp.object_version_number,
+        dp.id
+        FROM
+        devops_pipeline dp
+        WHERE
+        dp.project_id = #{projectId}
+        <include refid="sqlparam"/>
+        AND dp.created_by = #{classifyParam.userId}
     </sql>
 
 </mapper>

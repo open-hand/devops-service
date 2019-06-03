@@ -1392,9 +1392,11 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private Boolean filterPendingCheck(Boolean pendingcheck, Long pipelineRecordId) {
-        if (pendingcheck != null && pendingcheck) {
+        PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
+        if (pendingcheck != null && pendingcheck && pipelineRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
             List<PipelineStageRecordE> stageRecordEList = stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null);
             String auditUser = "";
+            List<String> reviewedUsers = new ArrayList<>();
             for (int i = 0; i < stageRecordEList.size(); i++) {
                 PipelineStageRecordE stageRecordE = stageRecordEList.get(i);
                 if (stageRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
@@ -1402,15 +1404,19 @@ public class PipelineServiceImpl implements PipelineService {
                     for (PipelineTaskRecordE taskRecordE : taskRecordEList) {
                         if (taskRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                             auditUser = taskRecordE.getAuditUser();
+                            reviewedUsers = pipelineUserRelRecordRepository.queryByRecordId(null, null, taskRecordE.getId()).stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
                             break;
                         }
                     }
                     break;
                 } else if (stageRecordE.getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && stageRecordEList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
-                    auditUser=stageRecordE.getAuditUser();
+                    auditUser = stageRecordE.getAuditUser();
                 }
             }
-            List<String> userIds = Arrays.asList(auditUser.split(","));
+            List<String> userIds = new ArrayList<>(Arrays.asList(auditUser.split(",")));
+            if (!reviewedUsers.isEmpty()) {
+                userIds.removeAll(reviewedUsers);
+            }
             return userIds.contains(TypeUtil.objToString(DetailsHelper.getUserDetails().getUserId()));
         }
         return true;
