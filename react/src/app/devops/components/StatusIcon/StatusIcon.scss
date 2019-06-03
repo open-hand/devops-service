@@ -8,3 +8,10 @@
   vertical-align: middle;
   margin-right: 5px;
 }
+
+.c7ncd-status-progress {
+  .c7n-progress-inner {
+    width: 15px !important;
+    height: 15px !important;
+  }
+}

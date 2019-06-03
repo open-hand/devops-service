@@ -13,43 +13,20 @@ import DeleteModal from '../../../../components/deleteModal/DeleteModal';
 
 import './CertTable.scss';
 
-const HEIGHT =
-  window.innerHeight ||
-  document.documentElement.clientHeight ||
-  document.body.clientHeight;
-
 @injectIntl
 @inject('AppState')
 @observer
 export default class CertTable extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      deleteLoading: false,
-      deleteArr: [],
-    };
-  }
+  state = {
+    deleteLoading: false,
+    deleteArr: [],
+  };
 
   componentWillUnmount() {
     const { store } = this.props;
-    store.setCertData([]);
-    store.setPageInfo({
-      current: 0,
-      total: 0,
-      pageSize: HEIGHT <= 900 ? 10 : 15,
-    });
-    store.setTableFilter({
-      page: 0,
-      pageSize: HEIGHT <= 900 ? 10 : 15,
-      param: [],
-      filters: {},
-      postData: { searchParam: {}, param: '' },
-      sorter: {
-        field: 'id',
-        columnKey: 'id',
-        order: 'descend',
-      },
-    });
+    store.setCertData();
+    store.initPageInfo();
+    store.initTableFilter();
   }
 
   /**
@@ -78,16 +55,8 @@ export default class CertTable extends Component {
 
       this.removeDeleteModal(id);
 
-      const { page, pageSize, sorter, postData } = store.getTableFilter;
-      store.loadCertData(
-        true,
-        projectId,
-        page,
-        pageSize,
-        sorter,
-        postData,
-        envId,
-      );
+      store.setTableFilter({ page: 0 });
+      store.loadCertData(true, projectId, envId);
     }
     this.setState({ deleteLoading: false });
   };
@@ -97,9 +66,9 @@ export default class CertTable extends Component {
    * @param pagination
    * @param filters
    * @param sorter
-   * @param paras
+   * @param param
    */
-  tableChange = (pagination, filters, sorter, paras) => {
+  tableChange = ({ current, pageSize }, filters, sorter, param) => {
     const {
       store,
       envId,
@@ -108,8 +77,6 @@ export default class CertTable extends Component {
       },
     } = this.props;
 
-    const { current, pageSize } = pagination;
-    const page = current - 1;
     const sort = _.isEmpty(sorter)
       ? {
         field: 'id',
@@ -117,31 +84,19 @@ export default class CertTable extends Component {
         order: 'descend',
       }
       : sorter;
-    const searchParam = {};
-    let param = '';
-    if (!_.isEmpty(filters)) {
-      _.forEach(filters, (value, key) => {
-        if (!_.isEmpty(value)) {
-          searchParam[key] = [String(value)];
-        }
-      });
-    }
-    if (paras.length) {
-      param = paras.toString();
-    }
-    const postData = {
-      searchParam,
-      param,
-    };
-    store.setTableFilter({
-      page,
+
+    const params = {
+      page: current - 1,
       pageSize,
-      filters,
-      postData,
+      postData: {
+        searchParam: filters,
+        param: param.toString(),
+      },
       sorter: sort,
-      param: paras,
-    });
-    store.loadCertData(true, projectId, page, pageSize, sort, postData, envId);
+    };
+
+    store.setTableFilter({ ...params, filters, param });
+    store.loadCertData(true, projectId, envId);
   };
 
   /**
@@ -237,20 +192,20 @@ export default class CertTable extends Component {
   renderActions = ({ id, domains, certName, commandStatus }) => {
     const {
       intl: { formatMessage },
-      AppState: {
-        currentMenuType: {
-          id: projectId,
-          type,
-          organizationId,
-        },
-      },
     } = this.props;
 
     // NOTE: 域名返回一个数组
-    //       约定数组的第一个元素为 CommonName，之后的元素都是 DNSNames
+    //       约定数组的第一个元素为 CommonName
+    //       之后的元素都是 DNSNames
     const detail = {
       CommonName: [domains[0]],
       DNSNames: domains.slice(1),
+    };
+
+    const btnProps = {
+      shape: 'circle',
+      size: 'small',
+      funcType: 'flat',
     };
     const content = _.map(detail, (value, key) => value.length ? (
       <div className="c7n-overlay-content" key={value}>
@@ -276,17 +231,12 @@ export default class CertTable extends Component {
           placement="bottomRight"
         >
           <Button
+            {...btnProps}
             icon="find_in_page"
-            size="small"
-            shape="circle"
-            funcType="flat"
           />
         </Popover>
         <Permission
           service={['devops-service.certification.delete']}
-          type={type}
-          projectId={projectId}
-          organizationId={organizationId}
         >
           <Tooltip
             trigger="hover"
@@ -294,11 +244,9 @@ export default class CertTable extends Component {
             title={<FormattedMessage id="delete" />}
           >
             <Button
+              {...btnProps}
               icon="delete_forever"
-              shape="circle"
-              size="small"
-              funcType="flat"
-              onClick={this.openDeleteModal.bind(this, id, certName)}
+              onClick={() => this.openDeleteModal(id, certName)}
               disabled={commandStatus === 'operating'}
             />
           </Tooltip>
@@ -387,6 +335,7 @@ export default class CertTable extends Component {
     return (
       <Fragment>
         <Table
+          noFilter
           filterBarPlaceholder={formatMessage({ id: 'filter' })}
           onChange={this.tableChange}
           loading={store.getCertLoading}

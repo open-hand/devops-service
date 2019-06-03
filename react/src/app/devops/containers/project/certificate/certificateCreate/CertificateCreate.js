@@ -17,7 +17,6 @@ import CertConfig from '../../../../components/certConfig';
 import { Provider } from '../../../../components/certConfig/certContext';
 import Tips from '../../../../components/Tips/Tips';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
-import { HEIGHT } from '../../../../common/Constants';
 import { handleCheckerProptError } from '../../../../utils';
 
 import '../../../main.scss';
@@ -27,6 +26,7 @@ const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
 const { Option } = Select;
 const { Group: RadioGroup } = Radio;
+const HEIGHT = getWindowHeight();
 
 const formItemLayout = {
   labelCol: {
@@ -161,14 +161,9 @@ export default class CertificateCreate extends Component {
         this.setState({ submitting: false });
 
         if (handleCheckerProptError(response)) {
-          const initSize = HEIGHT <= 900 ? 10 : 15;
-
           store.initTableFilter();
-          store.loadCertData(true, projectId, 0, initSize,
-            { field: 'id', order: 'descend' },
-            { searchParam: {}, param: '' },
-            envId,
-          );
+
+          store.loadCertData(true, projectId, envId);
           this.handleClose(true);
         }
       } else {
@@ -586,12 +581,4 @@ export default class CertificateCreate extends Component {
       </div>
     );
   }
-}
-
-function isFile(value) {
-  return Object.prototype.toString.call(value) === '[object File]';
-}
-
-function transToFile(value) {
-  return isFile(value) ? value : new File(value, value.name);
 }

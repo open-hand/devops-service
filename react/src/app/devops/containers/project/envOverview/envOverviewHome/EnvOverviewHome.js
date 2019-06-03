@@ -1,9 +1,9 @@
 /* eslint-disable react/sort-comp */
-import React, { Component, Fragment } from "react";
-import { observer } from "mobx-react";
-import { observable, action, configure } from "mobx";
-import { withRouter } from "react-router-dom";
-import { injectIntl, FormattedMessage } from "react-intl";
+import React, { Component, Fragment } from 'react';
+import { observer } from 'mobx-react';
+import { observable, action, configure } from 'mobx';
+import { withRouter } from 'react-router-dom';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import {
   Button,
   Tabs,
@@ -13,37 +13,38 @@ import {
   Tooltip,
   Menu,
   Dropdown,
-} from "choerodon-ui";
+} from 'choerodon-ui';
 import {
   Content,
   Header,
   Page,
   Permission,
   stores,
-} from "@choerodon/boot";
-import _ from "lodash";
-import "../EnvOverview.scss";
-import "../../../main.scss";
-import AppOverview from "../appOverview";
-import LogOverview from "../logOverview";
-import DomainOverview from "../domainOverview";
-import NetworkOverview from "../networkOverview";
-import CertTable from "../../certificate/certTable";
-import CreateDomain from "../../domain/createDomain";
-import CreateNetwork from "../../networkConfig/createNetwork";
-import CertificateCreate from "../../certificate/certificateCreate";
-import DomainStore from "../../../../stores/project/domain";
-import NetworkConfigStore from "../../../../stores/project/networkConfig";
-import CertificateStore from "../../../../stores/project/certificate";
-import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
-import RefreshBtn from "../../../../components/refreshBtn";
-import DevopsStore from "../../../../stores/DevopsStore";
+} from '@choerodon/boot';
+import _ from 'lodash';
+import AppOverview from '../appOverview';
+import LogOverview from '../logOverview';
+import DomainOverview from '../domainOverview';
+import NetworkOverview from '../networkOverview';
+import CertTable from '../../certificate/certTable';
+import CreateDomain from '../../domain/createDomain';
+import CreateNetwork from '../../networkConfig/createNetwork';
+import CertificateCreate from '../../certificate/certificateCreate';
+import DomainStore from '../../../../stores/project/domain';
+import NetworkConfigStore from '../../../../stores/project/networkConfig';
+import CertificateStore from '../../../../stores/project/certificate';
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import RefreshBtn from '../../../../components/refreshBtn';
+import DevopsStore from '../../../../stores/DevopsStore';
+
+import '../EnvOverview.scss';
+import '../../../main.scss';
 
 const { AppState } = stores;
 const { TabPane } = Tabs;
 const { Option } = Select;
 
-configure({ enforceActions: "never" });
+configure({ enforceActions: 'never' });
 
 @observer
 class EnvOverviewHome extends Component {
@@ -55,9 +56,9 @@ class EnvOverviewHome extends Component {
 
   @observable domainId = null;
 
-  @observable domainType = "";
+  @observable domainType = '';
 
-  @observable domainTitle = "";
+  @observable domainTitle = '';
 
   constructor(props, context) {
     super(props, context);
@@ -73,7 +74,7 @@ class EnvOverviewHome extends Component {
   componentWillUnmount() {
     const { EnvOverviewStore } = this.props;
     EnvOverviewStore.setIst(null);
-    EnvOverviewStore.setTabKey("app");
+    EnvOverviewStore.setTabKey('app');
     DevopsStore.clearAutoRefresh();
   }
 
@@ -82,17 +83,17 @@ class EnvOverviewHome extends Component {
    */
   handleRefresh = (spin = true) => {
     const { EnvOverviewStore } = this.props;
-    EnvOverviewStore.setVal("");
+    EnvOverviewStore.setVal('');
     const {
       getTabKey,
       getTpEnvId,
       getInfo: { filters, sort, paras },
     } = EnvOverviewStore;
-    const sorter = { field: "", order: "desc" };
+    const sorter = { field: '', order: 'desc' };
     if (sort.column) {
       sorter.field = sort.field || sort.columnKey;
-      if (sort.order === "ascend") {
-        sorter.order = "asc";
+      if (sort.order === 'ascend') {
+        sorter.order = 'asc';
       }
     }
     let searchParam = {};
@@ -117,17 +118,17 @@ class EnvOverviewHome extends Component {
     const { EnvOverviewStore } = this.props;
     EnvOverviewStore.setTabKey(key);
     const envId = EnvOverviewStore.getTpEnvId;
-    const sort = { field: "id", order: "desc" };
+    const sort = { field: 'id', order: 'desc' };
     const post = {
       searchParam: {},
-      param: "",
+      param: '',
     };
     if (this.env.length && envId) {
       this.loadModuleDate(true, key, envId, sort, post);
     }
     EnvOverviewStore.setInfo({
       filters: {},
-      sort: { columnKey: "id", order: "descend" },
+      sort: { columnKey: 'id', order: 'descend' },
       paras: [],
     });
   };
@@ -136,15 +137,15 @@ class EnvOverviewHome extends Component {
     this.loadSync(env);
     this.loadLog(spin, env);
     switch (key) {
-      case "domain":
-        this.loadDomainOrNet(spin, "domain", env, sort, post);
+      case 'domain':
+        this.loadDomainOrNet(spin, 'domain', env, sort, post);
         break;
-      case "network":
-        this.loadDomainOrNet(spin, "net", env, sort, post);
+      case 'network':
+        this.loadDomainOrNet(spin, 'net', env, sort, post);
         break;
-      case "log":
+      case 'log':
         break;
-      case "cert":
+      case 'cert':
         this.loadCertData(spin, env);
         break;
       default:
@@ -199,16 +200,16 @@ class EnvOverviewHome extends Component {
     spin,
     type,
     envId,
-    sort = { field: "id", order: "desc" },
+    sort = { field: 'id', order: 'desc' },
     datas = {
       searchParam: {},
-      param: "",
-    }
+      param: '',
+    },
   ) => {
     const { EnvOverviewStore } = this.props;
     const { id: projectId } = AppState.currentMenuType;
     const pagination = EnvOverviewStore.getPageInfo;
-    if (type === "domain") {
+    if (type === 'domain') {
       EnvOverviewStore.loadDomain(
         spin,
         projectId,
@@ -216,9 +217,9 @@ class EnvOverviewHome extends Component {
         pagination.current - 1,
         pagination.pageSize,
         sort,
-        datas
+        datas,
       );
-    } else if (type === "net") {
+    } else if (type === 'net') {
       EnvOverviewStore.loadNetwork(
         spin,
         projectId,
@@ -226,7 +227,7 @@ class EnvOverviewHome extends Component {
         pagination.current - 1,
         pagination.pageSize,
         sort,
-        datas
+        datas,
       );
     }
   };
@@ -257,23 +258,14 @@ class EnvOverviewHome extends Component {
    * @param envId
    */
   loadCertData = (spin, envId) => {
-    const { page, pageSize } = CertificateStore.getTableFilter;
     const { id: projectId } = AppState.currentMenuType;
-    CertificateStore.loadCertData(
-      spin,
-      projectId,
-      page,
-      pageSize,
-      { field: "id", order: "descend" },
-      { searchParam: {}, param: "" },
-      envId
-    );
+    CertificateStore.loadCertData(spin, projectId, envId);
   };
 
   loadAllDate(envId) {
     this.loadIstOverview(true, envId);
-    this.loadDomainOrNet(true, "domain", envId);
-    this.loadDomainOrNet(true, "net", envId);
+    this.loadDomainOrNet(true, 'domain', envId);
+    this.loadDomainOrNet(true, 'net', envId);
     this.loadLog(true, envId);
     this.loadSync(envId);
     this.loadCertData(true, envId);
@@ -283,21 +275,21 @@ class EnvOverviewHome extends Component {
    *打开域名创建弹框
    */
   @action
-  createDomain = (type, id = "") => {
+  createDomain = (type, id = '') => {
     const {
       form,
       intl: { formatMessage },
     } = this.props;
     form.resetFields();
-    if (type === "create") {
+    if (type === 'create') {
       this.domainTitle = formatMessage({
-        id: "domain.header.create",
+        id: 'domain.header.create',
       });
       this.domainType = type;
       this.domainId = id;
     } else {
       this.domainTitle = formatMessage({
-        id: "domain.header.update",
+        id: 'domain.header.update',
       });
       this.domainType = type;
       this.domainId = id;
@@ -324,13 +316,13 @@ class EnvOverviewHome extends Component {
     this.domainId = null;
     if (isLoad) {
       const envId = EnvOverviewStore.getTpEnvId;
-      this.loadDomainOrNet(true, "domain", envId);
+      this.loadDomainOrNet(true, 'domain', envId);
       EnvOverviewStore.setInfo({
         filters: {},
-        sort: { columnKey: "id", order: "descend" },
+        sort: { columnKey: 'id', order: 'descend' },
         paras: [],
       });
-      EnvOverviewStore.setTabKey("domain");
+      EnvOverviewStore.setTabKey('domain');
     }
   };
 
@@ -344,13 +336,13 @@ class EnvOverviewHome extends Component {
     this.showNetwork = false;
     if (isLoad) {
       const envId = EnvOverviewStore.getTpEnvId;
-      this.loadDomainOrNet(true, "net", envId);
+      this.loadDomainOrNet(true, 'net', envId);
       EnvOverviewStore.setInfo({
         filters: {},
-        sort: { columnKey: "id", order: "descend" },
+        sort: { columnKey: 'id', order: 'descend' },
         paras: [],
       });
-      EnvOverviewStore.setTabKey("network");
+      EnvOverviewStore.setTabKey('network');
     }
   };
 
@@ -374,10 +366,10 @@ class EnvOverviewHome extends Component {
       this.loadCertData(true, envId);
       EnvOverviewStore.setInfo({
         filters: {},
-        sort: { columnKey: "id", order: "descend" },
+        sort: { columnKey: 'id', order: 'descend' },
         paras: [],
       });
-      EnvOverviewStore.setTabKey("cert");
+      EnvOverviewStore.setTabKey('cert');
     }
   };
 
@@ -403,7 +395,7 @@ class EnvOverviewHome extends Component {
       type,
     } = AppState.currentMenuType;
     this.linkToChange(
-      `/devops/deployment-app/envOverview?type=${type}&id=${projectId}&name=${encodeURIComponent(projectName)}&organizationId=${organizationId}&envId=${envId}`
+      `/devops/deployment-app/envOverview?type=${type}&id=${projectId}&name=${encodeURIComponent(projectName)}&organizationId=${organizationId}&envId=${envId}`,
     );
   };
 
@@ -417,8 +409,8 @@ class EnvOverviewHome extends Component {
     const ist = EnvOverviewStore.getIst;
     const stateArr = ist
       ? _.map(ist.devopsEnvPreviewAppDTOS, i =>
-          _.filter(i.applicationInstanceDTOS, a => a.status === state)
-        )
+        _.filter(i.applicationInstanceDTOS, a => a.status === state),
+      )
       : [];
     let length = 0;
     _.map(stateArr, l => {
@@ -432,7 +424,7 @@ class EnvOverviewHome extends Component {
    */
   linkToLogTabs = () => {
     const { EnvOverviewStore } = this.props;
-    EnvOverviewStore.setTabKey("log");
+    EnvOverviewStore.setTabKey('log');
   };
 
   render() {
@@ -458,13 +450,13 @@ class EnvOverviewHome extends Component {
       : { connect: false };
 
     if (envData && envData.length && envId) {
-      DevopsStore.initAutoRefresh("overview", this.handleRefresh);
+      DevopsStore.initAutoRefresh('overview', this.handleRefresh);
     }
 
     // tab页选项
     const tabOption = [
       {
-        key: "app",
+        key: 'app',
         component: (
           <AppOverview
             store={EnvOverviewStore}
@@ -473,10 +465,10 @@ class EnvOverviewHome extends Component {
             envId={envId}
           />
         ),
-        msg: "network.column.app",
+        msg: 'network.column.app',
       },
       {
-        key: "network",
+        key: 'network',
         component: (
           <NetworkOverview
             store={EnvOverviewStore}
@@ -484,10 +476,10 @@ class EnvOverviewHome extends Component {
             envId={envId}
           />
         ),
-        msg: "network.header.title",
+        msg: 'network.header.title',
       },
       {
-        key: "domain",
+        key: 'domain',
         component: (
           <DomainOverview
             store={EnvOverviewStore}
@@ -495,29 +487,29 @@ class EnvOverviewHome extends Component {
             envId={envId}
           />
         ),
-        msg: "domain.header.title",
+        msg: 'domain.header.title',
       },
       {
-        key: "cert",
+        key: 'cert',
         component: <CertTable store={CertificateStore} envId={envId} />,
-        msg: "ctf.head",
+        msg: 'ctf.head',
       },
       {
-        key: "log",
+        key: 'log',
         component: (
           <LogOverview store={EnvOverviewStore} tabkey={tabKey} envId={envId} />
         ),
-        msg: "envoverview.logs",
+        msg: 'envoverview.logs',
       },
     ];
 
-    const istStatusType = ["running", "operating", "stopped", "failed"];
+    const istStatusType = ['running', 'operating', 'stopped', 'failed'];
 
     const menu = (
       <Menu className="c7n-envow-dropdown-link">
         <Menu.Item key="0" disabled={envState && !envState.connect}>
           <Permission
-            service={["devops-service.devops-service.create"]}
+            service={['devops-service.devops-service.create']}
             type={type}
             projectId={projectId}
             organizationId={orgId}
@@ -541,7 +533,7 @@ class EnvOverviewHome extends Component {
         </Menu.Item>
         <Menu.Item key="1" disabled={envState && !envState.connect}>
           <Permission
-            service={["devops-service.devops-ingress.create"]}
+            service={['devops-service.devops-ingress.create']}
             type={type}
             projectId={projectId}
             organizationId={orgId}
@@ -556,7 +548,7 @@ class EnvOverviewHome extends Component {
               <Button
                 funcType="flat"
                 disabled={envState && !envState.connect}
-                onClick={this.createDomain.bind(this, "create", "")}
+                onClick={this.createDomain.bind(this, 'create', '')}
               >
                 <FormattedMessage id="domain.header.create" />
               </Button>
@@ -568,7 +560,7 @@ class EnvOverviewHome extends Component {
             type={type}
             projectId={projectId}
             organizationId={orgId}
-            service={["devops-service.certification.create"]}
+            service={['devops-service.certification.create']}
           >
             <Tooltip
               title={
@@ -633,41 +625,40 @@ class EnvOverviewHome extends Component {
       <Page
         className="c7n-region c7n-app-wrapper"
         service={[
-          "devops-service.application-instance.listByAppId",
-          "devops-service.application-instance.listByAppInstanceId",
-          "devops-service.application-instance.queryValue",
-          "devops-service.application-instance.deploy",
-          "devops-service.application-instance.pageInstances",
-          "devops-service.application-instance.pageByOptions",
-          "devops-service.application-instance.listByAppVersionId",
-          "devops-service.application-instance.queryValues",
-          "devops-service.application-instance.listResources",
-          "devops-service.application-instance.listStages",
-          "devops-service.application-instance.delete",
-          "devops-service.application-instance.start",
-          "devops-service.application-instance.stop",
-          "devops-service.application-instance.restart",
-          "devops-service.application-instance.listByEnv",
-          "devops-service.application-version.getUpgradeAppVersion",
-          "devops-service.devops-env-file-error.page",
-          "devops-service.devops-environment.listByProjectIdAndActive",
-          "devops-service.application.listByEnvIdAndStatus",
-          "devops-service.devops-service.create",
-          "devops-service.devops-service.checkName",
-          "devops-service.devops-service.pageByOptions",
-          "devops-service.devops-service.query",
-          "devops-service.devops-service.update",
-          "devops-service.devops-service.delete",
-          "devops-service.devops-service.listByEnv",
-          "devops-service.devops-ingress.pageByOptions",
-          "devops-service.devops-ingress.queryDomainId",
-          "devops-service.devops-ingress.delete",
-          "devops-service.devops-ingress.create",
-          "devops-service.devops-ingress.listByEnv",
-          "devops-service.certification.listByOptions",
-          "devops-service.certification.create",
-          "devops-service.certification.delete",
-          "devops-service.devops-environment.queryByCode",
+          'devops-service.application-instance.listByAppId',
+          'devops-service.application-instance.listByAppInstanceId',
+          'devops-service.application-instance.queryValue',
+          'devops-service.application-instance.deploy',
+          'devops-service.application-instance.pageInstances',
+          'devops-service.application-instance.pageByOptions',
+          'devops-service.application-instance.listByAppVersionId',
+          'devops-service.application-instance.queryValues',
+          'devops-service.application-instance.listResources',
+          'devops-service.application-instance.listStages',
+          'devops-service.application-instance.delete',
+          'devops-service.application-instance.start',
+          'devops-service.application-instance.stop',
+          'devops-service.application-instance.restart',
+          'devops-service.application-instance.listByEnv',
+          'devops-service.application-version.getUpgradeAppVersion',
+          'devops-service.devops-env-file-error.page',
+          'devops-service.devops-environment.listByProjectIdAndActive',
+          'devops-service.application.listByEnvIdAndStatus',
+          'devops-service.devops-service.create',
+          'devops-service.devops-service.checkName',
+          'devops-service.devops-service.pageByOptions',
+          'devops-service.devops-service.query',
+          'devops-service.devops-service.update',
+          'devops-service.devops-service.delete',
+          'devops-service.devops-service.listByEnv',
+          'devops-service.devops-ingress.pageByOptions',
+          'devops-service.devops-ingress.queryDomainId',
+          'devops-service.devops-ingress.delete',
+          'devops-service.devops-ingress.create',
+          'devops-service.devops-ingress.listByEnv',
+          'devops-service.certification.listByOptions',
+          'devops-service.certification.create',
+          'devops-service.certification.delete',
         ]}
       >
         {envData && envData.length && envId ? (
@@ -676,11 +667,11 @@ class EnvOverviewHome extends Component {
               <Select
                 className={`${
                   envId
-                    ? "c7n-header-select"
-                    : "c7n-header-select c7n-select_min100"
-                }`}
+                    ? 'c7n-header-select'
+                    : 'c7n-header-select c7n-select_min100'
+                  }`}
                 dropdownClassName="c7n-header-env_drop"
-                placeholder={formatMessage({ id: "envoverview.noEnv" })}
+                placeholder={formatMessage({ id: 'envoverview.noEnv' })}
                 value={envData && envData.length ? envId : undefined}
                 disabled={envData && envData.length === 0}
                 onChange={this.handleEnvSelect}
@@ -706,23 +697,23 @@ class EnvOverviewHome extends Component {
                 ))}
               </Select>
               <Permission
-                service={["devops-service.devops-service.create"]}
+                service={['devops-service.devops-service.create']}
                 type={type}
                 projectId={projectId}
                 organizationId={orgId}
               >
                 <div className="c7n-envow-select">
-                  <Dropdown overlay={menu} trigger={["click"]}>
+                  <Dropdown overlay={menu} trigger={['click']}>
                     <a href="#">
                       <Icon type="playlist_add" />
-                      {formatMessage({ id: "create" })}
+                      {formatMessage({ id: 'create' })}
                       <Icon type="arrow_drop_down" />
                     </a>
                   </Dropdown>
                 </div>
               </Permission>
               <Permission
-                service={["devops-service.application-instance.deploy"]}
+                service={['devops-service.application-instance.deploy']}
                 type={type}
                 projectId={projectId}
                 organizationId={orgId}
@@ -790,7 +781,7 @@ class EnvOverviewHome extends Component {
                   <p>
                     <FormattedMessage id="envoverview.description" />
                     <a
-                      href={formatMessage({ id: "envoverview.link" })}
+                      href={formatMessage({ id: 'envoverview.link' })}
                       rel="nofollow me noopener noreferrer"
                       target="_blank"
                       className="c7n-external-link"

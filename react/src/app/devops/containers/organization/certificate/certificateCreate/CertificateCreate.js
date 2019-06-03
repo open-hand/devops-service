@@ -13,9 +13,10 @@ import {
   Button,
 } from 'choerodon-ui';
 import CertConfig from '../../../../components/certConfig';
+import { Provider } from '../../../../components/certConfig/certContext';
 import Tips from '../../../../components/Tips/Tips';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
-import { HEIGHT } from '../../../../common/Constants';
+import { getWindowHeight } from '../../../../common/Constants';
 import { handleCheckerProptError } from '../../../../utils';
 
 import '../../../main.scss';
@@ -25,7 +26,6 @@ import '../../../project/envPipeline/EnvPipeLineHome.scss';
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
 const { Group: RadioGroup } = Radio;
-const { TextArea } = Input;
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
@@ -36,6 +36,7 @@ const formItemLayout = {
     sm: { span: 26 },
   },
 };
+const HEIGHT = getWindowHeight();
 
 @Form.create({})
 @injectIntl
@@ -64,6 +65,7 @@ export default class CertificateCreate extends Component {
       intl: { formatMessage },
       AppState: { currentMenuType: { organizationId } },
     } = this.props;
+
     store.checkCertName(organizationId, value)
       .then(data => {
         if (data && data.failed) {
@@ -117,85 +119,74 @@ export default class CertificateCreate extends Component {
 
     this.setState({ submitting: true });
 
-    let p = null;
-    const submitFunc = {
-      create: data => {
+    form.validateFieldsAndScroll(async (err, data) => {
+      if (!err) {
+        const submitFunc = {
+          create: data => {
+            const formData = new FormData();
+            const { key, cert } = data;
+
+            const dtoData = {
+              projects: data.projects,
+              skipCheckProjectPermission: data.skipCheckProjectPermission,
+              name: data.name,
+              domain: data.domain,
+              keyValue: data.keyValue,
+              certValue: data.certValue,
+            };
+
+            formData.append('key', key.file);
+            formData.append('cert', cert.file);
+            formData.append('orgCertificationDTO', JSON.stringify(dtoData));
+
+            return store.createCert(organizationId, formData);
+          },
+          edit: (data) => {
+            const { getCert, getTagKeys } = store;
+            const proIds = _.map(getTagKeys, t => t.id);
+
+            const _data = {
+              ...data,
+              projects: proIds,
+            };
+
+            return store.updateCert(organizationId, getCert.id, _data);
+          },
+        };
         const _data = {
           ...data,
           skipCheckProjectPermission: checked,
           projects: createSelectedRowKeys,
         };
 
-        p = store.createCert(organizationId, _data);
-      },
-      edit: (data) => {
-        const { getCert, getTagKeys } = store;
-        const proIds = _.map(getTagKeys, t => t.id);
+        const request = submitFunc[showType];
 
-        const _data = {
-          ...data,
-          skipCheckProjectPermission: checked,
-          projects: proIds,
-        };
+        const result = await request(_data).catch(error => {
+          Choerodon.handleResponseError(error);
+          this.setState({ submitting: false });
+        });
 
-        p = store.updateCert(organizationId, getCert.id, _data);
-      },
-    };
+        this.setState({ submitting: false });
 
-    form.validateFieldsAndScroll((err, data) => {
-      if (!err) {
-        submitFunc[showType](data);
-        this.handleResponse(p);
+        if (handleCheckerProptError(result)) {
+          const initSize = HEIGHT <= 900 ? 10 : 15;
+
+          store.initTableFilter();
+          store.loadCertData(
+            organizationId,
+            0,
+            initSize,
+            { field: 'id', order: 'descend' },
+            { searchParam: {}, param: '' },
+          );
+          this.handleClose();
+        }
+
       } else {
         this.setState({ submitting: false });
       }
     });
 
-  };
-
-  /**
-   * 处理创建证书请求所返回的数据
-   * @param promise
-   */
-  handleResponse = async promise => {
-    if (!promise) return;
-
-    const {
-      store,
-      AppState: { currentMenuType: { organizationId } },
-    } = this.props;
-
-    const result = await promise.catch(error => {
-      Choerodon.handleResponseError(error);
-      this.setState({ submitting: false });
-    });
-
-    this.setState({ submitting: false });
-
-    if (handleCheckerProptError(result)) {
-      const initSize = HEIGHT <= 900 ? 10 : 15;
-      const filter = {
-        page: 0,
-        pageSize: initSize,
-        param: [],
-        filters: {},
-        postData: { searchParam: {}, param: '' },
-        sorter: {
-          field: 'id',
-          columnKey: 'id',
-          order: 'descend',
-        },
-      };
-      store.setTableFilter(filter);
-      store.loadCertData(
-        organizationId,
-        0,
-        initSize,
-        { field: 'id', order: 'descend' },
-        { searchParam: {}, param: '' },
-      );
-      this.handleClose();
-    }
   };
 
   /**
@@ -232,18 +223,25 @@ export default class CertificateCreate extends Component {
     }
   };
 
+  changeUploadMode = () => {
+    this.setState({ uploadMode: !this.state.uploadMode });
+  };
+
   onCreateSelectChange = (keys, selected) => {
-    let s = [];
-    const a = this.state.createSelectedTemp.concat(selected);
-    this.setState({ createSelectedTemp: a });
-    _.map(keys, o => {
-      if (_.filter(a, ['id', o]).length) {
-        s.push(_.filter(a, ['id', o])[0]);
+    const { createSelectedTemp } = this.state;
+    const allSelected = createSelectedTemp.concat(selected);
+
+    let _selected = [];
+    _.forEach(keys, key => {
+      const user = _.find(allSelected, ['id', key]);
+      if (user) {
+        _selected.push(user);
       }
     });
+
     this.setState({
       createSelectedRowKeys: keys,
-      createSelected: s,
+      createSelected: _selected,
     });
   };
 
@@ -257,15 +255,19 @@ export default class CertificateCreate extends Component {
     const {
       getTagKeys: tagKeys,
     } = store;
-    let s = [];
-    const a = tagKeys.length ? tagKeys.concat(selected) : this.state.selected.concat(selected);
-    this.setState({ selected: a });
-    _.map(keys, o => {
-      if (_.filter(a, ['id', o]).length) {
-        s.push(_.filter(a, ['id', o])[0]);
+
+    const allSelected = tagKeys.length ? tagKeys.concat(selected) : this.state.selected.concat(selected);
+    this.setState({ selected: allSelected });
+
+    const _selected = [];
+    _.forEach(keys, key => {
+      const user = _.find(allSelected, ['id', key]);
+      if (user) {
+        _selected.push(user);
       }
     });
-    store.setTagKeys(s);
+
+    store.setTagKeys(_selected);
   };
 
   cbChange = (e) => {
@@ -305,14 +307,10 @@ export default class CertificateCreate extends Component {
     }
   };
 
-  changeUploadMode = () => {
-    this.setState({ uploadMode: !this.state.uploadMode });
-  };
-
   render() {
     const {
       showType,
-      form: { getFieldDecorator },
+      form,
       intl: { formatMessage },
       AppState: { currentMenuType: { name } },
       store: {
@@ -324,6 +322,8 @@ export default class CertificateCreate extends Component {
         getTableLoading: tableLoading,
       },
     } = this.props;
+
+    const { getFieldDecorator } = form;
 
     const {
       submitting,
@@ -443,9 +443,9 @@ export default class CertificateCreate extends Component {
                       <FormattedMessage id="ctf.upload.mode" />
                     </Button>
                   </div>
-                  <CertConfig
-                    isUploadMode={uploadMode}
-                  />
+                  <Provider value={form}>
+                    <CertConfig isUploadMode={uploadMode} />
+                  </Provider>
                 </Fragment>}
               </div>
               <div className="c7n-creation-ctf-title">
@@ -464,6 +464,7 @@ export default class CertificateCreate extends Component {
               {checked ? null : <div>
                 <div className="c7n-sidebar-form">
                   <Table
+                    noFilter
                     rowSelection={showType === 'create' ? rowCreateSelection : rowSelection}
                     columns={columns}
                     dataSource={proData}

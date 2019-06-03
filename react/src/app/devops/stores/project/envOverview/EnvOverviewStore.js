@@ -1,13 +1,13 @@
-import { observable, action, computed } from "mobx";
-import { axios, store, stores } from "@choerodon/boot";
-import _ from "lodash";
-import ContainerStore from "../container";
-import CertificateStore from "../certificate";
-import InstancesStore from "../instances/InstancesStore";
-import ConfigMapStore from "../configMap";
-import SecretStore from "../secret";
-import { handleProptError } from "../../../utils";
-import DeploymentPipelineStore from "../deploymentPipeline";
+import { observable, action, computed } from 'mobx';
+import { axios, store, stores } from '@choerodon/boot';
+import _ from 'lodash';
+import ContainerStore from '../container';
+import CertificateStore from '../certificate';
+import InstancesStore from '../instances/InstancesStore';
+import ConfigMapStore from '../configMap';
+import SecretStore from '../secret';
+import { handleProptError } from '../../../utils';
+import DeploymentPipelineStore from '../deploymentPipeline';
 
 const { AppState } = stores;
 
@@ -15,11 +15,12 @@ const HEIGHT =
   window.innerHeight ||
   document.documentElement.clientHeight ||
   document.body.clientHeight;
-@store("EnvOverviewStore")
+
+@store('EnvOverviewStore')
 class EnvOverviewStore {
   @observable isLoading = false;
 
-  @observable val = "";
+  @observable val = '';
 
   @observable envCard = [];
 
@@ -37,7 +38,7 @@ class EnvOverviewStore {
 
   @observable tpEnvId = null;
 
-  @observable tabKey = "app";
+  @observable tabKey = 'app';
 
   @observable pageInfo = {
     current: 1,
@@ -47,7 +48,7 @@ class EnvOverviewStore {
 
   @observable Info = {
     filters: {},
-    sort: { columnKey: "id", order: "descend" },
+    sort: { columnKey: 'id', order: 'descend' },
     paras: [],
   };
 
@@ -159,7 +160,7 @@ class EnvOverviewStore {
     if (Number(this.preProId) !== Number(projectId)) {
       this.setEnvcard([]);
       this.setTpEnvId(null);
-      DeploymentPipelineStore.setProRole("env", "");
+      DeploymentPipelineStore.setProRole('env', '');
     }
     this.setPreProId(projectId);
     return axios
@@ -167,9 +168,9 @@ class EnvOverviewStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          const envSort = _.sortBy(data, ({ connect, permission}) => [-permission, -connect]);
-          const flag = _.filter(envSort, ["permission", true]);
-          const flagConnect = _.filter(flag, ["connect", true]);
+          const envSort = _.sortBy(data, ({ connect, permission }) => [-permission, -connect]);
+          const flag = _.filter(envSort, ['permission', true]);
+          const flagConnect = _.filter(flag, ['connect', true]);
           this.setEnvcard(envSort);
           if (!this.tpEnvId && flagConnect.length) {
             const envId = flagConnect[0].id;
@@ -179,7 +180,7 @@ class EnvOverviewStore {
             this.setTpEnvId(envId);
           } else if (
             flag.length &&
-            _.filter(flag, ["id", this.tpEnvId]).length === 0
+            _.filter(flag, ['id', this.tpEnvId]).length === 0
           ) {
             const envId = flag[0].id;
             this.setTpEnvId(envId);
@@ -188,28 +189,14 @@ class EnvOverviewStore {
           }
           if (data.length && this.tpEnvId) {
             switch (type) {
-              case "container":
+              case 'container':
                 const appId = ContainerStore.getappId;
                 ContainerStore.loadData(false, projectId, this.tpEnvId, appId);
                 break;
-              case "certificate":
-                const {
-                  page,
-                  pageSize,
-                  sorter,
-                  postData,
-                } = CertificateStore.getTableFilter;
-                CertificateStore.loadCertData(
-                  true,
-                  projectId,
-                  page,
-                  pageSize,
-                  sorter,
-                  postData,
-                  this.tpEnvId
-                );
+              case 'certificate':
+                CertificateStore.loadCertData(true, projectId, this.tpEnvId);
                 break;
-              case "instance":
+              case 'instance':
                 const {
                   loadAppNameByEnv,
                   loadInstanceAll,
@@ -228,13 +215,13 @@ class EnvOverviewStore {
                   InstancesStore.changeLoading(false);
                 });
                 break;
-              case "configMap":
+              case 'configMap':
                 ConfigMapStore.loadConfigMap(true, projectId, this.tpEnvId);
                 break;
-              case "secret":
+              case 'secret':
                 SecretStore.loadSecret(true, projectId, this.tpEnvId);
                 break;
-              case "all":
+              case 'all':
                 break;
               default:
                 break;
@@ -254,15 +241,15 @@ class EnvOverviewStore {
     envId,
     datas = {
       searchParam: {},
-      param: "",
-    }
+      param: '',
+    },
   ) => {
     spin && this.changeLoading(true);
     spin && this.setIst(null);
     axios
       .post(
         `/devops/v1/projects/${projectId}/app_instances/${envId}/listByEnv`,
-        JSON.stringify(datas)
+        JSON.stringify(datas),
       )
       .then(data => {
         const res = handleProptError(data);
@@ -279,18 +266,18 @@ class EnvOverviewStore {
     envId,
     page = this.pageInfo.current - 1,
     pageSize = this.pageInfo.pageSize,
-    sort = { field: "id", order: "desc" },
+    sort = { field: 'id', order: 'desc' },
     datas = {
       searchParam: {},
-      param: "",
-    }
+      param: '',
+    },
   ) => {
     spin && this.changeLoading(true);
     return axios
       .post(
         `/devops/v1/projects/${proId}/ingress/${envId}/listByEnv?page=${page}&size=${pageSize}&sort=${sort.field ||
-          "id"},${sort.order}`,
-        JSON.stringify(datas)
+        'id'},${sort.order}`,
+        JSON.stringify(datas),
       )
       .then(data => {
         const res = handleProptError(data);
@@ -309,18 +296,18 @@ class EnvOverviewStore {
     envId,
     page = this.pageInfo.current - 1,
     pageSize = this.pageInfo.pageSize,
-    sort = { field: "id", order: "desc" },
+    sort = { field: 'id', order: 'desc' },
     datas = {
       searchParam: {},
-      param: "",
-    }
+      param: '',
+    },
   ) => {
     spin && this.changeLoading(true);
     return axios
       .post(
         `/devops/v1/projects/${proId}/service/${envId}/listByEnv?page=${page}&size=${pageSize}&sort=${sort.field ||
-          "id"},${sort.order}`,
-        JSON.stringify(datas)
+        'id'},${sort.order}`,
+        JSON.stringify(datas),
       )
       .then(data => {
         const res = handleProptError(data);
@@ -338,12 +325,12 @@ class EnvOverviewStore {
     proId,
     envId,
     page = this.pageInfo.current - 1,
-    pageSize = this.pageInfo.pageSize
+    pageSize = this.pageInfo.pageSize,
   ) => {
     spin && this.changeLoading(true);
     return axios
       .get(
-        `/devops/v1/projects/${proId}/envs/${envId}/error_file/list_by_page?page=${page}&size=${pageSize}`
+        `/devops/v1/projects/${proId}/envs/${envId}/error_file/list_by_page?page=${page}&size=${pageSize}`,
       )
       .then(data => {
         const res = handleProptError(data);
