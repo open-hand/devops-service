@@ -449,9 +449,13 @@
       font-size: 16px;
       color: rgba(0, 0, 0, 0.36);
 
-      div {
+      .c7n-envow-sync-arrow-detail {
         transform: scaleX(3);
       }
+    }
+
+    .c7n-envow-sync-retry {
+      line-height: inherit;
     }
   }
 }

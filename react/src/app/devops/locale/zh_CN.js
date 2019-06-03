@@ -580,6 +580,7 @@ const zhCN = {
   ci_created: '创建中',
   ci_skipped: '未执行',
   ci_manual: '未执行',
+  retry: '重新执行',
 
   // 刷新
   refresh: '刷新',
@@ -1372,6 +1373,8 @@ const zhCN = {
     'DevOps 平台会对部署文件进行解析，并在平台上生成相应的对象',
   'envoverview.commit.carr': '执行后，k8s 平台也会生成相应的对象',
   'envoverview.log.table': '目前部署同步正常，暂无错误信息',
+  'envoverview.log.retry.title': '重试GitOps',
+  'envoverview.log.retry.des': '确定要重试GitOps吗？',
 
   // 证书管理
   'ctf.head': '证书',
