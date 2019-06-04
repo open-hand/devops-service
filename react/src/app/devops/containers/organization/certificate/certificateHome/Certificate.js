@@ -1,35 +1,33 @@
-import React, { Component, Fragment } from "react";
-import { observer, inject } from "mobx-react";
-import { withRouter } from "react-router-dom";
-import { injectIntl, FormattedMessage } from "react-intl";
+import React, { Component, Fragment } from 'react';
+import { observer, inject } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import {
   Content,
   Header,
   Page,
   Permission,
-} from "@choerodon/boot";
-import { Button, Tooltip, Table, Modal } from "choerodon-ui";
-import _ from "lodash";
-import "../../../main.scss";
-import "./Certificate.scss";
-import CertificateCreate from "../certificateCreate";
-import { HEIGHT } from '../../../../common/Constants';
+} from '@choerodon/boot';
+import { Button, Tooltip, Table, Modal } from 'choerodon-ui';
+import _ from 'lodash';
+import CertificateCreate from '../certificateCreate';
+
+import '../../../main.scss';
+import './Certificate.scss';
+import { handleCheckerProptError } from '../../../../utils';
 
 @injectIntl
 @withRouter
 @inject('AppState')
 @observer
-class Certificate extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      deleteCert: null,
-      deleteStatus: false,
-      removeDisplay: false,
-      showType: '',
-      id: null,
-    };
-  }
+export default class Certificate extends Component {
+  state = {
+    deleteCert: null,
+    deleteStatus: false,
+    removeDisplay: false,
+    showType: '',
+    id: null,
+  };
 
   componentDidMount() {
     this.loadCertData();
@@ -37,18 +35,7 @@ class Certificate extends Component {
 
   componentWillUnmount() {
     const { CertificateStore } = this.props;
-    CertificateStore.setTableFilter({
-      page: 0,
-      pageSize: HEIGHT <= 900 ? 10 : 15,
-      param: [],
-      filters: {},
-      postData: { searchParam: {}, param: "" },
-      sorter: {
-        field: "id",
-        columnKey: "id",
-        order: "descend",
-      },
-    });
+    CertificateStore.initTableFilter();
   }
 
   loadCertData = () => {
@@ -56,19 +43,8 @@ class Certificate extends Component {
       CertificateStore,
       AppState: { currentMenuType: { organizationId } },
     } = this.props;
-    const {
-      page,
-      pageSize,
-      sorter,
-      postData,
-    } = CertificateStore.getTableFilter;
-    CertificateStore.loadCertData(
-      organizationId,
-      page,
-      pageSize,
-      sorter,
-      postData,
-    );
+
+    CertificateStore.loadCertData(organizationId);
   };
 
   /**
@@ -83,41 +59,42 @@ class Certificate extends Component {
    */
   closeSideBar = () => {
     const { CertificateStore } = this.props;
-    this.setState({ createSelectedRowKeys: [], createSelected: [], showType: '' });
+    this.setState({
+      createSelectedRowKeys: [],
+      createSelected: [],
+      showType: '',
+    });
     CertificateStore.setCert(null);
   };
 
   /**
    * 删除证书
    */
-  handleDelete = () => {
+  handleDelete = async () => {
     const {
       CertificateStore,
       AppState: { currentMenuType: { organizationId } },
     } = this.props;
     const { deleteCert } = this.state;
+
     this.setState({ deleteStatus: true });
-    CertificateStore.deleteCertById(organizationId, deleteCert)
-      .then(data => {
-        const { page, pageSize, sorter, postData } = CertificateStore.getTableFilter;
-        if (data && data.failed) {
-          this.setState({ deleteStatus: false });
-          Choerodon.prompt(data.message);
-        } else {
-          CertificateStore.loadCertData(
-            organizationId,
-            page,
-            pageSize,
-            sorter,
-            postData,
-          );
-          this.setState({ deleteStatus: false, removeDisplay: false });
-        }
-      })
+
+    const response = await CertificateStore.deleteCertById(organizationId, deleteCert)
       .catch(err => {
         this.setState({ deleteStatus: false });
         Choerodon.handleResponseError(err);
       });
+
+    const result = handleCheckerProptError(response);
+    if (result) {
+      CertificateStore.setTableFilter({ page: 0 });
+      CertificateStore.loadCertData(organizationId);
+      this.setState({
+        removeDisplay: false,
+      });
+    }
+
+    this.setState({ deleteStatus: false });
   };
 
   /**
@@ -142,95 +119,73 @@ class Certificate extends Component {
    * @param pagination
    * @param filters
    * @param sorter
-   * @param paras
+   * @param param
    */
-  tableChange = (pagination, filters, sorter, paras) => {
+  tableChange = ({ current, pageSize }, filters, sorter, param) => {
     const {
       CertificateStore,
       AppState: { currentMenuType: { organizationId } },
     } = this.props;
-    const { current, pageSize } = pagination;
-    const page = current - 1;
+
     const sort = _.isEmpty(sorter)
       ? {
-        field: "id",
-        columnKey: "id",
-        order: "descend",
+        field: 'id',
+        columnKey: 'id',
+        order: 'descend',
       }
       : sorter;
-    const searchParam = {};
-    let param = "";
-    if (!_.isEmpty(filters)) {
-      _.forEach(filters, (value, key) => {
-        if (!_.isEmpty(value)) {
-          searchParam[key === 'name' ? 'certName' : key] = [String(value)];
-        }
-      });
-    }
-    if (paras.length) {
-      param = paras.toString();
-    }
-    const postData = {
-      searchParam,
-      param,
-    };
+
     CertificateStore.setTableFilter({
-      page,
+      page: current - 1,
       pageSize,
-      filters,
-      postData,
+      postData: {
+        searchParam: filters,
+        param: param.toString(),
+      },
       sorter: sort,
-      param: paras,
+      filters,
+      param,
     });
-    CertificateStore.loadCertData(organizationId, page, pageSize, sort, postData);
+    CertificateStore.loadCertData(organizationId);
   };
 
   /**
    * 操作列
-   * @param record
-   * @param type
-   * @param projectId
-   * @param orgId
    */
-  opColumn = (record, type, orgId) => {
-    const { id, name } = record;
+  opColumn = ({ id, name }) => {
+    const btnProps = {
+      shape: 'circle',
+      size: 'small',
+      funcType: 'flat',
+    };
+    const tipProps = {
+      trigger: 'hover',
+      placement: 'bottom',
+    };
+
     return (
       <Fragment>
-        <Permission
-          service={["devops-service.org-certification.update"]}
-          type={type}
-          organizationId={orgId}
-        >
+        <Permission service={['devops-service.org-certification.update']}>
           <Tooltip
-            trigger="hover"
-            placement="bottom"
+            {...tipProps}
             title={<FormattedMessage id="write" />}
           >
             <Button
+              {...btnProps}
               icon="mode_edit"
-              shape="circle"
-              size="small"
-              funcType="flat"
-              onClick={this.showSideBar.bind(this, 'edit', id)}
+              onClick={() => this.showSideBar('edit', id)}
             />
           </Tooltip>
         </Permission>
-        <Permission
-          service={["devops-service.org-certification.deleteOrgCert"]}
-          type={type}
-          organizationId={orgId}
-        >
+        <Permission service={['devops-service.org-certification.deleteOrgCert']}>
           <Tooltip
-            trigger="hover"
-            placement="bottom"
+            {...tipProps}
             title={<FormattedMessage id="delete" />}
           >
             <Button
+              {...btnProps}
               icon="delete_forever"
-              shape="circle"
-              size="small"
-              funcType="flat"
-              onClick={this.openRemoveModal.bind(this, id, name)}
+              onClick={() => this.openRemoveModal(id, name)}
             />
           </Tooltip>
         </Permission>
@@ -238,45 +193,44 @@ class Certificate extends Component {
     );
   };
 
-  getCertTable = () => {
+  get getCertTable() {
     const {
-      intl: {formatMessage},
-      CertificateStore,
-      AppState: { currentMenuType: { organizationId: orgId, type } },
+      intl: { formatMessage },
+      CertificateStore: {
+        getCertLoading,
+        getPageInfo,
+        getCertData,
+        getTableFilter: {
+          filters,
+          param,
+        },
+      },
     } = this.props;
-    const {
-      filters,
-      param,
-    } = CertificateStore.getTableFilter;
-    const {
-      getCertLoading,
-      getPageInfo,
-      getCertData,
-    } = CertificateStore;
 
     const columns = [
       {
-        title: <FormattedMessage id="ctf.column.name"/>,
-        key: "name",
-        dataIndex: "name",
+        title: <FormattedMessage id="ctf.column.name" />,
+        key: 'name',
+        dataIndex: 'name',
         filters: [],
         filteredValue: filters.name || [],
       },
       {
-        title: <FormattedMessage id="ctf.column.ingress"/>,
-        key: "domain",
-        dataIndex: "domain",
+        title: <FormattedMessage id="ctf.column.ingress" />,
+        key: 'domain',
+        dataIndex: 'domain',
       },
       {
-        align: "right",
+        align: 'right',
         width: 105,
-        key: "action",
-        render: record => this.opColumn(record, type, orgId),
+        key: 'action',
+        render: this.opColumn,
       },
     ];
     return (
       <Table
-        filterBarPlaceholder={formatMessage({id: "filter"})}
+        noFilter
+        filterBarPlaceholder={formatMessage({ id: 'filter' })}
         onChange={this.tableChange}
         loading={getCertLoading}
         pagination={getPageInfo}
@@ -288,49 +242,83 @@ class Certificate extends Component {
     );
   };
 
+  get getDeleteModal() {
+    const {
+      intl: { formatMessage },
+    } = this.props;
+    const {
+      removeDisplay,
+      deleteStatus,
+      certName,
+    } = this.state;
+
+    return (<Modal
+      confirmLoading={deleteStatus}
+      visible={removeDisplay}
+      title={`${formatMessage({ id: 'ctf.delete' })}“${certName}”`}
+      closable={false}
+      footer={[
+        <Button
+          key="back"
+          disabled={deleteStatus}
+          onClick={this.closeRemoveModal}
+        >
+          <FormattedMessage id="cancel" />
+        </Button>,
+        <Button
+          key="submit"
+          loading={deleteStatus}
+          type="danger"
+          onClick={this.handleDelete}
+        >
+          <FormattedMessage id="delete" />
+        </Button>,
+      ]}
+    >
+      <div className="c7n-padding-top_8">
+        <FormattedMessage id="ctf.delete.tooltip" />
+      </div>
+    </Modal>);
+  }
+
   render() {
     const {
       CertificateStore,
-      intl: { formatMessage },
       AppState: {
-        currentMenuType: { organizationId: orgId, type, name },
+        currentMenuType: { name },
       },
     } = this.props;
-    const { removeDisplay, deleteStatus, certName, showType, id } = this.state;
+    const {
+      removeDisplay,
+      showType,
+      id,
+    } = this.state;
 
     return (
       <Page
         className="c7n-region c7n-certificate-wrapper"
         service={[
-          "devops-service.org-certification.listOrgCert",
-          "devops-service.org-certification.query",
-          "devops-service.org-certification.pageProjects",
-          "devops-service.org-certification.listCertProjects",
-          "devops-service.org-certification.checkName",
-          "devops-service.org-certification.create",
-          "devops-service.org-certification.update",
-          "devops-service.org-certification.deleteOrgCert",
+          'devops-service.org-certification.listOrgCert',
+          'devops-service.org-certification.query',
+          'devops-service.org-certification.pageProjects',
+          'devops-service.org-certification.listCertProjects',
+          'devops-service.org-certification.checkName',
+          'devops-service.org-certification.create',
+          'devops-service.org-certification.update',
+          'devops-service.org-certification.deleteOrgCert',
         ]}
       >
         <Header title={<FormattedMessage id="certificate.head" />}>
-          <Permission
-            type={type}
-            organizationId={orgId}
-            service={["devops-service.org-certification.create"]}
-          >
+          <Permission service={['devops-service.org-certification.create']}>
             <Button
               funcType="flat"
-              onClick={this.showSideBar.bind(this, 'create')}
               icon="playlist_add"
+              onClick={() => this.showSideBar('create')}
             >
               <FormattedMessage id="ctf.create" />
             </Button>
           </Permission>
-          <Permission
-            type={type}
-            organizationId={orgId}
-            service={["devops-service.org-certification.listOrgCert"]}
-          >
+          <Permission service={['devops-service.org-certification.listOrgCert']}>
             <Button
               onClick={this.loadCertData}
               icon="refresh"
@@ -339,36 +327,14 @@ class Certificate extends Component {
             </Button>
           </Permission>
         </Header>
-        <Content className="page-content" code="certificate" values={{ name }}>
-          {this.getCertTable()}
-        </Content>
-        <Modal
-          confirmLoading={deleteStatus}
-          visible={removeDisplay}
-          title={`${formatMessage({ id: "ctf.delete" })}“${certName}”`}
-          closable={false}
-          footer={[
-            <Button
-              key="back"
-              onClick={this.closeRemoveModal}
-              disabled={deleteStatus}
-            >
-              <FormattedMessage id="cancel" />
-            </Button>,
-            <Button
-              key="submit"
-              loading={deleteStatus}
-              type="danger"
-              onClick={this.handleDelete}
-            >
-              <FormattedMessage id="delete" />
-            </Button>,
-          ]}
+        <Content
+          className="page-content"
+          code="certificate"
+          values={{ name }}
         >
-          <div className="c7n-padding-top_8">
-            <FormattedMessage id="ctf.delete.tooltip" />
-          </div>
-        </Modal>
+          {this.getCertTable}
+        </Content>
+        {removeDisplay && this.getDeleteModal}
         {showType !== '' && (
           <CertificateCreate
             store={CertificateStore}
@@ -381,5 +347,3 @@ class Certificate extends Component {
     );
   }
 }
-
-export default Certificate;

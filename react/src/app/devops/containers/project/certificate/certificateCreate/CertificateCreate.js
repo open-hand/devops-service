@@ -26,7 +26,6 @@ const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
 const { Option } = Select;
 const { Group: RadioGroup } = Radio;
-const HEIGHT = getWindowHeight();
 
 const formItemLayout = {
   labelCol: {
@@ -61,7 +60,7 @@ export default class CertificateCreate extends Component {
   domainCount = 1;
 
   /**
-   * 与域名相同的校验
+   * 域名名称唯一性校验
    */
   checkName = _.debounce((rule, value, callback) => {
     const {
@@ -136,9 +135,11 @@ export default class CertificateCreate extends Component {
         const formData = new FormData();
         const excludeProps = ['domainArr', 'cert', 'key'];
 
+        _data.domains = _.filter(_data.domains);
+
         if (_data.type === CERT_TYPE_CHOOSE) {
-          _data.type = CERT_TYPE_UPLOAD;
-          _data.domains = _.map(data.domains, item => `${item}${suffix}`);
+          _data.type = CERT_TYPE_REQUEST;
+          _data.domains = _.map(_data.domains, item => `${item}${suffix}`);
         } else if (_data.type === CERT_TYPE_UPLOAD && uploadMode) {
           const { key, cert } = data;
 
@@ -181,30 +182,44 @@ export default class CertificateCreate extends Component {
   };
 
   /**
+   * 域名唯一性校验
+   * @param value
+   * @returns {boolean}
+   */
+  isUniqCheck = (value) => {
+    const {
+      form: { getFieldValue },
+    } = this.props;
+    const keyCount = _.countBy(getFieldValue('domains'));
+
+    return keyCount[value] < 2;
+  };
+
+  /**
    * 域名格式检查
    * @param rule
    * @param value
    * @param callback
    */
   checkDomain = (rule, value, callback) => {
-    const { intl, form } = this.props;
+    const {
+      intl: { formatMessage },
+    } = this.props;
     const { type } = this.state;
-    const { getFieldValue } = form;
 
     let pattern = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)+)$/;
-    if (type === 'choose') {
+    if (type === CERT_TYPE_CHOOSE) {
       pattern = /^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)$/;
     }
 
-    const keyCount = _.countBy(getFieldValue('domains'));
     if (pattern.test(value)) {
-      if (keyCount[value] < 2) {
+      if (this.isUniqCheck(value)) {
         callback();
       } else {
-        callback(intl.formatMessage({ id: 'ctf.domain.check.repeat' }));
+        callback(formatMessage({ id: 'ctf.domain.check.repeat' }));
       }
     } else {
-      callback(intl.formatMessage({ id: 'ctf.domain.check.failed' }));
+      callback(formatMessage({ id: 'ctf.domain.check.failed' }));
     }
   };
 
@@ -240,6 +255,7 @@ export default class CertificateCreate extends Component {
     } = this.props;
 
     const keys = getFieldValue('domainArr');
+
     if (keys.length === 1) return;
 
     setFieldsValue({

@@ -93,9 +93,11 @@ export default class CertTable extends Component {
         param: param.toString(),
       },
       sorter: sort,
+      filters,
+      param,
     };
 
-    store.setTableFilter({ ...params, filters, param });
+    store.setTableFilter(params);
     store.loadCertData(true, projectId, envId);
   };
 
@@ -258,17 +260,21 @@ export default class CertTable extends Component {
   render() {
     const {
       intl: { formatMessage },
-      store,
+      store: {
+        getTableFilter: {
+          filters,
+          sorter: { columnKey, order },
+          param,
+        },
+        getCertLoading,
+        getPageInfo,
+        getCertData,
+      },
     } = this.props;
     const {
       deleteLoading,
       deleteArr,
     } = this.state;
-    const {
-      filters,
-      sorter: { columnKey, order },
-      param,
-    } = store.getTableFilter;
 
     const columns = [
       {
@@ -277,11 +283,11 @@ export default class CertTable extends Component {
         dataIndex: 'certName',
         filters: [],
         filteredValue: filters.certName || [],
-        render: (text, record) => (
+        render: (text, { commandStatus, error }) => (
           <StatusIcon
             name={text}
-            status={record.commandStatus || ''}
-            error={record.error || ''}
+            status={commandStatus || ''}
+            error={error || ''}
           />
         ),
       },
@@ -304,8 +310,8 @@ export default class CertTable extends Component {
         filters: [],
         sortOrder: columnKey === 'envName' && order,
         filteredValue: filters.envName || [],
-        render: (record) => (
-          <EnvFlag status={record.envConnected} name={record.envName} />
+        render: ({ envConnected, envName }) => (
+          <EnvFlag status={envConnected} name={envName} />
         ),
       },
       {
@@ -338,9 +344,9 @@ export default class CertTable extends Component {
           noFilter
           filterBarPlaceholder={formatMessage({ id: 'filter' })}
           onChange={this.tableChange}
-          loading={store.getCertLoading}
-          pagination={store.getPageInfo}
-          dataSource={store.getCertData}
+          loading={getCertLoading}
+          pagination={getPageInfo}
+          dataSource={getCertData}
           filters={param.slice()}
           columns={columns}
           rowKey={record => record.id}

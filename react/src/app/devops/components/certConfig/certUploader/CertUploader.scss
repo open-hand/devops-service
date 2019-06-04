@@ -39,5 +39,9 @@
     .c7ncd-upload-disabled {
       cursor: not-allowed;
     }
+
+    .is-validating.has-feedback .c7n-form-item-children:after {
+      display: none;
+    }
   }
 }
