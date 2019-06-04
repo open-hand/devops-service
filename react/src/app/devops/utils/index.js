@@ -254,6 +254,21 @@ function timeConvert(time) {
   return result;
 }
 
+function findAllIndex(collection, value) {
+  if (!Array.isArray(collection)) return;
+
+  let index = -1;
+  const allIndex = [];
+
+  while (index++ < collection.length) {
+    if (collection[index] === value) {
+      allIndex.push(index);
+    }
+  }
+
+  return allIndex;
+}
+
 export {
   handleProptError,
   padZero,
@@ -269,4 +284,5 @@ export {
   matchSpaces,
   handleCheckerProptError,
   timeConvert,
+  findAllIndex,
 };
