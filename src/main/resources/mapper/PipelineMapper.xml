@@ -3,15 +3,27 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineDO">
-        <if test='classifyParam.executor != null and classifyParam.userId != null'>
-            <include refid="executorSql"/>
-        </if>
+        SELECT
+        dp.is_enabled,
+        dp. NAME,
+        dp.trigger_type,
+        dp.created_by,
+        dp.last_update_date,
+        dp.object_version_number,
+        dp.id
+        FROM
+        devops_pipeline dp
+        WHERE
+        dp.project_id = #{projectId}
+        <include refid="sqlparam"/>
         <if test='classifyParam.creator != null and classifyParam.userId != null'>
+            AND dp.trigger_type='manual' and dp.created_by = #{classifyParam.userId}
+        </if>
         <if test='classifyParam.executor != null and classifyParam.userId != null'>
             UNION
+            <include refid="executorSql"/>
         </if>
-            <include refid="creatorSql"/>
-        </if>
+
         <if test="index !=''">
             ORDER BY
             is_enabled DESC,
