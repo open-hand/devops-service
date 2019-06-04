@@ -5,6 +5,7 @@ import _ from 'lodash';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { Collapse, Icon, Tooltip } from 'choerodon-ui';
 import { statusIcon } from '../statusMap';
+import StatusIcon from "../../../../../components/StatusIcon/StatusIcon";
 
 import './DetailCard.scss';
 
@@ -53,6 +54,7 @@ export default class DetailCard extends PureComponent {
          envId,
          instanceId,
          instanceName,
+         envPermission,
        }) => {
         const panelHead = (<div className="c7ncd-pipeline-panel-title">
           <Tooltip
@@ -80,11 +82,8 @@ export default class DetailCard extends PureComponent {
         let instanceNode = null;
 
         if (instanceName) {
-          if (instanceStatus && instanceStatus === INSTANCE_DELETE_STATUS) {
-            instanceNode = <Fragment>
-              <span className="c7ncd-pipeline-tag_delete">{formatMessage({ id: 'deleted' })}</span>
-              {instanceName}
-            </Fragment>;
+          if ((instanceStatus && instanceStatus === INSTANCE_DELETE_STATUS) || !envPermission) {
+            instanceNode = <StatusIcon name={instanceName} status={instanceStatus} width='120px' />
           } else {
             instanceNode = <Link
               to={{
@@ -99,7 +98,7 @@ export default class DetailCard extends PureComponent {
                 },
               }}
             >
-              {instanceName}
+              <StatusIcon name={instanceName} status={instanceStatus} width='120px' />
             </Link>;
           }
         } else {
@@ -139,7 +138,7 @@ export default class DetailCard extends PureComponent {
               {envName}
             </div>
             <div className="c7ncd-pipeline-task">
-              <span className="c7ncd-pipeline-task-label">{formatMessage({ id: 'pipeline.detail.instance' })}</span>
+              <span className="c7ncd-pipeline-task-label c7ncd-pipeline-middle">{formatMessage({ id: 'pipeline.detail.instance' })}</span>
               {instanceNode}
             </div>
           </Fragment>),

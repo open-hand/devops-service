@@ -45,6 +45,10 @@ $light_color: rgba(0, 0, 0, .54);
           color: $light_color;
         }
 
+        .c7ncd-pipeline-middle {
+          vertical-align: middle;
+        }
+
         .c7ncd-pipeline-tag_delete {
           display: inline-block;
           transform: scale(0.8333);

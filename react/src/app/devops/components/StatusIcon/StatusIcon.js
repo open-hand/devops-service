@@ -2,6 +2,7 @@ import React from 'react';
 import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { Tooltip, Progress, Icon } from 'choerodon-ui';
+import classnames from 'classnames';
 import MouseOverWrapper from '../../components/MouseOverWrapper';
 import './StatusIcon.scss';
 
@@ -11,8 +12,12 @@ function StatusIcon(props) {
     error,
     name,
     intl: { formatMessage },
+    width,
   } = props;
   let statusDom = null;
+  const statusClass = classnames({
+    'c7n-status-deleted': status === 'deleted',
+  });
   switch (status) {
     case 'failed':
       const msg = error ? `: ${error}` : '';
@@ -34,6 +39,13 @@ function StatusIcon(props) {
         </Tooltip>
       );
       break;
+    case 'deleted':
+      statusDom = (
+        <Tooltip title={formatMessage({ id: `deleted` })}>
+          <Icon type="cancel" className="c7n-status-deleted" />
+        </Tooltip>
+      );
+      break;
     default:
   }
 
@@ -41,10 +53,10 @@ function StatusIcon(props) {
     <React.Fragment>
       <MouseOverWrapper
         text={name}
-        width={0.15}
+        width={width || 0.15}
         className="c7n-status-text"
       >
-        {name}
+        <span className={statusClass}>{name}</span>
       </MouseOverWrapper>
       {statusDom}
     </React.Fragment>
@@ -55,6 +67,10 @@ StatusIcon.propTypes = {
   status: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   error: PropTypes.string,
+  width: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+  ]),
 };
 
 export default injectIntl(StatusIcon);
