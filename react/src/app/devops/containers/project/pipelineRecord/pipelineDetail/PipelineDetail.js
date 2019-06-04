@@ -86,11 +86,10 @@ export default class PipelineDetail extends Component {
 
   /**
    * 关闭强制失败或重试弹窗
-   * @param flag 是否加载数据
    */
-  closeModal = ( flag) => {
+  closeModal = () => {
     this.setState({ show: false });
-    flag && this.loadingData();
+    this.loadingData();
   };
 
   /**
@@ -157,8 +156,9 @@ export default class PipelineDetail extends Component {
         .then(data => {
           if (data && data.failed) {
             Choerodon.prompt(data.message);
+            this.loadingData();
           } else {
-            this.closeModal(true);
+            this.closeModal();
           }
           this.setState({ submitting: false });
         })
@@ -408,7 +408,7 @@ export default class PipelineDetail extends Component {
           title={formatMessage({ id: `pipeline.${show}.title` })}
           closable={false}
           onOk={this.handleSubmit.bind(this, show)}
-          onCancel={this.closeModal.bind(this, false)}
+          onCancel={this.closeModal}
         >
           <div className="c7n-padding-top_8">
             <FormattedMessage id={`pipeline.${show}.des`} />

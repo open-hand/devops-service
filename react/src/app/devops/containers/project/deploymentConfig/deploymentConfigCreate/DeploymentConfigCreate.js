@@ -314,6 +314,7 @@ class DeploymentConfigCreate extends Component {
                   initialValue: configName || "",
                 })(
                   <Input
+                    autoFocus
                     maxLength={30}
                     type="text"
                     label={<FormattedMessage id="deploymentConfig.name" />}

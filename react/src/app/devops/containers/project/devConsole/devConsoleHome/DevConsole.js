@@ -612,8 +612,8 @@ class DevConsole extends Component {
                 onChange={this.branchChange}
                 value={branchOne ? branchOne.branchName : null}
               >
-                {branchOption}
                 <Option key={'ALL'}><FormattedMessage id="devCs.allBranch" /></Option>
+                {branchOption}
               </Select>
             </div>
           </div>

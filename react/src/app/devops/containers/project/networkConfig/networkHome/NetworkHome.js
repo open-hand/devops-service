@@ -139,45 +139,65 @@ export default class NetworkHome extends Component {
         const { nodePort, port, targetPort } = item;
         portArr.push(
           <div key={port} className="network-config-item">
-            {nodePort || (type === 'NodePort' && <FormattedMessage id="null" />)} {port} {targetPort}
+            {nodePort || (type !== 'ClusterIP' && <FormattedMessage id="null" />)} {port} {targetPort}
           </div>,
         );
       });
     }
-    const content =
-      type === 'NodePort' ? (
-        <Fragment>
-          <div className="network-config-item">
-            <FormattedMessage id="network.node.port" />
-          </div>
-          <div>{portArr}</div>
-        </Fragment>
-      ) : (
-        <Fragment>
-          {type === 'ClusterIP' && (
+    let content = null;
+    switch (type) {
+      case 'ClusterIP':
+        content = (
+          <Fragment>
             <div className="network-config-wrap">
               <div className="network-type-title">
                 <FormattedMessage id="network.column.ip" />
               </div>
               <div>{externalIps ? iPArr : '-'}</div>
             </div>
-          )}
-          <div className="network-config-wrap">
-            <div className="network-type-title">
+            <div className="network-config-wrap">
+              <div className="network-type-title">
+                <FormattedMessage id="network.column.port" />
+              </div>
+              <div>{portArr}</div>
+            </div>
+          </Fragment>
+        );
+        break;
+      case 'NodePort':
+        content = (
+          <Fragment>
+            <div className="network-config-item">
               <FormattedMessage id="network.node.port" />
             </div>
             <div>{portArr}</div>
-          </div>
-          {loadBalanceIp && (
+          </Fragment>
+        );
+        break;
+      case 'LoadBalancer':
+        content = (
+          <Fragment>
             <div className="network-config-wrap">
               <div className="network-type-title">
-                <span>LoadBalancer IP</span>
+                <FormattedMessage id="network.node.port" />
               </div>
-              <div>{loadBalanceIp}</div>
+              <div>{portArr}</div>
             </div>
-          )}
-        </Fragment>
-      );
+            {loadBalanceIp && (
+              <div className="network-config-wrap">
+                <div className="network-type-title">
+                  <span>LoadBalancer IP</span>
+                </div>
+                <div>{loadBalanceIp}</div>
+              </div>
+            )}
+          </Fragment>
+        );
+        break;
+      default:
+        break;
+    }
+
     return (
       <div className="network-column-config">
         <span className="network-config-type">{type}</span>
