@@ -600,9 +600,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         resultMaps.forEach((key, value) -> {
             DevopsEnvPreviewAppDTO devopsEnvPreviewAppDTO = new DevopsEnvPreviewAppDTO();
             devopsEnvPreviewAppDTO.setAppName(key);
-            ApplicationE applicationE = applicationRepository.query(value.get(0).getApplicationE().getId());
-            devopsEnvPreviewAppDTO.setAppCode(applicationE.getCode());
-            devopsEnvPreviewAppDTO.setProjectId(applicationE.getProjectE().getId());
+            devopsEnvPreviewAppDTO.setAppCode(value.get(0).getAppCode());
+            devopsEnvPreviewAppDTO.setProjectId(value.get(0).getProjectId());
+//            ApplicationE applicationE = applicationRepository.query(value.get(0).getApplicationE().getId());
+//            devopsEnvPreviewAppDTO.setAppCode(applicationE.getCode());
+//            devopsEnvPreviewAppDTO.setProjectId(applicationE.getProjectE().getId());
             List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper
                     .convertList(value, ApplicationInstanceDTO.class);
 

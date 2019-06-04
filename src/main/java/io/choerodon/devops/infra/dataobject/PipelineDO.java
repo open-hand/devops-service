@@ -7,6 +7,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -24,6 +25,17 @@ public class PipelineDO extends AuditDomain {
     private String triggerType;
     private Integer isEnabled;
     private Long projectId;
+
+    @Transient
+    private Boolean execute;
+
+    public Boolean getExecute() {
+        return execute;
+    }
+
+    public void setExecute(Boolean execute) {
+        this.execute = execute;
+    }
 
     public Long getId() {
         return id;

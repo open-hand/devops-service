@@ -31,6 +31,15 @@ public class ApplicationInstanceE {
     private Boolean isConnect;
     private Long projectId;
     private Integer isEnabled;
+    private String appCode;
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
 
     public ApplicationInstanceE() {
     }

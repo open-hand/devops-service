@@ -16,6 +16,15 @@ public class PipelineE {
     private Long objectVersionNumber;
     private Date lastUpdateDate;
     private Long createdBy;
+    private Boolean execute;
+
+    public Boolean getExecute() {
+        return execute;
+    }
+
+    public void setExecute(Boolean execute) {
+        this.execute = execute;
+    }
 
     public Long getCreatedBy() {
         return createdBy;
