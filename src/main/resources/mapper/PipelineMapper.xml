@@ -3,27 +3,52 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineDO">
-        SELECT
-        dp.is_enabled,
-        dp. NAME,
-        dp.trigger_type,
-        dp.created_by,
-        dp.last_update_date,
-        dp.object_version_number,
-        dp.id
-        FROM
-        devops_pipeline dp
-        WHERE
-        dp.project_id = #{projectId}
-        <include refid="sqlparam"/>
-        <if test='classifyParam.creator != null and classifyParam.userId != null'>
-            AND dp.trigger_type='manual' and dp.created_by = #{classifyParam.userId}
-        </if>
-        <if test='classifyParam.executor != null and classifyParam.userId != null'>
-            UNION
-            <include refid="executorSql"/>
-        </if>
-
+        <choose>
+            <when test="classifyParam.executor !=null and classifyParam.creator != null">
+                SELECT
+                dp.is_enabled,
+                dp. NAME,
+                dp.trigger_type,
+                dp.created_by,
+                dp.last_update_date,
+                dp.object_version_number,
+                dp.id
+                FROM
+                devops_pipeline dp
+                WHERE
+                dp.project_id = #{projectId}
+                <include refid="sqlparam"/>
+                AND dp.trigger_type='manual' and dp.created_by = #{classifyParam.userId}
+                UNION
+                <include refid="executorSql"/>
+                <if test="index !=''">
+                    ORDER BY
+                    is_enabled DESC,
+                    id DESC
+                </if>
+            </when>
+            <when test="classifyParam.executor != null">
+                <include refid="executorSql"/>
+            </when>
+            <otherwise>
+                SELECT
+                dp.is_enabled,
+                dp. NAME,
+                dp.trigger_type,
+                dp.created_by,
+                dp.last_update_date,
+                dp.object_version_number,
+                dp.id
+                FROM
+                devops_pipeline dp
+                WHERE
+                dp.project_id = #{projectId}
+                <include refid="sqlparam"/>
+                <if test='classifyParam.creator != null and classifyParam.userId != null'>
+                    AND dp.trigger_type='manual' and dp.created_by = #{classifyParam.userId}
+                </if>
+            </otherwise>
+        </choose>
         <if test="index !=''">
             ORDER BY
             is_enabled DESC,
