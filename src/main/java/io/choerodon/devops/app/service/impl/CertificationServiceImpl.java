@@ -129,6 +129,7 @@ public class CertificationServiceImpl implements CertificationService {
         CertificationFileDO certificationFileDO = null;
         //如果创建的时候选择证书
         if (certificationDTO.getCertId() != null) {
+            certificationDTO.setType(UPLOAD);
             CertificationE certificationE = certificationRepository.queryById(certificationDTO.getCertId());
             certificationFileDO = certificationRepository.getCertFile(certificationE.getId());
         }
