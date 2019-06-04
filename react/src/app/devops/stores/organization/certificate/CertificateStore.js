@@ -1,7 +1,7 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import _ from 'lodash';
-import { handleProptError } from '../../../utils';
+import { handleProptError, handleCheckerProptError } from '../../../utils';
 import { SORTER_MAP, getWindowHeight } from '../../../common/Constants';
 
 const HEIGHT = getWindowHeight();
@@ -18,41 +18,14 @@ const INIT_TABLE_FILTER = {
     order: 'descend',
   },
 };
+const INIT_PAGE_INFO = {
+  current: 1,
+  total: 0,
+  pageSize: HEIGHT <= 900 ? 10 : 15,
+};
 
 @store('CertificateStore')
 class CertificateStore {
-  @observable envData = [];
-
-  @observable certData = [];
-
-  @observable loading = false;
-
-  @observable cert = null;
-
-  @observable tableLoading = false;
-
-  @observable proData = [];
-
-  @observable tagKeys = [];
-
-  @observable pageInfo = {
-    current: 1,
-    total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
-  };
-
-  @observable proPageInfo = {
-    current: 1,
-    total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
-  };
-
-  @observable Info = {
-    filters: {},
-    sort: { columnKey: 'id', order: 'descend' },
-    paras: [],
-  };
-
   @observable tableFilter = _.cloneDeep(INIT_TABLE_FILTER);
 
   @action initTableFilter() {
@@ -60,20 +33,37 @@ class CertificateStore {
   }
 
   @action setTableFilter(data) {
-    this.tableFilter = data;
+    this.tableFilter = {
+      ...this.tableFilter,
+      ...data,
+    };
   }
 
   @computed get getTableFilter() {
     return this.tableFilter;
   }
 
-  @action setInfo(Info) {
-    this.Info = Info;
+  @observable projectInfo = {
+    ..._.cloneDeep(INIT_TABLE_FILTER),
+    postData: [],
+  };
+
+  @action initProjectInfo() {
+    this.projectInfo = {
+      ..._.cloneDeep(INIT_TABLE_FILTER),
+      postData: [],
+    };
   }
 
-  @computed get getInfo() {
-    return this.Info;
+  @action setProjectInfo(Info) {
+    this.projectInfo = Info;
   }
+
+  @computed get getProjectInfo() {
+    return this.projectInfo;
+  }
+
+  @observable certData = [];
 
   @action setCertData(data) {
     this.certData = data;
@@ -83,21 +73,27 @@ class CertificateStore {
     return this.certData.slice();
   }
 
+  @observable certLoading = false;
+
   @action setCertLoading(flag) {
-    this.loading = flag;
+    this.certLoading = flag;
   }
 
   @computed get getCertLoading() {
-    return this.loading;
+    return this.certLoading;
+  }
+
+  @observable cert = null;
+
+  @action setCert(data) {
+    this.cert = data;
   }
 
   @computed get getCert() {
     return this.cert;
   }
 
-  @action setCert(data) {
-    this.cert = data;
-  }
+  @observable proData = [];
 
   @action setProData(data) {
     this.proData = data;
@@ -107,6 +103,8 @@ class CertificateStore {
     return this.proData.slice();
   }
 
+  @observable tableLoading = false;
+
   @action setTableLoading(flag) {
     this.tableLoading = flag;
   }
@@ -114,6 +112,8 @@ class CertificateStore {
   @computed get getTableLoading() {
     return this.tableLoading;
   }
+
+  @observable tagKeys = [];
 
   @action setTagKeys(tagKeys) {
     this.tagKeys = tagKeys;
@@ -123,6 +123,8 @@ class CertificateStore {
     return this.tagKeys.slice();
   }
 
+  @observable pageInfo = _.cloneDeep(INIT_PAGE_INFO);
+
   @action setPageInfo(page) {
     this.pageInfo = page;
   }
@@ -131,10 +133,14 @@ class CertificateStore {
     return this.pageInfo;
   }
 
-  @action setProPageInfo(page) {
-    this.proPageInfo.current = page.number + 1;
-    this.proPageInfo.total = page.totalElements;
-    this.proPageInfo.pageSize = page.size;
+  @observable proPageInfo = _.cloneDeep(INIT_PAGE_INFO);
+
+  @action initProPageInfo() {
+    this.proPageInfo = _.cloneDeep(INIT_PAGE_INFO);
+  }
+
+  @action setProPageInfo(data) {
+    this.proPageInfo = data;
   }
 
   @computed get getProPageInfo() {
@@ -144,37 +150,32 @@ class CertificateStore {
   /**
    * 加载证书列表
    * @param orgId
-   * @param page
-   * @param sizes
-   * @param sort
-   * @param filter
    */
-  loadCertData = (orgId, page, sizes, sort, filter) => {
+  loadCertData = async (orgId) => {
     this.setCertLoading(true);
-    axios
-      .post(
-        `/devops/v1/organizations/${orgId}/certs/page_cert?page=${page}&size=${sizes}&sort=${
-          sort.field
-          },${SORTER_MAP[sort.order]}`,
-        JSON.stringify(filter),
-      )
-      .then(data => {
-        this.setCertLoading(false);
-        const res = handleProptError(data);
-        if (res) {
-          const { content, totalElements, number, size } = res;
-          this.setPageInfo({
-            current: number + 1,
-            pageSize: size,
-            total: totalElements,
-          });
-          this.setCertData(content);
-        }
-      })
+
+    const { page, pageSize, sorter, postData } = this.tableFilter;
+    const search = `?page=${page}&size=${pageSize}&sort=${sorter.columnKey},${SORTER_MAP[sorter.order]}`;
+
+    const response = await axios.post(`/devops/v1/organizations/${orgId}/certs/page_cert${search}`, JSON.stringify(postData))
       .catch(err => {
         this.setCertLoading(false);
         Choerodon.handleResponseError(err);
       });
+
+    const result = handleProptError(response);
+    if (result) {
+      const { content, totalElements, number, size } = result;
+
+      this.setPageInfo({
+        current: number + 1,
+        pageSize: size,
+        total: totalElements,
+      });
+      this.setCertData(content);
+    }
+
+    this.setCertLoading(false);
   };
 
   /**
@@ -183,11 +184,10 @@ class CertificateStore {
    * @param id
    */
   loadCertById = (orgId, id) =>
-    axios.get(`/devops/v1/organizations/${orgId}/certs/${id}`)
+    axios
+      .get(`/devops/v1/organizations/${orgId}/certs/${id}`)
       .then(data => {
-        if (data && data.failed) {
-          Choerodon.prompt(data.message);
-        } else {
+        if (handleCheckerProptError(data)) {
           this.setCert(data);
         }
         return data;
@@ -196,31 +196,29 @@ class CertificateStore {
   /**
    * 分页查询项目列表
    */
-  loadPro = (
-    orgId,
-    certId,
-    page = this.proPageInfo.current - 1,
-    size = this.proPageInfo.pageSize,
-    sort = { field: 'id', order: 'desc' },
-    postData = [],
-  ) => {
+  loadProjects = (orgId, certId) => {
     this.setTableLoading(true);
-    const url = certId
-      ? `/devops/v1/organizations/${orgId}/certs/page_projects?certId=${certId}&page=${page}&size=${size}&sort=${sort.field ||
-      'id'},${sort.order}`
-      : `/devops/v1/organizations/${orgId}/certs/page_projects?page=${page}&size=${size}&sort=${sort.field ||
-      'id'},${sort.order}`;
-    return axios.post(url, JSON.stringify(postData)).then(data => {
-      if (data && data.failed) {
-        Choerodon.prompt(data.message);
-      } else {
-        this.setProData(data.content);
-        const { number, size, totalElements } = data;
-        const page = { number, size, totalElements };
-        this.setProPageInfo(page);
-      }
-      this.setTableLoading(false);
-    });
+
+    const { page, pageSize, sorter, postData } = this.projectInfo;
+    const certParam = certId ? `certId=${certId}&` : '';
+    const search = `?${certParam}page=${page}&size=${pageSize}&sort=${sorter.columnKey},${SORTER_MAP[sorter.order]}`;
+
+    axios.post(`/devops/v1/organizations/${orgId}/certs/page_projects${search}`, JSON.stringify(postData))
+      .then(data => {
+        const result = handleProptError(data);
+
+        if (result) {
+          const { number, size, totalElements, content } = result;
+          this.setProData(content);
+          this.setProPageInfo({
+            current: number + 1,
+            total: totalElements,
+            pageSize: size,
+          });
+        }
+
+        this.setTableLoading(false);
+      });
   };
 
   /**
@@ -231,9 +229,7 @@ class CertificateStore {
   loadTagKeys = (orgId, id) =>
     axios.get(`/devops/v1/organizations/${orgId}/certs/list_cert_projects/${id}`)
       .then(data => {
-        if (data && data.failed) {
-          Choerodon.prompt(data.message);
-        } else {
+        if (handleProptError(data)) {
           this.setTagKeys(data);
         }
       });
@@ -244,9 +240,7 @@ class CertificateStore {
    * @param name
    */
   checkCertName = (orgId, name) =>
-    axios.get(
-      `/devops/v1/organizations/${orgId}/certs/check_name?name=${name}`,
-    );
+    axios.get(`/devops/v1/organizations/${orgId}/certs/check_name?name=${name}`);
 
   /**
    * 创建证书
@@ -274,9 +268,7 @@ class CertificateStore {
    * @returns {*}
    */
   deleteCertById = (orgId, id) =>
-    axios.delete(
-      `/devops/v1/organizations/${orgId}/certs/${id}`,
-    );
+    axios.delete(`/devops/v1/organizations/${orgId}/certs/${id}`);
 }
 
 const certificateStore = new CertificateStore();

@@ -12,11 +12,11 @@ import {
   Tag,
   Button,
 } from 'choerodon-ui';
+import classnames from 'classnames';
 import CertConfig from '../../../../components/certConfig';
 import { Provider } from '../../../../components/certConfig/certContext';
 import Tips from '../../../../components/Tips/Tips';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
-import { getWindowHeight } from '../../../../common/Constants';
 import { handleCheckerProptError } from '../../../../utils';
 
 import '../../../main.scss';
@@ -36,7 +36,6 @@ const formItemLayout = {
     sm: { span: 26 },
   },
 };
-const HEIGHT = getWindowHeight();
 
 @Form.create({})
 @injectIntl
@@ -86,8 +85,9 @@ export default class CertificateCreate extends Component {
     } = this.props;
 
     if (showType === 'edit') {
-      store.loadPro(organizationId, id);
+      store.loadProjects(organizationId, id);
       store.loadTagKeys(organizationId, id);
+
       const response = await store.loadCertById(organizationId, id)
         .catch(e => {
           Choerodon.handleResponseError(e);
@@ -95,11 +95,11 @@ export default class CertificateCreate extends Component {
 
       if (handleCheckerProptError(response)) {
         this.setState({
-          checked: data.skipCheckProjectPermission,
+          checked: response.skipCheckProjectPermission,
         });
       }
     } else {
-      store.loadPro(organizationId, null);
+      store.loadProjects(organizationId);
     }
   }
 
@@ -115,6 +115,7 @@ export default class CertificateCreate extends Component {
     const {
       checked,
       createSelectedRowKeys,
+      uploadMode,
     } = this.state;
 
     this.setState({ submitting: true });
@@ -124,20 +125,20 @@ export default class CertificateCreate extends Component {
         const submitFunc = {
           create: data => {
             const formData = new FormData();
-            const { key, cert } = data;
+            const excludeProps = ['domainArr', 'cert', 'key'];
 
-            const dtoData = {
-              projects: data.projects,
-              skipCheckProjectPermission: data.skipCheckProjectPermission,
-              name: data.name,
-              domain: data.domain,
-              keyValue: data.keyValue,
-              certValue: data.certValue,
-            };
+            if (uploadMode) {
+              const { key, cert } = data;
 
-            formData.append('key', key.file);
-            formData.append('cert', cert.file);
-            formData.append('orgCertificationDTO', JSON.stringify(dtoData));
+              formData.append('key', key.file);
+              formData.append('cert', cert.file);
+            }
+
+            _.forEach(data, (value, k) => {
+              if (!_.includes(excludeProps, k)) {
+                formData.append(k, value);
+              }
+            });
 
             return store.createCert(organizationId, formData);
           },
@@ -153,12 +154,12 @@ export default class CertificateCreate extends Component {
             return store.updateCert(organizationId, getCert.id, _data);
           },
         };
+
         const _data = {
           ...data,
           skipCheckProjectPermission: checked,
           projects: createSelectedRowKeys,
         };
-
         const request = submitFunc[showType];
 
         const result = await request(_data).catch(error => {
@@ -169,24 +170,15 @@ export default class CertificateCreate extends Component {
         this.setState({ submitting: false });
 
         if (handleCheckerProptError(result)) {
-          const initSize = HEIGHT <= 900 ? 10 : 15;
-
           store.initTableFilter();
-          store.loadCertData(
-            organizationId,
-            0,
-            initSize,
-            { field: 'id', order: 'descend' },
-            { searchParam: {}, param: '' },
-          );
+          store.loadCertData(organizationId);
+
           this.handleClose();
         }
-
       } else {
         this.setState({ submitting: false });
       }
     });
-
   };
 
   /**
@@ -194,16 +186,8 @@ export default class CertificateCreate extends Component {
    */
   handleClose = () => {
     const { onClose, store } = this.props;
-    store.setInfo({
-      filters: {},
-      sort: { columnKey: 'id', order: 'descend' },
-      paras: [],
-    });
-    store.setProPageInfo({
-      number: 0,
-      size: HEIGHT <= 900 ? 10 : 15,
-      totalElements: 0,
-    });
+    store.initProjectInfo();
+    store.initProPageInfo();
     onClose();
   };
 
@@ -281,56 +265,54 @@ export default class CertificateCreate extends Component {
    * @param sorter
    * @param paras
    */
-  tableChange = (pagination, filters, sorter, paras) => {
+  tableChange = ({ current, pageSize }, filters, sorter, param) => {
     const {
       store,
       showType,
       AppState: { currentMenuType: { organizationId } },
     } = this.props;
-    store.setInfo({ filters, sort: sorter, paras });
-    let sort = { field: '', order: 'desc' };
-    if (sorter.column) {
-      sort.field = sorter.field || sorter.columnKey;
-      if (sorter.order === 'ascend') {
-        sort.order = 'asc';
-      } else if (sorter.order === 'descend') {
-        sort.order = 'desc';
+
+    const sort = _.isEmpty(sorter)
+      ? {
+        field: 'id',
+        columnKey: 'id',
+        order: 'descend',
       }
-    }
-    let page = pagination.current - 1;
-    const postData = [paras.toString()];
+      : sorter;
+
+    store.setProjectInfo({
+      page: current - 1,
+      postData: [param.toString()],
+      pageSize,
+      filters,
+      sorter: sort,
+      param,
+    });
+
     if (showType === 'create') {
-      store.loadPro(organizationId, null, page, pagination.pageSize, sort, postData);
+      store.loadProjects(organizationId);
     } else {
       const id = store.getCert ? store.getCert.id : null;
-      store.loadPro(organizationId, id, page, pagination.pageSize, sort, postData);
+      store.loadProjects(organizationId, id);
     }
   };
 
-  render() {
+  get getProjectContent() {
     const {
       showType,
-      form,
       intl: { formatMessage },
-      AppState: { currentMenuType: { name } },
       store: {
-        getCert,
-        getInfo: { paras },
+        getProjectInfo: { param },
         getProPageInfo,
-        getProData: proData,
+        getProData,
         getTagKeys: tagKeys,
-        getTableLoading: tableLoading,
+        getTableLoading,
       },
     } = this.props;
 
-    const { getFieldDecorator } = form;
-
     const {
-      submitting,
-      checked,
       createSelectedRowKeys,
       createSelected,
-      uploadMode,
     } = this.state;
 
     const rowCreateSelection = {
@@ -358,7 +340,7 @@ export default class CertificateCreate extends Component {
       </Tag>,
     );
 
-    const tagDom = _.map(tagKeys, (t) => t
+    const tagDom = _.map(tagKeys, t => t
       ? <Tag className="c7n-env-tag" key={t.id}>
         {t.name} {t.code}
       </Tag>
@@ -366,11 +348,65 @@ export default class CertificateCreate extends Component {
     );
 
     return (
+      <Fragment>
+        <div className="c7n-sidebar-form">
+          <Table
+            noFilter
+            rowSelection={showType === 'create' ? rowCreateSelection : rowSelection}
+            columns={columns}
+            dataSource={getProData}
+            filterBarPlaceholder={formatMessage({ id: 'filter' })}
+            pagination={getProPageInfo}
+            loading={getTableLoading}
+            onChange={this.tableChange}
+            rowKey={record => record.id}
+            filters={param.slice()}
+          />
+        </div>
+        <div className="c7n-env-tag-title">
+          <FormattedMessage id="cluster.authority.project" />
+        </div>
+        <div className="c7n-env-tag-wrap">
+          {showType === 'create' ? tagCreateDom : tagDom}
+        </div>
+      </Fragment>
+    );
+  }
+
+  render() {
+    const {
+      showType,
+      form,
+      intl: { formatMessage },
+      AppState: { currentMenuType: { name } },
+      store: { getCert },
+    } = this.props;
+
+    const { getFieldDecorator } = form;
+
+    const {
+      submitting,
+      checked,
+      uploadMode,
+    } = this.state;
+
+    const isCreateMode = showType === 'create';
+
+    const panelClass = classnames({
+      'c7n-creation-panel': isCreateMode,
+    });
+
+    const itemClass = classnames({
+      'c7n-select_480': isCreateMode,
+      'c7n-select_512': !isCreateMode,
+    });
+
+    return (
       <div className="c7n-region">
         <Sidebar
           destroyOnClose
           cancelText={<FormattedMessage id="cancel" />}
-          okText={<FormattedMessage id={`${showType === 'create' ? showType : 'save'}`} />}
+          okText={<FormattedMessage id={`${isCreateMode ? showType : 'save'}`} />}
           title={<FormattedMessage id={`ctf.sidebar.${showType}`} />}
           visible={showType !== ''}
           onOk={this.handleSubmit}
@@ -391,7 +427,7 @@ export default class CertificateCreate extends Component {
                       message: formatMessage({ id: 'required' }),
                     },
                     {
-                      validator: showType === 'create' ? this.checkName : null,
+                      validator: isCreateMode ? this.checkName : null,
                     },
                   ],
                   initialValue: getCert ? getCert.name : '',
@@ -404,12 +440,12 @@ export default class CertificateCreate extends Component {
                   />,
                 )}
               </FormItem>
-              {showType === 'create' && <div className="c7n-creation-ctf-title">
+              {isCreateMode && <div className="c7n-creation-ctf-title">
                 <FormattedMessage id="ctf.upload" />
               </div>}
-              <div className={showType === 'create' ? 'c7n-creation-panel' : ''}>
+              <div className={panelClass}>
                 <FormItem
-                  className={`c7n-select_${showType === 'create' ? '480' : '512'}`}
+                  className={itemClass}
                   {...formItemLayout}
                 >
                   {getFieldDecorator('domain', {
@@ -419,7 +455,7 @@ export default class CertificateCreate extends Component {
                         message: formatMessage({ id: 'required' }),
                       },
                       {
-                        validator: showType === 'create' ? this.checkDomain : null,
+                        validator: isCreateMode ? this.checkDomain : null,
                       },
                     ],
                     initialValue: getCert ? getCert.domain : '',
@@ -432,7 +468,7 @@ export default class CertificateCreate extends Component {
                     />,
                   )}
                 </FormItem>
-                {showType === 'create' && <Fragment>
+                {isCreateMode && <Fragment>
                   <div className="c7n-creation-add-title">
                     <Tips type="title" data="certificate.file.add" />
                     <Button
@@ -461,28 +497,7 @@ export default class CertificateCreate extends Component {
                   <Radio value={false}><FormattedMessage id="cluster.project.part" /></Radio>
                 </RadioGroup>
               </div>
-              {checked ? null : <div>
-                <div className="c7n-sidebar-form">
-                  <Table
-                    noFilter
-                    rowSelection={showType === 'create' ? rowCreateSelection : rowSelection}
-                    columns={columns}
-                    dataSource={proData}
-                    filterBarPlaceholder={formatMessage({ id: 'filter' })}
-                    pagination={getProPageInfo}
-                    loading={tableLoading}
-                    onChange={this.tableChange}
-                    rowKey={record => record.id}
-                    filters={paras.slice()}
-                  />
-                </div>
-                <div className="c7n-env-tag-title">
-                  <FormattedMessage id="cluster.authority.project" />
-                </div>
-                <div className="c7n-env-tag-wrap">
-                  {showType === 'create' ? tagCreateDom : tagDom}
-                </div>
-              </div>}
+              {!checked && this.getProjectContent}
             </Form>
             <InterceptMask visible={submitting} />
           </Content>

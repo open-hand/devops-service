@@ -10,6 +10,7 @@ import {
 } from '@choerodon/boot';
 import { Select, Button, Tooltip } from 'choerodon-ui';
 import _ from 'lodash';
+import classnames from 'classnames';
 import CertTable from '../certTable';
 import CertificateCreate from '../certificateCreate';
 import EnvOverviewStore from '../../../../stores/project/envOverview';
@@ -88,26 +89,99 @@ export default class Certificate extends Component {
     this.loadCertData(true, value);
   };
 
-  render() {
+  get getContent() {
     const {
       CertificateStore,
       intl: { formatMessage },
       AppState: {
         currentMenuType: {
-          type,
-          id: projectId,
-          organizationId,
           name,
         },
       },
     } = this.props;
-    const { createDisplay } = this.state;
 
     const envData = EnvOverviewStore.getEnvcard;
     const envId = EnvOverviewStore.getTpEnvId;
     const envState = _.filter(envData, { id: envId, connect: true });
 
-    if (envData && envData.length && envId) {
+    const selectClass = classnames({
+      'c7n-header-select': true,
+      'c7n-select_min100': !envId,
+    });
+
+    const envOptions = _.map(envData, ({ connect, id, permission, name }) => {
+      const envOptionClass = classnames({
+        'c7ncd-status': true,
+        'c7ncd-status-success': connect,
+        'c7ncd-status-disconnect': !connect,
+      });
+
+      return (<Option
+        key={id}
+        value={id}
+        disabled={!permission}
+        title={name}
+      >
+        <Tooltip placement="right" title={name}>
+          <span className="c7n-ib-width_100">
+            <span className={envOptionClass} />
+            {name}
+          </span>
+        </Tooltip>
+      </Option>);
+    });
+
+    return (<Fragment>
+      <Header title={<FormattedMessage id="ctf.head" />}>
+        <Select
+          className={selectClass}
+          dropdownClassName="c7n-header-env_drop"
+          placeholder={formatMessage({ id: 'envoverview.noEnv' })}
+          value={envData && envData.length ? envId : undefined}
+          disabled={envData && envData.length === 0}
+          onChange={this.handleEnvSelect}
+        >
+          {envOptions}
+        </Select>
+        <Permission
+          service={['devops-service.certification.create']}
+        >
+          <Button
+            funcType="flat"
+            onClick={this.openCreateModal}
+            icon="playlist_add"
+            disabled={!(envState && envState.length)}
+          >
+            <FormattedMessage id="ctf.create" />
+          </Button>
+        </Permission>
+        <RefreshBtn name="cert" onFresh={this.reload} />
+      </Header>
+      <Content
+        className="page-content"
+        code="ctf"
+        values={{ name }}
+      >
+        <CertTable
+          store={CertificateStore}
+          envId={envId}
+        />
+      </Content>
+    </Fragment>);
+  }
+
+  render() {
+    const {
+      CertificateStore,
+    } = this.props;
+    const { createDisplay } = this.state;
+
+    const envData = EnvOverviewStore.getEnvcard;
+    const envId = EnvOverviewStore.getTpEnvId;
+
+    const hasEnv = envData && envData.length && envId;
+
+    if (hasEnv) {
       DevopsStore.initAutoRefresh('cert', this.reload);
     }
 
@@ -122,68 +196,13 @@ export default class Certificate extends Component {
           'devops-service.certification.listOrgCert',
         ]}
       >
-        {envData && envData.length && envId ? (
-          <Fragment>
-            <Header title={<FormattedMessage id="ctf.head" />}>
-              <Select
-                className={`${
-                  envId
-                    ? 'c7n-header-select'
-                    : 'c7n-header-select c7n-select_min100'
-                  }`}
-                dropdownClassName="c7n-header-env_drop"
-                placeholder={formatMessage({ id: 'envoverview.noEnv' })}
-                value={envData && envData.length ? envId : undefined}
-                disabled={envData && envData.length === 0}
-                onChange={this.handleEnvSelect}
-              >
-                {_.map(envData, e => (
-                  <Option
-                    key={e.id}
-                    value={e.id}
-                    disabled={!e.permission}
-                    title={e.name}
-                  >
-                    <Tooltip placement="right" title={e.name}>
-                      <span className="c7n-ib-width_100">
-                        {e.connect ? (
-                          <span className="c7ncd-status c7ncd-status-success" />
-                        ) : (
-                          <span className="c7ncd-status c7ncd-status-disconnect" />
-                        )}
-                        {e.name}
-                      </span>
-                    </Tooltip>
-                  </Option>
-                ))}
-              </Select>
-              <Permission
-                type={type}
-                projectId={projectId}
-                organizationId={organizationId}
-                service={['devops-service.certification.create']}
-              >
-                <Button
-                  funcType="flat"
-                  onClick={this.openCreateModal}
-                  icon="playlist_add"
-                  disabled={!(envState && envState.length)}
-                >
-                  <FormattedMessage id="ctf.create" />
-                </Button>
-              </Permission>
-              <RefreshBtn name="cert" onFresh={this.reload} />
-            </Header>
-            <Content className="page-content" code="ctf" values={{ name }}>
-              <CertTable store={CertificateStore} envId={envId} />
-            </Content>
-          </Fragment>
-        ) : (
-          <DepPipelineEmpty
+        {hasEnv
+          ? (this.getContent)
+          : (<DepPipelineEmpty
             title={<FormattedMessage id="ctf.head" />}
             type="env"
-          />
-        )}
+          />)
+        }
         {createDisplay && (
           <CertificateCreate
             visible={createDisplay}
