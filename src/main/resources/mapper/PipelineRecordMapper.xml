@@ -4,7 +4,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineRecordMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
         SELECT
-        distinct dpr.id,
+        dpr.id,
         dpr. STATUS,
         dpr.trigger_type,
         dpr.pipeline_name,
@@ -19,16 +19,23 @@
         <if test="pipelineId != null">
             AND dpr.pipeline_id = #{pipelineId}
         </if>
-        <if test="classifyParam.executed != null">
-            OR(dpr.created_by = #{classifyParam.userId} AND dpr.trigger_type = 'manual')
-        </if>
-        <if test="classifyParam.pendingcheck != null">
-            OR(dpr.`status`='pendingcheck')
-        </if>
+        <choose>
+            <when test="classifyParam.executed !=null and classifyParam.pendingcheck != null">
+                AND(dpr.created_by = #{classifyParam.userId} AND dpr.trigger_type = 'manual' OR dpr.`status`='pendingcheck')
+            </when>
+            <when test="classifyParam.executed != null">
+                AND(dpr.created_by = #{classifyParam.userId} AND dpr.trigger_type = 'manual')
+            </when>
+            <when test="classifyParam.pendingcheck != null">
+                AND dpr.`status`='pendingcheck'
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
         <include refid="sqlparam"/>
         <if test='classifyParam.reviewed'>
             UNION
-            <include refid="classifySql"/>
+            <include refid="reviewedSql"/>
         </if>
     </select>
 
@@ -74,7 +81,7 @@
         </if>
     </sql>
 
-    <sql id="classifySql">
+    <sql id="reviewedSql">
         SELECT
         distinct dpr.id,
         dpr. STATUS,
