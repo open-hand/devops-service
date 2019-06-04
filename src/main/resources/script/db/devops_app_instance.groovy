@@ -28,11 +28,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_instance.groovy') {
     }
 
 
-    changeSet(author: 'younger', id: '2018-09-10-add-column')
-            {
-                addColumn(tableName: 'devops_app_instance') {
-                    column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id', afterColumn: 'env_id')
-                }
-            }
+    changeSet(author: 'younger', id: '2018-09-10-add-column') {
+        addColumn(tableName: 'devops_app_instance') {
+            column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id', afterColumn: 'env_id')
+        }
+    }
 
+    changeSet(author: 'scp', id: '2019-06-04-idx-app-id') {
+        createIndex(indexName: "idx_app_id ", tableName: "devops_app_instance") {
+            column(name: "app_id")
+        }
+    }
 }

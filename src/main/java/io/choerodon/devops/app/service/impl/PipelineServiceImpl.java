@@ -181,15 +181,15 @@ public class PipelineServiceImpl implements PipelineService {
             t.setCreateUserName(userE.getLoginName());
             t.setCreateUserUrl(userE.getImageUrl());
             t.setCreateUserRealName(userE.getRealName());
-            if (t.getIsEnabled() == 1) {
-                t.setExecute(pipelineUserRelRepository.listByOptions(t.getId(), null, null)
-                        .stream()
-                        .map(PipelineUserRelE::getUserId)
-                        .collect(Collectors.toList())
-                        .contains(DetailsHelper.getUserDetails().getUserId()));
-            } else {
-                t.setExecute(false);
-            }
+//            if (t.getIsEnabled() == 1) {
+//                t.setExecute(pipelineUserRelRepository.listByOptions(t.getId(), null, null)
+//                        .stream()
+//                        .map(PipelineUserRelE::getUserId)
+//                        .collect(Collectors.toList())
+//                        .contains(DetailsHelper.getUserDetails().getUserId()));
+//            } else {
+//                t.setExecute(false);
+//            }
             t.setEdit(true);
             //是否拥有环境权限.没有环境权限不可编辑
             List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(t.getId());

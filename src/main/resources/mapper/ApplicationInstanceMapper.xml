@@ -11,6 +11,7 @@
         dam.description,
         da.id appId,
         da.project_id projectId,
+        da.code as appCode,
         da.`name` appName,
         dav.version appVersion,
         dav.id appVersionId,
