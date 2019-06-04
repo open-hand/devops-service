@@ -182,7 +182,7 @@ export default class CertificateCreate extends Component {
   };
 
   /**
-   * 域名唯一性校验
+   * 添加域名时唯一性校验
    * @param value
    * @returns {boolean}
    */
@@ -251,6 +251,7 @@ export default class CertificateCreate extends Component {
       form: {
         getFieldValue,
         setFieldsValue,
+        validateFields,
       },
     } = this.props;
 
@@ -261,6 +262,11 @@ export default class CertificateCreate extends Component {
     setFieldsValue({
       domainArr: _.filter(keys, key => key !== k),
     });
+    setFieldsValue({
+      [`domains[${k}]`]: undefined,
+    });
+
+    validateFields(['domains'], { force: true });
   };
 
   /**
@@ -427,8 +433,8 @@ export default class CertificateCreate extends Component {
             <Input
               type="text"
               maxLength={50}
-              label={<FormattedMessage id="ctf.config.domain" />}
               suffix={suffix}
+              label={<FormattedMessage id="ctf.config.domain" />}
               disabled={type === 'choose' && !certId}
             />,
           )}
