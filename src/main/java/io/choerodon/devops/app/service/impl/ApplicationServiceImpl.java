@@ -809,7 +809,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
 
-
         try {
             // 设置appliation的属性
             String applicationToken = getApplicationToken(gitlabProjectDO.getId(), devOpsAppImportPayload.getUserId());
@@ -1198,7 +1197,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsAppPayload.setAppId(applicationE.getId());
         devOpsAppPayload.setIamProjectId(iamAppPayLoad.getProjectId());
         //0.14.0-0.15.0的时候，同步已有的app到iam，此时app已经存在gitlab project,不需要再创建
-        if (applicationE.getGitlabProjectE().getId() == null) {
+        if (applicationE.getGitlabProjectE() == null) {
             String input = gson.toJson(devOpsAppPayload);
             sagaClient.startSaga("devops-create-gitlab-project", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), iamAppPayLoad.getProjectId()));
         }
