@@ -810,6 +810,7 @@ class AppHome extends Component {
                 ],
               })(
                 <Input
+                  autoFocus
                   maxLength={30}
                   label={<FormattedMessage id="app.code" />}
                   size="default"
@@ -833,6 +834,7 @@ class AppHome extends Component {
               initialValue: singleData ? singleData.name : '',
             })(
               <Input
+                autoFocus={modeType === 'edit'}
                 maxLength={20}
                 label={<FormattedMessage id="app.name" />}
                 size="default"

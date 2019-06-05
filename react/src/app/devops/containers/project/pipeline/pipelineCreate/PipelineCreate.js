@@ -261,6 +261,7 @@ export default class PipelineCreate extends Component {
               }],
             })(
               <Input
+                autoFocus
                 className="c7n-select_512"
                 label={<FormattedMessage id="name" />}
                 type="text"

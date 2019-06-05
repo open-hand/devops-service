@@ -102,7 +102,7 @@ class CodeQuality extends Component {
                       <Icon type={icon} />
                       <span className="detail-content-block-title">{formatMessage({ id: `codeQuality.${key}`})}：</span>
                       {url ? (
-                        <a href={url} target="_blank">
+                        <a href={url} target="_blank" rel="nofollow me noopener noreferrer">
                           <span className="block-number-link">{value}</span>
                           {isPercent && <span className="block-number-percentage">%</span>}
                         </a>) : (

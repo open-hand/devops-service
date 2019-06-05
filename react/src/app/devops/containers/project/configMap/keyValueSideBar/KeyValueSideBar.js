@@ -480,6 +480,7 @@ export default class KeyValueSideBar extends Component {
           initialValue: data ? data.description : null,
         })(
           <TextArea
+            autoFocus={!!id}
             autosize={{ minRows: 2 }}
             maxLength={30}
             label={<FormattedMessage id="configMap.des" />}
