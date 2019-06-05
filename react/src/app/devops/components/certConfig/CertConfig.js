@@ -8,8 +8,8 @@ import PropTypes from 'prop-types';
 import CertUploader from './certUploader';
 import CertTextarea from './certTextarea';
 
-function CertConfig({ isUploadMode }) {
-  return isUploadMode ? <CertUploader /> : <CertTextarea />;
+function CertConfig(isUploadMode, propsForm, formatMessage) {
+  return isUploadMode ? <CertUploader propsForm={propsForm} /> : CertTextarea(propsForm, formatMessage);
 }
 
 CertConfig.propTypes = {

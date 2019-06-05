@@ -10,7 +10,6 @@ import {
 } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import classnames from 'classnames';
-import { Consumer } from '../certContext';
 
 import './CertUploader.scss';
 
@@ -88,6 +87,11 @@ export default class CertUploader extends PureComponent {
 
   render() {
     const {
+      propsForm: {
+        getFieldDecorator,
+      },
+    } = this.props;
+    const {
       keyDisabled,
       crtDisabled,
     } = this.state;
@@ -110,51 +114,49 @@ export default class CertUploader extends PureComponent {
       <div className="c7n-upload-text">Upload</div>
     </Fragment>;
 
-    return <Consumer>
-      {(form) => (<div className="c7ncd-cert-upload">
-        <div className="c7ncd-cert-upload-item">
-          <h4><FormattedMessage id="ctf.certFile" /></h4>
-          <FormItem{...formItemLayout}>
-            {form.getFieldDecorator('cert', {
-              rules: [{
-                validator: this.checkCrtFile,
-              }],
-            })(
-              <Upload
-                {...uploadProps}
-                disabled={crtDisabled}
-                beforeUpload={file => this.beforeUpload(file, 'crt')}
-                onRemove={this.removeCert}
-              >
-                <div className={crtUploadClass}>
-                  {uploadBtn}
-                </div>
-              </Upload>,
-            )}
-          </FormItem>
-        </div>
-        <div className="c7ncd-cert-upload-item">
-          <h4><FormattedMessage id="ctf.keyFile" /></h4>
-          <FormItem{...formItemLayout}>
-            {form.getFieldDecorator('key', {
-              rules: [{
-                validator: this.checkKeyFile,
-              }],
-            })(
-              <Upload
-                {...uploadProps}
-                disabled={keyDisabled}
-                beforeUpload={file => this.beforeUpload(file, 'key')}
-                onRemove={this.removeKey}
-              >
-                <div className={keyUploadClass}>
-                  {uploadBtn}
-                </div>
-              </Upload>,
-            )}
-          </FormItem>
-        </div>
-      </div>)}
-    </Consumer>;
+    return <div className="c7ncd-cert-upload">
+      <div className="c7ncd-cert-upload-item">
+        <h4><FormattedMessage id="ctf.certFile" /></h4>
+        <FormItem{...formItemLayout}>
+          {getFieldDecorator('cert', {
+            rules: [{
+              validator: this.checkCrtFile,
+            }],
+          })(
+            <Upload
+              {...uploadProps}
+              disabled={crtDisabled}
+              beforeUpload={file => this.beforeUpload(file, 'crt')}
+              onRemove={this.removeCert}
+            >
+              <div className={crtUploadClass}>
+                {uploadBtn}
+              </div>
+            </Upload>,
+          )}
+        </FormItem>
+      </div>
+      <div className="c7ncd-cert-upload-item">
+        <h4><FormattedMessage id="ctf.keyFile" /></h4>
+        <FormItem{...formItemLayout}>
+          {getFieldDecorator('key', {
+            rules: [{
+              validator: this.checkKeyFile,
+            }],
+          })(
+            <Upload
+              {...uploadProps}
+              disabled={keyDisabled}
+              beforeUpload={file => this.beforeUpload(file, 'key')}
+              onRemove={this.removeKey}
+            >
+              <div className={keyUploadClass}>
+                {uploadBtn}
+              </div>
+            </Upload>,
+          )}
+        </FormItem>
+      </div>
+    </div>;
   };
 }

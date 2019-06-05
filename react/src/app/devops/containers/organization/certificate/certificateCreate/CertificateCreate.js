@@ -14,7 +14,6 @@ import {
 } from 'choerodon-ui';
 import classnames from 'classnames';
 import CertConfig from '../../../../components/certConfig';
-import { Provider } from '../../../../components/certConfig/certContext';
 import Tips from '../../../../components/Tips/Tips';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
 import { handleCheckerProptError } from '../../../../utils';
@@ -23,6 +22,7 @@ import '../../../main.scss';
 import './CertificateCreate.scss';
 import '../../../project/envPipeline/EnvPipeLineHome.scss';
 
+const { TextArea } = Input;
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
 const { Group: RadioGroup } = Radio;
@@ -106,7 +106,6 @@ export default class CertificateCreate extends Component {
   handleSubmit = async e => {
     e.preventDefault();
     const {
-      form,
       store,
       showType,
       AppState: { currentMenuType: { organizationId } },
@@ -116,11 +115,14 @@ export default class CertificateCreate extends Component {
       checked,
       createSelectedRowKeys,
       uploadMode,
+      form: {
+        validateFieldsAndScroll,
+      },
     } = this.state;
 
     this.setState({ submitting: true });
 
-    form.validateFieldsAndScroll(async (err, data) => {
+    validateFieldsAndScroll(async (err, data) => {
       if (!err) {
         const submitFunc = {
           create: data => {
@@ -376,8 +378,8 @@ export default class CertificateCreate extends Component {
   render() {
     const {
       showType,
-      form,
       intl: { formatMessage },
+      form,
       AppState: { currentMenuType: { name } },
       store: { getCert },
     } = this.props;
@@ -470,7 +472,11 @@ export default class CertificateCreate extends Component {
                 </FormItem>
                 {isCreateMode && <Fragment>
                   <div className="c7n-creation-add-title">
-                    <Tips type="title" data="certificate.file.add" />
+                    <Tips
+                      type="title"
+                      data="certificate.file.add"
+                      help={!uploadMode}
+                    />
                     <Button
                       type="primary"
                       funcType="flat"
@@ -479,9 +485,7 @@ export default class CertificateCreate extends Component {
                       <FormattedMessage id="ctf.upload.mode" />
                     </Button>
                   </div>
-                  <Provider value={form}>
-                    <CertConfig isUploadMode={uploadMode} />
-                  </Provider>
+                  {CertConfig(uploadMode, form, formatMessage)}
                 </Fragment>}
               </div>
               <div className="c7n-creation-ctf-title">

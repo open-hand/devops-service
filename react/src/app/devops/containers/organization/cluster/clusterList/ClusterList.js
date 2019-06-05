@@ -91,7 +91,7 @@ class ClusterList extends Component {
   render() {
     const {
       store,
-      data: { id, upgrade, connect, nodes, name, description },
+      data: { id, upgrade, connect, nodes, name, description, code },
       tableData,
       showSideBar,
       clusterId,
@@ -202,7 +202,7 @@ class ClusterList extends Component {
                   <Button
                     funcType="flat"
                     shape="circle"
-                    onClick={delClusterShow.bind(this, id, name)}
+                    onClick={() => delClusterShow(id, name, code)}
                   >
                     <Icon type="delete_forever" />
                   </Button >

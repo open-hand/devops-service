@@ -103,6 +103,7 @@ class Cluster extends Component {
       createSelectedTemp: [],
       token: null,
       delId: null,
+      delCode: null,
       clsName: '',
       page: 0,
       size: 10,
@@ -261,7 +262,7 @@ class Cluster extends Component {
     ClusterStore.loadMoreNode(organizationId, id, page, size);
   };
 
-  delClusterShow = (id, name) => {
+  delClusterShow = (id, name, code) => {
     const { ClusterStore } = this.props;
     const { organizationId } = AppState.currentMenuType;
 
@@ -273,6 +274,7 @@ class Cluster extends Component {
           delId: id,
           showDel: true,
           clsName: name,
+          delCode: code,
         });
       }
     });
@@ -729,7 +731,7 @@ class Cluster extends Component {
 
   render() {
     const { type, organizationId, name } = AppState.currentMenuType;
-    const { show, sideType, submitting, showDel, btnLoading, clsName } = this.state;
+    const { show, sideType, submitting, showDel, btnLoading, clsName, delCode } = this.state;
     const { ClusterStore, intl: { formatMessage } } = this.props;
     const {
       getClsPageInfo: { current, total, pageSize },
@@ -846,9 +848,10 @@ class Cluster extends Component {
           onOk={this.delCluster}
           closable={false}
           footer={[
-            <Button key="back"
-                    onClick={() => this.setState({ delId: null, showDel: false })}
-                    disabled={btnLoading}
+            <Button
+              key="back"
+              onClick={() => this.setState({ delId: null, showDel: false })}
+              disabled={btnLoading}
             >
               <FormattedMessage id="cancel" />
             </Button>,
@@ -863,7 +866,7 @@ class Cluster extends Component {
               className="c7n-cls-shell-input"
             >
               <Input
-                value="helm del choerodon-cluster-agent --purge&&kubectl delete namespace choerodon"
+                value={`helm del choerodon-cluster-agent-code ${delCode || ''} --purge`}
                 readOnly
                 copy
               />

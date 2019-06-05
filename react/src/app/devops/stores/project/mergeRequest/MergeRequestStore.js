@@ -137,6 +137,7 @@ class MergeRequestStore {
               pageSize: pageResult.size,
               total: totalElements,
             }, key);
+
             this.setMerge(content, key);
             this.setCount({
               closeCount,
@@ -152,7 +153,7 @@ class MergeRequestStore {
           Choerodon.prompt(error.message);
         });
     } else {
-      // 针对opened和assignee的数据不分页处理，原因是前端从opened中分离assignee数据，会导致分页数据都显示opened的，期待后端修改
+      // 针对opened和assignee的数据不分页处理，原因是前端从opened中分离assignee数据，会导致分页数据都显示opened的
       axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/git/merge_request/list?state=${key}&page=${page}&size=${key === 'opened' ? 30 : size}`)
         .then((res) => {
           const response = handleProptError(res);
@@ -186,7 +187,6 @@ class MergeRequestStore {
         });
     }
   }
-
 
   loadApps(projectId) {
     return axios.get(`/devops/v1/projects/${projectId}/apps`)

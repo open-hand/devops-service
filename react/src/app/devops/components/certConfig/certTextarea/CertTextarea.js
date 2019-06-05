@@ -1,9 +1,5 @@
 /**
  * @author ale0720@163.com
- * @date 2019-05-31 10:52
- */
-/**
- * @author ale0720@163.com
  * @date 2019-05-30 15:37
  */
 import React, { Fragment } from 'react';
@@ -11,8 +7,7 @@ import {
   Form,
   Input,
 } from 'choerodon-ui';
-import { injectIntl, FormattedMessage } from 'react-intl';
-import { Consumer } from '../certContext';
+import { FormattedMessage } from 'react-intl';
 
 const { TextArea } = Input;
 const { Item: FormItem } = Form;
@@ -27,24 +22,15 @@ const formItemLayout = {
   },
 };
 
-function CertTextarea(props) {
-  const {
-    intl: { formatMessage },
-  } = props;
+export function CertTextarea(propsForm, formatMessage) {
 
-  /**
-   * form 通过 Context API 传递
-   * 为了将表单项注册在同一个 form 中
-   * @param form
-   * @returns {*}
-   */
-  const contents = form => (<Fragment>
+  return <Fragment>
     <FormItem
       className="c7n-select_480"
       {...formItemLayout}
       label={<FormattedMessage id="certificate.cert.content" />}
     >
-      {form.getFieldDecorator('certValue', {
+      {propsForm.getFieldDecorator('certValue', {
         rules: [
           {
             required: true,
@@ -63,7 +49,7 @@ function CertTextarea(props) {
       {...formItemLayout}
       label={<FormattedMessage id="certificate.key.content" />}
     >
-      {form.getFieldDecorator('keyValue', {
+      {propsForm.getFieldDecorator('keyValue', {
         rules: [
           {
             required: true,
@@ -77,11 +63,5 @@ function CertTextarea(props) {
         />,
       )}
     </FormItem>
-  </Fragment>);
-
-  return <Consumer>
-    {contents}
-  </Consumer>;
+  </Fragment>;
 }
-
-export default injectIntl(CertTextarea);
