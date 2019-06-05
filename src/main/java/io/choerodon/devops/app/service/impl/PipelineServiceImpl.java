@@ -89,7 +89,7 @@ import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepos
 import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
 import io.choerodon.devops.domain.application.repository.PipelineUserRelRecordRepository;
 import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
-import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
+import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
 import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
@@ -141,7 +141,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Autowired
     private PipelineAppDeployRepository appDeployRepository;
     @Autowired
-    private PipelineValueRepository valueRepository;
+    private DevopsDeployValueRepository valueRepository;
     @Autowired
     private PipelineTaskRecordRepository taskRecordRepository;
     @Autowired

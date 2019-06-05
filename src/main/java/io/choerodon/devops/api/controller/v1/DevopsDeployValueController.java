@@ -8,8 +8,8 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.PipelineValueDTO;
-import io.choerodon.devops.app.service.PipelineValueService;
+import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
+import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -27,9 +27,9 @@ import springfox.documentation.annotations.ApiIgnore;
  */
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/pipeline_value")
-public class PipelineValueController {
+public class DevopsDeployValueController {
     @Autowired
-    private PipelineValueService pipelineValueService;
+    private DevopsDeployValueService pipelineValueService;
 
     /**
      * 项目下获取流水线配置
@@ -43,7 +43,7 @@ public class PipelineValueController {
     @ApiOperation(value = "项目下获取流水线配置")
     @CustomPageRequest
     @PostMapping("/list_by_options")
-    public ResponseEntity<Page<PipelineValueDTO>> listByOptions(
+    public ResponseEntity<Page<DevopsDeployValueDTO>> listByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = false)
@@ -69,11 +69,11 @@ public class PipelineValueController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建流水线配置")
     @PostMapping
-    public ResponseEntity<PipelineValueDTO> createOrUpdate(
+    public ResponseEntity<DevopsDeployValueDTO> createOrUpdate(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PipelineValueDTO")
-            @RequestBody PipelineValueDTO pipelineValueDTO) {
+            @RequestBody DevopsDeployValueDTO pipelineValueDTO) {
         return Optional.ofNullable(pipelineValueService.createOrUpdate(projectId, pipelineValueDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.createOrUpdate"));
@@ -89,7 +89,7 @@ public class PipelineValueController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询配置详情")
     @GetMapping
-    public ResponseEntity<PipelineValueDTO> queryById(
+    public ResponseEntity<DevopsDeployValueDTO> queryById(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "valueId", required = true)
@@ -169,7 +169,7 @@ public class PipelineValueController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据应用Id和环境Id获取配置")
     @GetMapping("/list")
-    public ResponseEntity<List<PipelineValueDTO>> queryByAppIdAndEnvId(
+    public ResponseEntity<List<DevopsDeployValueDTO>> queryByAppIdAndEnvId(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = true)

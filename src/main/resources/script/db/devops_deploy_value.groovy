@@ -20,4 +20,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_value.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(id: '2019-06-05-rename-table', author: 'scp') {
+        renameTable(newTableName: 'devops_deploy_value', oldTableName: 'devops_pipeline_value')
+    }
+
 }
