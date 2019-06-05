@@ -39,4 +39,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_instance.groovy') {
             column(name: "app_id")
         }
     }
+
+    changeSet(author: 'scp', id: '2019-06-05-idx-env-id') {
+        createIndex(indexName: "idx_env_id ", tableName: "devops_app_instance") {
+            column(name: "env_id")
+        }
+    }
 }
