@@ -468,6 +468,7 @@ class TemplateHome extends Component {
             initialValue: singleData ? singleData.name : "",
           })(
             <Input
+              autoFocus={modeType === "edit"}
               maxLength={20}
               label={<FormattedMessage id="template.name" />}
             />

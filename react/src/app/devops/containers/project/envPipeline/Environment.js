@@ -1026,6 +1026,7 @@ class Environment extends Component {
               >
                 {getFieldDecorator("description")(
                   <TextArea
+                    autoFocus
                     autosize={{
                       minRows: 2,
                     }}
@@ -1124,6 +1125,7 @@ class Environment extends Component {
                   initialValue: envData ? envData.name : "",
                 })(
                   <Input
+                    autoFocus
                     maxLength={10}
                     label={<FormattedMessage id="envPl.form.name" />}
                     suffix={<Tips type="form" data="envPl.envName.tip" />}
@@ -1146,7 +1148,7 @@ class Environment extends Component {
               <div className="c7ncd-sidebar-select">
                 <FormItem {...formItemLayout}>
                   {getFieldDecorator("devopsEnvGroupId", {
-                    initialValue: envData
+                    initialValue: envData && envData.devopsEnvGroupId
                       ? envData.devopsEnvGroupId
                       : undefined,
                   })(

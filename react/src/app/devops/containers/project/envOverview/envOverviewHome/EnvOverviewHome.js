@@ -659,6 +659,7 @@ class EnvOverviewHome extends Component {
           'devops-service.certification.listByOptions',
           'devops-service.certification.create',
           'devops-service.certification.delete',
+          'devops-service.devops-environment.queryByCode',
         ]}
       >
         {envData && envData.length && envId ? (
