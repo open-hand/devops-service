@@ -11,6 +11,7 @@ public class ApplicationDeployDTO {
     private String instanceName;
     private boolean isNotChange;
     private Long recordId;
+    private Long valueId;
 
     public ApplicationDeployDTO() {
     }
@@ -106,4 +107,11 @@ public class ApplicationDeployDTO {
         this.recordId = recordId;
     }
 
+    public Long getValueId() {
+        return valueId;
+    }
+
+    public void setValueId(Long valueId) {
+        this.valueId = valueId;
+    }
 }

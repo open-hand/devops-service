@@ -101,7 +101,7 @@ public class IamRepositoryImpl implements IamRepository {
     @Override
     public Page<ProjectE> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params) {
         try {
-            ResponseEntity<PageInfo<ProjectDO>> pageInfoResponseEntity = iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, params);
+            ResponseEntity<PageInfo<ProjectDO>> pageInfoResponseEntity = iamServiceClient.queryProjectByOrgId(organizationId, page + 1, size, name, params);
             Page<ProjectE> projectES = new Page<>();
             projectES.setContent(ConvertHelper.convertList(pageInfoResponseEntity.getBody().getList(), ProjectE.class));
             projectES.setSize(size);
@@ -155,8 +155,8 @@ public class IamRepositoryImpl implements IamRepository {
 
     @Override
     public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
-                                                                RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                                Long roleId, Long projectId, Boolean doPage) {
+                                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                                    Long roleId, Long projectId, Boolean doPage) {
         try {
             return iamServiceClient
                     .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
@@ -169,7 +169,7 @@ public class IamRepositoryImpl implements IamRepository {
 
     @Override
     public PageInfo<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,
-                                                                Boolean doPage) {
+                                                                    Boolean doPage) {
         try {
             RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
             ResponseEntity<PageInfo<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient

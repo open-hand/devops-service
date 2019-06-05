@@ -34,4 +34,13 @@ public class DevopsEnvCommandValueRepositoryImpl implements DevopsEnvCommandValu
         devopsEnvCommandValueDO.setId(valueId);
         devopsEnvCommandValueMapper.deleteByPrimaryKey(devopsEnvCommandValueDO);
     }
+
+    @Override
+    public void updateValueById(Long valueId, String value)
+    {
+        DevopsEnvCommandValueDO devopsEnvCommandValueDO = new DevopsEnvCommandValueDO();
+        devopsEnvCommandValueDO.setId(valueId);
+        devopsEnvCommandValueDO.setValue(value);
+        devopsEnvCommandValueMapper.updateByPrimaryKeySelective(devopsEnvCommandValueDO);
+    }
 }

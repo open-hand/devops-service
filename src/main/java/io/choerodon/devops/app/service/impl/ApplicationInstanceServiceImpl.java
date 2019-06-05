@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,9 +14,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
@@ -134,6 +131,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private RedisTemplate redisTemplate;
     @Autowired
     private NotifyClient notifyClient;
+    @Autowired
+    private PipelineValueRepository pipelineValueRepository;
 
 
     @Override
@@ -283,32 +282,42 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public ReplaceResult queryValues(Long appId, Long envId, Long versionId) {
+    public ReplaceResult queryValues(String type, Long instanceId, Long versionId) {
         ReplaceResult replaceResult = new ReplaceResult();
-        String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.queryValue(versionId));
-        try {
-            FileUtil.checkYamlFormat(versionValue);
-        } catch (Exception e) {
+
+        if (type.equals(UPDATE)) {
+            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
+            if (applicationInstanceE.getValueId() == null) {
+                replaceResult.setYaml(applicationInstanceRepository.queryValueByInstanceId(instanceId));
+            } else {
+                PipelineValueE pipelineValueE = pipelineValueRepository.queryById(applicationInstanceE.getValueId());
+                replaceResult.setYaml(pipelineValueE.getValue());
+                replaceResult.setYaml(pipelineValueE.getName());
+            }
+        } else {
+            String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.queryValue(versionId));
+            try {
+                FileUtil.checkYamlFormat(versionValue);
+            } catch (Exception e) {
+                replaceResult.setYaml(versionValue);
+                return replaceResult;
+            }
             replaceResult.setYaml(versionValue);
-            replaceResult.setErrorMsg(e.getMessage());
-            replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()));
-            replaceResult.setErrorLines(getErrorLine(e.getMessage()));
-            return replaceResult;
-        }
-        String deployValue = FileUtil.checkValueFormat(
-                applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId));
-        replaceResult.setYaml(versionValue);
-        if (deployValue != null) {
-            replaceResult = getReplaceResult(versionValue, deployValue);
         }
         return replaceResult;
     }
 
     @Override
     public ReplaceResult queryUpgradeValue(Long instanceId, Long versionId) {
+        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
         String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(instanceId));
         String versionValue = applicationVersionRepository.queryValue(versionId);
-        return getReplaceResult(versionValue, yaml);
+        ReplaceResult replaceResult = getReplaceResult(versionValue, yaml);
+        if (applicationInstanceE.getValueId() != null) {
+            PipelineValueE pipelineValueE = pipelineValueRepository.queryById(applicationInstanceE.getValueId());
+            replaceResult.setValueName(pipelineValueE.getName());
+        }
+        return replaceResult;
     }
 
     @Override
@@ -527,19 +536,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public ReplaceResult queryValue(Long instanceId) {
-        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
+        ReplaceResult replaceResult = new ReplaceResult();
         String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(
                 instanceId));
-        String versionValue;
-        //实例表新增commndId之前的实例查values用实例的版本
-        if (devopsEnvCommandE == null) {
-            versionValue = applicationVersionRepository.queryValue(applicationInstanceE.getApplicationVersionE().getId());
-        } else {
-            versionValue = applicationVersionRepository
-                    .queryValue(devopsEnvCommandE.getObjectVersionId());
+        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
+        if (applicationInstanceE.getValueId() != null) {
+            PipelineValueE pipelineValueE = pipelineValueRepository.queryById(applicationInstanceE.getValueId());
+            replaceResult.setValueName(pipelineValueE.getName());
         }
-        return getReplaceResult(versionValue, yaml);
+        replaceResult.setYaml(yaml);
+        return replaceResult;
     }
 
     @Override
@@ -567,18 +573,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return new ArrayList<>();
     }
 
-    @Override
-    public ReplaceResult previewValues(ReplaceResult previewReplaceResult, Long appVersionId) {
-        String versionValue = applicationVersionRepository.queryValue(appVersionId);
-        try {
-            FileUtil.checkYamlFormat(previewReplaceResult.getYaml());
-        } catch (Exception e) {
-            throw new CommonException(e.getMessage(), e);
-        }
-        ReplaceResult replaceResult = getReplaceResult(versionValue, previewReplaceResult.getYaml());
-        replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
-        return replaceResult;
-    }
 
     @Override
     public DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params) {
@@ -725,7 +719,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    @Transactional(rollbackFor=Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
 
         //校验用户是否有环境的权限
@@ -894,6 +888,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceE.initApplicationEById(applicationDeployDTO.getAppId());
         applicationInstanceE.initDevopsEnvironmentEById(applicationDeployDTO.getEnvironmentId());
         applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+        applicationInstanceE.setValueId(applicationDeployDTO.getValueId());
         if (applicationDeployDTO.getType().equals(UPDATE)) {
             ApplicationInstanceE newApplicationInstanceE = applicationInstanceRepository.selectById(
                     applicationDeployDTO.getAppInstanceId());
@@ -924,9 +919,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     private DevopsEnvCommandValueE initDevopsEnvCommandValueE(ApplicationDeployDTO applicationDeployDTO) {
         DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
-        devopsEnvCommandValueE.setValue(
-                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),
-                        applicationDeployDTO.getValues()).getDeltaYaml().trim());
+        devopsEnvCommandValueE.setValue(applicationDeployDTO.getValues());
         return devopsEnvCommandValueE;
     }
 
@@ -1022,7 +1015,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    @Transactional(rollbackFor=Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void instanceDelete(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限
@@ -1196,10 +1189,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (secretName != null) {
             c7nHelmRelease.getSpec().setImagePullSecrets(Arrays.asList(new ImagePullSecret(secretName)));
         }
-        c7nHelmRelease.getSpec().setValues(
-                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),
-                        applicationDeployDTO.getValues()).getDeltaYaml().trim());
+        c7nHelmRelease.getSpec().setValues(applicationDeployDTO.getValues());
         return c7nHelmRelease;
+    }
+
+
+    private String getDeployTime(Long diff) {
+        float num = (float) diff / (60 * 1000);
+        DecimalFormat df = new DecimalFormat("0.00");
+        return df.format(num);
     }
 
     @Override
@@ -1228,12 +1226,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()));
         FileUtil.deleteFile(path + System.getProperty(FILE_SEPARATOR) + fileName);
         return replaceResult;
-    }
-
-    private String getDeployTime(Long diff) {
-        float num = (float) diff / (60 * 1000);
-        DecimalFormat df = new DecimalFormat("0.00");
-        return df.format(num);
     }
 
 

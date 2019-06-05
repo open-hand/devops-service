@@ -26,6 +26,7 @@ public class ApplicationInstanceDO extends AuditDomain {
     private Long envId;
     private Long commandId;
     private String status;
+    private Long valueId;
 
     @Transient
     private String appName;
@@ -253,5 +254,13 @@ public class ApplicationInstanceDO extends AuditDomain {
 
     public void setIsEnabled(Integer isEnabled) {
         this.isEnabled = isEnabled;
+    }
+
+    public Long getValueId() {
+        return valueId;
+    }
+
+    public void setValueId(Long valueId) {
+        this.valueId = valueId;
     }
 }

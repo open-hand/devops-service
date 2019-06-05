@@ -29,6 +29,7 @@ import springfox.documentation.annotations.ApiIgnore;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/app_instances")
 public class ApplicationInstanceController {
+
     private static final String ERROR_APPINSTANCE_QUERY = "error.appInstance.query";
 
     @Autowired
@@ -276,8 +277,8 @@ public class ApplicationInstanceController {
      * 查询value列表
      *
      * @param projectId    项目id
-     * @param appId        应用id
-     * @param envId        环境id
+     * @param type        部署类型
+     * @param instanceId   实例Id
      * @param appVersionId 版本id
      * @return ReplaceResult
      */
@@ -288,37 +289,17 @@ public class ApplicationInstanceController {
     public ResponseEntity<ReplaceResult> queryValues(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用ID", required = true)
-            @RequestParam Long appId,
-            @ApiParam(value = "环境ID", required = true)
-            @RequestParam Long envId,
-            @ApiParam(value = "版本ID", required = true)
+            @ApiParam(value = "type", required = true)
+            @RequestParam String type,
+            @ApiParam(value = "环境ID")
+            @RequestParam Long instanceId,
+            @ApiParam(value = "版本ID")
             @RequestParam Long appVersionId) {
-        return Optional.ofNullable(applicationInstanceService.queryValues(appId, envId, appVersionId))
+        return Optional.ofNullable(applicationInstanceService.queryValues(type, instanceId, appVersionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.values.query"));
     }
 
-    /**
-     * @param projectId     项目id
-     * @param replaceResult 部署value
-     * @return ReplaceResult
-     */
-    @Permission(type= io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询预览value")
-    @PostMapping("/previewValue")
-    public ResponseEntity<ReplaceResult> previewValues(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "replaceResult", required = true)
-            @RequestBody ReplaceResult replaceResult,
-            @ApiParam(value = "版本ID", required = true)
-            @RequestParam Long appVersionId) {
-        return Optional.ofNullable(applicationInstanceService.previewValues(replaceResult, appVersionId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.values.query"));
-    }
 
     /**
      * 校验values

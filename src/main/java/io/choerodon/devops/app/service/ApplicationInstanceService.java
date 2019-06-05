@@ -41,12 +41,12 @@ public interface ApplicationInstanceService {
     /**
      * 查询value列表
      *
-     * @param appId     应用id
-     * @param envId     环境id
+     * @param type     部署类型
+     * @param instanceId     实例Id
      * @param versionId 版本id
      * @return List
      */
-    ReplaceResult queryValues(Long appId, Long envId, Long versionId);
+    ReplaceResult queryValues(String type, Long instanceId, Long versionId);
 
     /**
      * 部署应用
@@ -149,15 +149,6 @@ public interface ApplicationInstanceService {
      * @return List
      */
     List<ErrorLineDTO> formatValue(ReplaceResult replaceResult);
-
-    /**
-     * 获取预览 Value
-     *
-     * @param replaceResult yaml
-     * @param appVersionId  版本Id
-     * @return ReplaceResult
-     */
-    ReplaceResult previewValues(ReplaceResult replaceResult, Long appVersionId);
 
 
     /**
