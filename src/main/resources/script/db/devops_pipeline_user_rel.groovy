@@ -20,8 +20,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_user_rel.groovy') {
     }
 
     changeSet(author: 'scp', id: '2019-06-04-idx-project-id') {
-        createIndex(indexName: "idx_project_id ", tableName: "devops_pipeline_user_rel") {
-            column(name: "project_id")
+        createIndex(indexName: "idx_pipeline_id ", tableName: "devops_pipeline_user_rel") {
+            column(name: "pipeline_id")
+            column(name: "user_id")
         }
     }
 }
