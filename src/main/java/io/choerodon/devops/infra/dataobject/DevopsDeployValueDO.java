@@ -1,19 +1,25 @@
-package io.choerodon.devops.domain.application.entity;
+package io.choerodon.devops.infra.dataobject;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import java.util.Date;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
- * Date:  9:42 2019/4/10
+ * Date:  9:34 2019/4/10
  * Description:
  */
-@Component
-@Scope("prototype")
-public class PipelineValueE {
+@VersionAudit
+@ModifyAudit
+@Table(name = "devops_deploy_value")
+public class DevopsDeployValueDO extends AuditDomain {
+    @Id
+    @GeneratedValue
     private Long id;
     private String value;
     private Long projectId;
@@ -21,35 +27,11 @@ public class PipelineValueE {
     private Long appId;
     private String name;
     private String description;
-    private Long createdBy;
-    private Date lastUpdateDate;
+
+    @Transient
     private String appName;
+    @Transient
     private String envName;
-    private Long objectVersionNumber;
-
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
-
-    public Long getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
-    }
 
     public String getAppName() {
         return appName;
@@ -65,22 +47,6 @@ public class PipelineValueE {
 
     public void setEnvName(String envName) {
         this.envName = envName;
-    }
-
-    public Date getLastUpdatedBy() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdatedBy(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
-    }
-
-    public Long getCreateBy() {
-        return createdBy;
-    }
-
-    public void setCreateBy(Long createBy) {
-        this.createdBy = createBy;
     }
 
     public Long getId() {

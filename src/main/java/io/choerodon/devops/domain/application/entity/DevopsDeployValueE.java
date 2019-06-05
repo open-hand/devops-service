@@ -1,14 +1,19 @@
-package io.choerodon.devops.api.dto;
+package io.choerodon.devops.domain.application.entity;
 
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
- * Date:  9:44 2019/4/10
+ * Date:  9:42 2019/4/10
  * Description:
  */
-public class PipelineValueDTO {
+@Component
+@Scope("prototype")
+public class DevopsDeployValueE {
     private Long id;
     private String value;
     private Long projectId;
@@ -16,15 +21,10 @@ public class PipelineValueDTO {
     private Long appId;
     private String name;
     private String description;
-    private String createUserUrl;
-    private String createUserName;
-    private String createUserRealName;
     private Long createdBy;
-    private Boolean envStatus;
     private Date lastUpdateDate;
-    private Boolean index;
-    private String envName;
     private String appName;
+    private String envName;
     private Long objectVersionNumber;
 
     public Long getObjectVersionNumber() {
@@ -51,14 +51,6 @@ public class PipelineValueDTO {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public String getEnvName() {
-        return envName;
-    }
-
-    public void setEnvName(String envName) {
-        this.envName = envName;
-    }
-
     public String getAppName() {
         return appName;
     }
@@ -67,20 +59,20 @@ public class PipelineValueDTO {
         this.appName = appName;
     }
 
-    public Boolean getIndex() {
-        return index;
+    public String getEnvName() {
+        return envName;
     }
 
-    public void setIndex(Boolean index) {
-        this.index = index;
+    public void setEnvName(String envName) {
+        this.envName = envName;
     }
 
-    public Boolean getEnvStatus() {
-        return envStatus;
+    public Date getLastUpdatedBy() {
+        return lastUpdateDate;
     }
 
-    public void setEnvStatus(Boolean envStatus) {
-        this.envStatus = envStatus;
+    public void setLastUpdatedBy(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 
     public Long getCreateBy() {
@@ -89,30 +81,6 @@ public class PipelineValueDTO {
 
     public void setCreateBy(Long createBy) {
         this.createdBy = createBy;
-    }
-
-    public String getCreateUserUrl() {
-        return createUserUrl;
-    }
-
-    public void setCreateUserUrl(String createUserUrl) {
-        this.createUserUrl = createUserUrl;
-    }
-
-    public String getCreateUserName() {
-        return createUserName;
-    }
-
-    public void setCreateUserName(String createUserName) {
-        this.createUserName = createUserName;
-    }
-
-    public String getCreateUserRealName() {
-        return createUserRealName;
-    }
-
-    public void setCreateUserRealName(String createUserRealName) {
-        this.createUserRealName = createUserRealName;
     }
 
     public Long getId() {

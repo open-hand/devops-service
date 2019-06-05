@@ -3,16 +3,16 @@ package io.choerodon.devops.app.service.impl;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.dto.PipelineValueDTO;
-import io.choerodon.devops.app.service.PipelineValueService;
+import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
+import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-import io.choerodon.devops.domain.application.entity.PipelineValueE;
+import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
+import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
@@ -28,9 +28,9 @@ import java.util.stream.Collectors;
  * Description:
  */
 @Service
-public class PipelineValueServiceImpl implements PipelineValueService {
+public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Autowired
-    private PipelineValueRepository valueRepository;
+    private DevopsDeployValueRepository valueRepository;
     @Autowired
     private IamRepository iamRepository;
     @Autowired
@@ -41,14 +41,14 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     private PipelineAppDeployRepository appDeployRepository;
 
     @Override
-    public PipelineValueDTO createOrUpdate(Long projectId, PipelineValueDTO pipelineValueDTO) {
-        PipelineValueE pipelineValueE = ConvertHelper.convert(pipelineValueDTO, PipelineValueE.class);
+    public DevopsDeployValueDTO createOrUpdate(Long projectId, DevopsDeployValueDTO pipelineValueDTO) {
+        DevopsDeployValueE pipelineValueE = ConvertHelper.convert(pipelineValueDTO, DevopsDeployValueE.class);
         pipelineValueE.setProjectId(projectId);
         if (pipelineValueE.getId() == null) {
             valueRepository.checkName(projectId, pipelineValueE.getName());
         }
         pipelineValueE = valueRepository.createOrUpdate(pipelineValueE);
-        return ConvertHelper.convert(pipelineValueE, PipelineValueDTO.class);
+        return ConvertHelper.convert(pipelineValueE, DevopsDeployValueDTO.class);
     }
 
     @Override
@@ -57,12 +57,12 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     }
 
     @Override
-    public Page<PipelineValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
+    public Page<DevopsDeployValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
 
-        Page<PipelineValueDTO> valueDTOS = ConvertPageHelper.convertPage(valueRepository.listByOptions(projectId, appId, envId, pageRequest, params), PipelineValueDTO.class);
-        Page<PipelineValueDTO> page = new Page<>();
+        Page<DevopsDeployValueDTO> valueDTOS = ConvertPageHelper.convertPage(valueRepository.listByOptions(projectId, appId, envId, pageRequest, params), DevopsDeployValueDTO.class);
+        Page<DevopsDeployValueDTO> page = new Page<>();
         BeanUtils.copyProperties(valueDTOS, page);
         page.setContent(valueDTOS.getContent().stream().peek(t -> {
             UserE userE = iamRepository.queryUserByUserId(t.getCreateBy());
@@ -79,8 +79,8 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     }
 
     @Override
-    public PipelineValueDTO queryById(Long projectId, Long valueId) {
-        PipelineValueDTO valueDTO = ConvertHelper.convert(valueRepository.queryById(valueId), PipelineValueDTO.class);
+    public DevopsDeployValueDTO queryById(Long projectId, Long valueId) {
+        DevopsDeployValueDTO valueDTO = ConvertHelper.convert(valueRepository.queryById(valueId), DevopsDeployValueDTO.class);
         valueDTO.setIndex(checkDelete(projectId, valueId));
         return valueDTO;
     }
@@ -91,8 +91,8 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     }
 
     @Override
-    public List<PipelineValueDTO> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
-        return ConvertHelper.convertList(valueRepository.queryByAppIdAndEnvId(projectId, appId, envId), PipelineValueDTO.class);
+    public List<DevopsDeployValueDTO> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
+        return ConvertHelper.convertList(valueRepository.queryByAppIdAndEnvId(projectId, appId, envId), DevopsDeployValueDTO.class);
     }
 
     @Override
