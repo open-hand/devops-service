@@ -14,7 +14,6 @@ import {
   Radio,
 } from 'choerodon-ui';
 import CertConfig from '../../../../components/certConfig';
-import { Provider } from '../../../../components/certConfig/certContext';
 import Tips from '../../../../components/Tips/Tips';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
 import { handleCheckerProptError } from '../../../../utils';
@@ -95,7 +94,7 @@ export default class CertificateCreate extends Component {
         })
         .catch(() => callback());
     }
-  }, 1000);
+  }, 600);
 
   componentDidMount() {
     const {
@@ -371,6 +370,19 @@ export default class CertificateCreate extends Component {
     );
   }
 
+  /**
+   * 每当域名输入改变，强制校验所有域名，消除重复域名的报错信息
+   */
+  changeDomainValue = _.debounce(() => {
+    const {
+      form: {
+        validateFields,
+      },
+    } = this.props;
+
+    validateFields(['domains'], { force: true });
+  }, 400);
+
   render() {
     const {
       visible,
@@ -436,6 +448,7 @@ export default class CertificateCreate extends Component {
               suffix={suffix}
               label={<FormattedMessage id="ctf.config.domain" />}
               disabled={type === 'choose' && !certId}
+              onChange={this.changeDomainValue}
             />,
           )}
         </FormItem>
@@ -582,7 +595,11 @@ export default class CertificateCreate extends Component {
                 </FormItem>
                 {type === CERT_TYPE_UPLOAD && <Fragment>
                   <div className="ctf-upload-head">
-                    <Tips type="title" data="certificate.file.add" />
+                    <Tips
+                      type="title"
+                      data="certificate.file.add"
+                      help={!uploadMode}
+                    />
                     <Button
                       type="primary"
                       funcType="flat"
@@ -591,9 +608,7 @@ export default class CertificateCreate extends Component {
                       <FormattedMessage id="ctf.upload.mode" />
                     </Button>
                   </div>
-                  <Provider value={form}>
-                    <CertConfig isUploadMode={uploadMode} />
-                  </Provider>
+                  {CertConfig(uploadMode, form, formatMessage)}
                 </Fragment>}
               </div>
             </Form>

@@ -5,7 +5,7 @@ const config = {
   buildType: 'single',
   master: '@choerodon/master',
   theme: {
-    'primary-color': '#3F51B5',
+    'primary-color': '#3f51b5',
     'icon-font-size-base': '16px',
   },
   dashboard: {
