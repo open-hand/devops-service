@@ -8,7 +8,7 @@ import io.choerodon.devops.infra.feign.NotifyClient;
  */
 public class NotifyServiceClientFallBack implements NotifyClient {
     @Override
-    public void postEmail(NoticeSendDTO dto) {
+    public void sendMessage(NoticeSendDTO dto) {
 
     }
 }

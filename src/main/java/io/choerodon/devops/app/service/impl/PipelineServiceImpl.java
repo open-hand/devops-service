@@ -1502,7 +1502,7 @@ public class PipelineServiceImpl implements PipelineService {
         params.put("projectName", projectE.getName());
         params.put("organizationId", projectE.getOrganization().getId());
         notifyDTO.setParams(params);
-        notifyClient.postEmail(notifyDTO);
+        notifyClient.sendMessage(notifyDTO);
     }
 
     private void sendAuditSiteMassage(String type, String auditUser, Long pipelineRecordId, String stageName) {
