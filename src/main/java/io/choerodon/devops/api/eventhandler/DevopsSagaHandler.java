@@ -2,7 +2,7 @@ package io.choerodon.devops.api.eventhandler;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -376,7 +376,7 @@ public class DevopsSagaHandler {
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             user.setEmail(GitUserNameUtil.getEmail());
             user.setId(GitUserNameUtil.getUserId().longValue());
-            pipelineService.sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEFAILED.toValue(),  Collections.singletonList(user),null);
+            pipelineService.sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEFAILED.toValue(), Collections.singletonList(user), new HashMap<>());
             LOGGER.error("error create pipeline auto deploy instance {}", e);
         }
     }
