@@ -625,14 +625,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     {
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent(String.format("Sync instance deploy value of %s", applicationInstanceE.getCode()));
+                        LOGGER.info("Sync instance deploy value of {}",applicationInstanceE.getCode());
                         try {
-                            String versionValue = applicationVersionRepository.queryValue(applicationInstanceE.getCommandVersionId());
-                            String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
                             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
+                            String versionValue = applicationVersionRepository.queryValue(devopsEnvCommandE.getObjectVersionId());
+                            String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
                             devopsEnvCommandValueRepository.updateValueById(devopsEnvCommandE.getDevopsEnvCommandValueE().getId(), applicationInstanceService.getReplaceResult(versionValue, deployValue).getYaml());
                             checkLog.setResult("success");
                         } catch (Exception e) {
                             checkLog.setResult("fail");
+                            LOGGER.info(e.getMessage(),e);
                         }
                         logs.add(checkLog);
                     }

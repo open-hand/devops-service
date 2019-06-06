@@ -292,7 +292,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             } else {
                 PipelineValueE pipelineValueE = pipelineValueRepository.queryById(applicationInstanceE.getValueId());
                 replaceResult.setYaml(pipelineValueE.getValue());
-                replaceResult.setYaml(pipelineValueE.getName());
+                replaceResult.setName(pipelineValueE.getName());
+                replaceResult.setId(pipelineValueE.getId());
+                replaceResult.setObjectVersionNumber(pipelineValueE.getObjectVersionNumber());
             }
         } else {
             String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.queryValue(versionId));
@@ -315,7 +317,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ReplaceResult replaceResult = getReplaceResult(versionValue, yaml);
         if (applicationInstanceE.getValueId() != null) {
             PipelineValueE pipelineValueE = pipelineValueRepository.queryById(applicationInstanceE.getValueId());
-            replaceResult.setValueName(pipelineValueE.getName());
+            replaceResult.setName(pipelineValueE.getName());
+            replaceResult.setId(pipelineValueE.getId());
+            replaceResult.setObjectVersionNumber(pipelineValueE.getObjectVersionNumber());
         }
         return replaceResult;
     }
@@ -542,7 +546,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
         if (applicationInstanceE.getValueId() != null) {
             PipelineValueE pipelineValueE = pipelineValueRepository.queryById(applicationInstanceE.getValueId());
-            replaceResult.setValueName(pipelineValueE.getName());
+            replaceResult.setName(pipelineValueE.getName());
+            replaceResult.setId(pipelineValueE.getId());
+            replaceResult.setObjectVersionNumber(pipelineValueE.getObjectVersionNumber());
         }
         replaceResult.setYaml(yaml);
         return replaceResult;

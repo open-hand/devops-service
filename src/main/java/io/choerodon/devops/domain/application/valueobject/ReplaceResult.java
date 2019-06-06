@@ -17,7 +17,9 @@ public class ReplaceResult {
     private List<ErrorLineDTO> errorLines;
     private List<Integer> newLines;
     private String deltaYaml;
-    private String valueName;
+    private String name;
+    private Long  id;
+    private Long objectVersionNumber;
 
     public String getYaml() {
         return yaml;
@@ -75,11 +77,27 @@ public class ReplaceResult {
         this.deltaYaml = deltaYaml;
     }
 
-    public String getValueName() {
-        return valueName;
+    public String getName() {
+        return name;
     }
 
-    public void setValueName(String valueName) {
-        this.valueName = valueName;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
