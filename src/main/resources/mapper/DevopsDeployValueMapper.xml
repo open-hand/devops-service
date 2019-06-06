@@ -14,7 +14,7 @@
         dpv.env_id,
         dpv.app_id
         FROM
-        devops_pipeline_value dpv
+        devops_deploy_value dpv
         JOIN devops_env de ON de.id = dpv.env_id
         JOIN devops_application da ON da.id = dpv.app_id
         WHERE
