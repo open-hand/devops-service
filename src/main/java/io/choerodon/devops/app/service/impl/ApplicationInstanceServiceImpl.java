@@ -132,7 +132,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private NotifyClient notifyClient;
     @Autowired
-    private PipelineValueRepository pipelineValueRepository;
+    private DevopsDeployValueRepository devopsDeployValueRepository;
 
 
     @Override
@@ -290,11 +290,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             if (applicationInstanceE.getValueId() == null) {
                 replaceResult.setYaml(applicationInstanceRepository.queryValueByInstanceId(instanceId));
             } else {
-                PipelineValueE pipelineValueE = pipelineValueRepository.queryById(applicationInstanceE.getValueId());
-                replaceResult.setYaml(pipelineValueE.getValue());
-                replaceResult.setName(pipelineValueE.getName());
-                replaceResult.setId(pipelineValueE.getId());
-                replaceResult.setObjectVersionNumber(pipelineValueE.getObjectVersionNumber());
+                DevopsDeployValueE devopsDeployValueE = devopsDeployValueRepository.queryById(applicationInstanceE.getValueId());
+                replaceResult.setYaml(devopsDeployValueE.getValue());
+                replaceResult.setName(devopsDeployValueE.getName());
+                replaceResult.setId(devopsDeployValueE.getId());
+                replaceResult.setObjectVersionNumber(devopsDeployValueE.getObjectVersionNumber());
             }
         } else {
             String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.queryValue(versionId));
@@ -316,10 +316,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String versionValue = applicationVersionRepository.queryValue(versionId);
         ReplaceResult replaceResult = getReplaceResult(versionValue, yaml);
         if (applicationInstanceE.getValueId() != null) {
-            PipelineValueE pipelineValueE = pipelineValueRepository.queryById(applicationInstanceE.getValueId());
-            replaceResult.setName(pipelineValueE.getName());
-            replaceResult.setId(pipelineValueE.getId());
-            replaceResult.setObjectVersionNumber(pipelineValueE.getObjectVersionNumber());
+            DevopsDeployValueE devopsDeployValueE = devopsDeployValueRepository.queryById(applicationInstanceE.getValueId());
+            replaceResult.setName(devopsDeployValueE.getName());
+            replaceResult.setId(devopsDeployValueE.getId());
+            replaceResult.setObjectVersionNumber(devopsDeployValueE.getObjectVersionNumber());
         }
         return replaceResult;
     }
@@ -545,10 +545,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 instanceId));
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
         if (applicationInstanceE.getValueId() != null) {
-            PipelineValueE pipelineValueE = pipelineValueRepository.queryById(applicationInstanceE.getValueId());
-            replaceResult.setName(pipelineValueE.getName());
-            replaceResult.setId(pipelineValueE.getId());
-            replaceResult.setObjectVersionNumber(pipelineValueE.getObjectVersionNumber());
+            DevopsDeployValueE devopsDeployValueE = devopsDeployValueRepository.queryById(applicationInstanceE.getValueId());
+            replaceResult.setName(devopsDeployValueE.getName());
+            replaceResult.setId(devopsDeployValueE.getId());
+            replaceResult.setObjectVersionNumber(devopsDeployValueE.getObjectVersionNumber());
         }
         replaceResult.setYaml(yaml);
         return replaceResult;
