@@ -17,6 +17,7 @@ public class PipelineRecordE {
     private String bpmDefinition;
     private Date lastUpdateDate;
     private Date creationDate;
+    private Long createdBy;
     private String businessKey;
     private Boolean edited;
     private String auditUser;
@@ -28,6 +29,14 @@ public class PipelineRecordE {
         this.projectId = projectId;
         this.status = status;
         this.pipelineName = pipelineName;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 
     public String getErrorInfo() {

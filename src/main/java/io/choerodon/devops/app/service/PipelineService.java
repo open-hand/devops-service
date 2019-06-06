@@ -1,8 +1,10 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.dto.CheckAuditDTO;
 import io.choerodon.devops.api.dto.IamUserDTO;
 import io.choerodon.devops.api.dto.PipelineCheckDeployDTO;
@@ -69,4 +71,6 @@ public interface PipelineService {
     void executeAppDeploy(Long pipelineId);
 
     void failed(Long projectId, Long recordId);
+
+    void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params);
 }
