@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,12 +37,14 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.CheckAuditDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.IamUserDTO;
+import io.choerodon.devops.api.dto.NotifyDTO;
 import io.choerodon.devops.api.dto.PipelineAppDeployDTO;
 import io.choerodon.devops.api.dto.PipelineCheckDeployDTO;
 import io.choerodon.devops.api.dto.PipelineDTO;
@@ -77,6 +80,7 @@ import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -89,7 +93,6 @@ import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepos
 import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
 import io.choerodon.devops.domain.application.repository.PipelineUserRelRecordRepository;
 import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
-import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
 import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
@@ -97,10 +100,12 @@ import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
+import io.choerodon.devops.infra.common.util.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineTaskDTO;
+import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -162,6 +167,8 @@ public class PipelineServiceImpl implements PipelineService {
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
+    private NotifyClient notifyClient;
 
     @Override
     public Page<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, PageRequest pageRequest, String params) {
@@ -181,15 +188,6 @@ public class PipelineServiceImpl implements PipelineService {
             t.setCreateUserName(userE.getLoginName());
             t.setCreateUserUrl(userE.getImageUrl());
             t.setCreateUserRealName(userE.getRealName());
-//            if (t.getIsEnabled() == 1) {
-//                t.setExecute(pipelineUserRelRepository.listByOptions(t.getId(), null, null)
-//                        .stream()
-//                        .map(PipelineUserRelE::getUserId)
-//                        .collect(Collectors.toList())
-//                        .contains(DetailsHelper.getUserDetails().getUserId()));
-//            } else {
-//                t.setExecute(false);
-//            }
             t.setEdit(true);
             //是否拥有环境权限.没有环境权限不可编辑
             List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(t.getId());
@@ -546,12 +544,19 @@ public class PipelineServiceImpl implements PipelineService {
         List<IamUserDTO> userDTOS = new ArrayList<>();
         String status;
         Boolean result = true;
+        PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId());
+        PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(recordRelDTO.getStageRecordId());
         if (recordRelDTO.getIsApprove()) {
             try {
                 CustomUserDetails details = DetailsHelper.getUserDetails();
                 approveWorkFlow(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
             } catch (Exception e) {
                 result = false;
+                UserE userE = iamRepository.queryUserByUserId(pipelineRecordE.getCreatedBy());
+                NoticeSendDTO.User user = new NoticeSendDTO.User();
+                user.setEmail(userE.getEmail());
+                user.setId(userE.getId());
+                sendSiteMessage(recordRelDTO.getPipelineRecordId(), PipelineNoticeType.PIPELINEFAILED.toValue(), Collections.singletonList(user), new HashMap<>());
             }
             status = result ? WorkFlowStatus.SUCCESS.toValue() : WorkFlowStatus.FAILED.toValue();
             if (STAGE.equals(recordRelDTO.getType())) {
@@ -559,6 +564,11 @@ public class PipelineServiceImpl implements PipelineService {
             }
         } else {
             status = WorkFlowStatus.STOP.toValue();
+            String auditUser = stageRecordE.getAuditUser();
+            if (recordRelDTO.getTaskRecordId() != null) {
+                auditUser = taskRecordRepository.queryById(recordRelDTO.getTaskRecordId()).getAuditUser();
+            }
+            sendAuditSiteMassage(PipelineNoticeType.PIPELINESTOP.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
         }
         PipelineUserRecordRelE userRelE = new PipelineUserRecordRelE();
         userRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
@@ -598,6 +608,7 @@ public class PipelineServiceImpl implements PipelineService {
                     }
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), WorkFlowStatus.RUNNING.toValue(), null);
                     startNextTask(taskRecordE.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
+                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), taskRecordE.getAuditUser(), recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), status, null);
                 }
@@ -622,6 +633,7 @@ public class PipelineServiceImpl implements PipelineService {
                     } else {
                         startEmptyStage(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                     }
+                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), stageRecordE.getAuditUser(), recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), null, status, null);
                 }
@@ -1105,6 +1117,11 @@ public class PipelineServiceImpl implements PipelineService {
                 break;
             }
         }
+        UserE userE = iamRepository.queryUserByUserId(recordE.getCreatedBy());
+        NoticeSendDTO.User user = new NoticeSendDTO.User();
+        user.setEmail(userE.getEmail());
+        user.setId(userE.getId());
+        sendSiteMessage(recordId, PipelineNoticeType.PIPELINEFAILED.toValue(), Collections.singletonList(user), new HashMap<>());
     }
 
     private PipelineTaskRecordE getFirstTask(Long pipelineRecordId) {
@@ -1179,6 +1196,11 @@ public class PipelineServiceImpl implements PipelineService {
                 LOGGER.info("任务成功了");
                 recordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
                 pipelineRecordRepository.update(recordE);
+                UserE userE = iamRepository.queryUserByUserId(recordE.getCreatedBy());
+                NoticeSendDTO.User user = new NoticeSendDTO.User();
+                user.setEmail(userE.getEmail());
+                user.setId(userE.getId());
+                sendSiteMessage(recordE.getId(), PipelineNoticeType.PIPELINESUCCESS.toValue(), Collections.singletonList(user),new HashMap<>());
             } else {
                 //更新下一个阶段状态
                 startNextStageRecord(stageRecordId, recordE);
@@ -1230,6 +1252,11 @@ public class PipelineServiceImpl implements PipelineService {
             startNextStageRecord(nextStageRecordE.getId(), pipelineRecordE);
         } else {
             updateStatus(pipelineRecordId, null, WorkFlowStatus.SUCCESS.toValue(), null);
+            UserE userE = iamRepository.queryUserByUserId(pipelineRecordE.getCreatedBy());
+            NoticeSendDTO.User user = new NoticeSendDTO.User();
+            user.setEmail(userE.getEmail());
+            user.setId(userE.getId());
+            sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINESUCCESS.toValue(), Collections.singletonList(user), new HashMap<>());
         }
     }
 
@@ -1238,6 +1265,19 @@ public class PipelineServiceImpl implements PipelineService {
             taskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
             taskRecordRepository.createOrUpdate(taskRecordE);
             updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.PENDINGCHECK.toValue(), null);
+            List<NoticeSendDTO.User> userList = new ArrayList<>();
+            String auditUser = taskRecordE.getAuditUser();
+            if (auditUser != null && !auditUser.isEmpty()) {
+                List<String> userIds = Arrays.asList(auditUser.split(","));
+                userIds.forEach(t -> {
+                    UserE userE = iamRepository.queryUserByUserId(TypeUtil.objToLong(t));
+                    NoticeSendDTO.User user = new NoticeSendDTO.User();
+                    user.setEmail(userE.getEmail());
+                    user.setId(userE.getId());
+                    userList.add(user);
+                });
+            }
+            sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, new HashMap<>());
         }
     }
 
@@ -1444,6 +1484,47 @@ public class PipelineServiceImpl implements PipelineService {
         taskRecordRepository.createOrUpdate(taskRecordE);
         Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
         updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), errorInfo);
+    }
+
+    @Override
+    public void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params) {
+        NotifyDTO notifyDTO = new NotifyDTO();
+        notifyDTO.setTargetUsers(users);
+        notifyDTO.setSourceId(pipelineRecordId);
+        notifyDTO.setCode(type);
+        notifyDTO.setCustomizedSendingTypes(Collections.singletonList("siteMessage"));
+        PipelineRecordE recordE = pipelineRecordRepository.queryById(pipelineRecordId);
+        params.put("pipelineId", recordE.getPipelineId());
+        params.put("pipelineName", recordE.getPipelineName());
+        params.put("pipelineRecordId", pipelineRecordId);
+        params.put("projectId", recordE.getProjectId());
+        ProjectE projectE = iamRepository.queryIamProject(recordE.getProjectId());
+        params.put("projectName", projectE.getName());
+        params.put("organizationId", projectE.getOrganization().getId());
+        notifyDTO.setParams(params);
+        notifyClient.sendMessage(notifyDTO);
+    }
+
+    private void sendAuditSiteMassage(String type, String auditUser, Long pipelineRecordId, String stageName) {
+        List<String> userIds = new ArrayList<>();
+        if (auditUser != null && !auditUser.isEmpty()) {
+            userIds = Arrays.asList(auditUser.split(","));
+            userIds.remove(TypeUtil.objToString(GitUserNameUtil.getUserId()));
+        }
+        List<NoticeSendDTO.User> userList = new ArrayList<>();
+        userIds.forEach(t -> {
+            NoticeSendDTO.User user = new NoticeSendDTO.User();
+            UserE userE = iamRepository.queryUserByUserId(TypeUtil.objToLong(t));
+            user.setEmail(userE.getEmail());
+            user.setId(userE.getId());
+            userList.add(user);
+        });
+        Map<String, Object> params = new HashMap<>();
+        params.put("stageName", stageName);
+        UserE userE = iamRepository.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
+        params.put("loginName", userE.getLoginName());
+        params.put("stageName", userE.getRealName());
+        sendSiteMessage(pipelineRecordId, type, userList, params);
     }
 }
 

@@ -282,17 +282,17 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                     notifyDTO.setSourceId(devopsEnvironmentE.getProjectE().getId());
                     notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
                     notifyDTO.setCustomizedSendingTypes(Arrays.asList("email"));
-                    notifyClient.postEmail(notifyDTO);
+                    notifyClient.sendMessage(notifyDTO);
                 } else if (triggerType.equals(TriggerType.PM.getType())) {
                     notifyDTO.setSourceId(devopsEnvironmentE.getProjectE().getId());
                     notifyDTO.setCode(RESOURCE_DELETE_CONFIRMATION);
                     notifyDTO.setCustomizedSendingTypes(Arrays.asList("siteMessage"));
-                    notifyClient.postEmail(notifyDTO);
+                    notifyClient.sendMessage(notifyDTO);
                 } else {
                     notifyDTO.setSourceId(0L);
                     notifyDTO.setCode(DEVOPS_DELETE_INSTANCE_4_SMS);
                     notifyDTO.setCustomizedSendingTypes(Arrays.asList("sms"));
-                    notifyClient.postEmail(notifyDTO);
+                    notifyClient.sendMessage(notifyDTO);
                 }
             });
         } catch (Exception e) {

@@ -14,5 +14,5 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface NotifyClient {
 
     @PostMapping
-    void postEmail(@RequestBody NoticeSendDTO dto);
+    void sendMessage(@RequestBody NoticeSendDTO dto);
 }

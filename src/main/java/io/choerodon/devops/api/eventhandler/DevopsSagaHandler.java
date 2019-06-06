@@ -1,6 +1,8 @@
 package io.choerodon.devops.api.eventhandler;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.api.dto.PipelineWebHookDTO;
@@ -43,7 +46,10 @@ import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepos
 import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.feign.NotifyClient;
 
 
 /**
@@ -81,6 +87,7 @@ public class DevopsSagaHandler {
     private final PipelineService pipelineService;
     private PipelineRecordRepository pipelineRecordRepository;
     private WorkFlowRepository workFlowRepository;
+    private NotifyClient notifyClient;
 
     @Autowired
     public DevopsSagaHandler(DevopsEnvironmentService devopsEnvironmentService,
@@ -100,6 +107,7 @@ public class DevopsSagaHandler {
                              PipelineService pipelineService,
                              PipelineRecordRepository pipelineRecordRepository,
                              WorkFlowRepository workFlowRepository,
+                             NotifyClient notifyClient,
                              ApplicationInstanceService applicationInstanceService) {
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.devopsGitService = devopsGitService;
@@ -119,6 +127,7 @@ public class DevopsSagaHandler {
         this.applicationInstanceService = applicationInstanceService;
         this.pipelineRecordRepository = pipelineRecordRepository;
         this.workFlowRepository = workFlowRepository;
+        this.notifyClient = notifyClient;
     }
 
     /**
@@ -346,14 +355,12 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public void pipelineAutoDeployInstance(String data) {
-        //创建或更新实例
         ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
         Long taskRecordId = applicationDeployDTO.getRecordId();
         Long stageRecordId = taskRecordRepository.queryById(taskRecordId).getStageRecordId();
         Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
         try {
             ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
-            //更新记录表中的实例
             if (!pipelineRecordRepository.queryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                 PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
                 pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
@@ -361,12 +368,15 @@ public class DevopsSagaHandler {
                 LOGGER.info("create pipeline auto deploy instance success");
             }
         } catch (Exception e) {
-            //实例创建失败,回写记录表
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
             pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
             pipelineTaskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
             pipelineService.updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), e.getMessage());
+            NoticeSendDTO.User user = new NoticeSendDTO.User();
+            user.setEmail(GitUserNameUtil.getEmail());
+            user.setId(GitUserNameUtil.getUserId().longValue());
+            pipelineService.sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEFAILED.toValue(), Collections.singletonList(user), new HashMap<>());
             LOGGER.error("error create pipeline auto deploy instance {}", e);
         }
     }
