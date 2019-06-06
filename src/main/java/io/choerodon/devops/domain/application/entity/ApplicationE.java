@@ -149,6 +149,9 @@ public class ApplicationE {
     }
 
     public void initGitlabProjectEByUrl(String url) {
+        if(this.getGitlabProjectE()==null) {
+            this.gitlabProjectE = new GitlabProjectE();
+        }
         this.gitlabProjectE.setRepoURL(url);
     }
 

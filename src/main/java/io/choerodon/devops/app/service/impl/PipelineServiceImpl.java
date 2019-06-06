@@ -527,8 +527,7 @@ public class PipelineServiceImpl implements PipelineService {
                 DevopsEnvCommandE olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
                 if (olddevopsEnvCommandE.getObjectVersionId().equals(applicationDeployDTO.getAppVersionId())) {
                     String oldValue = applicationInstanceRepository.queryValueByInstanceId(applicationDeployDTO.getAppInstanceId());
-                    ReplaceResult replaceResult = applicationInstanceService.getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()), applicationDeployDTO.getValues());
-                    if (replaceResult.getDeltaYaml().trim().equals(oldValue.trim())) {
+                    if (applicationDeployDTO.getValues().trim().equals(oldValue.trim())) {
                         applicationDeployDTO.setIsNotChange(true);
                     }
                 }

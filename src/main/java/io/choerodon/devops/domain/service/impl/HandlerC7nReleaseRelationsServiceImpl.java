@@ -230,10 +230,11 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             throw new GitOpsExplainException("appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion());
         }
 
+        String versionValue = applicationVersionRepository.queryValue(applicationVersionE.getId());
         ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO();
         applicationDeployDTO.setEnvironmentId(envId);
         applicationDeployDTO.setType(type);
-        applicationDeployDTO.setValues(c7nHelmRelease.getSpec().getValues());
+        applicationDeployDTO.setValues(applicationInstanceService.getReplaceResult(versionValue,c7nHelmRelease.getSpec().getValues()).getYaml());
         applicationDeployDTO.setAppId(applicationE.getId());
         applicationDeployDTO.setAppVersionId(applicationVersionE.getId());
         applicationDeployDTO.setInstanceName(c7nHelmRelease.getMetadata().getName());

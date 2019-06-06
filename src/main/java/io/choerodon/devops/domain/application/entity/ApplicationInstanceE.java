@@ -12,6 +12,7 @@ public class ApplicationInstanceE {
 
     private Long id;
     private String code;
+    private Long valueId;
     private String publishLevel;
     private String contributor;
     private String description;
@@ -238,5 +239,13 @@ public class ApplicationInstanceE {
 
     public void setIsEnabled(Integer isEnabled) {
         this.isEnabled = isEnabled;
+    }
+
+    public Long getValueId() {
+        return valueId;
+    }
+
+    public void setValueId(Long valueId) {
+        this.valueId = valueId;
     }
 }

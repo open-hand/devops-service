@@ -1,5 +1,4 @@
 # DevOps Service   
-<<<<<<< HEAD
 
 
 `DevOps Service` is the core service of Choerodon. Current version: `0.15.0`   

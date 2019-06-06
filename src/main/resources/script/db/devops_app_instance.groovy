@@ -45,4 +45,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_instance.groovy') {
             column(name: "env_id")
         }
     }
+
+    changeSet(author: 'younger', id: '2019-06-05-add-column') {
+        addColumn(tableName: 'devops_app_instance') {
+            column(name: 'value_id', type: 'BIGINT UNSIGNED', remarks: 'devops deploy value id', afterColumn: 'env_id')
+        }
+    }
 }
