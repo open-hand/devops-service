@@ -38,7 +38,7 @@ public class PipelineTaskRecordDO extends AuditDomain {
     private String name;
     private String instanceName;
     private String auditUser;
-    private String valueId;
+    private Long valueId;
 
     @Transient
     private String envName;
@@ -48,6 +48,14 @@ public class PipelineTaskRecordDO extends AuditDomain {
     private String version;
     @Transient
     private String instanceStatus;
+
+    public Long getValueId() {
+        return valueId;
+    }
+
+    public void setValueId(Long valueId) {
+        this.valueId = valueId;
+    }
 
     public String getAuditUser() {
         return auditUser;
