@@ -268,7 +268,13 @@ public class PipelineServiceImpl implements PipelineService {
             }
             return t;
         }).collect(Collectors.toList());
-        pageRecordDTOS.setContent(pipelineRecordDTOS);
+        if (pendingcheck) {
+            pageRecordDTOS.setContent(pipelineRecordDTOS);
+            pageRecordDTOS.setTotalPages((pipelineRecordDTOS.size() / pageRecordDTOS.getSize()) + 1);
+            pageRecordDTOS.setTotalElements(pipelineRecordDTOS.size());
+            Integer numberOfElements = pipelineRecordDTOS.size() - pageRecordDTOS.getSize() * pageRecordDTOS.getNumber();
+            pageRecordDTOS.setNumberOfElements(numberOfElements > pageRecordDTOS.getSize() ? pageRecordDTOS.getSize() : numberOfElements);
+        }
         return pageRecordDTOS;
     }
 
