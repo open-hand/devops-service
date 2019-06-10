@@ -479,6 +479,10 @@ public class PipelineServiceImpl implements PipelineService {
             updateFirstStage(pipelineRecordE.getId());
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
+            NoticeSendDTO.User user = new NoticeSendDTO.User();
+            user.setEmail(GitUserNameUtil.getEmail());
+            user.setId(GitUserNameUtil.getUserId().longValue());
+            sendSiteMessage(pipelineRecordE.getId(), PipelineNoticeType.PIPELINEFAILED.toValue(), Collections.singletonList(user), new HashMap<>());
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             pipelineRecordE.setErrorInfo(e.getMessage());
             pipelineRecordRepository.update(pipelineRecordE);
@@ -492,6 +496,7 @@ public class PipelineServiceImpl implements PipelineService {
         LOGGER.info("autoDeploy:stageRecordId: {} taskId: {}", stageRecordId, taskRecordId);
         //获取数据
         PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(taskRecordId);
+        Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
         CutomerContextUtil.setUserId(taskRecordE.getCreatedBy());
         List<ApplicationVersionE> versionES = versionRepository.listByAppId(taskRecordE.getApplicationId(), null);
         Integer index = -1;
@@ -510,7 +515,7 @@ public class PipelineServiceImpl implements PipelineService {
             }
         }
         if (index == -1) {
-            setPipelineFailed(stageRecordId, taskRecordE, "No version can trigger deploy");
+            setPipelineFailed(pipelineRecordId, stageRecordId, taskRecordE, "No version can trigger deploy");
             throw new CommonException("error.version.can.trigger.deploy");
         }
         //保存记录
@@ -538,7 +543,11 @@ public class PipelineServiceImpl implements PipelineService {
             String input = gson.toJson(applicationDeployDTO);
             sagaClient.startSaga("devops-pipeline-auto-deploy-instance", new StartInstanceDTO(input, "env", taskRecordE.getEnvId().toString(), ResourceLevel.PROJECT.value(), taskRecordE.getProjectId()));
         } catch (Exception e) {
-            setPipelineFailed(stageRecordId, taskRecordE, e.getMessage());
+            NoticeSendDTO.User user = new NoticeSendDTO.User();
+            user.setEmail(GitUserNameUtil.getEmail());
+            user.setId(GitUserNameUtil.getUserId().longValue());
+            sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEFAILED.toValue(), Collections.singletonList(user), new HashMap<>());
+            setPipelineFailed(pipelineRecordId, stageRecordId, taskRecordE, e.getMessage());
             throw new CommonException("error.create.pipeline.auto.deploy.instance", e);
         }
     }
@@ -1488,10 +1497,9 @@ public class PipelineServiceImpl implements PipelineService {
         return index;
     }
 
-    private void setPipelineFailed(Long stageRecordId, PipelineTaskRecordE taskRecordE, String errorInfo) {
+    private void setPipelineFailed(Long pipelineRecordId, Long stageRecordId, PipelineTaskRecordE taskRecordE, String errorInfo) {
         taskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
         taskRecordRepository.createOrUpdate(taskRecordE);
-        Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
         updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), errorInfo);
     }
 
