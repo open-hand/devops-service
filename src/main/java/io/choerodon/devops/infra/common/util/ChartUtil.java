@@ -58,7 +58,7 @@ public class ChartUtil {
     public void downloadChart(ApplicationVersionE applicationVersionE, Organization organization, ProjectE projectE, ApplicationE applicationE, String destpath) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setType(CHART);
-        configurationProperties.setBaseUrl(applicationVersionE.getRepository().split(organization.getCode())[0]);
+        configurationProperties.setBaseUrl(applicationVersionE.getRepository().split(organization.getCode() + "/" + projectE.getCode())[0]);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         ChartClient chartClient = retrofit.create(ChartClient.class);
         Call<ResponseBody> getTaz = chartClient.downloadTaz(organization.getCode(), projectE.getCode(), applicationE.getCode(), applicationVersionE.getVersion());
