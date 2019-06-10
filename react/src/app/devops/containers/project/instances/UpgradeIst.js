@@ -1,13 +1,14 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Modal, Select, Icon } from 'choerodon-ui';
 import { stores, Content } from '@choerodon/boot';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import YamlEditor from '../../../components/yamlEditor';
 import InterceptMask from '../../../components/interceptMask/InterceptMask';
 import LoadingBar from '../../../components/loadingBar';
+import CoverConfigModal from './components/CoverConfigModal';
 
 import './Instances.scss';
 import '../../main.scss';
@@ -26,13 +27,43 @@ class UpgradeIst extends Component {
       loading: false,
       submitting: false,
       hasEditorError: false,
+      hasChanged: false,
+      showCover: false,
     };
   }
 
   handleNextStepEnable = flag => this.setState({ hasEditorError: flag });
-  handleChangeValue = values => this.setState({ values });
+  handleChangeValue = (values, changed = false) => this.setState({ values, hasChanged: changed });
 
   onClose = () => this.props.onClose(false);
+
+  /**
+   * 判断是否显示覆盖弹窗
+   */
+  checkCover = () => {
+    const { store: { getValue } } = this.props;
+    const { hasChanged } = this.state;
+    if (hasChanged && getValue && getValue.id) {
+      this.setState({ showCover: true });
+    } else {
+      this.handleOk();
+    }
+  };
+
+  /**
+   * 关闭覆盖弹窗
+   * @param flag 是否覆盖
+   */
+  closeCover = (flag) => {
+    const { versionId } = this.state;
+    const { store: { getVerValue } } = this.props;
+    if (flag) {
+      this.handleVersionChange(versionId || (getVerValue.length ? getVerValue[0].id : undefined));
+    } else {
+      this.handleOk();
+    }
+    this.setState({ showCover: false });
+  };
 
   /**
    * 修改配置升级实例
@@ -81,7 +112,7 @@ class UpgradeIst extends Component {
   handleVersionChange = (id) => {
     const { store, appInstanceId } = this.props;
     const { id: projectId } = AppState.currentMenuType;
-    this.setState({ versionId: id, values: null, loading: true });
+    this.setState({ versionId: id, values: null, loading: true, hasChanged: false });
     store.setValue(null);
     store.loadValue(projectId, appInstanceId, id).then(() => {
       this.setState({ loading: false });
@@ -98,7 +129,7 @@ class UpgradeIst extends Component {
       name,
       visible,
     } = this.props;
-    const { values, submitting, loading, versionId } = this.state;
+    const { values, submitting, loading, versionId, showCover } = this.state;
 
     const versionOptions = _.map(getVerValue, app => (
       <Option key={app.id} value={app.id}>
@@ -106,13 +137,13 @@ class UpgradeIst extends Component {
       </Option>
     ));
 
-    const initValue = getValue ? getValue.yaml : '';
+    const { id, name: configName, yaml, objectVersionNumber } = getValue || {};
 
-    return (
+    return (<Fragment>
       <Sidebar
         title={formatMessage({ id: 'ist.upgrade' })}
         visible={visible}
-        onOk={this.handleOk}
+        onOk={this.checkCover}
         onCancel={this.onClose}
         cancelText={formatMessage({ id: 'cancel' })}
         okText={formatMessage({ id: 'ist.upgrade' })}
@@ -134,6 +165,15 @@ class UpgradeIst extends Component {
           >
             {versionOptions}
           </Select>
+          {id && configName && (
+            <Fragment>
+              <div className='c7n-deploy-configValue-title'><FormattedMessage id='configValue' /></div>
+              <div className="c7n-deploy-configValue-text">
+                <span>{formatMessage({ id: 'deployConfig' })}：</span>
+                <span className="c7n-deploy-configValue-name">{configName}</span>
+              </div>
+            </Fragment>
+          )}
 
           {getVerValue.length === 0 ? (
             <div>
@@ -145,8 +185,8 @@ class UpgradeIst extends Component {
           <div className="c7n-config-section">
             {getValue ? <YamlEditor
               readOnly={false}
-              value={values || initValue}
-              originValue={initValue}
+              value={values || yaml}
+              originValue={yaml}
               handleEnableNext={this.handleNextStepEnable}
               onValueChange={this.handleChangeValue}
             /> : null}
@@ -156,7 +196,16 @@ class UpgradeIst extends Component {
 
         <InterceptMask visible={submitting} />
       </Sidebar>
-    );
+      {showCover && (
+        <CoverConfigModal
+          id={id}
+          objectVersionNumber={objectVersionNumber}
+          show={showCover}
+          configValue={values}
+          onClose={this.closeCover}
+        />
+      )}
+    </Fragment>);
   }
 }
 

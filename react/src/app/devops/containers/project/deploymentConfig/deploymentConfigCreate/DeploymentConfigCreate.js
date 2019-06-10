@@ -258,6 +258,7 @@ class DeploymentConfigCreate extends Component {
     const appData = store.getAppData;
     const envData = store.getEnvData;
     const loading = store.getValueLoading;
+    const env = _.filter(envData, ['id', envId]);
 
     return (
       <div className="c7n-region">
@@ -390,7 +391,7 @@ class DeploymentConfigCreate extends Component {
                       message: formatMessage({ id: "required" }),
                     },
                   ],
-                  initialValue: envId,
+                  initialValue: (env && env.length) ? envId : undefined,
                 })(
                   <Select
                     label={formatMessage({ id: "deploy.envName" })}
