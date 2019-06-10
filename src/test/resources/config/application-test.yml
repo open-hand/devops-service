@@ -30,14 +30,14 @@ eureka:
     enabled: false
 services:
   harbor:
-    baseUrl: "https://registry.saas.hand-china.com"
+    baseUrl: "https://registry.saas.test.com"
     username: "admin"
     password: "Handhand123"
   helm:
-    url: "http://helm-charts.staging.saas.hand-china.com"
+    url: "http://helm-charts.staging.saas.test.com"
   gitlab:
     sshUrl: "git.vk.vu:2289"
-    url: "http://git.alpha.saas.hand-china.com"
+    url: "http://git.alpha.saas.test.com"
 choerodon:
   event:
     consumer:

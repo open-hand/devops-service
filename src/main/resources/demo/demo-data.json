@@ -37,6 +37,6 @@
   "appVersion": {
     "version": "0.1.0",
     "commit": "000000000000000000000000",
-    "image": "registry.saas.hand-china.com/code-x-code-x/code-i:2018.12.24-104231-multi-container"
+    "image": "registry.saas.test.com/code-x-code-x/code-i:2018.12.24-104231-multi-container"
   }
 }

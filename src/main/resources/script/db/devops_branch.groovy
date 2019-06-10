@@ -51,4 +51,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_branch.groovy') {
     changeSet(author: 'crockitwood', id: '2018-09-28-drop-branch-constraint') {
         dropUniqueConstraint(constraintName: "uk_branch_name_commit",tableName: "devops_branch")
     }
+
+    changeSet(author: 'younger', id: '2019-05-27-add-index') {
+        createIndex(indexName: "idx_branchname_appid_isdeleted_creationdate ", tableName: "devops_branch") {
+            column(name: "branch_name")
+            column(name: "app_id")
+            column(name: "is_deleted")
+            column(name: "creation_date")
+        }
+    }
 }

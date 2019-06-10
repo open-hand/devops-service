@@ -8,7 +8,7 @@ metadata:
   name: ingtest2asd
 spec:
   rules:
-  - host: devops-service2323-front.staging.saas.hand-china.com
+  - host: devops-service2323-front.staging.saas.test.com
     http:
       paths:
       - backend:

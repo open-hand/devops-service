@@ -234,16 +234,16 @@ class GitlabWebHookServiceimplSpec extends Specification {
                 "env:\n" +
                 "  open:\n" +
                 "    SPRING_REDIS_HOST: redis.tools.svc\n" +
-                "    SERVICES_GITLAB_URL: http://git.staging.saas.hand-china.com\n" +
-                "    SERVICES_GATEWAY_URL: http://api.staging.saas.hand-china.com\n" +
-                "    AGENT_SERVICEURL: ws://devops-service-front.staging.saas.hand-china.com/agent/\n" +
-                "    SERVICES_SONARQUBE_URL: http://sonarqube.staging.saas.hand-china.com\n" +
+                "    SERVICES_GITLAB_URL: http://git.staging.saas.test.com\n" +
+                "    SERVICES_GATEWAY_URL: http://api.staging.saas.test.com\n" +
+                "    AGENT_SERVICEURL: ws://devops-service-front.staging.saas.test.com/agent/\n" +
+                "    SERVICES_SONARQUBE_URL: http://sonarqube.staging.saas.test.com\n" +
                 "    AGENT_REPOURL: http://chart.choerodon.com.cn/choerodon/c7ncd/\n" +
                 "    SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**,/webhook/**,/workflow/**\n" +
                 "    SPRING_CLOUD_CONFIG_URI: http://config-server.choerodon-framework-staging:8010\n" +
                 "    SERVICES_HARBOR_PASSWORD: Handhand123\n" +
-                "    SERVICES_HELM_URL: http://helm-charts.staging.saas.hand-china.com\n" +
-                "    SERVICES_HARBOR_BASEURL: https://registry.saas.hand-china.com\n" +
+                "    SERVICES_HELM_URL: http://helm-charts.staging.saas.test.com\n" +
+                "    SERVICES_HARBOR_BASEURL: https://registry.saas.test.com\n" +
                 "    SPRING_DATASOURCE_URL: jdbc:mysql://hapcloud-mysql.db:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false\n" +
                 "    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server.choerodon-framework-staging:8000/eureka/\n" +
                 "    SPRING_DATASOURCE_PASSWORD: handhand\n" +
@@ -371,7 +371,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         DevopsIngressE devopsIngressE = new DevopsIngressE()
         devopsIngressE.setName("ing" + code)
         devopsIngressE.setEnvId(devopsEnvironmentE.getId())
-        devopsIngressE.setDomain("devops-service2-front.staging.saas.hand-china.com")
+        devopsIngressE.setDomain("devops-service2-front.staging.saas.test.com")
         devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE)
 
         DevopsEnvCommandE devopsEnvCommandE2 = new DevopsEnvCommandE()
@@ -399,7 +399,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         certificationE.setEnvironmentE(devopsEnvironmentE)
         certificationE.setCertificationFileId(1L)
         List<String> domain = new ArrayList<>()
-        domain.add("test.saas.hand-china.com")
+        domain.add("test.saas.test.com")
         certificationE.setDomains(domain)
         certificationE = certificationRepository.create(certificationE);
 
