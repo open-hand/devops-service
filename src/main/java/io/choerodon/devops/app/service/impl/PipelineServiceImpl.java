@@ -1455,7 +1455,9 @@ public class PipelineServiceImpl implements PipelineService {
             List<String> userIds = new ArrayList<>();
             if (!reviewedUsers.isEmpty() && auditUser != null) {
                 userIds = Arrays.asList(auditUser.split(","));
-                userIds.removeAll(reviewedUsers);
+                List arrList = new ArrayList(userIds);
+                arrList.removeAll(reviewedUsers);
+                userIds = arrList;
             }
             return userIds.contains(TypeUtil.objToString(DetailsHelper.getUserDetails().getUserId()));
         }
