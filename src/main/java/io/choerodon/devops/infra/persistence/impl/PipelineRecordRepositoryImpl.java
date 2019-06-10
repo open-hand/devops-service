@@ -62,7 +62,7 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
 
     @Override
     public PipelineRecordE queryById(Long recordId) {
-        return ConvertHelper.convert(pipelineRecordMapper.queryById(recordId), PipelineRecordE.class);
+        return ConvertHelper.convert(pipelineRecordMapper.selectByPrimaryKey(recordId), PipelineRecordE.class);
     }
 
     @Override
