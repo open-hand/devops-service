@@ -216,7 +216,7 @@ public class PipelineServiceImpl implements PipelineService {
         classifyParam.put("userId", DetailsHelper.getUserDetails().getUserId());
         Page<PipelineRecordDTO> pageRecordDTOS = ConvertPageHelper.convertPage(
                 pipelineRecordRepository.listByOptions(projectId, pipelineId, pageRequest, params, classifyParam), PipelineRecordDTO.class);
-        List<PipelineRecordDTO> pipelineRecordDTOS = pageRecordDTOS.getContent().stream().filter(t -> filterPendingCheck(pendingcheck, t.getId())).map(t -> {
+        pageRecordDTOS.setContent(pageRecordDTOS.getContent().stream().map(t -> {
             t.setIndex(false);
             t.setStageDTOList(ConvertHelper.convertList(stageRecordRepository.list(projectId, t.getId()), PipelineStageRecordDTO.class));
             if (t.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
@@ -267,14 +267,7 @@ public class PipelineServiceImpl implements PipelineService {
                 t.setIndex(checkTaskRecordEnvPermission(projectE, t.getId()));
             }
             return t;
-        }).collect(Collectors.toList());
-        if (pendingcheck) {
-            pageRecordDTOS.setContent(pipelineRecordDTOS);
-            pageRecordDTOS.setTotalPages((pipelineRecordDTOS.size() / pageRecordDTOS.getSize()) + 1);
-            pageRecordDTOS.setTotalElements(pipelineRecordDTOS.size());
-            Integer numberOfElements = pipelineRecordDTOS.size() - pageRecordDTOS.getSize() * pageRecordDTOS.getNumber();
-            pageRecordDTOS.setNumberOfElements(numberOfElements > pageRecordDTOS.getSize() ? pageRecordDTOS.getSize() : numberOfElements);
-        }
+        }).collect(Collectors.toList()));
         return pageRecordDTOS;
     }
 

@@ -3,29 +3,81 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineRecordMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
-        <choose>
-            <when test="classifyParam.executed !=null and classifyParam.pendingcheck != null">
-                <include refid="selectSql"/>
-                AND(dpr.created_by = #{classifyParam.userId} AND dpr.trigger_type = 'manual' OR dpr.`status`='pendingcheck')
-            </when>
-            <when test="classifyParam.executed != null">
-                <include refid="selectSql"/>
-                AND(dpr.created_by = #{classifyParam.userId} AND dpr.trigger_type = 'manual')
-            </when>
-            <when test="classifyParam.pendingcheck != null">
-                <include refid="selectSql"/>
-                AND dpr.`status`='pendingcheck'
-            </when>
-        </choose>
-        <include refid="sqlparam"/>
-        <if test='classifyParam.reviewed'>
-            <choose>
-            <when test="classifyParam.executed !=null or classifyParam.pendingcheck != null">
+        <if test="classifyParam.executed ==null and classifyParam.pendingcheck == null and classifyParam.reviewed==null">
+            <include refid="selectSql"/>
+            <if test="pipelineId != null">
+                AND dpr.pipeline_id = #{pipelineId}
+            </if>
+            <include refid="sqlparam"/>
+        </if>
+        <if test="classifyParam.pendingcheck != null">
+            SELECT DISTINCT
+            dpr.id,
+            dpr. STATUS,
+            dpr.trigger_type,
+            dpr.pipeline_name,
+            dpr.last_update_date,
+            dpr.project_id,
+            dpr.pipeline_id,
+            dpr.error_info
+            FROM
+            devops_pipeline_record dpr
+            JOIN devops_pipeline_stage_record dpsr ON dpsr.pipeline_record_id = dpr.id
+            AND dpsr.audit_user LIKE CONCAT(CONCAT('%', #{classifyParam.userId}),'%')
+            JOIN devops_pipeline_user_record_rel dpurl ON dpurl.stage_record_id = dpsr.id
+            AND dpurl.user_id != #{classifyParam.userId}
+            WHERE
+            dpr.project_id = 490
+            AND dpr.`status` = 'pendingcheck'
+            <if test="pipelineId != null">
+                AND dpr.pipeline_id = #{pipelineId}
+            </if>
+            <include refid="sqlparam"/>
+            UNION
+            SELECT DISTINCT
+            dpr.id,
+            dpr. STATUS,
+            dpr.trigger_type,
+            dpr.pipeline_name,
+            dpr.last_update_date,
+            dpr.project_id,
+            dpr.pipeline_id,
+            dpr.error_info
+            FROM
+            devops_pipeline_record dpr
+            JOIN devops_pipeline_stage_record dpsr ON dpsr.pipeline_record_id = dpr.id
+            JOIN devops_pipeline_task_record dptr ON dptr.stage_record_id = dpsr.id
+            AND dptr.audit_user LIKE CONCAT(CONCAT('%', #{classifyParam.userId}),'%')
+            JOIN devops_pipeline_user_record_rel dpurl ON dpurl.task_record_id = dptr.id
+            AND dpurl.user_id != #{classifyParam.userId}
+            WHERE
+            dpr.project_id = 490
+            AND dpr.`status` = 'pendingcheck'
+            <if test="pipelineId != null">
+                AND dpr.pipeline_id = #{pipelineId}
+            </if>
+            <include refid="sqlparam"/>
+        </if>
+
+        <if test="classifyParam.reviewed != null">
+            <if test="classifyParam.pendingcheck != null">
                 UNION
-            </when>
-            </choose>
+            </if>
             <include refid="reviewedSql"/>
         </if>
+
+        <if test="classifyParam.executed !=null">
+            <if test="classifyParam.reviewed !=null or classifyParam.pendingcheck != null">
+                UNION
+            </if>
+            <include refid="selectSql"/>
+            <if test="pipelineId != null">
+                AND dpr.pipeline_id = #{pipelineId}
+            </if>
+            <include refid="sqlparam"/>
+            AND(dpr.created_by = #{classifyParam.userId} AND dpr.trigger_type = 'manual')
+        </if>
+
     </select>
 
     <select id="queryById" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
