@@ -94,7 +94,6 @@ import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
 import io.choerodon.devops.domain.application.repository.PipelineUserRelRecordRepository;
 import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
 import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
@@ -519,7 +518,7 @@ public class PipelineServiceImpl implements PipelineService {
             String type = instanceId == null ? CommandType.CREATE.getType() : CommandType.UPDATE.getType();
             ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(versionES.get(index).getId(), taskRecordE.getEnvId(),
                     valueRepository.queryById(taskRecordE.getValueId()).getValue(), taskRecordE.getApplicationId(), type, instanceId,
-                    taskRecordE.getInstanceName(), taskRecordE.getId(),taskRecordE.getValueId());
+                    taskRecordE.getInstanceName(), taskRecordE.getId(), taskRecordE.getValueId());
             if (type.equals(CommandType.UPDATE.getType())) {
                 ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
                 DevopsEnvCommandE olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
@@ -1096,23 +1095,24 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void failed(Long projectId, Long recordId) {
         PipelineRecordE recordE = pipelineRecordRepository.queryById(recordId);
-//        if (!recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
-//            throw new CommonException("error.pipeline.record.status");
-//        }
+        if (!recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
+            throw new CommonException("error.pipeline.record.status");
+        }
         List<PipelineStageRecordE> stageRecordES = stageRecordRepository.queryByPipeRecordId(recordId, null);
 
         for (PipelineStageRecordE stageRecordE : stageRecordES) {
             if (stageRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()) || stageRecordE.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                 updateStatus(recordId, stageRecordE.getId(), WorkFlowStatus.FAILED.toValue(), "Force failure");
-                List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null);
-                for (PipelineTaskRecordE taskRecordE : taskRecordEList) {
-                    if (taskRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
-                        taskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
-                        taskRecordRepository.createOrUpdate(taskRecordE);
-                        break;
-                    }
+                Optional<PipelineTaskRecordE> optional = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null).stream().filter(t -> t.getStatus().equals(WorkFlowStatus.RUNNING.toValue())).findFirst();
+                if (optional.isPresent()) {
+                    PipelineTaskRecordE taskRecordE = optional.get();
+                    taskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
+                    taskRecordRepository.createOrUpdate(taskRecordE);
+                } else {
+                    throw new CommonException("error.pipeline.record.status");
                 }
                 break;
             }
@@ -1200,7 +1200,7 @@ public class PipelineServiceImpl implements PipelineService {
                 NoticeSendDTO.User user = new NoticeSendDTO.User();
                 user.setEmail(userE.getEmail());
                 user.setId(userE.getId());
-                sendSiteMessage(recordE.getId(), PipelineNoticeType.PIPELINESUCCESS.toValue(), Collections.singletonList(user),new HashMap<>());
+                sendSiteMessage(recordE.getId(), PipelineNoticeType.PIPELINESUCCESS.toValue(), Collections.singletonList(user), new HashMap<>());
             } else {
                 //更新下一个阶段状态
                 startNextStageRecord(stageRecordId, recordE);
