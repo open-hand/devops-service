@@ -17,6 +17,13 @@
         devops_deploy_value dpv
         JOIN devops_env de ON de.id = dpv.env_id
         JOIN devops_application da ON da.id = dpv.app_id
+        <if test="userId !=null">
+            JOIN devops_env_user_permission deup ON (
+            deup.iam_user_id = #{userId}
+            AND deup.is_permitted = 1
+            AND dpv.env_id = deup.env_id
+            )
+        </if>
         WHERE
         dpv.project_id = #{projectId}
         <if test='appId != null and appId !=""'>

@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
@@ -70,8 +68,11 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-
-        Page<DevopsDeployValueDTO> valueDTOS = ConvertPageHelper.convertPage(valueRepository.listByOptions(projectId, appId, envId, pageRequest, params), DevopsDeployValueDTO.class);
+        Long userId = null;
+        if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+            userId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
+        }
+        Page<DevopsDeployValueDTO> valueDTOS = ConvertPageHelper.convertPage(valueRepository.listByOptions(projectId, appId, envId, userId, pageRequest, params), DevopsDeployValueDTO.class);
         Page<DevopsDeployValueDTO> page = new Page<>();
         BeanUtils.copyProperties(valueDTOS, page);
         List<DevopsDeployValueDTO> deployValueDTOS = new ArrayList<>();
@@ -85,17 +86,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 t.setEnvStatus(true);
             }
-            if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
-                List<Long> envIds = devopsEnvUserPermissionRepository
-                        .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
-                        .filter(DevopsEnvUserPermissionE::getPermitted)
-                        .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
-                if (envIds.contains(GitUserNameUtil.getUserId().longValue())) {
-                    deployValueDTOS.add(t);
-                }
-            } else {
-                deployValueDTOS.add(t);
-            }
+            deployValueDTOS.add(t);
         });
         page.setContent(deployValueDTOS);
         return page;

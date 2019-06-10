@@ -16,6 +16,7 @@ public interface DevopsDeployValueMapper extends BaseMapper<DevopsDeployValueDO>
     List<DevopsDeployValueDO> listByOptions(@Param("projectId") Long projectId,
                                             @Param("appId") Long appId,
                                             @Param("envId") Long envId,
+                                            @Param("userId") Long userId,
                                             @Param("searchParam") Map<String, Object> searchParam,
                                             @Param("param") String param);
 }
