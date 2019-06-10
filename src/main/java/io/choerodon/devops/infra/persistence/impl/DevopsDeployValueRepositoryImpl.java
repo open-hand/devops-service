@@ -1,6 +1,12 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -12,11 +18,6 @@ import io.choerodon.devops.infra.dataobject.DevopsDeployValueDO;
 import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -31,12 +32,12 @@ public class DevopsDeployValueRepositoryImpl implements DevopsDeployValueReposit
     private DevopsDeployValueMapper valueMapper;
 
     @Override
-    public Page<DevopsDeployValueE> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
+    public Page<DevopsDeployValueE> listByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         Page<DevopsDeployValueDO> devopsAutoDeployDOS = PageHelper
-                .doPageAndSort(pageRequest, () -> valueMapper.listByOptions(projectId, appId, envId, searchParamMap, paramMap));
+                .doPageAndSort(pageRequest, () -> valueMapper.listByOptions(projectId, appId, envId, userId, searchParamMap, paramMap));
         return ConvertPageHelper.convertPage(devopsAutoDeployDOS, DevopsDeployValueE.class);
     }
 
