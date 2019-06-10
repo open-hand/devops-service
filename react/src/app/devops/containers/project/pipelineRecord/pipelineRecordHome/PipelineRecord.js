@@ -516,8 +516,9 @@ class PipelineRecord extends Component {
               mode="multiple"
               label={formatMessage({ id: "pipelineRecord.search" })}
               allowClear
-              className="c7n-pipelineRecord-select-380"
+              className="c7n-pipelineRecord-select-380 c7n-pipelineRecord-search-related"
               onChange={this.handleSearch}
+              choiceRemove={false}
             >
               {
                 _.map(RELATED_TO_ME, item => (

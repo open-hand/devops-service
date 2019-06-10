@@ -538,6 +538,7 @@ export default class Pipeline extends Component {
           allowClear
           className="c7ncd-pipeline-search"
           onChange={this.handleSearch}
+          choiceRemove={false}
         >
           {
             _.map(FAST_SEARCH, item => (

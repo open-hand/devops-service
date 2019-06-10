@@ -9,4 +9,17 @@
 .c7ncd-pipeline-search {
   width: 360px;
   margin-bottom: 20px;
+
+  .c7n-select-selection--multiple .c7n-select-selection__choice {
+    background: none;
+    padding: 0;
+
+    &:after {
+      content: ',';
+    }
+
+    &:nth-last-child(2):after {
+      content: none;
+    }
+  }
 }

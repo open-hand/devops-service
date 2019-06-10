@@ -14,6 +14,22 @@
     &-380 {
       width: 380px;
     }
+
+    .c7n-pipelineRecord-search-related {
+
+      .c7n-select-selection--multiple .c7n-select-selection__choice {
+        background: none;
+        padding: 0;
+
+        &:after {
+          content: ',';
+        }
+
+        &:nth-last-child(2):after {
+          content: none;
+        }
+      }
+    }
   }
 
   .c7n-pipelineRecord-process {
