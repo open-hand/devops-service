@@ -1452,8 +1452,9 @@ public class PipelineServiceImpl implements PipelineService {
                     auditUser = stageRecordE.getAuditUser();
                 }
             }
-            List<String> userIds = new ArrayList<>(Arrays.asList(auditUser.split(",")));
-            if (!reviewedUsers.isEmpty()) {
+            List<String> userIds = new ArrayList<>();
+            if (!reviewedUsers.isEmpty() && auditUser != null) {
+                userIds = Arrays.asList(auditUser.split(","));
                 userIds.removeAll(reviewedUsers);
             }
             return userIds.contains(TypeUtil.objToString(DetailsHelper.getUserDetails().getUserId()));
