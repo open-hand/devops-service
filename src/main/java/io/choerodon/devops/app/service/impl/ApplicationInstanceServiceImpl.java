@@ -314,13 +314,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
         String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(instanceId));
         String versionValue = applicationVersionRepository.queryValue(versionId);
-        ReplaceResult replaceResult = getReplaceResult(versionValue, yaml);
+        ReplaceResult replaceResult = new ReplaceResult();
         if (applicationInstanceE.getValueId() != null) {
             DevopsDeployValueE devopsDeployValueE = devopsDeployValueRepository.queryById(applicationInstanceE.getValueId());
+            yaml = devopsDeployValueE.getValue();
             replaceResult.setName(devopsDeployValueE.getName());
             replaceResult.setId(devopsDeployValueE.getId());
             replaceResult.setObjectVersionNumber(devopsDeployValueE.getObjectVersionNumber());
         }
+        replaceResult.setYaml(getReplaceResult(versionValue, yaml).getYaml());
+
         return replaceResult;
     }
 
@@ -546,6 +549,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
         if (applicationInstanceE.getValueId() != null) {
             DevopsDeployValueE devopsDeployValueE = devopsDeployValueRepository.queryById(applicationInstanceE.getValueId());
+            yaml = devopsDeployValueE.getValue();
             replaceResult.setName(devopsDeployValueE.getName());
             replaceResult.setId(devopsDeployValueE.getId());
             replaceResult.setObjectVersionNumber(devopsDeployValueE.getObjectVersionNumber());

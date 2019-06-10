@@ -16,14 +16,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface DevopsEnvPodContainerService {
 
     /**
-     * 获取日志信息
-     *
-     * @param containerId 容器ID
-     * @return DevopsEnvPodContainerLogDTO
-     */
-    DevopsEnvPodContainerLogDTO log(Long containerId);
-
-    /**
      * 获取日志信息 By Pod
      *
      * @param podId pod ID
@@ -31,13 +23,4 @@ public interface DevopsEnvPodContainerService {
      */
     List<DevopsEnvPodContainerLogDTO> logByPodId(Long podId);
 
-    /**
-     * 分页查询容器
-     *
-     * @param podId       pod ID
-     * @param pageRequest 分页参数
-     * @param searchParam 查询参数
-     * @return Page
-     */
-    Page<DevopsEnvPodContainerDTO> listByOptions(Long podId, PageRequest pageRequest, String searchParam);
 }

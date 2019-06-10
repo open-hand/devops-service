@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -18,4 +19,9 @@ public interface DevopsEnvPodService {
      * @return page of devopsEnvPodDTO
      */
     Page<DevopsEnvPodDTO> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam);
+
+
+
+    void setContainers(DevopsEnvPodE devopsEnvPodE);
+
 }
