@@ -53,4 +53,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
             column(name: 'audit_user', type: 'VARCHAR(255)', remarks: '审核人员', afterColumn: "app_deploy_id")
         }
     }
+    changeSet(author: 'scp', id: '2019-06-10-devops_pipeline_task-add-column') {
+        addColumn(tableName: 'devops_pipeline_task_record') {
+            column(name: 'value_id', type: 'BIGINT UNSIGNED', remarks: 'value Id', afterColumn: "app_deploy_id")
+        }
+    }
 }

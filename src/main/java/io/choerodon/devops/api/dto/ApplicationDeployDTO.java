@@ -16,7 +16,7 @@ public class ApplicationDeployDTO {
     public ApplicationDeployDTO() {
     }
 
-    public ApplicationDeployDTO(Long appVersionId, Long environmentId, String values, Long appId, String type, Long appInstanceId, String instanceName, Long recordId) {
+    public ApplicationDeployDTO(Long appVersionId, Long environmentId, String values, Long appId, String type, Long appInstanceId, String instanceName, Long recordId, Long valueId) {
         this.appVersionId = appVersionId;
         this.environmentId = environmentId;
         this.values = values;
@@ -25,6 +25,7 @@ public class ApplicationDeployDTO {
         this.appInstanceId = appInstanceId;
         this.instanceName = instanceName;
         this.recordId = recordId;
+        this.valueId = valueId;
     }
 
     public Long getAppVersionId() {

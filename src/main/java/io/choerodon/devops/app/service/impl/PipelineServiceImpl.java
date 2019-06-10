@@ -518,8 +518,8 @@ public class PipelineServiceImpl implements PipelineService {
             Long instanceId = instanceE == null ? null : instanceE.getId();
             String type = instanceId == null ? CommandType.CREATE.getType() : CommandType.UPDATE.getType();
             ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(versionES.get(index).getId(), taskRecordE.getEnvId(),
-                    taskRecordE.getValue(), taskRecordE.getApplicationId(), type, instanceId,
-                    taskRecordE.getInstanceName(), taskRecordE.getId());
+                    valueRepository.queryById(taskRecordE.getValueId()).getValue(), taskRecordE.getApplicationId(), type, instanceId,
+                    taskRecordE.getInstanceName(), taskRecordE.getId(),taskRecordE.getValueId());
             if (type.equals(CommandType.UPDATE.getType())) {
                 ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
                 DevopsEnvCommandE olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
@@ -808,7 +808,7 @@ public class PipelineServiceImpl implements PipelineService {
                     PipelineAppDeployE appDeployE = appDeployRepository.queryById(task.getAppDeployId());
                     BeanUtils.copyProperties(appDeployE, taskRecordE);
                     taskRecordE.setInstanceId(null);
-                    taskRecordE.setValue(valueRepository.queryById(appDeployE.getValueId()).getValue());
+                    taskRecordE.setValueId(appDeployE.getValueId());
                 }
                 List<PipelineUserRelE> taskUserRels = pipelineUserRelRepository.listByOptions(null, null, task.getId());
                 taskRecordE.setAuditUser(StringUtils.join(taskUserRels.stream().map(PipelineUserRelE::getUserId).toArray(), ","));
@@ -1098,9 +1098,9 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public void failed(Long projectId, Long recordId) {
         PipelineRecordE recordE = pipelineRecordRepository.queryById(recordId);
-        if (!recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
-            throw new CommonException("error.pipeline.record.status");
-        }
+//        if (!recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
+//            throw new CommonException("error.pipeline.record.status");
+//        }
         List<PipelineStageRecordE> stageRecordES = stageRecordRepository.queryByPipeRecordId(recordId, null);
 
         for (PipelineStageRecordE stageRecordE : stageRecordES) {

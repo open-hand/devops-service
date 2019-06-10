@@ -40,9 +40,7 @@ public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepos
 
     @Override
     public PipelineTaskRecordE queryById(Long taskRecordId) {
-        PipelineTaskRecordDO recordDO = new PipelineTaskRecordDO();
-        recordDO.setId(taskRecordId);
-        return ConvertHelper.convert(taskRecordMapper.selectByPrimaryKey(recordDO), PipelineTaskRecordE.class);
+        return ConvertHelper.convert(taskRecordMapper.selectByPrimaryKey(taskRecordId), PipelineTaskRecordE.class);
     }
 
     @Override
@@ -52,9 +50,7 @@ public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepos
 
     @Override
     public void delete(Long recordId) {
-        PipelineTaskRecordDO recordDO = new PipelineTaskRecordDO();
-        recordDO.setId(recordId);
-        taskRecordMapper.deleteByPrimaryKey(recordDO);
+        taskRecordMapper.deleteByPrimaryKey(recordId);
     }
 
     @Override
