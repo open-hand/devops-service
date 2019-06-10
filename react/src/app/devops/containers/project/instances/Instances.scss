@@ -671,3 +671,20 @@
     text-anchor: middle;
   }
 }
+
+.c7n-deploy-configValue-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 14px 0 16px;
+}
+
+.c7n-deploy-configValue-text {
+  font-size: 14px;
+  line-height: 20px;
+  margin-bottom: 30px;
+
+  .c7n-deploy-configValue-name {
+    color: rgba(0, 0, 0, .65);
+    margin-left: 70px;
+  }
+}

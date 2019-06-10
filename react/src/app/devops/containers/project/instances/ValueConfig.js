@@ -6,6 +6,8 @@ import { Modal, Button } from 'choerodon-ui';
 import { Content, stores } from '@choerodon/boot';
 import YamlEditor from '../../../components/yamlEditor';
 import InterceptMask from '../../../components/interceptMask/InterceptMask';
+import CoverConfigModal from './components/CoverConfigModal';
+
 import './Instances.scss';
 import '../../main.scss';
 
@@ -22,6 +24,7 @@ class ValueConfig extends Component {
       hasChanged: false,
       modalDisplay: false,
       hasEditorError: false,
+      showCover: false,
     };
   }
 
@@ -35,11 +38,24 @@ class ValueConfig extends Component {
    */
   handleOk = () => {
     const { hasChanged } = this.state;
+    const { store: { getValue } } = this.props;
     if (hasChanged) {
-      this.reDeploy();
+      if (getValue && getValue.id) {
+        this.setState({ showCover: true });
+      } else {
+        this.reDeploy();
+      }
     } else {
       this.setState({ modalDisplay: true });
     }
+  };
+
+  /**
+   * 关闭覆盖部署配置弹窗
+   */
+  closeCover = () => {
+    this.setState({ showCover: false });
+    this.reDeploy();
   };
 
   /**
@@ -99,14 +115,20 @@ class ValueConfig extends Component {
       name,
       visible,
     } = this.props;
-    const { loading, modalDisplay, hasEditorError } = this.state;
-    const configValue = getValue ? getValue.yaml : '';
+    const { loading, modalDisplay, hasEditorError, showCover, value } = this.state;
+    const { id, name: configName, yaml, objectVersionNumber } = getValue || {};
     const sideDom = (
       <Content code="ist.edit" values={{ name }} className="sidebar-content">
+        {id && configName && (
+          <div className="c7n-deploy-configValue-text">
+            <span>{formatMessage({ id: 'deployConfig' })}：</span>
+            <span className="c7n-deploy-configValue-name">{configName}</span>
+          </div>
+        )}
         <YamlEditor
           readOnly={false}
-          value={configValue}
-          originValue={configValue}
+          value={yaml}
+          originValue={yaml}
           onValueChange={this.handleChangeValue}
           handleEnableNext={this.handleEnableNext}
         />
@@ -156,6 +178,15 @@ class ValueConfig extends Component {
             {formatMessage({ id: 'envOverview.confirm.content.reDeploy' })}
           </span>
         </Modal>
+        {showCover && (
+          <CoverConfigModal
+            id={id}
+            objectVersionNumber={objectVersionNumber}
+            show={showCover}
+            configValue={value}
+            onClose={this.closeCover}
+          />
+        )}
       </Fragment>
     );
   }
