@@ -1,26 +1,33 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
+import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -39,6 +46,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     private DevopsEnvironmentRepository devopsEnviromentRepository;
     @Autowired
     private PipelineAppDeployRepository appDeployRepository;
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
 
     @Override
     public DevopsDeployValueDTO createOrUpdate(Long projectId, DevopsDeployValueDTO pipelineValueDTO) {
@@ -58,13 +67,15 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public Page<DevopsDeployValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
 
         Page<DevopsDeployValueDTO> valueDTOS = ConvertPageHelper.convertPage(valueRepository.listByOptions(projectId, appId, envId, pageRequest, params), DevopsDeployValueDTO.class);
         Page<DevopsDeployValueDTO> page = new Page<>();
         BeanUtils.copyProperties(valueDTOS, page);
-        page.setContent(valueDTOS.getContent().stream().peek(t -> {
+        List<DevopsDeployValueDTO> deployValueDTOS = new ArrayList<>();
+        valueDTOS.getContent().forEach(t -> {
             UserE userE = iamRepository.queryUserByUserId(t.getCreateBy());
             t.setCreateUserName(userE.getLoginName());
             t.setCreateUserUrl(userE.getImageUrl());
@@ -74,7 +85,19 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 t.setEnvStatus(true);
             }
-        }).collect(Collectors.toList()));
+            if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+                List<Long> envIds = devopsEnvUserPermissionRepository
+                        .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                        .filter(DevopsEnvUserPermissionE::getPermitted)
+                        .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+                if (envIds.contains(GitUserNameUtil.getUserId().longValue())) {
+                    deployValueDTOS.add(t);
+                }
+            } else {
+                deployValueDTOS.add(t);
+            }
+        });
+        page.setContent(deployValueDTOS);
         return page;
     }
 
