@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.config;
 
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.notify.PmTemplate;
 import io.choerodon.devops.infra.common.util.enums.PipelineNoticeType;
 
@@ -8,6 +10,7 @@ import io.choerodon.devops.infra.common.util.enums.PipelineNoticeType;
  * Date:  14:35 2019/6/6
  * Description:
  */
+@Component
 public class PipelineAuditPmTemplate implements PmTemplate {
     @Override
     public String businessTypeCode() {
@@ -21,7 +24,7 @@ public class PipelineAuditPmTemplate implements PmTemplate {
 
     @Override
     public String name() {
-        return PipelineNoticeType.PIPELINEAUDIT.toValue();
+        return "流水线审核通知";
     }
 
     @Override

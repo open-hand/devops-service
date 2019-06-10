@@ -31,6 +31,7 @@ public class PipelineTaskRecordE {
     private String instanceStatus;
     private String auditUser;
     private Long createdBy;
+    private Long valueId;
     private java.util.Date creationDate;
 
     public PipelineTaskRecordE() {
@@ -55,6 +56,14 @@ public class PipelineTaskRecordE {
         this.envId = envId;
         this.instanceId = instanceId;
         this.value = value;
+    }
+
+    public Long getValueId() {
+        return valueId;
+    }
+
+    public void setValueId(Long valueId) {
+        this.valueId = valueId;
     }
 
     public java.util.Date getCreationDate() {

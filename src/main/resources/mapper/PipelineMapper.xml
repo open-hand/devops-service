@@ -31,11 +31,6 @@
                 AND dp.trigger_type='manual' and dp.created_by = #{classifyParam.userId}
                 UNION
                 <include refid="executorSql"/>
-                <if test="index !=''">
-                    ORDER BY
-                    is_enabled DESC,
-                    id DESC
-                </if>
             </when>
             <when test="classifyParam.executor != null">
                 <include refid="executorSql"/>

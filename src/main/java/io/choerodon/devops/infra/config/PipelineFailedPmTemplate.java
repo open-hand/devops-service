@@ -24,7 +24,7 @@ public class PipelineFailedPmTemplate implements PmTemplate {
 
     @Override
     public String name() {
-        return PipelineNoticeType.PIPELINEFAILED.toValue();
+        return "流水线失败通知";
     }
 
     @Override
