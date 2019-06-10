@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.config;
 
 import org.springframework.stereotype.Component;
 
+import io.choerodon.core.notify.Level;
+import io.choerodon.core.notify.NotifyBusinessType;
 import io.choerodon.core.notify.PmTemplate;
 import io.choerodon.devops.infra.common.util.enums.PipelineNoticeType;
 
@@ -10,6 +12,8 @@ import io.choerodon.devops.infra.common.util.enums.PipelineNoticeType;
  * Date:  14:38 2019/6/6
  * Description:
  */
+@NotifyBusinessType(code = "pipelinestop", name = "流水线被终止通知", level = Level.SITE,
+        description = "流水线被终止通知", isAllowConfig = false, isManualRetry = true)
 @Component
 public class PipelineStopPmTemplate implements PmTemplate {
     @Override

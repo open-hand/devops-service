@@ -1519,7 +1519,9 @@ public class PipelineServiceImpl implements PipelineService {
         List<String> userIds = new ArrayList<>();
         if (auditUser != null && !auditUser.isEmpty()) {
             userIds = Arrays.asList(auditUser.split(","));
-            userIds.remove(TypeUtil.objToString(GitUserNameUtil.getUserId()));
+            List arrList = new ArrayList(userIds);
+            arrList.remove(TypeUtil.objToString(GitUserNameUtil.getUserId()));
+            userIds = arrList;
         }
         List<NoticeSendDTO.User> userList = new ArrayList<>();
         userIds.forEach(t -> {
