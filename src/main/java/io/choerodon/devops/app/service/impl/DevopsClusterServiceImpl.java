@@ -13,12 +13,15 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.app.service.DevopsClusterService;
+import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
+import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +55,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Autowired
     private ClusterNodeInfoService clusterNodeInfoService;
     @Autowired
-    private DevopsEnvPodContainerRepository devopsEnvPodContainerRepository;
+    private DevopsEnvPodService devopsEnvPodService;
 
 
     @Override
@@ -304,10 +307,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private DevopsClusterPodDTO podE2ClusterPodDTO(DevopsEnvPodE pod) {
         DevopsClusterPodDTO devopsEnvPodDTO = new DevopsClusterPodDTO();
         BeanUtils.copyProperties(pod, devopsEnvPodDTO);
+
+        devopsEnvPodService.setContainers(pod);
+
         devopsEnvPodDTO.setContainersForLogs(
-                devopsEnvPodContainerRepository.list(new DevopsEnvPodContainerDO(pod.getId()))
+                pod.getContainers()
                         .stream()
-                        .map(container -> new DevopsEnvPodContainerLogDTO(pod.getName(), container.getContainerName()))
+                        .map(container -> new DevopsEnvPodContainerLogDTO(pod.getName(), container.getName()))
                         .collect(Collectors.toList())
         );
         return devopsEnvPodDTO;

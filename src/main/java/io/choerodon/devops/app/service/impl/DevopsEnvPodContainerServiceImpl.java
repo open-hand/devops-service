@@ -3,20 +3,14 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.DevopsEnvPodContainerDTO;
 import io.choerodon.devops.api.dto.DevopsEnvPodContainerLogDTO;
 import io.choerodon.devops.app.service.DevopsEnvPodContainerService;
+import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
-import io.choerodon.devops.domain.application.repository.DevopsEnvPodContainerRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
-import io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Creator: Runge
@@ -26,44 +20,26 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Component
 public class DevopsEnvPodContainerServiceImpl implements DevopsEnvPodContainerService {
-    @Autowired
-    private DevopsEnvPodContainerRepository containerRepository;
+
     @Autowired
     private DevopsEnvPodRepository podRepository;
+    @Autowired
+    private DevopsEnvPodService devopsEnvPodService;
 
-    @Override
-    public DevopsEnvPodContainerLogDTO log(Long containerId) {
-        DevopsEnvPodContainerDO container = containerRepository.get(containerId);
-        if (container == null) {
-            throw new CommonException("error.container.notExist");
-        }
-        DevopsEnvPodE pod = podRepository.get(container.getPodId());
-        if (pod == null) {
-            throw new CommonException("error.pod.notExist");
-        }
-        return new DevopsEnvPodContainerLogDTO(pod.getName(),
-                container.getContainerName());
-    }
 
     @Override
     public List<DevopsEnvPodContainerLogDTO> logByPodId(Long podId) {
-        List<DevopsEnvPodContainerDO> container = containerRepository.list(new DevopsEnvPodContainerDO(podId));
-        if (container == null) {
-            throw new CommonException("error.container.notExist");
-        }
-        DevopsEnvPodE pod = podRepository.get(podId);
-        if (pod == null) {
+
+        DevopsEnvPodE devopsEnvPodE = podRepository.get(podId);
+        if (devopsEnvPodE == null) {
             throw new CommonException("error.pod.notExist");
         }
-        return container.stream().map(t ->
-                new DevopsEnvPodContainerLogDTO(pod.getName(), t.getContainerName()))
-                .collect(Collectors.toList());
-    }
+        devopsEnvPodService.setContainers(devopsEnvPodE);
+        List<DevopsEnvPodContainerLogDTO> devopsEnvPodContainerLogDTOS = devopsEnvPodE.getContainers().stream().map(containerDTO -> {
+            DevopsEnvPodContainerLogDTO devopsEnvPodContainerLogDTO = new DevopsEnvPodContainerLogDTO(devopsEnvPodE.getName(), containerDTO.getName());
+            return devopsEnvPodContainerLogDTO;
+        }).collect(Collectors.toList());
 
-    @Override
-    public Page<DevopsEnvPodContainerDTO> listByOptions(Long podId, PageRequest pageRequest, String searchParam) {
-        return ConvertPageHelper.convertPage(
-                containerRepository.page(podId, pageRequest, searchParam),
-                DevopsEnvPodContainerDTO.class);
+        return devopsEnvPodContainerLogDTOS;
     }
 }

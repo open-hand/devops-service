@@ -72,7 +72,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
      *
      * @param devopsEnvPodE the pod entity
      */
-    private void setContainers(DevopsEnvPodE devopsEnvPodE) {
+    @Override
+    public void setContainers(DevopsEnvPodE devopsEnvPodE) {
         String message = devopsEnvResourceRepository.getResourceDetailByNameAndTypeAndInstanceId(devopsEnvPodE.getApplicationInstanceE().getId(), devopsEnvPodE.getName(), ResourceType.POD);
 
         if (StringUtils.isEmpty(message)) {

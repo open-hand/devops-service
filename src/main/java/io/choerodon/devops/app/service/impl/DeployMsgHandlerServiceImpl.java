@@ -24,7 +24,6 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
-import io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.mapper.ApplicationMarketMapper;
 import io.choerodon.websocket.Msg;
@@ -104,8 +103,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private ApplicationVersionRepository applicationVersionRepository;
     @Autowired
     private IamRepository iamRepository;
-    @Autowired
-    private DevopsEnvPodContainerRepository containerRepository;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
@@ -235,11 +232,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (devopsEnvPodEList == null || devopsEnvPodEList.isEmpty()) {
             devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
             devopsEnvPodRepository.insert(devopsEnvPodE);
-            Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
-            v1Pod.getSpec().getContainers().forEach(t ->
-                    containerRepository.insert(new DevopsEnvPodContainerDO(
-                            podId,
-                            t.getName())));
         } else {
             for (DevopsEnvPodE pod : devopsEnvPodEList) {
                 if (pod.getName().equals(v1Pod.getMetadata().getName())
@@ -249,10 +241,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         devopsEnvPodE.initApplicationInstanceE(pod.getApplicationInstanceE().getId());
                         devopsEnvPodE.setObjectVersionNumber(pod.getObjectVersionNumber());
                         devopsEnvPodRepository.update(devopsEnvPodE);
-                        containerRepository.deleteByPodId(pod.getId());
-                        v1Pod.getSpec().getContainers().forEach(t ->
-                                containerRepository.insert(
-                                        new DevopsEnvPodContainerDO(pod.getId(), t.getName())));
                     }
                     flag = true;
                 }
@@ -260,11 +248,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             if (!flag) {
                 devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
                 devopsEnvPodRepository.insert(devopsEnvPodE);
-                Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
-                v1Pod.getSpec().getContainers().forEach(t ->
-                        containerRepository.insert(new DevopsEnvPodContainerDO(
-                                podId,
-                                t.getName())));
             }
         }
     }
@@ -529,11 +512,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (KeyParseTool.getResourceType(key).equals(ResourceType.POD.getType())) {
             String podName = KeyParseTool.getResourceName(key);
             String podNameSpace = KeyParseTool.getNamespace(key);
-            DevopsEnvPodE podE = devopsEnvPodRepository.get(new DevopsEnvPodE(podName, podNameSpace));
             devopsEnvPodRepository.deleteByName(podName, podNameSpace);
-            if (podE != null) {
-                containerRepository.deleteByPodId(podE.getId());
-            }
         }
 
         if (KeyParseTool.getResourceType(key).equals(ResourceType.SERVICE.getType())) {
@@ -1174,10 +1153,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsEnvPodE.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
         devopsEnvPodRepository.insert(devopsEnvPodE);
         Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
-        v1Pod.getSpec().getContainers().forEach(t ->
-                containerRepository.insert(new DevopsEnvPodContainerDO(
-                        podId,
-                        t.getName())));
     }
 
     private void insertDevopsCommandEvent(Event event, String type) {
