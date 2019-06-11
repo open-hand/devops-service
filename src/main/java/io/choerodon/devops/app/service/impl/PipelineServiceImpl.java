@@ -553,6 +553,15 @@ public class PipelineServiceImpl implements PipelineService {
         Boolean result = true;
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId());
         PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(recordRelDTO.getStageRecordId());
+        String auditUser = null;
+        if ("task".equals(recordRelDTO.getType())) {
+            auditUser = taskRecordRepository.queryById(recordRelDTO.getTaskRecordId()).getAuditUser();
+        } else {
+            Optional<PipelineStageRecordE> optional = stageRecordRepository.queryByPipeRecordId(recordRelDTO.getPipelineRecordId(), null).stream().filter(t -> t.getId() < recordRelDTO.getStageRecordId()).findFirst();
+            if (optional.isPresent()) {
+                auditUser = optional.get().getAuditUser();
+            }
+        }
         if (recordRelDTO.getIsApprove()) {
             try {
                 CustomUserDetails details = DetailsHelper.getUserDetails();
@@ -571,10 +580,6 @@ public class PipelineServiceImpl implements PipelineService {
             }
         } else {
             status = WorkFlowStatus.STOP.toValue();
-            String auditUser = stageRecordE.getAuditUser();
-            if (recordRelDTO.getTaskRecordId() != null) {
-                auditUser = taskRecordRepository.queryById(recordRelDTO.getTaskRecordId()).getAuditUser();
-            }
             sendAuditSiteMassage(PipelineNoticeType.PIPELINESTOP.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
         }
         PipelineUserRecordRelE userRelE = new PipelineUserRecordRelE();
@@ -612,10 +617,11 @@ public class PipelineServiceImpl implements PipelineService {
                             });
                             break;
                         }
+                    } else {
+                        sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(),auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
                     }
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), WorkFlowStatus.RUNNING.toValue(), null);
                     startNextTask(taskRecordE.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
-                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), taskRecordE.getAuditUser(), recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), status, null);
                 }
@@ -640,7 +646,7 @@ public class PipelineServiceImpl implements PipelineService {
                     } else {
                         startEmptyStage(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                     }
-                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), stageRecordE.getAuditUser(), recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
+                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(),auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), null, status, null);
                 }
@@ -1239,6 +1245,21 @@ public class PipelineServiceImpl implements PipelineService {
                 startEmptyStage(recordE.getId(), nextStageRecordE.getId());
             }
         } else {
+            List<NoticeSendDTO.User> userList = new ArrayList<>();
+            String auditUser = stageRecordRepository.queryById(stageRecordId).getAuditUser();
+            if (auditUser != null && !auditUser.isEmpty()) {
+                List<String> userIds = Arrays.asList(auditUser.split(","));
+                userIds.forEach(t -> {
+                    UserE userE = iamRepository.queryUserByUserId(TypeUtil.objToLong(t));
+                    NoticeSendDTO.User user = new NoticeSendDTO.User();
+                    user.setEmail(userE.getEmail());
+                    user.setId(userE.getId());
+                    userList.add(user);
+                });
+            }
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("stageName", stageRecordRepository.queryById(stageRecordId).getStageName());
+            sendSiteMessage(recordE.getId(), PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, params);
             updateStatus(recordE.getId(), null, WorkFlowStatus.PENDINGCHECK.toValue(), null);
         }
     }
@@ -1506,13 +1527,13 @@ public class PipelineServiceImpl implements PipelineService {
         notifyDTO.setCode(type);
         notifyDTO.setCustomizedSendingTypes(Collections.singletonList("siteMessage"));
         PipelineRecordE recordE = pipelineRecordRepository.queryById(pipelineRecordId);
-        params.put("pipelineId", recordE.getPipelineId());
+        params.put("pipelineId", recordE.getPipelineId().toString());
         params.put("pipelineName", recordE.getPipelineName());
-        params.put("pipelineRecordId", pipelineRecordId);
-        params.put("projectId", recordE.getProjectId());
+        params.put("pipelineRecordId", pipelineRecordId.toString());
+        params.put("projectId", recordE.getProjectId().toString());
         ProjectE projectE = iamRepository.queryIamProject(recordE.getProjectId());
         params.put("projectName", projectE.getName());
-        params.put("organizationId", projectE.getOrganization().getId());
+        params.put("organizationId", projectE.getOrganization().getId().toString());
         notifyDTO.setParams(params);
         notifyClient.sendMessage(notifyDTO);
     }
