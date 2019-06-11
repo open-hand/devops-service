@@ -11,7 +11,19 @@
             dpad.trigger_version,
             dpad.env_id,
             de. NAME AS envName,
-            dpad.instance_id,
+            IF (
+            ISNULL(dpad.instance_id),
+            (
+                SELECT
+                    dai.id
+                FROM
+                    devops_app_instance dai
+                WHERE
+                    dai.env_id = dpad.env_id
+                AND dai. CODE = dpad.instance_name
+            ),
+            dpad.instance_id
+            ) AS instance_id,
             dpad.instance_name,
             dadv.VALUE,
             dpad.value_id,
