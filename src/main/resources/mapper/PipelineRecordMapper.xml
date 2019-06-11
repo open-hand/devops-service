@@ -22,10 +22,18 @@
             dpr.error_info
             FROM
             devops_pipeline_record dpr
-            JOIN devops_pipeline_stage_record dpsr ON dpsr.pipeline_record_id = dpr.id
-            AND dpsr.audit_user LIKE CONCAT(CONCAT('%', #{classifyParam.userId}),'%')
-            JOIN devops_pipeline_user_record_rel dpurl ON dpurl.stage_record_id = dpsr.id
-            AND dpurl.user_id != #{classifyParam.userId}
+            JOIN devops_pipeline_stage_record dpsr ON dpsr.pipeline_record_id = dpr.id AND dpsr.`status` = 'pendingcheck'
+            JOIN devops_pipeline_task_record dptr ON dptr.stage_record_id = dpsr.id
+            AND dptr.audit_user LIKE CONCAT(CONCAT('%', #{classifyParam.userId}), '%')
+            AND NOT EXISTS (
+            SELECT
+            1
+            FROM
+            devops_pipeline_user_record_rel dpurl
+            WHERE
+            dpurl.task_record_id = dptr.id
+            AND dpurl.user_id = #{classifyParam.userId}
+            )
             WHERE
             dpr.project_id = #{projectId}
             AND dpr.`status` = 'pendingcheck'
@@ -42,20 +50,46 @@
             dpr.last_update_date,
             dpr.project_id,
             dpr.pipeline_id,
-            dpr.error_info,
-            dptr.id
+            dpr.error_info
             FROM
             devops_pipeline_record dpr
             JOIN devops_pipeline_stage_record dpsr ON dpsr.pipeline_record_id = dpr.id
-            JOIN devops_pipeline_task_record dptr ON dptr.stage_record_id = dpsr.id
-            AND dptr.audit_user LIKE CONCAT(CONCAT('%', #{classifyParam.userId}), '%')
+            AND dpsr.id IN (
+            SELECT
+            max(dpsr.id)
+            FROM
+            devops_pipeline_stage_record dpsr
+            WHERE
+            dpsr.pipeline_record_id IN (
+            SELECT
+            dpr.id
+            FROM
+            devops_pipeline_record dpr
+            WHERE
+            dpr.project_id = #{projectId}
+            AND dpr.`status` = 'pendingcheck'
             AND NOT EXISTS (
+            SELECT
+            1
+            FROM
+            devops_pipeline_stage_record dpsr
+            WHERE
+            dpsr.pipeline_record_id = dpr.id
+            AND dpsr. STATUS = 'pendingcheck'
+            )
+            )
+            AND dpsr. STATUS = 'success'
+            GROUP BY
+            dpsr.pipeline_record_id
+            )
+            AND dpsr.audit_user LIKE CONCAT(CONCAT('%', #{classifyParam.userId}), '%')
+            JOIN devops_pipeline_user_record_rel dpurl ON NOT EXISTS (
             SELECT
             1
             FROM
             devops_pipeline_user_record_rel dpurl
             WHERE
-            dpurl.task_record_id = dptr.id
+            dpurl.stage_record_id = dpsr.id
             AND dpurl.user_id = #{classifyParam.userId}
             )
             WHERE
