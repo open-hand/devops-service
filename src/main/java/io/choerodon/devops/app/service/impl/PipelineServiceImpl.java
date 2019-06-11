@@ -914,7 +914,7 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRecordE.setBusinessKey(uuid);
         pipelineRecordRepository.update(pipelineRecordE);
         stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null).forEach(t -> {
-            t.setStatus(null);
+            t.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
             stageRecordRepository.update(t);
             taskRecordRepository.queryByStageRecordId(t.getId(), null).forEach(taskRecordE -> {
                 taskRecordRepository.delete(taskRecordE.getId());
