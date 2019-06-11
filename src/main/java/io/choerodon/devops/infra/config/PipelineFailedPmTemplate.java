@@ -18,7 +18,7 @@ import io.choerodon.devops.infra.common.util.enums.PipelineNoticeType;
 public class PipelineFailedPmTemplate implements PmTemplate {
     @Override
     public String businessTypeCode() {
-        return "pipeline";
+        return PipelineNoticeType.PIPELINEFAILED.toValue();
     }
 
     @Override

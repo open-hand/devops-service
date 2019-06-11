@@ -1285,7 +1285,9 @@ public class PipelineServiceImpl implements PipelineService {
                     userList.add(user);
                 });
             }
-            sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, new HashMap<>());
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("stageName", stageRecordRepository.queryById(stageRecordId).getStageName());
+            sendSiteMessage(pipelineRecordId, PipelineNoticeType.PIPELINEAUDIT.toValue(), userList, params);
         }
     }
 
@@ -1534,8 +1536,8 @@ public class PipelineServiceImpl implements PipelineService {
         Map<String, Object> params = new HashMap<>();
         params.put("stageName", stageName);
         UserE userE = iamRepository.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
-        params.put("loginName", userE.getLoginName());
-        params.put("stageName", userE.getRealName());
+        params.put("auditName", userE.getLoginName());
+        params.put("realName", userE.getRealName());
         sendSiteMessage(pipelineRecordId, type, userList, params);
     }
 }
