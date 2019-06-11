@@ -2,9 +2,9 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.DevopsConfigMapE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsConfigMapRepository {
 
@@ -18,7 +18,7 @@ public interface DevopsConfigMapRepository {
 
     void delete(Long id);
 
-    Page<DevopsConfigMapE> pageByEnv(Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsConfigMapE> pageByEnv(Long envId, PageRequest pageRequest, String params);
 
     List<DevopsConfigMapE> listByEnv(Long envId);
 

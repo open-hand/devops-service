@@ -3,40 +3,23 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.app.service.PipelineService;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.CheckAuditDTO;
-import io.choerodon.devops.api.dto.IamUserDTO;
-import io.choerodon.devops.api.dto.PipelineCheckDeployDTO;
-import io.choerodon.devops.api.dto.PipelineDTO;
-import io.choerodon.devops.api.dto.PipelineRecordDTO;
-import io.choerodon.devops.api.dto.PipelineRecordListDTO;
-import io.choerodon.devops.api.dto.PipelineRecordReqDTO;
-import io.choerodon.devops.api.dto.PipelineReqDTO;
-import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
-import io.choerodon.devops.api.dto.iam.UserDTO;
-import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -163,7 +146,7 @@ public class PipelineController {
     @ApiOperation(value = "项目下获取流水线")
     @CustomPageRequest
     @PostMapping("/list_by_options")
-    public ResponseEntity<Page<PipelineDTO>> listByOptions(
+    public ResponseEntity<PageInfo<PipelineDTO>> listByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "创建者", required = false)
@@ -191,7 +174,7 @@ public class PipelineController {
     @ApiOperation(value = "项目下获取流水线记录")
     @CustomPageRequest
     @PostMapping("/list_record")
-    public ResponseEntity<Page<PipelineRecordDTO>> listRecords(
+    public ResponseEntity<PageInfo<PipelineRecordDTO>> listRecords(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = false)

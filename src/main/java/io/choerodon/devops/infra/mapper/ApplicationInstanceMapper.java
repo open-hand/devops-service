@@ -4,18 +4,18 @@ import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
-import io.choerodon.mybatis.common.BaseMapper;
 
 
 /**
  * Created by Zenger on 2018/4/15.
  */
-public interface ApplicationInstanceMapper extends BaseMapper<ApplicationInstanceDO> {
+public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDO> {
 
     List<ApplicationInstanceDO> listApplicationInstance(@Param("projectId") Long projectId,
                                                         @Param("envId") Long envId,

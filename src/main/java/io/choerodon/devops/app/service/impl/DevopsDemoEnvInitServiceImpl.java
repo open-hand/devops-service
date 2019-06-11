@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -30,7 +32,6 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -218,7 +219,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @throws CommonException if there isn't a template named 'MicroService'
      */
     private Long getMicroServiceTemplateId() throws CommonException {
-        List<ApplicationTemplateRepDTO> template = applicationTemplateService.listByOptions(new PageRequest(0, 1), null, demoDataDTO.getTemplateSearchParam());
+        List<ApplicationTemplateRepDTO> template = applicationTemplateService.listByOptions(new PageRequest(0, 1), null, demoDataDTO.getTemplateSearchParam()).getList();
 
         if (template != null && !template.isEmpty()) {
             return template.get(0).getId();
@@ -264,10 +265,10 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      */
     private AppMarketVersionDTO getApplicationVersion(Long projectId, Long applicationId) {
         PageRequest pageRequest = new PageRequest(0, 1);
-        Page<ApplicationVersionRepDTO> versions = applicationVersionService.listApplicationVersionInApp(projectId, applicationId, pageRequest, demoDataDTO.getAppVersionSearchParam());
-        if (!versions.isEmpty()) {
+        PageInfo<ApplicationVersionRepDTO> versions = applicationVersionService.listApplicationVersionInApp(projectId, applicationId, pageRequest, null);
+        if (!versions.getList().isEmpty()) {
             AppMarketVersionDTO appMarketVersionDTO = new AppMarketVersionDTO();
-            BeanUtils.copyProperties(versions.getContent().get(0), appMarketVersionDTO);
+            BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionDTO);
             return appMarketVersionDTO;
         } else {
             logger.error("Error: can not find a version with name {}", demoDataDTO.getTagInfo().getTag());

@@ -5,17 +5,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.CommitFormRecordDTO;
 import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,15 +59,16 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public Page<CommitFormRecordDTO> pageCommitRecord(Long projectId, List<Long> appId,
-                                                      PageRequest pageRequest, Map<Long, UserE> userMap,
-                                                      Date startDate, Date endDate) {
+    public PageInfo<CommitFormRecordDTO> pageCommitRecord(Long projectId, List<Long> appId,
+                                                          PageRequest pageRequest, Map<Long, UserE> userMap,
+                                                          Date startDate, Date endDate) {
         List<CommitFormRecordDTO> commitFormRecordDTOList = new ArrayList<>();
 
-        Page<DevopsGitlabCommitDO> devopsGitlabCommitDOPage = PageHelper.doPageAndSort(pageRequest,
+        PageInfo<DevopsGitlabCommitDO> devopsGitlabCommitDOPage = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(),
+                PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
                 () -> devopsGitlabCommitMapper.listCommits(projectId, appId, new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime())));
 
-        devopsGitlabCommitDOPage.getContent().forEach(e -> {
+        devopsGitlabCommitDOPage.getList().forEach(e -> {
             Long userId = e.getUserId();
             UserE user = userMap.get(userId);
             if (user != null) {
@@ -80,9 +82,9 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
                 commitFormRecordDTOList.add(commitFormRecordDTO);
             }
         });
-        Page<CommitFormRecordDTO> commitFormRecordDTOPagee = new Page<>();
+        PageInfo<CommitFormRecordDTO> commitFormRecordDTOPagee = new PageInfo<>();
         BeanUtils.copyProperties(devopsGitlabCommitDOPage, commitFormRecordDTOPagee);
-        commitFormRecordDTOPagee.setContent(commitFormRecordDTOList);
+        commitFormRecordDTOPagee.setList(commitFormRecordDTOList);
 
         return commitFormRecordDTOPagee;
     }

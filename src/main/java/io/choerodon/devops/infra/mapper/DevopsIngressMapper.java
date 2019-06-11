@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
-import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.mybatis.common.Mapper;
+
 
 /**
  * Creator: Runge
@@ -13,7 +15,7 @@ import org.apache.ibatis.annotations.Param;
  * Time: 14:30
  * Description:
  */
-public interface DevopsIngressMapper extends BaseMapper<DevopsIngressDO> {
+public interface DevopsIngressMapper extends Mapper<DevopsIngressDO> {
     List<String> queryIngressNameByServiceId(@Param("serviceId") Long serviceId);
 
     List<DevopsIngressDO> selectIngress(

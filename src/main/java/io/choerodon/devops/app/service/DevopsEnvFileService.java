@@ -2,9 +2,9 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.DevopsEnvFileErrorDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -15,5 +15,5 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface DevopsEnvFileService {
     List<DevopsEnvFileErrorDTO> listByEnvId(Long envId);
 
-    Page<DevopsEnvFileErrorDTO> pageByEnvId(Long envId, PageRequest pageRequest);
+    PageInfo<DevopsEnvFileErrorDTO> pageByEnvId(Long envId, PageRequest pageRequest);
 }

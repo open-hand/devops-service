@@ -2,11 +2,12 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by ernst on 2018/5/12.
@@ -30,7 +31,7 @@ public interface ApplicationMarketService {
      * @param searchParam 模糊查询参数
      * @return list of ApplicationReleasingDTO
      */
-    Page<ApplicationReleasingDTO> listMarketAppsByProjectId(
+    PageInfo<ApplicationReleasingDTO> listMarketAppsByProjectId(
             Long projectId,
             PageRequest pageRequest,
             String searchParam);
@@ -43,7 +44,7 @@ public interface ApplicationMarketService {
      * @param searchParam 模糊查询参数
      * @return list of ApplicationReleasingDTO
      */
-    Page<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam);
+    PageInfo<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam);
 
     ApplicationReleasingDTO getMarketAppInProject(Long projectId, Long appMarketId);
 
@@ -69,7 +70,7 @@ public interface ApplicationMarketService {
 
     List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish);
 
-    Page<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish,
+    PageInfo<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish,
                                              PageRequest pageRequest, String searchParam);
 
     AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file);

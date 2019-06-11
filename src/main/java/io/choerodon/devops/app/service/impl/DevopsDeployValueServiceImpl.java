@@ -2,14 +2,17 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
@@ -23,9 +26,9 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvironmentReposi
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
+
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -52,8 +55,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         DevopsDeployValueE pipelineValueE = ConvertHelper.convert(pipelineValueDTO, DevopsDeployValueE.class);
         pipelineValueE.setProjectId(projectId);
         if (pipelineValueE.getId() == null) {
-            valueRepository.checkName(projectId, pipelineValueE.getName());
-        }
+            }
         pipelineValueE = valueRepository.createOrUpdate(pipelineValueE);
         return ConvertHelper.convert(pipelineValueE, DevopsDeployValueDTO.class);
     }
@@ -64,19 +66,14 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public Page<DevopsDeployValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+    public PageInfo<DevopsDeployValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-        Long userId = null;
-        if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
-            userId = TypeUtil.objToLong(GitUserNameUtil.getUserId());
-        }
-        Page<DevopsDeployValueDTO> valueDTOS = ConvertPageHelper.convertPage(valueRepository.listByOptions(projectId, appId, envId, userId, pageRequest, params), DevopsDeployValueDTO.class);
-        Page<DevopsDeployValueDTO> page = new Page<>();
+
+        PageInfo<DevopsDeployValueDTO> valueDTOS = ConvertPageHelper.convertPageInfo(valueRepository.listByOptions(projectId, appId, envId, pageRequest, params), DevopsDeployValueDTO.class);
+        PageInfo<DevopsDeployValueDTO> page = new PageInfo<>();
         BeanUtils.copyProperties(valueDTOS, page);
-        List<DevopsDeployValueDTO> deployValueDTOS = new ArrayList<>();
-        valueDTOS.getContent().forEach(t -> {
+        page.setList(valueDTOS.getList().stream().peek(t -> {
             UserE userE = iamRepository.queryUserByUserId(t.getCreateBy());
             t.setCreateUserName(userE.getLoginName());
             t.setCreateUserUrl(userE.getImageUrl());
@@ -86,9 +83,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 t.setEnvStatus(true);
             }
-            deployValueDTOS.add(t);
-        });
-        page.setContent(deployValueDTOS);
+        }).collect(Collectors.toList()));
         return page;
     }
 

@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by younger on 2018/3/28.
  */
-public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
+public interface ApplicationMapper extends Mapper<ApplicationDO> {
     List<ApplicationDO> list(@Param("projectId") Long projectId,
                              @Param("isActive") Boolean isActive,
                              @Param("hasVersion") Boolean hasVersion,

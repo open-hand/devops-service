@@ -2,9 +2,9 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.DevopsNotificationE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -21,7 +21,7 @@ public interface DevopsNotificationRepository {
 
     List<DevopsNotificationE> ListByEnvId(Long envId);
 
-    Page<DevopsNotificationE> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
+    PageInfo<DevopsNotificationE> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
 
     List<DevopsNotificationE> queryByEnvId(Long projectId,Long envId);
 }

@@ -3,20 +3,20 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Zenger on 2018/4/12.
  */
 public interface ApplicationInstanceRepository {
 
-    Page<ApplicationInstanceE> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                       Long envId, Long versionId, Long appId, String params);
+    PageInfo<ApplicationInstanceE> listApplicationInstance(Long projectId, PageRequest pageRequest,
+                                                           Long envId, Long versionId, Long appId, String params);
 
     ApplicationInstanceE selectByCode(String code, Long envId);
 
@@ -51,10 +51,10 @@ public interface ApplicationInstanceRepository {
 
     List<DeployDO> listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime);
 
-    Page<DeployDO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId,
-                                             Date startTime, Date endTime);
+    PageInfo<DeployDO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId,
+                                                 Date startTime, Date endTime);
 
-    Page<DeployDO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long envId, Long[] appIds,
+    PageInfo<DeployDO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long envId, Long[] appIds,
                                         Date startTime, Date endTime);
 
     List<ApplicationInstanceE> listByAppId(Long appId);

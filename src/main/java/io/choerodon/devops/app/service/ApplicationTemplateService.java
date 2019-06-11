@@ -2,13 +2,12 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/3/27.
@@ -56,7 +55,7 @@ public interface ApplicationTemplateService {
      * @param searchParam    模糊查询参数
      * @return Page
      */
-    Page<ApplicationTemplateRepDTO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam);
+    PageInfo<ApplicationTemplateRepDTO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam);
 
     /**
      * 处理模板创建逻辑
@@ -101,8 +100,7 @@ public interface ApplicationTemplateService {
      * 设置应用应用模板创建失败状态
      *
      * @param gitlabProjectEventDTO 应用信息
-     * @param organizationId 可为空
-     *
+     * @param organizationId        可为空
      */
     void setAppTemplateErrStatus(String gitlabProjectEventDTO, Long organizationId);
 

@@ -5,13 +5,13 @@ import java.util.Map;
 
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
  * Created by younger on 2018/3/28.
  */
-public interface ApplicationVersionMapper extends BaseMapper<ApplicationVersionDO> {
+public interface ApplicationVersionMapper extends Mapper<ApplicationVersionDO> {
 
     List<ApplicationVersionDO> listApplicationVersion(
             @Param("projectId") Long projectId,

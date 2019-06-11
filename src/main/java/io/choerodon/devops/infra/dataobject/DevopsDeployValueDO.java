@@ -1,25 +1,18 @@
 package io.choerodon.devops.infra.dataobject;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import javax.persistence.*;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  9:34 2019/4/10
  * Description:
  */
-@VersionAudit
-@ModifyAudit
 @Table(name = "devops_deploy_value")
-public class DevopsDeployValueDO extends AuditDomain {
+public class DevopsDeployValueDO extends BaseDTO {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String value;
     private Long projectId;

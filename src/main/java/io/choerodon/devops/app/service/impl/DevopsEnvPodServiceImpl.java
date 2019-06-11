@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.ContainerDTO;
 import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
@@ -19,7 +20,6 @@ import io.choerodon.devops.infra.common.util.ArrayUtil;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.K8sUtil;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,11 +49,11 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
 
     @Override
-    public Page<DevopsEnvPodDTO> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsEnvPodDTO> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-        Page<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.listAppPod(projectId, envId, appId, pageRequest, searchParam);
-        devopsEnvPodEPage.forEach(devopsEnvPodE -> {
+        PageInfo<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.listAppPod(projectId, envId, appId, pageRequest, searchParam);
+        devopsEnvPodEPage.getList().forEach(devopsEnvPodE -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsEnvPodE.getEnvId());
             devopsEnvPodE.setClusterId(devopsEnvironmentE.getClusterE().getId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
@@ -64,7 +64,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             setContainers(devopsEnvPodE);
         });
 
-        return ConvertPageHelper.convertPage(devopsEnvPodEPage, DevopsEnvPodDTO.class);
+        return ConvertPageHelper.convertPageInfo(devopsEnvPodEPage, DevopsEnvPodDTO.class);
     }
 
     /**

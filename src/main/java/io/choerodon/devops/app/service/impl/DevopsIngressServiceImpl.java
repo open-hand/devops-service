@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
@@ -22,7 +24,6 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -248,14 +249,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public Page<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params) {
-        Page<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository
-                .getIngress(projectId, envId, null, pageRequest, params);
 
+    public PageInfo<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params) {
+        PageInfo<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository
+                .getIngress(projectId, envId, pageRequest, params);
 
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-        devopsIngressDTOS.forEach(devopsIngressDTO -> {
+        devopsIngressDTOS.getList().forEach(devopsIngressDTO -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {

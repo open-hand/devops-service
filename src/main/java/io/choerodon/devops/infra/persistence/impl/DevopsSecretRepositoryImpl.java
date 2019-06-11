@@ -3,20 +3,21 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.List;
 import java.util.Map;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsSecretE;
 import io.choerodon.devops.domain.application.repository.DevopsSecretRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsSecretDO;
 import io.choerodon.devops.infra.mapper.DevopsSecretMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by n!Ck
@@ -87,13 +88,13 @@ public class DevopsSecretRepositoryImpl implements DevopsSecretRepository {
     }
 
     @Override
-    public Page<DevopsSecretE> listByOption(Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsSecretE> listByOption(Long envId, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-        Page<DevopsSecretDO> devopsSecretDOPage = PageHelper
-                .doPageAndSort(pageRequest, () -> devopsSecretMapper.listByOption(envId, searchParamMap, paramMap));
-        return ConvertPageHelper.convertPage(devopsSecretDOPage, DevopsSecretE.class);
+        PageInfo<DevopsSecretDO> devopsSecretDOPage = PageHelper
+                .startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsSecretMapper.listByOption(envId, searchParamMap, paramMap));
+        return ConvertPageHelper.convertPageInfo(devopsSecretDOPage, DevopsSecretE.class);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.infra.dataobject.DevopsDeployValueDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.Map;
  * Date:  9:33 2019/4/10
  * Description:
  */
-public interface DevopsDeployValueMapper extends BaseMapper<DevopsDeployValueDO> {
+public interface DevopsDeployValueMapper extends Mapper<DevopsDeployValueDO> {
     List<DevopsDeployValueDO> listByOptions(@Param("projectId") Long projectId,
                                             @Param("appId") Long appId,
                                             @Param("envId") Long envId,

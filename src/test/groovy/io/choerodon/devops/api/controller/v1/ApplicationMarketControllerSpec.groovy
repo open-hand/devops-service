@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
+import io.choerodon.base.domain.PageRequest
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.ExportOctetStream2HttpMessageConverter
@@ -19,7 +20,6 @@ import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
-import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
@@ -22,7 +23,6 @@ import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -139,13 +139,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public Page<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
-                                         String[] params) {
-        Page<ProjectE> projects = iamRepository
+    public PageInfo<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
+                                             String[] params) {
+        PageInfo<ProjectE> projects = iamRepository
                 .queryProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params);
-        Page<ProjectDTO> pageProjectDTOS = new Page<>();
+        PageInfo<ProjectDTO> pageProjectDTOS = new PageInfo<>();
         List<ProjectDTO> projectDTOS = new ArrayList<>();
-        if (!projects.isEmpty()) {
+        if (!projects.getList().isEmpty()) {
             BeanUtils.copyProperties(projects, pageProjectDTOS);
             List<Long> projectIds;
             if (clusterId != null) {
@@ -154,13 +154,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             } else {
                 projectIds = new ArrayList<>();
             }
-            projects.forEach(projectDO -> {
+            projects.getList().forEach(projectDO -> {
                 ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
                 projectDTOS.add(projectDTO);
             });
         }
         BeanUtils.copyProperties(projects, pageProjectDTOS);
-        pageProjectDTOS.setContent(projectDTOS);
+        pageProjectDTOS.setList(projectDTOS);
         return pageProjectDTOS;
     }
 
@@ -202,16 +202,16 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public Page<ClusterWithNodesDTO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params) {
-        Page<DevopsClusterE> devopsClusterEPage = devopsClusterRepository
+    public PageInfo<ClusterWithNodesDTO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params) {
+        PageInfo<DevopsClusterE> devopsClusterEPage = devopsClusterRepository
                 .pageClusters(organizationId, doPage, pageRequest, params);
-        Page<ClusterWithNodesDTO> devopsClusterRepDTOPage = new Page<>();
+        PageInfo<ClusterWithNodesDTO> devopsClusterRepDTOPage = new PageInfo<>();
         BeanUtils.copyProperties(devopsClusterEPage, devopsClusterRepDTOPage);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-        devopsClusterEPage.getContent().forEach(devopsClusterE ->
+        devopsClusterEPage.getList().forEach(devopsClusterE ->
                 setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterE));
-        devopsClusterRepDTOPage.setContent(fromClusterE2ClusterWithNodesDTO(devopsClusterEPage.getContent(), organizationId));
+        devopsClusterRepDTOPage.setList(fromClusterE2ClusterWithNodesDTO(devopsClusterEPage.getList(), organizationId));
         return devopsClusterRepDTOPage;
     }
 
@@ -284,11 +284,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public Page<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
-        Page<DevopsEnvPodE> ePage = devopsClusterRepository.pageQueryPodsByNodeName(clusterId, nodeName, pageRequest, searchParam);
-        Page<DevopsClusterPodDTO> clusterPodDTOPage = new Page<>();
+    public PageInfo<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
+        PageInfo<DevopsEnvPodE> ePage = devopsClusterRepository.pageQueryPodsByNodeName(clusterId, nodeName, pageRequest, searchParam);
+        PageInfo<DevopsClusterPodDTO> clusterPodDTOPage = new PageInfo<>();
         BeanUtils.copyProperties(ePage, clusterPodDTOPage, "content");
-        clusterPodDTOPage.setContent(ePage.getContent().stream().map(this::podE2ClusterPodDTO).collect(Collectors.toList()));
+        clusterPodDTOPage.setList(ePage.getList().stream().map(this::podE2ClusterPodDTO).collect(Collectors.toList()));
         return clusterPodDTOPage;
     }
 

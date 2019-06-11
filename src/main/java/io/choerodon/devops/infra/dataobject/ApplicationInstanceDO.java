@@ -1,24 +1,17 @@
 package io.choerodon.devops.infra.dataobject;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Created by Zenger on 2018/4/14.
  */
-@VersionAudit
-@ModifyAudit
 @Table(name = "devops_app_instance")
-public class ApplicationInstanceDO extends AuditDomain {
+public class ApplicationInstanceDO extends BaseDTO {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String code;
     private Long appId;

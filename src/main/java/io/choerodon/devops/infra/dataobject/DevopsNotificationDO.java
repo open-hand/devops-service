@@ -1,26 +1,18 @@
 package io.choerodon.devops.infra.dataobject;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-import org.springframework.transaction.annotation.Transactional;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  17:37 2019/5/13
  * Description:
  */
-@ModifyAudit
-@VersionAudit
 @Table(name = "devops_notification")
-public class DevopsNotificationDO extends AuditDomain {
+public class DevopsNotificationDO extends BaseDTO {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long envId;
     private Long projectId;

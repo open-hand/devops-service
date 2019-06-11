@@ -2,9 +2,9 @@ package io.choerodon.devops.app.service;
 
 import java.util.Date;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsGitlabPipelineService {
 
@@ -18,5 +18,5 @@ public interface DevopsGitlabPipelineService {
 
     void handleCreate(PipelineWebHookDTO pipelineWebHookDTO);
 
-    Page<DevopsGitlabPipelineDTO> pagePipelines(Long appId, String branch, PageRequest pageRequest, Date startTime, Date endTime);
+    PageInfo<DevopsGitlabPipelineDTO> pagePipelines(Long appId, String branch, PageRequest pageRequest, Date startTime, Date endTime);
 }

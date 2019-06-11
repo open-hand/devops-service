@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +23,6 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.CommitDTO;
@@ -84,7 +84,6 @@ import io.choerodon.devops.infra.common.util.enums.HelmObjectKind;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/4/9.
@@ -667,14 +666,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Page<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+    public PageInfo<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
                                                                       String searchParams, Long envId) {
         if (envId == null) {
             // 根据项目成员id查询项目下所有的项目成员
             PageInfo<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
 
             List<DevopsEnvUserPermissionDTO> allProjectMemberList = new ArrayList<>();
-            Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
+            PageInfo<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
             allProjectMemberPage.getList().forEach(e -> {
                 DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
@@ -683,7 +682,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 allProjectMemberList.add(devopsEnvUserPermissionDTO);
             });
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
-            devopsEnvUserPermissionDTOPage.setContent(allProjectMemberList);
+            devopsEnvUserPermissionDTOPage.setList(allProjectMemberList);
             return devopsEnvUserPermissionDTOPage;
         } else {
             List<DevopsEnvUserPermissionDTO> retureUsersDTOList = new ArrayList<>();
@@ -696,9 +695,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionDTO.setRealName(e.getRealName());
                 retureUsersDTOList.add(devopsEnvUserPermissionDTO);
             });
-            Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
+            PageInfo<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
-            devopsEnvUserPermissionDTOPage.setContent(retureUsersDTOList);
+            devopsEnvUserPermissionDTOPage.setList(retureUsersDTOList);
             return devopsEnvUserPermissionDTOPage;
         }
     }

@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileResourceDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Creator: Runge
@@ -9,5 +9,5 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Time: 15:42
  * Description:
  */
-public interface DevopsEnvFileResourceMapper extends BaseMapper<DevopsEnvFileResourceDO> {
+public interface DevopsEnvFileResourceMapper extends Mapper<DevopsEnvFileResourceDO> {
 }

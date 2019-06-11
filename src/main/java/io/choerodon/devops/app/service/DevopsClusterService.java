@@ -2,9 +2,9 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsClusterService {
 
@@ -14,13 +14,13 @@ public interface DevopsClusterService {
 
     void checkName(Long organizationId, String name);
 
-    Page<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest, String[] params);
+    PageInfo<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest, String[] params);
 
     String queryShell(Long clusterId);
 
     void checkCode(Long organizationId, String code);
 
-    Page<ClusterWithNodesDTO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
+    PageInfo<ClusterWithNodesDTO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
 
     List<ProjectDTO> listClusterProjects(Long organizationId, Long clusterId);
 
@@ -38,7 +38,7 @@ public interface DevopsClusterService {
      * @param searchParam 查询参数
      * @return pods
      */
-    Page<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 
 
     /**

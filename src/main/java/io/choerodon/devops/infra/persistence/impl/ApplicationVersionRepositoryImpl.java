@@ -1,31 +1,35 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
 import io.choerodon.devops.infra.dataobject.ApplicationVersionReadmeDO;
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.util.Assert;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -36,7 +40,6 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     private static final String APP_CODE = "appCode";
     private static final String APP_NAME = "appName";
     private static JSON json = new JSON();
-    private static final Gson gson = new Gson();
 
     @Autowired
     private ApplicationVersionMapper applicationVersionMapper;
@@ -76,21 +79,21 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     }
 
     @Override
-    public Page<ApplicationVersionE> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam) {
-        Page<ApplicationVersionDO> applicationVersionDOPage;
-        applicationVersionDOPage = PageHelper.doPageAndSort(pageRequest,
+    public PageInfo<ApplicationVersionE> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam) {
+        PageInfo<ApplicationVersionDO> applicationVersionDOPage;
+        applicationVersionDOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
                 () -> applicationVersionMapper.selectByAppIdAndParamWithPage(appId, isPublish, searchParam));
         if (appVersionId != null) {
             ApplicationVersionDO versionDO = new ApplicationVersionDO();
             versionDO.setId(appVersionId);
             ApplicationVersionDO searchDO = applicationVersionMapper.selectByPrimaryKey(versionDO);
-            applicationVersionDOPage.getContent().removeIf(v->v.getId().equals(appVersionId));
-            applicationVersionDOPage.getContent().add(0, searchDO);
+            applicationVersionDOPage.getList().removeIf(v -> v.getId().equals(appVersionId));
+            applicationVersionDOPage.getList().add(0, searchDO);
         }
-        if (applicationVersionDOPage.isEmpty()) {
-            return new Page<>();
+        if (applicationVersionDOPage.getList().isEmpty()) {
+            return new PageInfo<>();
         }
-        return ConvertPageHelper.convertPage(applicationVersionDOPage, ApplicationVersionE.class);
+        return ConvertPageHelper.convertPageInfo(applicationVersionDOPage, ApplicationVersionE.class);
     }
 
     @Override
@@ -143,31 +146,38 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     }
 
     @Override
-    public Page<ApplicationVersionE> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest,
-                                                                 String searchParam, Boolean isProjectOwner,
-                                                                 Long userId) {
-        if (pageRequest.getSort() != null) {
-            Map<String, String> map = new HashMap<>();
-            map.put("version", "dav.version");
-            map.put(APP_CODE, APP_CODE);
-            map.put(APP_NAME, APP_NAME);
-            map.put("creationDate", "dav.creation_date");
-            pageRequest.resetOrder("dav", map);
+    public PageInfo<ApplicationVersionE> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest,
+                                                                     String searchParam, Boolean isProjectOwner,
+                                                                     Long userId) {
+        Sort sort = pageRequest.getSort();
+        String sortResult = "";
+        if (sort != null) {
+            sortResult = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                    .map(t -> {
+                        String property = t.getProperty();
+                        if (property.equals("version")) {
+                            property = "dav.version";
+                        } else if (property.equals("creationDate")) {
+                            property = "dav.creation_date";
+                        }
+                        return property + " " + t.getDirection();
+                    })
+                    .collect(Collectors.joining(","));
         }
 
-        Page<ApplicationVersionDO> applicationVersionQueryDOPage;
+        PageInfo<ApplicationVersionDO> applicationVersionQueryDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             applicationVersionQueryDOPage = PageHelper
-                    .doPageAndSort(pageRequest, () -> applicationVersionMapper.listApplicationVersion(projectId, appId,
+                    .startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> applicationVersionMapper.listApplicationVersion(projectId, appId,
                             TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), isProjectOwner, userId));
         } else {
-            applicationVersionQueryDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationVersionMapper
-                            .listApplicationVersion(projectId, appId, null, null, isProjectOwner, userId));
+            applicationVersionQueryDOPage = PageHelper.startPage(
+                    pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> applicationVersionMapper
+                    .listApplicationVersion(projectId, appId, null, null, isProjectOwner, userId));
         }
-        return ConvertPageHelper.convertPage(applicationVersionQueryDOPage, ApplicationVersionE.class);
+        return ConvertPageHelper.convertPageInfo(applicationVersionQueryDOPage, ApplicationVersionE.class);
     }
 
     @Override
@@ -281,6 +291,6 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO();
         applicationVersionDO.setAppId(appId);
         applicationVersionDO.setVersion(appVersion);
-        return ConvertHelper.convert(applicationVersionMapper.selectOne(applicationVersionDO),ApplicationVersionE.class);
+        return ConvertHelper.convert(applicationVersionMapper.selectOne(applicationVersionDO), ApplicationVersionE.class);
     }
 }

@@ -3,6 +3,10 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.Date;
 import java.util.List;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -16,8 +20,6 @@ import io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO;
 import io.choerodon.devops.infra.mapper.DevopsCommandEventMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandLogMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * @author crcokitwood
@@ -85,10 +87,10 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     }
 
     @Override
-    public Page<DevopsEnvCommandE> listByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
-        Page<ApplicationInstanceDO> applicationInstanceDOPage = PageHelper.doPageAndSort(pageRequest, () ->
+    public PageInfo<DevopsEnvCommandE> listByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
+        PageInfo<ApplicationInstanceDO> applicationInstanceDOPage = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
-        return ConvertPageHelper.convertPage(applicationInstanceDOPage, DevopsEnvCommandE.class);
+        return ConvertPageHelper.convertPageInfo(applicationInstanceDOPage, DevopsEnvCommandE.class);
     }
 
     @Override

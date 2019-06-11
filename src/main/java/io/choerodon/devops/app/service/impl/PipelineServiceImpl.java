@@ -16,8 +16,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
+import io.choerodon.base.domain.PageRequest;
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
@@ -36,7 +38,6 @@ import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.notify.NoticeSendDTO;
@@ -103,7 +104,6 @@ import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.feign.NotifyClient;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -160,16 +160,16 @@ public class PipelineServiceImpl implements PipelineService {
     private NotifyClient notifyClient;
 
     @Override
-    public Page<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, PageRequest pageRequest, String params) {
+    public PageInfo<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, PageRequest pageRequest, String params) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Map<String, Object> classifyParam = new HashMap<>();
         classifyParam.put("creator", creator);
         classifyParam.put("executor", executor);
         classifyParam.put("userId", DetailsHelper.getUserDetails().getUserId());
-        Page<PipelineDTO> pipelineDTOS = ConvertPageHelper.convertPage(pipelineRepository.listByOptions(projectId, pageRequest, params, classifyParam), PipelineDTO.class);
-        Page<PipelineDTO> page = new Page<>();
+        PageInfo<PipelineDTO> pipelineDTOS = ConvertPageHelper.convertPageInfo(pipelineRepository.listByOptions(projectId, pageRequest, params, classifyParam), PipelineDTO.class);
+        PageInfo<PipelineDTO> page = new PageInfo<>();
         BeanUtils.copyProperties(pipelineDTOS, page);
-        page.setContent(pipelineDTOS.getContent().stream().peek(t -> {
+        page.setList(pipelineDTOS.getList().stream().peek(t -> {
             UserE userE = iamRepository.queryUserByUserId(t.getCreatedBy());
             t.setCreateUserName(userE.getLoginName());
             t.setCreateUserUrl(userE.getImageUrl());
@@ -181,16 +181,16 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public Page<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed) {
+    public PageInfo<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Map<String, Object> classifyParam = new HashMap<>();
         classifyParam.put("executed", executed);
         classifyParam.put("reviewed", reviewed);
         classifyParam.put("pendingcheck", pendingcheck);
         classifyParam.put("userId", DetailsHelper.getUserDetails().getUserId());
-        Page<PipelineRecordDTO> pageRecordDTOS = ConvertPageHelper.convertPage(
+        PageInfo<PipelineRecordDTO> pageRecordDTOS = ConvertPageHelper.convertPageInfo(
                 pipelineRecordRepository.listByOptions(projectId, pipelineId, pageRequest, params, classifyParam), PipelineRecordDTO.class);
-        pageRecordDTOS.setContent(pageRecordDTOS.getContent().stream().peek(t -> {
+        pageRecordDTOS.setList(pageRecordDTOS.getList().stream().peek(t -> {
             t.setExecute(false);
             t.setStageDTOList(ConvertHelper.convertList(stageRecordRepository.list(projectId, t.getId()), PipelineStageRecordDTO.class));
             if (t.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {

@@ -3,7 +3,8 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.dto.CheckAuditDTO;
 import io.choerodon.devops.api.dto.IamUserDTO;
@@ -16,7 +17,6 @@ import io.choerodon.devops.api.dto.PipelineReqDTO;
 import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -24,9 +24,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Description:
  */
 public interface PipelineService {
-    Page<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, PageRequest pageRequest, String params);
+    PageInfo<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, PageRequest pageRequest, String params);
 
-    Page<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed);
+    PageInfo<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed);
 
     PipelineReqDTO create(Long projectId, PipelineReqDTO pipelineReqDTO);
 

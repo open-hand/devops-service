@@ -3,10 +3,10 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dataobject.DevopsSecretDO;
-import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created by n!Ck
@@ -14,7 +14,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Time: 上午10:13
  * Description:
  */
-public interface DevopsSecretMapper extends BaseMapper<DevopsSecretDO> {
+public interface DevopsSecretMapper extends Mapper<DevopsSecretDO> {
 
     DevopsSecretDO selectById(@Param("secretId") Long secretId);
 

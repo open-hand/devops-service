@@ -35,8 +35,6 @@ import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
-import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
-import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
@@ -77,8 +75,6 @@ public class DevopsSagaHandler {
     private final ApplicationRepository applicationRepository;
     private final ApplicationTemplateRepository applicationTemplateRepository;
     private final DevopsEnvironmentRepository devopsEnvironmentRepository;
-    private final DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository;
-    private final DevopsAutoDeployRepository devopsAutoDeployRepository;
     private final ApplicationInstanceService applicationInstanceService;
     private final GitlabRepository gitlabRepository;
     private final PipelineTaskRecordRepository taskRecordRepository;
@@ -98,8 +94,6 @@ public class DevopsSagaHandler {
                              ApplicationRepository applicationRepository,
                              ApplicationTemplateRepository applicationTemplateRepository,
                              DevopsEnvironmentRepository devopsEnvironmentRepository,
-                             DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository,
-                             DevopsAutoDeployRepository devopsAutoDeployRepository,
                              PipelineTaskRecordRepository taskRecordRepository,
                              PipelineAppDeployRepository appDeployRepository,
                              PipelineStageRecordRepository stageRecordRepository,
@@ -117,8 +111,6 @@ public class DevopsSagaHandler {
         this.applicationRepository = applicationRepository;
         this.applicationTemplateRepository = applicationTemplateRepository;
         this.devopsEnvironmentRepository = devopsEnvironmentRepository;
-        this.devopsAutoDeployRecordRepository = devopsAutoDeployRecordRepository;
-        this.devopsAutoDeployRepository = devopsAutoDeployRepository;
         this.taskRecordRepository = taskRecordRepository;
         this.appDeployRepository = appDeployRepository;
         this.gitlabRepository = gitlabRepository;

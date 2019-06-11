@@ -2,15 +2,15 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO;
-import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * Created by younger on 2018/4/24.
  */
-public interface DevopsEnvResourceMapper extends BaseMapper<DevopsEnvResourceDO> {
+public interface DevopsEnvResourceMapper extends Mapper<DevopsEnvResourceDO> {
     List<DevopsEnvResourceDO> listJobs(@Param("commandId") Long commandId);
 
     DevopsEnvResourceDO queryResource(@Param("instanceId") Long instanceId,

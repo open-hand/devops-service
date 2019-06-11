@@ -2,11 +2,11 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.domain.Page;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/4/9.
@@ -115,8 +115,8 @@ public interface DevopsEnvironmentService {
      * @param envId       环境id
      * @return page
      */
-    Page<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                               String params, Long envId);
+    PageInfo<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+                                                                   String params, Long envId);
 
     /**
      * 获取环境下所有用户权限

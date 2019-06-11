@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
@@ -23,8 +24,6 @@ import io.choerodon.devops.domain.application.valueobject.certification.*;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.nutz.lang.ComboException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -321,15 +320,15 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public Page<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params) {
         if (params == null) {
             params = "{}";
         }
 
-        Page<CertificationDTO> certificationDTOPage = certificationRepository.page(projectId, null, envId, pageRequest, params);
+        PageInfo<CertificationDTO> certificationDTOPage = certificationRepository.page(projectId, null, envId, pageRequest, params);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-        certificationDTOPage.getContent().stream()
+        certificationDTOPage.getList().stream()
                 .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
                 .forEach(certificationDTO -> {
                     DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certificationDTO.getEnvId());

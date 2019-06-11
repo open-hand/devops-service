@@ -2,12 +2,12 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.domain.application.entity.DevopsIngressE;
 import io.choerodon.devops.domain.application.entity.DevopsIngressPathE;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -22,7 +22,8 @@ public interface DevopsIngressRepository {
 
     void updateIngress(DevopsIngressDO devopsIngressDO);
 
-    Page<DevopsIngressDTO> getIngress(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params);
+
+    PageInfo<DevopsIngressDTO> getIngress(Long projectId, Long envId, PageRequest pageRequest, String params);
 
     DevopsIngressDTO getIngress(Long projectId, Long ingressId);
 

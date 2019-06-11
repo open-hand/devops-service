@@ -2,9 +2,7 @@ package io.choerodon.devops.infra.dataobject;
 
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Created by n!Ck
@@ -13,10 +11,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * Description:
  */
 
-@VersionAudit
-@ModifyAudit
 @Table(name = "devops_env_user_permission")
-public class DevopsEnvUserPermissionDO extends AuditDomain {
+public class DevopsEnvUserPermissionDO extends BaseDTO {
     private String loginName;
     private Long iamUserId;
     private String realName;

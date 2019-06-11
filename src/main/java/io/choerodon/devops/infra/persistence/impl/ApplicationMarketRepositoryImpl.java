@@ -6,7 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.google.gson.Gson;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +29,6 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.devops.infra.mapper.ApplicationMarketMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by ernst on 2018/3/28.
@@ -34,7 +37,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationMarketRepositoryImpl implements ApplicationMarketRepository {
 
     private JSON json = new JSON();
-    private Gson gson = new Gson();
 
     private ApplicationMarketMapper applicationMarketMapper;
     @Autowired
@@ -52,37 +54,37 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     }
 
     @Override
-    public Page<ApplicationMarketE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam) {
-        Page<DevopsAppMarketDO> applicationMarketQueryDOPage;
+    public PageInfo<ApplicationMarketE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam) {
+        PageInfo<DevopsAppMarketDO> applicationMarketQueryDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
-            applicationMarketQueryDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationMarketMapper.listMarketApplicationInProject(
+            applicationMarketQueryDOPage = PageHelper.startPage(
+                    pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMarketMapper.listMarketApplicationInProject(
                             projectId,
                             TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
         } else {
-            applicationMarketQueryDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationMarketMapper.listMarketApplicationInProject(projectId, null, null));
+            applicationMarketQueryDOPage = PageHelper.startPage(
+                    pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> applicationMarketMapper.listMarketApplicationInProject(projectId, null, null));
         }
-        return ConvertPageHelper.convertPage(applicationMarketQueryDOPage, ApplicationMarketE.class);
+        return ConvertPageHelper.convertPageInfo(applicationMarketQueryDOPage, ApplicationMarketE.class);
     }
 
     @Override
-    public Page<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam) {
-        Page<DevopsAppMarketDO> applicationMarketQueryDOPage;
+    public PageInfo<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam) {
+        PageInfo<DevopsAppMarketDO> applicationMarketQueryDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
-            applicationMarketQueryDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationMarketMapper.listMarketApplication(
+            applicationMarketQueryDOPage = PageHelper.startPage(
+                    pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> applicationMarketMapper.listMarketApplication(
                             projectIds,
                             TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
         } else {
-            applicationMarketQueryDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationMarketMapper.listMarketApplication(projectIds, null, null));
+            applicationMarketQueryDOPage = PageHelper.startPage(
+                    pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> applicationMarketMapper.listMarketApplication(projectIds, null, null));
         }
-        return ConvertPageHelper.convertPage(applicationMarketQueryDOPage, ApplicationMarketE.class);
+        return ConvertPageHelper.convertPageInfo(applicationMarketQueryDOPage, ApplicationMarketE.class);
     }
 
     @Override
@@ -152,14 +154,25 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     }
 
     @Override
-    public Page<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish,
+    public PageInfo<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish,
                                                       PageRequest pageRequest, String params) {
-        if (pageRequest.getSort() != null) {
-            Map<String, String> map = new HashMap<>();
-            map.put("version", "dav.version");
-            map.put("creationDate", "dav.creation_date");
-            map.put("updatedDate", "dav.last_update_date");
-            pageRequest.resetOrder("dav", map);
+        Sort sort = pageRequest.getSort();
+        String sortResult = "";
+        if (sort != null) {
+            sortResult = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                    .map(t -> {
+                        String property = t.getProperty();
+                        if (property.equals("version")) {
+                            property = "dav.version";
+                        } else if (property.equals("updatedDate")) {
+                            property = "dav.last_update_date";
+                        } else if (property.equals("creationDate")) {
+                            property = "dav.creation_date";
+                        }
+
+                        return property + " " + t.getDirection();
+                    })
+                    .collect(Collectors.joining(","));
         }
 
         Map<String, Object> searchParam = null;
@@ -172,7 +185,7 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         Map<String, Object> finalSearchParam = searchParam;
         String finalParam = param;
         List<Long> projectIds = getProjectIds(projectId);
-        return PageHelper.doPageAndSort(pageRequest,
+        return PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(),sortResult).doSelectPageInfo(
                 () -> applicationMarketMapper.listAppVersions(
                         projectIds, appMarketId, isPublish,
                         finalSearchParam, finalParam));

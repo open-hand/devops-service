@@ -1,9 +1,9 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
 import io.choerodon.devops.api.dto.ProjectDefaultConfigDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ public interface DevopsProjectConfigService {
 
     DevopsProjectConfigDTO queryByPrimaryKey(Long id);
 
-    Page<DevopsProjectConfigDTO> listByOptions(Long projectId, PageRequest pageRequest,String params);
+    PageInfo<DevopsProjectConfigDTO> listByOptions(Long projectId, PageRequest pageRequest, String params);
 
     void delete(Long id);
 

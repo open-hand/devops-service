@@ -3,16 +3,17 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.dto.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -49,7 +50,7 @@ public class ApplicationVersionController {
     @ApiOperation(value = "分页查询应用版本")
     @CustomPageRequest
     @PostMapping(value = "/list_by_options")
-    public ResponseEntity<Page<ApplicationVersionRepDTO>> pageByOptions(
+    public ResponseEntity<PageInfo<ApplicationVersionRepDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -81,7 +82,7 @@ public class ApplicationVersionController {
                     InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @GetMapping("/list_by_app/{app_id}")
-    public ResponseEntity<Page<ApplicationVersionRepDTO>> queryByAppId(
+    public ResponseEntity<PageInfo<ApplicationVersionRepDTO>> queryByAppId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id")

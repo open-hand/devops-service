@@ -4,9 +4,10 @@ import java.util.List;
 
 import io.choerodon.devops.infra.dataobject.DevopsCheckLogDO;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
-import io.choerodon.mybatis.common.BaseMapper;
 
-public interface DevopsCheckLogMapper extends BaseMapper<DevopsCheckLogDO> {
+import io.choerodon.mybatis.common.Mapper;
+
+public interface DevopsCheckLogMapper extends Mapper<DevopsCheckLogDO> {
     List<DevopsProjectDO> queryNonEnvGroupProject();
 
     void syncCommandId();

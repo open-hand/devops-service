@@ -2,14 +2,15 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.dto.DeployVersionDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -46,7 +47,7 @@ public interface ApplicationVersionService {
      * @param searchParam 查询参数
      * @return List
      */
-    Page<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish,Long appVersionId,PageRequest pageRequest,String searchParam);
+    PageInfo<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish,Long appVersionId,PageRequest pageRequest,String searchParam);
 
     /**
      * 项目下查询应用所有已部署版本
@@ -76,8 +77,8 @@ public interface ApplicationVersionService {
      * @param searchParam 模糊搜索参数
      * @return ApplicationVersionRepDTO
      */
-    Page<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest,
-                                                               String searchParam);
+    PageInfo<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest,
+                                                                   String  searchParam);
 
     /**
      * 根据应用id查询需要升级的应用版本

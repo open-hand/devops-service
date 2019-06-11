@@ -1,10 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
@@ -12,42 +13,19 @@ import io.choerodon.devops.api.dto.DeployEnvVersionDTO;
 import io.choerodon.devops.api.dto.DeployInstanceVersionDTO;
 import io.choerodon.devops.api.dto.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
-import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
-import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-import io.choerodon.devops.domain.application.entity.PipelineE;
-import io.choerodon.devops.domain.application.entity.PipelineTaskE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.PipelineRepository;
-import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
-import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,7 +90,10 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private ChartUtil chartUtil;
     @Autowired
     private PipelineService pipelineService;
-
+    @Autowired
+    private DevopsProjectRepository devopsProjectRepository;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -251,8 +232,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public Page<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam) {
-        return ConvertPageHelper.convertPage(
+    public PageInfo<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam) {
+        return ConvertPageHelper.convertPageInfo(
                 applicationVersionRepository.listByAppIdAndParamWithPage(appId, isPublish, appVersionId, pageRequest, searchParam), ApplicationVersionRepDTO.class);
     }
 
@@ -270,13 +251,13 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public Page<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String  searchParams) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Boolean isProjectOwner = iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE);
-        Page<ApplicationVersionE> applicationVersionEPage = applicationVersionRepository.listApplicationVersionInApp(
-                projectId, appId, pageRequest, searchParam, isProjectOwner, userAttrE.getIamUserId());
-        return ConvertPageHelper.convertPage(applicationVersionEPage, ApplicationVersionRepDTO.class);
+        PageInfo<ApplicationVersionE> applicationVersionEPage = applicationVersionRepository.listApplicationVersionInApp(
+                projectId, appId, pageRequest, "", isProjectOwner, userAttrE.getIamUserId());
+        return ConvertPageHelper.convertPageInfo(applicationVersionEPage, ApplicationVersionRepDTO.class);
     }
 
     @Override

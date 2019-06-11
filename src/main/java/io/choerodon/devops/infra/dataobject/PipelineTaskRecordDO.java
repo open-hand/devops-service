@@ -1,26 +1,18 @@
 package io.choerodon.devops.infra.dataobject;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import javax.persistence.*;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import java.sql.Date;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  19:36 2019/4/3
  * Description:
  */
-@VersionAudit
-@ModifyAudit
 @Table(name = "devops_pipeline_task_record")
-public class PipelineTaskRecordDO extends AuditDomain {
+public class PipelineTaskRecordDO extends BaseDTO {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long stageRecordId;
     private String taskType;

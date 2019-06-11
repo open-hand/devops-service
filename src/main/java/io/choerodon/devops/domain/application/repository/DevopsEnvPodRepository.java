@@ -2,9 +2,9 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -20,7 +20,7 @@ public interface DevopsEnvPodRepository {
 
     void update(DevopsEnvPodE devopsEnvPodE);
 
-    Page<DevopsEnvPodE> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsEnvPodE> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam);
 
     void deleteByName(String name, String namespace);
 

@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.infra.dataobject.ApplicationVersionReadmeDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Creator: Runge
@@ -9,5 +9,5 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Time: 11:17
  * Description:
  */
-public interface ApplicationVersionReadmeMapper extends BaseMapper<ApplicationVersionReadmeDO> {
+public interface ApplicationVersionReadmeMapper extends Mapper<ApplicationVersionReadmeDO> {
 }

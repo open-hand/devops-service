@@ -2,12 +2,12 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.api.dto.OrgCertificationDTO;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -34,7 +34,7 @@ public interface CertificationService {
 
     void certDeleteByGitOps(Long certId);
 
-    Page<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params);
 
     List<CertificationDTO> getActiveByDomain(Long projectId, Long envId, String domain);
 

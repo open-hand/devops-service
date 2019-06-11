@@ -1,15 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.AgentNodeInfoDTO;
 import io.choerodon.devops.api.dto.ClusterNodeInfoDTO;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.domain.application.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -173,7 +173,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     }
 
     @Override
-    public Page<ClusterNodeInfoDTO> pageQueryClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest) {
+    public PageInfo<ClusterNodeInfoDTO> pageQueryClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest) {
         long start = (long) pageRequest.getPage() * (long) pageRequest.getSize();
         long stop = start + (long) pageRequest.getSize() - 1;
         String redisKey = getRedisClusterKey(clusterId, organizationId);
@@ -185,8 +185,10 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .stream()
                 .map(node -> JSONObject.parseObject(node, ClusterNodeInfoDTO.class))
                 .collect(Collectors.toList());
-
-        return new Page<>(nodes, new PageInfo(pageRequest.getPage(), pageRequest.getSize()), total);
+        Page<ClusterNodeInfoDTO> result = new Page(pageRequest.getPage(),pageRequest.getSize());
+        result.setTotal(total);
+        result.addAll(nodes);
+        return result.toPageInfo();
     }
 
     @Override

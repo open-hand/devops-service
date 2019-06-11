@@ -4,17 +4,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
+import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -175,7 +175,7 @@ public class ApplicationController {
     @ApiOperation(value = "项目下分页查询应用")
     @CustomPageRequest
     @PostMapping("/list_by_options")
-    public ResponseEntity<Page<ApplicationRepDTO>> pageByOptions(
+    public ResponseEntity<PageInfo<ApplicationRepDTO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用是否启用")
@@ -209,7 +209,7 @@ public class ApplicationController {
     @ApiOperation(value = "根据环境id分页获取已部署正在运行实例的应用")
     @CustomPageRequest
     @GetMapping("/pages")
-    public ResponseEntity<Page<ApplicationCodeDTO>> pageByEnvIdAndStatus(
+    public ResponseEntity<PageInfo<ApplicationCodeDTO>> pageByEnvIdAndStatus(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
@@ -369,7 +369,7 @@ public class ApplicationController {
     @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的应用")
     @CustomPageRequest
     @PostMapping(value = "/list_unpublish")
-    public ResponseEntity<Page<ApplicationReqDTO>> listByActiveAndPubAndVersion(
+    public ResponseEntity<PageInfo<ApplicationReqDTO>> listByActiveAndPubAndVersion(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -395,7 +395,7 @@ public class ApplicationController {
     @ApiOperation(value = "项目下分页查询代码仓库")
     @CustomPageRequest
     @PostMapping("/list_code_repository")
-    public ResponseEntity<Page<ApplicationRepDTO>> listCodeRepository(
+    public ResponseEntity<PageInfo<ApplicationRepDTO>> listCodeRepository(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")

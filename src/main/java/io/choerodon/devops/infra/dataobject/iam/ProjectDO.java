@@ -3,12 +3,11 @@ package io.choerodon.devops.infra.dataobject.iam;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by Zenger on 2018/3/28.
  */
-public class ProjectDO extends AuditDomain {
+public class ProjectDO {
 
     @Id
     @GeneratedValue

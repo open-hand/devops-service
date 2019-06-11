@@ -6,8 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.core.domain.Page;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.api.dto.OrgCertificationDTO;
@@ -24,7 +25,6 @@ import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.common.util.SslUtil;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -163,13 +163,13 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
         }
     }
 
-    public Page<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
-                                         String[] params) {
-        Page<ProjectE> projects = iamRepository
+    public PageInfo<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
+                                             String[] params) {
+        PageInfo<ProjectE> projects = iamRepository
                 .queryProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params);
-        Page<ProjectDTO> pageProjectDTOS = new Page<>();
+        PageInfo<ProjectDTO> pageProjectDTOS = new PageInfo<>();
         List<ProjectDTO> projectDTOS = new ArrayList<>();
-        if (!projects.isEmpty()) {
+        if (!projects.getList().isEmpty()) {
             BeanUtils.copyProperties(projects, pageProjectDTOS);
             List<Long> projectIds;
             if (clusterId != null) {
@@ -178,31 +178,31 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
             } else {
                 projectIds = new ArrayList<>();
             }
-            projects.forEach(projectDO -> {
+            projects.getList().forEach(projectDO -> {
                 ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
                 projectDTOS.add(projectDTO);
             });
         }
         BeanUtils.copyProperties(projects, pageProjectDTOS);
-        pageProjectDTOS.setContent(projectDTOS);
+        pageProjectDTOS.setList(projectDTOS);
         return pageProjectDTOS;
     }
 
 
-    public Page<OrgCertificationDTO> pageCerts(Long organizationId, PageRequest pageRequest,
+    public PageInfo<OrgCertificationDTO> pageCerts(Long organizationId, PageRequest pageRequest,
                                                String params) {
-        Page<CertificationDTO> certificationDTOS = certificationRepository
+        PageInfo<CertificationDTO> certificationDTOS = certificationRepository
                 .page(null, organizationId, null, pageRequest, params);
-        Page<OrgCertificationDTO> orgCertificationDTOS = new Page<>();
+        PageInfo<OrgCertificationDTO> orgCertificationDTOS = new PageInfo<>();
         BeanUtils.copyProperties(certificationDTOS, orgCertificationDTOS);
         List<OrgCertificationDTO> orgCertifications = new ArrayList<>();
-        if (!certificationDTOS.getContent().isEmpty()) {
-            certificationDTOS.getContent().forEach(certificationDTO -> {
+        if (!certificationDTOS.getList().isEmpty()) {
+            certificationDTOS.getList().forEach(certificationDTO -> {
                 OrgCertificationDTO orgCertificationDTO = new OrgCertificationDTO(certificationDTO.getId(), certificationDTO.getCertName(), certificationDTO.getDomains().get(0), certificationDTO.getSkipCheckProjectPermission());
                 orgCertifications.add(orgCertificationDTO);
             });
         }
-        orgCertificationDTOS.setContent(orgCertifications);
+        orgCertificationDTOS.setList(orgCertifications);
         return orgCertificationDTOS;
     }
 

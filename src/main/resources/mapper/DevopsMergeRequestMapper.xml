@@ -21,6 +21,18 @@
         AND state = #{state}
     </select>
 
+
+    <select id="list" resultType="io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO">
+        SELECT
+        *
+        FROM
+        devops_merge_request
+          WHERE
+        project_id = #{projectId}
+        AND source_branch = #{branchName}
+        ORDER by id desc
+    </select>
+
 </mapper>
 
 

@@ -3,15 +3,15 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
 import io.choerodon.devops.api.dto.ProjectDefaultConfigDTO;
 import io.choerodon.devops.app.service.DevopsProjectConfigService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -121,7 +121,7 @@ public class DevopsProjectConfigController {
     @ApiOperation(value = "项目下分页查询配置")
     @CustomPageRequest
     @PostMapping("/list_by_options")
-    public ResponseEntity<Page<DevopsProjectConfigDTO>> pageByOptions(
+    public ResponseEntity<PageInfo<DevopsProjectConfigDTO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")

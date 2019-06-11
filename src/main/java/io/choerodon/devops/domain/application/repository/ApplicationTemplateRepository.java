@@ -2,10 +2,10 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
 import io.choerodon.devops.infra.feign.IamServiceClient;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/3/27.
@@ -20,7 +20,7 @@ public interface ApplicationTemplateRepository {
 
     ApplicationTemplateE query(Long appTemplateId);
 
-    Page<ApplicationTemplateE> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam);
+    PageInfo<ApplicationTemplateE> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam);
 
     ApplicationTemplateE queryByCode(Long organizationId, String code);
 

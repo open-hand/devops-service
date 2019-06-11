@@ -2,11 +2,10 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsClusterRepository {
 
@@ -22,7 +21,7 @@ public interface DevopsClusterRepository {
 
     void update(DevopsClusterE devopsClusterE);
 
-    Page<DevopsClusterE> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
+    PageInfo<DevopsClusterE> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
 
     void delete(Long clusterId);
 
@@ -38,7 +37,7 @@ public interface DevopsClusterRepository {
      * @param searchParam 查询参数
      * @return pods
      */
-    Page<DevopsEnvPodE> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsEnvPodE> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 
     DevopsClusterE queryByCode(Long organizationId, String code);
 }

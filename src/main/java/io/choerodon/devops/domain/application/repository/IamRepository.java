@@ -3,7 +3,7 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.core.domain.Page;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
@@ -12,7 +12,6 @@ import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/3/29.
@@ -29,7 +28,7 @@ public interface IamRepository {
 
     List<ProjectE> listIamProjectByOrgId(Long organizationId, String name, String[] params);
 
-    Page<ProjectE> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
+    PageInfo<ProjectE> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
 
     List<UserE> listUsersByIds(List<Long> ids);
 

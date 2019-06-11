@@ -3,14 +3,14 @@ package io.choerodon.devops.app.service;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/3/28.
@@ -74,14 +74,14 @@ public interface ApplicationService {
      * @param params      参数
      * @return Page
      */
-    Page<ApplicationRepDTO> listByOptions(Long projectId,
-                                          Boolean isActive,
-                                          Boolean hasVersion,
-                                          Boolean appMarket,
-                                          String type,
-                                          Boolean doPage,
-                                          PageRequest pageRequest,
-                                          String params);
+    PageInfo<ApplicationRepDTO> listByOptions(Long projectId,
+                                              Boolean isActive,
+                                              Boolean hasVersion,
+                                              Boolean appMarket,
+                                              String type,
+                                              Boolean doPage,
+                                              PageRequest pageRequest,
+                                              String params);
 
     /**
      * 处理应用创建逻辑
@@ -134,7 +134,7 @@ public interface ApplicationService {
      * @param pageRequest 分页参数
      * @return list of ApplicationRepDTO
      */
-    Page<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest);
+    PageInfo<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest);
 
     /**
      * 项目下查询所有已经启用的应用
@@ -185,7 +185,7 @@ public interface ApplicationService {
      * @param params      查询参数
      * @return list of ApplicationRepDTO
      */
-    Page<ApplicationReqDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<ApplicationReqDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
 
     /**
      * 项目下分页查询代码仓库
@@ -195,7 +195,7 @@ public interface ApplicationService {
      * @param params      查询参数
      * @return page of ApplicationRepDTO
      */
-    Page<ApplicationRepDTO> listCodeRepository(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<ApplicationRepDTO> listCodeRepository(Long projectId, PageRequest pageRequest, String params);
 
     /**
      * 获取应用下所有用户权限

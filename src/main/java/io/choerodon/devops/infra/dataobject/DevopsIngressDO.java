@@ -1,15 +1,10 @@
 package io.choerodon.devops.infra.dataobject;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import java.util.List;
 import java.util.Objects;
+import javax.persistence.*;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Creator: Runge
@@ -17,12 +12,10 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * Time: 14:30
  * Description:
  */
-@VersionAudit
-@ModifyAudit
 @Table(name = "devops_ingress")
-public class DevopsIngressDO extends AuditDomain {
+public class DevopsIngressDO extends BaseDTO {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long projectId;
     private Long envId;

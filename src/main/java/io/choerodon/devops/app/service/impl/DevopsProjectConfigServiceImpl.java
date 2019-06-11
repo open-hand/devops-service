@@ -5,9 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
 import io.choerodon.devops.api.dto.ProjectConfigDTO;
@@ -29,7 +30,6 @@ import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.harbor.*;
 import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -128,8 +128,8 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     }
 
     @Override
-    public Page<DevopsProjectConfigDTO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
-        return ConvertPageHelper.convertPage(devopsProjectConfigRepository.listByOptions(projectId, pageRequest, params), DevopsProjectConfigDTO.class);
+    public PageInfo<DevopsProjectConfigDTO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
+        return ConvertPageHelper.convertPageInfo(devopsProjectConfigRepository.listByOptions(projectId, pageRequest, params), DevopsProjectConfigDTO.class);
     }
 
     @Override

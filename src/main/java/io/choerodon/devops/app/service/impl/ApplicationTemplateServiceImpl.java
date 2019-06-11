@@ -2,27 +2,23 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
-import org.eclipse.jgit.api.Git;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO;
 import io.choerodon.devops.api.validator.ApplicationTemplateValidator;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
@@ -35,7 +31,10 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.Visibility;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.eclipse.jgit.api.Git;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by younger on 2018/3/27.
@@ -164,14 +163,14 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     }
 
     @Override
-    public Page<ApplicationTemplateRepDTO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam) {
-        Page<ApplicationTemplateRepDTO> applicationTemplateRepDTOPage = ConvertPageHelper
-                .convertPage(applicationTemplateRepository.listByOptions(
+    public PageInfo<ApplicationTemplateRepDTO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam) {
+        PageInfo<ApplicationTemplateRepDTO> applicationTemplateRepDTOPage = ConvertPageHelper
+                .convertPageInfo(applicationTemplateRepository.listByOptions(
                         pageRequest, organizationId, searchParam),
                         ApplicationTemplateRepDTO.class);
-        List<ApplicationTemplateRepDTO> applicationTemplateRepDTOList = applicationTemplateRepDTOPage.getContent();
+        List<ApplicationTemplateRepDTO> applicationTemplateRepDTOList = applicationTemplateRepDTOPage.getList();
         setAppTemplateRepoUrl(applicationTemplateRepDTOList);
-        applicationTemplateRepDTOPage.setContent(applicationTemplateRepDTOList);
+        applicationTemplateRepDTOPage.setList(applicationTemplateRepDTOList);
         return applicationTemplateRepDTOPage;
     }
 
@@ -284,10 +283,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
 
     @Override
     public ApplicationTemplateRepDTO queryByCode(Long organizationId, String code) {
-       return ConvertHelper.convert(applicationTemplateRepository.queryByCode(organizationId,code),ApplicationTemplateRepDTO.class);
+        return ConvertHelper.convert(applicationTemplateRepository.queryByCode(organizationId, code), ApplicationTemplateRepDTO.class);
     }
-
-
 
 
     @Override

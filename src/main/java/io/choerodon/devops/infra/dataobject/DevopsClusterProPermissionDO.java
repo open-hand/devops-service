@@ -3,14 +3,11 @@ package io.choerodon.devops.infra.dataobject;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
-@VersionAudit
-@ModifyAudit
+
 @Table(name = "devops_cluster_pro_rel")
-public class DevopsClusterProPermissionDO extends AuditDomain {
+public class DevopsClusterProPermissionDO extends BaseDTO {
 
     @Id
     private Long clusterId;

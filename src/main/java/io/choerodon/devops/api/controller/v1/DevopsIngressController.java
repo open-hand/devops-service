@@ -2,14 +2,14 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.app.service.DevopsIngressService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -186,7 +186,7 @@ public class DevopsIngressController {
     @CustomPageRequest
     @ApiOperation(value = "环境总览域名查询")
     @PostMapping(value = "/{envId}/listByEnv")
-    public ResponseEntity<Page<DevopsIngressDTO>> listByEnv(
+    public ResponseEntity<PageInfo<DevopsIngressDTO>> listByEnv(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore

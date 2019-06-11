@@ -1,12 +1,11 @@
 package io.choerodon.devops.api.controller.v1
 
+import io.choerodon.base.domain.PageRequest
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.mapper.*
-import io.choerodon.mybatis.pagehelper.domain.PageRequest
-import io.choerodon.websocket.helper.EnvListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest

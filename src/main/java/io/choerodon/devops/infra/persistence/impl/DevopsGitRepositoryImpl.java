@@ -6,7 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.util.StringUtil;
 import feign.FeignException;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -20,6 +24,7 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
@@ -31,9 +36,6 @@ import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.util.StringUtil;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -182,27 +184,27 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public Page<DevopsBranchE> listBranches(Long appId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsBranchE> listBranches(Long appId, PageRequest pageRequest, String params) {
 
-        Page<DevopsBranchDO> devopsBranchDOS;
+        PageInfo<DevopsBranchDO> devopsBranchDOS;
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> maps = json.deserialize(params, Map.class);
             if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
-                devopsBranchDOS = PageHelper.doPageAndSort(
-                        pageRequest, () -> devopsBranchMapper.list(
+                devopsBranchDOS = PageHelper.startPage(
+                        pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(
                                 appId, null,
                                 TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             } else {
-                devopsBranchDOS = PageHelper.doPageAndSort(
-                        pageRequest, () -> devopsBranchMapper.list(
+                devopsBranchDOS = PageHelper.startPage(
+                        pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> devopsBranchMapper.list(
                                 appId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             }
         } else {
-            devopsBranchDOS = PageHelper.doPageAndSort(
-                    pageRequest, () -> devopsBranchMapper.list(appId, null, null));
+            devopsBranchDOS = PageHelper.startPage(
+                    pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> devopsBranchMapper.list(appId, null, null));
         }
-        return ConvertPageHelper.convertPage(devopsBranchDOS, DevopsBranchE.class);
+        return ConvertPageHelper.convertPageInfo(devopsBranchDOS, DevopsBranchE.class);
     }
 
     @Override
@@ -215,7 +217,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public Page<TagDTO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId) {
+    public PageInfo<TagDTO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId) {
         ApplicationE applicationE = applicationRepository.query(appId);
         GitlabMemberE newGroupMemberE = gitlabProjectRepository.getProjectMember(
                 TypeUtil.objToInteger(applicationE.getGitlabProjectE().getId()),
@@ -225,7 +227,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         }
         Integer projectId = getGitLabId(appId);
         List<TagDO> tagTotalList = getGitLabTags(projectId, userId);
-        Page<TagDTO> tagsPage = new Page<>();
+        PageInfo<TagDTO> tagsPage = new PageInfo<>();
         List<TagDO> tagList = tagTotalList.stream()
                 .filter(t -> filterTag(t, params))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -247,11 +249,9 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
         tagsPage.setSize(size);
-        tagsPage.setTotalElements(tagList.size());
-        tagsPage.setTotalPages(totalPageSizes);
-        tagsPage.setContent(tagDTOS);
-        tagsPage.setNumber(page);
-        tagsPage.setNumberOfElements(tagDTOS.size());
+        tagsPage.setTotal(tagList.size());
+        tagsPage.setPageNum(page);
+        tagsPage.setList(tagDTOS);
         return tagsPage;
     }
 
@@ -431,14 +431,14 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                 }
             });
         }
-        Page<DevopsMergeRequestE> page = devopsMergeRequestRepository
+        PageInfo<DevopsMergeRequestE> page = devopsMergeRequestRepository
                 .getByGitlabProjectId(gitLabProjectId, pageRequest);
         if (StringUtil.isNotEmpty(state)) {
             page = devopsMergeRequestRepository
                     .getMergeRequestList(gitLabProjectId, state, pageRequest);
         }
         List<MergeRequestDTO> pageContent = new ArrayList<>();
-        List<DevopsMergeRequestE> content = page.getContent();
+        List<DevopsMergeRequestE> content = page.getList();
         if (content != null && !content.isEmpty()) {
             content.forEach(devopsMergeRequestE -> {
                 MergeRequestDTO mergeRequestDTO = devopsMergeRequestToMergeRequest(

@@ -1,16 +1,16 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
 import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,14 +37,8 @@ public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepos
 
     @Override
     public List<DevopsMergeRequestE> getBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
-        DevopsMergeRequestDO devopsMergeRequestDO = new DevopsMergeRequestDO();
-        devopsMergeRequestDO.setSourceBranch(sourceBranchName);
-        devopsMergeRequestDO.setProjectId(gitLabProjectId);
-        List<Sort.Order> orders = new ArrayList<>();
-        orders.add(new Sort.Order(Sort.Direction.DESC, "id"));
-        Sort sort = new Sort(orders);
-        return ConvertHelper.convertList(PageHelper.doSort(sort, () ->
-                devopsMergeRequestMapper.select(devopsMergeRequestDO)), DevopsMergeRequestE.class);
+        return ConvertHelper.convertList(
+                devopsMergeRequestMapper.listByProjectIdAndBranch(gitLabProjectId.intValue(),sourceBranchName), DevopsMergeRequestE.class);
     }
 
     @Override
@@ -57,19 +51,19 @@ public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepos
     }
 
     @Override
-    public Page<DevopsMergeRequestE> getMergeRequestList(Integer gitlabProjectId, String state, PageRequest pageRequest) {
-        Page<Object> page = PageHelper.doPageAndSort(pageRequest, () ->
+    public PageInfo<DevopsMergeRequestE> getMergeRequestList(Integer gitlabProjectId, String state, PageRequest pageRequest) {
+        PageInfo<Object> page = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 devopsMergeRequestMapper.getByProjectIdAndState(gitlabProjectId, state));
-        return ConvertPageHelper.convertPage(page, DevopsMergeRequestE.class);
+        return ConvertPageHelper.convertPageInfo(page, DevopsMergeRequestE.class);
     }
 
     @Override
-    public Page<DevopsMergeRequestE> getByGitlabProjectId(Integer gitlabProjectId, PageRequest pageRequest) {
+    public PageInfo<DevopsMergeRequestE> getByGitlabProjectId(Integer gitlabProjectId, PageRequest pageRequest) {
         DevopsMergeRequestDO devopsMergeRequestDO = new DevopsMergeRequestDO();
         devopsMergeRequestDO.setProjectId((long) gitlabProjectId);
-        Page<Object> page = PageHelper.doPageAndSort(pageRequest, () -> devopsMergeRequestMapper
+        PageInfo<Object> page = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> devopsMergeRequestMapper
                 .select(devopsMergeRequestDO));
-        return ConvertPageHelper.convertPage(page, DevopsMergeRequestE.class);
+        return ConvertPageHelper.convertPageInfo(page, DevopsMergeRequestE.class);
     }
 
     @Override

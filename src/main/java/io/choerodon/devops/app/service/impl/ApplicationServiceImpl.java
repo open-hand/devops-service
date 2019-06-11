@@ -12,10 +12,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -54,7 +56,6 @@ import io.choerodon.devops.infra.dataobject.harbor.User;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.tool.UUIDTool;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
@@ -331,19 +332,23 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Page<ApplicationRepDTO> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
-                                                 Boolean appMarket,
-                                                 String type, Boolean doPage,
-                                                 PageRequest pageRequest, String params) {
-        Page<ApplicationE> applicationES =
+    public PageInfo<ApplicationRepDTO> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
+                                                     Boolean appMarket,
+                                                     String type, Boolean doPage,
+                                                     PageRequest pageRequest, String params) {
+        PageInfo<ApplicationE> applicationES =
                 applicationRepository.listByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        initApplicationParams(projectE, organization, applicationES.getContent(), urlSlash);
-        Page<ApplicationRepDTO> resultDTOPage = ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
-        resultDTOPage.setContent(setApplicationRepDTOPermission(applicationES.getContent(), userAttrE, projectE));
+
+
+
+        initApplicationParams(projectE, organization, applicationES.getList(), urlSlash);
+
+        PageInfo<ApplicationRepDTO> resultDTOPage = ConvertPageHelper.convertPageInfo(applicationES, ApplicationRepDTO.class);
+        resultDTOPage.setList(setApplicationRepDTOPermission(applicationES.getList(), userAttrE, projectE));
         return resultDTOPage;
     }
 
@@ -379,21 +384,21 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 
     @Override
-    public Page<ApplicationRepDTO> listCodeRepository(Long projectId, PageRequest pageRequest, String params) {
+    public PageInfo<ApplicationRepDTO> listCodeRepository(Long projectId, PageRequest pageRequest, String params) {
 
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Boolean isProjectOwner = iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
-        Page<ApplicationE> applicationES = applicationRepository
+        PageInfo<ApplicationE> applicationES = applicationRepository
                 .listCodeRepository(projectId, pageRequest, params, isProjectOwner, userAttrE.getIamUserId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
 
-        initApplicationParams(projectE, organization, applicationES.getContent(), urlSlash);
+        initApplicationParams(projectE, organization, applicationES.getList(), urlSlash);
 
-        return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
+        return ConvertPageHelper.convertPageInfo(applicationES, ApplicationRepDTO.class);
     }
 
     private void initApplicationParams(ProjectE projectE, Organization organization, List<ApplicationE> applicationES, String urlSlash) {
@@ -1008,15 +1013,15 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Page<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
-        return ConvertPageHelper.convertPage(applicationRepository.pageByEnvId(projectId, envId, appId, pageRequest),
+    public PageInfo<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
+        return ConvertPageHelper.convertPageInfo(applicationRepository.pageByEnvId(projectId, envId, appId, pageRequest),
                 ApplicationCodeDTO.class);
     }
 
     @Override
-    public Page<ApplicationReqDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest,
+    public PageInfo<ApplicationReqDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest,
                                                                 String params) {
-        return ConvertPageHelper.convertPage(applicationRepository
+        return ConvertPageHelper.convertPageInfo(applicationRepository
                         .listByActiveAndPubAndVersion(projectId, true, pageRequest, params),
                 ApplicationReqDTO.class);
     }

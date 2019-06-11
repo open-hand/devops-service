@@ -4,11 +4,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.CommitFormRecordDTO;
 import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsGitlabCommitRepository {
 
@@ -18,9 +18,9 @@ public interface DevopsGitlabCommitRepository {
 
     List<DevopsGitlabCommitE> listCommits(Long projectId, List<Long> appIds, Date startDate, Date endDate);
 
-    Page<CommitFormRecordDTO> pageCommitRecord(Long projectId, List<Long> appId,
-                                               PageRequest pageRequest, Map<Long, UserE> userMap,
-                                               Date startDate, Date endDate);
+    PageInfo<CommitFormRecordDTO> pageCommitRecord(Long projectId, List<Long> appId,
+                                                   PageRequest pageRequest, Map<Long, UserE> userMap,
+                                                   Date startDate, Date endDate);
 
     void update(DevopsGitlabCommitE devopsGitlabCommitE);
 

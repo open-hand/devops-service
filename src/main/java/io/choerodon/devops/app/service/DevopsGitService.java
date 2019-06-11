@@ -3,13 +3,13 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -45,7 +45,7 @@ public interface DevopsGitService {
      * @param params        search param
      * @return Page
      */
-    Page<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params);
+    PageInfo<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params);
 
     /**
      * 查询单个分支
@@ -85,7 +85,7 @@ public interface DevopsGitService {
 
     Map<String, Object> getMergeRequestList(Long projectId, Long aplicationId, String state, PageRequest pageRequest);
 
-    Page<TagDTO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size);
+    PageInfo<TagDTO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size);
 
     List<TagDO> getTags(Long projectId, Long applicationId);
 

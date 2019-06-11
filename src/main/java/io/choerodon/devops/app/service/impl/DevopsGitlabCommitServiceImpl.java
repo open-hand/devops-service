@@ -3,9 +3,10 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.choerodon.core.domain.Page;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.CommitFormRecordDTO;
 import io.choerodon.devops.api.dto.CommitFormUserDTO;
 import io.choerodon.devops.api.dto.DevopsGitlabCommitDTO;
@@ -20,7 +21,6 @@ import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -124,13 +124,13 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public Page<CommitFormRecordDTO> getRecordCommits(Long projectId, String appIds, PageRequest pageRequest,
-                                                      Date startDate, Date endDate) {
+    public PageInfo<CommitFormRecordDTO> getRecordCommits(Long projectId, String appIds, PageRequest pageRequest,
+                                                          Date startDate, Date endDate) {
 
         List<Long> appIdsMap = gson.fromJson(appIds, new TypeToken<List<Long>>() {
         }.getType());
         if (appIdsMap.isEmpty()) {
-            return new Page<>();
+            return new PageInfo<>();
         }
 
         // 查询应用列表下所有commit记录
@@ -182,7 +182,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         return commitFormUserDTOS;
     }
 
-    private Page<CommitFormRecordDTO> getCommitFormRecordDTOS(Long projectId, List<Long> appId, PageRequest pageRequest,
+    private PageInfo<CommitFormRecordDTO> getCommitFormRecordDTOS(Long projectId, List<Long> appId, PageRequest pageRequest,
                                                               Map<Long, UserE> userMap, Date startDate, Date endDate) {
         return devopsGitlabCommitRepository.pageCommitRecord(projectId, appId, pageRequest, userMap, startDate, endDate);
     }

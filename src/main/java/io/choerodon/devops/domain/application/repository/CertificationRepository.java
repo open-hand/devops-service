@@ -2,11 +2,11 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.domain.application.entity.CertificationE;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by n!Ck
@@ -22,7 +22,7 @@ public interface CertificationRepository {
 
     CertificationE queryByEnvAndName(Long envId, String name);
 
-    Page<CertificationDTO> page(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<CertificationDTO> page(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params);
 
     List<CertificationDTO> getActiveByDomain(Long projectId,Long clusterId, String domain);
 

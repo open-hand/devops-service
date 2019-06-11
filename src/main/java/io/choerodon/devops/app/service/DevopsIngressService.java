@@ -1,11 +1,11 @@
 package io.choerodon.devops.app.service;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.kubernetes.client.models.V1beta1HTTPIngressPath;
 import io.kubernetes.client.models.V1beta1Ingress;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -123,5 +123,5 @@ public interface DevopsIngressService {
      * @param params      模糊查询参数
      * @return Page
      */
-    Page<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
 }

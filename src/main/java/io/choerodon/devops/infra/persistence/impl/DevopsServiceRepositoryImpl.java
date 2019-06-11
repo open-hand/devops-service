@@ -1,15 +1,16 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.domain.PageInfo;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsServiceE;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
@@ -18,8 +19,6 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
 import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
@@ -49,47 +48,60 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     }
 
     @Override
-    public Page<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, Long instanceId, PageRequest pageRequest,
-                                                        String searchParam) {
-        String sort = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
-                .filter(t -> checkServiceParam(t.getProperty()))
-                .map(t -> t.getProperty() + " " + t.getDirection())
-                .collect(Collectors.joining(","));
-        if (pageRequest.getSort() != null) {
-            Map<String, String> map = new HashMap<>();
-            map.put("name", "ds.`name`");
-            map.put("envName", "env_name");
-            map.put("externalIp", "ds.external_ip");
-            map.put("targetPort", "ds.target_port");
-            map.put("appName", "app_name");
-            map.put("version", "version");
-            pageRequest.resetOrder("ds", map);
+    public PageInfo<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, PageRequest pageRequest,
+                                                            String searchParam) {
+
+        Sort sort = pageRequest.getSort();
+        String sortResult = "";
+        if (sort != null) {
+            sortResult = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                    .map(t -> {
+                        String property = t.getProperty();
+                        if (property.equals("name")) {
+                            property = "ds.`name`";
+                        } else if (property.equals("envName")) {
+                            property = "env_name";
+                        }else if (property.equals("externalIp")) {
+                            property = "ds.external_ip";
+                        }else if (property.equals("targetPort")) {
+                            property = "ds.target_port";
+                        }else if (property.equals("appName")) {
+                            property = "app_name";
+                        }
+                        return property + " " + t.getDirection();
+                    })
+                    .collect(Collectors.joining(","));
         }
         int page = pageRequest.getPage();
         int size = pageRequest.getSize();
-        int start = page * size;
+        int start = getBegin(page,size);
         //分页组件暂不支持级联查询，只能手写分页
-        PageInfo pageInfo = new PageInfo(page, size);
+        Page<DevopsServiceQueryDO> result = new Page(page, size);
         int count;
         List<DevopsServiceQueryDO> devopsServiceQueryDOList;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             count = devopsServiceMapper.selectCountByName(
-                    projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                    projectId, envId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)));
-            devopsServiceQueryDOList = PageHelper.doSort(
-                    pageRequest.getSort(), () -> devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size, sort));
+
+            result.setTotal(count);
+            devopsServiceQueryDOList = devopsServiceMapper.listDevopsServiceByPage(
+                            projectId, envId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size, sortResult);
+            result.addAll(devopsServiceQueryDOList);
         } else {
             count = devopsServiceMapper
-                    .selectCountByName(projectId, envId, instanceId, null, null);
-            devopsServiceQueryDOList = PageHelper.doSort(pageRequest.getSort(), () ->
+                    .selectCountByName(projectId, envId, null,null, null);
+            result.setTotal(count);
+            devopsServiceQueryDOList =
                     devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, envId, instanceId, null, null, start, size, sort));
+                            projectId, envId, null, null, null, start, size, sortResult);
+            result.addAll(devopsServiceQueryDOList);
         }
-        return ConvertPageHelper.convertPage(
-                new Page<>(devopsServiceQueryDOList, pageInfo, count), DevopsServiceV.class);
+
+        return ConvertPageHelper.convertPageInfo(
+                result.toPageInfo(), DevopsServiceV.class);
     }
 
     private Boolean checkServiceParam(String key) {
@@ -194,5 +206,11 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         if (!serviceIds.isEmpty()) {
             devopsServiceMapper.deleteServiceInstance(serviceIds);
         }
+    }
+
+
+    public static int getBegin(int page, int size) {
+        page = page <= 1 ? 1 : page;
+        return (page - 1) * size;
     }
 }

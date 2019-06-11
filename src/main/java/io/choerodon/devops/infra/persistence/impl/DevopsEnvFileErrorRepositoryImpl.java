@@ -2,16 +2,17 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileErrorE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileErrorRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -54,11 +55,11 @@ public class DevopsEnvFileErrorRepositoryImpl implements DevopsEnvFileErrorRepos
     }
 
     @Override
-    public Page<DevopsEnvFileErrorE> pageByEnvId(Long envId, PageRequest pageRequest) {
+    public PageInfo<DevopsEnvFileErrorE> pageByEnvId(Long envId, PageRequest pageRequest) {
         DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO();
         devopsEnvFileErrorDO.setEnvId(envId);
-        return ConvertPageHelper.convertPage(PageHelper.doPage(
-                pageRequest.getPage(), pageRequest.getSize(),
+        return ConvertPageHelper.convertPageInfo(PageHelper.startPage(
+                pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
                 () -> devopsEnvFileErrorMapper.select(devopsEnvFileErrorDO)), DevopsEnvFileErrorE.class);
     }
 

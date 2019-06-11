@@ -1,27 +1,29 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.domain.application.entity.CertificationE;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.infra.common.util.EnvUtil;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
 import io.choerodon.devops.infra.dataobject.CertificationDO;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -65,26 +67,39 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     }
 
     @Override
-    public Page<CertificationDTO> page(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<CertificationDTO> page(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params) {
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
         }.getType());
-        if (pageRequest.getSort() != null) {
-            Map<String, String> map = new HashMap<>();
-            map.put("envName", "de.name");
-            map.put("envCode", "de.code");
-            map.put("certName", "dc.`name`");
-            map.put("commonName", "dc.domains");
-            pageRequest.resetOrder("dc", map);
+
+        Sort sort = pageRequest.getSort();
+        String sortResult = "";
+        if (sort != null) {
+            sortResult = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                    .map(t -> {
+                        String property = t.getProperty();
+                        if (property.equals("envName")) {
+                            property = "de.name";
+                        } else if (property.equals("envCode")) {
+                            property = "de.code";
+                        } else if (property.equals("certName")) {
+                            property = "dc.`name`";
+                        }else if (property.equals("commonName")) {
+                            property = "dc.domains";
+                        }
+                        return property + " " + t.getDirection();
+                    })
+                    .collect(Collectors.joining(","));
         }
+
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-        Page<CertificationDTO> certificationDTOPage = ConvertPageHelper.convertPage(
-                PageHelper.doPageAndSort(pageRequest, () -> devopsCertificationMapper
+        PageInfo<CertificationDTO> certificationDTOPage = ConvertPageHelper.convertPageInfo(
+                PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsCertificationMapper
                         .selectCertification(projectId, organizationId, envId, searchParamMap, param)),
                 CertificationDTO.class);
 
         // check if cert is overdue
-        certificationDTOPage.getContent().forEach(dto -> {
+        certificationDTOPage.getList().forEach(dto -> {
             if (CertificationStatus.ACTIVE.getStatus().equals(dto.getStatus())) {
                 CertificationE certificationE = ConvertHelper.convert(dto, CertificationE.class);
                 if (!certificationE.checkValidity()) {

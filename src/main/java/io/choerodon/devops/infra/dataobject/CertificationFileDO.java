@@ -1,12 +1,11 @@
 package io.choerodon.devops.infra.dataobject;
 
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Created by n!Ck
@@ -14,12 +13,10 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * Time: 19:51
  * Description:
  */
-@ModifyAudit
-@VersionAudit
 @Table(name = "devops_certification_file")
-public class CertificationFileDO extends AuditDomain {
+public class CertificationFileDO extends BaseDTO {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String certFile;
