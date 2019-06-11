@@ -18,7 +18,7 @@ import io.choerodon.devops.infra.common.util.enums.PipelineNoticeType;
 public class PipelinePassPmTemplate implements PmTemplate {
     @Override
     public String businessTypeCode() {
-        return "pipeline";
+        return PipelineNoticeType.PIPELINEPASS.toValue();
     }
 
     @Override
@@ -38,7 +38,7 @@ public class PipelinePassPmTemplate implements PmTemplate {
 
     @Override
     public String content() {
-        return "<p>流水线“${pipelineName}”在【${stageName}】中的或签任务已被${loginName}:${realName}审核<p>" +
+        return "<p>流水线“${pipelineName}”在【${stageName}】中的或签任务已被${auditName}:${realName}审核<p>" +
                 "<p><a href=#/devops/pipeline-record/detail/${pipelineId}/${pipelineRecordId}?type=project&id=${projectId}&name=${projectName}&category=undefined&organizationId=${organizationId}>查看详情</a >";
     }
 }
