@@ -2,14 +2,13 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsServiceAppInstanceE;
 import io.choerodon.devops.domain.application.repository.DevopsServiceInstanceRepository;
 import io.choerodon.devops.infra.dataobject.DevopsServiceAppInstanceDO;
 import io.choerodon.devops.infra.mapper.DevopsServiceAppInstanceMapper;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by Zenger on 2018/4/19.
@@ -59,5 +58,13 @@ public class DevopsServiceInstanceRepositoryImpl implements DevopsServiceInstanc
     @Override
     public void deleteById(Long id) {
         devopsServiceAppInstanceMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public List<DevopsServiceAppInstanceE> selectByInstanceId(Long instanceId) {
+        DevopsServiceAppInstanceDO devopsServiceAppInstanceDO = new DevopsServiceAppInstanceDO();
+        devopsServiceAppInstanceDO.setAppInstanceId(instanceId);
+        return ConvertHelper.convertList(devopsServiceAppInstanceMapper
+                .select(devopsServiceAppInstanceDO), DevopsServiceAppInstanceE.class);
     }
 }

@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.List;
+
 /**
  * Created by younger on 2018/4/25.
  */
@@ -11,6 +13,7 @@ public class ServiceDTO {
     private String port;
     private String targetPort;
     private String age;
+    private List<IngressDTO> ingressDTOS;
 
     public String getName() {
         return name;
@@ -67,4 +70,6 @@ public class ServiceDTO {
     public void setTargetPort(String targetPort) {
         this.targetPort = targetPort;
     }
+
+
 }

@@ -109,6 +109,9 @@
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
         WHERE 1
+        <if test="instanceId != null">
+            AND dai.id = #{instanceId}
+        </if>
         <include refid="sqlparam"/>
     </select>
 

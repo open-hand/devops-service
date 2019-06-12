@@ -8,11 +8,6 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -23,7 +18,6 @@ import io.choerodon.devops.domain.application.repository.CertificationRepository
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
-import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.IngressStatus;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
@@ -33,8 +27,10 @@ import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.websocket.helper.EnvListener;
-import io.choerodon.websocket.helper.EnvSession;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -116,12 +112,11 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
-    public Page<DevopsIngressDTO> getIngress(Long projectId, Long envId, PageRequest pageRequest, String params) {
+    public Page<DevopsIngressDTO> getIngress(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params) {
         List<DevopsIngressDTO> devopsIngressDTOS = new ArrayList<>();
+
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
         }.getType());
-        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
 
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
@@ -132,7 +127,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
 
         Page<DevopsIngressDO> devopsIngressDOS =
                 PageHelper.doPageAndSort(pageRequest,
-                        () -> devopsIngressMapper.selectIngress(projectId, envId, searchParamMap, paramMap));
+                        () -> devopsIngressMapper.selectIngress(projectId, envId, serviceId, maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAM))));
         devopsIngressDOS.getContent().forEach(t -> {
             DevopsIngressDTO devopsIngressDTO =
                     new DevopsIngressDTO(t.getId(), t.getDomain(), t.getName(),

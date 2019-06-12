@@ -1,8 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+import javax.validation.Valid;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
@@ -203,7 +203,7 @@ public class DevopsServiceController {
      * @param searchParam 查询参数
      * @return Page of DevopsServiceDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境总览网络查询")
@@ -220,6 +220,34 @@ public class DevopsServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsServiceService.listByEnv(projectId, envId, pageRequest, searchParam))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
+    }
+
+
+    /**
+     * 查询实例下关联的网络域名（不包含chart）
+     *
+     * @param projectId   项目id
+     * @param instanceId   实例Id
+     * @param pageRequest 分页参数
+     * @return Page of DevopsServiceDTO
+     */
+    @Permission(type= ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询实例下关联的网络域名（不包含chart）")
+    @CustomPageRequest
+    @PostMapping(value = "/{instanceId}/listByInstance")
+    public ResponseEntity<Page<DevopsServiceDTO>> listByInstance(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @PathVariable(value = "instanceId") Long instanceId,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC)
+            @ApiIgnore PageRequest pageRequest) {
+        return Optional.ofNullable(devopsServiceService.listByInstanceId(projectId, instanceId, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
     }

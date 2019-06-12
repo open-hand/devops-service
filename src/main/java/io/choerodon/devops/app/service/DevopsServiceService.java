@@ -115,4 +115,15 @@ public interface DevopsServiceService {
      */
     DevopsServiceDTO queryByName(Long envId, String serviceName);
 
+    /**
+     * 查询实例下关联的网络域名（不包含chart）
+     *
+     * @param projectId   项目id
+     * @param instanceId  实例Id
+     * @param pageRequest 分页参数
+     * @return Page of DevopsServiceDTO
+     */
+    Page<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest);
+
+
 }

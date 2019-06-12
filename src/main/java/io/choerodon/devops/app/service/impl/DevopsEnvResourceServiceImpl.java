@@ -50,27 +50,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     private ApplicationInstanceRepository applicationInstanceRepository;
     @Autowired
     private IamRepository iamRepository;
+    @Autowired
+    private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
 
-    @Override
-    public DevopsEnvResourceDTO listResources(Long instanceId) {
-        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
-        List<DevopsEnvResourceE> devopsEnvResourceES =
-                devopsEnvResourceRepository.listByInstanceId(instanceId);
-        DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
-        if (devopsEnvResourceES == null) {
-            return devopsEnvResourceDTO;
-        }
-
-        // 关联资源
-        devopsEnvResourceES.forEach(devopsInstanceResourceE -> dealWithResource(
-                devopsEnvResourceDetailRepository.query(devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId()),
-                devopsInstanceResourceE,
-                devopsEnvResourceDTO,
-                applicationInstanceE.getDevopsEnvironmentE().getId()
-                )
-        );
-        return devopsEnvResourceDTO;
-    }
 
     @Override
     public DevopsEnvResourceDTO listResourcesInHelmRelease(Long instanceId) {
@@ -166,7 +148,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                             V1beta1Ingress v1beta1Ingress = json.deserialize(
                                     devopsEnvResourceDetailE1.getMessage(),
                                     V1beta1Ingress.class);
-                            addIngressToResource(devopsEnvResourceDTO, v1beta1Ingress);
+                            devopsEnvResourceDTO.getIngressDTOS().add(addIngressToResource(v1beta1Ingress));
                         }
                     });
                 }
@@ -177,7 +159,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                     V1beta1Ingress v1beta1Ingress = json.deserialize(
                             devopsEnvResourceDetailE.getMessage(),
                             V1beta1Ingress.class);
-                    addIngressToResource(devopsEnvResourceDTO, v1beta1Ingress);
+                    devopsEnvResourceDTO.getIngressDTOS().add(addIngressToResource(v1beta1Ingress));
                 }
                 break;
             case REPLICASET:
@@ -389,17 +371,16 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     /**
      * 增加ingress资源
      *
-     * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta1Ingress       ingress对象
      */
-    public void addIngressToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1beta1Ingress v1beta1Ingress) {
+    public IngressDTO addIngressToResource(V1beta1Ingress v1beta1Ingress) {
         IngressDTO ingressDTO = new IngressDTO();
         ingressDTO.setName(v1beta1Ingress.getMetadata().getName());
         ingressDTO.setHosts(K8sUtil.formatHosts(v1beta1Ingress.getSpec().getRules()));
         ingressDTO.setPorts(K8sUtil.formatPorts(v1beta1Ingress.getSpec().getTls()));
         ingressDTO.setAddress(K8sUtil.loadBalancerStatusStringer(v1beta1Ingress.getStatus().getLoadBalancer()));
         ingressDTO.setAge(v1beta1Ingress.getMetadata().getCreationTimestamp().toString());
-        devopsEnvResourceDTO.getIngressDTOS().add(ingressDTO);
+        return ingressDTO;
     }
 
     /**

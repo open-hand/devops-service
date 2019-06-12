@@ -586,16 +586,20 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params) {
+
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
         }.getType());
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+
         List<ApplicationInstanceDO> applicationInstancesDOS = applicationInstanceMapper
                 .listApplicationInstance(projectId, envId, null, null, searchParamMap, paramMap);
         List<ApplicationInstanceE> applicationInstanceES = ConvertHelper
                 .convertList(applicationInstancesDOS, ApplicationInstanceE.class);
+
         setInstanceConnect(applicationInstanceES, connectedEnvList, updatedEnvList);
         Map<String, List<ApplicationInstanceE>> resultMaps = applicationInstanceES.stream()
                 .collect(Collectors.groupingBy(t -> t.getApplicationE().getName()));
@@ -606,9 +610,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvPreviewAppDTO.setAppName(key);
             devopsEnvPreviewAppDTO.setAppCode(value.get(0).getAppCode());
             devopsEnvPreviewAppDTO.setProjectId(value.get(0).getProjectId());
-//            ApplicationE applicationE = applicationRepository.query(value.get(0).getApplicationE().getId());
-//            devopsEnvPreviewAppDTO.setAppCode(applicationE.getCode());
-//            devopsEnvPreviewAppDTO.setProjectId(applicationE.getProjectE().getId());
             List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper
                     .convertList(value, ApplicationInstanceDTO.class);
 

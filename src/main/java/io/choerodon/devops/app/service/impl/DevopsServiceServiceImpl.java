@@ -8,6 +8,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.api.dto.DevopsServiceDTO;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
@@ -81,6 +82,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
     private CheckOptionsHandler checkOptionsHandler;
+    @Autowired
+    private DevopsIngressRepository devopsIngressRepository;
 
 
     @Override
@@ -92,7 +95,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public Page<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
         Page<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
-                projectId, envId, pageRequest, searchParam);
+                projectId, envId, null, pageRequest, searchParam);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         devopsServiceByPage.forEach(devopsServiceV -> {
@@ -104,6 +107,37 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         });
         return ConvertPageHelper.convertPage(devopsServiceByPage, DevopsServiceDTO.class);
     }
+
+
+    public Page<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest) {
+        Page<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
+                projectId, null, instanceId, pageRequest, null);
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+        if (!devopsServiceByPage.getContent().isEmpty()) {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceByPage.getContent().get(0).getEnvId());
+            if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
+                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
+                devopsServiceByPage.getContent().stream().forEach(devopsServiceV -> {
+                    devopsServiceV.setEnvStatus(true);
+                });
+            }
+            devopsServiceByPage.getContent().stream().forEach(devopsServiceV -> {
+                Page<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository
+                        .getIngress(projectId, null, devopsServiceV.getId(), new PageRequest(0, 100), "");
+                if (devopsServiceV.getEnvStatus() != null && devopsServiceV.getEnvStatus()) {
+                    devopsIngressDTOS.getContent().stream().forEach(devopsIngressDTO -> devopsIngressDTO.setEnvStatus(true));
+
+                }
+                devopsServiceV.setDevopsIngressDTOS(devopsIngressDTOS.getContent());
+            });
+
+        }
+
+
+        return ConvertPageHelper.convertPage(devopsServiceByPage, DevopsServiceDTO.class);
+    }
+
 
     @Override
     public DevopsServiceDTO queryByName(Long envId, String serviceName) {
@@ -137,7 +171,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     @Override
-    @Transactional(rollbackFor=Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
 
         //校验用户是否有环境的权限
@@ -313,7 +347,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     @Override
-    @Transactional(rollbackFor=Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateDevopsService(Long projectId, Long id,
                                        DevopsServiceReqDTO devopsServiceReqDTO) {
 
@@ -397,7 +431,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     @Override
-    @Transactional(rollbackFor=Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void deleteDevopsService(Long id) {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
 
