@@ -47,6 +47,9 @@
         <if test="envId != null">
             AND de.id = #{envId}
         </if>
+        <if test="serviceId != null">
+            AND ds.id = #{serviceId}
+        </if>
         <if test='searchParam != null'>
             <if test='searchParam.domain != null and searchParam.domain.size > 0'>
                 AND

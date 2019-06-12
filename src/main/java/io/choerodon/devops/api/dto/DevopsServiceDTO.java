@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.List;
+
 /**
  * Created by Zenger on 2018/4/19.
  */
@@ -21,6 +23,7 @@ public class DevopsServiceDTO {
     private String commandStatus;
     private String error;
     private String loadBalanceIp;
+    private List<DevopsIngressDTO> devopsIngressDTOS;
 
     public Long getId() {
         return id;
@@ -148,5 +151,13 @@ public class DevopsServiceDTO {
 
     public void setLoadBalanceIp(String loadBalanceIp) {
         this.loadBalanceIp = loadBalanceIp;
+    }
+
+    public List<DevopsIngressDTO> getDevopsIngressDTOS() {
+        return devopsIngressDTOS;
+    }
+
+    public void setDevopsIngressDTOS(List<DevopsIngressDTO> devopsIngressDTOS) {
+        this.devopsIngressDTOS = devopsIngressDTOS;
     }
 }

@@ -47,6 +47,10 @@ public class ApplicationInstanceDO extends AuditDomain {
     @Transient
     private Long podRunningCount;
     @Transient
+    private Long serviceCount;
+    @Transient
+    private Long ingressCount;
+    @Transient
     private String commandStatus;
     @Transient
     private String commandType;
@@ -262,5 +266,21 @@ public class ApplicationInstanceDO extends AuditDomain {
 
     public void setValueId(Long valueId) {
         this.valueId = valueId;
+    }
+
+    public Long getServiceCount() {
+        return serviceCount;
+    }
+
+    public void setServiceCount(Long serviceCount) {
+        this.serviceCount = serviceCount;
+    }
+
+    public Long getIngressCount() {
+        return ingressCount;
+    }
+
+    public void setIngressCount(Long ingressCount) {
+        this.ingressCount = ingressCount;
     }
 }

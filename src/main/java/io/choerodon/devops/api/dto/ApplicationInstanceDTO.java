@@ -23,6 +23,8 @@ public class ApplicationInstanceDTO {
     private Long commandId;
     private Long podCount;
     private Long podRunningCount;
+    private Long serviceCount;
+    private Long ingressCount;
     private String commandStatus;
     private String commandType;
     private String commandVersion;
@@ -231,5 +233,21 @@ public class ApplicationInstanceDTO {
 
     public void setDeploymentDTOS(List<DeploymentDTO> deploymentDTOS) {
         this.deploymentDTOS = deploymentDTOS;
+    }
+
+    public Long getServiceCount() {
+        return serviceCount;
+    }
+
+    public void setServiceCount(Long serviceCount) {
+        this.serviceCount = serviceCount;
+    }
+
+    public Long getIngressCount() {
+        return ingressCount;
+    }
+
+    public void setIngressCount(Long ingressCount) {
+        this.ingressCount = ingressCount;
     }
 }

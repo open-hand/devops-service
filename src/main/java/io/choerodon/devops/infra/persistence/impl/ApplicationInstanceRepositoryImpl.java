@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRepository {
+
     private static final Gson gson = new Gson();
 
     private ApplicationInstanceMapper applicationInstanceMapper;

@@ -1213,7 +1213,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public void deleteIamApplication(IamAppPayLoad iamAppPayLoad) {
         ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
-        gitlabRepository.deleteProject(applicationE.getGitlabProjectE().getId(), 1);
+        if (applicationE.getGitlabProjectE() != null) {
+            gitlabRepository.deleteProject(applicationE.getGitlabProjectE().getId(), 1);
+        }
         applicationRepository.delete(applicationE.getId());
     }
 

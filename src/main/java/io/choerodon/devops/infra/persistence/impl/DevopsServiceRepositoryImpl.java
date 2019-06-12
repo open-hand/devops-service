@@ -15,7 +15,6 @@ import io.choerodon.devops.domain.application.entity.DevopsServiceE;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsServiceAppInstanceDO;
 import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
 import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
@@ -50,7 +49,7 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     }
 
     @Override
-    public Page<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, PageRequest pageRequest,
+    public Page<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, Long instanceId, PageRequest pageRequest,
                                                         String searchParam) {
         String sort = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
                 .filter(t -> checkServiceParam(t.getProperty()))
@@ -80,14 +79,14 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)));
             devopsServiceQueryDOList = PageHelper.doSort(
                     pageRequest.getSort(), () -> devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, envId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                            projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size, sort));
         } else {
             count = devopsServiceMapper
                     .selectCountByName(projectId, envId, null, null);
             devopsServiceQueryDOList = PageHelper.doSort(pageRequest.getSort(), () ->
                     devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, envId, null, null, start, size, sort));
+                            projectId, envId, instanceId, null, null, start, size, sort));
         }
         return ConvertPageHelper.convertPage(
                 new Page<>(devopsServiceQueryDOList, pageInfo, count), DevopsServiceV.class);
