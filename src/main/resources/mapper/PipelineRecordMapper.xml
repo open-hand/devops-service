@@ -83,15 +83,6 @@
             dpsr.pipeline_record_id
             )
             AND dpsr.audit_user LIKE CONCAT(CONCAT('%', #{classifyParam.userId}), '%')
-            JOIN devops_pipeline_user_record_rel dpurl ON NOT EXISTS (
-            SELECT
-            1
-            FROM
-            devops_pipeline_user_record_rel dpurl
-            WHERE
-            dpurl.stage_record_id = dpsr.id
-            AND dpurl.user_id = #{classifyParam.userId}
-            )
             WHERE
             dpr.project_id = #{projectId}
             AND dpr.`status` = 'pendingcheck'

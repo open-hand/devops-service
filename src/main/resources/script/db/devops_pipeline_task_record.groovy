@@ -58,4 +58,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
             column(name: 'value_id', type: 'BIGINT UNSIGNED', remarks: 'value Id', afterColumn: "app_deploy_id")
         }
     }
+    changeSet(author: 'scp', id: '2019-06-12-idx-stage-record-id') {
+        createIndex(indexName: "idx_stage_record_id ", tableName: "devops_pipeline_task_record") {
+            column(name: "stage_record_id")
+        }
+    }
 }

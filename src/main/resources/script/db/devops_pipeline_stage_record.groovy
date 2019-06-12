@@ -34,4 +34,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_stage_record.groovy') {
             column(name: 'audit_user', type: 'VARCHAR(255)', remarks: '审核人员', afterColumn: "project_id")
         }
     }
+    changeSet(author: 'scp', id: '2019-06-12-idx-pipeline-record-id') {
+        createIndex(indexName: "idx_pipeline_record_id ", tableName: "devops_pipeline_stage_record") {
+            column(name: "pipeline_record_id")
+        }
+    }
 }

@@ -22,7 +22,7 @@ public class PipelineRecordDTO {
     private Long taskRecordId;
     private Long stageRecordId;
     private String type;
-    private Boolean index;
+    private Boolean execute;
     private String errorInfo;
 
     public String getErrorInfo() {
@@ -41,12 +41,12 @@ public class PipelineRecordDTO {
         this.pipelineName = pipelineName;
     }
 
-    public Boolean getIndex() {
-        return index;
+    public Boolean getExecute() {
+        return execute;
     }
 
-    public void setIndex(Boolean index) {
-        this.index = index;
+    public void setExecute(Boolean execute) {
+        this.execute = execute;
     }
 
     public String getType() {
