@@ -218,7 +218,7 @@ public class PipelineServiceImpl implements PipelineService {
         Page<PipelineRecordDTO> pageRecordDTOS = ConvertPageHelper.convertPage(
                 pipelineRecordRepository.listByOptions(projectId, pipelineId, pageRequest, params, classifyParam), PipelineRecordDTO.class);
         pageRecordDTOS.setContent(pageRecordDTOS.getContent().stream().map(t -> {
-            t.setIndex(false);
+            t.setExecute(false);
             t.setStageDTOList(ConvertHelper.convertList(stageRecordRepository.list(projectId, t.getId()), PipelineStageRecordDTO.class));
             if (t.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                 for (int i = 0; i < t.getStageDTOList().size(); i++) {
@@ -230,14 +230,14 @@ public class PipelineServiceImpl implements PipelineService {
                             t.setTaskRecordId(taskRecordE.get().getId());
                             t.setStageRecordId(t.getStageDTOList().get(i).getId());
                             t.setType(TASK);
-                            t.setIndex(checkTaskTriggerPermission(taskRecordE.get().getId()));
+                            t.setExecute(checkTaskTriggerPermission(taskRecordE.get().getId()));
                             break;
                         }
                     } else if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                         t.setType(STAGE);
                         t.setStageName(t.getStageDTOList().get(i - 1).getStageName());
                         t.setStageRecordId(t.getStageDTOList().get(i).getId());
-                        t.setIndex(checkRecordTriggerPermission(null, t.getStageDTOList().get(i - 1).getId()));
+                        t.setExecute(checkRecordTriggerPermission(null, t.getStageDTOList().get(i - 1).getId()));
                         break;
                     }
                 }
@@ -259,13 +259,13 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             } else if (t.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                 if (t.getTriggerType().equals(AUTO)) {
-                    t.setIndex(true);
+                    t.setExecute(true);
                 } else {
-                    t.setIndex(checkRecordTriggerPermission(t.getId(), null));
+                    t.setExecute(checkRecordTriggerPermission(t.getId(), null));
                 }
             }
-            if (t.getIndex()) {
-                t.setIndex(checkTaskRecordEnvPermission(projectE, t.getId()));
+            if (t.getExecute()) {
+                t.setExecute(checkTaskRecordEnvPermission(projectE, t.getId()));
             }
             return t;
         }).collect(Collectors.toList()));
