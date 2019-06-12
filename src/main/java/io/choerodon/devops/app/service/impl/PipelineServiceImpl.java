@@ -875,7 +875,7 @@ public class PipelineServiceImpl implements PipelineService {
                     startNextTask(taskRecordId, pipelineRecordId, stageRecordId);
                 }
             } else {
-                startNextTask(taskRecordRepository.queryById(taskRecordId).getId(), pipelineRecordId, stageRecordId);
+                startNextTask(taskRecordId, pipelineRecordId, stageRecordId);
             }
         } else {
             //停止实例
