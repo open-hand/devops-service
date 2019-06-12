@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -618,7 +619,7 @@ public class PipelineServiceImpl implements PipelineService {
                             break;
                         }
                     } else {
-                        sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(),auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
+                        sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
                     }
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), WorkFlowStatus.RUNNING.toValue(), null);
                     startNextTask(taskRecordE.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
@@ -646,7 +647,7 @@ public class PipelineServiceImpl implements PipelineService {
                     } else {
                         startEmptyStage(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                     }
-                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(),auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
+                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), null, status, null);
                 }
@@ -1125,8 +1126,6 @@ public class PipelineServiceImpl implements PipelineService {
                     PipelineTaskRecordE taskRecordE = optional.get();
                     taskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
                     taskRecordRepository.createOrUpdate(taskRecordE);
-                } else {
-                    throw new CommonException("error.pipeline.record.status");
                 }
                 break;
             }
@@ -1198,9 +1197,15 @@ public class PipelineServiceImpl implements PipelineService {
         PipelineTaskRecordE nextTaskRecord = getNextTask(taskRecordId);
         //属于阶段的最后一个任务
         if (nextTaskRecord == null) {
+            Long time = null;
+            if (getFirstStage(pipelineRecordId).getId().equals(stageRecordId)) {
+                time = System.currentTimeMillis() - pipelineRecordRepository.queryById(pipelineRecordId).getLastUpdateDate().getTime();
+            } else {
+                PipelineStageRecordE lastStageRecord = getLastStage(pipelineRecordId, stageRecordId);
+                time = System.currentTimeMillis() - lastStageRecord.getLastUpdateDate().getTime();
+            }
             PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(taskRecordE.getStageRecordId());
             stageRecordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
-            Long time = System.currentTimeMillis() - stageRecordE.getLastUpdateDate().getTime();
             stageRecordE.setExecutionTime(time.toString());
             stageRecordRepository.createOrUpdate(stageRecordE);
             //属于pipeline最后一个任务
@@ -1317,7 +1322,6 @@ public class PipelineServiceImpl implements PipelineService {
         return list.stream().filter(t -> t.getId() > stageRecordId).findFirst().orElse(null);
     }
 
-
     private PipelineTaskRecordE getNextTask(Long taskRecordId) {
         List<PipelineTaskRecordE> list = taskRecordRepository.queryByStageRecordId(taskRecordRepository.queryById(taskRecordId).getStageRecordId(), null);
         return list.stream().filter(t -> t.getId() > taskRecordId).findFirst().orElse(null);
@@ -1345,7 +1349,6 @@ public class PipelineServiceImpl implements PipelineService {
         }
         return userIds.contains(TypeUtil.objToString(DetailsHelper.getUserDetails().getUserId()));
     }
-
 
     private Boolean checkTaskTriggerPermission(Long taskRecordId) {
         PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(taskRecordId);
@@ -1461,40 +1464,6 @@ public class PipelineServiceImpl implements PipelineService {
                 });
     }
 
-    private Boolean filterPendingCheck(Boolean pendingcheck, Long pipelineRecordId) {
-        PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
-        if (pendingcheck != null && pendingcheck && pipelineRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
-            List<PipelineStageRecordE> stageRecordEList = stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null);
-            String auditUser = "";
-            List<String> reviewedUsers = new ArrayList<>();
-            for (int i = 0; i < stageRecordEList.size(); i++) {
-                PipelineStageRecordE stageRecordE = stageRecordEList.get(i);
-                if (stageRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
-                    List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null);
-                    for (PipelineTaskRecordE taskRecordE : taskRecordEList) {
-                        if (taskRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
-                            auditUser = taskRecordE.getAuditUser();
-                            reviewedUsers = pipelineUserRelRecordRepository.queryByRecordId(null, null, taskRecordE.getId()).stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
-                            break;
-                        }
-                    }
-                    break;
-                } else if (stageRecordE.getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && stageRecordEList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
-                    auditUser = stageRecordE.getAuditUser();
-                }
-            }
-            List<String> userIds = new ArrayList<>();
-            if (!reviewedUsers.isEmpty() && auditUser != null) {
-                userIds = Arrays.asList(auditUser.split(","));
-                List arrList = new ArrayList(userIds);
-                arrList.removeAll(reviewedUsers);
-                userIds = arrList;
-            }
-            return userIds.contains(TypeUtil.objToString(DetailsHelper.getUserDetails().getUserId()));
-        }
-        return true;
-    }
-
     private Boolean checkTaskRecordEnvPermission(ProjectE projectE, Long pipelineRecordId) {
         Boolean index = true;
         List<PipelineTaskRecordE> allAutoTaskRecords = taskRecordRepository.queryAllAutoTaskRecord(pipelineRecordId);
@@ -1517,6 +1486,16 @@ public class PipelineServiceImpl implements PipelineService {
         taskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
         taskRecordRepository.createOrUpdate(taskRecordE);
         updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), errorInfo);
+    }
+
+    private PipelineStageRecordE getFirstStage(Long pipelineRecordId) {
+        return stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null).get(0);
+    }
+
+    private PipelineStageRecordE getLastStage(Long pipelineRecordId, Long stageRecordId) {
+        Optional<PipelineStageRecordE> optional = stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null)
+                .stream().filter(t -> t.getId() < stageRecordId).max(Comparator.comparingLong(PipelineStageRecordE::getId));
+        return optional.orElse(null);
     }
 
     @Override
