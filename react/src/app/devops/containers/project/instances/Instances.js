@@ -20,6 +20,7 @@ import DevopsStore from '../../../stores/DevopsStore';
 import InstancesStore from '../../../stores/project/instances/InstancesStore';
 import EnvOverviewStore from '../../../stores/project/envOverview';
 import DeleteModal from '../../../components/deleteModal';
+import Networking from './components/NetWorking';
 import '../../main.scss';
 import './Instances.scss';
 
@@ -36,6 +37,8 @@ class Instances extends Component {
     confirmType: '',
     idArr: {},
     deleteArr: [],
+    showNetworking: false,
+    appId: null,
   };
 
   componentDidMount() {
@@ -462,12 +465,13 @@ class Instances extends Component {
    * @param type 类型：重新部署或启停实例
    */
   openConfirm = (record, type) => {
-    const { id, code } = record;
+    const { id, code, appId } = record;
     this.setState({
       confirmType: type,
       id,
       name: code,
     });
+    type === 'networking' && this.setState({ appId });
   };
 
   /**
@@ -476,6 +480,9 @@ class Instances extends Component {
   closeConfirm = () => {
     this.setState({
       confirmType: '',
+      id: null,
+      name: null,
+      appId: null,
     });
   };
 
@@ -584,6 +591,26 @@ class Instances extends Component {
     );
   }
 
+  renderNetworking = (record) => {
+    const { serviceCount, ingressCount } = record;
+    const { intl: { formatMessage } } = this.props;
+    return (
+      <div>
+        <FormattedMessage
+          id='ist.networking.info'
+          values={{ serviceCount, ingressCount }}
+        />
+        <Tooltip title={formatMessage({ id: 'ist.networking.header' })}>
+          <Button
+            icon='open_in_new'
+            shape='circle'
+            onClick={this.openConfirm.bind(this, record, 'networking')}
+          />
+        </Tooltip>
+      </div>
+    )
+  };
+
   render() {
     DevopsStore.initAutoRefresh('ist', this.reload);
 
@@ -615,6 +642,7 @@ class Instances extends Component {
       confirmLoading,
       deleteLoading,
       deleteArr,
+      appId,
     } = this.state;
 
     const envData = EnvOverviewStore.getEnvcard;
@@ -667,6 +695,11 @@ class Instances extends Component {
         filters: [],
         filteredValue: filters.appName || [],
         render: this.renderAppName,
+      },
+      {
+        title: 'Networking',
+        key: 'networking',
+        render: this.renderNetworking
       },
       {
         title: <FormattedMessage id="deploy.pod" />,
@@ -753,6 +786,9 @@ class Instances extends Component {
           'devops-service.application-instance.deploy',
           'devops-service.application-instance.delete',
           'devops-service.application-instance.restart',
+          'devops-service.devops-service.listByInstance',
+          'devops-service.devops-service.create',
+          'devops-service.devops-ingress.create',
         ]}
       >
         {envData && envData.length && envId ? (
@@ -860,6 +896,16 @@ class Instances extends Component {
               </Modal>
               {deleteModals}
             </Content>
+            {confirmType === 'networking' && (
+              <Networking
+                id={id}
+                appId={appId}
+                name={name}
+                show={confirmType === 'networking'}
+                store={InstancesStore}
+                onClose={this.closeConfirm}
+              />
+            )}
           </Fragment>
         ) : (
           <DepPipelineEmpty
