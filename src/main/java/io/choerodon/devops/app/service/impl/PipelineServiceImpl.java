@@ -554,14 +554,12 @@ public class PipelineServiceImpl implements PipelineService {
         Boolean result = true;
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId());
         PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(recordRelDTO.getStageRecordId());
-        String auditUser = null;
+        StringBuilder auditUser = new StringBuilder();
         if ("task".equals(recordRelDTO.getType())) {
-            auditUser = taskRecordRepository.queryById(recordRelDTO.getTaskRecordId()).getAuditUser();
+            auditUser.append(taskRecordRepository.queryById(recordRelDTO.getTaskRecordId()).getAuditUser());
         } else {
             Optional<PipelineStageRecordE> optional = stageRecordRepository.queryByPipeRecordId(recordRelDTO.getPipelineRecordId(), null).stream().filter(t -> t.getId() < recordRelDTO.getStageRecordId()).findFirst();
-            if (optional.isPresent()) {
-                auditUser = optional.get().getAuditUser();
-            }
+            optional.ifPresent(pipelineStageRecordE -> auditUser.append(pipelineStageRecordE.getAuditUser()));
         }
         if (recordRelDTO.getIsApprove()) {
             try {
@@ -581,7 +579,8 @@ public class PipelineServiceImpl implements PipelineService {
             }
         } else {
             status = WorkFlowStatus.STOP.toValue();
-            sendAuditSiteMassage(PipelineNoticeType.PIPELINESTOP.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
+            auditUser.append(",").append(pipelineRecordE.getCreatedBy());
+            sendAuditSiteMassage(PipelineNoticeType.PIPELINESTOP.toValue(), auditUser.toString(), recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
         }
         PipelineUserRecordRelE userRelE = new PipelineUserRecordRelE();
         userRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
@@ -619,7 +618,7 @@ public class PipelineServiceImpl implements PipelineService {
                             break;
                         }
                     } else {
-                        sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
+                        sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser.toString(), recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
                     }
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), WorkFlowStatus.RUNNING.toValue(), null);
                     startNextTask(taskRecordE.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
@@ -647,7 +646,7 @@ public class PipelineServiceImpl implements PipelineService {
                     } else {
                         startEmptyStage(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                     }
-                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
+                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser.toString(), recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), null, status, null);
                 }
@@ -790,6 +789,7 @@ public class PipelineServiceImpl implements PipelineService {
             recordE.setStageId(stageE.getId());
             recordE.setPipelineRecordId(pipelineRecordId);
             recordE.setId(null);
+            recordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis()));
             List<PipelineUserRelE> stageRelEList = pipelineUserRelRepository.listByOptions(null, stageE.getId(), null);
             if (stageE.getTriggerType().equals(MANUAL)) {
                 recordE.setAuditUser(StringUtils.join(stageRelEList.stream().map(PipelineUserRelE::getUserId).toArray(), ","));
@@ -1170,16 +1170,10 @@ public class PipelineServiceImpl implements PipelineService {
     private void startNextTask(Long taskRecordId, Long pipelineRecordId, Long stageRecordId) {
         PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(taskRecordId);
         PipelineTaskRecordE nextTaskRecord = getNextTask(taskRecordId);
+        PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
         //属于阶段的最后一个任务
         if (nextTaskRecord == null) {
-            Long time = null;
-            if (getFirstStage(pipelineRecordId).getId().equals(stageRecordId)) {
-                time = System.currentTimeMillis() - pipelineRecordRepository.queryById(pipelineRecordId).getLastUpdateDate().getTime();
-            } else {
-                PipelineStageRecordE lastStageRecord = getLastStage(pipelineRecordId, stageRecordId);
-                time = System.currentTimeMillis() - lastStageRecord.getLastUpdateDate().getTime();
-            }
-            PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(taskRecordE.getStageRecordId());
+            Long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordE.getExecutionTime());
             stageRecordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
             stageRecordE.setExecutionTime(time.toString());
             stageRecordRepository.createOrUpdate(stageRecordE);
@@ -1211,6 +1205,10 @@ public class PipelineServiceImpl implements PipelineService {
      * @param recordE
      */
     private void startNextStageRecord(Long stageRecordId, PipelineRecordE recordE) {
+        PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
+        stageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis()));
+        stageRecordRepository.createOrUpdate(stageRecordE);
+
         PipelineStageRecordE nextStageRecordE = getNextStage(stageRecordId);
         if (stageRecordRepository.queryById(stageRecordId).getTriggerType().equals(AUTO)) {
             if (!isEmptyStage(nextStageRecordE.getId())) {
