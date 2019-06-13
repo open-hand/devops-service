@@ -215,9 +215,12 @@ const pageDetail = {
   'ist.detail.title': '查看实例"{name}"的详情',
   'ist.detail.description':
     '您可在此查看该实例的运行详情及部署详情。运行详情包括各资源对象的基本信息；部署详情包括配置信息及部署阶段及日志。',
+  'ist.networking.title': '实例"{name}"的关联网络与域名',
+  'ist.networking.description': '您可在此创建和查看实例相关的网络和域名。',
   'ist.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
   'ist.detail.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
   'ist.edit.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
+  'ist.networking.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
 
   // 部署总览
   'dpOverview.title': '项目"{name}"的部署总览',
@@ -441,7 +444,7 @@ const pageDetail = {
   // 部署配置
   'deploymentConfig.title': '项目"{name}"的部署配置',
   'deploymentConfig.description':
-    '部署配置用于管理流水线中添加部署任务时需要用到的配置信息。',
+    '部署配置用于管理部署流水线中部署应用时需要用到的配置信息。',
   'deploymentConfig.link': `${docServer}/user-guide/deployment-pipeline/pipeline/deployment-config/`,
   'deploymentConfig.create.title': '在项目"{name}"中创建部署配置',
   'deploymentConfig.create.description':
@@ -740,6 +743,19 @@ const zhCN = {
   'ist.deploy.variables.describe': '在创建时添加的环境变量。',
   'ist.deploy.variables.key': '变量名称',
   'ist.deploy.variables.value': '变量值',
+
+  'ist.networking.info': '{serviceCount}网络，{ingressCount}域名',
+  'ist.networking.header': '关联网络与域名',
+  'ist.networking.service.name': '网络名称',
+  'ist.networking.service.type': '网络类型',
+  'ist.networking.service.ip': '外部IP',
+  'ist.networking.service.port': '节点端口/端口/目标端口',
+  'ist.networking.ingress.name': '域名名称：',
+  'ist.networking.ingress.address': '地址：',
+  'ist.networking.ingress.disabled': '请先创建实例的关联网络',
+  'ist.networking.create.service': '创建实例"{istName}"的关联网络',
+  'ist.networking.create.ingress': '创建实例"{istName}"的关联域名',
+  'ist.networking.edit.ingress': '修改实例"{istName}"的关联域名"{name}"',
 
   // network
   network_delete: '网络删除中，请耐心等待',

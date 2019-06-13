@@ -487,7 +487,6 @@ class BranchCreate extends Component {
                 ],
               })(
                 <Input
-                  autoFocus
                   maxLength={50}
                   label={<FormattedMessage id="branch.name" />}
                   prefix={`${

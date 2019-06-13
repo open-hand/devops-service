@@ -84,7 +84,7 @@ export default class DetailCard extends PureComponent {
 
         if (instanceName) {
           if ((instanceStatus && instanceStatus === INSTANCE_DELETE_STATUS) || !envPermission) {
-            instanceNode = <StatusIcon name={instanceName} status={instanceStatus} width='120px' />
+            instanceNode = <StatusIcon name={instanceName} status={instanceStatus} width='110px' />
           } else {
             instanceNode = <Link
               to={{
@@ -99,7 +99,7 @@ export default class DetailCard extends PureComponent {
                 },
               }}
             >
-              <StatusIcon name={instanceName} status={instanceStatus} width='120px' />
+              <StatusIcon name={instanceName} status={instanceStatus} width='110px' />
             </Link>;
           }
         } else {

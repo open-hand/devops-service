@@ -19,7 +19,17 @@ class InstancesStore {
 
   @observable value = null;
 
+  @observable networking = [];
+
+  @observable networkingLoading = false;
+
   @observable pageInfo = {
+    current: 1,
+    total: 0,
+    pageSize: height <= 900 ? 10 : 15,
+  };
+
+  @observable networkingPageInfo = {
     current: 1,
     total: 0,
     pageSize: height <= 900 ? 10 : 15,
@@ -115,6 +125,18 @@ class InstancesStore {
     return this.pageInfo;
   }
 
+  @action setNetworkingPageInfo(page) {
+    this.networkingPageInfo = {
+      current: page.number + 1,
+      total: page.totalElements,
+      pageSize: page.size,
+    };
+  }
+
+  @computed get getNetworkingPageInfo() {
+    return this.networkingPageInfo;
+  }
+
   @action setIstPage(page) {
     if (page) {
       this.istPage = page;
@@ -152,6 +174,22 @@ class InstancesStore {
 
   @computed get getIsLoading() {
     return this.isLoading;
+  }
+
+  @action changeNetworkingLoading(flag) {
+    this.networkingLoading = flag;
+  }
+
+  @computed get getNetworkingLoading() {
+    return this.networkingLoading;
+  }
+
+  @action setNetworking(data) {
+    this.networking = data;
+  }
+
+  @computed get getNetworking() {
+    return this.networking.slice();
   }
 
   /**
@@ -343,6 +381,22 @@ class InstancesStore {
         }
         return data;
       });
+
+  loadNetworking = (projectId, instanceId, page = 0, pageSize = (height <= 900 ? 10 : 15)) => {
+    this.changeNetworkingLoading(true);
+    return axios
+      .post(`/devops/v1/projects/${projectId}/service/${instanceId}/listByInstance?page=${page}&size=${pageSize}`)
+      .then(data => {
+        const res = handleProptError(data);
+        if (res) {
+          const { content, number, totalElements, size } = res;
+          this.setNetworking(content);
+          this.setNetworkingPageInfo({ number, totalElements, size });
+        }
+        this.changeNetworkingLoading(false);
+        return data;
+      })
+  }
 }
 
 const instancesStore = new InstancesStore();
