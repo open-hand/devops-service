@@ -755,7 +755,6 @@ const zhCN = {
   'ist.networking.ingress.disabled': '请先创建实例的关联网络',
   'ist.networking.create.service': '创建实例"{istName}"的关联网络',
   'ist.networking.create.ingress': '创建实例"{istName}"的关联域名',
-  'ist.networking.edit.service': '修改实例"{istName}"的关联网络"{name}"',
   'ist.networking.edit.ingress': '修改实例"{istName}"的关联域名"{name}"',
 
   // network
