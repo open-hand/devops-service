@@ -156,10 +156,8 @@ export default class PipelineDetail extends Component {
         .then(data => {
           if (data && data.failed) {
             Choerodon.prompt(data.message);
-            this.loadingData();
-          } else {
-            this.closeModal();
           }
+          this.closeModal();
           this.setState({ submitting: false });
         })
         .catch(err => {

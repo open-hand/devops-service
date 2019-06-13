@@ -1026,7 +1026,6 @@ class Environment extends Component {
               >
                 {getFieldDecorator("description")(
                   <TextArea
-                    autoFocus
                     autosize={{
                       minRows: 2,
                     }}

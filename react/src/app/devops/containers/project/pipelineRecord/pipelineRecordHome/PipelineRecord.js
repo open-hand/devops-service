@@ -229,9 +229,19 @@ class PipelineRecord extends Component {
         key: 'action',
         align: 'right',
         render: (text, record) => {
-          const { status, type: checkType, id, pipelineName, stageName, stageRecordId, taskRecordId, pipelineId, index } = record;
+          const {
+            status,
+            type: checkType,
+            id,
+            pipelineName,
+            stageName,
+            stageRecordId,
+            taskRecordId,
+            pipelineId,
+            execute,
+          } = record;
           return (<div>
-              {index && status === 'failed' && (
+              {execute && status === 'failed' && (
                 <Permission
                   type={type}
                   projectId={projectId}
@@ -251,7 +261,7 @@ class PipelineRecord extends Component {
                   </Tooltip>
                 </Permission>
               )}
-              {index && status === 'pendingcheck' && (
+              {execute && status === 'pendingcheck' && (
                 <Permission
                   type={type}
                   projectId={projectId}

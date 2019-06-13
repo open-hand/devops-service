@@ -1,0 +1,47 @@
+.c7n-networking-wrap {
+
+  .c7n-networking-expandedRow {
+    font-size: 14px;
+    line-height: 20px;
+    padding: 16px 0;
+
+    .c7n-networking-expandedRow-detail {
+      margin-bottom: 16px;
+      display: flex;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .c7n-networking-ingress {
+        color: rgba(0, 0, 0, .65);
+
+        &-name {
+          width: 220px;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          overflow: hidden;
+          margin-right: 10px;
+        }
+      }
+    }
+  }
+
+  .mg-right {
+
+    &-20 {
+      margin-right: 20px;
+    }
+  }
+
+  .mg-top {
+
+    &-15 {
+      margin-top: 15px;
+    }
+  }
+}
+
+.c7n-ist-networking-modal {
+  width: 560px !important;
+}
