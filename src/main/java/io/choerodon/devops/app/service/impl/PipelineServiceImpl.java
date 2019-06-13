@@ -899,6 +899,9 @@ public class PipelineServiceImpl implements PipelineService {
         List<PipelineStageRecordDTO> recordDTOList = ConvertHelper.convertList(stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null), PipelineStageRecordDTO.class);
         for (int i = 0; i < recordDTOList.size(); i++) {
             PipelineStageRecordDTO stageRecordDTO = recordDTOList.get(i);
+            if (stageRecordDTO.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                recordDTOList.get(i).setExecutionTime(null);
+            }
             //获取触发人员
             if (stageRecordDTO.getTriggerType().equals(MANUAL)) {
                 //不是最后一个阶段
