@@ -899,7 +899,7 @@ public class PipelineServiceImpl implements PipelineService {
         List<PipelineStageRecordDTO> recordDTOList = ConvertHelper.convertList(stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null), PipelineStageRecordDTO.class);
         for (int i = 0; i < recordDTOList.size(); i++) {
             PipelineStageRecordDTO stageRecordDTO = recordDTOList.get(i);
-            if (!stageRecordDTO.getStatus().equals(WorkFlowStatus.SUCCESS.toValue())) {
+            if (stageRecordDTO.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue()) || stageRecordDTO.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                 recordDTOList.get(i).setExecutionTime(null);
             }
             //获取触发人员
@@ -1104,6 +1104,8 @@ public class PipelineServiceImpl implements PipelineService {
                     PipelineTaskRecordE taskRecordE = optional.get();
                     taskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
                     taskRecordRepository.createOrUpdate(taskRecordE);
+                    stageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis() - TypeUtil.objToLong(stageRecordE.getExecutionTime())));
+                    stageRecordRepository.createOrUpdate(stageRecordE);
                 }
                 break;
             }
