@@ -920,12 +920,12 @@ public class PipelineServiceImpl implements PipelineService {
                         userDTOS.add(userDTO);
                     });
                     stageRecordDTO.setUserDTOS(userDTOS);
-                }
-                if (recordDTOList.get(i).getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
-                    recordReqDTO.setType(STAGE);
-                    recordReqDTO.setStageRecordId(recordDTOList.get(i + 1).getId());
-                    recordReqDTO.setStageName(stageRecordDTO.getStageName());
-                    recordReqDTO.setExecute(checkRecordTriggerPermission(null, stageRecordDTO.getId()));
+                    if (recordDTOList.get(i).getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
+                        recordReqDTO.setType(STAGE);
+                        recordReqDTO.setStageRecordId(recordDTOList.get(i + 1).getId());
+                        recordReqDTO.setStageName(stageRecordDTO.getStageName());
+                        recordReqDTO.setExecute(checkRecordTriggerPermission(null, stageRecordDTO.getId()));
+                    }
                 }
             }
 
@@ -1099,13 +1099,13 @@ public class PipelineServiceImpl implements PipelineService {
         for (PipelineStageRecordE stageRecordE : stageRecordES) {
             if (stageRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()) || stageRecordE.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                 updateStatus(recordId, stageRecordE.getId(), WorkFlowStatus.FAILED.toValue(), "Force failure");
+                stageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis() - TypeUtil.objToLong(stageRecordE.getExecutionTime())));
+                stageRecordRepository.createOrUpdate(stageRecordE);
                 Optional<PipelineTaskRecordE> optional = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null).stream().filter(t -> t.getStatus().equals(WorkFlowStatus.RUNNING.toValue())).findFirst();
                 if (optional.isPresent()) {
                     PipelineTaskRecordE taskRecordE = optional.get();
                     taskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
                     taskRecordRepository.createOrUpdate(taskRecordE);
-                    stageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis() - TypeUtil.objToLong(stageRecordE.getExecutionTime())));
-                    stageRecordRepository.createOrUpdate(stageRecordE);
                 }
                 break;
             }
@@ -1210,11 +1210,9 @@ public class PipelineServiceImpl implements PipelineService {
      * @param recordE
      */
     private void startNextStageRecord(Long stageRecordId, PipelineRecordE recordE) {
-        PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
-        stageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis()));
-        stageRecordRepository.createOrUpdate(stageRecordE);
-
         PipelineStageRecordE nextStageRecordE = getNextStage(stageRecordId);
+        nextStageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis()));
+        stageRecordRepository.createOrUpdate(nextStageRecordE);
         if (stageRecordRepository.queryById(stageRecordId).getTriggerType().equals(AUTO)) {
             if (!isEmptyStage(nextStageRecordE.getId())) {
                 nextStageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
