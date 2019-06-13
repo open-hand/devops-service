@@ -46,7 +46,7 @@ public interface PipelineService {
 
     PipelineCheckDeployDTO checkDeploy(Long projectId, Long pipelineId);
 
-    DevopsPipelineDTO setWorkFlowDTO(Long pipelineRecordId, Long pipelineId);
+    DevopsPipelineDTO setWorkFlowDTO(Long pipelineRecordId, Long pipelineId,String businessKey);
 
     String getAppDeployStatus(Long stageRecordId, Long taskId);
 
