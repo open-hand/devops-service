@@ -68,7 +68,7 @@ public interface PipelineService {
 
     CheckAuditDTO checkAudit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
 
-    void executeAppDeploy(Long pipelineId);
+    void executeAutoDeploy(Long pipelineId);
 
     void failed(Long projectId, Long recordId);
 

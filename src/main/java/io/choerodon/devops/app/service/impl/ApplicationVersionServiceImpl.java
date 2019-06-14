@@ -47,7 +47,6 @@ import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.PipelineCheckDeploy;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -225,7 +224,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                 pipelineList.forEach(pipelineId -> {
                     if (pipelineService.checkDeploy(null,pipelineId).getVersions()) {
                         LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertApplicationVersionE.getId(), insertApplicationVersionE.getVersion(), pipelineId);
-                        pipelineService.executeAppDeploy(pipelineId);
+                        pipelineService.executeAutoDeploy(pipelineId);
                     }
                 });
             }
