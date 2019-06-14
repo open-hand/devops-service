@@ -136,10 +136,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
 
     @Override
-    public Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                                     Long envId, Long versionId, Long appId, String params) {
+    public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
+                                                                Long envId, Long versionId, Long appId, String params) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+
         Page<ApplicationInstanceE> applicationInstanceEPage = applicationInstanceRepository.listApplicationInstance(
                 projectId, pageRequest, envId, versionId, appId, params);
 
@@ -148,27 +149,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         Page<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
                 .convertPage(applicationInstanceEPage, ApplicationInstanceDTO.class);
-
-        return convertPageFromApplicationInstance(applicationInstanceDTOS);
+        return applicationInstanceDTOS;
     }
 
-    /**
-     * convert page from ApplicationInstance
-     *
-     * @param applicationInstanceDTOS the page that contains the instances
-     * @return the page converted
-     */
-    private Page<DevopsEnvPreviewInstanceDTO> convertPageFromApplicationInstance(Page<ApplicationInstanceDTO> applicationInstanceDTOS) {
-        Page<DevopsEnvPreviewInstanceDTO> previewInstanceDTOPage = new Page<>();
-        previewInstanceDTOPage.setContent(applicationInstanceDTOS.getContent().stream().map(this::fromInstanceToEnvPreview).collect(Collectors.toList()));
-        previewInstanceDTOPage.setNumber(applicationInstanceDTOS.getNumber());
-        previewInstanceDTOPage.setNumberOfElements(applicationInstanceDTOS.getNumberOfElements());
-        previewInstanceDTOPage.setSize(applicationInstanceDTOS.getSize());
-        previewInstanceDTOPage.setTotalElements(applicationInstanceDTOS.getTotalElements());
-        previewInstanceDTOPage.setTotalPages(applicationInstanceDTOS.getTotalPages());
 
-        return previewInstanceDTOPage;
-    }
 
     @Override
     public List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId) {
@@ -559,6 +543,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
+    public ReplaceResult queryDeployValue(Long instanceId) {
+        ReplaceResult replaceResult = new ReplaceResult();
+        String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(
+                instanceId));
+        replaceResult.setYaml(yaml);
+        return replaceResult;
+    }
+
+    @Override
     public List<ErrorLineDTO> formatValue(ReplaceResult replaceResult) {
         try {
             FileUtil.checkYamlFormat(replaceResult.getYaml());
@@ -614,11 +607,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     .convertList(value, ApplicationInstanceDTO.class);
 
             // set instances
-            devopsEnvPreviewAppDTO.setApplicationInstanceDTOS(
-                    applicationInstanceDTOS.stream()
-                            .map(this::fromInstanceToEnvPreview)
-                            .collect(Collectors.toList())
-            );
+            devopsEnvPreviewAppDTO.setApplicationInstanceDTOS(applicationInstanceDTOS);
 
             devopsEnvPreviewAppDTOS.add(devopsEnvPreviewAppDTO);
         });
@@ -820,6 +809,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             objectOperation.setType(getC7NHelmRelease(
                     code, applicationVersionE, applicationDeployDTO, applicationE, secretCode));
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+
             objectOperation.operationEnvGitlabFile(
                     RELEASE_PREFIX + code,
                     projectId,

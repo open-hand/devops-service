@@ -84,7 +84,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
         certificationE.setOrganizationId(organizationId);
         certificationE.setSkipCheckProjectPermission(orgCertificationDTO.getSkipCheckProjectPermission());
         certificationE.setDomains(Arrays.asList(orgCertificationDTO.getDomain()));
-        certificationE.setCertificationFileId(certificationRepository.storeCertFile(new CertificationFileDO(orgCertificationDTO.getKeyValue(), orgCertificationDTO.getCertValue())));
+        certificationE.setCertificationFileId(certificationRepository.storeCertFile(new CertificationFileDO(orgCertificationDTO.getCertValue(), orgCertificationDTO.getKeyValue())));
         certificationE = certificationRepository.create(certificationE);
         if (!orgCertificationDTO.getSkipCheckProjectPermission() && orgCertificationDTO.getProjects() != null) {
             for (Long projectId : orgCertificationDTO.getProjects()) {

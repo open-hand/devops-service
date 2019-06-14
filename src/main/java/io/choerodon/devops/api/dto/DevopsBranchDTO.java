@@ -2,6 +2,8 @@ package io.choerodon.devops.api.dto;
 
 import java.util.List;
 
+import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
+
 public class DevopsBranchDTO {
 
     private Long appId;
@@ -9,7 +11,7 @@ public class DevopsBranchDTO {
     private String originBranch;
     private Long issueId;
     private String branchName;
-    private List<CommitDTO> commits;
+    private List<DevopsGitlabCommitE> commits;
     private List<CustomMergeRequestDTO> mergeRequests;
 
     public String getOriginBranch() {
@@ -52,11 +54,11 @@ public class DevopsBranchDTO {
         this.appName = appName;
     }
 
-    public List<CommitDTO> getCommits() {
+    public List<DevopsGitlabCommitE> getCommits() {
         return commits;
     }
 
-    public void setCommits(List<CommitDTO> commits) {
+    public void setCommits(List<DevopsGitlabCommitE> commits) {
         this.commits = commits;
     }
 

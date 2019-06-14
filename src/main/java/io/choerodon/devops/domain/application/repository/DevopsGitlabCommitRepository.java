@@ -24,4 +24,6 @@ public interface DevopsGitlabCommitRepository {
 
     void update(DevopsGitlabCommitE devopsGitlabCommitE);
 
+    List<DevopsGitlabCommitE> queryByAppIdAndBranch(Long appId, String branch, Date startDate);
+
 }
