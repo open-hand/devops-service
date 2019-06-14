@@ -313,8 +313,8 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "type", required = true)
             @RequestParam String type,
-            @ApiParam(value = "环境ID")
-            @RequestParam Long instanceId,
+            @ApiParam(value = "实例ID")
+            @RequestParam(required = false) Long instanceId,
             @ApiParam(value = "版本ID")
             @RequestParam Long appVersionId) {
         return Optional.ofNullable(applicationInstanceService.queryValues(type, instanceId, appVersionId))
