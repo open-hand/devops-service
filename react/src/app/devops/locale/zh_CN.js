@@ -15,6 +15,7 @@ const commonField = {
   add: '添加',
   edit: '修改',
   save: '保存',
+  loadMore: '展开更多',
 
   // 通用描述
   app: '应用',
@@ -33,7 +34,7 @@ const deleteConfirmMessages = {
   'configMap.delete': '删除配置映射',
   'ingress.delete': '删除域名',
   'service.delete': '删除网络',
-  'certificate.delete': '删除实例',
+  'certificate.delete': '删除证书',
 
   captcha: '验证码',
   'captcha.send': '发送验证码',
@@ -647,7 +648,6 @@ const zhCN = {
   'ist.lastVer': '最新版本',
   'ist.noChoose': '请先选择应用和环境',
   'ist.noUpVer': '暂无可升级版本',
-  'ist.more': '展开更多',
   'ist.yamlErr': '请先修改yaml格式错误',
   'ist.stopDes': '确定停用该实例吗？',
   'ist.startDes': '确定重启该实例吗？',
@@ -847,31 +847,32 @@ const zhCN = {
   'deploy.cNumber': '容器数量',
   'deploy.header.title': '应用部署',
   'deploy.step.one.title': '选择应用及版本',
+  'deploy.step.two.title': '选择环境与部署模式',
+  'deploy.step.three.title': '选择部署配置',
+  'deploy.step.four.title': '确认信息',
   'deploy.step.one.description':
     '您可以点击“打开应用列表”，选择本项目的应用或来自应用市场的应用，再在此界面选择需要部署的版本。',
+  'deploy.step.two.description':
+    '平台支持两种部署模式：新建实例和替换实例。新建实例是部署生成新的实例；替换实例是等待新部署生成的副本集通过健康检查后再删除原副本集，但实例不变，只替换其相关参数。同时，您可以在下方自定义该实例的名称，或者直接使用默认名称。',
+  'deploy.step.three.description': '请在此选择需要部署的环境并修改相关配置信息，平台默认会引用该应用上次在该环境部署的信息。',
   'deploy.app.add': '打开应用列表',
   'deploy.step.one.app': '选择应用',
+  'deploy.step.one.app.must': '请先选择应用',
   'deploy.step.one.version.title': '选择版本',
   'deploy.step.one.version': '应用版本',
-  'deploy.step.two.title': '选择环境及修改配置信息',
-  'deploy.step.two.description':
-    '请在此选择需要部署的环境并修改相关配置信息，无权限或未连接的环境不可选。平台默认会引用该应用上次在该环境部署的信息。',
-  'deploy.step.two.description_1':
+  'deploy.step.config': '配置信息',
+  'deploy.step.config.template': '选择配置模版',
+  'deploy.step.config.description':
     '该配置信息里的固有字段不可删除，仅允许在此基础上进行修改或新增！',
   'deploy.step.two.env.title': '选择环境',
   'deploy.step.two.env': '环境',
-  'deploy.step.two.config': '配置信息',
-  'deploy.step.three.title': '选择部署模式',
-  'deploy.step.three.description':
-    '平台支持两种部署模式：新建实例和替换实例。新建实例是部署生成新的实例；替换实例是等待新部署生成的副本集通过健康检查后再删除原副本集，但实例不变，只替换其相关参数。当您新建实例时，可以在下方自定义该实例的名称，或者直接使用默认名称；替换实例时则无法更改名称。',
-  'deploy.step.three.mode.title': '选择部署模式',
-  'deploy.step.three.ist.title': '编辑实例名称',
-  'deploy.step.three.mode': '部署模式',
-  'deploy.step.three.mode.create': '新建实例',
-  'deploy.step.three.mode.update': '替换实例',
-  'deploy.step.three.mode.replace.label': '选择要替换的实例',
-  'deploy.step.three.mode.help': '替换实例会更新该实例的镜像及配置信息',
-  'deploy.step.four.title': '确认信息及部署',
+  'deploy.step.mode.title': '选择部署模式',
+  'deploy.step.ist.title': '编辑实例名称',
+  'deploy.step.mode': '部署模式',
+  'deploy.step.mode.create': '新建实例',
+  'deploy.step.mode.update': '替换实例',
+  'deploy.step.mode.replace.label': '选择要替换的实例',
+  'deploy.step.mode.help': '替换实例会更新该实例的镜像及配置信息',
   'deploy.step.four.app': '应用名称',
   'deploy.step.four.version': '应用版本',
   'deploy.btn.deploy': '部署',
@@ -881,6 +882,7 @@ const zhCN = {
   'deploy.ver.tip': '实例中对应的应用版本',
   'deploy.ist.event': '实例事件',
   'deploy.ist.event.empty': '暂无实例事件',
+  'deploy.appOrVersion.empty': '请返回第一步，选择应用和版本。',
 
   // envPipeline
   'envPl.head': '环境管理',

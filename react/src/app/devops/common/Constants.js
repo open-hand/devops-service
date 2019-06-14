@@ -3,12 +3,6 @@ const SORTER_MAP = {
   descend: 'desc',
 };
 
-function getWindowHeight() {
-  return window.innerHeight ||
-    document.documentElement.clientHeight ||
-    document.body.clientHeight;
-}
-
 const HEIGHT = window.innerHeight ||
   document.documentElement.clientHeight ||
   document.body.clientHeight;
@@ -16,5 +10,4 @@ const HEIGHT = window.innerHeight ||
 export {
   SORTER_MAP,
   HEIGHT,
-  getWindowHeight,
 };

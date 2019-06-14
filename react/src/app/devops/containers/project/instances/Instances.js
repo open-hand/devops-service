@@ -721,7 +721,7 @@ class Instances extends Component {
         </div>
         <div>{appNameDom}</div>
         {getAppNameByEnv.length && total > 15 ? (
-          <div className="c7n-store-pagination">
+          <div className="c7n-pagination_right">
             <Pagination
               tiny={false}
               showSizeChanger

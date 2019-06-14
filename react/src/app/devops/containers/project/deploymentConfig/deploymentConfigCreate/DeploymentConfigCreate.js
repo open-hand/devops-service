@@ -424,7 +424,7 @@ class DeploymentConfigCreate extends Component {
                 )}
               </FormItem>
               <div className="c7n-deploymentConfig-value">
-                <FormattedMessage id="deploy.step.two.config" />
+                <FormattedMessage id="deploy.step.config" />
               </div>
               {loading ? <Spin /> : this.getYaml()}
             </Form>

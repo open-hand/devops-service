@@ -1,8 +1,8 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import _ from 'lodash';
-import { handleProptError } from '../../../utils';
-import { SORTER_MAP, getWindowHeight } from '../../../common/Constants';
+import { handleProptError, getWindowHeight } from '../../../utils';
+import { SORTER_MAP } from '../../../common/Constants';
 
 const HEIGHT = getWindowHeight();
 

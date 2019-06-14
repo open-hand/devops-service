@@ -412,7 +412,7 @@ class BranchCreate extends Component {
                           onClick={this.changeSize.bind(this, "branch")}
                           className="c7n-option-popover c7n-dom-more"
                         >
-                          {intl.formatMessage({ id: "ist.more" })}
+                          {intl.formatMessage({ id: "loadMore" })}
                         </div>
                       </Option>
                     ) : null}
@@ -435,7 +435,7 @@ class BranchCreate extends Component {
                           onClick={this.changeSize.bind(this, "tag")}
                           className="c7n-option-popover c7n-dom-more"
                         >
-                          {intl.formatMessage({ id: "ist.more" })}
+                          {intl.formatMessage({ id: "loadMore" })}
                         </div>
                       </Option>
                     ) : null}

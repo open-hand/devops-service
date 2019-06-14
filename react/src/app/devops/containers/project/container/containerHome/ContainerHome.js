@@ -694,7 +694,7 @@ class ContainerHome extends Component {
                       className="c7ncd-more-btn"
                       onClick={this.appDomMore.bind(this, 'pro')}
                     >
-                      {formatMessage({ id: 'ist.more' })}
+                      {formatMessage({ id: 'loadMore' })}
                     </Button>
                   </Option>
                 )}
@@ -711,7 +711,7 @@ class ContainerHome extends Component {
                       className="c7ncd-more-btn"
                       onClick={this.appDomMore.bind(this, 'pub')}
                     >
-                      {formatMessage({ id: 'ist.more' })}
+                      {formatMessage({ id: 'loadMore' })}
                     </Button>
                   </Option>
                 )}

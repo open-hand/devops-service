@@ -212,7 +212,7 @@ class AppTagCreate extends Component {
                         role="none"
                         onClick={this.changeSize}
                         className="c7n-option-popover c7n-dom-more"
-                      >{formatMessage({ id: 'ist.more' })}</div>
+                      >{formatMessage({ id: 'loadMore' })}</div>
                     </Option> : null }
                   </OptGroup>
                 </Select>
