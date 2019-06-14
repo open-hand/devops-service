@@ -212,7 +212,7 @@
   }
 
   .c7n-envow-ist-name {
-    width: 50%;
+    width: 35%;
     border-left: 1px solid rgba(0, 0, 0, 0.12);
     padding-left: 22px;
     line-height: 30px;
@@ -220,7 +220,7 @@
 
   .c7n-envow-ist-version {
     line-height: 30px;
-    width: 35%;
+    width: 30%;
 
     .c7n-envow-version-text {
       display: inline-block;
@@ -231,6 +231,11 @@
   .c7n-envow-ist-action {
     margin-left: auto;
     padding-top: 4px;
+  }
+
+  .c7n-appow-networking {
+    width: 23%;
+    line-height: 30px;
   }
 }
 

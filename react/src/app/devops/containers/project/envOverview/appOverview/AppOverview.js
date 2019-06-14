@@ -12,6 +12,7 @@ import {
   Tooltip,
   Modal,
   Progress,
+  Button,
 } from 'choerodon-ui';
 import { Action } from '@choerodon/boot';
 import _ from 'lodash';
@@ -29,6 +30,7 @@ import ExpandRow from '../../instances/components/ExpandRow';
 import UploadIcon from '../../instances/components/UploadIcon';
 import PodStatus from '../../instances/components/PodStatus/PodStatus';
 import DeleteModal from '../../../../components/deleteModal';
+import Networking from '../../instances/components/NetWorking';
 import { handleProptError } from '../../../../utils';
 
 import '../EnvOverview.scss';
@@ -187,11 +189,13 @@ export default class AppOverview extends Component {
   };
 
   getPanelHeader(data) {
-    const { intl } = this.props;
+    const { intl: { formatMessage } } = this.props;
     const {
       status,
       code,
       error,
+      serviceCount,
+      ingressCount,
     } = data;
 
     let nameNode = null;
@@ -203,7 +207,7 @@ export default class AppOverview extends Component {
       case 'operating':
         nameNode = <div>
           <span className="c7n-deploy-istCode">{code}</span>
-          <Tooltip title={intl.formatMessage({ id: `ist_${status}` })}>
+          <Tooltip title={formatMessage({ id: `ist_${status}` })}>
             <Progress
               type="loading"
               size="small"
@@ -232,9 +236,24 @@ export default class AppOverview extends Component {
             <FormattedMessage id="app.appVersion" />
             :&nbsp;&nbsp;
           </span>
-
           <UploadIcon dataSource={data} />
         </span>
+        <div className='c7n-appow-networking' onClick={this.handlerAction}>
+          <span className="c7n-envow-version-text">
+            Networking:&nbsp;&nbsp;
+          </span>
+          <FormattedMessage
+            id='ist.networking.info'
+            values={{ serviceCount, ingressCount }}
+          />
+          <Tooltip title={formatMessage({ id: 'ist.networking.header' })}>
+            <Button
+              icon='open_in_new'
+              shape='circle'
+              onClick={this.openConfirm.bind(this, data, 'networking')}
+            />
+          </Tooltip>
+        </div>
         <div className="c7n-appow-pod-status">
           <PodStatus dataSource={data} />
         </div>
@@ -346,10 +365,11 @@ export default class AppOverview extends Component {
    */
   @action
   openConfirm = (record, type) => {
-    const { id, code } = record;
+    const { id, code, appId } = record;
     this.confirmType = type;
     this.id = id;
     this.istName = code;
+    this.appId = appId;
   };
 
   /**
@@ -835,6 +855,16 @@ export default class AppOverview extends Component {
                 istId={this.istId}
                 store={NetworkConfigStore}
                 onClose={this.closeNetwork}
+              />
+            )}
+            {this.confirmType === 'networking' && (
+              <Networking
+                id={this.id}
+                appId={this.appId}
+                name={this.istName}
+                show={this.confirmType === 'networking'}
+                store={InstancesStore}
+                onClose={this.closeConfirm}
               />
             )}
           </React.Fragment>

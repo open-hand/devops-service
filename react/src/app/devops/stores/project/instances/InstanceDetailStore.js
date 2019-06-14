@@ -98,7 +98,7 @@ class InstanceDetailStore {
 
   getInstanceValue = (projectId, id) =>
     axios
-      .get(`/devops/v1/projects/${projectId}/app_instances/${id}/value`)
+      .get(`/devops/v1/projects/${projectId}/app_instances/${id}/deployValue`)
       .then(stage => {
         const res = handleProptError(stage);
         if (res) {

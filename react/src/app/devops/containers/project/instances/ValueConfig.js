@@ -119,12 +119,12 @@ class ValueConfig extends Component {
     const { id, name: configName, yaml, objectVersionNumber } = getValue || {};
     const sideDom = (
       <Content code="ist.edit" values={{ name }} className="sidebar-content">
-        {id && configName && (
-          <div className="c7n-deploy-configValue-text">
-            <span>{formatMessage({ id: 'deployConfig' })}：</span>
-            <span className="c7n-deploy-configValue-name">{configName}</span>
-          </div>
-        )}
+        <div className="c7n-deploy-configValue-text">
+          <span>{formatMessage({ id: 'deployConfig' })}：</span>
+          <span className="c7n-deploy-configValue-name">
+            {configName || formatMessage({ id: 'deploymentConfig.no.configValue'})}
+          </span>
+        </div>
         <YamlEditor
           readOnly={false}
           value={yaml}

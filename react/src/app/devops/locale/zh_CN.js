@@ -1684,6 +1684,7 @@ const zhCN = {
   'deploymentConfig.des': '部署配置描述',
   'deployment.delete.unable': '仅能删除没有关联任务的部署配置',
   'task.name.check.failed': '名称不能包含空格',
+  'deploymentConfig.no.configValue': '未使用部署配置',
   'deploymentConfig.cover.title': '覆盖至部署配置',
   'deploymentConfig.cover.des':
     '是否将此次修改覆盖至部署配置？覆盖后，您在下次部署过程中，选中该部署配置时，便能使用到此次修改的最新配置信息。',

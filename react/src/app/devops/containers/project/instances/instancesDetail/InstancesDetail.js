@@ -114,7 +114,7 @@ class InstancesDetail extends Component {
         className="c7n-region c7n-deployDetail-wrapper"
         service={[
           'devops-service.application-instance.listEvents',
-          'devops-service.application-instance.queryValues',
+          'devops-service.application-instance.queryDeployValue',
           'devops-service.application-instance.listResources',
           'devops-service.application-instance.listCommandLogs',
         ]}
