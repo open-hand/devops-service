@@ -77,7 +77,6 @@ $WIDTH512: 512px;
 
 .c7n-text-title-4 {
   color: #000;
-  //font-family: "roboto";
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.01em;
@@ -89,7 +88,7 @@ $WIDTH512: 512px;
 .c7n-text-title-5,
 .c7n-text-body-large {
   color: #000;
-  //font-family: "roboto";
+
   font-size: 15px;
   font-weight: 400;
   letter-spacing: 0.01em;
@@ -490,6 +489,10 @@ input::-webkit-contacts-auto-fill-button {
         }
       }
 
+      .c7ncd-step-indent {
+        padding-left: 30px;
+      }
+
       .c7ncd-step-item-indent {
         display: flex;
         flex-wrap: wrap;
@@ -624,7 +627,7 @@ input::-webkit-contacts-auto-fill-button {
 .c7n-expand-table {
 
   .c7n-table-tbody {
-    &>tr {
+    & > tr {
       &.c7n-table-expanded-row {
         background: #fff;
 
@@ -635,7 +638,7 @@ input::-webkit-contacts-auto-fill-button {
 
       &.c7n-table-expanded-row-level-1 {
         &:hover {
-          &>td {
+          & > td {
             background: transparent;
           }
         }
@@ -667,4 +670,8 @@ input::-webkit-contacts-auto-fill-button {
       }
     }
   }
+}
+
+.c7n-pagination_right {
+  float: right;
 }

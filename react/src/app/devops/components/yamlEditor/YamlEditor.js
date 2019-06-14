@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { Icon } from 'choerodon-ui';
 import JsYaml from 'js-yaml';
 import YAML from 'yamljs';
+import classnames from 'classnames';
 import 'codemirror/addon/merge/merge.css';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/lint/lint.css';
@@ -89,7 +90,7 @@ class YamlEditor extends Component {
       theme: 'chd',
       mode: 'text/chd-yaml',
       readOnly: props.readOnly,
-      lineNumbers: true,
+      lineNumbers: !props.readOnly,
       lineWrapping: true,
       viewportMargin: Infinity,
       lint: !props.readOnly,
@@ -149,12 +150,18 @@ class YamlEditor extends Component {
       originValue,
       value,
       modeChange,
+      readOnly,
     } = this.props;
     const { errorTip, yamlValue } = this.state;
 
+    const wrapClass = classnames({
+      'c7ncd-yaml-wrapper': true,
+      'c7ncd-yaml-readonly': readOnly,
+    });
+
     return (
       <Fragment>
-        <div className="c7ncd-yaml-wrapper">
+        <div className={wrapClass}>
           <CodeMirror
             modeChange={modeChange}
             options={this.options}

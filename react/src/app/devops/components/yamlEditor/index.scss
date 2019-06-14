@@ -25,3 +25,9 @@
 .CodeMirror-lint-tooltip {
   z-index: 1000 !important;
 }
+
+.c7ncd-yaml-readonly {
+  .CodeMirror-code {
+    padding-left: 30px;
+  }
+}

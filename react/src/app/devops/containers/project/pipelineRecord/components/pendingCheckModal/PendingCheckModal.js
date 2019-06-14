@@ -32,7 +32,7 @@ export default class PendingCheckModal extends Component {
         checkType,
         stageRecordId,
         taskRecordId,
-      }
+      },
     } = this.props;
     const data = {
       pipelineRecordId: id,
@@ -42,7 +42,7 @@ export default class PendingCheckModal extends Component {
       taskRecordId,
     };
     PipelineRecordStore.canCheck(projectId, data)
-      .then(data =>{
+      .then(data => {
         if (data) {
           if (data.failed) {
             Choerodon.prompt(data.message);
@@ -51,8 +51,8 @@ export default class PendingCheckModal extends Component {
             this.setState({
               show: true,
               canCheck: false,
-              checkTips: formatMessage({ id: `pipeline.canCheck.tips.${data.isCountersigned}`}, {userName: data.userName}),
-            })
+              checkTips: formatMessage({ id: `pipeline.canCheck.tips.${data.isCountersigned}` }, { userName: data.userName }),
+            });
           } else {
             // 预检通过，返回数据：{ isCountersigned: null, userName: null }
             this.setState({
@@ -96,19 +96,22 @@ export default class PendingCheckModal extends Component {
         if (data) {
           if (data.failed) {
             Choerodon.prompt(data.message);
-          } else if (data.length){
+          } else if (data.length) {
             //会签，非最后一人审核，返回数据：[{ audit: true 已审核 | false 未审核, loginName: "工号", realName: "姓名"}]
             const users = {
               check: [],
               unCheck: [],
             };
             _.forEach(data, ({ audit, loginName, realName }) => {
-              users[audit ? "check" : "unCheck"].push(`${loginName} ${realName}`);
+              users[audit ? 'check' : 'unCheck'].push(`${loginName} ${realName}`);
             });
             this.setState({
               canCheck: false,
-              checkTips: formatMessage({ id: "pipeline.check.tips.text"}, {checkUsers: users["check"].join("，"), unCheckUsers: users["unCheck"].join("，")}),
-            })
+              checkTips: formatMessage({ id: 'pipeline.check.tips.text' }, {
+                checkUsers: users['check'].join('，'),
+                unCheckUsers: users['unCheck'].join('，'),
+              }),
+            });
           } else {
             // 或签、会签最后一人，返回数据[]
             this.handClose(true);
@@ -128,7 +131,6 @@ export default class PendingCheckModal extends Component {
     this.setState({ show: false, canCheck: false, checkTips: null });
   };
 
-
   render() {
     const {
       intl: { formatMessage },
@@ -136,7 +138,7 @@ export default class PendingCheckModal extends Component {
       checkData: {
         checkType,
         stageName,
-      }
+      },
     } = this.props;
     const {
       stopLoading,
@@ -196,7 +198,7 @@ export default class PendingCheckModal extends Component {
           }
         </div>
       </Modal>
-    )
+    );
   }
 }
 

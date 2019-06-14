@@ -5,7 +5,7 @@ import {
 } from 'react-router-dom';
 import { asyncRouter, nomatch } from '@choerodon/boot';
 
-const DeploymentApp = asyncRouter(() => import('./deploymentAppHome'), () => import('../../../stores/project/deploymentApp'));
+const DeploymentApp = asyncRouter(() => import('./deploymentAppHome'), () => import('../../../stores/project/deployApp'));
 
 const DeploymentAppIndex = ({ match }) => (
   <Switch>

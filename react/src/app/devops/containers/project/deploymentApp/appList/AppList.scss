@@ -1,7 +1,4 @@
 .c7n-deployApp-sidebar {
-  button {
-    margin: 0 1px;
-  }
 
   .c7n-store-search {
     margin-bottom: 24px;
@@ -118,9 +115,6 @@
       width: 25px;
       height: 25px;
       border-radius: 50%;
-      display: -webkit-box;
-      display: -webkit-flex;
-      display: -ms-flexbox;
       display: flex;
 
       .icon {
@@ -139,21 +133,7 @@
     background: rgba(140, 158, 255, 0.2);
   }
 
-  .icon-select {
-    vertical-align: middle;
-    font-size: 18px;
-    color: #3f51b5;
-  }
-
   .c7n-deploy-tabpane {
     padding: 5px;
-  }
-
-  .c7n-store-pagination {
-    float: right;
-  }
-
-  .col-check {
-    height: 32px;
   }
 }

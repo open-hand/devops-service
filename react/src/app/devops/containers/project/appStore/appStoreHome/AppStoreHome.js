@@ -328,7 +328,7 @@ class AppStoreHome extends Component {
             : (<div className="c7n-store-list-wrap">
               {getListActive === 'card' ? appCardsDom : appListDom}
             </div>)}
-          <div className="c7n-store-pagination">
+          <div className="c7n-pagination_right">
             <Pagination
               total={total}
               current={current}

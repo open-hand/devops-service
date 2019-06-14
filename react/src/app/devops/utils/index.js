@@ -269,6 +269,12 @@ function findAllIndex(collection, value) {
   return allIndex;
 }
 
+function getWindowHeight() {
+  return window.innerHeight ||
+    document.documentElement.clientHeight ||
+    document.body.clientHeight;
+}
+
 export {
   handleProptError,
   padZero,
@@ -285,4 +291,5 @@ export {
   handleCheckerProptError,
   timeConvert,
   findAllIndex,
+  getWindowHeight,
 };
