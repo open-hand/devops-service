@@ -9,6 +9,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
 import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
+import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.dataobject.PipelineTaskRecordDO;
 import io.choerodon.devops.infra.mapper.PipelineTaskRecordMapper;
 
@@ -56,5 +57,13 @@ public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepos
     @Override
     public List<PipelineTaskRecordE> queryAllAutoTaskRecord(Long pipelineRecordId) {
         return ConvertHelper.convertList(taskRecordMapper.queryAllAutoTaskRecord(pipelineRecordId), PipelineTaskRecordE.class);
+    }
+
+    @Override
+    public PipelineTaskRecordE queryPendingCheckTask(Long stageRecordId) {
+        PipelineTaskRecordDO taskRecordDO = new PipelineTaskRecordDO();
+        taskRecordDO.setStageRecordId(stageRecordId);
+        taskRecordDO.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
+        return ConvertHelper.convert(taskRecordMapper.selectOne(taskRecordDO), PipelineTaskRecordE.class);
     }
 }

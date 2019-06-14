@@ -40,7 +40,7 @@ public class PipelineStageRecordRepositoryImpl implements PipelineStageRecordRep
                 throw new CommonException("error.update.pipeline.stage.record");
             }
         }
-        return ConvertHelper.convert(stageRecordMapper.selectByPrimaryKey(stageRecordDO), PipelineStageRecordE.class);
+        return ConvertHelper.convert(stageRecordDO, PipelineStageRecordE.class);
     }
 
     @Override

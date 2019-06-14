@@ -46,7 +46,7 @@ public interface PipelineService {
 
     PipelineCheckDeployDTO checkDeploy(Long projectId, Long pipelineId);
 
-    DevopsPipelineDTO setWorkFlowDTO(Long pipelineRecordId, Long pipelineId,String businessKey);
+    DevopsPipelineDTO createWorkFlowDTO(Long pipelineRecordId, Long pipelineId, String businessKey);
 
     String getAppDeployStatus(Long stageRecordId, Long taskId);
 
@@ -68,7 +68,7 @@ public interface PipelineService {
 
     CheckAuditDTO checkAudit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
 
-    void executeAppDeploy(Long pipelineId);
+    void executeAutoDeploy(Long pipelineId);
 
     void failed(Long projectId, Long recordId);
 

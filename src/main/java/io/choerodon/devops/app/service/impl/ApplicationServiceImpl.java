@@ -341,11 +341,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-
-
         initApplicationParams(projectE, organization, applicationES.getContent(), urlSlash);
-
-
         Page<ApplicationRepDTO> resultDTOPage = ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
         resultDTOPage.setContent(setApplicationRepDTOPermission(applicationES.getContent(), userAttrE, projectE));
         return resultDTOPage;

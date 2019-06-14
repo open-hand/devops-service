@@ -19,4 +19,6 @@ public interface PipelineTaskRecordRepository {
     void delete(Long recordId);
 
     List<PipelineTaskRecordE> queryAllAutoTaskRecord(Long pipelineRecordId);
+
+    PipelineTaskRecordE queryPendingCheckTask(Long stageRecordId);
 }
