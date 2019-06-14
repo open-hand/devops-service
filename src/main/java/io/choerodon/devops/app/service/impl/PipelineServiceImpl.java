@@ -831,7 +831,8 @@ public class PipelineServiceImpl implements PipelineService {
         List<PipelineStageRecordE> stageRecordES = stageRecordRepository.queryByPipeRecordId(recordId, null);
         for (PipelineStageRecordE stageRecordE : stageRecordES) {
             if (stageRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()) || stageRecordE.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
-                updateStatus(recordId, stageRecordE.getId(), WorkFlowStatus.FAILED.toValue(), "Force failure");
+                updateStatus(recordId, null, WorkFlowStatus.FAILED.toValue(), "Force failure");
+                stageRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
                 stageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis() - TypeUtil.objToLong(stageRecordE.getExecutionTime())));
                 stageRecordRepository.createOrUpdate(stageRecordE);
                 Optional<PipelineTaskRecordE> optional = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null).stream().filter(t -> t.getStatus().equals(WorkFlowStatus.RUNNING.toValue())).findFirst();
