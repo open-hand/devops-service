@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static java.util.Comparator.comparing;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -754,8 +756,9 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public List<PipelineRecordListDTO> queryByPipelineId(Long pipelineId) {
-        return pipelineRecordRepository.queryByPipelineId(pipelineId).stream().map(t ->
-                new PipelineRecordListDTO(t.getId(), t.getCreationDate())).collect(Collectors.toList());
+        return pipelineRecordRepository.queryByPipelineId(pipelineId).stream()
+                .sorted(comparing(PipelineRecordE::getId).reversed())
+                .map(t -> new PipelineRecordListDTO(t.getId(), t.getCreationDate())).collect(Collectors.toList());
     }
 
     @Override
