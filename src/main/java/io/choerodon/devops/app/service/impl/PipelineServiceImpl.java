@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static java.util.Comparator.comparing;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -419,12 +421,12 @@ public class PipelineServiceImpl implements PipelineService {
         String status;
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId());
         PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(recordRelDTO.getStageRecordId());
-        StringBuilder auditUser = new StringBuilder();
+        String auditUser = new String();
         if ("task".equals(recordRelDTO.getType())) {
-            auditUser.append(taskRecordRepository.queryById(recordRelDTO.getTaskRecordId()).getAuditUser());
+            auditUser = taskRecordRepository.queryById(recordRelDTO.getTaskRecordId()).getAuditUser();
         } else {
             Optional<PipelineStageRecordE> optional = stageRecordRepository.queryByPipeRecordId(recordRelDTO.getPipelineRecordId(), null).stream().filter(t -> t.getId() < recordRelDTO.getStageRecordId()).findFirst();
-            optional.ifPresent(pipelineStageRecordE -> auditUser.append(pipelineStageRecordE.getAuditUser()));
+            auditUser = optional.isPresent() ? optional.get().getAuditUser() : auditUser;
         }
         status = getAuditResult(recordRelDTO, pipelineRecordE, auditUser, stageRecordE.getStageName());
         PipelineUserRecordRelE userRelE = new PipelineUserRecordRelE();
@@ -468,7 +470,7 @@ public class PipelineServiceImpl implements PipelineService {
                     } else {
                         startEmptyStage(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                     }
-                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser.toString(), recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
+                    sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), null, status, null);
                 }
@@ -754,8 +756,9 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public List<PipelineRecordListDTO> queryByPipelineId(Long pipelineId) {
-        return pipelineRecordRepository.queryByPipelineId(pipelineId).stream().map(t ->
-                new PipelineRecordListDTO(t.getId(), t.getCreationDate())).collect(Collectors.toList());
+        return pipelineRecordRepository.queryByPipelineId(pipelineId).stream()
+                .sorted(comparing(PipelineRecordE::getId).reversed())
+                .map(t -> new PipelineRecordListDTO(t.getId(), t.getCreationDate())).collect(Collectors.toList());
     }
 
     @Override
@@ -828,7 +831,8 @@ public class PipelineServiceImpl implements PipelineService {
         List<PipelineStageRecordE> stageRecordES = stageRecordRepository.queryByPipeRecordId(recordId, null);
         for (PipelineStageRecordE stageRecordE : stageRecordES) {
             if (stageRecordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()) || stageRecordE.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
-                updateStatus(recordId, stageRecordE.getId(), WorkFlowStatus.FAILED.toValue(), "Force failure");
+                updateStatus(recordId, null, WorkFlowStatus.FAILED.toValue(), "Force failure");
+                stageRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
                 stageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis() - TypeUtil.objToLong(stageRecordE.getExecutionTime())));
                 stageRecordRepository.createOrUpdate(stageRecordE);
                 Optional<PipelineTaskRecordE> optional = taskRecordRepository.queryByStageRecordId(stageRecordE.getId(), null).stream().filter(t -> t.getStatus().equals(WorkFlowStatus.RUNNING.toValue())).findFirst();
@@ -1441,7 +1445,7 @@ public class PipelineServiceImpl implements PipelineService {
         updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), errorInfo);
     }
 
-    private String getAuditResult(PipelineUserRecordRelDTO recordRelDTO, PipelineRecordE pipelineRecordE, StringBuilder auditUser, String stageName) {
+    private String getAuditResult(PipelineUserRecordRelDTO recordRelDTO, PipelineRecordE pipelineRecordE, String auditUser, String stageName) {
         Boolean result = true;
         String status;
         if (recordRelDTO.getIsApprove()) {
@@ -1458,8 +1462,8 @@ public class PipelineServiceImpl implements PipelineService {
             }
         } else {
             status = WorkFlowStatus.STOP.toValue();
-            auditUser.append(",").append(pipelineRecordE.getCreatedBy());
-            sendAuditSiteMassage(PipelineNoticeType.PIPELINESTOP.toValue(), auditUser.toString(), recordRelDTO.getPipelineRecordId(), stageName);
+            auditUser = auditUser.contains(pipelineRecordE.getCreatedBy().toString()) ? auditUser : auditUser + "," + pipelineRecordE.getCreatedBy();
+            sendAuditSiteMassage(PipelineNoticeType.PIPELINESTOP.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageName);
         }
         return status;
     }
