@@ -438,10 +438,12 @@ public class PipelineServiceImpl implements PipelineService {
                 PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(recordRelDTO.getTaskRecordId());
                 if (status.equals(WorkFlowStatus.SUCCESS.toValue())) {
                     //判断会签是否全部通过
-                    if (taskRecordE.getIsCountersigned() == 1 && !checkCouAllApprove(userDTOS, taskRecordE.getTaskId(), recordRelDTO.getTaskRecordId())) {
-                        break;
+                    if (taskRecordE.getIsCountersigned() == 1) {
+                        if (!checkCouAllApprove(userDTOS, taskRecordE.getTaskId(), recordRelDTO.getTaskRecordId())) {
+                            break;
+                        }
                     } else {
-                        sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser.toString(), recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
+                        sendAuditSiteMassage(PipelineNoticeType.PIPELINEPASS.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageRecordE.getStageName());
                     }
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), WorkFlowStatus.RUNNING.toValue(), null);
                     startNextTask(taskRecordE.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
