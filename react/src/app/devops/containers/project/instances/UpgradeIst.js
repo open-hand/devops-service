@@ -165,15 +165,16 @@ class UpgradeIst extends Component {
           >
             {versionOptions}
           </Select>
-          {id && configName && (
-            <Fragment>
-              <div className='c7n-deploy-configValue-title'><FormattedMessage id='configValue' /></div>
-              <div className="c7n-deploy-configValue-text">
-                <span>{formatMessage({ id: 'deployConfig' })}：</span>
-                <span className="c7n-deploy-configValue-name">{configName}</span>
-              </div>
-            </Fragment>
-          )}
+
+          <div className='c7n-deploy-configValue-title'>
+            <FormattedMessage id='configValue' />
+          </div>
+          <div className="c7n-deploy-configValue-text">
+            <span>{formatMessage({ id: 'deployConfig' })}：</span>
+            <span className="c7n-deploy-configValue-name">
+              {configName || formatMessage({ id: 'deploymentConfig.no.configValue'})}
+            </span>
+          </div>
 
           {getVerValue.length === 0 ? (
             <div>

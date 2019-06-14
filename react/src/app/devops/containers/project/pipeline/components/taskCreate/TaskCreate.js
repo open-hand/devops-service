@@ -287,38 +287,56 @@ export default class TaskCreate extends Component {
   handleChangeEnv = (id) => {
     const { appId } = this.state;
 
-    this.setState({ envId: id, value: '', initIstId: undefined });
-
-    this.clearConfigFiled();
+    this.setState({ envId: id }, () => this.changeAppOrEnv());
     appId && this.loadInstanceData(id, appId);
     appId && this.loadConfigValue(id, appId);
   };
 
   handleChangeApp = (id) => {
-    const {
-      form: {
-        setFieldsValue,
-        getFieldsValue,
-      },
-    } = this.props;
     const { envId } = this.state;
 
-    this.setState({
-      appId: id,
-      value: '',
-      mode: MODE_TYPE_NEW,
-      initIstId: undefined,
-    });
-
-    if (getFieldsValue(['instanceName'])) {
-      const { code } = _.find(PipelineCreateStore.getAppData, ['id', id]) || {};
-      const initIstName = code ? `${code}-${uuidv1().substring(0, 5)}` : uuidv1().substring(0, 30);
-      setFieldsValue({ 'instanceName': initIstName });
-    }
-
-    this.clearConfigFiled();
+    this.setState({ appId: id }, () => this.changeAppOrEnv());
     envId && this.loadInstanceData(envId, id);
     envId && this.loadConfigValue(envId, id);
+  };
+
+  /**
+   * 修改应用或环境
+   */
+  changeAppOrEnv = () => {
+    const {
+      stageId,
+      id: taskId,
+      form: { setFieldsValue, getFieldsValue },
+    } = this.props;
+    const { appId: selectApp, envId: selectEnv } = this.state;
+    const { getTaskList } = PipelineCreateStore;
+    const { appDeployDTOS } = _.find(getTaskList[stageId], ['index', taskId]) || {};
+    const { applicationId, envId, instanceId, valueId } = appDeployDTOS || {};
+    const { code } = _.find(PipelineCreateStore.getAppData, ['id', selectApp]) || {};
+    const initIstName = code ? `${code}-${uuidv1().substring(0, 5)}` : uuidv1().substring(0, 30);
+
+    if (selectApp === applicationId && selectEnv === envId) {
+      if (instanceId) {
+        this.setState({
+          initIstId: String(instanceId) || undefined,
+          mode: MODE_TYPE_UPDATE,
+        });
+      } else {
+        setFieldsValue({ 'instanceName': initIstName });
+        this.setState({ mode: MODE_TYPE_NEW });
+      }
+      setFieldsValue({
+        valueId,
+      });
+      this.handleChangeConfig(valueId);
+    } else {
+      this.setState({ value: '', initIstId: undefined, mode: MODE_TYPE_NEW, initIstName });
+      if (getFieldsValue(['instanceName'])) {
+        setFieldsValue({ 'instanceName': initIstName });
+      }
+      this.clearConfigFiled();
+    }
   };
 
   /**
@@ -651,7 +669,7 @@ export default class TaskCreate extends Component {
             className="c7n-pipeline-radio"
           >
             <Radio
-              disabled={!!instanceId}
+              disabled={instanceId && selectEnvId  === envId && appId === applicationId}
               value={MODE_TYPE_NEW}
             >
               <FormattedMessage id="pipeline.task.instance.create" />
