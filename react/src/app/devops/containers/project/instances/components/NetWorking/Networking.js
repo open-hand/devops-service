@@ -123,9 +123,11 @@ export default class Networking extends Component {
     }));
   };
 
-  getExpandedRow = (record) => {
-    const { devopsIngressDTOS } = record;
-    return (
+  getExpandedRow = ({ devopsIngressDTOS }) => {
+    const {
+      intl: { formatMessage },
+    } = this.props;
+    const content = devopsIngressDTOS && devopsIngressDTOS.length ? (
       _.map(devopsIngressDTOS, ({ id, name, domain, error, status }) => (
         <div key={id} className='c7n-networking-expandedRow-detail'>
           <FormattedMessage id='ist.networking.ingress.name' />
@@ -140,7 +142,8 @@ export default class Networking extends Component {
           <span className='c7n-networking-ingress'>{domain}</span>
         </div>
       ))
-    );
+    ) : (<span>{formatMessage({ id: 'ist.networking.no.ingress' })}</span>);
+    return content;
   };
 
   renderExternalIp = (record) => {

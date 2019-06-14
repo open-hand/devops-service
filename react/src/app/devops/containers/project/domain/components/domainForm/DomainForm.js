@@ -442,7 +442,7 @@ export default class DomainForm extends Component {
 
     const { getNetwork, getCertificates } = DomainStore;
     const { getNetworking } = InstancesStore;
-    const network = isInstancePage ? getNetworking : getNetwork;
+    const network = isInstancePage ? _.filter(getNetworking, ['status', 'running']) : getNetwork;
     let initPaths = [0];
     if (pathList && pathList.length) {
       initPaths.pop();
