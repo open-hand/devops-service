@@ -275,9 +275,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         Long appId = applicationUpdateDTO.getId();
         ApplicationE oldApplicationE = applicationRepository.query(appId);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        gitlabRepository.batchAddVariable(oldApplicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
-                setVariableDTO(applicationUpdateDTO.getHarborConfigId(), applicationUpdateDTO.getChartConfigId()));
+//        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+//        gitlabRepository.batchAddVariable(oldApplicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
+//                setVariableDTO(applicationUpdateDTO.getHarborConfigId(), applicationUpdateDTO.getChartConfigId()));
         if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
             applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
         }
