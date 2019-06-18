@@ -15,7 +15,7 @@ public class DevopsProjectDO extends BaseDTO {
     private Long iamProjectId;
     private Long devopsAppGroupId;
     private Long devopsEnvGroupId;
-    private boolean harborProjectIsPrivate;
+    private Boolean harborProjectIsPrivate;
     private String harborProjectUserName;
     private String harborProjectUserPassword;
     private String harborProjectUserEmail;
@@ -76,11 +76,11 @@ public class DevopsProjectDO extends BaseDTO {
         this.harborProjectUserEmail = harborProjectUserEmail;
     }
 
-    public boolean isHarborProjectIsPrivate() {
+    public Boolean isHarborProjectIsPrivate() {
         return harborProjectIsPrivate;
     }
 
-    public void setHarborProjectIsPrivate(boolean harborProjectIsPrivate) {
+    public void setHarborProjectIsPrivate(Boolean harborProjectIsPrivate) {
         this.harborProjectIsPrivate = harborProjectIsPrivate;
     }
 }
