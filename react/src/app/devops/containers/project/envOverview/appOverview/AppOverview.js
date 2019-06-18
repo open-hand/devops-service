@@ -30,7 +30,7 @@ import ExpandRow from '../../instances/components/ExpandRow';
 import UploadIcon from '../../instances/components/UploadIcon';
 import PodStatus from '../../instances/components/PodStatus/PodStatus';
 import DeleteModal from '../../../../components/deleteModal';
-import Networking from '../../instances/components/NetWorking';
+import Networking from '../../instances/components/Networking';
 import { handleProptError } from '../../../../utils';
 
 import '../EnvOverview.scss';

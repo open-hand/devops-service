@@ -752,7 +752,7 @@ const zhCN = {
   'ist.networking.service.port': '节点端口/端口/目标端口',
   'ist.networking.ingress.name': '域名名称：',
   'ist.networking.ingress.address': '地址：',
-  'ist.networking.no.ingress': '暂无域名',
+  'ist.networking.no.ingress': '暂无关联域名',
   'ist.networking.ingress.disabled': '请先创建实例的关联网络',
   'ist.networking.create.service': '创建实例"{istName}"的关联网络',
   'ist.networking.create.ingress': '创建实例"{istName}"的关联域名',
