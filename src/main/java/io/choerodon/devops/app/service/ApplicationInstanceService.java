@@ -26,7 +26,7 @@ public interface ApplicationInstanceService {
      * @param params      模糊查询参数
      * @return page of devopsEnvPreviewInstanceDTO
      */
-    Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
+    Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                          Long envId, Long versionId, Long appId, String params);
 
     /**
@@ -47,6 +47,15 @@ public interface ApplicationInstanceService {
      * @return List
      */
     ReplaceResult queryValues(String type, Long instanceId, Long versionId);
+
+
+    /**
+     * 获取当前部署配置
+     *
+     * @param instanceId 实例Id
+     * @return
+     */
+    ReplaceResult queryDeployValue(Long instanceId);
 
     /**
      * 部署应用
@@ -135,7 +144,7 @@ public interface ApplicationInstanceService {
 
 
     /**
-     * 获取部署 Value
+     * 获取最新部署配置
      *
      * @param instanceId 实例id
      * @return string

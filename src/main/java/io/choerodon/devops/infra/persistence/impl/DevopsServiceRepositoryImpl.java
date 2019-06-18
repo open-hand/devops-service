@@ -75,7 +75,7 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             count = devopsServiceMapper.selectCountByName(
-                    projectId, envId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                    projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)));
             devopsServiceQueryDOList = PageHelper.doSort(
                     pageRequest.getSort(), () -> devopsServiceMapper.listDevopsServiceByPage(
@@ -83,7 +83,7 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size, sort));
         } else {
             count = devopsServiceMapper
-                    .selectCountByName(projectId, envId, null, null);
+                    .selectCountByName(projectId, envId, instanceId, null, null);
             devopsServiceQueryDOList = PageHelper.doSort(pageRequest.getSort(), () ->
                     devopsServiceMapper.listDevopsServiceByPage(
                             projectId, envId, instanceId, null, null, start, size, sort));

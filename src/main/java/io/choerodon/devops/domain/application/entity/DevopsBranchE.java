@@ -23,6 +23,8 @@ public class DevopsBranchE {
     private String lastCommitMsg;
     private Long lastCommitUser;
     private Date lastCommitDate;
+    private String status;
+    private String errorMessage;
 
     public DevopsBranchE() {
     }
@@ -157,6 +159,22 @@ public class DevopsBranchE {
 
     public void setLastCommitDate(Date lastCommitDate) {
         this.lastCommitDate = lastCommitDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }
 

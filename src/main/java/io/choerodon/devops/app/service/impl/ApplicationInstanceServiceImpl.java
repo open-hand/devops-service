@@ -136,10 +136,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
 
     @Override
-    public Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                                     Long envId, Long versionId, Long appId, String params) {
+    public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
+                                                                Long envId, Long versionId, Long appId, String params) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+
         Page<ApplicationInstanceE> applicationInstanceEPage = applicationInstanceRepository.listApplicationInstance(
                 projectId, pageRequest, envId, versionId, appId, params);
 
@@ -148,27 +149,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         Page<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
                 .convertPage(applicationInstanceEPage, ApplicationInstanceDTO.class);
-
-        return convertPageFromApplicationInstance(applicationInstanceDTOS);
+        return applicationInstanceDTOS;
     }
 
-    /**
-     * convert page from ApplicationInstance
-     *
-     * @param applicationInstanceDTOS the page that contains the instances
-     * @return the page converted
-     */
-    private Page<DevopsEnvPreviewInstanceDTO> convertPageFromApplicationInstance(Page<ApplicationInstanceDTO> applicationInstanceDTOS) {
-        Page<DevopsEnvPreviewInstanceDTO> previewInstanceDTOPage = new Page<>();
-        previewInstanceDTOPage.setContent(applicationInstanceDTOS.getContent().stream().map(this::fromInstanceToEnvPreview).collect(Collectors.toList()));
-        previewInstanceDTOPage.setNumber(applicationInstanceDTOS.getNumber());
-        previewInstanceDTOPage.setNumberOfElements(applicationInstanceDTOS.getNumberOfElements());
-        previewInstanceDTOPage.setSize(applicationInstanceDTOS.getSize());
-        previewInstanceDTOPage.setTotalElements(applicationInstanceDTOS.getTotalElements());
-        previewInstanceDTOPage.setTotalPages(applicationInstanceDTOS.getTotalPages());
-
-        return previewInstanceDTOPage;
-    }
 
     @Override
     public List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId) {
@@ -559,6 +542,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
+    public ReplaceResult queryDeployValue(Long instanceId) {
+        ReplaceResult replaceResult = new ReplaceResult();
+        String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(
+                instanceId));
+        replaceResult.setYaml(yaml);
+        return replaceResult;
+    }
+
+    @Override
     public List<ErrorLineDTO> formatValue(ReplaceResult replaceResult) {
         try {
             FileUtil.checkYamlFormat(replaceResult.getYaml());
@@ -614,11 +606,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     .convertList(value, ApplicationInstanceDTO.class);
 
             // set instances
-            devopsEnvPreviewAppDTO.setApplicationInstanceDTOS(
-                    applicationInstanceDTOS.stream()
-                            .map(this::fromInstanceToEnvPreview)
-                            .collect(Collectors.toList())
-            );
+            devopsEnvPreviewAppDTO.setApplicationInstanceDTOS(applicationInstanceDTOS);
 
             devopsEnvPreviewAppDTOS.add(devopsEnvPreviewAppDTO);
         });
@@ -751,19 +739,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String secretCode = null;
         secretCode = getSecret(applicationE, secretCode, devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvironmentE.getClusterE().getId());
 
-        //校验更新实例时values是否删除key
-        if (!applicationDeployDTO.getIsNotChange() && applicationDeployDTO.getType().equals(UPDATE)) {
-            ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
-            DevopsEnvCommandE olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
-            if (applicationDeployDTO.getAppVersionId().equals(olddevopsEnvCommandE.getObjectVersionId())) {
-                String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
-                        applicationDeployDTO.getAppInstanceId());
-                String newDeployValue = devopsEnvCommandValueE.getValue();
-                if (oldDeployValue.equals(newDeployValue)) {
-                    throw new CommonException("error.values.key.delete");
-                }
-            }
-        }
 
         // 初始化自定义实例名
         String code;
@@ -785,50 +760,64 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
+
         if (applicationDeployDTO.getIsNotChange()) {
-            applicationInstanceRepository.update(applicationInstanceE);
-            applicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
-            devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
-            devopsEnvCommandE.setId(null);
-            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-            devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
-            deployService.deploy(applicationE, applicationVersionE, applicationInstanceE.getCode(), devopsEnvironmentE,
-                    devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId(), secretCode);
+            applicationInstanceE = restartDeploy(applicationDeployDTO, devopsEnvironmentE, applicationE, applicationVersionE, applicationInstanceE, devopsEnvCommandValueE, secretCode);
         } else {
-            //存储数据
-            if (applicationDeployDTO.getType().equals(CREATE)) {
-                applicationInstanceE.setCode(code);
-                applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
-                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-                devopsEnvCommandE.initDevopsEnvCommandValueE(
-                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-                applicationInstanceRepository.update(applicationInstanceE);
+            String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
+            //从未关联部署配置到关联部署配置，或者从一个部署配置关联另外一个部署配置，如果values是一样的，虽然getIsNotChange为false,但是此时也应该直接走restart
+            if (devopsEnvCommandValueE.getValue().equals(deployValue)) {
+                restartDeploy(applicationDeployDTO, devopsEnvironmentE, applicationE, applicationVersionE, applicationInstanceE, devopsEnvCommandValueE, secretCode);
             } else {
-                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-                devopsEnvCommandE.initDevopsEnvCommandValueE(
-                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-                applicationInstanceRepository.update(applicationInstanceE);
+                //存储数据
+                if (applicationDeployDTO.getType().equals(CREATE)) {
+                    applicationInstanceE.setCode(code);
+                    applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+                    devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                    devopsEnvCommandE.initDevopsEnvCommandValueE(
+                            devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+                    applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                    applicationInstanceRepository.update(applicationInstanceE);
+                } else {
+                    devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                    devopsEnvCommandE.initDevopsEnvCommandValueE(
+                            devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+                    applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                    applicationInstanceRepository.update(applicationInstanceE);
+                }
+
+                //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+                String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
+
+                //在gitops库处理instance文件
+                ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
+                objectOperation.setType(getC7NHelmRelease(
+                        code, applicationVersionE, applicationDeployDTO, applicationE, secretCode));
+                Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+
+                objectOperation.operationEnvGitlabFile(
+                        RELEASE_PREFIX + code,
+                        projectId,
+                        applicationDeployDTO.getType(),
+                        userAttrE.getGitlabUserId(),
+                        applicationInstanceE.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentE.getId(), filePath);
+
             }
-
-            //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
-
-            //在gitops库处理instance文件
-            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
-            objectOperation.setType(getC7NHelmRelease(
-                    code, applicationVersionE, applicationDeployDTO, applicationE, secretCode));
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.operationEnvGitlabFile(
-                    RELEASE_PREFIX + code,
-                    projectId,
-                    applicationDeployDTO.getType(),
-                    userAttrE.getGitlabUserId(),
-                    applicationInstanceE.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentE.getId(), filePath);
-
         }
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
+    }
+
+    private ApplicationInstanceE restartDeploy(ApplicationDeployDTO applicationDeployDTO, DevopsEnvironmentE devopsEnvironmentE, ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvCommandValueE devopsEnvCommandValueE, String secretCode) {
+        DevopsEnvCommandE devopsEnvCommandE;
+        applicationInstanceRepository.update(applicationInstanceE);
+        applicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
+        devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
+        devopsEnvCommandE.setId(null);
+        devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
+        deployService.deploy(applicationE, applicationVersionE, applicationInstanceE.getCode(), devopsEnvironmentE,
+                devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId(), secretCode);
+        return applicationInstanceE;
     }
 
     private String getSecret(ApplicationE applicationE, String secretCode, String namespace, Long envId, Long clusterId) {

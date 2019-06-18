@@ -22,6 +22,8 @@ public class BranchDTO {
     private String issueCode;
     private String issueName;
     private String typeCode;
+    private String status;
+    private String errorMessage;
 
     public BranchDTO() {
     }
@@ -32,7 +34,7 @@ public class BranchDTO {
     public BranchDTO(DevopsBranchE branchE, String lastCommitUrl,
                      String createUserUrl,
                      Issue issue,
-                     UserE commitUserE, String createUserName, String realName) {
+                     UserE commitUserE, String createUserName, String realName, String status, String errorMessage) {
         this.branchName = branchE.getBranchName();
         this.sha = branchE.getLastCommit();
         this.commitContent = branchE.getLastCommitMsg();
@@ -48,6 +50,8 @@ public class BranchDTO {
         this.commitUserName = commitUserE.getRealName();
         this.createUserName = createUserName;
         this.createUserRealName = realName;
+        this.status = status;
+        this.errorMessage = errorMessage;
     }
 
     public String getBranchName() {
@@ -168,5 +172,21 @@ public class BranchDTO {
 
     public void setCreateUserRealName(String createUserRealName) {
         this.createUserRealName = createUserRealName;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

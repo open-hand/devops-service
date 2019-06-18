@@ -109,7 +109,9 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                                                                    String searchParam) {
         Page<ApplicationMarketE> applicationMarketEPage = applicationMarketRepository.listMarketAppsByProjectId(
                 projectId, pageRequest, searchParam);
-        return getReleasingDTOs(projectId, applicationMarketEPage);
+        return ConvertPageHelper.convertPage(
+                applicationMarketEPage,
+                ApplicationReleasingDTO.class);
     }
 
     @Override
@@ -124,7 +126,10 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             }
             Page<ApplicationMarketE> applicationMarketEPage = applicationMarketRepository.listMarketApps(
                     projectIds, pageRequest, searchParam);
-            return getReleasingDTOs(projectId, applicationMarketEPage);
+
+            return ConvertPageHelper.convertPage(
+                    applicationMarketEPage,
+                    ApplicationReleasingDTO.class);
         }
         return null;
     }
@@ -501,23 +506,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             images.add(applicationVersionE.getImage());
             chartUtil.downloadChart(applicationVersionE, organization, projectE, applicationE, destpath);
         });
-    }
-
-    private Page<ApplicationReleasingDTO> getReleasingDTOs(Long projectId,
-                                                           Page<ApplicationMarketE> applicationMarketEPage) {
-        Page<ApplicationReleasingDTO> applicationReleasingDTOPage = ConvertPageHelper.convertPage(
-                applicationMarketEPage,
-                ApplicationReleasingDTO.class);
-        List<ApplicationReleasingDTO> applicationReleasingDTOList = applicationReleasingDTOPage.getContent();
-        for (ApplicationReleasingDTO applicationReleasingDTO : applicationReleasingDTOList) {
-            Long appMarketId = applicationReleasingDTO.getId();
-            List<DevopsAppMarketVersionDO> marketVersionDOS = applicationMarketRepository
-                    .getVersions(projectId, appMarketId, true);
-            List<AppMarketVersionDTO> marketVersionDTOList = ConvertHelper
-                    .convertList(marketVersionDOS, AppMarketVersionDTO.class);
-            applicationReleasingDTO.setAppVersions(marketVersionDTOList);
-        }
-        return applicationReleasingDTOPage;
     }
 
 

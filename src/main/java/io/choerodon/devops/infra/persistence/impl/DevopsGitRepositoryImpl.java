@@ -392,9 +392,25 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public void createDevopsBranch(DevopsBranchE devopsBranchE) {
+    public DevopsBranchE createDevopsBranch(DevopsBranchE devopsBranchE) {
         devopsBranchE.setDeleted(false);
-        devopsBranchMapper.insert(ConvertHelper.convert(devopsBranchE, DevopsBranchDO.class));
+        DevopsBranchDO devopsBranchDO = ConvertHelper.convert(devopsBranchE, DevopsBranchDO.class);
+        devopsBranchMapper.insert(devopsBranchDO);
+        return ConvertHelper.convert(devopsBranchDO, DevopsBranchE.class);
+    }
+
+    @Override
+    public DevopsBranchE qureyBranchById(Long devopsBranchId) {
+        return ConvertHelper.convert(devopsBranchMapper.selectByPrimaryKey(devopsBranchId), DevopsBranchE.class);
+    }
+
+    @Override
+    public void updateBranch(DevopsBranchE devopsBranchE) {
+        DevopsBranchDO branchDO = ConvertHelper.convert(devopsBranchE, DevopsBranchDO.class);
+        branchDO.setObjectVersionNumber(devopsBranchMapper.selectByPrimaryKey(devopsBranchE.getId()).getObjectVersionNumber());
+        if (devopsBranchMapper.updateByPrimaryKey(branchDO) != 1) {
+            throw new CommonException("error.branch.update");
+        }
     }
 
     @Override

@@ -97,6 +97,11 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
         }
     }
 
+    @Override
+    public List<DevopsGitlabCommitE> queryByAppIdAndBranch(Long appId, String branch, Date startDate) {
+        return ConvertHelper.convertList(devopsGitlabCommitMapper.queryByAppIdAndBranch(appId, branch, new java.sql.Date(startDate.getTime())), DevopsGitlabCommitE.class);
+    }
+
 
     public boolean checkExist(DevopsGitlabCommitE devopsGitlabCommitE) {
         DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO();

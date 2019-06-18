@@ -44,4 +44,27 @@
         </if>
         ORDER BY dgc.commit_date DESC
     </select>
+
+
+    <select id="queryByAppIdAndBranch" resultType="io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO">
+        SELECT
+        dgc.id,
+        dgc.user_id,
+        dgc.app_id,
+        dgc.ref,
+        dgc.commit_date,
+        dgc.commit_sha,
+        dgc.commit_content,
+        dgc.url
+        FROM
+        devops_gitlab_commit dgc
+        WHERE
+        dgc.app_id = #{appId}
+        AND dgc.ref = #{branchName}
+        <if test="startDate != null">
+            AND dgc.commit_date >= CONCAT('','${startDate}',' 00:00:00')
+        </if>
+
+    </select>
+
 </mapper>

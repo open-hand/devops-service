@@ -66,4 +66,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_branch.groovy') {
             column(name: "app_id")
         }
     }
+
+
+    changeSet(author: 'sheep', id: '2019-06-13-add-column') {
+        addColumn(tableName: 'devops_branch') {
+            column(name: 'status', type: 'VARCHAR(32)', remarks: '分支创建状态', afterColumn: 'branch_name', defaultValue: "success")
+            column(name: 'error_message', type: 'VARCHAR(5000)', remarks: '分支创建失败错误信息', afterColumn: 'status')
+        }
+    }
 }

@@ -35,7 +35,11 @@ public interface DevopsGitRepository {
 
     String getGitlabUrl(Long projectId, Long appId);
 
-    void createDevopsBranch(DevopsBranchE devopsBranchE);
+    DevopsBranchE createDevopsBranch(DevopsBranchE devopsBranchE);
+
+    DevopsBranchE qureyBranchById(Long devopsBranchId);
+
+    void updateBranch(DevopsBranchE devopsBranchE);
 
     BranchDO createBranch(Integer projectId, String branchName, String baseBranch, Integer userId);
 

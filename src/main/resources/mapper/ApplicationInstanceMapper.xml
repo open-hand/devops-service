@@ -44,7 +44,7 @@
         ( SELECT count( 1 ) FROM devops_service_instance dsi WHERE dsi.app_instance_id = dai.id ) serviceCount,
         (
         SELECT
-        count( 1 )
+        count(distinct dip.ingress_id)
         FROM
         devops_ingress_path dip
         JOIN devops_service_instance dsi ON dip.service_id = dsi.service_id

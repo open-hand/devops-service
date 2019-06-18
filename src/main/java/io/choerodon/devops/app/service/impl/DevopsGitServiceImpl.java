@@ -17,6 +17,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.eventhandler.DemoEnvSetupSagaHandler;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
@@ -39,10 +40,13 @@ import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.models.*;
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -171,29 +175,50 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void createBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO) {
         DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
-        devopsBranchE.initApplicationE(applicationId);
-        ApplicationE applicationE = applicationRepository.query(applicationId);
-        BranchDO branchDO = devopsGitRepository.createBranch(
-                TypeUtil.objToInteger(applicationE.getGitlabProjectE().getId()),
-                devopsBranchDTO.getBranchName(),
-                devopsBranchDTO.getOriginBranch(),
-                getGitlabUserId());
-        if (branchDO.getCommit() == null) {
-            throw new CommonException("error.branch.exist");
-        }
-        CommitE commitE = branchDO.getCommit();
-        Date checkoutDate = commitE.getCommittedDate();
-        String checkoutSha = commitE.getId();
         Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
-        devopsBranchE.setCheckoutDate(checkoutDate);
-        devopsBranchE.setCheckoutCommit(checkoutSha);
         devopsBranchE.setUserId(gitLabUser);
+        devopsBranchE.initApplicationE(applicationId);
+        devopsBranchE.setStatus(CommandStatus.OPERATING.getStatus());
+        ApplicationE applicationE = applicationRepository.query(applicationId);
+        devopsBranchE = devopsGitRepository.createDevopsBranch(devopsBranchE);
+        Long devopsBranchId = devopsBranchE.getId();
+        //创建gitlab分支异步执行，创建成功设置成功状态并设置相关commit参数，创建失败设置失败状态
+        String loginName = GitUserNameUtil.getUsername();
+        Integer userId = GitUserNameUtil.getUserId();
+        Long orgId = GitUserNameUtil.getOrganizationId();
+        Observable.just(1)
+                .observeOn(Schedulers.io())
+                .subscribe(integer -> {
+                    try {
+                        DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId.longValue(), orgId);
+                        BranchDO branchDO = devopsGitRepository.createBranch(
+                                TypeUtil.objToInteger(applicationE.getGitlabProjectE().getId()),
+                                devopsBranchDTO.getBranchName(),
+                                devopsBranchDTO.getOriginBranch(),
+                                getGitlabUserId());
+                        if (branchDO.getCommit() == null) {
+                            throw new CommonException("error.branch.exist");
+                        }
+                        CommitE commitE = branchDO.getCommit();
+                        Date checkoutDate = commitE.getCommittedDate();
+                        String checkoutSha = commitE.getId();
+                        DevopsBranchE devopsBranchECreate = devopsGitRepository.qureyBranchById(devopsBranchId);
+                        devopsBranchECreate.setStatus(CommandStatus.SUCCESS.getStatus());
+                        devopsBranchECreate.setCheckoutDate(checkoutDate);
+                        devopsBranchECreate.setCheckoutCommit(checkoutSha);
 
-        devopsBranchE.setLastCommitDate(checkoutDate);
-        devopsBranchE.setLastCommit(checkoutSha);
-        devopsBranchE.setLastCommitMsg(commitE.getMessage());
-        devopsBranchE.setLastCommitUser(gitLabUser);
-        devopsGitRepository.createDevopsBranch(devopsBranchE);
+                        devopsBranchECreate.setLastCommitDate(checkoutDate);
+                        devopsBranchECreate.setLastCommit(checkoutSha);
+                        devopsBranchECreate.setLastCommitMsg(commitE.getMessage());
+                        devopsBranchECreate.setLastCommitUser(userAttrRepository.queryByGitlabUserName(commitE.getCommitterName()).getGitlabUserId());
+                        devopsGitRepository.updateBranch(devopsBranchECreate);
+                    } catch (Exception e) {
+                        DevopsBranchE devopsBranchECreate = devopsGitRepository.qureyBranchById(devopsBranchId);
+                        devopsBranchECreate.setStatus(CommandStatus.FAILED.getStatus());
+                        devopsBranchECreate.setErrorMessage(e.getMessage());
+                        devopsGitRepository.updateBranch(devopsBranchECreate);
+                    }
+                });
     }
 
     @Override
@@ -277,7 +302,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 issue,
                 commitUserE,
                 createUserName,
-                createUserRealName);
+                createUserRealName,
+                devopsBranchE.getStatus(),
+                devopsBranchE.getErrorMessage());
     }
 
     @Override
