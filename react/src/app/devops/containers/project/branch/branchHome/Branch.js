@@ -14,7 +14,8 @@ import IssueDetail from '../issueDetail';
 import '../index.scss';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
 import DevPipelineStore from '../../../../stores/project/devPipeline';
-import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;
@@ -122,11 +123,14 @@ class Branch extends Component {
         filteredValue: filters.branchName,
         sorter: true,
         sortOrder: columnKey === 'branchName' && order,
-        render: (text, record) => (<div>
-          {this.getIcon(record.branchName)}
-          <MouserOverWrapper text={record.branchName} width={0.2} className="c7n-branch-text">
-            {record.branchName}
-          </MouserOverWrapper>
+        render: (text, { branchName, status, errorMessage}) => (<div>
+          {this.getIcon(branchName)}
+          <StatusIcon
+            status={status}
+            error={errorMessage}
+            name={branchName}
+            width={0.2}
+          />
         </div>),
       },
       {

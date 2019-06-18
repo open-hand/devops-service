@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { Table, Select, Tooltip, Pagination, Button, Icon, Modal } from 'choerodon-ui';
+import { Table, Select, Tooltip, Pagination, Button, Icon, Modal, Spin } from 'choerodon-ui';
 import { Action, stores, Content, Header, Page } from '@choerodon/boot';
 import _ from 'lodash';
 import { handleProptError } from '../../../utils';
@@ -20,7 +20,7 @@ import DevopsStore from '../../../stores/DevopsStore';
 import InstancesStore from '../../../stores/project/instances/InstancesStore';
 import EnvOverviewStore from '../../../stores/project/envOverview';
 import DeleteModal from '../../../components/deleteModal';
-import Networking from './components/NetWorking';
+import Networking from './components/Networking';
 import '../../main.scss';
 import './Instances.scss';
 
@@ -39,6 +39,8 @@ class Instances extends Component {
     deleteArr: [],
     showNetworking: false,
     appId: null,
+    resourceData: {},
+    resourceLoading: {},
   };
 
   componentDidMount() {
@@ -611,6 +613,39 @@ class Instances extends Component {
     )
   };
 
+  ExpandChange = (expend, { id }) => {
+    const {
+      InstancesStore,
+    } = this.props;
+    const { projectId } = AppState.currentMenuType;
+    const {
+      resourceData,
+      resourceLoading,
+    } = this.state;
+    const loading = resourceLoading;
+    if (expend) {
+      if (!resourceData[id]) {
+        loading[id] = true;
+        this.setState({ resourceLoading: loading });
+      }
+      InstancesStore.loadResource(projectId, id)
+        .then(data => {
+          if (!resourceData[id]) {
+            loading[id] = false;
+            this.setState({ resourceLoading: loading });
+          }
+          if (data && !data.failed) {
+            if (resourceData[id] && _.isEqual(data, resourceData[id])) {
+              return;
+            }
+            const resource = resourceData;
+            resource[id] = data;
+            this.setState({ resourceData: resource })
+          }
+        })
+    }
+  };
+
   render() {
     DevopsStore.initAutoRefresh('ist', this.reload);
 
@@ -643,6 +678,8 @@ class Instances extends Component {
       deleteLoading,
       deleteArr,
       appId,
+      resourceLoading,
+      resourceData,
     } = this.state;
 
     const envData = EnvOverviewStore.getEnvcard;
@@ -747,7 +784,12 @@ class Instances extends Component {
           filters={param.slice() || []}
           columns={columns}
           rowKey={record => record.id}
-          expandedRowRender={record => <ExpandRow record={record} />}
+          onExpand={this.ExpandChange}
+          expandedRowRender={record => (
+            resourceLoading[record.id]
+              ? <Spin spinning className='c7n-ist-expandrow-loading' />
+              : <ExpandRow record={Object.assign({}, record, resourceData[record.id] || {})} />
+          )}
         />
       </Fragment>
     );

@@ -396,7 +396,15 @@ class InstancesStore {
         this.changeNetworkingLoading(false);
         return data;
       })
-  }
+  };
+
+  loadResource = (projectId, instanceId) =>
+    axios
+      .get(`/devops/v1/projects/${projectId}/app_instances/${instanceId}/resources`)
+      .then(data => {
+        const res = handleProptError(data);
+        return res;
+      });
 }
 
 const instancesStore = new InstancesStore();
