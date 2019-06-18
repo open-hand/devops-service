@@ -133,7 +133,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
-        return Optional.ofNullable(applicationInstanceService.queryValue(appInstanceId))
+        return Optional.ofNullable(applicationInstanceService.queryDeployValue(appInstanceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.instance.value.get"));
     }

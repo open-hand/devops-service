@@ -302,7 +302,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 issue,
                 commitUserE,
                 createUserName,
-                createUserRealName);
+                createUserRealName,
+                devopsBranchE.getStatus(),
+                devopsBranchE.getErrorMessage());
     }
 
     @Override
