@@ -315,7 +315,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
                     .sorted().collect(Collectors.toList())
                     .equals(devopsServiceInstanceEList.stream()
-                            .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
+                            .map(DevopsServiceAppInstanceE::getCode).sorted()
                             .collect(Collectors.toList()));
         }
         if ((devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() != null) || (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() == null)) {
