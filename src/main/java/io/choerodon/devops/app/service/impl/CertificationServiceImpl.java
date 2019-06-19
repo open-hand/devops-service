@@ -259,6 +259,12 @@ public class CertificationServiceImpl implements CertificationService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return;
+        }else {
+            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                certificationRepository.deleteById(certId);
+                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+            }
         }
         certificationE.setCommandId(createCertCommandE(CommandType.DELETE.getType(), certId, null));
         certificationRepository.updateCommandId(certificationE);
@@ -315,7 +321,7 @@ public class CertificationServiceImpl implements CertificationService {
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //实例相关对象数据库操作
-        devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.CERTIFICATE.toValue(), certificationE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t));
+        devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.CERTIFICATE.toValue(), certificationE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t));
         certificationRepository.deleteById(certId);
     }
 

@@ -1,7 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
@@ -17,11 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author zmf
@@ -118,7 +117,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
      * @param node the node information
      */
     private void setMemoryInfo(ClusterNodeInfoDTO node) {
-        double total = ((Long)getByteOfMemory(node.getMemoryTotal())).doubleValue();
+        double total = ((Long) getByteOfMemory(node.getMemoryTotal())).doubleValue();
         long request = getByteOfMemory(node.getMemoryRequest());
         long limit = getByteOfMemory(node.getMemoryLimit());
         node.setMemoryLimitPercentage(String.format(PERCENTAGE_FORMAT, limit / total * 100));
@@ -143,7 +142,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
             return Long.parseLong(memory.substring(0, index)) << 20;
         } else if ((index = memory.indexOf('G')) != -1) {
             return Long.parseLong(memory.substring(0, index)) << 30;
-        } else if (memory.matches("^\\d+$")){
+        } else if (memory.matches("^\\d+$")) {
             return Long.parseLong(memory);
         } else if ((index = memory.indexOf('m')) != -1) {
             return Long.parseLong(memory.substring(0, index)) / 1000;
@@ -174,7 +173,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
 
     @Override
     public PageInfo<ClusterNodeInfoDTO> pageQueryClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest) {
-        long start = (long) pageRequest.getPage() * (long) pageRequest.getSize();
+        long start = (long) (pageRequest.getPage() - 1) * (long) pageRequest.getSize();
         long stop = start + (long) pageRequest.getSize() - 1;
         String redisKey = getRedisClusterKey(clusterId, organizationId);
 
@@ -185,10 +184,19 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .stream()
                 .map(node -> JSONObject.parseObject(node, ClusterNodeInfoDTO.class))
                 .collect(Collectors.toList());
-        Page<ClusterNodeInfoDTO> result = new Page(pageRequest.getPage(),pageRequest.getSize());
+        PageInfo<ClusterNodeInfoDTO> result = new PageInfo();
+        if (nodes.size() < pageRequest.getSize()) {
+            result.setSize(nodes.size());
+        }
+        if (nodes.size() < (pageRequest.getPage() * pageRequest.getSize())) {
+            result.setSize(nodes.size() - ((pageRequest.getPage() - 1) * pageRequest.getSize()));
+        }
+
+        result.setPageSize(pageRequest.getSize());
+        result.setPageNum(pageRequest.getPage());
         result.setTotal(total);
-        result.addAll(nodes);
-        return result.toPageInfo();
+        result.setList(nodes);
+        return result;
     }
 
     @Override

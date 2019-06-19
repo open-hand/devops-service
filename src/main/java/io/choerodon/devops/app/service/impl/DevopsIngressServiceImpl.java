@@ -314,6 +314,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             }
             return;
 
+        }else {
+            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                devopsIngressRepository.deleteIngress(ingressId);
+                devopsIngressRepository.deleteIngressPath(ingressId);
+                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+            }
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
 
@@ -354,10 +361,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressDO.getCommandId());
-
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandRepository.listByObjectAll(ObjectType.INGRESS.getType(), ingressId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         devopsIngressRepository.deleteIngress(ingressId);
     }
 

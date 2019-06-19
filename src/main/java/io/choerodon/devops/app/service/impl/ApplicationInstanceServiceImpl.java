@@ -133,6 +133,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsDeployValueRepository devopsDeployValueRepository;
 
 
+
     @Override
     public PageInfo<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                                          Long envId, Long versionId, Long appId, String params) {
@@ -146,8 +147,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         PageInfo<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
                 .convertPageInfo(applicationInstanceEPage, ApplicationInstanceDTO.class);
-
-        return ConvertPageHelper.convertPageInfo(applicationInstanceDTOS,DevopsEnvPreviewInstanceDTO.class);
+        PageInfo<DevopsEnvPreviewInstanceDTO>  devopsEnvPreviewInstanceDTOPageInfo = new PageInfo<>();
+        BeanUtils.copyProperties(applicationInstanceDTOS,devopsEnvPreviewInstanceDTOPageInfo);
+        return devopsEnvPreviewInstanceDTOPageInfo;
     }
 
 
@@ -1044,6 +1046,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return;
+        }else {
+            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                applicationInstanceRepository.deleteById(instanceId);
+                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+            }
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
                 .queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
@@ -1084,17 +1092,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        //实例相关对象数据库操作
-        DevopsEnvCommandE devopsEnvCommandE;
-        if (instanceE.getCommandId() == null) {
-            devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.INSTANCE.getType(), instanceE.getId());
-        } else {
-            devopsEnvCommandE = devopsEnvCommandRepository
-                    .query(instanceE.getCommandId());
-        }
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandRepository.listByObjectAll(ObjectType.INSTANCE.getType(), instanceId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         applicationInstanceRepository.deleteById(instanceId);
     }
 

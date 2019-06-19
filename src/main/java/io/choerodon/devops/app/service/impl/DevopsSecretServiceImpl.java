@@ -207,6 +207,12 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return true;
+        }else {
+            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                devopsSecretRepository.deleteSecret(secretId);
+                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+            }
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
                 .queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
@@ -239,10 +245,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         DevopsSecretE devopsSecretE = devopsSecretRepository.queryBySecretId(secretId);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsSecretE.getCommandId());
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
-        devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.SECRET.toValue(), devopsSecretE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t));
+
+        devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.SECRET.toValue(), devopsSecretE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t));
         devopsSecretRepository.deleteSecret(secretId);
     }
 

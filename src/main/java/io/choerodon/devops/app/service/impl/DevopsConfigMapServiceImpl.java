@@ -165,11 +165,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId());
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsConfigMapE.getDevopsEnvCommandE().getId());
-
-        //更新数据
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandRepository.listByObjectAll(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         devopsConfigMapRepository.delete(configMapId);
     }
 
@@ -216,6 +212,12 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return;
+        }else {
+            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                devopsConfigMapRepository.delete(configMapId);
+                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+            }
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
 

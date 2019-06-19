@@ -22,8 +22,6 @@ public interface DeployMsgHandlerService {
 
     void updateInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String commandMsg);
 
-    void helmReleaseDelete(String key, Long clusterId);
-
     void handlerDomainCreateMessage(String key, String msg, Long clusterId);
 
     void helmReleasePreUpgrade(String key, String msg, Long clusterId);
@@ -81,7 +79,4 @@ public interface DeployMsgHandlerService {
     void handleConfigUpdate(String key, String msg, Long clusterId);
 
     void operateDockerRegistrySecretResp(String key, String msg, Long clusterId);
-
-    void deleteCommandById(DevopsEnvCommandE commandE);
-
 }

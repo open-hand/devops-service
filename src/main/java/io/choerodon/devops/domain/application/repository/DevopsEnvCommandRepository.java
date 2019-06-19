@@ -26,4 +26,6 @@ public interface DevopsEnvCommandRepository {
     void deleteById(Long commandId);
 
     List<DevopsEnvCommandE> listByObjectAll(String objectType, Long objectId);
+
+    void deleteCommandById(DevopsEnvCommandE commandE);
 }

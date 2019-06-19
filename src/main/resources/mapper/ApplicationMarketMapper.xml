@@ -127,17 +127,7 @@
         dam.description,
         dam.category,
         dam.img_url,
-        dam.publish_level,
-        EXISTS (
-        SELECT
-        1
-        FROM
-        devops_app_instance dai
-        JOIN devops_env de ON dai.env_id = de.id
-        WHERE
-        dai.app_id = dam.app_id
-        AND de.project_id != da.project_id
-        ) is_deployed
+        dam.publish_level
         FROM
         devops_application da
         JOIN devops_app_market dam ON da.id = dam.app_id

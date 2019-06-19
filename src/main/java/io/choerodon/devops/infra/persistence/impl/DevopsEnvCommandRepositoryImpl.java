@@ -6,7 +6,11 @@ import java.util.List;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.domain.application.repository.DevopsCommandEventRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandLogRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
 import io.choerodon.devops.infra.common.util.PageRequestUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -28,18 +32,17 @@ import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepository {
     private static final String INSTANCE_TYPE = "instance";
 
+    @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
-    private DevopsEnvCommandLogMapper devopsEnvCommandLogMapper;
-    private DevopsCommandEventMapper commandEventMapper;
 
+    @Autowired
+    DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
 
-    public DevopsEnvCommandRepositoryImpl(DevopsEnvCommandMapper devopsEnvCommandMapper,
-                                          DevopsEnvCommandLogMapper devopsEnvCommandLogMapper,
-                                          DevopsCommandEventMapper commandEventMapper) {
-        this.devopsEnvCommandMapper = devopsEnvCommandMapper;
-        this.devopsEnvCommandLogMapper = devopsEnvCommandLogMapper;
-        this.commandEventMapper = commandEventMapper;
-    }
+    @Autowired
+    DevopsEnvCommandLogRepository devopsEnvCommandLogRepository;
+
+    @Autowired
+    DevopsCommandEventRepository devopsCommandEventRepository;
 
 
     @Override
@@ -106,5 +109,15 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
         devopsEnvCommandDO.setObjectId(objectId);
         devopsEnvCommandDO.setObject(objectType);
         return ConvertHelper.convertList(devopsEnvCommandMapper.select(devopsEnvCommandDO), DevopsEnvCommandE.class);
+    }
+
+    @Override
+    public void deleteCommandById(DevopsEnvCommandE commandE) {
+        if (commandE.getDevopsEnvCommandValueE() != null) {
+            devopsEnvCommandValueRepository.deleteById(commandE.getDevopsEnvCommandValueE().getId());
+        }
+        devopsEnvCommandLogRepository.deleteByCommandId(commandE.getId());
+        devopsCommandEventRepository.deleteByCommandId(commandE.getId());
+        devopsEnvCommandMapper.deleteByPrimaryKey(commandE.getId());
     }
 }

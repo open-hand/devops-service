@@ -112,7 +112,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest) {
         PageInfo<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
-                projectId, null,  instanceId, pageRequest, null);
+                projectId, null, instanceId, pageRequest, null);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         if (!devopsServiceByPage.getList().isEmpty()) {
@@ -471,6 +471,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return;
+        }else {
+            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                devopsServiceRepository.delete(id);
+                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+            }
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
 
@@ -510,11 +516,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
-
         //更新数据
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandRepository.listByObjectAll(ObjectType.SERVICE.getType(), devopsServiceE.getId()).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         devopsServiceRepository.delete(id);
     }
 

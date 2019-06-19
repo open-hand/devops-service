@@ -515,29 +515,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsEnvPodRepository.deleteByName(podName, podNameSpace);
         }
 
-        if (KeyParseTool.getResourceType(key).equals(ResourceType.SERVICE.getType())) {
-            DevopsServiceE devopsServiceE =
-                    devopsServiceRepository.selectByNameAndEnvId(
-                            KeyParseTool.getResourceName(key),
-                            envId);
-            //更新网络数据
-            if (devopsServiceE != null) {
-                devopsEnvCommandRepository.listByObjectAll(SERVICE_KIND, devopsServiceE.getId()).forEach(this::deleteCommandById);
-                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
-                devopsServiceRepository.delete(devopsServiceE.getId());
-            }
-        }
-        if (KeyParseTool.getResourceType(key).equals(ResourceType.INGRESS.getType())) {
-
-            DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
-                    envId, KeyParseTool.getResourceName(key));
-            if (devopsIngressE != null) {
-                devopsEnvCommandRepository.listByObjectAll(INGRESS_KIND, devopsIngressE.getId()).forEach(this::deleteCommandById);
-                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
-                devopsIngressRepository.deleteIngress(devopsIngressE.getId());
-                devopsIngressRepository.deleteIngressPath(devopsIngressE.getId());
-            }
-        }
         devopsEnvResourceRepository.deleteByEnvIdAndKindAndName(
                 envId,
                 KeyParseTool.getResourceType(key),
@@ -584,24 +561,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsEnvCommandE.setStatus(commandStatus);
             devopsEnvCommandE.setError(msg);
             devopsEnvCommandRepository.update(devopsEnvCommandE);
-        }
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void helmReleaseDelete(String key, Long clusterId) {
-
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
-            return;
-        }
-
-        ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(key, envId);
-        if (instanceE != null) {
-            devopsEnvCommandRepository.listByObjectAll(INSTANCE_KIND, instanceE.getId()).forEach(this::deleteCommandById);
-            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, instanceE.getId(), "C7NHelmRelease");
-            applicationInstanceRepository.deleteById(instanceE.getId());
         }
     }
 
@@ -1703,16 +1662,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsRegistrySecretE.setStatus(true);
         }
         devopsRegistrySecretRepository.update(devopsRegistrySecretE);
-    }
-
-    @Override
-    public void deleteCommandById(DevopsEnvCommandE commandE) {
-        if (commandE.getDevopsEnvCommandValueE() != null) {
-            commandValueRepository.deleteById(commandE.getDevopsEnvCommandValueE().getId());
-        }
-        commandLogRepository.deleteByCommandId(commandE.getId());
-        devopsCommandEventRepository.deleteByCommandId(commandE.getId());
-        devopsEnvCommandRepository.deleteById(commandE.getId());
     }
 }
 

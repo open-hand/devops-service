@@ -191,18 +191,18 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             Map<String, Object> maps = json.deserialize(params, Map.class);
             if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
                 devopsBranchDOS = PageHelper.startPage(
-                        pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(
-                                appId, null,
-                                TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                        pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(
+                        appId, null,
+                        TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             } else {
                 devopsBranchDOS = PageHelper.startPage(
-                        pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> devopsBranchMapper.list(
-                                appId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                        pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(
+                        appId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             }
         } else {
             devopsBranchDOS = PageHelper.startPage(
-                    pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> devopsBranchMapper.list(appId, null, null));
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(appId, null, null));
         }
         return ConvertPageHelper.convertPageInfo(devopsBranchDOS, DevopsBranchE.class);
     }
@@ -231,13 +231,8 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         List<TagDO> tagList = tagTotalList.stream()
                 .filter(t -> filterTag(t, params))
                 .collect(Collectors.toCollection(ArrayList::new));
-        int totalPageSizes = tagList.size() / size + (tagList.size() % size == 0 ? 0 : 1);
-        if (page > totalPageSizes - 1 && page > 0) {
-            page = totalPageSizes - 1;
-        }
         List<TagDTO> tagDTOS = tagList.stream()
                 .sorted(this::sortTag)
-                .skip(page.longValue() * size).limit(size)
                 .map(TagDTO::new)
                 .parallel()
                 .peek(t -> {
@@ -248,7 +243,13 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                     t.getCommit().setUrl(String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId()));
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
-        tagsPage.setSize(size);
+        if (tagDTOS.size() < size) {
+            tagsPage.setSize(tagDTOS.size());
+        }
+        if (tagDTOS.size() < (page * size)) {
+            tagsPage.setSize(tagDTOS.size() - ((page - 1) * size));
+        }
+        tagsPage.setPageSize(size);
         tagsPage.setTotal(tagList.size());
         tagsPage.setPageNum(page);
         tagsPage.setList(tagDTOS);
@@ -447,9 +448,9 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             });
         }
         int total = count[0] + count[1] + count[2];
-        Page<MergeRequestDTO> pageResult = new Page<>();
+        PageInfo<MergeRequestDTO> pageResult = new PageInfo<>();
         BeanUtils.copyProperties(page, pageResult);
-        pageResult.setContent(pageContent);
+        pageResult.setList(pageContent);
         Map<String, Object> result = new HashMap<>();
         result.put("mergeCount", count[0]);
         result.put("openCount", count[1]);
