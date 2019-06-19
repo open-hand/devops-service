@@ -97,7 +97,7 @@ class TemplateStore {
     envId,
     page = this.pageInfo.current,
     size = this.pageInfo.pageSize,
-    sort = { field: "organizationId", order: "desc" },
+    sort = { field: "organization_id", order: "desc" },
     datas = {
       searchParam: {},
       param: "",
@@ -110,7 +110,7 @@ class TemplateStore {
     return axios
       .post(
         `/devops/v1/organizations/${orgId}/app_templates/list_by_options?page=${page}&size=${size}&sort=${sort.field ||
-          "organizationId"},${sort.order}`,
+          "organization_id"},${sort.order}`,
         JSON.stringify(datas)
       )
       .then(data => {

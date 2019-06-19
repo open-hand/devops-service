@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import {Content, Permission} from "@choerodon/boot";
-import { Modal, Button, Table, Tooltip, Popover } from 'choerodon-ui';
+import { Modal, Button, Table, Tooltip, Popover, Icon } from 'choerodon-ui';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import EnvOverviewStore from '../../../../../stores/project/envOverview';
@@ -41,7 +41,7 @@ export default class Networking extends Component {
       .then(data => {
         if (data && !data.failed) {
           this.setState({
-            expandedRowKeys: _.map(data.content, item => item.id)
+            expandedRowKeys: _.map(data.list, item => item.id)
           })
         }
       })
@@ -142,48 +142,69 @@ export default class Networking extends Component {
           <span className='c7n-networking-ingress'>{domain}</span>
         </div>
       ))
-    ) : (<span>{formatMessage({ id: 'ist.networking.no.ingress' })}</span>);
+    ) : (<span className='c7n-networking-no-ingress'>{formatMessage({ id: 'ist.networking.no.ingress' })}</span>);
     return content;
   };
 
   renderExternalIp = (record) => {
     const { config: { externalIps } } = record;
-    const text = externalIps && externalIps.length ? externalIps[0] : '<none>';
-    const content = externalIps && externalIps.length > 1 ? (
+    const ipDom = _.map(externalIps, item => (
+      <div className='c7n-networking-tag-dom'>
+        <div className='c7n-networking-tag'>{item}</div>
+      </div>
+    ));
+    const popoverDom = externalIps && externalIps.length > 2 ? (
       <Popover
-        content={_.map(externalIps, item => (<div key={item}>{item}</div>))}
+        arrowPointAtCenter
+        placement='bottomRight'
+        getPopupContainer={triggerNode => triggerNode.parentNode}
+        content={ipDom}
       >
-        ···
+        <Icon type='expand_more' className='c7n-networking-expend-icon' />
       </Popover>
     ) : null;
+    const content = externalIps && externalIps.length ? ipDom[0] : '<none>';
 
     return (
       <div>
-        <span>{text}</span>
         {content}
+        <div className='c7n-networking-tag-more'>
+          {ipDom[1] || null}
+          {popoverDom}
+        </div>
       </div>
     )
   };
 
   renderPorts = (record) => {
+    const {
+      intl: { formatMessage },
+    } = this.props;
     const { config: { ports } } = record;
-    const { nodePort, port, targetPort } = ports[0];
-    const text = `${nodePort || '-'}/${port}/${targetPort}`;
-    const content = ports && ports.length > 1 ? (
+    const portDom = _.map(ports, ({ nodePort, port, targetPort }) => (
+      <div className='c7n-networking-tag-dom'>
+        <div className='c7n-networking-tag'>
+          {nodePort || formatMessage({ id: 'null' })} {port} {targetPort}
+        </div>
+      </div>
+    ));
+    const popoverDom = ports && ports.length > 2 ? (
       <Popover
-        content={
-          _.map(ports, ({ nodePort, port, targetPort }) => (
-            <div key={port}>{nodePort || '-'}/{port}/{targetPort}</div>
-          ))
-        }
+        arrowPointAtCenter
+        placement='bottomRight'
+        getPopupContainer={triggerNode => triggerNode.parentNode}
+        content={portDom}
       >
-        ···
+        <Icon type='expand_more' className='c7n-networking-expend-icon' />
       </Popover>
     ) : null;
     return (
       <div>
-        <span>{text}</span>
-        {content}
+        {portDom[0]}
+        <div className='c7n-networking-tag-more'>
+          {portDom[1] || null}
+          {popoverDom}
+        </div>
       </div>
     )
   };
