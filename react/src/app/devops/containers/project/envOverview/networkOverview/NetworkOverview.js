@@ -400,7 +400,7 @@ export default class NetworkOverview extends Component {
       }
     }
     let searchParam = {};
-    const page = pagination.current - 1;
+    const page = pagination.current;
     if (Object.keys(filters).length) {
       searchParam = filters;
     }
@@ -452,7 +452,7 @@ export default class NetworkOverview extends Component {
         true,
         projectId,
         envId,
-        isLastItem ? current - 2 : current - 1,
+        isLastItem ? current - 1 : current,
       );
       store.setInfo({
         filters: {},

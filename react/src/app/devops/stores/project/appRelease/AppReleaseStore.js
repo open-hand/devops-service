@@ -36,9 +36,9 @@ class AppReleaseStore {
   }
 
   @action setUnPageInfo(page) {
-    this.unPageInfo.current = page.number + 1;
-    this.unPageInfo.total = page.totalElements;
-    this.unPageInfo.pageSize = page.size;
+    this.unPageInfo.current = page.pageNum;
+    this.unPageInfo.total = page.total;
+    this.unPageInfo.pageSize = page.pageSize;
   }
 
   @computed get getUnPageInfo() {
@@ -57,9 +57,9 @@ class AppReleaseStore {
   }
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -85,7 +85,7 @@ class AppReleaseStore {
   loadData = ({
                 isRefresh = false,
                 projectId,
-                page = 0,
+                page = 1,
                 size,
                 sorter = {field: 'id', order: 'desc'},
                 postData = {
@@ -116,13 +116,13 @@ class AppReleaseStore {
   };
 
   handleData = (data, type) => {
-    const {number, size, totalElements, content} = data;
+    const {pageNum, pageSize, total, list} = data;
     if (type === '1') {
-      this.setUnReleaseData(content);
-      this.setUnPageInfo({number, size, totalElements});
+      this.setUnReleaseData(list);
+      this.setUnPageInfo({pageNum, pageSize, total});
     } else {
-      this.setReleaseData(content);
-      this.setPageInfo({number, size, totalElements});
+      this.setReleaseData(list);
+      this.setPageInfo({pageNum, pageSize, total});
     }
   };
 }

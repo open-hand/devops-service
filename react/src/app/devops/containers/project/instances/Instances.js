@@ -86,7 +86,7 @@ class Instances extends Component {
     const envId = EnvOverviewStore.getTpEnvId;
     InstancesStore.setAppPage(page);
     InstancesStore.setAppPageSize(size);
-    InstancesStore.loadAppNameByEnv(projectId, envId, page - 1, size);
+    InstancesStore.loadAppNameByEnv(projectId, envId, page, size);
   };
 
   /**
@@ -162,7 +162,7 @@ class Instances extends Component {
     const time = Date.now();
 
     InstancesStore.setIstTableFilter({ filters, param });
-    InstancesStore.setIstPage({ page: current - 1, pageSize });
+    InstancesStore.setIstPage({ page: current, pageSize });
     InstancesStore.loadInstanceAll(true, projectId, {
       envId,
       appId,
@@ -622,25 +622,20 @@ class Instances extends Component {
       resourceData,
       resourceLoading,
     } = this.state;
-    const loading = resourceLoading;
     if (expend) {
       if (!resourceData[id]) {
-        loading[id] = true;
-        this.setState({ resourceLoading: loading });
+        this.setState({ resourceLoading: _.assign({}, resourceLoading, { [id]: true}) });
       }
       InstancesStore.loadResource(projectId, id)
         .then(data => {
           if (!resourceData[id]) {
-            loading[id] = false;
-            this.setState({ resourceLoading: loading });
+            this.setState({ resourceLoading: _.assign({}, resourceLoading, { [id]: false}) });
           }
           if (data && !data.failed) {
             if (resourceData[id] && _.isEqual(data, resourceData[id])) {
               return;
             }
-            const resource = resourceData;
-            resource[id] = data;
-            this.setState({ resourceData: resource })
+            this.setState({ resourceData: _.assign({}, resourceData, { [id]: data}) })
           }
         })
     }

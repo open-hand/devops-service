@@ -1637,7 +1637,7 @@ const zhCN = {
   //组织层证书管理
   'certificate.head': '证书管理',
   'certificate.file.add': '添加证书文件',
-  'certificate.file.add.tip': '您需在此粘贴输入对应的文件内容。',
+  'certificate.file.add.tip': '您需在此添加对应的文件内容，目前只支持base64格式的证书内容',
   'certificate.key.content': 'KEY文件内容',
   'certificate.cert.content': 'CERT文件内容',
   'certificate.permission': '证书权限分配',

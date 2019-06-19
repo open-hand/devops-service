@@ -26,7 +26,7 @@ export default class Elements extends Component {
     editMode: false,
     eleIdForEdit: undefined,
     param: '',
-    page: 0,
+    page: 1,
     filters: {},
     sorter: null,
     enableDeleteLoading: false,
@@ -73,7 +73,7 @@ export default class Elements extends Component {
 
     ElementsStore.loadListData(
       projectId,
-      current - 1,
+      current,
       pageSize,
       realSorter,
       {
@@ -91,7 +91,7 @@ export default class Elements extends Component {
     } = this.props;
 
     const { page, pageSize, param, filters, sorter } = this.state;
-    const currentPage = (toPage || toPage === 0) ? toPage : page;
+    const currentPage = toPage || page;
     const {
       getPageInfo: {
         pageSize: storePageSize,

@@ -47,9 +47,9 @@ class DomainStore {
   }
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -137,7 +137,7 @@ class DomainStore {
     isRefresh = true,
     proId,
     envId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     pageSize = this.pageInfo.pageSize,
     sort = { field: "id", order: "desc" },
     datas = {
@@ -166,9 +166,9 @@ class DomainStore {
   };
 
   handleData = data => {
-    this.setAllData(data.content);
-    const { number, size, totalElements } = data;
-    this.setPageInfo({ number, size, totalElements });
+    const { pageNum, size, total, list } = data;
+    this.setAllData(list);
+    this.setPageInfo({ pageNum, size, total });
   };
 
   loadDataById = (projectId, id) =>

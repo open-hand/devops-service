@@ -37,7 +37,7 @@ class InstancesStore {
 
   @observable istPage = {
     pageSize: height <= 900 ? 10 : 15,
-    page: 0,
+    page: 1,
   };
 
   @observable appPageInfo = {};
@@ -114,9 +114,9 @@ class InstancesStore {
   @action setPageInfo(page) {
     if (this.requireTime <= page.requireTime) {
       this.pageInfo = {
-        current: page.number + 1,
-        total: page.totalElements,
-        pageSize: page.size,
+        current: page.pageNum,
+        total: page.total,
+        pageSize: page.pageSize,
       };
     }
   }
@@ -127,9 +127,9 @@ class InstancesStore {
 
   @action setNetworkingPageInfo(page) {
     this.networkingPageInfo = {
-      current: page.number + 1,
-      total: page.totalElements,
-      pageSize: page.size,
+      current: page.pageNum,
+      total: page.total,
+      pageSize: page.pageSize,
     };
   }
 
@@ -143,16 +143,16 @@ class InstancesStore {
     } else {
       this.istPage = {
         pageSize: height <= 900 ? 10 : 15,
-        page: 0,
+        page: 1,
       };
     }
   }
 
   @action setAppPageInfo(page) {
     this.appPageInfo = {
-      current: page.number + 1,
-      total: page.totalElements,
-      pageSize: page.size,
+      current: page.pageNum,
+      total: page.total,
+      pageSize: page.pageSize,
     };
   }
 
@@ -209,7 +209,7 @@ class InstancesStore {
 
   @action setIstAll(data) {
     if (this.requireTime <= data.requireTime) {
-      this.istAll = data.content;
+      this.istAll = data.list;
       this.requireTime = data.requireTime;
     }
   }
@@ -291,9 +291,9 @@ class InstancesStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          const { number, size, totalElements, content } = data;
-          this.setIstAll({ content, requireTime });
-          this.setPageInfo({ number, size, totalElements, requireTime });
+          const { pageNum, pageSize, total, list } = data;
+          this.setIstAll({ list, requireTime });
+          this.setPageInfo({ pageNum, pageSize, total, requireTime });
         }
         this.changeLoading(false);
       });
@@ -307,14 +307,14 @@ class InstancesStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          this.setAppNameByEnv(data.content);
-          if (this.appId && !_.find(data.content, ['id', this.appId])) {
+          this.setAppNameByEnv(data.list);
+          if (this.appId && !_.find(data.list, ['id', this.appId])) {
             this.setAppId(null);
           }
-          const { number, size, totalElements } = data;
-          const pageInfo = { number, size, totalElements };
+          const { pageNum, pageSize, total, list } = data;
+          const pageInfo = { pageNum, pageSize, total };
           this.setAppPageInfo(pageInfo);
-          return data.content;
+          return list;
         }
         return false;
       });
@@ -382,16 +382,16 @@ class InstancesStore {
         return data;
       });
 
-  loadNetworking = (projectId, instanceId, page = 0, pageSize = (height <= 900 ? 10 : 15)) => {
+  loadNetworking = (projectId, instanceId, page = 1, pageSize = (height <= 900 ? 10 : 15)) => {
     this.changeNetworkingLoading(true);
     return axios
       .post(`/devops/v1/projects/${projectId}/service/${instanceId}/listByInstance?page=${page}&size=${pageSize}`)
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          const { content, number, totalElements, size } = res;
-          this.setNetworking(content);
-          this.setNetworkingPageInfo({ number, totalElements, size });
+          const { list, pageNum, total, pageSize } = res;
+          this.setNetworking(list);
+          this.setNetworkingPageInfo({ pageNum, total, pageSize });
         }
         this.changeNetworkingLoading(false);
         return data;

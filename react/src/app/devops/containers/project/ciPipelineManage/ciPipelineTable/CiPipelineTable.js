@@ -170,7 +170,7 @@ class CiPipelineTable extends Component {
     this.props.store.loadPipelines(
       true,
       DevPipelineStore.selectedApp,
-      pagination.current - 1,
+      pagination.current,
       pagination.pageSize,
     );
   };
@@ -180,7 +180,7 @@ class CiPipelineTable extends Component {
     store.loadPipelines(
       spin,
       DevPipelineStore.selectedApp,
-      store.pagination.current - 1,
+      store.pagination.current,
       store.pagination.pageSize,
     );
   };

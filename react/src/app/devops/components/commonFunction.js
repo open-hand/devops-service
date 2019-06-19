@@ -80,9 +80,9 @@ export const commonComponent = storeName => {
         const lastCount = total % pageSize;
         const totalPage = Math.ceil(total / pageSize);
         if (lastCount === 1 && current === totalPage && current > 1) {
-          this.loadAllData(current - 2, envId);
-        } else {
           this.loadAllData(current - 1, envId);
+        } else {
+          this.loadAllData(current, envId);
         }
         hasValid ? this.removeDeleteModal(id) : this.closeRemove();
       }
@@ -186,7 +186,7 @@ export const commonComponent = storeName => {
         false,
         id,
         envId,
-        current - 1,
+        current,
         pageSize,
         sort,
         postData,

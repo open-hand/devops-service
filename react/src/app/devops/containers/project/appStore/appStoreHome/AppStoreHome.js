@@ -76,7 +76,7 @@ class AppStoreHome extends Component {
       param: param.toString(),
     };
     this.setState({ pageSize: pagination.pageSize });
-    AppStoreStore.loadApps(projectId, pagination.current - 1, pagination.pageSize, sort, postData);
+    AppStoreStore.loadApps(projectId, pagination.current, pagination.pageSize, sort, postData);
   };
 
   /**

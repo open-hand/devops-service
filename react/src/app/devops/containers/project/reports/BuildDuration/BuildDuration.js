@@ -40,7 +40,7 @@ class BuildDuration extends Component {
     ReportsStore.setStartTime(moment().subtract(6, 'days'));
     ReportsStore.setEndTime(moment());
     ReportsStore.setAppId(null);
-    ReportsStore.setPageInfo({ number: 0, totalElements: 0, size: HEIGHT <= 900 ? 10 : 15 });
+    ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15 });
     ReportsStore.setStartDate();
     ReportsStore.setEndDate();
     ReportsStore.setAllApps([]);
@@ -233,7 +233,7 @@ class BuildDuration extends Component {
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
     ReportsStore.loadBuildDuration(projectId, appId, startTime, endTime);
     if (pageInfo) {
-      ReportsStore.loadBuildTable(projectId, appId, startTime, endTime, pageInfo.current - 1, pageInfo.pageSize);
+      ReportsStore.loadBuildTable(projectId, appId, startTime, endTime, pageInfo.current, pageInfo.pageSize);
     } else {
       ReportsStore.loadBuildTable(projectId, appId, startTime, endTime);
     }

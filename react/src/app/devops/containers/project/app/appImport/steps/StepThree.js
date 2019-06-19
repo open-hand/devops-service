@@ -107,7 +107,7 @@ class StepThree extends Component {
       }
     }
     let searchParam = {};
-    let page = pagination.current - 1;
+    let page = pagination.current;
     if (Object.keys(filters).length) {
       searchParam = filters;
     }

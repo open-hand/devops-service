@@ -121,7 +121,7 @@ class MergeRequestStore {
     return this.assigneeCount;
   }
 
-  loadMergeRquest(appId, key = 'opened', page = 0, size = 10, projectId = AppState.currentMenuType.id) {
+  loadMergeRquest(appId, key = 'opened', page = 1, size = 10, projectId = AppState.currentMenuType.id) {
     this.setMerge([]);
     this.setLoading(true);
     const userId = this.getUserId;
@@ -131,14 +131,14 @@ class MergeRequestStore {
           const response = handleProptError(res);
           if (response) {
             const { pageResult, closeCount, mergeCount, openCount, totalCount } = response;
-            const { number, totalElements, content } = pageResult;
+            const { pageNum, total, list, pageSize } = pageResult;
             this.setPageInfo({
-              current: number + 1,
-              pageSize: pageResult.size,
-              total: totalElements,
+              current: pageNum,
+              pageSize,
+              total,
             }, key);
 
-            this.setMerge(content, key);
+            this.setMerge(list, key);
             this.setCount({
               closeCount,
               mergeCount,
@@ -159,16 +159,16 @@ class MergeRequestStore {
           const response = handleProptError(res);
           if (response) {
             const { pageResult, closeCount, mergeCount, openCount, totalCount } = response;
-            const { number, totalElements, content } = pageResult;
+            const { pageNum, total, list, pageSize } = pageResult;
             this.setPageInfo({
-              current: number + 1,
-              pageSize: pageResult.size,
-              total: totalElements,
+              current: pageNum,
+              pageSize,
+              total,
             }, key);
-            this.setMerge(content, key);
+            this.setMerge(list, key);
             if (key === 'opened') {
               const assignee = pageResult
-                ? _.filter(content, a => a.assignee && a.assignee.id === userId) : [];
+                ? _.filter(list, a => a.assignee && a.assignee.id === userId) : [];
               this.setAssignee(assignee);
               this.setAssigneeCount(assignee.length);
             }

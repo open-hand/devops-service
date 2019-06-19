@@ -122,7 +122,7 @@ class TemplateHome extends Component {
   }
 
   componentDidMount() {
-    this.loadAllData(0);
+    this.loadAllData(1);
   }
 
   componentWillUnmount() {
@@ -331,7 +331,7 @@ class TemplateHome extends Component {
           TemplateStore.addData(organizationId, postData)
             .then(res => {
               if (res) {
-                this.loadAllData(0);
+                this.loadAllData(1);
                 this.setState({ type: false, show: false });
               }
               this.setState({
@@ -359,7 +359,7 @@ class TemplateHome extends Component {
           TemplateStore.updateData(organizationId, formData)
             .then(res => {
               if (res) {
-                this.loadAllData(0);
+                this.loadAllData(1);
                 this.setState({ show: false });
                 this.setState({
                   submitting: false,

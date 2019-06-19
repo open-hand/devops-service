@@ -110,7 +110,7 @@ class ContainerHome extends Component {
       sort.order = SORTER_MAP[sorter.order];
     }
     let searchParam = {};
-    const page = pagination.current - 1;
+    const page = pagination.current;
     if (Object.keys(filters).length) {
       searchParam = filters;
     }
@@ -355,7 +355,7 @@ class ContainerHome extends Component {
    * @param option
    */
   handleEnvSelect = (value, option) => {
-    this.setState({ page: 0, pageSize: 10, envName: option.props.children });
+    this.setState({ page: 1, pageSize: 10, envName: option.props.children });
     EnvOverviewStore.setTpEnvId(value);
     const { ContainerStore } = this.props;
     ContainerStore.setInfo({

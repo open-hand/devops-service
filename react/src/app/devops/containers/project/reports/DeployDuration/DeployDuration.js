@@ -97,7 +97,7 @@ class DeployDuration extends Component {
     ReportsStore.setAllData([]);
     ReportsStore.setStartTime(moment().subtract(6, 'days'));
     ReportsStore.setEndTime(moment());
-    ReportsStore.setPageInfo({ number: 0, totalElements: 0, size: HEIGHT <= 900 ? 10 : 15 });
+    ReportsStore.setPageInfo({ pageNum: 1, total: 0, pageSize: HEIGHT <= 900 ? 10 : 15 });
     ReportsStore.setStartDate();
     ReportsStore.setEndDate();
   }
@@ -133,7 +133,7 @@ class DeployDuration extends Component {
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
     const { pageInfo } = ReportsStore;
-    ReportsStore.loadDeployDurationTable(projectId, this.envId, startTime, endTime, this.appIds.slice(), pageInfo.current - 1, pageInfo.pageSize);
+    ReportsStore.loadDeployDurationTable(projectId, this.envId, startTime, endTime, this.appIds.slice(), pageInfo.current, pageInfo.pageSize);
   };
 
   /**
@@ -368,7 +368,7 @@ class DeployDuration extends Component {
     const projectId = AppState.currentMenuType.id;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    ReportsStore.loadDeployDurationTable(projectId, this.envId, startTime, endTime, this.appIds.slice(), pagination.current - 1, pagination.pageSize);
+    ReportsStore.loadDeployDurationTable(projectId, this.envId, startTime, endTime, this.appIds.slice(), pagination.current, pagination.pageSize);
   };
 
   @action

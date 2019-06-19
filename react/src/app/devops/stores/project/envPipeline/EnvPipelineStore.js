@@ -65,9 +65,9 @@ class EnvPipelineStore {
   };
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -329,7 +329,7 @@ class EnvPipelineStore {
   loadPrm = (
     projectId,
     envId = null,
-    page = 0,
+    page = 1,
     size = 10,
     sort = { field: "", order: "desc" },
     postData = { searchParam: {}, param: "" }
@@ -345,9 +345,9 @@ class EnvPipelineStore {
         if (data && data.failed) {
           Choerodon.prompt(data.message);
         } else {
-          this.setMbr(data.content);
-          const { number, size, totalElements } = data;
-          const page = { number, size, totalElements };
+          const { pageNum, pageSize, total, list } = data;
+          this.setMbr(list);
+          const page = { pageNum, pageSize, total };
           this.setPageInfo(page);
         }
         this.tableLoading(false);
@@ -382,7 +382,7 @@ class EnvPipelineStore {
   loadInstance = (
     projectId,
     envId,
-    page = 0,
+    page = 1,
     size = 10,
     datas = { searchParam: {}, param: "" }
   ) =>
@@ -395,7 +395,7 @@ class EnvPipelineStore {
         if (data && data.failed) {
           Choerodon.prompt(data.message);
         } else {
-          this.setIst(data.content);
+          this.setIst(data.list);
         }
       });
 

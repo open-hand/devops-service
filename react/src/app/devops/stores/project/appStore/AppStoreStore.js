@@ -20,7 +20,7 @@ class AppStoreStore {
   @observable impApp = {};
 
   @action setPageInfo(page) {
-    this.pageInfo = { current: page.number + 1, total: page.totalElements, pageSize: page.size };
+    this.pageInfo = { current: page.pageNum, total: page.total, pageSize: page.pageSize };
   }
 
   @computed get getPageInfo() {
@@ -88,7 +88,7 @@ class AppStoreStore {
   }
 
 
-  loadApps = (projectId, page = 0, size = 20, sorter = { id: 'asc' }, datas = {
+  loadApps = (projectId, page = 1, size = 20, sorter = { id: 'asc' }, datas = {
     searchParam: {},
     param: '',
   }) => axios.post(`devops/v1/projects/${projectId}/apps_market/list_all?page=${page}&size=${size}`, JSON.stringify(datas))
@@ -183,9 +183,9 @@ class AppStoreStore {
     });
 
   handleData = (data) => {
-    this.setAppCards(data.content);
-    const { number, size, totalElements } = data;
-    const page = { number, size, totalElements };
+    const { pageNum, pageSize, total, list } = data;
+    this.setAppCards(list);
+    const page = { pageNum, pageSize, total };
     this.setPageInfo(page);
   };
 }

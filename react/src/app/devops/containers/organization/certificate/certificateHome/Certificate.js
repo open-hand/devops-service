@@ -87,7 +87,7 @@ export default class Certificate extends Component {
 
     const result = handleCheckerProptError(response);
     if (result) {
-      CertificateStore.setTableFilter({ page: 0 });
+      CertificateStore.setTableFilter({ page: 1 });
       CertificateStore.loadCertData(organizationId);
       this.setState({
         removeDisplay: false,
@@ -136,7 +136,7 @@ export default class Certificate extends Component {
       : sorter;
 
     CertificateStore.setTableFilter({
-      page: current - 1,
+      page: current,
       pageSize,
       postData: {
         searchParam: filters,

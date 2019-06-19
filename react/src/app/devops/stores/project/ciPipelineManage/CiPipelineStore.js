@@ -21,39 +21,39 @@ class CiPipelineStore {
 
   @observable loading = true;
 
-  loadPipelines(spin, appId, page = 0, size = this.pagination.pageSize, projectId = AppState.currentMenuType.id) {
+  loadPipelines(spin, appId, page = 1, size = this.pagination.pageSize, projectId = AppState.currentMenuType.id) {
     spin && this.setLoading(true);
     return axios.get(`/devops/v1/projects/${projectId}/pipeline/page?appId=${appId}&page=${page}&size=${size}`)
       .then((res) => {
         const response = handleProptError(res);
         if (response) {
           this.setPagination({
-            current: res.number + 1,
-            pageSize: res.size,
-            total: res.totalElements,
+            current: res.pageNum,
+            pageSize: res.pageSize,
+            total: res.total,
           });
-          this.setCiPipelines(res.content);
+          this.setCiPipelines(res.list);
         }
         spin && this.setLoading(false);
-        return res.content;
+        return res.list;
       });
   }
 
-  loadPipelinesByBc(appId, branch, page = 0, size = this.pagination.pageSize, projectId = AppState.currentMenuType.id) {
+  loadPipelinesByBc(appId, branch, page = 1, size = this.pagination.pageSize, projectId = AppState.currentMenuType.id) {
     this.setLoading(true);
     return axios.get(`/devops/v1/projects/${projectId}/pipeline/page?appId=${appId}&branch=${branch}&page=${page}&size=${size}`)
       .then((res) => {
         const response = handleProptError(res);
         if (response) {
           this.setPagination({
-            current: res.number + 1,
-            pageSize: res.size,
-            total: res.totalElements,
+            current: res.pageNum,
+            pageSize: res.pageSize,
+            total: res.total,
           });
-          this.setCiPipelines(res.content);
+          this.setCiPipelines(res.list);
         }
         this.setLoading(false);
-        return res.content;
+        return res.list;
       });
   }
 

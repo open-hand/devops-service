@@ -55,7 +55,7 @@ export default class CertTable extends Component {
 
       this.removeDeleteModal(id);
 
-      store.setTableFilter({ page: 0 });
+      store.setTableFilter({ page: 1 });
       store.loadCertData(true, projectId, envId);
     }
     this.setState({ deleteLoading: false });
@@ -86,7 +86,7 @@ export default class CertTable extends Component {
       : sorter;
 
     const params = {
-      page: current - 1,
+      page: current,
       pageSize,
       postData: {
         searchParam: filters,

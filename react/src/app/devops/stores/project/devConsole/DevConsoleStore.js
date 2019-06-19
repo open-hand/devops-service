@@ -46,11 +46,11 @@ class DevConsoleStore {
 
   loadBranchList = (projectId, appId) => {
     this.setBranchLoading(true);
-    axios.post(`/devops/v1/projects/${projectId}/apps/${appId}/git/branches?page=0&size=50`)
+    axios.post(`/devops/v1/projects/${projectId}/apps/${appId}/git/branches?page=1&size=50`)
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
-          this.setBranchList(data.content);
+          this.setBranchList(data.list);
         }
         this.setBranchLoading(false);
       });

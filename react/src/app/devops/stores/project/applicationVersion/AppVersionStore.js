@@ -90,7 +90,7 @@ class AppVersionStore {
       .catch(err => Choerodon.prompt(err));
   };
 
-  loadData = (proId, app, page = this.pageInfo.current - 1, pageSize = this.pageInfo.pageSize, sort = { field: "id", order: "descend" },
+  loadData = (proId, app, page = this.pageInfo.current, pageSize = this.pageInfo.pageSize, sort = { field: "id", order: "descend" },
               filter = {
                 searchParam: {},
                 param: "",
@@ -103,9 +103,9 @@ class AppVersionStore {
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
-          const { number, size, totalElements, content } = res;
-          this.setAllData(content);
-          this.setPageInfo({ current: number + 1, pageSize: size, total: totalElements });
+          const { pageNum, pageSize, total, list } = res;
+          this.setAllData(list);
+          this.setPageInfo({ current: pageNum, pageSize, total });
         }
         this.changeLoading(false);
       });

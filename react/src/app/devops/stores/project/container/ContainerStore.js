@@ -37,9 +37,9 @@ class ContainerStore {
   @observable appId = null;
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -167,7 +167,7 @@ class ContainerStore {
    * @param sort
    * @param datas 筛选条件
    */
-  loadData = (isRefresh = false, proId, envId = this.envId, appId = this.appId, page = 0, size = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, datas = {
+  loadData = (isRefresh = false, proId, envId = this.envId, appId = this.appId, page = 1, size = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, datas = {
     searchParam: {},
     param: '',
   }) => {
@@ -193,9 +193,9 @@ class ContainerStore {
   };
 
   handleData = (data) => {
-    this.setAllData(data.content);
-    const { number, size, totalElements } = data;
-    const page = { number, size, totalElements };
+    const { pageNum, pageSize, total, list } = data;
+    this.setAllData(list);
+    const page = { pageNum, pageSize, total };
     this.setPageInfo(page);
   };
 

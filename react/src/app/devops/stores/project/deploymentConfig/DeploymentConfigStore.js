@@ -37,9 +37,9 @@ class DeploymentConfigStore {
   };
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -115,7 +115,7 @@ class DeploymentConfigStore {
    */
   loadAllData = (
     projectId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     size = this.pageInfo.pageSize,
     sort = { field: "id", order: "desc" },
     postData = {
@@ -128,9 +128,9 @@ class DeploymentConfigStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          const {content, totalElements, number, size} = res;
-          this.setPageInfo({number, totalElements, size});
-          this.setConfigList(content);
+          const {list, total, pageNum, pageSize} = res;
+          this.setPageInfo({pageNum, total, pageSize});
+          this.setConfigList(list);
         }
         this.changeLoading(false);
       });
@@ -147,7 +147,7 @@ class DeploymentConfigStore {
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
-          this.setAppDate(data.content);
+          this.setAppDate(data.list);
         }
         return res;
       });

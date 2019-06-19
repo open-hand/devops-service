@@ -80,7 +80,7 @@ export default class AppSidebar extends Component {
   }, 600);
 
   state = {
-    page: 0,
+    page: 1,
     id: '',
     projectId: menu.id,
     submitting: false,
@@ -238,7 +238,7 @@ export default class AppSidebar extends Component {
       }
     }
     let searchParam = {};
-    let page = pagination.current - 1;
+    let page = pagination.current;
     if (Object.keys(filters).length) {
       searchParam = filters;
     }

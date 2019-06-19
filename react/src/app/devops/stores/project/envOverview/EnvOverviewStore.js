@@ -57,9 +57,9 @@ class EnvOverviewStore {
   }
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -207,7 +207,7 @@ class EnvOverviewStore {
                 const time = Date.now();
 
                 InstancesStore.setAppPageSize(appPageSize);
-                loadAppNameByEnv(projectId, this.tpEnvId, 0, appPageSize);
+                loadAppNameByEnv(projectId, this.tpEnvId, 1, appPageSize);
                 loadInstanceAll(true, projectId, {
                   envId: this.tpEnvId,
                   appId: getAppId,
@@ -264,7 +264,7 @@ class EnvOverviewStore {
     spin,
     proId,
     envId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     pageSize = this.pageInfo.pageSize,
     sort = { field: 'id', order: 'desc' },
     datas = {
@@ -282,9 +282,9 @@ class EnvOverviewStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          const { number, size, totalElements } = data;
-          this.setPageInfo({ number, size, totalElements });
-          this.setDomin(data.content);
+          const { pageNum, pageSize, total, list } = data;
+          this.setPageInfo({ pageNum, pageSize, total });
+          this.setDomin(list);
         }
         spin && this.changeLoading(false);
       });
@@ -294,7 +294,7 @@ class EnvOverviewStore {
     spin,
     proId,
     envId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     pageSize = this.pageInfo.pageSize,
     sort = { field: 'id', order: 'desc' },
     datas = {
@@ -312,9 +312,9 @@ class EnvOverviewStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          const { number, size, totalElements } = data;
-          this.setPageInfo({ number, size, totalElements });
-          this.setNetwork(data.content);
+          const { pageNum, pageSize, total, list } = data;
+          this.setPageInfo({ pageNum, pageSize, total });
+          this.setNetwork(list);
         }
         spin && this.changeLoading(false);
       });
@@ -324,7 +324,7 @@ class EnvOverviewStore {
     spin,
     proId,
     envId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     pageSize = this.pageInfo.pageSize,
   ) => {
     spin && this.changeLoading(true);
@@ -335,9 +335,9 @@ class EnvOverviewStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          const { number, size, totalElements } = data;
-          this.setPageInfo({ number, size, totalElements });
-          this.setLog(data.content);
+          const { pageNum, pageSize, total, list } = data;
+          this.setPageInfo({ pageNum, pageSize, total });
+          this.setLog(list);
         }
         spin && this.changeLoading(false);
       });

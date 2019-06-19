@@ -20,7 +20,7 @@ class ApplicationVersion extends Component {
     super(props);
     const menu = AppState.currentMenuType;
     this.state = {
-      page: 0,
+      page: 1,
       pageSize: HEIGHT <= 900 ? 10 : 15,
       param: [],
       filters: {},
@@ -57,7 +57,7 @@ class ApplicationVersion extends Component {
 
   tableChange = (pagination, filters, sorter, paras) => {
     const { current, pageSize } = pagination;
-    const page = current - 1;
+    const page = current;
     const sort = _.isEmpty(sorter) ? {
       filed: 'id',
       columnKey: 'id',
@@ -87,7 +87,7 @@ class ApplicationVersion extends Component {
     this.loadAllData(page, pageSize, sorter, postData);
   };
 
-  loadAllData = (page = 0, sizes = this.state.pageSize, sort = { field: 'id', order: 'descend' }, filter = { searchParam: {}, param: '' }) => {
+  loadAllData = (page = 1, sizes = this.state.pageSize, sort = { field: 'id', order: 'descend' }, filter = { searchParam: {}, param: '' }) => {
     const { AppVersionStore } = this.props;
     const { appId } = this.state;
     const { id: projectId } = AppState.currentMenuType;

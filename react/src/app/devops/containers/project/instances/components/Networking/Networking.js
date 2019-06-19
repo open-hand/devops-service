@@ -75,7 +75,7 @@ export default class Networking extends Component {
     store.loadNetworking(
       projectId,
       id,
-      current - 1,
+      current,
       pageSize,
     );
   };

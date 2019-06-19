@@ -11,9 +11,9 @@ class ExportChartStore {
 
   @action setPageInfo(page) {
     this.pageInfo = {
-      current: page.number + 1,
-      total: page.totalElements,
-      pageSize: page.size,
+      current: page.pageNum,
+      total: page.total,
+      pageSize: page.pageSize,
     };
   }
 
@@ -43,7 +43,7 @@ class ExportChartStore {
 
   loadApps = ({
     projectId,
-    page = 0,
+    page = 1,
     size = 10,
     search = {
       searchParam: {},
@@ -81,9 +81,9 @@ class ExportChartStore {
     );
 
   handleData = data => {
-    this.setApp(data.content);
-    const { number, size, totalElements } = data;
-    const page = { number, size, totalElements };
+    const { pageNum, pageSize, total, list } = data;
+    this.setApp(list);
+    const page = { pageNum, pageSize, total };
     this.setPageInfo(page);
   };
 }

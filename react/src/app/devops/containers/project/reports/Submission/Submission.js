@@ -58,7 +58,7 @@ class Submission extends Component {
     super(props);
     this.state = {
       appId: null,
-      page: 0,
+      page: 1,
       dateType: "seven",
     };
   }
@@ -123,8 +123,8 @@ class Submission extends Component {
       .format()
       .split("T")[0]
       .replace(/-/g, "/");
-    this.setState({ page: page - 1 });
-    loadCommitsRecord(projectId, startTime, endTime, appId, page - 1);
+    this.setState({ page });
+    loadCommitsRecord(projectId, startTime, endTime, appId, page);
   };
 
   loadData = () => {

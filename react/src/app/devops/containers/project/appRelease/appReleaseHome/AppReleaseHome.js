@@ -274,7 +274,7 @@ class AppReleaseHome extends Component {
   handleChangeTabs = value => {
     const { AppReleaseStore } = this.props;
     AppReleaseStore.loadData({
-      page: 0,
+      page: 1,
       key: value,
       projectId: this.state.projectId,
       size: this.state.pageSize,
@@ -308,7 +308,7 @@ class AppReleaseHome extends Component {
         sort.order = 'desc';
       }
     }
-    const page = pagination.current - 1;
+    const page = pagination.current;
     let searchParam = {};
     if (Object.keys(filters).length) {
       searchParam = filters;

@@ -25,9 +25,9 @@ class PipelineRecordStore {
   };
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -73,7 +73,7 @@ class PipelineRecordStore {
   loadRecordList = (
     projectId,
     pipelineId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     size = this.pageInfo.pageSize,
     searchData,
     sort = { field: "id", order: "desc" },
@@ -94,9 +94,9 @@ class PipelineRecordStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          const {content, totalElements, number, size} = res;
-          this.setPageInfo({number, totalElements, size});
-          this.setRecordListList(content);
+          const {list, total, pageNum, pageSize} = res;
+          this.setPageInfo({pageNum, total, pageSize});
+          this.setRecordListList(list);
         }
         this.changeLoading(false);
       });

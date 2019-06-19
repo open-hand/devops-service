@@ -74,9 +74,9 @@ class AppStore {
   }
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -84,9 +84,9 @@ class AppStore {
   }
 
   @action setMbrPageInfo(page) {
-    this.mbrPageInfo.current = page.number + 1;
-    this.mbrPageInfo.total = page.totalElements;
-    this.mbrPageInfo.pageSize = page.size;
+    this.mbrPageInfo.current = page.pageNum;
+    this.mbrPageInfo.total = page.total;
+    this.mbrPageInfo.pageSize = page.pageSize;
   }
 
   @computed get getMbrPageInfo() {
@@ -182,7 +182,7 @@ class AppStore {
     isRefresh = false,
     projectId,
     envId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     size = this.pageInfo.pageSize,
     sort = { field: '', order: 'desc' },
     postData = { searchParam: {}, param: '' },
@@ -203,9 +203,9 @@ class AppStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          const { number, size, totalElements, content } = res;
-          const page = { number, size, totalElements };
-          this.setAllData(content);
+          const { pageNum, pageSize, total, list } = res;
+          const page = { pageNum, pageSize, total };
+          this.setAllData(list);
           this.setPageInfo(page);
         }
         spin && this.changeLoading(false);
@@ -278,7 +278,7 @@ class AppStore {
    */
   loadPrm = (
     projectId,
-    page = 0,
+    page = 1,
     size = 10,
     sort = { field: '', order: 'desc' },
     postData = { searchParam: {}, param: '' },
@@ -293,9 +293,9 @@ class AppStore {
         if (data && data.failed) {
           Choerodon.prompt(data.message);
         } else {
-          this.setMbr(data.content);
-          const { number, size, totalElements } = data;
-          const page = { number, size, totalElements };
+          const { pageNum, pageSize, total, list } = data;
+          this.setMbr(list);
+          const page = { pageNum, pageSize, total };
           this.setMbrPageInfo(page);
         }
         this.setTableLoading(false);

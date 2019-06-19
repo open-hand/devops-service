@@ -152,7 +152,7 @@ class DevPipelineStore {
                 BranchStore.loadBranchList({ projectId });
                 break;
               case 'tag':
-                AppTagStore.queryTagData(projectId, 0, 10);
+                AppTagStore.queryTagData(projectId, 1, 10);
                 break;
               case 'merge':
                 MergeRequestStore.loadMergeRquest(this.selectedApp);
@@ -166,9 +166,9 @@ class DevPipelineStore {
                 break;
               case 'all':
                 DevConsoleStore.loadBranchList(projectId, this.selectedApp);
-                AppTagStore.queryTagData(projectId, 0, 10);
-                MergeRequestStore.loadMergeRquest(this.selectedApp, 'opened', 0, 5);
-                MergeRequestStore.loadMergeRquest(this.selectedApp, 'merged', 0, 5);
+                AppTagStore.queryTagData(projectId, 1, 10);
+                MergeRequestStore.loadMergeRquest(this.selectedApp, 'opened', 1, 5);
+                MergeRequestStore.loadMergeRquest(this.selectedApp, 'merged', 1, 5);
                 MergeRequestStore.loadUrl(projectId, this.selectedApp);
                 ReportsStore.loadCommits(projectId, START, END, [this.selectedApp]);
                 AppVersionStore.loadData(projectId, this.selectedApp);

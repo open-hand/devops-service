@@ -7,7 +7,7 @@ import { SORTER_MAP } from '../../../common/Constants';
 const HEIGHT = getWindowHeight();
 
 const INIT_TABLE_FILTER = {
-  page: 0,
+  page: 1,
   pageSize: HEIGHT <= 900 ? 10 : 15,
   param: [],
   filters: {},
@@ -165,14 +165,14 @@ class CertificateStore {
 
     const result = handleProptError(response);
     if (result) {
-      const { content, totalElements, number, size } = result;
+      const { list, total, pageNum, pageSize } = result;
 
       this.setPageInfo({
-        current: number + 1,
-        pageSize: size,
-        total: totalElements,
+        current: pageNum,
+        pageSize,
+        total,
       });
-      this.setCertData(content);
+      this.setCertData(list);
     }
 
     this.setCertLoading(false);
@@ -208,12 +208,12 @@ class CertificateStore {
         const result = handleProptError(data);
 
         if (result) {
-          const { number, size, totalElements, content } = result;
-          this.setProData(content);
+          const { pageNum, pageSize, total, list } = result;
+          this.setProData(list);
           this.setProPageInfo({
-            current: number + 1,
-            total: totalElements,
-            pageSize: size,
+            current: pageNum,
+            total,
+            pageSize,
           });
         }
 

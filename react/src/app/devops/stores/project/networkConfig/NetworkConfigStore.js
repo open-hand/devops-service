@@ -37,9 +37,9 @@ class NetworkConfigStore {
   };
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -160,7 +160,7 @@ class NetworkConfigStore {
     isRefresh = false,
     proId,
     envId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     pageSize = this.pageInfo.pageSize,
     sort = { field: "id", order: "desc" },
     datas = {
@@ -181,9 +181,9 @@ class NetworkConfigStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          const { number, size, totalElements, content } = res;
-          this.setAllData(content);
-          this.setPageInfo({ number, size, totalElements });
+          const { pageNum, pageSize, total, list } = res;
+          this.setAllData(list);
+          this.setPageInfo({ pageNum, pageSize, total });
         }
         spin && this.changeLoading(false);
         this.changeIsRefresh(false);
