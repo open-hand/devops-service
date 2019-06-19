@@ -76,7 +76,7 @@ public class DevopsProjectDO extends BaseDTO {
         this.harborProjectUserEmail = harborProjectUserEmail;
     }
 
-    public Boolean isHarborProjectIsPrivate() {
+    public Boolean getHarborProjectIsPrivate() {
         return harborProjectIsPrivate;
     }
 
