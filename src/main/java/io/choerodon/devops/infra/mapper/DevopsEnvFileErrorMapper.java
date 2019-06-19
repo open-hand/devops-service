@@ -2,12 +2,12 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO;
-import io.choerodon.mybatis.common.BaseMapper;
 
-public interface DevopsEnvFileErrorMapper extends BaseMapper<DevopsEnvFileErrorDO> {
+public interface DevopsEnvFileErrorMapper extends Mapper<DevopsEnvFileErrorDO> {
 
     DevopsEnvFileErrorDO queryLatestByEnvAndPath(@Param("envId") Long envId, @Param("filePath") String filePath);
 

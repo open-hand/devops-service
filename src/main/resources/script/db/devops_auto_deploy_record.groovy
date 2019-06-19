@@ -57,4 +57,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_auto_deploy_record.groovy') {
     changeSet(author: 'scp', id: '2019-03-01-del-column') {
         dropColumn(columnName: "instance_status", tableName: "devops_auto_deploy_record")
     }
+
+    changeSet(author: 'Sheep', id: '2019-06-11-delete-table') {
+        dropTable(tableName: "devops_auto_deploy_record")
+    }
 }

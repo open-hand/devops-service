@@ -19,4 +19,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_auto_deploy_value.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'Sheep', id: '2019-06-11-delete-table') {
+        dropTable(tableName: "devops_auto_deploy_value")
+    }
 }

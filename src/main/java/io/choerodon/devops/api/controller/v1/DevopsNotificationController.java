@@ -3,33 +3,23 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 import java.util.Set;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.dto.DevopsNotificationDTO;
 import io.choerodon.devops.api.dto.ResourceCheckDTO;
+import io.choerodon.devops.app.service.DevopsNotificationService;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.DevopsNotificationDTO;
-import io.choerodon.devops.app.service.DevopsNotificationService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.base.annotation.Permission;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -135,7 +125,7 @@ public class DevopsNotificationController {
     @ApiOperation(value = "通知列表")
     @CustomPageRequest
     @PostMapping(value = "/list")
-    public ResponseEntity<Page<DevopsNotificationDTO>> listByOptions(
+    public ResponseEntity<PageInfo<DevopsNotificationDTO>> listByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id", required = false)

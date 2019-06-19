@@ -4,7 +4,9 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -24,7 +26,6 @@ import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.tool.UUIDTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,17 +106,17 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public Page<ApplicationReleasingDTO> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest,
-                                                                   String searchParam) {
-        Page<ApplicationMarketE> applicationMarketEPage = applicationMarketRepository.listMarketAppsByProjectId(
+    public PageInfo<ApplicationReleasingDTO> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest,
+                                                                       String searchParam) {
+        PageInfo<ApplicationMarketE> applicationMarketEPage = applicationMarketRepository.listMarketAppsByProjectId(
                 projectId, pageRequest, searchParam);
-        return ConvertPageHelper.convertPage(
+        return ConvertPageHelper.convertPageInfo(
                 applicationMarketEPage,
                 ApplicationReleasingDTO.class);
     }
 
     @Override
-    public Page<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         if (projectE != null && projectE.getOrganization() != null) {
             Long organizationId = projectE.getOrganization().getId();
@@ -124,10 +125,10 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             if (projectEList != null) {
                 projectIds = projectEList.stream().map(ProjectE::getId).collect(Collectors.toList());
             }
-            Page<ApplicationMarketE> applicationMarketEPage = applicationMarketRepository.listMarketApps(
+            PageInfo<ApplicationMarketE> applicationMarketEPage = applicationMarketRepository.listMarketApps(
                     projectIds, pageRequest, searchParam);
 
-            return ConvertPageHelper.convertPage(
+            return ConvertPageHelper.convertPageInfo(
                     applicationMarketEPage,
                     ApplicationReleasingDTO.class);
         }
@@ -300,9 +301,9 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public Page<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish,
+    public PageInfo<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish,
                                                     PageRequest pageRequest, String searchParam) {
-        return ConvertPageHelper.convertPage(
+        return ConvertPageHelper.convertPageInfo(
                 applicationMarketRepository.getVersions(projectId, appMarketId, isPublish, pageRequest, searchParam),
                 AppMarketVersionDTO.class);
     }
@@ -507,7 +508,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             chartUtil.downloadChart(applicationVersionE, organization, projectE, applicationE, destpath);
         });
     }
-
 
     private void createVersion(AppMarketVersionDTO appVersion,
                                String organizationCode,

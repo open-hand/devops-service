@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO;
@@ -23,7 +24,6 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1ObjectMeta;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,16 +145,16 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
     @Override
-    public Page<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
-        Page<DevopsConfigMapE> devopsConfigMapES = devopsConfigMapRepository.pageByEnv(
+    public PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
+        PageInfo<DevopsConfigMapE> devopsConfigMapES = devopsConfigMapRepository.pageByEnv(
                 envId, pageRequest, searchParam);
-        devopsConfigMapES.forEach(devopsConfigMapE -> {
+        devopsConfigMapES.getList().forEach(devopsConfigMapE -> {
             List<String> keys = new ArrayList<>();
             gson.fromJson(devopsConfigMapE.getValue(), Map.class).forEach((key, value) ->
                     keys.add(key.toString()));
             devopsConfigMapE.setKey(keys);
         });
-        return ConvertPageHelper.convertPage(devopsConfigMapES, DevopsConfigMapRepDTO.class);
+        return ConvertPageHelper.convertPageInfo(devopsConfigMapES, DevopsConfigMapRepDTO.class);
     }
 
 

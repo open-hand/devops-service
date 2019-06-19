@@ -4,21 +4,22 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 /**
@@ -36,15 +37,15 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public Page<ApplicationInstanceE> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                              Long envId, Long versionId, Long appId, String params) {
+    public PageInfo<ApplicationInstanceE> listApplicationInstance(Long projectId, PageRequest pageRequest,
+                                                                  Long envId, Long versionId, Long appId, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-        Page<ApplicationInstanceDO> applicationInstanceDOPage = PageHelper.doPageAndSort(pageRequest, () ->
+        PageInfo<ApplicationInstanceDO> applicationInstanceDOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 applicationInstanceMapper
                         .listApplicationInstance(projectId, envId, versionId, appId, searchParamMap, paramMap));
-        return ConvertPageHelper.convertPage(applicationInstanceDOPage, ApplicationInstanceE.class);
+        return ConvertPageHelper.convertPageInfo(applicationInstanceDOPage, ApplicationInstanceE.class);
     }
 
     @Override
@@ -160,18 +161,18 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public Page<DeployDO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId,
-                                                    Date startTime, Date endTime) {
-        return PageHelper.doPageAndSort(pageRequest, () ->
+    public PageInfo<DeployDO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId,
+                                                        Date startTime, Date endTime) {
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 applicationInstanceMapper
                         .listDeployFrequency(projectId, envIds, appId, new java.sql.Date(startTime.getTime()),
                                 new java.sql.Date(endTime.getTime())));
     }
 
     @Override
-    public Page<DeployDO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long envId, Long[] appIds,
-                                               Date startTime, Date endTime) {
-        return PageHelper.doPageAndSort(pageRequest, () ->
+    public PageInfo<DeployDO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long envId, Long[] appIds,
+                                                   Date startTime, Date endTime) {
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 applicationInstanceMapper
                         .listDeployTime(projectId, envId, appIds, new java.sql.Date(startTime.getTime()),
                                 new java.sql.Date(endTime.getTime())));

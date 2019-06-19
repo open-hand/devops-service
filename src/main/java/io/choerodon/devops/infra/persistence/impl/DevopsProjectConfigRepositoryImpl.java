@@ -1,9 +1,11 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
@@ -11,14 +13,10 @@ import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
 import io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -78,14 +76,14 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
     }
 
     @Override
-    public Page<DevopsProjectConfigE> listByOptions(Long projectId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsProjectConfigE> listByOptions(Long projectId, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
 
-        Page<DevopsProjectConfigDO> configDOPage = PageHelper
-                .doPageAndSort(pageRequest, () -> configMapper.list(projectId,
+        PageInfo<DevopsProjectConfigDO> configDOPage = PageHelper
+                .startPage(pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> configMapper.list(projectId,
                         (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
                         (String) mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
-        return ConvertPageHelper.convertPage(configDOPage, DevopsProjectConfigE.class);
+        return ConvertPageHelper.convertPageInfo(configDOPage, DevopsProjectConfigE.class);
     }
 
     @Override

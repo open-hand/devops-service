@@ -10,11 +10,12 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageInfo;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.eventhandler.DemoEnvSetupSagaHandler;
@@ -43,7 +44,6 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.models.*;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
@@ -222,7 +222,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Page<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
+    public PageInfo<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         // 查询用户是否在该gitlab project下
@@ -237,11 +237,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
-        Page<DevopsBranchE> branches =
+        PageInfo<DevopsBranchE> branches =
                 devopsGitRepository.listBranches(applicationId, pageRequest, params);
-        Page<BranchDTO> page = new Page<>();
+        PageInfo<BranchDTO> page = new PageInfo<>();
         BeanUtils.copyProperties(branches, page);
-        page.setContent(branches.stream().map(t -> {
+        page.setList(branches.getList().stream().map(t -> {
             Issue issue = null;
             if (t.getIssueId() != null) {
                 issue = agileRepository.queryIssue(projectId, t.getIssueId(), organization.getId());
@@ -318,7 +318,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Page<TagDTO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size) {
+    public PageInfo<TagDTO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());

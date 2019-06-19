@@ -4,10 +4,12 @@ import java.sql.Date;
 import java.util.List;
 
 import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
-import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
-public interface DevopsGitlabCommitMapper extends BaseMapper<DevopsGitlabCommitDO> {
+import io.choerodon.mybatis.common.Mapper;
+
+
+public interface DevopsGitlabCommitMapper extends Mapper<DevopsGitlabCommitDO> {
     List<DevopsGitlabCommitDO> listCommits(@Param("projectId") Long projectId,
                                            @Param("appIds") List<Long> appId,
                                            @Param("startDate") Date startDate,

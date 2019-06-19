@@ -1,9 +1,9 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.AgentNodeInfoDTO;
 import io.choerodon.devops.api.dto.ClusterNodeInfoDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
 
@@ -45,7 +45,7 @@ public interface ClusterNodeInfoService {
      * @param pageRequest    the page parameters
      * @return a page of nodes
      */
-    Page<ClusterNodeInfoDTO> pageQueryClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest);
+    PageInfo<ClusterNodeInfoDTO> pageQueryClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest);
 
     /**
      * get cluster node information by cluster id and node name

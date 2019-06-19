@@ -13,8 +13,7 @@ import io.choerodon.devops.domain.application.event.DevOpsUserPayload
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload
 import io.choerodon.devops.domain.application.repository.ApplicationRepository
 import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository
-import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository
-import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository
+
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository
 import io.choerodon.devops.domain.application.repository.GitlabRepository
 import org.junit.runner.RunWith
@@ -47,15 +46,13 @@ class DevopsSagaHandlerSpec extends Specification {
     private ApplicationRepository applicationRepository = PowerMockito.mock(ApplicationRepository)
     private ApplicationTemplateRepository applicationTemplateRepository = PowerMockito.mock(ApplicationTemplateRepository)
     private DevopsEnvironmentRepository devopsEnvironmentRepository = PowerMockito.mock(DevopsEnvironmentRepository)
-    private DevopsAutoDeployRecordRepository deployRecordRepository = PowerMockito.mock(DevopsAutoDeployRecordRepository)
-    private DevopsAutoDeployRepository devopsAutoDeployRepository = PowerMockito.mock(DevopsAutoDeployRepository)
     private GitlabRepository gitlabRepository = PowerMockito.mock(GitlabRepository)
     private ApplicationInstanceService applicationInstanceService = PowerMockito.mock(ApplicationInstanceService)
 
 
     private DevopsSagaHandler devopsSagaHandler = new DevopsSagaHandler(devopsEnvironmentService,
             devopsGitService, applicationTemplateService, applicationService, devopsGitlabPipelineService, applicationRepository,
-            applicationTemplateRepository, devopsEnvironmentRepository,deployRecordRepository,devopsAutoDeployRepository,gitlabRepository,applicationInstanceService)
+            applicationTemplateRepository, devopsEnvironmentRepository,gitlabRepository,applicationInstanceService)
 
     def "DevopsCreateEnv"() {
         given: '初始化GitlabProjectPayload'

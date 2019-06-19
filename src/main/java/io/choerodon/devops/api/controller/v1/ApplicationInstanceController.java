@@ -4,8 +4,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.core.domain.Page;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.*;
@@ -13,7 +14,6 @@ import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -54,7 +54,7 @@ public class ApplicationInstanceController {
     @ApiOperation(value = "分页查询应用部署")
     @CustomPageRequest
     @PostMapping(value = "/list_by_options")
-    public ResponseEntity<Page<ApplicationInstanceDTO>> pageByOptions(
+    public ResponseEntity<PageInfo<DevopsEnvPreviewInstanceDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
@@ -660,7 +660,7 @@ public class ApplicationInstanceController {
     @ApiOperation(value = "获取部署次数报表table")
     @CustomPageRequest
     @PostMapping(value = "/env_commands/frequencyDetail")
-    public ResponseEntity<Page<DeployDetailDTO>> pageDeployFrequencyDetail(
+    public ResponseEntity<PageInfo<DeployDetailDTO>> pageDeployFrequencyDetail(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数") PageRequest pageRequest,
@@ -694,7 +694,7 @@ public class ApplicationInstanceController {
     @ApiOperation(value = "获取部署时长报表table")
     @CustomPageRequest
     @PostMapping(value = "/env_commands/timeDetail")
-    public ResponseEntity<Page<DeployDetailDTO>> pageDeployTimeDetail(
+    public ResponseEntity<PageInfo<DeployDetailDTO>> pageDeployTimeDetail(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -774,7 +774,7 @@ public class ApplicationInstanceController {
     @ApiOperation(value = "获取实例操作日志")
     @CustomPageRequest
     @PostMapping(value = "/command_log/{appInstanceId}")
-    public ResponseEntity<Page<AppInstanceCommandLogDTO>> listCommandLogs(
+    public ResponseEntity<PageInfo<AppInstanceCommandLogDTO>> listCommandLogs(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数") PageRequest pageRequest,

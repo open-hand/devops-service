@@ -2,9 +2,10 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 
 public interface DevopsMergeRequestRepository {
 
@@ -16,9 +17,9 @@ public interface DevopsMergeRequestRepository {
 
     Integer update(DevopsMergeRequestE devopsMergeRequestE);
 
-    Page<DevopsMergeRequestE> getMergeRequestList(Integer gitlabProjectId, String state, PageRequest pageRequest);
+    PageInfo<DevopsMergeRequestE> getMergeRequestList(Integer gitlabProjectId, String state, PageRequest pageRequest);
 
-    Page<DevopsMergeRequestE> getByGitlabProjectId(Integer gitlabProjectId, PageRequest pageRequest);
+    PageInfo<DevopsMergeRequestE> getByGitlabProjectId(Integer gitlabProjectId, PageRequest pageRequest);
 
     List<DevopsMergeRequestE> getByGitlabProjectId(Integer gitlabProjectId);
 

@@ -1,20 +1,17 @@
 package io.choerodon.devops.infra.dataobject;
 
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
-@ModifyAudit
 @Table(name = "devops_env_command")
-@VersionAudit
-public class DevopsEnvCommandDO extends AuditDomain {
+public class DevopsEnvCommandDO extends BaseDTO {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String object;
     private Long objectId;

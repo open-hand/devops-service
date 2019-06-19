@@ -3,15 +3,15 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Date;
 import java.util.Optional;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.CommitFormRecordDTO;
 import io.choerodon.devops.api.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -73,7 +73,7 @@ public class DevopsGitlabCommitController {
     @CustomPageRequest
     @ApiOperation(value = "获取应用下的代码提交历史记录")
     @PostMapping("/record")
-    public ResponseEntity<Page<CommitFormRecordDTO>> getRecordCommits(
+    public ResponseEntity<PageInfo<CommitFormRecordDTO>> getRecordCommits(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ids", required = true)

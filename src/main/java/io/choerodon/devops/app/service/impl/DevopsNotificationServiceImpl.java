@@ -6,9 +6,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.dto.*;
@@ -23,7 +23,6 @@ import io.choerodon.devops.infra.common.util.enums.TriggerObject;
 import io.choerodon.devops.infra.common.util.enums.TriggerType;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.feign.NotifyClient;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,10 +124,10 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     }
 
     @Override
-    public Page<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest) {
-        Page<DevopsNotificationDTO> page = ConvertPageHelper.convertPage(notificationRepository.listByOptions(projectId, envId, params, pageRequest), DevopsNotificationDTO.class);
+    public PageInfo<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest) {
+        PageInfo<DevopsNotificationDTO> page = ConvertPageHelper.convertPageInfo(notificationRepository.listByOptions(projectId, envId, params, pageRequest), DevopsNotificationDTO.class);
         List<DevopsNotificationDTO> list = new ArrayList<>();
-        page.getContent().forEach(t -> {
+        page.getList().forEach(t -> {
             if ("specifier".equals(t.getNotifyObject())) {
                 List<DevopsNotificationUserRelDTO> userRelDTOS = ConvertHelper.convertList(notificationUserRelRepository.queryByNoticaionId(t.getId()), DevopsNotificationUserRelDTO.class);
                 userRelDTOS = userRelDTOS.stream().peek(u -> {
@@ -143,9 +142,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             }
             list.add(t);
         });
-        Page<DevopsNotificationDTO> dtoPage = new Page<>();
+        PageInfo<DevopsNotificationDTO> dtoPage = new PageInfo<>();
         BeanUtils.copyProperties(page, dtoPage);
-        dtoPage.setContent(list);
+        dtoPage.setList(list);
         return dtoPage;
     }
 

@@ -1,23 +1,21 @@
 package io.choerodon.devops.infra.dataobject;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * @author zongw.lee@gmail.com
  * @since 2019/03/11
  */
-@ModifyAudit
-@VersionAudit
 @Table(name = "devops_project_config")
-public class DevopsProjectConfigDO {
+public class DevopsProjectConfigDO extends BaseDTO {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;

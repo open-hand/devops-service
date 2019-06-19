@@ -1,12 +1,11 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
 import java.util.Set;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.DevopsNotificationDTO;
 import io.choerodon.devops.api.dto.ResourceCheckDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -22,7 +21,7 @@ public interface DevopsNotificationService {
 
     DevopsNotificationDTO queryById(Long notificationId);
 
-    Page<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
+    PageInfo<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
 
 
     Set<String> check(Long projectId, Long envId);

@@ -1,9 +1,9 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsConfigMapService {
 
@@ -19,6 +19,6 @@ public interface DevopsConfigMapService {
 
     DevopsConfigMapRepDTO query(Long configMapId);
 
-    Page<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
 
 }

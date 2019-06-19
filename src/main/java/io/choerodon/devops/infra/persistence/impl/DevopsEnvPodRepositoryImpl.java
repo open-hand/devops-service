@@ -1,23 +1,24 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Service;
-
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -72,32 +73,42 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
     }
 
     @Override
-    public Page<DevopsEnvPodE> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam) {
-        if (pageRequest.getSort() != null) {
-            Map<String, String> map = new HashMap<>();
-            map.put("name", "dp.`name`");
-            map.put("appName", "appName");
-            map.put("appVersion", "appVersion");
-            map.put("ip", "dp.ip");
-            map.put("creationDate", "dp.creation_date");
-            pageRequest.resetOrder("dp", map);
+    public PageInfo<DevopsEnvPodE> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam) {
+
+        Sort sort = pageRequest.getSort();
+        String sortResult = "";
+        if (sort != null) {
+            sortResult = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                    .map(t -> {
+                        String property = t.getProperty();
+                        if (property.equals("name")) {
+                            property = "dp.`name`";
+                        } else if (property.equals("ip")) {
+                            property = "dp.ip";
+                        } else if (property.equals("creationDate")) {
+                            property = "dp.creation_date";
+                        }
+
+                        return property + " " + t.getDirection();
+                    })
+                    .collect(Collectors.joining(","));
         }
-        Page<DevopsEnvPodDO> devopsEnvPodDOPage;
+        PageInfo<DevopsEnvPodDO> devopsEnvPodDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
-            devopsEnvPodDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> devopsEnvPodMapper.listAppPod(
-                            projectId,
-                            envId,
-                            appId,
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
+            devopsEnvPodDOPage = PageHelper.startPage(
+                    pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppPod(
+                    projectId,
+                    envId,
+                    appId,
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
         } else {
-            devopsEnvPodDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> devopsEnvPodMapper.listAppPod(projectId, envId, appId, null, null));
+            devopsEnvPodDOPage = PageHelper.startPage(
+                    pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppPod(projectId, envId, appId, null, null));
         }
 
-        return ConvertPageHelper.convertPage(devopsEnvPodDOPage, DevopsEnvPodE.class);
+        return ConvertPageHelper.convertPageInfo(devopsEnvPodDOPage, DevopsEnvPodE.class);
     }
 
     @Override

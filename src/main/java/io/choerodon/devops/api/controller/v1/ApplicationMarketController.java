@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletResponse;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
@@ -18,7 +19,6 @@ import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
 import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -73,7 +73,7 @@ public class ApplicationMarketController {
     @ApiOperation(value = "项目下分页查询所有发布在应用市场的应用")
     @CustomPageRequest
     @PostMapping(value = "/list")
-    public ResponseEntity<Page<ApplicationReleasingDTO>> pageListMarketAppsByProjectId(
+    public ResponseEntity<PageInfo<ApplicationReleasingDTO>> pageListMarketAppsByProjectId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -99,7 +99,7 @@ public class ApplicationMarketController {
     @ApiOperation(value = "查询发布级别为全局或者在本组织下的所有应用市场的应用")
     @CustomPageRequest
     @PostMapping(value = "/list_all")
-    public ResponseEntity<Page<ApplicationReleasingDTO>> listAllApp(
+    public ResponseEntity<PageInfo<ApplicationReleasingDTO>> listAllApp(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -190,7 +190,7 @@ public class ApplicationMarketController {
     @ApiOperation(value = "分页查询项目下单个应用市场的应用的版本")
     @CustomPageRequest
     @PostMapping("/{app_market_id}/versions")
-    public ResponseEntity<Page<AppMarketVersionDTO>> queryAppVersionsInProjectByPage(
+    public ResponseEntity<PageInfo<AppMarketVersionDTO>> queryAppVersionsInProjectByPage(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)

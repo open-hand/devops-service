@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.dto;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
 
 /**
  * 带有节点信息的集群信息
@@ -8,13 +8,13 @@ import io.choerodon.core.domain.Page;
  * @author zmf
  */
 public class ClusterWithNodesDTO extends DevopsClusterRepDTO {
-    private Page<ClusterNodeInfoDTO> nodes;
+    private PageInfo<ClusterNodeInfoDTO> nodes;
 
-    public Page<ClusterNodeInfoDTO> getNodes() {
+    public PageInfo<ClusterNodeInfoDTO> getNodes() {
         return nodes;
     }
 
-    public void setNodes(Page<ClusterNodeInfoDTO> nodes) {
+    public void setNodes(PageInfo<ClusterNodeInfoDTO> nodes) {
         this.nodes = nodes;
     }
 }

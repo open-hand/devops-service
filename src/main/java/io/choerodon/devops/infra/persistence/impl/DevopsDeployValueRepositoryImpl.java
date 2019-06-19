@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+
 import java.util.List;
 import java.util.Map;
 
@@ -7,17 +8,21 @@ import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
 import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsDeployValueDO;
 import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -32,13 +37,14 @@ public class DevopsDeployValueRepositoryImpl implements DevopsDeployValueReposit
     private DevopsDeployValueMapper valueMapper;
 
     @Override
-    public Page<DevopsDeployValueE> listByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params) {
+
+    public PageInfo<DevopsDeployValueE> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-        Page<DevopsDeployValueDO> devopsAutoDeployDOS = PageHelper
-                .doPageAndSort(pageRequest, () -> valueMapper.listByOptions(projectId, appId, envId, userId, searchParamMap, paramMap));
-        return ConvertPageHelper.convertPage(devopsAutoDeployDOS, DevopsDeployValueE.class);
+        PageInfo<DevopsDeployValueDO> devopsAutoDeployDOS = PageHelper
+                .startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> valueMapper.listByOptions(projectId, appId, envId, null, searchParamMap, paramMap));
+        return ConvertPageHelper.convertPageInfo(devopsAutoDeployDOS, DevopsDeployValueE.class);
     }
 
     @Override

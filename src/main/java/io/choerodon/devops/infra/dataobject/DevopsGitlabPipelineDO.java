@@ -1,23 +1,16 @@
 package io.choerodon.devops.infra.dataobject;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import java.util.Date;
+import javax.persistence.*;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.mybatis.entity.BaseDTO;
 
 
-@VersionAudit
-@ModifyAudit
 @Table(name = "devops_gitlab_pipeline")
-public class DevopsGitlabPipelineDO extends AuditDomain {
+public class DevopsGitlabPipelineDO extends BaseDTO {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long appId;
     private Long pipelineId;

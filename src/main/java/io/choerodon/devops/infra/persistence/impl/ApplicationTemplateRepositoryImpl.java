@@ -3,29 +3,28 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
 import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationTemplateDO;
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationTemplateMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by younger on 2018/3/27.
@@ -68,7 +67,7 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
     public ApplicationTemplateE update(ApplicationTemplateE applicationTemplateE) {
         ApplicationTemplateDO newApplicationTemplateDO = ConvertHelper.convert(applicationTemplateE,
                 ApplicationTemplateDO.class);
-        if(applicationTemplateE.getObjectVersionNumber() == null) {
+        if (applicationTemplateE.getObjectVersionNumber() == null) {
             ApplicationTemplateDO applicationTemplateDO = applicationTemplateMapper.selectByPrimaryKey(
                     applicationTemplateE.getId());
             newApplicationTemplateDO.setObjectVersionNumber(applicationTemplateDO.getObjectVersionNumber());
@@ -91,33 +90,33 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
     }
 
     @Override
-    public Page<ApplicationTemplateE> listByOptions(PageRequest pageRequest, Long organizationId, String params) {
-        Page<ApplicationVersionDO> applicationTemplateDOS;
+    public PageInfo<ApplicationTemplateE> listByOptions(PageRequest pageRequest, Long organizationId, String params) {
+        PageInfo<ApplicationVersionDO> applicationTemplateDOS;
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> maps = json.deserialize(params, Map.class);
             if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
-                applicationTemplateDOS = PageHelper.doPageAndSort(
-                        pageRequest, () -> applicationTemplateMapper.list(
-                                organizationId,
-                                null,
-                                TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                applicationTemplateDOS = PageHelper.startPage(
+                        pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationTemplateMapper.list(
+                        organizationId,
+                        null,
+                        TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             } else {
-                applicationTemplateDOS = PageHelper.doPageAndSort(
-                        pageRequest, () -> applicationTemplateMapper.list(
-                                organizationId,
-                                TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                applicationTemplateDOS = PageHelper.startPage(
+                        pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationTemplateMapper.list(
+                        organizationId,
+                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             }
         } else {
-            applicationTemplateDOS = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationTemplateMapper.list(organizationId, null, null));
+            applicationTemplateDOS = PageHelper.startPage(
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationTemplateMapper.list(organizationId, null, null));
         }
-        return ConvertPageHelper.convertPage(applicationTemplateDOS, ApplicationTemplateE.class);
+        return ConvertPageHelper.convertPageInfo(applicationTemplateDOS, ApplicationTemplateE.class);
     }
 
     @Override
     public ApplicationTemplateE queryByCode(Long organizationId, String code) {
-        ApplicationTemplateDO applicationTemplate = applicationTemplateMapper.queryByCode(organizationId,code);
+        ApplicationTemplateDO applicationTemplate = applicationTemplateMapper.queryByCode(organizationId, code);
         return ConvertHelper.convert(applicationTemplate, ApplicationTemplateE.class);
     }
 

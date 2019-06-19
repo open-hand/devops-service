@@ -4,10 +4,10 @@ import java.sql.Date;
 import java.util.List;
 
 import io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO;
-import io.choerodon.mybatis.common.BaseMapper;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-public interface DevopsEnvCommandMapper extends BaseMapper<DevopsEnvCommandDO> {
+public interface DevopsEnvCommandMapper extends Mapper<DevopsEnvCommandDO> {
 
     DevopsEnvCommandDO queryByObject(@Param("objectType") String objectType, @Param("objectId") Long objectId);
 

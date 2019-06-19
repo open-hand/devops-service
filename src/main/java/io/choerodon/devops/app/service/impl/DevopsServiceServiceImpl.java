@@ -3,10 +3,11 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.api.dto.DevopsServiceDTO;
@@ -26,7 +27,6 @@ import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
@@ -93,49 +93,50 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     @Override
-    public Page<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
-        Page<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
+    public PageInfo<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
+        PageInfo<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
                 projectId, envId, null, pageRequest, searchParam);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-        devopsServiceByPage.forEach(devopsServiceV -> {
+        devopsServiceByPage.getList().forEach(devopsServiceV -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceV.getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 devopsServiceV.setEnvStatus(true);
             }
         });
-        return ConvertPageHelper.convertPage(devopsServiceByPage, DevopsServiceDTO.class);
+        return ConvertPageHelper.convertPageInfo(devopsServiceByPage, DevopsServiceDTO.class);
     }
 
 
-    public Page<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest) {
-        Page<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
-                projectId, null, instanceId, pageRequest, null);
+    @Override
+    public PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest) {
+        PageInfo<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
+                projectId, null,  instanceId, pageRequest, null);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-        if (!devopsServiceByPage.getContent().isEmpty()) {
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceByPage.getContent().get(0).getEnvId());
+        if (!devopsServiceByPage.getList().isEmpty()) {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceByPage.getList().get(0).getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
-                devopsServiceByPage.getContent().stream().forEach(devopsServiceV -> {
+                devopsServiceByPage.getList().stream().forEach(devopsServiceV -> {
                     devopsServiceV.setEnvStatus(true);
                 });
             }
-            devopsServiceByPage.getContent().stream().forEach(devopsServiceV -> {
-                Page<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository
+            devopsServiceByPage.getList().stream().forEach(devopsServiceV -> {
+                PageInfo<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository
                         .getIngress(projectId, null, devopsServiceV.getId(), new PageRequest(0, 100), "");
                 if (devopsServiceV.getEnvStatus() != null && devopsServiceV.getEnvStatus()) {
-                    devopsIngressDTOS.getContent().stream().forEach(devopsIngressDTO -> devopsIngressDTO.setEnvStatus(true));
+                    devopsIngressDTOS.getList().stream().forEach(devopsIngressDTO -> devopsIngressDTO.setEnvStatus(true));
 
                 }
-                devopsServiceV.setDevopsIngressDTOS(devopsIngressDTOS.getContent());
+                devopsServiceV.setDevopsIngressDTOS(devopsIngressDTOS.getList());
             });
 
         }
 
 
-        return ConvertPageHelper.convertPage(devopsServiceByPage, DevopsServiceDTO.class);
+        return ConvertPageHelper.convertPageInfo(devopsServiceByPage, DevopsServiceDTO.class);
     }
 
 

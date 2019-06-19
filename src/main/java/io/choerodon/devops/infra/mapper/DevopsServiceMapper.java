@@ -5,13 +5,14 @@ import java.util.Map;
 
 import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
 import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
-import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
+import io.choerodon.mybatis.common.Mapper;
+
 
 /**
  * Created by Zenger on 2018/4/15.
  */
-public interface DevopsServiceMapper extends BaseMapper<DevopsServiceDO> {
+public interface DevopsServiceMapper extends Mapper<DevopsServiceDO> {
 
     List<DevopsServiceQueryDO> listDevopsServiceByPage(
             @Param("projectId") Long projectId,

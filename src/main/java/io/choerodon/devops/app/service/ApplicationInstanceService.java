@@ -4,11 +4,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -26,8 +26,9 @@ public interface ApplicationInstanceService {
      * @param params      模糊查询参数
      * @return page of devopsEnvPreviewInstanceDTO
      */
-    Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                         Long envId, Long versionId, Long appId, String params);
+
+    PageInfo<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
+                                                                  Long envId, Long versionId, Long appId, String params);
 
     /**
      * 查询应用部署
@@ -222,7 +223,7 @@ public interface ApplicationInstanceService {
      * @param endTime   结束时间
      * @return List
      */
-    Page<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime);
+    PageInfo<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime);
 
     /**
      * 获取部署时长报表table
@@ -234,7 +235,7 @@ public interface ApplicationInstanceService {
      * @param endTime   结束时间
      * @return List
      */
-    Page<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime);
+    PageInfo<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime);
 
     /**
      * 部署自动化测试应用
@@ -283,6 +284,6 @@ public interface ApplicationInstanceService {
     void operationPodCount(String deploymentName, Long envId, Long count);
 
 
-    Page<AppInstanceCommandLogDTO> listAppInstanceCommand(PageRequest pageRequest, Long appInstanceId, Date startTime, Date endTime);
+    PageInfo<AppInstanceCommandLogDTO> listAppInstanceCommand(PageRequest pageRequest, Long appInstanceId, Date startTime, Date endTime);
 
 }

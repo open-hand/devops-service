@@ -1,8 +1,8 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public interface DevopsProjectConfigRepository {
 
     DevopsProjectConfigE queryByName(Long projectId, String name);
 
-    Page<DevopsProjectConfigE> listByOptions(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<DevopsProjectConfigE> listByOptions(Long projectId, PageRequest pageRequest, String params);
 
     void delete(Long id);
 

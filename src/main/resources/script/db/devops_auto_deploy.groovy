@@ -54,4 +54,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_auto_deploy.groovy') {
             column(name: 'instance_name', type: 'VARCHAR(100)', remarks: '实例名称')
         }
     }
+
+
+    changeSet(author: 'Sheep', id: '2019-06-11-delete-table') {
+        dropTable(tableName: "devops_auto_deploy")
+    }
 }

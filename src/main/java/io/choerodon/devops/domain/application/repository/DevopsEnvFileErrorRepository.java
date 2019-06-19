@@ -2,9 +2,9 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileErrorE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -18,7 +18,7 @@ public interface DevopsEnvFileErrorRepository {
 
     List<DevopsEnvFileErrorE> listByEnvId(Long envId);
 
-    Page<DevopsEnvFileErrorE> pageByEnvId(Long envId, PageRequest pageRequest);
+    PageInfo<DevopsEnvFileErrorE> pageByEnvId(Long envId, PageRequest pageRequest);
 
     void delete(DevopsEnvFileErrorE devopsEnvFileErrorE);
 

@@ -2,10 +2,11 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsEnvUserPermissionDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by n!Ck
@@ -17,7 +18,7 @@ public interface DevopsEnvUserPermissionRepository {
 
     void create(DevopsEnvUserPermissionE devopsEnvUserPermissionE);
 
-    Page<DevopsEnvUserPermissionDTO> pageUserPermissionByOption(Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsEnvUserPermissionDTO> pageUserPermissionByOption(Long envId, PageRequest pageRequest, String params);
 
     List<DevopsEnvUserPermissionDTO> listALlUserPermission(Long envId);
 

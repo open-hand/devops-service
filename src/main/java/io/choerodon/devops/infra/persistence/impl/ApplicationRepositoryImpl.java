@@ -3,10 +3,12 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.List;
 import java.util.Map;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
@@ -15,8 +17,6 @@ import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,8 +99,8 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public void updateSql(ApplicationE applicationE) {
         ApplicationDO applicationDO = ConvertHelper.convert(applicationE, ApplicationDO.class);
-        applicationMapper.updateSql(applicationDO.getId(),applicationDO.getToken(),
-                applicationDO.getGitlabProjectId(),applicationDO.getHookId(),applicationDO.getSynchro());
+        applicationMapper.updateSql(applicationDO.getId(), applicationDO.getToken(),
+                applicationDO.getGitlabProjectId(), applicationDO.getHookId(), applicationDO.getSynchro());
     }
 
     @Override
@@ -110,34 +110,34 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,Boolean appMarket,
-                                            String type, Boolean doPage, PageRequest pageRequest, String params) {
-        Page<ApplicationDO> applicationES = new Page<>();
+    public PageInfo<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket,
+                                                String type, Boolean doPage, PageRequest pageRequest, String params) {
+        PageInfo<ApplicationDO> applicationES = new PageInfo<>();
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         //是否需要分页
         if (doPage != null && !doPage) {
-            applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, appMarket, type,
+            applicationES.setList(applicationMapper.list(projectId, isActive, hasVersion, appMarket, type,
                     (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
                     mapParams.get(TypeUtil.PARAM).toString(), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         } else {
             applicationES = PageHelper
-                    .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, appMarket, type,
+                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.list(projectId, isActive, hasVersion, appMarket, type,
                             (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
                             (String) mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         }
-        return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
+        return ConvertPageHelper.convertPageInfo(applicationES, ApplicationE.class);
     }
 
     @Override
-    public Page<ApplicationE> listCodeRepository(Long projectId, PageRequest pageRequest, String params,
-                                                 Boolean isProjectOwner, Long userId) {
-        Page<ApplicationDO> applicationES;
+    public PageInfo<ApplicationE> listCodeRepository(Long projectId, PageRequest pageRequest, String params,
+                                                     Boolean isProjectOwner, Long userId) {
+        PageInfo<ApplicationDO> applicationES;
         Map maps = gson.fromJson(params, Map.class);
-        applicationES = PageHelper.doPageAndSort(pageRequest, () -> applicationMapper.listCodeRepository(projectId,
+        applicationES = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(maps.get(TypeUtil.PARAM)), isProjectOwner, userId));
-        return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
+        return ConvertPageHelper.convertPageInfo(applicationES, ApplicationE.class);
     }
 
     @Override
@@ -161,10 +161,9 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public Page<ApplicationE> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
-        return ConvertPageHelper.convertPage(
-                PageHelper.doPageAndSort(
-                        pageRequest, () -> applicationMapper.listByEnvId(projectId, envId, appId, "nodeleted")),
+    public PageInfo<ApplicationE> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
+        return ConvertPageHelper.convertPageInfo(
+                PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listByEnvId(projectId, envId, appId, "nodeleted")),
                 ApplicationE.class
         );
     }
@@ -180,8 +179,8 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public Page<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive,
-                                                           PageRequest pageRequest, String params) {
+    public PageInfo<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive,
+                                                               PageRequest pageRequest, String params) {
         Map<String, Object> searchParam = null;
         String param = null;
         if (!StringUtils.isEmpty(params)) {
@@ -191,7 +190,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         }
         Map<String, Object> finalSearchParam = searchParam;
         String finalParam = param;
-        return ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, () -> applicationMapper
+        return ConvertPageHelper.convertPageInfo(PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper
                 .listByActiveAndPubAndVersion(projectId, isActive, finalSearchParam, finalParam)), ApplicationE.class);
     }
 
@@ -240,7 +239,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public void updateAppHarborConfig(Long projectId, Long newConfigId,Long oldConfigId, boolean harborPrivate) {
-        applicationMapper.updateAppHarborConfig(projectId,newConfigId,oldConfigId, harborPrivate);
+    public void updateAppHarborConfig(Long projectId, Long newConfigId, Long oldConfigId, boolean harborPrivate) {
+        applicationMapper.updateAppHarborConfig(projectId, newConfigId, oldConfigId, harborPrivate);
     }
 }

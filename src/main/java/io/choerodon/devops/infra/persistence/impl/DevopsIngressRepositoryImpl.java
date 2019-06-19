@@ -1,15 +1,24 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.api.dto.DevopsIngressPathDTO;
@@ -25,12 +34,7 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
 import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+
 
 
 /**
@@ -112,23 +116,33 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
-    public Page<DevopsIngressDTO> getIngress(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsIngressDTO> getIngress(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params) {
         List<DevopsIngressDTO> devopsIngressDTOS = new ArrayList<>();
 
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
         }.getType());
 
-        if (pageRequest.getSort() != null) {
-            Map<String, String> map = new HashMap<>();
-            map.put("envName", "de.name");
-            map.put("path", "dip.path");
-            pageRequest.resetOrder("di", map);
+        Sort sort = pageRequest.getSort();
+        String sortResult = "";
+        if (sort != null) {
+            sortResult = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                    .map(t -> {
+                        String property = t.getProperty();
+                        if (property.equals("envName")) {
+                            property = "de.name";
+                        } else if (property.equals("path")) {
+                            property = "dip.path";
+                        }
+                        return property + " " + t.getDirection();
+                    })
+                    .collect(Collectors.joining(","));
         }
 
-        Page<DevopsIngressDO> devopsIngressDOS =
-                PageHelper.doPageAndSort(pageRequest,
+
+        PageInfo<DevopsIngressDO> devopsIngressDOS =
+                PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), sortResult).doSelectPageInfo(
                         () -> devopsIngressMapper.selectIngress(projectId, envId, serviceId, maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAM))));
-        devopsIngressDOS.getContent().forEach(t -> {
+        devopsIngressDOS.getList().forEach(t -> {
             DevopsIngressDTO devopsIngressDTO =
                     new DevopsIngressDTO(t.getId(), t.getDomain(), t.getName(),
                             t.getEnvId(), t.getUsable(), t.getEnvName());
@@ -141,9 +155,9 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             devopsIngressPathMapper.select(devopsIngressPathDO).forEach(e -> getDevopsIngressDTO(devopsIngressDTO, e));
             devopsIngressDTOS.add(devopsIngressDTO);
         });
-        Page<DevopsIngressDTO> ingressDTOPage = new Page<>();
+        PageInfo<DevopsIngressDTO> ingressDTOPage = new PageInfo<>();
         BeanUtils.copyProperties(devopsIngressDOS, ingressDTOPage);
-        ingressDTOPage.setContent(devopsIngressDTOS);
+        ingressDTOPage.setList(devopsIngressDTOS);
         return ingressDTOPage;
     }
 

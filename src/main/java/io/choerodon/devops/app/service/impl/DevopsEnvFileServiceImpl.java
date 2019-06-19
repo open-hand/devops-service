@@ -2,13 +2,14 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsEnvFileErrorDTO;
 import io.choerodon.devops.app.service.DevopsEnvFileService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileErrorE;
@@ -18,7 +19,6 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvFileErrorRepos
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -48,11 +48,11 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     }
 
     @Override
-    public Page<DevopsEnvFileErrorDTO> pageByEnvId(Long envId, PageRequest pageRequest) {
+    public PageInfo<DevopsEnvFileErrorDTO> pageByEnvId(Long envId, PageRequest pageRequest) {
         String gitlabProjectPath = getGitlabUrl(envId);
-        Page<DevopsEnvFileErrorE> envFileErrorES = devopsEnvFileErrorRepository.pageByEnvId(envId, pageRequest);
-        envFileErrorES.getContent().stream().forEach(t -> setCommitAndFileUrl(t, gitlabProjectPath));
-        return ConvertPageHelper.convertPage(envFileErrorES, DevopsEnvFileErrorDTO.class);
+        PageInfo<DevopsEnvFileErrorE> envFileErrorES = devopsEnvFileErrorRepository.pageByEnvId(envId, pageRequest);
+        envFileErrorES.getList().stream().forEach(t -> setCommitAndFileUrl(t, gitlabProjectPath));
+        return ConvertPageHelper.convertPageInfo(envFileErrorES, DevopsEnvFileErrorDTO.class);
     }
 
     private String getGitlabUrl(Long envId) {

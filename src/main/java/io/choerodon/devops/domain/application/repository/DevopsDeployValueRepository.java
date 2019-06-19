@@ -1,10 +1,11 @@
 package io.choerodon.devops.domain.application.repository;
 
+
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -12,7 +13,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Description:
  */
 public interface DevopsDeployValueRepository {
-    Page<DevopsDeployValueE> listByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params);
+
+    PageInfo<DevopsDeployValueE> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params);
 
     DevopsDeployValueE createOrUpdate(DevopsDeployValueE pipelineRecordE);
 

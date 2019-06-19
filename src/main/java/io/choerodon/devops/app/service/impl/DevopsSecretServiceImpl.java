@@ -4,9 +4,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.SecretRepDTO;
 import io.choerodon.devops.api.dto.SecretReqDTO;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
@@ -24,7 +25,6 @@ import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.HelmObjectKind;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.SecretStatus;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1Secret;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -302,9 +302,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public Page<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params) {
         return ConvertPageHelper
-                .convertPage(devopsSecretRepository.listByOption(envId, pageRequest, params), SecretRepDTO.class);
+                .convertPageInfo(devopsSecretRepository.listByOption(envId, pageRequest, params), SecretRepDTO.class);
     }
 
     @Override

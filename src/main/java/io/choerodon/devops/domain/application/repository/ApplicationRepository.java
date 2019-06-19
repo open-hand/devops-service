@@ -1,8 +1,8 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
 
@@ -31,23 +31,23 @@ public interface ApplicationRepository {
 
     ApplicationE query(Long applicationId);
 
-    Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,Boolean appMarket, String type, Boolean doPage,
-                                     PageRequest pageRequest, String params);
+    PageInfo<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket, String type, Boolean doPage,
+                                         PageRequest pageRequest, String params);
 
-    Page<ApplicationE> listCodeRepository(Long projectId, PageRequest pageRequest, String params, Boolean isProjectId,
+    PageInfo<ApplicationE> listCodeRepository(Long projectId, PageRequest pageRequest, String params, Boolean isProjectId,
                                           Long userId);
 
     Boolean applicationExist(String uuid);
 
     List<ApplicationE> listByEnvId(Long projectId, Long envId, String status);
 
-    Page<ApplicationE> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest);
+    PageInfo<ApplicationE> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest);
 
     List<ApplicationE> listByActive(Long projectId);
 
     List<ApplicationE> listAll(Long projectId);
 
-    Page<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive, PageRequest pageRequest,
+    PageInfo<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive, PageRequest pageRequest,
                                                     String params);
 
     ApplicationE queryByToken(String token);

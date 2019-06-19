@@ -4,15 +4,13 @@ import java.util.List;
 import java.util.Map;
 
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dataobject.DevopsClusterDO;
-import io.choerodon.mybatis.common.BaseMapper;
 
-public interface DevopsClusterMapper extends BaseMapper<DevopsClusterDO> {
+public interface DevopsClusterMapper extends Mapper<DevopsClusterDO> {
 
     List<DevopsClusterDO> listByProjectId(@Param("projectId") Long projectId,@Param("organizationId") Long organizationId);
 

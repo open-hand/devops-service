@@ -1,9 +1,9 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ public interface ApplicationVersionRepository {
 
     List<ApplicationVersionE> listByAppId(Long appId, Boolean isPublish);
 
-    Page<ApplicationVersionE> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam);
+    PageInfo<ApplicationVersionE> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam);
 
     List<ApplicationVersionE> listDeployedByAppId(Long projectId, Long appId);
 
@@ -31,8 +31,8 @@ public interface ApplicationVersionRepository {
 
     void updatePublishLevelByIds(List<Long> appVersionIds, Long level);
 
-    Page<ApplicationVersionE> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest,
-                                                          String searchParam, Boolean isProjectOwner, Long userId);
+    PageInfo<ApplicationVersionE> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest,
+                                                              String searchParam, Boolean isProjectOwner, Long userId);
 
     List<ApplicationVersionE> listAllPublishedVersion(Long applicationId);
 

@@ -2,10 +2,10 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.DevopsServiceDTO;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -103,7 +103,7 @@ public interface DevopsServiceService {
      * @param searchParam 查询参数
      * @return Page of DevopsServiceDTO
      */
-    Page<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
 
 
     /**
@@ -123,7 +123,7 @@ public interface DevopsServiceService {
      * @param pageRequest 分页参数
      * @return Page of DevopsServiceDTO
      */
-    Page<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest);
+    PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest);
 
 
 }

@@ -3,7 +3,8 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
@@ -11,7 +12,6 @@ import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -45,11 +45,11 @@ public interface DevopsGitRepository {
 
     List<BranchDO> listGitLabBranches(Integer projectId, String path, Integer userId);
 
-    Page<DevopsBranchE> listBranches(Long appId, PageRequest pageRequest, String params);
+    PageInfo<DevopsBranchE> listBranches(Long appId, PageRequest pageRequest, String params);
 
     void deleteDevopsBranch(Long appId, String branchName);
 
-    Page<TagDTO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId);
+    PageInfo<TagDTO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId);
 
     List<TagDO> getTagList(Long appId, Integer userId);
 

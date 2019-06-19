@@ -3,15 +3,15 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.app.service.DevopsClusterService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -152,7 +152,7 @@ public class DevopsClusterController {
     @ApiOperation(value = "分页查询项目列表")
     @CustomPageRequest
     @PostMapping("/page_projects")
-    public ResponseEntity<Page<ProjectDTO>> pageProjects(
+    public ResponseEntity<PageInfo<ProjectDTO>> pageProjects(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "分页参数")
@@ -220,7 +220,7 @@ public class DevopsClusterController {
     @ApiOperation(value = "集群列表查询")
     @CustomPageRequest
     @PostMapping("/page_cluster")
-    public ResponseEntity<Page<ClusterWithNodesDTO>> listCluster(
+    public ResponseEntity<PageInfo<ClusterWithNodesDTO>> listCluster(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "分页参数")
@@ -289,7 +289,7 @@ public class DevopsClusterController {
     @ApiOperation(value = "分页查询节点下的Pod")
     @CustomPageRequest
     @PostMapping(value = "/page_node_pods")
-    public ResponseEntity<Page<DevopsClusterPodDTO>> pageQueryPodsByNodeName(
+    public ResponseEntity<PageInfo<DevopsClusterPodDTO>> pageQueryPodsByNodeName(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群id", required = true)
@@ -318,7 +318,7 @@ public class DevopsClusterController {
     @ApiOperation(value = "分页查询集群下的节点")
     @CustomPageRequest
     @GetMapping("/page_nodes")
-    public ResponseEntity<Page<ClusterNodeInfoDTO>> listClusterNodes(
+    public ResponseEntity<PageInfo<ClusterNodeInfoDTO>> listClusterNodes(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群id", required = true)

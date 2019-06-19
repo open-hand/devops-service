@@ -2,10 +2,10 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.OrgCertificationDTO;
 import io.choerodon.devops.api.dto.ProjectDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface DevopsOrgCertificationService {
@@ -20,10 +20,10 @@ public interface DevopsOrgCertificationService {
 
     void deleteCert(Long certId);
 
-    Page<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
-                                  String[] params);
+    PageInfo<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
+                                      String[] params);
 
-    Page<OrgCertificationDTO> pageCerts(Long organizationId, PageRequest pageRequest,
+    PageInfo<OrgCertificationDTO> pageCerts(Long organizationId, PageRequest pageRequest,
                                         String params);
 
     OrgCertificationDTO getCert(Long certId);

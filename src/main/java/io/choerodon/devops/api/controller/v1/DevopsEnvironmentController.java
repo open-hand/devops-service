@@ -3,14 +3,14 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -270,7 +270,7 @@ public class DevopsEnvironmentController {
     @CustomPageRequest
     @ApiOperation(value = "分页查询项目下用户权限")
     @PostMapping(value = "/list")
-    public ResponseEntity<Page<DevopsEnvUserPermissionDTO>> listUserPermissionByEnvId(
+    public ResponseEntity<PageInfo<DevopsEnvUserPermissionDTO>> listUserPermissionByEnvId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")

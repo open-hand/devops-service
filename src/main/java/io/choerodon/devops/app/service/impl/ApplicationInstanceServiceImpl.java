@@ -8,11 +8,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
@@ -37,7 +38,6 @@ import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
 import org.apache.commons.lang.StringUtils;
@@ -116,8 +116,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private CheckOptionsHandler checkOptionsHandler;
     @Autowired
-    private DevopsAutoDeployRepository devopsAutoDeployRepository;
-    @Autowired
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
     @Autowired
     private DevopsRegistrySecretRepository devopsRegistrySecretRepository;
@@ -136,20 +134,33 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
 
     @Override
-    public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                                Long envId, Long versionId, Long appId, String params) {
+    public PageInfo<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
+                                                                         Long envId, Long versionId, Long appId, String params) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-
-        Page<ApplicationInstanceE> applicationInstanceEPage = applicationInstanceRepository.listApplicationInstance(
+        PageInfo<ApplicationInstanceE> applicationInstanceEPage = applicationInstanceRepository.listApplicationInstance(
                 projectId, pageRequest, envId, versionId, appId, params);
 
-        List<ApplicationInstanceE> applicationInstanceES = applicationInstanceEPage.getContent();
+        List<ApplicationInstanceE> applicationInstanceES = applicationInstanceEPage.getList();
         setInstanceConnect(applicationInstanceES, connectedEnvList, updatedEnvList);
 
-        Page<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
-                .convertPage(applicationInstanceEPage, ApplicationInstanceDTO.class);
-        return applicationInstanceDTOS;
+        PageInfo<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
+                .convertPageInfo(applicationInstanceEPage, ApplicationInstanceDTO.class);
+
+        return convertPageFromApplicationInstance(applicationInstanceDTOS);
+    }
+
+    /**
+     * convert page from ApplicationInstance
+     *
+     * @param applicationInstanceDTOS the page that contains the instances
+     * @return the page converted
+     */
+    private PageInfo<DevopsEnvPreviewInstanceDTO> convertPageFromApplicationInstance(PageInfo<ApplicationInstanceDTO> applicationInstanceDTOS) {
+        PageInfo<DevopsEnvPreviewInstanceDTO> previewInstanceDTOPage = new PageInfo<>();
+        BeanUtils.copyProperties(applicationInstanceDTOS,previewInstanceDTOPage);
+        previewInstanceDTOPage.setList(applicationInstanceDTOS.getList().stream().map(this::fromInstanceToEnvPreview).collect(Collectors.toList()));
+        return previewInstanceDTOPage;
     }
 
 
@@ -386,24 +397,24 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public Page<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds,
+    public PageInfo<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds,
                                                            Long appId, Date startTime, Date endTime) {
         if (envIds.length == 0) {
-            return new Page<>();
+            return new PageInfo<>();
         }
-        Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployFrequencyDetail(projectId, pageRequest,
+        PageInfo<DeployDO> deployDOS = applicationInstanceRepository.pageDeployFrequencyDetail(projectId, pageRequest,
                 envIds, appId, startTime, endTime);
         return getDeployDetailDTOS(deployDOS);
     }
 
     @Override
-    public Page<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds,
+    public PageInfo<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds,
                                                       Long envId,
                                                       Date startTime, Date endTime) {
         if (appIds.length == 0) {
-            return new Page<>();
+            return new PageInfo<>();
         }
-        Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployTimeDetail(projectId, pageRequest, envId,
+        PageInfo<DeployDO> deployDOS = applicationInstanceRepository.pageDeployTimeDetail(projectId, pageRequest, envId,
                 appIds, startTime, endTime);
         return getDeployDetailDTOS(deployDOS);
     }
@@ -470,17 +481,17 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public Page<AppInstanceCommandLogDTO> listAppInstanceCommand(PageRequest pageRequest, Long appInstanceId, Date startTime, Date endTime) {
-        Page<DevopsEnvCommandE> devopsEnvCommandES = devopsEnvCommandRepository.listByObject(pageRequest, ObjectType.INSTANCE.getType(), appInstanceId, startTime, endTime);
+    public PageInfo<AppInstanceCommandLogDTO> listAppInstanceCommand(PageRequest pageRequest, Long appInstanceId, Date startTime, Date endTime) {
+        PageInfo<DevopsEnvCommandE> devopsEnvCommandES = devopsEnvCommandRepository.listByObject(pageRequest, ObjectType.INSTANCE.getType(), appInstanceId, startTime, endTime);
         Set<Long> userIds = new HashSet<>();
-        devopsEnvCommandES.stream().forEach(devopsEnvCommandE ->
+        devopsEnvCommandES.getList().stream().forEach(devopsEnvCommandE ->
                 userIds.add(devopsEnvCommandE.getCreatedBy())
         );
         List<UserE> userES = iamRepository.listUsersByIds(new ArrayList<>(userIds));
-        Page<AppInstanceCommandLogDTO> pageAppInstanceCommandLogDTOS = new Page<>();
+        PageInfo<AppInstanceCommandLogDTO> pageAppInstanceCommandLogDTOS = new PageInfo<>();
         List<AppInstanceCommandLogDTO> appInstanceCommandLogDTOS = new ArrayList<>();
         BeanUtils.copyProperties(devopsEnvCommandES, pageAppInstanceCommandLogDTOS);
-        devopsEnvCommandES.stream().forEach(devopsEnvCommandE -> {
+        devopsEnvCommandES.getList().stream().forEach(devopsEnvCommandE -> {
             AppInstanceCommandLogDTO appInstanceCommandLogDTO = new AppInstanceCommandLogDTO();
             appInstanceCommandLogDTO.setType(devopsEnvCommandE.getCommandType());
             userES.stream().filter(userE -> userE.getId().equals(devopsEnvCommandE.getCreatedBy())).forEach(userE -> {
@@ -491,7 +502,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             appInstanceCommandLogDTO.setCreateTime(devopsEnvCommandE.getCreationDate());
             appInstanceCommandLogDTOS.add(appInstanceCommandLogDTO);
         });
-        pageAppInstanceCommandLogDTOS.setContent(appInstanceCommandLogDTOS);
+        pageAppInstanceCommandLogDTOS.setList(appInstanceCommandLogDTOS);
         return pageAppInstanceCommandLogDTOS;
     }
 
@@ -505,11 +516,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
 
-    private Page<DeployDetailDTO> getDeployDetailDTOS(Page<DeployDO> deployDOS) {
-        Page<DeployDetailDTO> pageDeployDetailDTOS = new Page<>();
+    private PageInfo<DeployDetailDTO> getDeployDetailDTOS(PageInfo<DeployDO> deployDOS) {
+        PageInfo<DeployDetailDTO> pageDeployDetailDTOS = new PageInfo<>();
         List<DeployDetailDTO> deployDetailDTOS = new ArrayList<>();
         BeanUtils.copyProperties(deployDOS, pageDeployDetailDTOS);
-        deployDOS.getContent().forEach(deployDO -> {
+        deployDOS.getList().forEach(deployDO -> {
             DeployDetailDTO deployDetailDTO = new DeployDetailDTO();
             BeanUtils.copyProperties(deployDO, deployDetailDTO);
             deployDetailDTO.setDeployTime(
@@ -520,7 +531,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             }
             deployDetailDTOS.add(deployDetailDTO);
         });
-        pageDeployDetailDTOS.setContent(deployDetailDTOS);
+        pageDeployDetailDTOS.setList(deployDetailDTOS);
         return pageDeployDetailDTOS;
     }
 
@@ -1087,7 +1098,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     instanceE.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentE.getId(), path);
         }
         appDeployRepository.updateInstanceId(instanceId);
-        devopsAutoDeployRepository.deleteInstanceId(instanceId);
     }
 
     @Override

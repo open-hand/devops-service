@@ -2,11 +2,11 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by ernst on 2018/5/12.
@@ -14,9 +14,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface ApplicationMarketRepository {
     void create(ApplicationMarketE applicationMarketE);
 
-    Page<ApplicationMarketE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam);
+    PageInfo<ApplicationMarketE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam);
 
-    Page<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam);
+    PageInfo<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam);
 
     ApplicationMarketE getMarket(Long projectId, Long appMarketId);
 
@@ -38,8 +38,8 @@ public interface ApplicationMarketRepository {
 
     List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish);
 
-    Page<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish,
-                                               PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish,
+                                                   PageRequest pageRequest, String searchParam);
 
     ApplicationMarketE queryByAppId(Long appId);
 

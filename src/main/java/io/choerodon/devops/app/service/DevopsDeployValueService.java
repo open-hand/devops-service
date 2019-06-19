@@ -1,8 +1,8 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.core.domain.Page;
+import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public interface DevopsDeployValueService {
 
     void delete(Long projectId, Long valueId);
 
-    Page<DevopsDeployValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsDeployValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params);
 
     DevopsDeployValueDTO queryById(Long pipelineId, Long valueId);
 

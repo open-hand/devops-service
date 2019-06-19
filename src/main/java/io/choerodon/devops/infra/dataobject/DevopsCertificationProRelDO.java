@@ -1,20 +1,13 @@
 package io.choerodon.devops.infra.dataobject;
 
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
 
-
-@ModifyAudit
-@VersionAudit
 @Table(name = "devops_certification_pro_rel")
 public class DevopsCertificationProRelDO {
 
     @Id
-    @GeneratedValue
     private Long certId;
 
     private Long projectId;
