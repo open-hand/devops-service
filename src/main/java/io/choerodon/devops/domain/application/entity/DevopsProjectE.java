@@ -117,7 +117,7 @@ public class DevopsProjectE {
         this.harborProjectUserEmail = harborProjectUserEmail;
     }
 
-    public Boolean isHarborProjectIsPrivate() {
+    public Boolean getHarborProjectIsPrivate() {
         return harborProjectIsPrivate;
     }
 

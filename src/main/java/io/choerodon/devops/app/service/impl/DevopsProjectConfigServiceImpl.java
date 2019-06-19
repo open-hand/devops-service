@@ -291,7 +291,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     public ProjectDefaultConfigDTO getProjectDefaultConfig(Long projectId) {
         ProjectDefaultConfigDTO projectDefaultConfigDTO = new ProjectDefaultConfigDTO();
         DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
-        projectDefaultConfigDTO.setHarborIsPrivate(devopsProjectE.isHarborProjectIsPrivate());
+        projectDefaultConfigDTO.setHarborIsPrivate(devopsProjectE.getHarborProjectIsPrivate());
         List<DevopsProjectConfigE> harborConfigs = devopsProjectConfigRepository.queryByIdAndType(projectId, HARBOR);
         Optional<DevopsProjectConfigE> devopsConfigE = harborConfigs.stream().filter(devopsProjectConfigE -> devopsProjectConfigE.getName().equals("project_harbor_default")).findFirst();
         if (devopsConfigE.isPresent()) {

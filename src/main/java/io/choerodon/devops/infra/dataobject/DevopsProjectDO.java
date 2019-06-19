@@ -80,7 +80,7 @@ public class DevopsProjectDO extends AuditDomain {
         this.harborProjectUserEmail = harborProjectUserEmail;
     }
 
-    public Boolean isHarborProjectIsPrivate() {
+    public Boolean getHarborProjectIsPrivate() {
         return harborProjectIsPrivate;
     }
 
