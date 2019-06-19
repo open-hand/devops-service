@@ -883,6 +883,16 @@ const zhCN = {
   'deploy.ist.event': '实例事件',
   'deploy.ist.event.empty': '暂无实例事件',
   'deploy.appOrVersion.empty': '请返回第一步，选择应用和版本。',
+  'deploy.config.create.title': '创建部署配置',
+  'deploy.config.create.describe': '是否需要为修改后的配置信息创建一个部署配置？创建后，您便可以在之后部署中，直接选中并应用该部署配置中的配置信息。',
+  'deploy.config.create.cancel': '取消',
+  'deploy.config.create.submit': '创建',
+  'deploy.config.update.title': '覆盖至部署配置',
+  'deploy.config.update.describe': '是否将此次修改覆盖至部署配置？覆盖后，您在下次部署过程中，选中该部署配置时，便能使用到此次修改的最新配置信息。',
+  'deploy.config.update.cancel': '不覆盖',
+  'deploy.config.update.submit': '覆盖',
+  'deploy.config.update.success': '覆盖成功！',
+  'deploy.config.update.failed': '覆盖失败！',
 
   // envPipeline
   'envPl.head': '环境管理',

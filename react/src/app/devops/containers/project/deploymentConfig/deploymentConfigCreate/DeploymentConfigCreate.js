@@ -133,7 +133,7 @@ class DeploymentConfigCreate extends Component {
         if (sidebarType === 'edit') {
           data.id = id;
           data.objectVersionNumber = objectVersionNumber;
-        };
+        }
         const promise = store.createData(projectId, data);
         this.handleResponse(promise);
       } else {

@@ -5,6 +5,7 @@ import { withRouter } from 'react-router-dom';
 import { Steps } from 'choerodon-ui';
 import { Content, Header, Page } from '@choerodon/boot';
 import _ from 'lodash';
+import { handlePromptError } from '../../../../utils';
 import AppWithVersions from '../appWithVersions';
 import DeployMode from '../deployMode';
 import Configuration from '../configuration';
@@ -36,13 +37,52 @@ export default class DeploymentAppHome extends Component {
     currentStep: 0,
   };
 
-  handleChangeStep = (index) => {
-    this.setState({ currentStep: index });
-  };
+  async componentDidMount() {
+    const {
+      location: {
+        state,
+      },
+      DeployAppStore,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+
+    if (state) {
+      const { appId, version, prevPage } = state;
+
+      if (prevPage === 'deploy' && appId && version) {
+        try {
+          const [app, ver] = await Promise.all([
+            DeployAppStore.queryAppDetail(projectId, appId),
+            DeployAppStore.queryVersionDetail(projectId, appId, version),
+          ]);
+
+          if (handlePromptError(app)) {
+            DeployAppStore.setSelectedApp(app);
+          }
+
+          if (handlePromptError(ver)) {
+            DeployAppStore.setSelectedVersion(ver);
+          }
+          this.setState({ currentStep: 1 });
+        } catch (e) {
+          this.setState({ currentStep: 0 });
+          DeployAppStore.initAllData();
+        }
+      }
+    }
+  }
 
   componentWillUnmount() {
     this.props.DeployAppStore.initAllData();
   }
+
+  handleChangeStep = (index) => {
+    this.setState({ currentStep: index });
+  };
 
   /**
    * 点击取消按钮
@@ -92,7 +132,7 @@ export default class DeploymentAppHome extends Component {
     const stepRender = [
       () => <AppWithVersions {...stepProps} />,
       () => <DeployMode {...stepProps} />,
-      () => (<Configuration {...stepProps} />),
+      () => <Configuration {...stepProps} />,
       () => <ConfirmInfo {...stepProps} />,
     ];
 

@@ -18,6 +18,7 @@ import './merge';
 
 const HAS_ERROR = true;
 const NO_ERROR = false;
+
 /**
  * YAML 格式校验
  * @param values
@@ -45,7 +46,7 @@ function parse(values) {
 function changedValue(old, value, callback) {
   let hasChanged = true;
   try {
-    const oldValue = YAML.parse(old);
+    const oldValue = YAML.parse(old || '');
     const newValue = YAML.parse(value);
     // 实际值变动检测
     if (JSON.stringify(oldValue) === JSON.stringify(newValue)) {
@@ -83,7 +84,6 @@ class YamlEditor extends Component {
     super(props);
     this.state = {
       errorTip: false,
-      yamlValue: '',
     };
     this.options = {
       // chd 自定制的主题配色
@@ -116,7 +116,6 @@ class YamlEditor extends Component {
       });
     }
     onValueChange(value, changed);
-    this.setState({ yamlValue: value });
   };
 
   /**
@@ -152,7 +151,7 @@ class YamlEditor extends Component {
       modeChange,
       readOnly,
     } = this.props;
-    const { errorTip, yamlValue } = this.state;
+    const { errorTip } = this.state;
 
     const wrapClass = classnames({
       'c7ncd-yaml-wrapper': true,
@@ -165,7 +164,7 @@ class YamlEditor extends Component {
           <CodeMirror
             modeChange={modeChange}
             options={this.options}
-            value={yamlValue || value}
+            value={value}
             originValue={originValue}
             onChange={this.onChange}
             ref={instance => {

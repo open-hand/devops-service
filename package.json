@@ -55,7 +55,8 @@
     "stylelint": "^9.5.0",
     "stylelint-config-standard": "^18.2.0",
     "through2": "^2.0.3",
-    "webpack-bundle-analyzer": "^3.1.0"
+    "webpack-bundle-analyzer": "^3.1.0",
+    "lodash": "latest"
   },
   "lint-staged": {
     "react/src/**/*.{js,jsx}": [],

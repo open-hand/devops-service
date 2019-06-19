@@ -17,7 +17,7 @@ class AppListStore {
   @observable localData = [];
 
   @action setLocalData(data) {
-    this.localData = Array.isArray(data) ? data : data.content;
+    this.localData = Array.isArray(data) ? data : data.list;
   }
 
   @computed get getLocalData() {
@@ -44,7 +44,7 @@ class AppListStore {
   @observable storeData = [];
 
   @action setStoreData(data) {
-    this.storeData = Array.isArray(data) ? data : data.content;
+    this.storeData = Array.isArray(data) ? data : data.list;
   }
 
   @computed get getStoreData() {
