@@ -286,4 +286,5 @@ public interface ApplicationInstanceService {
 
     PageInfo<AppInstanceCommandLogDTO> listAppInstanceCommand(PageRequest pageRequest, Long appInstanceId, Date startTime, Date endTime);
 
+    DevopsEnvResourceDTO listResourcesInHelmRelease(Long instanceId);
 }

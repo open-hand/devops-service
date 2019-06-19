@@ -141,7 +141,7 @@ public class RetrofitHandler {
         configurationProperties.setType(sonar);
         configurationProperties.setUsername(userName);
         configurationProperties.setPassword(password);
-        configurationProperties.setInsecureSkipTlsVerify(false);
+        configurationProperties.setInsecureSkipTlsVerify(true);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         return retrofit.create(SonarClient.class);
     }
