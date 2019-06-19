@@ -39,6 +39,6 @@ public class PipelineSuccessPmTemplate implements PmTemplate {
     @Override
     public String content() {
         return "<p>流水线“${pipelineName}”执行成功</p>"+
-                "<p><a href=#/devops/pipeline-record/detail/${pipelineId}/${pipelineRecordId}?type=project&id=${projectId}&name=${projectName}&category=undefined&organizationId=${organizationId}>查看详情</a >\";\n";
+                "<p><a href=#/devops/pipeline-record/detail/${pipelineId}/${pipelineRecordId}?type=project&id=${projectId}&name=${projectName}&category=undefined&organizationId=${organizationId}>查看详情</a >;\n";
     }
 }
