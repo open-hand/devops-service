@@ -103,8 +103,8 @@ class ElementsStore {
       );
       const result = handleProptError(data);
       if (result) {
-        const { number, totalElements: total, size: pageSize, content } = result;
-        const listData = _.map(content, item => {
+        const { pageNum, total, pageSize, list } = result;
+        const listData = _.map(list, item => {
           const { config: { url }, projectId } = item;
           return {
             ...item,
@@ -113,7 +113,7 @@ class ElementsStore {
           };
         });
         const pageInfo = {
-          current: number + 1,
+          current: pageNum,
           total,
           pageSize,
         };

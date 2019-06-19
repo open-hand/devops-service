@@ -24,7 +24,7 @@ class AppTag extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      page: 0,
+      page: 1,
       pageSize: 10,
       visible: false,
       deleteLoading: false,
@@ -50,7 +50,7 @@ class AppTag extends Component {
    * @param option
    */
   handleSelect = (id, option) => {
-    this.setState({ page: 0, pageSize: 10, appName: option.props.children });
+    this.setState({ page: 1, pageSize: 10, appName: option.props.children });
     DevPipelineStore.setSelectApp(id);
     DevPipelineStore.setRecentApp(id);
     this.loadTagData();
@@ -78,7 +78,7 @@ class AppTag extends Component {
    * @param page
    * @param pageSize
    */
-  loadTagData = (page = 0, pageSize = 10) => {
+  loadTagData = (page = 1, pageSize = 10) => {
     const { AppTagStore } = this.props;
     const { projectId } = AppState.currentMenuType;
     AppTagStore.queryTagData(projectId, page, pageSize);
@@ -90,8 +90,8 @@ class AppTag extends Component {
    * @param size
    */
   handlePaginChange = (current, size) => {
-    this.setState({ page: current - 1, pageSize: size });
-    this.loadTagData(current - 1, size);
+    this.setState({ page: current, pageSize: size });
+    this.loadTagData(current, size);
   };
 
   /**

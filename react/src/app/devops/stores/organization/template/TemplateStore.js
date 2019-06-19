@@ -33,9 +33,9 @@ class TemplateStore {
   };
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pagepageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -95,7 +95,7 @@ class TemplateStore {
     isRefresh = false,
     orgId,
     envId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     size = this.pageInfo.pageSize,
     sort = { field: "organizationId", order: "desc" },
     datas = {
@@ -124,9 +124,9 @@ class TemplateStore {
   };
 
   handleData = data => {
-    this.setAllData(data.content);
-    const { number, size, totalElements } = data;
-    const page = { number, size, totalElements };
+    const { pageNum, pageSize, total, list } = data;
+    this.setAllData(list);
+    const page = { pageNum, pageSize, total };
     this.setPageInfo(page);
   };
 

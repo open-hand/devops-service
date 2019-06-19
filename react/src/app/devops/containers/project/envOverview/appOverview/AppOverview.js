@@ -13,6 +13,7 @@ import {
   Modal,
   Progress,
   Button,
+  Spin,
 } from 'choerodon-ui';
 import { Action } from '@choerodon/boot';
 import _ from 'lodash';
@@ -51,7 +52,7 @@ export default class AppOverview extends Component {
 
   @observable visibleUp = false;
 
-  @observable page = 0;
+  @observable page = 1;
 
   @observable loading = false;
 
@@ -96,6 +97,8 @@ export default class AppOverview extends Component {
   state = {
     deleteArr: [],
     deleteLoading: false,
+    resourceData: {},
+    resourceLoading: {},
   };
 
   componentDidMount() {
@@ -146,6 +149,35 @@ export default class AppOverview extends Component {
   @action
   onChange = e => {
     this.activeKey = e;
+
+    const {
+      AppState: {
+        currentMenuType: {
+          projectId,
+        },
+      },
+    } = this.props;
+    const {
+      resourceData,
+      resourceLoading,
+    } = this.state;
+    if (e) {
+      if (!resourceData[e]) {
+        this.setState({ resourceLoading: _.assign({}, resourceLoading, { [e]: true}) });
+      }
+      InstancesStore.loadResource(projectId, e)
+        .then(data => {
+          if (!resourceData[e]) {
+            this.setState({ resourceLoading: _.assign({}, resourceLoading, { [e]: false}) });
+          }
+          if (data && !data.failed) {
+            if (resourceData[e] && _.isEqual(data, resourceData[e])) {
+              return;
+            }
+            this.setState({ resourceData: _.assign({}, resourceData, { [e]: data}) })
+          }
+        })
+    }
   };
 
   /**
@@ -579,6 +611,10 @@ export default class AppOverview extends Component {
         },
       },
     } = this.props;
+    const {
+      resourceData,
+      resourceLoading,
+    } = this.state;
     const ist = store.getIst;
     if (ist) {
       if (ist.devopsEnvPreviewAppDTOS && ist.devopsEnvPreviewAppDTOS.length) {
@@ -608,7 +644,10 @@ export default class AppOverview extends Component {
                     header={this.getPanelHeader(detail)}
                     key={detail.id}
                   >
-                    <ExpandRow record={detail} />
+                    {resourceLoading[detail.id]
+                      ? <Spin spinning className='c7n-ist-expandrow-loading' />
+                      : <ExpandRow record={Object.assign({}, detail, resourceData[detail.id] || {})} />
+                    }
                   </Panel>
                 ))}
                 {/* 处理Safari浏览器下，折叠面板渲染最后一个节点panel卡顿问题 */}

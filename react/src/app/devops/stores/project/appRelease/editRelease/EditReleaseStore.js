@@ -51,9 +51,9 @@ class EditReleaseStore {
   }
 
   @action setVersionPageInfo(page) {
-    this.versionPage.current = page.number + 1;
-    this.versionPage.total = page.totalElements;
-    this.versionPage.pageSize = page.size;
+    this.versionPage.current = page.pageNum;
+    this.versionPage.total = page.total;
+    this.versionPage.pageSize = page.pageSize;
   }
 
   @computed get getVersionPageInfo() {
@@ -61,9 +61,9 @@ class EditReleaseStore {
   }
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -80,7 +80,7 @@ class EditReleaseStore {
 
   @action setSelectData(data) {
     this.selectData = data;
-    this.setSelectPageInfo({ pageSize: 10, total: data.length, current: 0 });
+    this.setSelectPageInfo({ pageSize: 10, total: data.length, current: 1 });
   }
 
   @computed get getSelectData() {
@@ -146,7 +146,7 @@ class EditReleaseStore {
   loadAppTableData = ({
     isRefresh = false,
     projectId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     size = this.pageInfo.pageSize,
     sort = { field: "id", order: "desc" },
     postData = { searchParam: {}, param: "" },
@@ -173,17 +173,17 @@ class EditReleaseStore {
   };
 
   handleData = data => {
-    const { number, size, totalElements } = data;
-    const page = { number, size, totalElements };
+    const { pageNum, pageSize, total, list } = data;
+    const page = { pageNum, pageSize, total };
     this.setPageInfo(page);
-    this.setAppTableData(data.content);
+    this.setAppTableData(list);
   };
 
   loadAllVersion = ({
     isRefresh = false,
     projectId,
     appId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     size = this.pageInfo.pageSize,
     sort = { field: "id", order: "desc" },
     postData = { searchParam: {}, param: "" },
@@ -229,10 +229,10 @@ class EditReleaseStore {
   };
 
   handleVersionData = data => {
-    const { number, size, totalElements } = data;
-    const page = { number, size, totalElements };
+    const { pageNum, pageSize, total, list } = data;
+    const page = { pageNum, pageSize, total };
     this.setVersionPageInfo(page);
-    this.setVersionData(data.content);
+    this.setVersionData(list);
   };
 
   loadDataById = (projectId, id) =>

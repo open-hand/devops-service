@@ -17,7 +17,7 @@ class ClusterList extends Component {
   constructor(props) {
     super(...arguments);
     this.state = {
-      page: 0,
+      page: 1,
       size: 10,
     };
   }
@@ -45,8 +45,8 @@ class ClusterList extends Component {
   onPageChange = (page, size) => {
     const { store, clusterId } = this.props;
     const { organizationId } = AppState.currentMenuType;
-    this.setState({ page: page - 1, size });
-    store.loadMoreNode(organizationId, clusterId, page - 1, size);
+    this.setState({ page: page, size });
+    store.loadMoreNode(organizationId, clusterId, page, size);
   };
 
   /**
@@ -104,10 +104,10 @@ class ClusterList extends Component {
     // numberOfElements 表示当前页数的数据条数
     // 当前页数 >= 3 总页数 > 3 ，显示展开与收起的按钮
     const { current, total, pageSize, numberOfElements } = getNodePageInfo[clusterId] || {
-      current: nodes ? nodes.number + 1 : 1,
-      total: nodes ? nodes.totalElements : 0,
-      pageSize: nodes ? nodes.size : 10,
-      numberOfElements: nodes ? nodes.numberOfElements : 0,
+      current: nodes ? nodes.pageNum : 1,
+      total: nodes ? nodes.total : 0,
+      pageSize: nodes ? nodes.pageSize : 10,
+      numberOfElements: nodes ? nodes.size : 0,
     };
 
     const columns = [{
@@ -211,7 +211,7 @@ class ClusterList extends Component {
             </div >
           </div >
           {connect ? <Fragment >
-            {nodes && nodes.content.length ?
+            {nodes && nodes.list.length ?
               <Table
                 className="c7n-cls-node-table"
                 loading={!!getMoreLoading[clusterId]}

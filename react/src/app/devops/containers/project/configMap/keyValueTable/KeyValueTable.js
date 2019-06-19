@@ -43,8 +43,8 @@ export default class KeyValueTable extends Component {
     };
 
     const loadDataMap = {
-      configMap: () => store.loadConfigMap(true, projectId, envId, current - 1, pageSize),
-      secret: () => store.loadSecret(true, projectId, envId, current - 1, pageSize),
+      configMap: () => store.loadConfigMap(true, projectId, envId, current, pageSize),
+      secret: () => store.loadSecret(true, projectId, envId, current, pageSize),
     };
 
     this.setState({ deleteLoading: true });
@@ -94,7 +94,7 @@ export default class KeyValueTable extends Component {
         sort.order = 'desc';
       }
     }
-    let page = pagination.current - 1;
+    let page = pagination.current;
     let searchParam = {};
     if (Object.keys(filters).length) {
       searchParam = filters;

@@ -26,7 +26,7 @@ const EXECUTE_FAILED = 'failed';
 @observer
 export default class Pipeline extends Component {
   state = {
-    page: 0,
+    page: 1,
     pageSize: NaN,
     param: '',
     filters: {},
@@ -86,7 +86,7 @@ export default class Pipeline extends Component {
 
     const realSorter = _.isEmpty(sorter) ? null : sorter;
     this.setState({
-      page: current - 1,
+      page: current,
       pageSize,
       param,
       filters,
@@ -94,7 +94,7 @@ export default class Pipeline extends Component {
     });
     PipelineStore.loadListData(
       projectId,
-      current - 1,
+      current,
       pageSize,
       realSorter,
       {
@@ -119,7 +119,7 @@ export default class Pipeline extends Component {
       },
     } = this.props;
     const { page, pageSize, param, filters, sorter, searchData } = this.state;
-    const currentPage = (toPage || toPage === 0) ? toPage : page;
+    const currentPage = toPage || page;
     const {
       getPageInfo: {
         pageSize: storePageSize,
@@ -350,7 +350,7 @@ export default class Pipeline extends Component {
    * @param value
    */
   handleSearch = (value) => {
-    this.setState({ searchData: value }, () => this.loadData(0));
+    this.setState({ searchData: value }, () => this.loadData(1));
   };
 
   renderAction = (record) => {

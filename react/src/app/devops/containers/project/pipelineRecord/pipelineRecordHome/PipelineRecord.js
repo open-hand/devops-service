@@ -57,7 +57,7 @@ class PipelineRecord extends Component {
     } = this.props;
     PipelineRecordStore.loadPipelineData(projectId);
     const { pipelineId } = state || {};
-    PipelineRecordStore.loadRecordList(projectId, pipelineId, 0, HEIGHT < 900 ? 10 : 15);
+    PipelineRecordStore.loadRecordList(projectId, pipelineId, 1, HEIGHT < 900 ? 10 : 15);
     pipelineId && this.setState({ pipelineId });
   }
 
@@ -75,7 +75,7 @@ class PipelineRecord extends Component {
       sort: { columnKey: 'id', order: 'descend' },
       paras: [],
     });
-    PipelineRecordStore.loadRecordList(projectId, pipelineId, 0, HEIGHT < 900 ? 10 : 15, searchData);
+    PipelineRecordStore.loadRecordList(projectId, pipelineId, 1, HEIGHT < 900 ? 10 : 15, searchData);
   };
 
   /**
@@ -95,7 +95,7 @@ class PipelineRecord extends Component {
    * @param sorter
    * @param paras
    */
-  tableChange = (pagination, filters, sorter, paras) => {
+  tableChange = ({ current, pageSize }, filters, sorter, paras) => {
     const {
       PipelineRecordStore,
       AppState: { currentMenuType: { projectId } },
@@ -122,8 +122,8 @@ class PipelineRecord extends Component {
     PipelineRecordStore.loadRecordList(
       projectId,
       pipelineId,
-      pagination.current - 1,
-      pagination.pageSize,
+      current,
+      pageSize,
       searchData,
       sort,
       postData,

@@ -294,7 +294,7 @@ class BranchCreate extends Component {
       });
     } else {
       this.setState({ tagSize: tagSize + 10 });
-      store.loadTagData(this.state.projectId, 0, tagSize + 10, {
+      store.loadTagData(this.state.projectId, 1, tagSize + 10, {
         searchParam: { tagName: [this.state.filter] },
         param: "",
       });
@@ -313,7 +313,7 @@ class BranchCreate extends Component {
       size: branchSize,
       postData: { searchParam: { branchName: [input] }, param: "" },
     });
-    store.loadTagData(this.state.projectId, 0, tagSize, {
+    store.loadTagData(this.state.projectId, 1, tagSize, {
       searchParam: { tagName: [input] },
       param: "",
     });
@@ -398,14 +398,14 @@ class BranchCreate extends Component {
                     label={intl.formatMessage({ id: "branch.branch" })}
                     key="proGroup"
                   >
-                    {branches.content.map(s => (
+                    {branches.list.map(s => (
                       <Option value={s.branchName} key={s.branchName}>
                         <i className="icon icon-branch c7n-branch-formItem-icon" />
                         {s.branchName}
                       </Option>
                     ))}
-                    {branches.totalElements > branches.numberOfElements &&
-                    branches.numberOfElements > 0 ? (
+                    {branches.total > branches.size &&
+                    branches.size > 0 ? (
                       <Option key="more">
                         <div
                           role="none"
@@ -421,14 +421,14 @@ class BranchCreate extends Component {
                     label={intl.formatMessage({ id: "branch.tag" })}
                     key="more"
                   >
-                    {tags.content.map(s => (
+                    {tags.list.map(s => (
                       <Option value={s.tagName} key={s.tagName}>
                         <i className="icon icon-local_offer c7n-branch-formItem-icon" />
                         {s.tagName}
                       </Option>
                     ))}
-                    {tags.totalElements > tags.numberOfElements &&
-                    tags.numberOfElements > 0 ? (
+                    {tags.total > tags.size &&
+                    tags.size > 0 ? (
                       <Option value="more">
                         <div
                           role="none"

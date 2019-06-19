@@ -5,7 +5,7 @@ import TimePopover from '../../../../components/timePopover';
 import './Submission.scss';
 
 export default function CommitHistory(props) {
-  const { dataSource: { content, totalElements, number }, onPageChange, loading } = props;
+  const { dataSource: { list: content, total, pageNum }, onPageChange, loading } = props;
   let list = [];
   if (content && content.length) {
     list = content.map((item) => {
@@ -41,11 +41,11 @@ export default function CommitHistory(props) {
       <div className="c7n-report-history-list">{list}</div>
     </Spin>
     <div className="c7n-report-history-page">
-      {totalElements ? (<Pagination
+      {total ? (<Pagination
         tiny
         size="small"
-        total={totalElements || 0}
-        current={number + 1 || 1}
+        total={total || 0}
+        current={pageNum || 1}
         pageSize={5}
         showSizeChanger={false}
         onChange={onPageChange}

@@ -129,7 +129,7 @@ class BranchStore {
       .then((data) => {
         this.setIssueLoading(false);
         const res = handleProptError(data);
-        this.setIssue(data.content);
+        this.setIssue(data.list);
         return res;
       });
   };
@@ -165,7 +165,7 @@ class BranchStore {
    * @param sort
    * @param postData
    */
-  loadBranchData = ({ projectId, page = 0, size = this.pageInfo.pageSize, sort = { field: 'creationDate', order: 'asc' }, postData = { searchParam: {},
+  loadBranchData = ({ projectId, page = 1, size = this.pageInfo.pageSize, sort = { field: 'creationDate', order: 'asc' }, postData = { searchParam: {},
     param: '' } }) => {
     axios.post(`/devops/v1/projects/${projectId}/apps/${DevPipelineStore.selectedApp}/git/branches?page=${page}&size=${size}&sort=${sort.field},${sort.order}`, JSON.stringify(postData))
       .then((data) => {
@@ -184,7 +184,7 @@ class BranchStore {
    * @param sort
    * @param postData
    */
-  loadBranchList = ({ projectId, page = 0, size = this.pageInfo.pageSize, sort = { field: 'creationDate', order: 'asc' }, postData = { searchParam: {},
+  loadBranchList = ({ projectId, page = 1, size = this.pageInfo.pageSize, sort = { field: 'creationDate', order: 'asc' }, postData = { searchParam: {},
     param: '' } }) => {
     if (DevPipelineStore.selectedApp) {
       this.changeLoading(true);
@@ -193,15 +193,15 @@ class BranchStore {
           this.changeLoading(false);
           const res = handleProptError(data);
           if (res) {
-            this.setBranchList(data.content);
-            const pages = { current: data.number + 1, pageSize: size, total: data.totalElements };
+            this.setBranchList(data.list);
+            const pages = { current: data.pageNum, pageSize: size, total: data.total };
             this.setPageInfo(pages);
           }
         });
     }
   };
 
-  loadTagData = (projectId, page = 0, sizes = 10, postData = { searchParam: {}, param: '' }) => axios.post(`/devops/v1/projects/${projectId}/apps/${DevPipelineStore.selectedApp}/git/tags_list_options?page=0&size=${sizes}`, JSON.stringify(postData))
+  loadTagData = (projectId, page = 1, sizes = 10, postData = { searchParam: {}, param: '' }) => axios.post(`/devops/v1/projects/${projectId}/apps/${DevPipelineStore.selectedApp}/git/tags_list_options?page=1&size=${sizes}`, JSON.stringify(postData))
     .then((data) => {
       const res = handleProptError(data);
       if (res) {

@@ -65,7 +65,7 @@ class AppHome extends Component {
     } = props.history;
     super(props);
     this.state = {
-      page: 0,
+      page: 1,
       id: '',
       projectId: menu.id,
       show: state && state.show,

@@ -283,7 +283,7 @@ export default class CertificateCreate extends Component {
       : sorter;
 
     store.setProjectInfo({
-      page: current - 1,
+      page: current,
       postData: [param.toString()],
       pageSize,
       filters,

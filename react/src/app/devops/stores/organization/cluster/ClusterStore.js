@@ -65,9 +65,9 @@ class ClusterStore {
   };
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -76,9 +76,9 @@ class ClusterStore {
 
   @action setNodePageInfo(id, pagination) {
     const tableInfo = pagination ? {
-      current: pagination.number + 1,
-      total: pagination.totalElements,
-      pageSize: pagination.size,
+      current: pagination.pageNum,
+      total: pagination.total,
+      pageSize: pagination.pageSize,
       numberOfElements: pagination.numberOfElements,
     } : null;
     this.nodePageInfo = _.assign({}, this.nodePageInfo, { [id]: tableInfo });
@@ -97,9 +97,9 @@ class ClusterStore {
   }
 
   @action setClsPageInfo(page) {
-    this.clsPageInfo.current = page.number + 1;
-    this.clsPageInfo.total = page.totalElements;
-    this.clsPageInfo.pageSize = page.size;
+    this.clsPageInfo.current = page.pageNum;
+    this.clsPageInfo.total = page.total;
+    this.clsPageInfo.pageSize = page.pageSize;
   }
 
   @computed get getClsPageInfo() {
@@ -208,7 +208,7 @@ class ClusterStore {
 
   loadCluster = (
     orgId,
-    page = this.clsPageInfo.current - 1,
+    page = this.clsPageInfo.current,
     size = this.clsPageInfo.pageSize,
     sort = { field: "id", order: "desc" },
     postData = {
@@ -227,12 +227,12 @@ class ClusterStore {
         const res = handleProptError(data);
         if (res) {
           const clsSort = _.concat(
-            _.filter(res.content, ["connect", true]),
-            _.filter(res.content, ["connect", false]),
+            _.filter(res.list, ["connect", true]),
+            _.filter(res.list, ["connect", false]),
           );
           this.setData(clsSort);
-          const { number, size, totalElements } = data;
-          const page = { number, size, totalElements };
+          const { pageNum, pageSize, total } = data;
+          const page = { pageNum, pageSize, total };
           this.setClsPageInfo(page);
           this.changeLoading(false);
         }
@@ -243,7 +243,7 @@ class ClusterStore {
     orgId,
     clusterId,
     nodeName,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     size = this.pageInfo.pageSize,
     sort = { field: "id", order: "desc" },
     postData = {
@@ -258,25 +258,25 @@ class ClusterStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          this.setPodData(res.content);
-          const { number, size, totalElements } = data;
-          const page = { number, size, totalElements };
+          const { pageNum, pageSize, total, list } = data;
+          this.setPodData(list);
+          const page = { pageNum, pageSize, total };
           this.setPageInfo(page);
           this.changeLoading(false);
         }
       });
   };
 
-  async loadMoreNode(orgId, clusterId, page = 0, size = 10) {
+  async loadMoreNode(orgId, clusterId, page = 1, size = 10) {
     this.setMoreLoading(clusterId, true);
     try {
       let data = await axios.get(`/devops/v1/organizations/${orgId}/clusters/page_nodes?cluster_id=${clusterId}&page=${page}&size=${size}&sort=id,desc`);
       const result = handleProptError(data);
 
       if (result) {
-        const { number, size, totalElements, numberOfElements, content } = result;
-        this.setNodeData(clusterId, content);
-        this.setNodePageInfo(clusterId, { number, size, totalElements, numberOfElements });
+        const { pageNum, pageSize, total, size: numberOfElements, list } = result;
+        this.setNodeData(clusterId, list);
+        this.setNodePageInfo(clusterId, { pageNum, pageSize, total, numberOfElements });
         this.setMoreLoading(clusterId, false);
       }
     } catch (e) {
@@ -288,7 +288,7 @@ class ClusterStore {
   loadPro = (
     orgId,
     clusterId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     size = this.pageInfo.pageSize,
     sort = { field: "id", order: "desc" },
     postData = [],
@@ -303,9 +303,9 @@ class ClusterStore {
       if (data && data.failed) {
         Choerodon.prompt(data.message);
       } else {
-        this.setProData(data.content);
-        const { number, size, totalElements } = data;
-        const page = { number, size, totalElements };
+        const { pageNum, pageSize, total, list } = data;
+        this.setProData(list);
+        const page = { pageNum, pageSize, total };
         this.setPageInfo(page);
       }
       this.tableLoading(false);

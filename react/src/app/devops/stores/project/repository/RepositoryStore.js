@@ -59,11 +59,11 @@ class RepositoryStore {
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
-          this.setRepoData(res.content);
+          this.setRepoData(res.list);
           const pageInfo = {
-            current: res.number + 1,
-            total: res.totalElements,
-            pageSize: res.size,
+            current: res.pageNum,
+            total: res.total,
+            pageSize: res.pageSize,
           };
           this.setPageInfo(pageInfo);
         }

@@ -40,7 +40,7 @@ class AppVersionTable extends Component {
   tableChange = (pagination) => {
     const { id: projectId } = AppState.currentMenuType;
     const { current, pageSize } = pagination;
-    const page = current - 1;
+    const page = current;
     this.props.store.loadData(projectId, DevPipelineStore.getSelectApp, page, pageSize);
   };
 

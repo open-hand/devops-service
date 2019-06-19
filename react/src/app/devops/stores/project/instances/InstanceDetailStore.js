@@ -132,7 +132,7 @@ class InstanceDetailStore {
       });
   };
 
-  loadIstLog = (projectId, id, page=0, size=15, startTime, endTime, flag = true) => {
+  loadIstLog = (projectId, id, page=1, size=15, startTime, endTime, flag = true) => {
     if (flag) {
       this.setLogLoading(true);
     }
@@ -143,8 +143,8 @@ class InstanceDetailStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          this.setIstLog(data.content, flag);
-          this.setLogTotal(data.totalElements);
+          this.setIstLog(data.list, flag);
+          this.setLogTotal(data.total);
           this.setLogLoading(false);
           return res;
         }

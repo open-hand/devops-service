@@ -89,14 +89,14 @@ class PipelineStore {
 
     const result = handleProptError(data);
     if (result) {
-      const { number, totalElements: total, size: pageSize, content } = result;
+      const { pageNum, total, pageSize, list } = result;
 
       const pageInfo = {
-        current: number + 1,
+        current: pageNum,
         total,
         pageSize,
       };
-      this.setListData(content);
+      this.setListData(list);
       this.setPageInfo(pageInfo);
     }
     this.setLoading(false);

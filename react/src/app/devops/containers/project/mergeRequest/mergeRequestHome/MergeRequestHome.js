@@ -44,7 +44,7 @@ class MergeRequestHome extends Component {
     MergeRequestStore.loadMergeRquest(
       DevPipelineStore.selectedApp,
       this.state.tabKey,
-      MergeRequestStore.pageInfo.current - 1,
+      MergeRequestStore.pageInfo.current,
       MergeRequestStore.pageInfo.pageSize,
     );
     DevPipelineStore.queryAppData(AppState.currentMenuType.id);
@@ -80,7 +80,7 @@ class MergeRequestHome extends Component {
     MergeRequestStore.loadMergeRquest(
       DevPipelineStore.selectedApp,
       keys,
-      pagination.current - 1,
+      pagination.current,
       pagination.pageSize,
     );
   };

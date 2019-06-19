@@ -82,7 +82,7 @@ class AppTagCreate extends Component {
           if (req && req.failed) {
             Choerodon.prompt(data.message);
           } else {
-            store.queryTagData(projectId, 0, 10);
+            store.queryTagData(projectId, 1, 10);
             this.handleCancel();
           }
           this.setState({ submitting: false });
@@ -141,7 +141,7 @@ class AppTagCreate extends Component {
   render() {
     const { intl: { formatMessage }, store, form: { getFieldDecorator }, show, app: name } = this.props;
     const { submitting, release } = this.state;
-    const { content, totalElements, numberOfElements } = store.getBranchData;
+    const { list, total, size } = store.getBranchData;
     return (<Sidebar
       destroyOnClose
       title={<FormattedMessage id="apptag.create" />}
@@ -200,14 +200,14 @@ class AppTagCreate extends Component {
                 >
                   <OptGroup label={<FormattedMessage id="apptag.branch" />}>
                     {
-                      _.map(content, item => (<Option
+                      _.map(list, item => (<Option
                         key={item.branchName}
                         value={item.branchName}
                       >
                         <Icon className="apptag-branch-icon" type="branch" />{item.branchName}
                       </Option>))
                     }
-                    {(totalElements > numberOfElements && numberOfElements > 0) ? <Option key="more">
+                    {(total > size && size > 0) ? <Option key="more">
                       <div
                         role="none"
                         onClick={this.changeSize}

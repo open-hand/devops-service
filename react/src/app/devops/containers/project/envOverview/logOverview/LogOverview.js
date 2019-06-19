@@ -29,7 +29,7 @@ class LogOverview extends Component {
   tableChange = pagination => {
     const { store, envId } = this.props;
     const { id } = AppState.currentMenuType;
-    const page = pagination.current - 1;
+    const page = pagination.current;
     store.loadLog(true, id, envId, page, pagination.pageSize);
   };
 

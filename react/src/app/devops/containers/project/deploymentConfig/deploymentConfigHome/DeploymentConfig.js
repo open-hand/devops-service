@@ -52,7 +52,7 @@ class DeploymentConfig extends Component {
       DeploymentConfigStore,
       AppState: { currentMenuType: { projectId } },
     } = this.props;
-    DeploymentConfigStore.loadAllData(projectId, 0, HEIGHT < 900 ? 10 : 15);
+    DeploymentConfigStore.loadAllData(projectId, 1, HEIGHT < 900 ? 10 : 15);
   };
 
   /**
@@ -72,7 +72,7 @@ class DeploymentConfig extends Component {
    * @param sorter
    * @param paras
    */
-  tableChange = (pagination, filters, sorter, paras) => {
+  tableChange = ({ current, pageSize }, filters, sorter, paras) => {
     const {
       DeploymentConfigStore,
       AppState: { currentMenuType: { projectId } },
@@ -97,8 +97,8 @@ class DeploymentConfig extends Component {
     };
     DeploymentConfigStore.loadAllData(
       projectId,
-      pagination.current - 1,
-      pagination.pageSize,
+      current,
+      pageSize,
       sort,
       postData,
     );

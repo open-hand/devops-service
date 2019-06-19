@@ -39,7 +39,7 @@ class CiPipelineHome extends Component {
     CiPipelineStore.loadPipelines(
       spin,
       DevPipelineStore.selectedApp,
-      CiPipelineStore.pagination.current - 1,
+      CiPipelineStore.pagination.current,
       CiPipelineStore.pagination.pageSize,
     );
     DevPipelineStore.queryAppData(AppState.currentMenuType.id);

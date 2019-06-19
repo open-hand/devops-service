@@ -240,7 +240,7 @@ class NodeDetail extends Component {
       }
     }
     let searchParam = {};
-    const page = pagination.current - 1;
+    const page = pagination.current;
     if (Object.keys(filters).length) {
       searchParam = filters;
     }

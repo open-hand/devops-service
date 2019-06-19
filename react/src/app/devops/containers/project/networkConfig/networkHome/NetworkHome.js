@@ -58,7 +58,7 @@ export default class NetworkHome extends Component {
       if (env.length) {
         const envId = EnvOverviewStore.getTpEnvId;
         if (envId) {
-          this.loadAllData(0, envId);
+          this.loadAllData(1, envId);
         }
       }
     });
@@ -84,7 +84,7 @@ export default class NetworkHome extends Component {
         paras: [],
       });
       const envId = EnvOverviewStore.getTpEnvId;
-      this.loadAllData(0, envId);
+      this.loadAllData(1, envId);
     }
   };
 
@@ -478,7 +478,7 @@ export default class NetworkHome extends Component {
    */
   handleEnvSelect = value => {
     EnvOverviewStore.setTpEnvId(value);
-    this.loadAllData(0, value);
+    this.loadAllData(1, value);
   };
 
   render() {

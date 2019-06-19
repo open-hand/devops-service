@@ -30,7 +30,7 @@ const { Option } = Select;
 @observer
 export default class Notifications extends Component {
   state = {
-    page: 0,
+    page: 1,
     pageSize: NaN,
     param: '',
     filters: {},
@@ -62,7 +62,7 @@ export default class Notifications extends Component {
     const realSorter = _.isEmpty(sorter) ? null : sorter;
 
     this.setState({
-      page: current - 1,
+      page: current,
       pageSize,
       param,
       filters,
@@ -71,7 +71,7 @@ export default class Notifications extends Component {
 
     NotificationsStore.loadListData({
       projectId,
-      page: current - 1,
+      page: current,
       size: pageSize,
       sort: realSorter,
       param: {
@@ -101,7 +101,7 @@ export default class Notifications extends Component {
       showSidebar: false,
       sidebarType: 'create',
     });
-    reload ? this.loadData(0) : this.loadData();
+    reload ? this.loadData(1) : this.loadData();
   };
 
   handleRefresh = (e, page) => {
@@ -170,7 +170,7 @@ export default class Notifications extends Component {
       },
     } = this.props;
     const { page, pageSize, param, filters, sorter, envId } = this.state;
-    const currentPage = (toPage || toPage === 0) ? toPage : page;
+    const currentPage = toPage || page;
     const {
       getPageInfo: {
         pageSize: storePageSize,
@@ -193,7 +193,7 @@ export default class Notifications extends Component {
   }
 
   handleSelectEnv = (value) => {
-    this.setState({ envId: value }, () => this.loadData(0));
+    this.setState({ envId: value }, () => this.loadData(1));
   };
 
   renderUser = ({ userRelDTOS, notifyObject }) => (

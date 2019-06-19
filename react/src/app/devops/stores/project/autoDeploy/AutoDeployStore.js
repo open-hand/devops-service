@@ -47,9 +47,9 @@ class AutoDeployStore {
   };
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @computed get getPageInfo() {
@@ -57,9 +57,9 @@ class AutoDeployStore {
   }
 
   @action setRecordPageInfo(page) {
-    this.recordPageInfo.current = page.number + 1;
-    this.recordPageInfo.total = page.totalElements;
-    this.recordPageInfo.pageSize = page.size;
+    this.recordPageInfo.current = page.pageNum;
+    this.recordPageInfo.total = page.total;
+    this.recordPageInfo.pageSize = page.pageSize;
   }
 
   @computed get getRecordPageInfo() {
@@ -187,7 +187,7 @@ class AutoDeployStore {
       userId,
       envId,
       appId,
-      page = 0,
+      page = 1,
       size = HEIGHT <= 900 ? 10 : 15,
       sort = { field: "", order: "desc" },
       postData = {
@@ -208,9 +208,9 @@ class AutoDeployStore {
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
-          const {content, totalElements, number, size} = res;
-          this.setPageInfo({number, totalElements, size});
-          this.setTaskList(content);
+          const {list, total, pageNum, pageSize} = res;
+          this.setPageInfo({pageNum, total, pageSize});
+          this.setTaskList(list);
         }
         this.changeLoading(false);
       })
@@ -252,7 +252,7 @@ class AutoDeployStore {
       envId,
       appId,
       taskName,
-      page = this.recordPageInfo.current - 1,
+      page = this.recordPageInfo.current,
       size = this.recordPageInfo.pageSize,
       sort = { field: "id", order: "desc" },
       postData = {
@@ -273,9 +273,9 @@ class AutoDeployStore {
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
-          const {content, totalElements, number, size} = res;
-          this.setRecordPageInfo({number, totalElements, size});
-          this.setRecordList(content);
+          const {list, total, pageNum, pageSize} = res;
+          this.setRecordPageInfo({pageNum, total, pageSize});
+          this.setRecordList(list);
         }
         this.changeRecordLoading(false);
       })
@@ -299,9 +299,9 @@ class AutoDeployStore {
         const res = handleProptError(data);
         if (res) {
           if (hasVersion) {
-            this.setHasVersionApp(data.content);
+            this.setHasVersionApp(data.list);
           } else {
-            this.setAppDate(data.content);
+            this.setAppDate(data.list);
           }
         }
       });

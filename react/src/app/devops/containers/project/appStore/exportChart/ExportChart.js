@@ -69,7 +69,7 @@ class ExportChart extends Component {
     const { projectId } = AppState.currentMenuType;
     const { current, pageSize: size } = pagination;
 
-    const page = current - 1;
+    const page = current;
     const search = {
       searchParam: Object.keys(filters).length ? filters : {},
       param: paras.toString(),

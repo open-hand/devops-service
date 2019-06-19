@@ -74,7 +74,7 @@ class OperationLog extends Component {
       .then(data => {
         if (data && !data.failed) {
           const istLog = store.getIstLog;
-          this.setState({ hasMore: data.totalElements > istLog.length });
+          this.setState({ hasMore: data.total > istLog.length });
         }
       });
     this.setState({ page: 1, startTime, endTime });
@@ -92,7 +92,7 @@ class OperationLog extends Component {
       .then(data => {
         if (data && !data.failed) {
           const istLog = store.getIstLog;
-          this.setState({ hasMore: data.totalElements > istLog.length });
+          this.setState({ hasMore: data.total > istLog.length });
         }
         this.setState({ loading: false, once: true });
       });

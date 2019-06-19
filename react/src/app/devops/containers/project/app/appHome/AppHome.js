@@ -97,7 +97,7 @@ class AppHome extends Component {
     } = props.history;
     super(props);
     this.state = {
-      page: 0,
+      page: 1,
       id: '',
       projectId: menu.id,
       show: state && state.show,
@@ -117,7 +117,7 @@ class AppHome extends Component {
     } = this.props;
     const { show, modeType } = state || {};
     show && modeType && this.showSideBar('create');
-    this.loadAllData(0);
+    this.loadAllData(1);
   }
 
   componentWillUnmount() {
@@ -611,7 +611,7 @@ class AppHome extends Component {
       }
     }
     let searchParam = {};
-    let page = pagination.current - 1;
+    let page = pagination.current;
     if (Object.keys(filters).length) {
       searchParam = filters;
     }

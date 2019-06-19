@@ -32,9 +32,9 @@ class ConfigMapStore {
   };
 
   @action setPageInfo(page) {
-    this.pageInfo.current = page.number + 1;
-    this.pageInfo.total = page.totalElements;
-    this.pageInfo.pageSize = page.size;
+    this.pageInfo.current = page.pageNum;
+    this.pageInfo.total = page.total;
+    this.pageInfo.pageSize = page.pageSize;
   }
 
   @action setPreProId(id) {
@@ -91,7 +91,7 @@ class ConfigMapStore {
     spin,
     projectId,
     envId,
-    page = this.pageInfo.current - 1,
+    page = this.pageInfo.current,
     size = this.pageInfo.pageSize,
     sort = { field: 'id', order: 'desc' },
     postData = {
@@ -109,9 +109,9 @@ class ConfigMapStore {
       .then(data => {
         const res = handleProptError(data);
         if (res) {
-          this.setData(res.content);
-          const { number, size, totalElements } = data;
-          const page = { number, size, totalElements };
+          const { pageNum, pageSize, total, list } = data;
+          this.setData(list);
+          const page = { pageNum, pageSize, total };
           this.setPageInfo(page);
           spin && this.changeLoading(false);
         }

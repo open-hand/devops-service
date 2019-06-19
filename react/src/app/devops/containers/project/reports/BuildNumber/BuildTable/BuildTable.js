@@ -326,7 +326,7 @@ class BuildTable extends Component {
     const appId = ReportsStore.getAppId;
     const startTime = ReportsStore.getStartTime.format().split('T')[0].replace(/-/g, '/');
     const endTime = ReportsStore.getEndTime.format().split('T')[0].replace(/-/g, '/');
-    ReportsStore.loadBuildTable(projectId, appId, startTime, endTime, pagination.current - 1, pagination.pageSize);
+    ReportsStore.loadBuildTable(projectId, appId, startTime, endTime, pagination.current, pagination.pageSize);
   };
 
   render() {

@@ -105,7 +105,7 @@ class Cluster extends Component {
       delId: null,
       delCode: null,
       clsName: '',
-      page: 0,
+      page: 1,
       size: 10,
     };
   }
@@ -184,7 +184,7 @@ class Cluster extends Component {
         sort.order = 'desc';
       }
     }
-    let page = pagination.current - 1;
+    let page = pagination.current;
     const postData = [paras.toString()];
     if (this.state.sideType === 'create') {
       ClusterStore.loadPro(organizationId, null, page, pagination.pageSize, sort, postData);
@@ -252,10 +252,10 @@ class Cluster extends Component {
     const { organizationId } = AppState.currentMenuType;
     const nodePageInfo = ClusterStore.getNodePageInfo;
 
-    let page = 0;
+    let page = 1;
     let size = 10;
     if (nodePageInfo[id]) {
-      page = nodePageInfo[id].current - 1;
+      page = nodePageInfo[id].current;
       size = nodePageInfo[id].pageSize;
     }
 
@@ -286,7 +286,7 @@ class Cluster extends Component {
 
     return _.map(clusters, (cluster) => {
       const { id, connect, nodes } = cluster;
-      const nodeData = nodes && nodes.content ? nodes.content.slice() : [];
+      const nodeData = nodes && nodes.list ? nodes.list.slice() : [];
       const tableData = getNodeData[id] && getNodeData[id].length ? getNodeData[id].slice() : nodeData;
 
       return <ClusterList
@@ -725,8 +725,8 @@ class Cluster extends Component {
    * @param size
    */
   onPageChange = (page, size) => {
-    this.setState({ page: page - 1, size });
-    this.loadCluster(page - 1, size);
+    this.setState({ page, size });
+    this.loadCluster(page, size);
   };
 
   render() {

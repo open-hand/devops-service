@@ -450,7 +450,7 @@ class PipelineCreateStore {
     this.setLoading('app', false);
     const data = handleProptError(response);
     if (data) {
-      this.setAppDate(data.content);
+      this.setAppDate(data.list);
     }
   }
 

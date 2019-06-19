@@ -65,7 +65,7 @@ class RepositoryHome extends Component {
       param: param[0],
     };
     this.setState({ param, filters, sort: sorter });
-    this.loadRepoData(pagination.current - 1, pagination.pageSize, sorter, search);
+    this.loadRepoData(pagination.current, pagination.pageSize, sorter, search);
   };
 
   /**
@@ -75,7 +75,7 @@ class RepositoryHome extends Component {
    * @param sorter
    * @param search
    */
-  loadRepoData = (page = 0, pageSize, sorter = {}, search = { searchParam: {}, param: '' }) => {
+  loadRepoData = (page = 1, pageSize, sorter = {}, search = { searchParam: {}, param: '' }) => {
     const { RepositoryStore } = this.props;
     const { projectId } = this.state;
     RepositoryStore.queryRepoData(projectId, page, pageSize, sorter, search);
