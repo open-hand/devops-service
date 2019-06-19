@@ -386,17 +386,20 @@ class EnvOverviewHome extends Component {
    * 条件部署应用
    */
   deployApp = () => {
-    const { EnvOverviewStore } = this.props;
-    const envId = EnvOverviewStore.getTpEnvId;
     const {
-      id: projectId,
-      name: projectName,
-      organizationId,
-      type,
-    } = AppState.currentMenuType;
-    this.linkToChange(
-      `/devops/deployment-app/envOverview?type=${type}&id=${projectId}&name=${encodeURIComponent(projectName)}&organizationId=${organizationId}&envId=${envId}`,
-    );
+      history,
+      location: {
+        search,
+      },
+    } = this.props;
+
+    history.push({
+      pathname: '/devops/deployment-app',
+      search,
+      state: {
+        prevPage: 'env',
+      },
+    });
   };
 
   /**

@@ -1,22 +1,22 @@
-import React, { Component, Fragment } from "react";
-import { observer } from "mobx-react";
-import { withRouter } from "react-router-dom";
+import React, { Component, Fragment } from 'react';
+import { observer } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
 import {
   Content,
   Header,
   Page,
   Permission,
   stores,
-} from "@choerodon/boot";
-import { Button, Popover, Tooltip, Table } from "choerodon-ui";
-import { injectIntl, FormattedMessage } from "react-intl";
-import _ from "lodash";
-import MouserOverWrapper from "../../../../components/MouseOverWrapper";
-import AppName from "../../../../components/appName";
-import "../../instances/Instances.scss";
-import "../../../main.scss";
-import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
-import DeploymentPipelineStore from "../../../../stores/project/deploymentPipeline";
+} from '@choerodon/boot';
+import { Button, Popover, Tooltip, Table } from 'choerodon-ui';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import _ from 'lodash';
+import MouserOverWrapper from '../../../../components/MouseOverWrapper';
+import AppName from '../../../../components/appName';
+import '../../instances/Instances.scss';
+import '../../../main.scss';
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import DeploymentPipelineStore from '../../../../stores/project/deploymentPipeline';
 
 const { AppState } = stores;
 
@@ -63,29 +63,37 @@ class DeployOverview extends Component {
 
   /**
    * 快速部署
-   * @param appId
-   * @param verId
-   * @param proId
    */
-  quickDeploy = (appId, verId, proId) => {
+  quickDeploy = ({ applicationId, latestVersion }) => {
     const {
-      id: projectId,
-      name: projectName,
-      organizationId,
-      type,
-    } = AppState.currentMenuType;
+      history,
+      location: {
+        search,
+      },
+    } = this.props;
 
-    const baseUrl = `/devops/deployment-app/deployOverview/${appId}/${verId}?type=${type}&id=${projectId}&name=${projectName}&organizationId=${organizationId}`;
-    this.linkToChange(`${baseUrl}${proId !== Number(projectId) ? '&notLocalApp' : ''}`);
+    history.push({
+      pathname: '/devops/deployment-app',
+      search,
+      state: {
+        appId: applicationId,
+        version: latestVersion,
+        prevPage: 'deploy',
+      },
+    });
   };
 
   /**
    * 处理页面跳转
-   * @param url 跳转地址
    */
-  linkToChange = url => {
+  linkToReports = () => {
     const { history } = this.props;
-    history.push(url);
+    const {
+      id: projectId,
+      name,
+      organizationId,
+    } = AppState.currentMenuType;
+    history.push(`/devops/reports/deploy-times?type=${type}&id=${projectId}&name=${name}&organizationId=${organizationId}&deploy-overview`);
   };
 
   /**
@@ -100,17 +108,17 @@ class DeployOverview extends Component {
     const projectId = parseInt(AppState.currentMenuType.id, 10);
     const appList = InstancesStore.getMutiData;
     const envNames = _.filter(DeploymentPipelineStore.getEnvLine, [
-      "permission",
+      'permission',
       true,
     ]);
     const { type, organizationId: orgId } = AppState.currentMenuType;
 
     const columns = [
       {
-        title: formatMessage({ id: "deploy.app" }),
+        title: formatMessage({ id: 'deploy.app' }),
         width: 152,
-        key: "apps",
-        fixed: "left",
+        key: 'apps',
+        fixed: 'left',
         render: record => (
           <AppName
             name={record.applicationName}
@@ -121,10 +129,10 @@ class DeployOverview extends Component {
         ),
       },
       {
-        title: formatMessage({ id: "ist.lastVer" }),
+        title: formatMessage({ id: 'ist.lastVer' }),
         width: 227,
-        key: "latestVersion",
-        fixed: "left",
+        key: 'latestVersion',
+        fixed: 'left',
         render: record => (
           <div className="c7n-deploy-last">
             <div className="c7n-deploy-muti_card last_177">
@@ -133,7 +141,7 @@ class DeployOverview extends Component {
               </MouserOverWrapper>
             </div>
             <Permission
-              service={["devops-service.application-instance.deploy"]}
+              service={['devops-service.application-instance.deploy']}
               type={type}
               projectId={projectId}
               organizationId={orgId}
@@ -142,12 +150,7 @@ class DeployOverview extends Component {
                 <Button
                   shape="circle"
                   icon="jsfiddle"
-                  onClick={this.quickDeploy.bind(
-                    this,
-                    record.applicationId,
-                    record.latestVersionId,
-                    record.projectId
-                  )}
+                  onClick={() => this.quickDeploy(record)}
                 />
               </Tooltip>
             </Permission>
@@ -181,12 +184,12 @@ class DeployOverview extends Component {
      * 处理环境列变换时fixed列自适应宽度问题
      */
     columns.push({
-      key: "blank",
+      key: 'blank',
     });
 
     return (
       <Table
-        className={`${!appList.length && "no-value"} c7n-multi-table`}
+        className={`${!appList.length && 'no-value'} c7n-multi-table`}
         pagination={false}
         filterBar={false}
         loading={InstancesStore.getIsLoading}
@@ -225,11 +228,11 @@ class DeployOverview extends Component {
                     <div
                       className={`c7n-ist-status c7n-ist-status_${
                         ist.instanceStatus
-                      }`}
+                        }`}
                     >
                       <div>
                         {intl.formatMessage({
-                          id: ist.instanceStatus || "null",
+                          id: ist.instanceStatus || 'null',
                         })}
                       </div>
                     </div>
@@ -267,7 +270,7 @@ class DeployOverview extends Component {
       type,
     } = AppState.currentMenuType;
     const envNames = _.filter(DeploymentPipelineStore.getEnvLine, [
-      "permission",
+      'permission',
       true,
     ]);
 
@@ -275,9 +278,9 @@ class DeployOverview extends Component {
       <Page
         className="c7n-region"
         service={[
-          "devops-service.application.listAll",
-          "devops-service.devops-environment.listByProjectIdAndActive",
-          "devops-service.application-instance.deploy",
+          'devops-service.application.listAll',
+          'devops-service.devops-environment.listByProjectIdAndActive',
+          'devops-service.application-instance.deploy',
         ]}
       >
         {envNames && envNames.length ? (
@@ -285,9 +288,7 @@ class DeployOverview extends Component {
             <Header title={<FormattedMessage id="dpOverview.head" />}>
               <Button
                 icon="poll"
-                onClick={this.linkToChange.bind(this,
-                  `/devops/reports/deploy-times?type=${type}&id=${projectId}&name=${name}&organizationId=${organizationId}&deploy-overview`
-                )}
+                onClick={this.linkToReports}
               >
                 <FormattedMessage id="dpOverview.reports" />
               </Button>

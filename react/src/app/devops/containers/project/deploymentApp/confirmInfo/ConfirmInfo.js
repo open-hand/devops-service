@@ -6,8 +6,7 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
-import { Button, Icon } from 'choerodon-ui';
-import { Permission } from '@choerodon/boot';
+import { Icon } from 'choerodon-ui';
 import _ from 'lodash';
 import ButtonGroup from '../components/buttonGroup';
 import YamlEditor from '../../../../components/yamlEditor';
@@ -75,8 +74,6 @@ export default class ConfirmInfo extends Component {
       valueId: templateId,
     };
 
-    console.log(deployDTO);
-
     this.setState({ loading: true });
     const response = await store.submitDeployment(projectId, deployDTO)
       .catch(error => {
@@ -95,8 +92,8 @@ export default class ConfirmInfo extends Component {
   returnPrevPage = () => {
     const {
       history,
-      match: {
-        params: { prevPage },
+      location: {
+        state,
       },
       AppState: {
         currentMenuType: {
@@ -108,17 +105,7 @@ export default class ConfirmInfo extends Component {
       },
     } = this.props;
 
-    let url = 'instance';
-
-    switch (prevPage) {
-      case 'envOverview':
-        url = 'env-overview';
-        break;
-      case 'deployOverview':
-        url = 'deploy-overview';
-        break;
-      default:
-    }
+    let url = state && state.prevPage ? `${state.prevPage}-overview` : 'instance';
 
     history.push(
       `/devops/${url}?type=${type}&id=${id}&name=${name}&organizationId=${organizationId}`,
@@ -148,7 +135,7 @@ export default class ConfirmInfo extends Component {
     const envValue = getEnvironment ? renderValue(getEnvironment.name, getEnvironment.code) : null;
 
     const modeValue = <Fragment>
-      <FormattedMessage id={`deploy.step.three.mode.${mode}`} />
+      <FormattedMessage id={`deploy.step.mode.${mode}`} />
       {mode === MODE_UPDATE && <span className="c7ncd-step-info-item-text">({istName})</span>}
     </Fragment>;
 
@@ -180,17 +167,14 @@ export default class ConfirmInfo extends Component {
       },
     ];
 
-    const infoDom = _.map(deployInfo, item => {
-      const { icon, label, value } = item;
+    const infoDom = _.map(deployInfo, ({ icon, label, value }) => {
       return (
         <div key={label} className="c7ncd-step-info-item">
           <div className="c7ncd-step-info-item-label">
             <Icon type={icon} className="c7ncd-step-info-item-icon" />
             <FormattedMessage id={label} />：
           </div>
-          {value ? (
-            <div className="c7ncd-step-info-item-value">{value}</div>
-          ) : null}
+          {value && <div className="c7ncd-step-info-item-value">{value}</div>}
         </div>
       );
     });

@@ -131,7 +131,9 @@ export default class DeployMode extends Component {
         ...instance,
       });
 
-      store.loadInstances(projectId, appId, envId);
+      if (envId) {
+        store.loadInstances(projectId, appId, envId);
+      }
     }
   }
 
@@ -140,8 +142,10 @@ export default class DeployMode extends Component {
    * @param e
    */
   handleChangeMode = e => {
-    const { store } = this.props;
     let istName;
+    let instanceId;
+    let instance = null;
+    const { store } = this.props;
     const target = e.target;
 
     if (target.value === MODE_CRATE) {
@@ -149,19 +153,18 @@ export default class DeployMode extends Component {
       const prefix = app ? app.code : '';
 
       istName = getRandomName(prefix);
-
-      this.setState({
-        instanceId: undefined,
-        instanceDto: null,
-      });
     } else {
       const { getInstances } = store;
       const { instanceDto } = this.state;
 
       if (instanceDto) {
         istName = instanceDto.code;
+        instance = instanceDto;
+        instanceId = instanceDto.id;
       } else {
         istName = getInstances[0] ? getInstances[0].code : '';
+        instance = getInstances[0];
+        instanceId = getInstances[0].id;
       }
     }
 
@@ -172,14 +175,18 @@ export default class DeployMode extends Component {
     });
     this.setState({
       istName,
+      instanceId,
+      instanceDto: instance,
       istNameOk: true,
       mode: target.value,
     });
+
+    store.clearValue();
   };
 
   handleSelectInstance = value => {
-    const { store: { getInstances } } = this.props;
-    const instanceDto = _.find(getInstances, ['id', value]);
+    const { store  } = this.props;
+    const instanceDto = _.find(store.getInstances, ['id', value]);
     const istName = (instanceDto || {}).code;
 
     this.setState({
@@ -193,6 +200,7 @@ export default class DeployMode extends Component {
         value: istName,
       },
     });
+    store.clearValue();
   };
 
   get renderReplaceContent() {
@@ -252,6 +260,7 @@ export default class DeployMode extends Component {
       instanceDto: null,
     });
     store.loadInstances(projectId, appId, value);
+    store.clearValue();
   };
 
   handleIstNameChange = e => {
@@ -331,7 +340,7 @@ export default class DeployMode extends Component {
       </Option>;
     });
 
-    const disabledNext = !(
+    const disabledNext = !envId || !(
       (mode === MODE_CRATE && istName && istNameOk) ||
       (mode === MODE_UPDATE && (instanceId || (getInstances && getInstances.length))));
 

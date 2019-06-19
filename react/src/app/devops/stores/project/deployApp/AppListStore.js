@@ -17,7 +17,7 @@ class AppListStore {
   @observable localData = [];
 
   @action setLocalData(data) {
-    this.localData = Array.isArray(data) ? data : data.content;
+    this.localData = Array.isArray(data) ? data : data.list;
   }
 
   @computed get getLocalData() {
@@ -28,11 +28,11 @@ class AppListStore {
     ...INIT_PAGINATION,
   };
 
-  @action setLocalPageInfo({ number, totalElements, size }) {
+  @action setLocalPageInfo({ pageNum, total, pageSize }) {
     this.localPageInfo = {
-      current: number + 1,
-      total: totalElements,
-      pageSize: size,
+      current: pageNum,
+      total,
+      pageSize,
     };
   }
 
@@ -44,7 +44,7 @@ class AppListStore {
   @observable storeData = [];
 
   @action setStoreData(data) {
-    this.storeData = Array.isArray(data) ? data : data.content;
+    this.storeData = Array.isArray(data) ? data : data.list;
   }
 
   @computed get getStoreData() {
@@ -55,11 +55,11 @@ class AppListStore {
     ...INIT_PAGINATION,
   };
 
-  @action setStorePageInfo({ number, totalElements, size }) {
+  @action setStorePageInfo({ pageNum, total, pageSize }) {
     this.storePageInfo = {
-      current: number + 1,
-      total: totalElements,
-      pageSize: size,
+      current: pageNum,
+      total,
+      pageSize,
     };
   }
 
@@ -120,8 +120,8 @@ class AppListStore {
       postData = { searchParam: {}, param: '' },
     }) {
     const path = isMarket
-      ? `apps_market/list_all?page=${current - 1}&size=${pageSize}`
-      : `apps/list_by_options?active=true&page=${current - 1}&size=${pageSize}&sort=${sorter.field || 'id'},${SORTER_MAP[sorter.order] || 'desc'}&has_version=true&type=normal`;
+      ? `apps_market/list_all?page=${current}&size=${pageSize}`
+      : `apps/list_by_options?active=true&page=${current}&size=${pageSize}&sort=${sorter.field || 'id'},${SORTER_MAP[sorter.order] || 'desc'}&has_version=true&type=normal`;
 
     this.changeLoading(true);
     const response = await axios.post(`/devops/v1/projects/${projectId}/${path}`, JSON.stringify(postData))

@@ -33,6 +33,22 @@ function handleCheckerProptError(data) {
 }
 
 /**
+ * 数据请求后的错误拦截
+ * @param data
+ * @param hasReturn
+ */
+function handlePromptError(data, hasReturn = true) {
+  if (hasReturn && !data) return false;
+
+  if (data && data.failed) {
+    Choerodon.prompt(data.message);
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * 参数 长度低于2则前面加 0，否则不加
  * @param {string | number} str
  * @returns {string}
@@ -292,4 +308,5 @@ export {
   timeConvert,
   findAllIndex,
   getWindowHeight,
+  handlePromptError,
 };

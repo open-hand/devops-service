@@ -16,6 +16,19 @@ import { handleCheckerProptError } from '../../../../utils';
 
 import './AppWithVersions.scss';
 
+const INIT_STATE = {
+  app: null,
+  appId: undefined,
+  versions: [],
+  versionId: undefined,
+  versionOptions: [],
+  versionPageNum: 1,
+  versionSearchParam: '',
+  versionLoading: false,
+  displayAppList: false,
+  isLocalProject: true,
+};
+
 const { Option } = Select;
 
 @injectIntl
@@ -34,11 +47,6 @@ export default class AppWithVersions extends Component {
 
   componentDidMount() {
     const {
-      // match: {
-      //   // 路由传参
-      //   params: { appId: urlAppId, verId },
-      // },
-      // location: { search },
       store: {
         getSelectedApp,
         getSelectedVersion,
@@ -48,10 +56,12 @@ export default class AppWithVersions extends Component {
     let appId;
     let isLocalProject = true;
 
+    const versionId = (getSelectedVersion || {}).id;
+
     if (getSelectedApp) {
       isLocalProject = !getSelectedApp.publishLevel;
       appId = getSelectedApp.publishLevel ? getSelectedApp.appId : getSelectedApp.id;
-      this.handleLoadVersion(appId, isLocalProject);
+      this.handleLoadVersion(appId, isLocalProject, '', versionId);
     }
 
     this.setState({
@@ -59,7 +69,7 @@ export default class AppWithVersions extends Component {
       isLocalProject,
       app: getSelectedApp,
       versionDto: getSelectedVersion,
-      versionId: (getSelectedVersion || {}).id,
+      versionId,
     });
   }
 
@@ -80,22 +90,20 @@ export default class AppWithVersions extends Component {
    * @param isLocalProject 标明是项目应用还是应用市场应用
    */
   handleSelectApp = (app, isLocalProject) => {
+    const { store } = this.props;
     if (app) {
       const appId = isLocalProject ? app.id : app.appId;
+      const initState = _.cloneDeep(INIT_STATE);
 
       this.setState({
+        ...initState,
         app,
         appId,
         isLocalProject,
-        displayAppList: false,
-        versionId: undefined,
-        versions: [],
-        versionOptions: [],
-        versionPageNum: 1,
-        versionSearchParam: '',
       });
 
       this.handleLoadVersion(appId, !isLocalProject);
+      store.initAllData();
     } else {
       this.setState({ displayAppList: false });
     }
@@ -130,20 +138,19 @@ export default class AppWithVersions extends Component {
       },
       store,
     } = this.props;
-    const { versionId } = this.state;
-    const initId = init ? versionId : '';
 
     this.setState({ versionLoading: true });
 
+    const initId = init || '';
     const data = await store.loadVersions({ projectId, appId, isPublic, page: 0, param, initId })
       .catch(() => {
         this.setState({ versionLoading: false });
       });
 
     if (handleCheckerProptError(data)) {
-      const { totalPages, content } = data;
+      const { totalPages, list } = data;
 
-      const versionOptions = renderVersionOptions(content);
+      const versionOptions = renderVersionOptions(list);
 
       if (totalPages > 1) {
         // 在选项最后置入一个加载更多按钮
@@ -154,7 +161,7 @@ export default class AppWithVersions extends Component {
 
       this.setState({
         versionOptions,
-        versions: content,
+        versions: list,
         versionLoading: false,
       });
     }
@@ -217,9 +224,9 @@ export default class AppWithVersions extends Component {
       });
 
     if (handleCheckerProptError(data)) {
-      const { totalPages, content } = data;
+      const { totalPages, list } = data;
 
-      const moreVersion = _.filter(content, ({ id }) => id !== versionId);
+      const moreVersion = _.filter(list, ({ id }) => id !== versionId);
       const options = renderVersionOptions(moreVersion);
 
       /**
@@ -257,10 +264,20 @@ export default class AppWithVersions extends Component {
     onChange(1);
   };
 
+  handleCancel = () => {
+    const { onCancel } = this.props;
+    this.initState();
+    onCancel();
+  };
+
+  initState = () => {
+    const state = _.cloneDeep(INIT_STATE);
+    this.setState(state);
+  };
+
   render() {
     const {
       intl: { formatMessage },
-      onCancel,
     } = this.props;
     const {
       app,
@@ -347,7 +364,7 @@ export default class AppWithVersions extends Component {
         <ButtonGroup
           disabled={!(appId && versionId)}
           onNext={this.handleNext}
-          onCancel={onCancel}
+          onCancel={this.handleCancel}
         />
         {displayAppList && (
           <AppList

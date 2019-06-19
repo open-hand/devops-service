@@ -4,7 +4,7 @@
  */
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
-import { handleCheckerProptError, handleProptError } from '../../../utils';
+import { handlePromptError } from '../../../utils';
 
 @store('DeployAppStore')
 class DeployAppStore {
@@ -88,16 +88,6 @@ class DeployAppStore {
     return this.configLoading;
   }
 
-  @observable configValue = '';
-
-  @action setConfigValue(data) {
-    this.configValue = data;
-  }
-
-  @computed get getConfigValue() {
-    return this.configValue;
-  }
-
   @observable selectedValue = {};
 
   @action setSelectedValue(data) {
@@ -108,6 +98,46 @@ class DeployAppStore {
     return this.selectedValue;
   }
 
+  @observable chartValue = '';
+
+  @action setChartValue(data) {
+    this.chartValue = data;
+  }
+
+  @computed get getChartValue() {
+    return this.chartValue;
+  }
+
+  @observable templateValue = '';
+
+  @action setTemplateValue(data) {
+    this.templateValue = data;
+  }
+
+  @computed get getTemplateValue() {
+    return this.templateValue;
+  }
+
+  @observable currentValue = '';
+
+  @action setCurrentValue(data) {
+    this.currentValue = data;
+  }
+
+  @computed get getCurrentValue() {
+    return this.currentValue;
+  }
+
+  @observable valueLoading = false;
+
+  @action setValueLoading(data) {
+    this.valueLoading = data;
+  }
+
+  @computed get getValueLoading() {
+    return this.valueLoading;
+  }
+
   @action initAllData() {
     this.selectedApp = null;
     this.selectedVersion = null;
@@ -115,8 +145,18 @@ class DeployAppStore {
     this.selectedInstance = {};
     this.instances = [];
     this.configList = [];
-    this.configValue = '';
     this.selectedValue = {};
+    this.chartValue = '';
+    this.templateValue = '';
+    this.currentValue = '';
+  }
+
+  @action clearValue() {
+    this.selectedInstance = {};
+    this.selectedValue = {};
+    this.chartValue = '';
+    this.templateValue = '';
+    this.currentValue = '';
   }
 
   /**
@@ -128,7 +168,7 @@ class DeployAppStore {
    * @param param 搜索内容
    * @param initId 搜索结果中必须包含的版本的id
    */
-  loadVersions(
+  async loadVersions(
     {
       projectId,
       appId,
@@ -138,78 +178,112 @@ class DeployAppStore {
       initId = '',
     },
   ) {
-    return axios.get(
+    return await axios.get(
       `/devops/v1/projects/${projectId}/app_versions/list_by_app/${appId}?is_publish=${isPublish ||
       ''}&page=${page}&app_version_id=${initId}&version=${param}&size=15`,
     );
   }
 
-  loadInstances(projectId, appId, envId) {
+  async loadInstances(projectId, appId, envId) {
     this.setIstLoading(true);
-    axios
+    const response = await axios
       .get(`/devops/v1/projects/${projectId}/app_instances/listByAppIdAndEnvId?envId=${envId}&appId=${appId}`)
-      .then(data => {
-        if (handleCheckerProptError(data)) {
-          this.setInstances(data);
-        }
-        this.setIstLoading(false);
-      })
       .catch(error => {
-        this.setIstLoading(false);
         Choerodon.handleResponseError(error);
       });
+
+    if (handlePromptError(response)) {
+      this.setInstances(response);
+    }
+    this.setIstLoading(false);
   }
 
-  checkIstName(projectId, value) {
-    return axios.get(
+  async checkIstName(projectId, value) {
+    return await axios.get(
       `/devops/v1/projects/${projectId}/app_instances/check_name?instance_name=${value}`,
     );
   }
 
-  loadValuesList(projectId, appId, envId) {
+  async loadValuesList(projectId, appId, envId) {
     this.setConfigLoading(true);
 
-    axios.get(`devops/v1/projects/${projectId}/pipeline_value/list?app_id=${appId}&env_id=${envId}`)
-      .then(data => {
-        if (handleProptError(data)) {
-          this.setConfigList(data);
-        }
-        this.setConfigLoading(false);
-      })
+    const response = await axios.get(`devops/v1/projects/${projectId}/pipeline_value/list?app_id=${appId}&env_id=${envId}`)
       .catch(error => {
-        this.setConfigLoading(false);
         Choerodon.handleResponseError(error);
       });
+
+    if (handlePromptError(response)) {
+      this.setConfigList(response);
+    }
+
+    this.setConfigLoading(false);
   }
 
   /**
-   *
+   * 加载实例默认chart中的配置信息
    * @param projectId
    * @param type 创建实例（create）或更新实例（update）
    * @param istId
    * @param versionId
    */
-  loadValue(projectId, type, istId, versionId) {
+  async loadChartValue(projectId, type, istId, versionId) {
     const params = istId || istId === 0 ? istId : '';
-    axios
-      .get(
-        `/devops/v1/projects/${projectId}/app_instances/value?type=${type}&appVersionId=${versionId}&instanceId=${params}`,
-      )
-      .then(data => {
-        const res = handleProptError(data);
-        if (res) {
-          this.setConfigValue(res);
-        }
-      })
+
+    this.setValueLoading(true);
+
+    const response = await axios
+      .get(`/devops/v1/projects/${projectId}/app_instances/value?type=${type}&appVersionId=${versionId}&instanceId=${params}`)
       .catch(error => {
         Choerodon.handleResponseError(error);
       });
+
+    if (handlePromptError(response)) {
+      const value = response.yaml || '';
+      this.setChartValue(value);
+      this.setCurrentValue(value);
+    }
+
+    this.setValueLoading(false);
   }
 
-  submitDeployment(projectId, data) {
-    return axios
-      .post(`/devops/v1/projects/${projectId}/app_instances`, JSON.stringify(data))
-      .then(data => handleProptError(data));
+  /**
+   * 加载配置模版中的信息
+   * @param projectId
+   * @param valueId
+   * @returns {Promise<void>}
+   */
+  async loadTemplateValue(projectId, valueId) {
+    this.setValueLoading(true);
+
+    const response = await axios.get(`/devops/v1/projects/${projectId}/pipeline_value?value_id=${valueId}`)
+      .catch(error => {
+        Choerodon.handleResponseError(error);
+      });
+
+    if (handlePromptError(response)) {
+      const value = response.value || '';
+      this.setTemplateValue(value);
+      this.setCurrentValue(value);
+    }
+
+    this.setValueLoading(false);
+  }
+
+  async submitDeployment(projectId, data) {
+    return await axios
+      .post(`/devops/v1/projects/${projectId}/app_instances`, JSON.stringify(data));
+  }
+
+  async changeConfig(projectId, data) {
+    return await axios.post(`/devops/v1/projects/${projectId}/pipeline_value`, JSON.stringify(data));
+  }
+
+  async queryAppDetail(projectId, appId) {
+    return await axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/detail`);
+  }
+
+  async queryVersionDetail(projectId, appId, version) {
+    return await axios.get(`/devops/v1/projects/${projectId}/app_versions/query_by_version?appId=${appId}&version=${version}`);
   }
 }
 
