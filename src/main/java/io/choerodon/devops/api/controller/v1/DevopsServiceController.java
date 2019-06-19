@@ -239,7 +239,7 @@ public class DevopsServiceController {
     @ApiOperation(value = "查询实例下关联的网络域名（不包含chart）")
     @CustomPageRequest
     @PostMapping(value = "/{instanceId}/listByInstance")
-    public ResponseEntity<Page<DevopsServiceDTO>> listByInstance(
+    public ResponseEntity<PageInfo<DevopsServiceDTO>> listByInstance(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)

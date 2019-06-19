@@ -252,7 +252,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     public PageInfo<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params) {
         PageInfo<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository
-                .getIngress(projectId, envId, pageRequest, params);
+                .getIngress(projectId, envId, null,  pageRequest, params);
 
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();

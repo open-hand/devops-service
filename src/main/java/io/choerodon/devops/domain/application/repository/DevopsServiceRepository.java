@@ -23,7 +23,7 @@ public interface DevopsServiceRepository {
     Boolean checkName(Long envId, String name);
 
 
-    PageInfo<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId,
+    PageInfo<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, Long instanceId,
                                                      PageRequest pageRequest, String searchParam);
 
     List<DevopsServiceV> listDevopsService(Long envId);

@@ -95,7 +95,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public PageInfo<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
         PageInfo<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
-                projectId, envId, pageRequest, searchParam);
+                projectId, envId, null, pageRequest, searchParam);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         devopsServiceByPage.getList().forEach(devopsServiceV -> {
@@ -112,7 +112,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest) {
         PageInfo<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
-                projectId, null, instanceId, pageRequest, null);
+                projectId, null,  instanceId, pageRequest, null);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         if (!devopsServiceByPage.getList().isEmpty()) {
@@ -130,7 +130,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     devopsIngressDTOS.getList().stream().forEach(devopsIngressDTO -> devopsIngressDTO.setEnvStatus(true));
 
                 }
-                devopsServiceV.setDevopsIngressDTOS(devopsIngressDTOS.getList()));
+                devopsServiceV.setDevopsIngressDTOS(devopsIngressDTOS.getList());
             });
 
         }

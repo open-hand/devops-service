@@ -116,7 +116,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
-    public PageInfo<DevopsIngressDTO> getIngress(Long projectId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsIngressDTO> getIngress(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params) {
         List<DevopsIngressDTO> devopsIngressDTOS = new ArrayList<>();
 
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
@@ -141,7 +141,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
 
         PageInfo<DevopsIngressDO> devopsIngressDOS =
                 PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), sortResult).doSelectPageInfo(
-                        () -> devopsIngressMapper.selectIngress(projectId, envId, null, maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                        () -> devopsIngressMapper.selectIngress(projectId, envId, serviceId, maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAM))));
         devopsIngressDOS.getList().forEach(t -> {
             DevopsIngressDTO devopsIngressDTO =
                     new DevopsIngressDTO(t.getId(), t.getDomain(), t.getName(),

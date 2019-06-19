@@ -48,7 +48,7 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     }
 
     @Override
-    public PageInfo<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, PageRequest pageRequest,
+    public PageInfo<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, Long instanceId,  PageRequest pageRequest,
                                                             String searchParam) {
 
         Sort sort = pageRequest.getSort();
@@ -82,21 +82,21 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             count = devopsServiceMapper.selectCountByName(
-                    projectId, envId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                    projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)));
 
             result.setTotal(count);
             devopsServiceQueryDOList = devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, envId, null, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                            projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size, sortResult);
             result.addAll(devopsServiceQueryDOList);
         } else {
             count = devopsServiceMapper
-                    .selectCountByName(projectId, envId, null,null, null);
+                    .selectCountByName(projectId, envId, instanceId,null, null);
             result.setTotal(count);
             devopsServiceQueryDOList =
                     devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, envId, null, null, null, start, size, sortResult);
+                            projectId, envId, instanceId, null, null, start, size, sortResult);
             result.addAll(devopsServiceQueryDOList);
         }
 
