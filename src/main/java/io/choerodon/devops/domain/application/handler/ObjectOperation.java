@@ -134,7 +134,7 @@ public class ObjectOperation<T> {
             if (operationType.equals(UPDATE)) {
                 Map<String, String> oldAnnotations = v1Service.getMetadata().getAnnotations();
                 newV1Service = (V1Service) t;
-                Map<String, String> newAnnotations = v1Service.getMetadata().getAnnotations();
+                Map<String, String> newAnnotations = newV1Service.getMetadata().getAnnotations();
                 oldAnnotations.forEach((key, value) -> {
                     if (!key.equals("choerodon.io/network-service-instances") && !key.equals("choerodon.io/network-service-app")) {
                         newAnnotations.put(key, value);
