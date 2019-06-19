@@ -92,8 +92,8 @@ export default class ConfirmInfo extends Component {
   returnPrevPage = () => {
     const {
       history,
-      match: {
-        params: { prevPage },
+      location: {
+        state,
       },
       AppState: {
         currentMenuType: {
@@ -105,7 +105,7 @@ export default class ConfirmInfo extends Component {
       },
     } = this.props;
 
-    let url = prevPage ? `${prevPage}-overview` : 'instance';
+    let url = state && state.prevPage ? `${state.prevPage}-overview` : 'instance';
 
     history.push(
       `/devops/${url}?type=${type}&id=${id}&name=${name}&organizationId=${organizationId}`,

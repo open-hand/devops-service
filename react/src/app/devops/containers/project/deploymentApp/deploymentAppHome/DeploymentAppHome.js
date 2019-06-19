@@ -61,6 +61,9 @@ export default class DeploymentAppHome extends Component {
           ]);
 
           if (handlePromptError(app)) {
+            if (String(app.projectId) === projectId) {
+              app.appId = app.id;
+            }
             DeployAppStore.setSelectedApp(app);
           }
 
