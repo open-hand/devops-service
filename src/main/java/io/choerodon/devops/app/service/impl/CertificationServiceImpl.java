@@ -259,7 +259,7 @@ public class CertificationServiceImpl implements CertificationService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return;
-        }else {
+        } else {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 certificationRepository.deleteById(certId);

@@ -102,9 +102,6 @@
         <if test="sort != null and !sort.isEmpty()">
             ORDER BY ${sort}
         </if>
-        <if test="start != null and size != null">
-            LIMIT #{start}, #{size}
-        </if>
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_env_command cmd ON ds.command_id = cmd.id
@@ -114,6 +111,9 @@
         WHERE 1
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
+        </if>
+        <if test="start != null and size != null">
+            LIMIT #{start}, #{size}
         </if>
         <include refid="sqlparam"/>
     </select>

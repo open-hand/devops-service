@@ -249,7 +249,7 @@
         FROM
         devops_gitlab_pipeline dgp
         LEFT JOIN devops_gitlab_commit dgc ON dgp.commit_id = dgc.id
-        LEFT JOIN devops_app_version dav ON dav.`commit` = dgc.commit_sha
+        LEFT JOIN devops_app_version dav ON dav.`commit` = dgc.commit_sha and dav.app_id=#{appId}
         WHERE
         dgp.pipeline_id = #{pipelineId}
         and dav.version LIKE CONCAT('%', #{branch, jdbcType=VARCHAR})

@@ -354,8 +354,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public Boolean queryByPipelineId(Long pipelineId, String branch) {
-        return applicationVersionRepository.queryByPipelineId(pipelineId, branch) != null;
+    public Boolean queryByPipelineId(Long pipelineId, String branch,Long appId) {
+        return applicationVersionRepository.queryByPipelineId(pipelineId, branch,appId) != null;
     }
 
     @Override

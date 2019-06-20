@@ -20,6 +20,7 @@
       .c7n-select-selection--multiple .c7n-select-selection__choice {
         background: none;
         padding: 0;
+        margin: 0 8px 0 0;
 
         &:after {
           content: ',';

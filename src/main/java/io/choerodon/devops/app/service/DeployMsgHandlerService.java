@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 
 /**
  * Created by Zenger on 2018/4/17.

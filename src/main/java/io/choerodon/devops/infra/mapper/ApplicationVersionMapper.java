@@ -3,10 +3,11 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
 import io.choerodon.mybatis.common.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 /**
  * Created by younger on 2018/3/28.
@@ -60,7 +61,7 @@ public interface ApplicationVersionMapper extends Mapper<ApplicationVersionDO> {
 
     List<ApplicationVersionDO> listByAppIdAndBranch(@Param("appId") Long appId, @Param("branch") String branch);
 
-    String queryByPipelineId(@Param("pipelineId") Long pipelineId, @Param("branch") String branch);
+    String queryByPipelineId(@Param("pipelineId") Long pipelineId, @Param("branch") String branch, @Param("appId") Long appId);
 
     String queryValueById(@Param("appId") Long appId);
 

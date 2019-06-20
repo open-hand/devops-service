@@ -8,6 +8,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.SecretRepDTO;
 import io.choerodon.devops.api.dto.SecretReqDTO;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
@@ -71,7 +72,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     @Transactional(rollbackFor=Exception.class)
     public SecretRepDTO createOrUpdate(SecretReqDTO secretReqDTO) {
-
+        if (secretReqDTO.getValue() == null || secretReqDTO.getValue().size() == 0) {
+            throw new CommonException("error.secret.value.is.null");
+        }
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验用户是否有环境的权限
@@ -207,7 +210,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return true;
-        }else {
+        } else {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsSecretRepository.deleteSecret(secretId);

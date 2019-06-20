@@ -6,24 +6,20 @@ import java.util.List;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.domain.application.repository.DevopsCommandEventRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandLogRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
-import io.choerodon.devops.infra.common.util.PageRequestUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.repository.DevopsCommandEventRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandLogRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO;
-import io.choerodon.devops.infra.mapper.DevopsCommandEventMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvCommandLogMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author crcokitwood
@@ -33,16 +29,13 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     private static final String INSTANCE_TYPE = "instance";
 
     @Autowired
-    private DevopsEnvCommandMapper devopsEnvCommandMapper;
-
-    @Autowired
     DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
-
     @Autowired
     DevopsEnvCommandLogRepository devopsEnvCommandLogRepository;
-
     @Autowired
     DevopsCommandEventRepository devopsCommandEventRepository;
+    @Autowired
+    private DevopsEnvCommandMapper devopsEnvCommandMapper;
 
 
     @Override

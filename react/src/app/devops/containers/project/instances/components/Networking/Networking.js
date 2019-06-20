@@ -149,7 +149,7 @@ export default class Networking extends Component {
   renderExternalIp = (record) => {
     const { config: { externalIps } } = record;
     const ipDom = _.map(externalIps, item => (
-      <div className='c7n-networking-tag-dom'>
+      <div className='c7n-networking-tag-dom' key={item}>
         <div className='c7n-networking-tag'>{item}</div>
       </div>
     ));
@@ -182,7 +182,7 @@ export default class Networking extends Component {
     } = this.props;
     const { config: { ports } } = record;
     const portDom = _.map(ports, ({ nodePort, port, targetPort }) => (
-      <div className='c7n-networking-tag-dom'>
+      <div className='c7n-networking-tag-dom' key={port}>
         <div className='c7n-networking-tag'>
           {nodePort || formatMessage({ id: 'null' })} {port} {targetPort}
         </div>

@@ -212,7 +212,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return;
-        }else {
+        } else {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsConfigMapRepository.delete(configMapId);

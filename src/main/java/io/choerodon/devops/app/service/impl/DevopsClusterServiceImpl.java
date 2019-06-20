@@ -224,7 +224,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      */
     private List<ClusterWithNodesDTO> fromClusterE2ClusterWithNodesDTO(List<DevopsClusterE> clusterEList, Long organizationId) {
         // default three records of nodes in the instance
-        PageRequest pageRequest = new PageRequest(0, 3);
+        PageRequest pageRequest = new PageRequest(1, 3);
 
         return clusterEList.stream().map(cluster -> {
             ClusterWithNodesDTO clusterWithNodesDTO = new ClusterWithNodesDTO();

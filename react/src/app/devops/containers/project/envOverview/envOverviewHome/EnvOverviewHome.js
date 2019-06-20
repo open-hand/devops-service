@@ -123,6 +123,12 @@ class EnvOverviewHome extends Component {
       searchParam: {},
       param: '',
     };
+    const { pageSize } = EnvOverviewStore.getPageInfo;
+    EnvOverviewStore.setPageInfo({
+      pageNum: 1,
+      pageSize: pageSize,
+      total: 0,
+    });
     if (this.env.length && envId) {
       this.loadModuleDate(true, key, envId, sort, post);
     }

@@ -179,8 +179,8 @@ class DevConsole extends Component {
    */
   loadMergeData = () => {
     const { projectId } = AppState.currentMenuType;
-    MergeRequestStore.loadMergeRquest(DevPipelineStore.getSelectApp, 'opened', 0, 5);
-    MergeRequestStore.loadMergeRquest(DevPipelineStore.getSelectApp, 'merged', 0, 5);
+    MergeRequestStore.loadMergeRquest(DevPipelineStore.getSelectApp, 'opened', 1, 5);
+    MergeRequestStore.loadMergeRquest(DevPipelineStore.getSelectApp, 'merged', 1, 5);
     MergeRequestStore.loadUrl(projectId, DevPipelineStore.getSelectApp);
   };
 
