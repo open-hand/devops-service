@@ -64,13 +64,14 @@ class DeployOverview extends Component {
   /**
    * 快速部署
    */
-  quickDeploy = ({ applicationId, latestVersion }) => {
+  quickDeploy = ({ applicationId, latestVersion, projectId }) => {
     const {
       history,
       location: {
         search,
       },
     } = this.props;
+    const currentProject = parseInt(AppState.currentMenuType.id, 10);
 
     history.push({
       pathname: '/devops/deployment-app',
@@ -79,6 +80,7 @@ class DeployOverview extends Component {
         appId: applicationId,
         version: latestVersion,
         prevPage: 'deploy',
+        isLocalApp: projectId === currentProject,
       },
     });
   };

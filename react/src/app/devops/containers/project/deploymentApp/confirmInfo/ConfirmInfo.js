@@ -105,7 +105,7 @@ export default class ConfirmInfo extends Component {
       },
     } = this.props;
 
-    let url = state && state.prevPage ? `${state.prevPage}-overview` : 'instance';
+    let url = state && state.prevPage && state.prevPage !== 'market' ? `${state.prevPage}-overview` : 'instance';
 
     history.push(
       `/devops/${url}?type=${type}&id=${id}&name=${name}&organizationId=${organizationId}`,

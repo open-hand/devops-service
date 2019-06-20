@@ -59,6 +59,7 @@ export default class AppWithVersions extends Component {
     const versionId = (getSelectedVersion || {}).id;
 
     if (getSelectedApp) {
+      // NOTE: 项目下的应用 publishLevel 一定为 null
       isLocalProject = !getSelectedApp.publishLevel;
       appId = getSelectedApp.publishLevel ? getSelectedApp.appId : getSelectedApp.id;
       this.handleLoadVersion(appId, isLocalProject, '', versionId);
@@ -255,7 +256,7 @@ export default class AppWithVersions extends Component {
     const { app, versionDto } = this.state;
 
     let _app = app;
-    if (!_app.isPublish) {
+    if (!_app.publishLevel) {
       _app.appId = _app.id;
     }
 

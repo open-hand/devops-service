@@ -21,6 +21,7 @@ class AppDetail extends Component {
     super(props);
     this.state = {
       verId: '',
+      versions: '',
       id: props.match.params.id,
     };
   }
@@ -57,9 +58,10 @@ class AppDetail extends Component {
    * 选择版本
    * @param verId
    */
-  handleChange = (verId) => {
+  handleChange = (verId, option) => {
     this.setState({
       verId,
+      version: option.props.children || '',
     });
     this.loadReadmes(verId);
   };
@@ -68,20 +70,29 @@ class AppDetail extends Component {
    * 条件部署应用
    * @param app 应用详细数据
    */
-  deployApp = (app) => {
-    const { AppStoreStore } = this.props;
-    const { verId } = this.state;
-    const { appId, appVersions } = app;
+  deployApp = ({ appId, appVersions }) => {
     const {
-      id: projectId,
-      name: projectName,
-      organizationId,
-      type,
-    } = AppState.currentMenuType;
+      AppStoreStore,
+      history,
+      location: {
+        search,
+      },
+    } = this.props;
+    const { version } = this.state;
+    const selectedVersion = version || appVersions[0].version;
+
     AppStoreStore.setBackPath(true);
 
-    const versionId = verId || appVersions[0].id;
-    this.linkToChange(`/devops/deployment-app/store/${appId}/${versionId}?type=${type}&id=${projectId}&name=${encodeURIComponent(projectName)}&organizationId=${organizationId}&notLocalApp`);
+    history.push({
+      pathname: '/devops/deployment-app',
+      search,
+      state: {
+        appId,
+        version: selectedVersion,
+        prevPage: 'market',
+      },
+    });
+
   };
 
   /**

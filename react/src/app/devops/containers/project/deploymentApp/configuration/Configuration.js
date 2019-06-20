@@ -5,6 +5,7 @@
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
+import { withRouter } from 'react-router-dom';
 import { Select, Icon, Modal, Spin } from 'choerodon-ui';
 import _ from 'lodash';
 import ButtonGroup from '../components/buttonGroup';
@@ -14,6 +15,7 @@ import { handlePromptError } from '../../../../utils';
 
 const { Option } = Select;
 
+@withRouter
 @injectIntl
 @inject('AppState')
 @observer
@@ -34,6 +36,9 @@ export default class Configuration extends Component {
           id: projectId,
         },
       },
+      location: {
+        state,
+      },
     } = this.props;
     const {
       getSelectedApp: app,
@@ -46,10 +51,13 @@ export default class Configuration extends Component {
       getSelectedValue,
     } = store;
     const { templateId, configValue } = getSelectedValue;
+    const isMarketApp = state && (state.prevPage === 'market' || state.isLocalApp) || app.publishLevel;
 
     this.setState({ ...getSelectedValue });
 
-    store.loadValuesList(projectId, app.appId, getEnvironment.id);
+    if (!isMarketApp) {
+      store.loadValuesList(projectId, app.appId, getEnvironment.id);
+    }
 
     if (configValue) return;
 
@@ -113,10 +121,20 @@ export default class Configuration extends Component {
    * @param changed 有效值有无改动
    */
   handleChangeValue = (value, changed = false) => {
+    const {
+      store: {
+        getSelectedApp,
+      },
+      location: {
+        state,
+      },
+    } = this.props;
+    const isMarketApp = state && (state.prevPage === 'market' || state.isLocalApp) || getSelectedApp.publishLevel;
+
     this.setState({
       configValue: value,
       isValueChanged: changed,
-      shouldDisplayModal: changed,
+      shouldDisplayModal: !isMarketApp && changed,
     });
   };
 
@@ -287,6 +305,9 @@ export default class Configuration extends Component {
       intl: { formatMessage },
       store,
       onCancel,
+      location: {
+        state,
+      },
     } = this.props;
     const {
       configValue,
@@ -312,6 +333,7 @@ export default class Configuration extends Component {
     ));
 
     const enableClick = !(configValue || getCurrentValue) || hasEditorError;
+    const disableSelectConfig = state && (state.prevPage === 'market' || state.isLocalApp) || !!app.publishLevel;
 
     return (
       <Fragment>
@@ -333,6 +355,7 @@ export default class Configuration extends Component {
             <Select
               filter
               allowClear
+              disabled={disableSelectConfig}
               className="c7ncd-step-input"
               optionFilterProp="children"
               loading={getConfigLoading}
