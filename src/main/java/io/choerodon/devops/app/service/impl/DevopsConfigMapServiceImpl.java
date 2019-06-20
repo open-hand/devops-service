@@ -178,7 +178,6 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentE.getId());
-//
 //        //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
@@ -217,6 +216,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsConfigMapRepository.delete(configMapId);
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                return;
             }
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
