@@ -31,6 +31,11 @@ export default class Networking extends Component {
     this.loadData();
   };
 
+  componentWillUnmount() {
+    const { store } = this.props;
+    store.setNetworking([]);
+  }
+
   loadData = () => {
     const {
       AppState: { currentMenuType: { projectId } },

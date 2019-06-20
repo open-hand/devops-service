@@ -237,7 +237,7 @@ export default class KeyValueSideBar extends Component {
     const onlyHasKey = hasKey.filter(({ value }) => _.isEmpty(value));
     const hasErrorItem = onlyHasKey.length || onlyHasValue.length;
     const hasRepeatKey = hasKey.length !== _.uniqBy(hasKey, 'key').length;
-    const hasEmptyKey = title === 'secret' && hasKey.length !== _data.length;
+    const hasEmptyKey = title === 'secret' && (_.isEmpty(hasKey) || hasKey.length !== _data.length);
 
     let hasErrorKey;
     for (const { key } of hasKey) {

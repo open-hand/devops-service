@@ -287,7 +287,7 @@ class Branch extends Component {
     const { BranchStore } = this.props;
     DevPipelineStore.setSelectApp(value);
     DevPipelineStore.setRecentApp(value);
-    BranchStore.setBranchData({ content: [] });
+    BranchStore.setBranchData({ list: [] });
     BranchStore.loadBranchList({ projectId });
   };
 
