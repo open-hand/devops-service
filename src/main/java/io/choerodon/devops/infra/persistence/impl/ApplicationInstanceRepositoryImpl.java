@@ -194,6 +194,14 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
+    public List<ApplicationInstanceE> listByValueId(Long valueId) {
+        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
+        applicationInstanceDO.setValueId(valueId);
+        return ConvertHelper
+                .convertList(applicationInstanceMapper.select(applicationInstanceDO), ApplicationInstanceE.class);
+    }
+
+    @Override
     public void checkName(String instanceName) {
         ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
         applicationInstanceDO.setCode(instanceName);
