@@ -41,6 +41,7 @@ export default class DomainForm extends Component {
       protocol: 'normal',
       pathCountChange: false,
       selectEnv: props.envId,
+      singleData: {}
     };
     this.pathKeys = 1;
   }
@@ -51,42 +52,52 @@ export default class DomainForm extends Component {
       AppState: { currentMenuType: { projectId } },
       type,
       form: { setFieldsValue, setFields },
-      singleData,
+      ingressId,
     } = this.props;
-    if (type === 'edit' && !_.isEmpty(singleData)) {
-      const { pathList, envId: domainEnv, certId, certName, domain } = singleData;
-      const deletedService = [];
-      _.forEach(pathList, (item, index) => {
-        const { serviceStatus, serviceName, serviceId } = item;
-        if (serviceStatus !== 'running') {
-          deletedService[index] = {
-            name: serviceName,
-            id: serviceId,
-            status: serviceStatus,
-          };
-        } else {
-          deletedService[index] = {};
-        }
-      });
-      this.setState({
-        deletedService,
-        protocol: certId ? 'secret' : 'normal',
-      });
-      if (certId && domain && domainEnv) {
-        DomainStore.loadCertByEnv(projectId, domainEnv, domain);
-        if (certName) {
-          setFieldsValue({ certId });
-        } else {
-          setFields({
-            certId: {
-              value: null,
-              errors: [
-                new Error(formatMessage({ id: 'domain.cert.delete' })),
-              ],
-            },
+    if (ingressId && type === 'edit') {
+      DomainStore.loadDataById(projectId, ingressId)
+        .then(data => {
+          const {
+            pathList,
+            envId: domainEnv,
+            certId,
+            certName,
+            domain,
+          } = data;
+          const deletedService = [];
+          _.forEach(pathList, (item, index) => {
+            const { serviceStatus, serviceName, serviceId } = item;
+            if (serviceStatus !== 'running') {
+              deletedService[index] = {
+                name: serviceName,
+                id: serviceId,
+                status: serviceStatus,
+              };
+            } else {
+              deletedService[index] = {};
+            }
           });
-        }
-      }
+          this.setState({
+            deletedService,
+            protocol: certId ? 'secret' : 'normal',
+            singleData: data,
+          });
+          if (certId && domain && domainEnv) {
+            DomainStore.loadCertByEnv(projectId, domainEnv, domain);
+            if (certName) {
+              setFieldsValue({ certId });
+            } else {
+              setFields({
+                certId: {
+                  value: null,
+                  errors: [
+                    new Error(formatMessage({ id: 'domain.cert.delete' })),
+                  ],
+                },
+              });
+            }
+          }
+        })
     }
   }
 
@@ -108,9 +119,11 @@ export default class DomainForm extends Component {
     const {
       intl: { formatMessage },
       AppState: { currentMenuType: { projectId } },
-      singleData: { name },
     } = this.props;
-    const { selectEnv } = this.state;
+    const {
+      selectEnv,
+      singleData: { name },
+    } = this.state;
     const p = /^([a-z0-9]([-a-z0-9]?[a-z0-9])*)$/;
     if (name && name === value) {
       callback();
@@ -147,9 +160,11 @@ export default class DomainForm extends Component {
       AppState: { currentMenuType: { projectId } },
       intl: { formatMessage },
       type,
-      singleData: { id },
     } = this.props;
-    const { selectEnv } = this.state;
+    const {
+      selectEnv,
+      singleData: { id },
+    } = this.state;
     if (value) {
       const p = /^\/(\S)*$/;
       const count = _.countBy(getFieldValue('path'));
@@ -424,11 +439,6 @@ export default class DomainForm extends Component {
       },
       intl: { formatMessage },
       type,
-      singleData: {
-        pathList,
-        name,
-        domain,
-      },
       isInstancePage,
       envId
     } = this.props;
@@ -438,6 +448,11 @@ export default class DomainForm extends Component {
       protocol,
       deletedService,
       selectEnv,
+      singleData: {
+        pathList,
+        name,
+        domain,
+      },
     } = this.state;
 
     const { getNetwork, getCertificates } = DomainStore;
@@ -821,12 +836,11 @@ export default class DomainForm extends Component {
 
 DomainForm.propTypes = {
   envId: PropTypes.number,
+  ingressId: PropTypes.number,
   type: PropTypes.string,
-  singleData: PropTypes.object,
   isInstancePage: PropTypes.bool,
 };
 
 DomainForm.defaultProps = {
   type: 'create',
-  singleData: {},
 };

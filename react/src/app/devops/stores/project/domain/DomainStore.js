@@ -166,9 +166,9 @@ class DomainStore {
   };
 
   handleData = data => {
-    const { pageNum, size, total, list } = data;
+    const { pageNum, pageSize, total, list } = data;
     this.setAllData(list);
-    this.setPageInfo({ pageNum, size, total });
+    this.setPageInfo({ pageNum, pageSize, total });
   };
 
   loadDataById = (projectId, id) =>

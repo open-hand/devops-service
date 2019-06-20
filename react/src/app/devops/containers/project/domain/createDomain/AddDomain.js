@@ -28,13 +28,8 @@ class CreateDomain extends Component {
     const {
       AppState: { currentMenuType: { projectId } },
       store,
-      id,
-      type,
       envId,
     } = this.props;
-    if (id && type === 'edit') {
-      store.loadDataById(projectId, id);
-    }
     store.loadNetwork(projectId, envId);
     EnvOverviewStore.loadActiveEnv(projectId);
   }
@@ -130,6 +125,7 @@ class CreateDomain extends Component {
       type,
       visible,
       envId,
+      id,
     } = this.props;
     const env = EnvOverviewStore.getEnvcard;
     const {
@@ -164,7 +160,7 @@ class CreateDomain extends Component {
               wrappedComponentRef={(form) => this.formRef = form}
               type={type}
               envId={env && env.length ? envId : null}
-              singleData={getSingleData || {}}
+              ingressId={id}
             />
             <InterceptMask visible={submitting} />
           </Content>
