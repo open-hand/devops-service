@@ -8,9 +8,9 @@ const HEIGHT = window.innerHeight || document.documentElement.clientHeight || do
 
 @store('BranchStore')
 class BranchStore {
-  @observable branchData = { content: [] };
+  @observable branchData = { list: [] };
 
-  @observable tagData = { content: [] };
+  @observable tagData = { list: [] };
 
   @observable tags = [];
 

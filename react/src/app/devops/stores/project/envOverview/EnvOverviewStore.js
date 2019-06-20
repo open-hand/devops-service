@@ -46,6 +46,12 @@ class EnvOverviewStore {
     pageSize: HEIGHT <= 900 ? 10 : 15,
   };
 
+  @observable logPageInfo = {
+    current: 1,
+    total: 0,
+    pageSize: HEIGHT <= 900 ? 10 : 15,
+  };
+
   @observable Info = {
     filters: {},
     sort: { columnKey: 'id', order: 'descend' },
@@ -64,6 +70,16 @@ class EnvOverviewStore {
 
   @computed get getPageInfo() {
     return this.pageInfo;
+  }
+
+  @action setLogPageInfo(page) {
+    this.logPageInfo.current = page.pageNum;
+    this.logPageInfo.total = page.total;
+    this.logPageInfo.pageSize = page.pageSize;
+  }
+
+  @computed get getLogPageInfo() {
+    return this.logPageInfo;
   }
 
   @action setEnvcard(envCard) {
@@ -265,7 +281,7 @@ class EnvOverviewStore {
     proId,
     envId,
     page = this.pageInfo.current,
-    pageSize = this.pageInfo.pageSize,
+    size = this.pageInfo.pageSize,
     sort = { field: 'id', order: 'desc' },
     datas = {
       searchParam: {},
@@ -275,7 +291,7 @@ class EnvOverviewStore {
     spin && this.changeLoading(true);
     return axios
       .post(
-        `/devops/v1/projects/${proId}/ingress/${envId}/listByEnv?page=${page}&size=${pageSize}&sort=${sort.field ||
+        `/devops/v1/projects/${proId}/ingress/${envId}/listByEnv?page=${page}&size=${size}&sort=${sort.field ||
         'id'},${sort.order}`,
         JSON.stringify(datas),
       )
@@ -295,7 +311,7 @@ class EnvOverviewStore {
     proId,
     envId,
     page = this.pageInfo.current,
-    pageSize = this.pageInfo.pageSize,
+    size = this.pageInfo.pageSize,
     sort = { field: 'id', order: 'desc' },
     datas = {
       searchParam: {},
@@ -305,7 +321,7 @@ class EnvOverviewStore {
     spin && this.changeLoading(true);
     return axios
       .post(
-        `/devops/v1/projects/${proId}/service/${envId}/listByEnv?page=${page}&size=${pageSize}&sort=${sort.field ||
+        `/devops/v1/projects/${proId}/service/${envId}/listByEnv?page=${page}&size=${size}&sort=${sort.field ||
         'id'},${sort.order}`,
         JSON.stringify(datas),
       )
@@ -325,18 +341,18 @@ class EnvOverviewStore {
     proId,
     envId,
     page = this.pageInfo.current,
-    pageSize = this.pageInfo.pageSize,
+    size = this.pageInfo.pageSize,
   ) => {
     spin && this.changeLoading(true);
     return axios
       .get(
-        `/devops/v1/projects/${proId}/envs/${envId}/error_file/list_by_page?page=${page}&size=${pageSize}`,
+        `/devops/v1/projects/${proId}/envs/${envId}/error_file/list_by_page?page=${page}&size=${size}`,
       )
       .then(data => {
         const res = handleProptError(data);
         if (res) {
           const { pageNum, pageSize, total, list } = data;
-          this.setPageInfo({ pageNum, pageSize, total });
+          this.setLogPageInfo({ pageNum, pageSize, total });
           this.setLog(list);
         }
         spin && this.changeLoading(false);
