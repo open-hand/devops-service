@@ -252,6 +252,7 @@ export default class KeyValueSideBar extends Component {
       intl: {
         formatMessage,
       },
+      title,
     } = this.props;
 
     const _data = data || this.state.dataSource;
@@ -260,6 +261,7 @@ export default class KeyValueSideBar extends Component {
     const onlyHasKey = hasKey.filter(({ value }) => _.isEmpty(value));
     const hasErrorItem = onlyHasKey.length || onlyHasValue.length;
     const hasRepeatKey = hasKey.length !== _.uniqBy(hasKey, 'key').length;
+    const hasEmptyKey = title === 'secret' && hasKey.length !== _data.length;
 
     let hasErrorKey;
     for (const { key } of hasKey) {
@@ -271,7 +273,7 @@ export default class KeyValueSideBar extends Component {
 
     }
 
-    if (!(hasErrorItem || hasErrorKey || hasRepeatKey)) {
+    if (!(hasErrorItem || hasErrorKey || hasRepeatKey || hasEmptyKey)) {
       this.setState({
         warningMes: '',
         hasItemError: false,
@@ -280,7 +282,7 @@ export default class KeyValueSideBar extends Component {
     }
 
     const errorMsg = formatMessage({
-      id: hasRepeatKey ? 'configMap.keyRepeat' : 'configMap.keyValueSpan',
+      id: hasRepeatKey ? 'configMap.keyRepeat' : `${title}.keyValueSpan`,
     });
 
     this.setConfigError(errorMsg);

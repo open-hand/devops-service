@@ -100,11 +100,10 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
                             projectId, envId, instanceId, null, null, start, size, sortResult);
             result.setList(devopsServiceQueryDOList);
         }
-        if (devopsServiceQueryDOList.size() < pageRequest.getSize()) {
-            result.setSize(devopsServiceQueryDOList.size());
-        }
-        if (devopsServiceQueryDOList.size() < (pageRequest.getPage() * pageRequest.getSize())) {
-            result.setSize(devopsServiceQueryDOList.size() - ((pageRequest.getPage() - 1) * pageRequest.getSize()));
+        if (devopsServiceQueryDOList.size() < size * page) {
+            result.setSize(TypeUtil.objToInt(devopsServiceQueryDOList.size()) - (size * (page - 1)));
+        } else {
+            result.setSize(size);
         }
         return ConvertPageHelper.convertPageInfo(
                 result, DevopsServiceV.class);

@@ -242,12 +242,13 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                     t.getCommit().setUrl(String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId()));
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
-        if (tagDTOS.size() < size) {
-            tagsPage.setSize(tagDTOS.size());
+
+        if (tagDTOS.size() < size * page) {
+            tagsPage.setSize(TypeUtil.objToInt(tagDTOS.size()) - (size * (page - 1)));
+        } else {
+            tagsPage.setSize(size);
         }
-        if (tagDTOS.size() < (page * size)) {
-            tagsPage.setSize(tagDTOS.size() - ((page - 1) * size));
-        }
+
         tagsPage.setPageSize(size);
         tagsPage.setTotal(tagList.size());
         tagsPage.setPageNum(page);

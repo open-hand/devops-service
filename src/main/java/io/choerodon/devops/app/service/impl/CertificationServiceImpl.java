@@ -264,6 +264,7 @@ public class CertificationServiceImpl implements CertificationService {
                     devopsEnvFileResourceE.getFilePath())) {
                 certificationRepository.deleteById(certId);
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                return;
             }
         }
         certificationE.setCommandId(createCertCommandE(CommandType.DELETE.getType(), certId, null));

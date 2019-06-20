@@ -718,11 +718,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             allMemberWithOtherUsersPage.setPageSize(pageRequest.getSize());
             allMemberWithOtherUsersPage.setTotal(returnUserDTOList.size());
             allMemberWithOtherUsersPage.setPageNum(pageRequest.getPage());
-            if (returnUserDTOList.size() < pageRequest.getSize()) {
-                allMemberWithOtherUsersPage.setSize(returnUserDTOList.size());
-            }
-            if (returnUserDTOList.size() < (pageRequest.getPage() * pageRequest.getSize())) {
-                allMemberWithOtherUsersPage.setSize(returnUserDTOList.size() - ((pageRequest.getPage() - 1) * pageRequest.getSize()));
+            if (returnUserDTOList.size() < pageRequest.getSize() * pageRequest.getPage()) {
+                allMemberWithOtherUsersPage.setSize(TypeUtil.objToInt(returnUserDTOList.size()) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
+            } else {
+                allMemberWithOtherUsersPage.setSize(pageRequest.getSize());
             }
 
             return allMemberWithOtherUsersPage;

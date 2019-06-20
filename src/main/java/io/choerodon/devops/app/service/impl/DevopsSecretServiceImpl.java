@@ -215,6 +215,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsSecretRepository.deleteSecret(secretId);
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                return true;
             }
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository

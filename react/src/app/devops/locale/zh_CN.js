@@ -1633,6 +1633,7 @@ const zhCN = {
   'secret.add': '添加密文',
   'secret.key': '键',
   'secret.des': '描述',
+  'secret.keyValueSpan': '键值对不能为空，请检查输入。',
 
   //组织层证书管理
   'certificate.head': '证书管理',

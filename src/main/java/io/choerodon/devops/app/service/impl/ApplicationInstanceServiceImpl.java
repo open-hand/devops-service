@@ -1051,6 +1051,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     devopsEnvFileResourceE.getFilePath())) {
                 applicationInstanceRepository.deleteById(instanceId);
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                return;
             }
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
