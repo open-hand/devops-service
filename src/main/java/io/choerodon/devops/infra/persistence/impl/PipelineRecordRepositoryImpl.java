@@ -49,7 +49,7 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
         if (pipelineRecordMapper.insert(pipelineRecordDO) != 1) {
             throw new CommonException("error.insert.pipeline.record");
         }
-        return ConvertHelper.convert(pipelineRecordMapper.selectOne(pipelineRecordDO), PipelineRecordE.class);
+        return ConvertHelper.convert(pipelineRecordDO, PipelineRecordE.class);
     }
 
     @Override

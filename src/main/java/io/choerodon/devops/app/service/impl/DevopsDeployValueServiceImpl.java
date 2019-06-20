@@ -18,6 +18,7 @@ import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
@@ -64,10 +65,14 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public PageInfo<DevopsDeployValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-
-        PageInfo<DevopsDeployValueDTO> valueDTOS = ConvertPageHelper.convertPageInfo(valueRepository.listByOptions(projectId, appId, envId, DetailsHelper.getUserDetails().getUserId(), pageRequest, params), DevopsDeployValueDTO.class);
+        Long userId = null;
+        if (!iamRepository.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectE)) {
+            userId = DetailsHelper.getUserDetails().getUserId();
+        }
+        PageInfo<DevopsDeployValueDTO> valueDTOS = ConvertPageHelper.convertPageInfo(valueRepository.listByOptions(projectId, appId, envId, userId, pageRequest, params), DevopsDeployValueDTO.class);
         PageInfo<DevopsDeployValueDTO> page = new PageInfo<>();
         BeanUtils.copyProperties(valueDTOS, page);
         page.setList(valueDTOS.getList().stream().peek(t -> {
@@ -80,7 +85,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 t.setEnvStatus(true);
             }
-            t.setIndex(checkDelete(projectId,t.getId()));
+            t.setIndex(checkDelete(projectId, t.getId()));
         }).collect(Collectors.toList()));
         return page;
     }
