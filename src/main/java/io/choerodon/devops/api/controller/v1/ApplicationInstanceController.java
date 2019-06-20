@@ -431,7 +431,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long appInstanceId) {
-        return Optional.ofNullable(devopsEnvResourceService.listResourcesInHelmRelease(appInstanceId))
+        return Optional.ofNullable(applicationInstanceService.listResourcesInHelmRelease(appInstanceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.resource.query"));
     }
