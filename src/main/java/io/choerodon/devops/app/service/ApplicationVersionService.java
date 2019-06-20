@@ -3,14 +3,13 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.dto.DeployVersionDTO;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -40,14 +39,14 @@ public interface ApplicationVersionService {
     /**
      * 根据参数和页数在应用下查询应用所有版本
      *
-     * @param appId     应用Id
-     * @param appVersionId     应用版本Id
-     * @param isPublish 是否发布
-     * @param pageRequest 分页参数
-     * @param searchParam 查询参数
+     * @param appId        应用Id
+     * @param appVersionId 应用版本Id
+     * @param isPublish    是否发布
+     * @param pageRequest  分页参数
+     * @param searchParam  查询参数
      * @return List
      */
-    PageInfo<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish,Long appVersionId,PageRequest pageRequest,String searchParam);
+    PageInfo<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam);
 
     /**
      * 项目下查询应用所有已部署版本
@@ -78,7 +77,7 @@ public interface ApplicationVersionService {
      * @return ApplicationVersionRepDTO
      */
     PageInfo<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest,
-                                                                   String  searchParam);
+                                                                   String searchParam);
 
     /**
      * 根据应用id查询需要升级的应用版本
@@ -102,7 +101,7 @@ public interface ApplicationVersionService {
 
     List<ApplicationVersionAndCommitDTO> listByAppIdAndBranch(Long appId, String branch);
 
-    Boolean queryByPipelineId(Long pipelineId, String branch);
+    Boolean queryByPipelineId(Long pipelineId, String branch, Long appId);
 
     /**
      * 项目下根据应用Id查询value
@@ -116,8 +115,8 @@ public interface ApplicationVersionService {
     /**
      * 根据应用和版本号查询应用版本
      *
-     * @param appId  应用Id
-     * @param version  版本
+     * @param appId   应用Id
+     * @param version 版本
      * @return ApplicationVersionRepDTO
      */
     ApplicationVersionRepDTO queryByAppAndVersion(Long appId, String version);

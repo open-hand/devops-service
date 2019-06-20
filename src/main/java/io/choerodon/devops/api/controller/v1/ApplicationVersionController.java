@@ -4,6 +4,19 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
@@ -13,14 +26,7 @@ import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.dto.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
-import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -44,7 +50,7 @@ public class ApplicationVersionController {
      * @param searchParam 查询参数
      * @return ApplicationVersionRepDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询应用版本")
@@ -77,7 +83,7 @@ public class ApplicationVersionController {
      * @return List
      */
     @ApiOperation(value = "应用下查询应用所有版本")
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
@@ -108,7 +114,7 @@ public class ApplicationVersionController {
      * @return List
      */
     @ApiOperation(value = "项目下查询应用所有已部署版本")
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @GetMapping("/list_deployed_by_app/{app_id}")
@@ -130,7 +136,7 @@ public class ApplicationVersionController {
      * @param envId     环境Id
      * @return List
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询部署在某个环境应用的应用版本")
@@ -154,7 +160,7 @@ public class ApplicationVersionController {
      * @param appVersionId 应用版本ID
      * @return ApplicationVersionRepDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "实例下查询可升级版本")
@@ -176,7 +182,7 @@ public class ApplicationVersionController {
      * @param appId     应用ID
      * @return DeployVersionDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询应用最新的版本和各环境下部署的版本")
@@ -199,7 +205,7 @@ public class ApplicationVersionController {
      * @param appVersionId 应用版本ID
      * @return String
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据版本id获取版本values")
@@ -222,7 +228,7 @@ public class ApplicationVersionController {
      * @param appVersionIds 应用版本ID
      * @return ApplicationVersionRepDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据版本id查询版本信息")
@@ -246,7 +252,7 @@ public class ApplicationVersionController {
      * @param appId     应用Id
      * @return ApplicationVersionRepDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据分支名查询版本")
@@ -272,7 +278,7 @@ public class ApplicationVersionController {
      * @param branch     分支
      * @return Boolean
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据pipelineID 查询版本")
@@ -282,9 +288,11 @@ public class ApplicationVersionController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "持续集成Id", required = true)
             @RequestParam Long pipelineId,
+            @ApiParam(value = "应用Id", required = true)
+            @RequestParam Long appId,
             @ApiParam(value = "分支", required = true)
             @RequestParam String branch) {
-        return Optional.ofNullable(applicationVersionService.queryByPipelineId(pipelineId, branch))
+        return Optional.ofNullable(applicationVersionService.queryByPipelineId(pipelineId, branch, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
@@ -296,7 +304,7 @@ public class ApplicationVersionController {
      * @param appId
      * @return
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询所有自动部署")
     @GetMapping("/value")
@@ -314,12 +322,12 @@ public class ApplicationVersionController {
     /**
      * 根据应用和版本号查询应用版本
      *
-     * @param projectId  项目ID
-     * @param appId  应用Id
-     * @param version  版本
+     * @param projectId 项目ID
+     * @param appId     应用Id
+     * @param version   版本
      * @return ApplicationVersionRepDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据应用和版本号查询应用版本")
