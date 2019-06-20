@@ -14,6 +14,7 @@ import io.choerodon.devops.api.dto.ClusterNodeInfoDTO;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.domain.application.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -185,13 +186,11 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .map(node -> JSONObject.parseObject(node, ClusterNodeInfoDTO.class))
                 .collect(Collectors.toList());
         PageInfo<ClusterNodeInfoDTO> result = new PageInfo();
-        if (nodes.size() < pageRequest.getSize()) {
-            result.setSize(nodes.size());
+        if (total < pageRequest.getSize() * pageRequest.getPage()) {
+            result.setSize(TypeUtil.objToInt(total) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
+        } else {
+            result.setSize(pageRequest.getSize());
         }
-        if (nodes.size() < (pageRequest.getPage() * pageRequest.getSize())) {
-            result.setSize(nodes.size() - ((pageRequest.getPage() - 1) * pageRequest.getSize()));
-        }
-
         result.setPageSize(pageRequest.getSize());
         result.setPageNum(pageRequest.getPage());
         result.setTotal(total);
