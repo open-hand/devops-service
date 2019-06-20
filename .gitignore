@@ -45,6 +45,8 @@ tmp
 
 ### front ###
 
+config-local.js
+
 # npm
 node_modules
 npm-debug.log
