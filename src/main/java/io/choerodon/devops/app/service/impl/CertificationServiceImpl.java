@@ -111,10 +111,10 @@ public class CertificationServiceImpl implements CertificationService {
             File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
             try {
                 SslUtil.validate(certPath, keyPath);
-            } catch (Exception e) {
+            } catch (CommonException e) {
                 FileUtil.deleteFile(certPath);
                 FileUtil.deleteFile(keyPath);
-                throw new CommonException(e);
+                throw e;
             }
             FileUtil.deleteFile(certPath);
             FileUtil.deleteFile(keyPath);

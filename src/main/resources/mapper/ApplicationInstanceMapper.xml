@@ -144,9 +144,9 @@
         SELECT
         dad.instance_id
         FROM
-        devops_auto_deploy dad
+        devops_pipeline_app_deploy dad
         WHERE
-        dad.app_id = #{appId}
+        dad.application_id = #{appId}
         AND dad.env_id = #{envId}
         AND dad.project_id = #{projectId}
         ),0,1 ) isEnabled
