@@ -381,7 +381,7 @@ export default class NetworkForm extends Component {
         list = ['targetport'];
         break;
       case 'targetKeys':
-        list = ['keyWords'];
+        list = ['keywords'];
         break;
       default:
         break;

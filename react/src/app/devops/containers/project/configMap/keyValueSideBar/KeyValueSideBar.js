@@ -138,30 +138,6 @@ export default class KeyValueSideBar extends Component {
   }
 
   /**
-   * 环境选择
-   * @param value
-   */
-  handleEnvSelect = (value) => {
-    const {
-      store,
-      title,
-      AppState: {
-        currentMenuType: {
-          id: projectId,
-        },
-      },
-    } = this.props;
-
-    const loadFnMap = {
-      configMap: () => store.loadConfigMap(true, projectId, value),
-      secret: () => store.loadSecret(true, projectId, value),
-    };
-
-    loadFnMap[title]();
-    EnvOverviewStore.setTpEnvId(value);
-  };
-
-  /**
    * 删除key-value
    * @param key
    */
@@ -374,6 +350,7 @@ export default class KeyValueSideBar extends Component {
                 this.setState({ submitting: false });
                 Choerodon.prompt(res.message);
               } else {
+                EnvOverviewStore.setTpEnvId(envId);
                 this.handleClose();
                 this.setState({ submitting: false });
               }
@@ -430,7 +407,6 @@ export default class KeyValueSideBar extends Component {
               id: 'ctf.env.placeholder',
             })}
             optionFilterProp="children"
-            onSelect={this.handleEnvSelect}
             filterOption={(input, option) =>
               option.props.children[1]
                 .toLowerCase()
@@ -684,6 +660,11 @@ export default class KeyValueSideBar extends Component {
       envId,
       title,
       modeSwitch,
+      AppState: {
+        currentMenuType: {
+          name: menuName,
+        },
+      },
     } = this.props;
     const {
       submitting,
@@ -694,8 +675,7 @@ export default class KeyValueSideBar extends Component {
       hasItemError,
     } = this.state;
 
-    const envName = (_.find(EnvOverviewStore.getEnvcard, ['id', envId]) || {}).name;
-    const titleName = id ? data.name : envName;
+    const titleName = id ? data.name : menuName;
     const titleCode = `${title}.${id ? 'edit' : 'create'}`;
     const disableBtn = hasYamlError || hasValueError || hasItemError;
 

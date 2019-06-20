@@ -217,7 +217,7 @@ const pageDetail = {
   'ist.detail.description':
     '您可在此查看该实例的运行详情及部署详情。运行详情包括各资源对象的基本信息；部署详情包括配置信息及部署阶段及日志。',
   'ist.networking.title': '实例"{name}"的关联网络与域名',
-  'ist.networking.description': '您可在此创建和查看实例相关的网络和域名。',
+  'ist.networking.description': '您可在此创建和查看平台中与此实例相关的网络和域名。',
   'ist.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
   'ist.detail.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
   'ist.edit.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
@@ -392,7 +392,7 @@ const pageDetail = {
 
   // 配置映射
   'configMap.title': '环境"{name}"的配置映射',
-  'configMap.create.title': '在环境"{name}"中创建配置映射',
+  'configMap.create.title': '在项目"{name}"中创建配置映射',
   'configMap.edit.title': '对映射配置"{name}"进行修改',
   'configMap.edit.description': '您可在此编辑配置映射的描述以及键值对的内容。',
   'configMap.create.description':
@@ -406,7 +406,7 @@ const pageDetail = {
 
   // 密文
   'secret.title': '环境"{name}"的密文',
-  'secret.create.title': '在环境"{name}"中创建密文',
+  'secret.create.title': '在项目"{name}"中创建密文',
   'secret.edit.title': '对密文"{name}"进行修改',
   'secret.edit.description': '您可在此编辑密文的描述以及键值对的内容。',
   'secret.create.description':

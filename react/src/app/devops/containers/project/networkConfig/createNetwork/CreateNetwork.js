@@ -118,6 +118,7 @@ class CreateNetwork extends Component {
           .then(res => {
             this.setState({ submitting: false });
             if (res) {
+              EnvOverviewStore.setTpEnvId(envId);
               this.handleClose();
             }
           })
