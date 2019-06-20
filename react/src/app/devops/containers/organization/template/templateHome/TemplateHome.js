@@ -161,13 +161,14 @@ class TemplateHome extends Component {
         >
           <Tooltip
             placement="bottom"
-            title={<FormattedMessage id="delete" />}
+            title={<FormattedMessage id={`${record.synchro ? 'delete' : 'ci_created'}`} />}
           >
             <div className="c7n-template-btn">
               <Button
                 icon="delete_forever"
                 shape="circle"
                 size="small"
+                disabled={!record.synchro}
                 onClick={this.openRemove.bind(this, record.id, record.name)}
               />
             </div>
