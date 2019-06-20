@@ -1,25 +1,23 @@
-import React, { Component } from "react";
-import { observer, inject } from "mobx-react";
-import { withRouter } from "react-router-dom";
-import { injectIntl, FormattedMessage } from "react-intl";
-import { Table, Modal } from "choerodon-ui";
-import { stores, Content } from "@choerodon/boot";
-import _ from "lodash";
-import TimePopover from "../../../../components/timePopover";
-import "../../../main.scss";
-import "./index.scss";
+import React, { Component } from 'react';
+import { observer, inject } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import { Table, Modal } from 'choerodon-ui';
+import { stores, Content } from '@choerodon/boot';
+import _ from 'lodash';
+import TimePopover from '../../../../components/timePopover';
+import '../../../main.scss';
+import './index.scss';
 
 const Sidebar = Modal.Sidebar;
 const { AppState } = stores;
 
 @observer
 class VersionTable extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      selectedRowKeys: [],
-    };
-  }
+  state = {
+    selectedRowKeys: [],
+    allSelectedRows: [],
+  };
 
   componentDidMount() {
     const {
@@ -29,6 +27,16 @@ class VersionTable extends Component {
     this.handleSelectData();
     loadAllVersion({ projectId, appId: getAppDetailById.id });
   }
+
+  handleRowSelect = (selectedRowKeys, selectedRows) => {
+    const { allSelectedRows } = this.state;
+    const _allSelectedRows = allSelectedRows.concat(selectedRows);
+
+    this.setState({
+      allSelectedRows: _allSelectedRows,
+      selectedRowKeys,
+    });
+  };
 
   /**
    * 获取未发布版本
@@ -42,7 +50,7 @@ class VersionTable extends Component {
     const columns = [
       {
         title: <FormattedMessage id="deploy.ver" />,
-        dataIndex: "version",
+        dataIndex: 'version',
       },
       {
         title: <FormattedMessage id="app.createTime" />,
@@ -51,13 +59,11 @@ class VersionTable extends Component {
     ];
     const rowSelection = {
       selectedRowKeys: this.state.selectedRowKeys || [],
-      onChange: (selectedRowKeys, selectedRows) => {
-        this.setState({ selectedRows, selectedRowKeys });
-      },
+      onChange: this.handleRowSelect,
     };
     return (
       <Table
-        filterBarPlaceholder={formatMessage({ id: "filter" })}
+        filterBarPlaceholder={formatMessage({ id: 'filter' })}
         className="c7n-table-512"
         loading={loading}
         pagination={versionPage}
@@ -103,7 +109,7 @@ class VersionTable extends Component {
   };
 
   handleSelectData = () => {
-    const selectData = _.map(this.props.store.selectData, "id") || [];
+    const selectData = _.map(this.props.store.selectData, 'id') || [];
     this.setState({ selectedRowKeys: selectData });
   };
 
@@ -119,7 +125,9 @@ class VersionTable extends Component {
    */
   handleAddVersion = () => {
     const { store } = this.props;
-    const { selectedRows } = this.state;
+    const { allSelectedRows, selectedRowKeys } = this.state;
+    const selectedRows = _.map(selectedRowKeys, item => _.find(allSelectedRows, ['id', item]));
+
     if (selectedRows && selectedRows.length) {
       store.setSelectData(selectedRows);
     }
@@ -143,10 +151,8 @@ class VersionTable extends Component {
     );
     return (
       <Sidebar
-        okText={formatMessage({
-          id: "release.addVersion.btn.confirm",
-        })}
-        cancelText={formatMessage({ id: "cancel" })}
+        okText={formatMessage({ id: 'release.addVersion.btn.confirm' })}
+        cancelText={formatMessage({ id: 'cancel' })}
         visible={show}
         title={<FormattedMessage id="release.addVersion.header.title" />}
         onCancel={this.handleClose}

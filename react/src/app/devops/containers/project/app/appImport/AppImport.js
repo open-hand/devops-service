@@ -24,25 +24,6 @@ export default class AppImport extends Component {
     current: STEP_FLAG.IMPORT_ORIGIN,
   };
 
-  /**
-   * 下一步
-   * @param key
-   * @param platformType
-   * @param isSkipCheckPermission
-   * @param repositoryUrl
-   * @param accessToken
-   * @param code
-   * @param name
-   * @param applicationTemplateId
-   * @param template
-   * @param harborConfigId
-   * @param chartConfigId
-   * @param harborName
-   * @param chartName
-   * @param userIds
-   * @param membersInfo
-   * @param current
-   */
   nextStep = (
     {
       key,
