@@ -256,7 +256,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Boolean isProjectOwner = iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE);
         PageInfo<ApplicationVersionE> applicationVersionEPage = applicationVersionRepository.listApplicationVersionInApp(
-                projectId, appId, pageRequest, "", isProjectOwner, userAttrE.getIamUserId());
+                projectId, appId, pageRequest, searchParams, isProjectOwner, userAttrE.getIamUserId());
         return ConvertPageHelper.convertPageInfo(applicationVersionEPage, ApplicationVersionRepDTO.class);
     }
 

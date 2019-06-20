@@ -265,17 +265,7 @@
         dav.version,
         dav.creation_date,
         dav.last_update_date updatedDate,
-        dav.is_publish,
-        EXISTS (
-        SELECT
-        1
-        FROM
-        devops_app_instance dai
-        JOIN devops_env de ON dai.env_id = de.id
-        WHERE
-        dai.app_version_id = dav.id
-        AND de.project_id != da.project_id
-        ) is_deployed
+        dav.is_publish
         FROM
         devops_app_version dav
         JOIN devops_app_market dam ON dam.app_id = dav.app_id

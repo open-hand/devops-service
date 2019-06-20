@@ -20,8 +20,6 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDO> {
             @Param("instanceId") Long instanceId,
             @Param("searchParam") Map<String, Object> searchParam,
             @Param("param") String param,
-            @Param("start") Integer start,
-            @Param("size") Integer size,
             @Param("sort") String sort);
 
     List<DevopsServiceQueryDO> listDevopsService(@Param("envId") Long envId);

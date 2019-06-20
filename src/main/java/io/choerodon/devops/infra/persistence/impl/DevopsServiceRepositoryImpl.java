@@ -71,9 +71,9 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
                     })
                     .collect(Collectors.joining(","));
         }
-        int page = pageRequest.getPage();
-        int size = (pageRequest.getSize() * pageRequest.getPage()) - 1;
-        int start = getBegin(page, size);
+
+        int start = getBegin(pageRequest.getPage(), pageRequest.getSize());
+        int stop = start + pageRequest.getSize();
         //分页组件暂不支持级联查询，只能手写分页
         PageInfo<DevopsServiceQueryDO> result = new PageInfo();
         result.setPageSize(pageRequest.getSize());
@@ -89,21 +89,21 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
             result.setTotal(count);
             devopsServiceQueryDOList = devopsServiceMapper.listDevopsServiceByPage(
                     projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size, sortResult);
-            result.setList(devopsServiceQueryDOList);
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), sortResult);
+            result.setList(devopsServiceQueryDOList.subList(start, stop > devopsServiceQueryDOList.size() ? devopsServiceQueryDOList.size()  : stop));
         } else {
             count = devopsServiceMapper
                     .selectCountByName(projectId, envId, instanceId, null, null);
             result.setTotal(count);
             devopsServiceQueryDOList =
                     devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, envId, instanceId, null, null, start, size, sortResult);
-            result.setList(devopsServiceQueryDOList);
+                            projectId, envId, instanceId, null, null, sortResult);
+            result.setList(devopsServiceQueryDOList.subList(start, stop > devopsServiceQueryDOList.size() ? devopsServiceQueryDOList.size() : stop));
         }
-        if (devopsServiceQueryDOList.size() < size * page) {
-            result.setSize(TypeUtil.objToInt(devopsServiceQueryDOList.size()) - (size * (page - 1)));
+        if (devopsServiceQueryDOList.size() < pageRequest.getSize() * pageRequest.getPage()) {
+            result.setSize(TypeUtil.objToInt(devopsServiceQueryDOList.size()) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
         } else {
-            result.setSize(size);
+            result.setSize(pageRequest.getSize());
         }
         return ConvertPageHelper.convertPageInfo(
                 result, DevopsServiceV.class);

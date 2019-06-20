@@ -112,9 +112,6 @@
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
         </if>
-        <if test="start != null and size != null">
-            LIMIT #{start}, #{size}
-        </if>
         <include refid="sqlparam"/>
     </select>
 

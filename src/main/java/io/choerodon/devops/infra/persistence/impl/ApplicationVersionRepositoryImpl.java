@@ -141,6 +141,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         applicationVersionDO.setIsPublish(level);
         for (Long id : appVersionIds) {
             applicationVersionDO.setId(id);
+            applicationVersionDO.setObjectVersionNumber(applicationVersionMapper.selectByPrimaryKey(id).getObjectVersionNumber());
             applicationVersionMapper.updateByPrimaryKeySelective(applicationVersionDO);
         }
     }
