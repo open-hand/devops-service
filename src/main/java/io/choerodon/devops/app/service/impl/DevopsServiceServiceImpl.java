@@ -471,7 +471,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return;
-        }else {
+        } else {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsServiceRepository.delete(id);

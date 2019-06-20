@@ -147,8 +147,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         PageInfo<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
                 .convertPageInfo(applicationInstanceEPage, ApplicationInstanceDTO.class);
-        PageInfo<DevopsEnvPreviewInstanceDTO>  devopsEnvPreviewInstanceDTOPageInfo = new PageInfo<>();
-        BeanUtils.copyProperties(applicationInstanceDTOS,devopsEnvPreviewInstanceDTOPageInfo);
+        PageInfo<DevopsEnvPreviewInstanceDTO> devopsEnvPreviewInstanceDTOPageInfo = new PageInfo<>();
+        BeanUtils.copyProperties(applicationInstanceDTOS, devopsEnvPreviewInstanceDTOPageInfo);
         return devopsEnvPreviewInstanceDTOPageInfo;
     }
 
@@ -1046,7 +1046,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return;
-        }else {
+        } else {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 applicationInstanceRepository.deleteById(instanceId);

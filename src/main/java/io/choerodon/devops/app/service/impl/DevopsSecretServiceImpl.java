@@ -207,7 +207,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return true;
-        }else {
+        } else {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsSecretRepository.deleteSecret(secretId);
