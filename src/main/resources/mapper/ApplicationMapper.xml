@@ -283,7 +283,7 @@
                 where (da.harbor_config_id = #{oldConfigId} or da.harbor_config_id is null)
             </if>
             <if test='harborPrivate == false'>
-                set da.harbor_config_id = null
+                set da.harbor_config_id = #{newConfigId}
                 where da.harbor_config_id = #{oldConfigId}
             </if>
         </if>

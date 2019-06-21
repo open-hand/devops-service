@@ -272,11 +272,12 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                         harborClient.deleteMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue()).execute();
                     }
                     DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByName(projectId, "project_harbor_default");
+                    DevopsProjectConfigE newDevopsProjectConfigE = devopsProjectConfigRepository.queryByName(null, "harbor_default");
 
                     DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
                     devopsProjectE.setHarborProjectIsPrivate(false);
                     devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDO.class));
-                    applicationRepository.updateAppHarborConfig(projectId, null, devopsProjectConfigE.getId(), false);
+                    applicationRepository.updateAppHarborConfig(projectId, newDevopsProjectConfigE.getId(), devopsProjectConfigE.getId(), false);
                     devopsProjectConfigRepository.delete(devopsProjectConfigE.getId());
 
                 }
