@@ -321,3 +321,34 @@ Changed
 - Optimized jumps for instances in deployment tasks within the pipeline details
 - Optimized UI for the pipeline details interface
 - Optimized permissions for project members with no environment permissions in the pipeline
+
+
+[0.18.0] - 2019-06-18
+Added
+- Added internal message in the deployment pipeline module which used to inform relevant member to operate the pipeline.
+- Added the status and operation button of the pipeline in the pipeline details page.
+- Added "quick search" and "about me" filter boxes in the pipeline management page and pipeline record page.
+- Added deployment configuration in the deployment pipeline enabling user to create deployment configuration for application deployment and to create automatic deployment tasks.
+- Added instance-related service and ingress page in the instance section, which support to create and view instance-related service and ingress.
+- Added another mode of uploading certificate in the certificate page, and added the verification of certificate file.
+- Added the GitOps retry button in the environment overview page.
+
+Fixed
+- Fixed the bug of null value in the ConfigMap.
+- Fixed the query problem with branches in the development console page.
+- Fixed the issue of format in the Redis container.
+- Fixed the problem caused by clicking retry button after pipeline failure.
+
+
+
+
+Changed
+- Optimized the query of code quality page in the development pipeline.
+- Optimized the operation to create branches in the development pipeline.
+- Optimized the authority problem of the pipeline.
+- Optimized the query speed of the instance page.
+- Optimized the problem of importing only master branches when importing applications from GitLab and Github, now all branches are imported by default.
+- Optimized the query speed for released versions of applications in the application market.
+
+Removed
+- Removed the deployment configuration from the pipeline section and placed it in the deployment pipeline module.
