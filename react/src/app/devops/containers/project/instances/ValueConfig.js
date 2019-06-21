@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
-import { Modal, Button } from 'choerodon-ui';
+import { Modal, Button, Icon } from 'choerodon-ui';
 import { Content, stores } from '@choerodon/boot';
 import YamlEditor from '../../../components/yamlEditor';
 import InterceptMask from '../../../components/interceptMask/InterceptMask';
@@ -125,6 +125,14 @@ class ValueConfig extends Component {
             {configName || formatMessage({ id: 'deploymentConfig.no.configValue'})}
           </span>
         </div>
+        {configName && (
+          <div className='c7n-deploy-configValue-tips'>
+            <Icon type='error' className='c7n-configValue-tips-icon' />
+            <span className='c7n-deploy-configValue-name'>
+              {formatMessage({ id: 'deploymentConfig.configValue.tips' })}
+            </span>
+          </div>
+        )}
         <YamlEditor
           readOnly={false}
           value={yaml}

@@ -311,7 +311,7 @@ const pageDetail = {
   'envoverview.link': `${docServer}/user-guide/deployment-pipeline/environments-overview/`,
   'envoverview.unlist': '暂无可用应用',
   'envOverview.confirm.reDeploy': '确认部署',
-  'envOverview.confirm.content.reDeploy': '未修改配置信息是否重新部署?',
+  'envOverview.confirm.content.reDeploy': '未修改此页面的配置信息，确定重新部署?',
 
   // 证书
   'ctf.description':
@@ -651,7 +651,7 @@ const zhCN = {
   'ist.yamlErr': '请先修改yaml格式错误',
   'ist.stopDes': '确定停用该实例吗？',
   'ist.startDes': '确定重启该实例吗？',
-  'ist.reDeployDes': '确定重新部署该实例吗？',
+  'ist.reDeployDes': '重新部署不会改变当前实例中的配置信息，确定是否重新部署？',
   'ist.expand.count': '更改pod数至',
   'ist.expand.stop.title': '停止Deployment {name}',
   'ist.expand.stop.describe': '确认停止该 Deployment 吗？',
@@ -1699,6 +1699,7 @@ const zhCN = {
   'deployment.delete.unable': '仅能删除没有关联任务和关联实例的部署配置。',
   'task.name.check.failed': '名称不能包含空格',
   'deploymentConfig.no.configValue': '未使用部署配置',
+  'deploymentConfig.configValue.tips': '下方显示的为实例所选部署配置中最新的配置信息，而非实例正在使用的配置信息。',
   'deploymentConfig.cover.title': '覆盖至部署配置',
   'deploymentConfig.cover.des':
     '是否将此次修改覆盖至部署配置？覆盖后，您在下次部署过程中，选中该部署配置时，便能使用到此次修改的最新配置信息。',
