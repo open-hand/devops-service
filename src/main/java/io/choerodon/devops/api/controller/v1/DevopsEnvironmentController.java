@@ -394,7 +394,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目ID
      * @param envId     环境Id
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境编码查询环境")
     @GetMapping(value = "/{env_id}/retry")
     public void queryByCode(
