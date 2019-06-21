@@ -400,27 +400,29 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     break;
                 default:
                     releaseName = KeyParseTool.getReleaseName(key);
-                    applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
-                    if (applicationInstanceE == null) {
-                        return;
-                    }
-                    newdevopsEnvResourceE =
-                            devopsEnvResourceRepository.queryResource(
-                                    applicationInstanceE.getId(),
-                                    resourceType.getType().equals(ResourceType.JOB.getType()) ? applicationInstanceE.getCommandId() : null,
-                                    envId,
-                                    KeyParseTool.getResourceType(key),
-                                    KeyParseTool.getResourceName(key));
-                    if (newdevopsEnvResourceE == null) {
+                    if (releaseName != null) {
+                        applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
+                        if (applicationInstanceE == null) {
+                            return;
+                        }
                         newdevopsEnvResourceE =
                                 devopsEnvResourceRepository.queryResource(
                                         applicationInstanceE.getId(),
                                         resourceType.getType().equals(ResourceType.JOB.getType()) ? applicationInstanceE.getCommandId() : null,
-                                        null,
+                                        envId,
                                         KeyParseTool.getResourceType(key),
                                         KeyParseTool.getResourceName(key));
+                        if (newdevopsEnvResourceE == null) {
+                            newdevopsEnvResourceE =
+                                    devopsEnvResourceRepository.queryResource(
+                                            applicationInstanceE.getId(),
+                                            resourceType.getType().equals(ResourceType.JOB.getType()) ? applicationInstanceE.getCommandId() : null,
+                                            null,
+                                            KeyParseTool.getResourceType(key),
+                                            KeyParseTool.getResourceName(key));
+                        }
+                        saveOrUpdateResource(devopsEnvResourceE, newdevopsEnvResourceE, devopsEnvResourceDetailE, applicationInstanceE);
                     }
-                    saveOrUpdateResource(devopsEnvResourceE, newdevopsEnvResourceE, devopsEnvResourceDetailE, applicationInstanceE);
                     break;
             }
         } catch (IOException e) {
