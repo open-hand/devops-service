@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -237,8 +238,8 @@ public class ApplicationVersionController {
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID", required = true)
-            @RequestBody List<Long> appVersionIds) {
-        return Optional.ofNullable(applicationVersionService.listByAppVersionIds(appVersionIds))
+            @RequestParam Long[] appVersionIds) {
+        return Optional.ofNullable(applicationVersionService.listByAppVersionIds(Arrays.asList(appVersionIds)))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
