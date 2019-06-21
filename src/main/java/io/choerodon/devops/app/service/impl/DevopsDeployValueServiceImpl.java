@@ -85,7 +85,6 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 t.setEnvStatus(true);
             }
-            t.setIndex(checkDelete(projectId, t.getId()));
         }).collect(Collectors.toList()));
         return page;
     }
