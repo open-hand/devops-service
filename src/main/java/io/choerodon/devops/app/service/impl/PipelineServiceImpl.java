@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
-import io.choerodon.base.domain.PageRequest;
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
@@ -36,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
@@ -527,9 +527,11 @@ public class PipelineServiceImpl implements PipelineService {
      */
     @Override
     public PipelineCheckDeployDTO checkDeploy(Long projectId, Long pipelineId) {
-        if (pipelineRepository.queryById(pipelineId).getIsEnabled() == 0) {
+        PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
+        if (pipelineE.getIsEnabled() == 0) {
             throw new CommonException("error.pipeline.check.deploy");
         }
+        Long userId=pipelineE.getTriggerType().equals(AUTO)?pipelineE.getLastUpdatedBy():TypeUtil.objToLong(GitUserNameUtil.getUserId());
         PipelineCheckDeployDTO checkDeployDTO = new PipelineCheckDeployDTO();
         checkDeployDTO.setPermission(true);
         checkDeployDTO.setVersions(true);
@@ -538,7 +540,7 @@ public class PipelineServiceImpl implements PipelineService {
             return checkDeployDTO;
         }
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-        if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+        if (!iamRepository.isProjectOwner(userId, projectE)) {
             List<Long> envIds = devopsEnvUserPermissionRepository
                     .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                     .filter(DevopsEnvUserPermissionE::getPermitted)

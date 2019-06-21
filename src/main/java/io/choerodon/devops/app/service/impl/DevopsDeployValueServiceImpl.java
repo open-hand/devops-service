@@ -112,9 +112,9 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         if (appDeployEList == null || appDeployEList.isEmpty()) {
             List<ApplicationInstanceE> instanceEList = applicationInstanceRepository.listByValueId(valueId);
             if (instanceEList == null || instanceEList.isEmpty()) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }

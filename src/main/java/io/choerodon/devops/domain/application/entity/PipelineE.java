@@ -17,6 +17,15 @@ public class PipelineE {
     private Date lastUpdateDate;
     private Long createdBy;
     private Boolean execute;
+    private Long lastUpdatedBy;
+
+    public Long getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+
+    public void setLastUpdatedBy(Long lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
+    }
 
     public Boolean getExecute() {
         return execute;

@@ -122,4 +122,7 @@ public interface ApplicationVersionService {
     ApplicationVersionRepDTO queryByAppAndVersion(Long appId, String version);
 
     void checkAutoDeploy(ApplicationVersionE versionE);
+
+
+    void test();
 }
