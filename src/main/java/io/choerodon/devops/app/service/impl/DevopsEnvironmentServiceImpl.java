@@ -457,6 +457,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         PushWebHookDTO pushWebHookDTO = new PushWebHookDTO();
         pushWebHookDTO.setCheckoutSha(commitDO.getId());
         pushWebHookDTO.setUserId(userAttrE.getGitlabUserId().intValue());
+        pushWebHookDTO.setProjectId(devopsEnvironmentE.getGitlabEnvProjectId().intValue());
         CommitDTO commitDTO = new CommitDTO();
         commitDTO.setId(commitDO.getId());
         commitDTO.setTimestamp(commitDO.getTimestamp());
