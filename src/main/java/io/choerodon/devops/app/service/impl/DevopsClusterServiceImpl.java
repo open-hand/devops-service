@@ -178,11 +178,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         } else {
             inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
         }
+        UserE userE = iamRepository.queryUserByUserId(devopsClusterE.getCreatedBy());
         Map<String, String> params = new HashMap<>();
         params.put("{VERSION}", agentExpectVersion);
         params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterE.getCode());
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsClusterE.getToken());
+        params.put("{EMAIL}", userE == null ? "" : userE.getEmail());
         params.put("{REPOURL}", agentRepoUrl);
         params.put("{CHOERODONID}", devopsClusterE.getChoerodonId());
         params.put("{CLUSTERID}", devopsClusterE

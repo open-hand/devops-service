@@ -15,6 +15,7 @@ public class DevopsClusterE {
     private String choerodonId;
     private String namespaces;
     private Boolean  isInit;
+    private Long createdBy;
 
     public DevopsClusterE() {
     }
@@ -126,5 +127,13 @@ public class DevopsClusterE {
 
     public void setInit(Boolean init) {
         isInit = init;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 }
