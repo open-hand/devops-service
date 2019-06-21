@@ -861,7 +861,7 @@ const zhCN = {
   'deploy.step.one.version.title': '选择版本',
   'deploy.step.one.version': '应用版本',
   'deploy.step.config': '配置信息',
-  'deploy.step.config.template': '选择配置模版',
+  'deploy.step.config.template': '选择部署配置',
   'deploy.step.config.description':
     '该配置信息里的固有字段不可删除，仅允许在此基础上进行修改或新增！',
   'deploy.step.two.env.title': '选择环境',
