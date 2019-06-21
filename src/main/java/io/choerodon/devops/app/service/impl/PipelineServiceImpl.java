@@ -666,7 +666,16 @@ public class PipelineServiceImpl implements PipelineService {
                 startNextTask(taskRecordId, pipelineRecordId, stageRecordId);
             }
         } else {
-            workFlowRepository.stopInstance(pipelineRecordE.getProjectId(), pipelineRecordE.getBusinessKey());
+            if (stageRecordE.getIsParallel() == 1) {
+                List<PipelineTaskRecordE> taskRecordEList = taskRecordRepository.queryByStageRecordId(stageRecordId, null);
+                List<PipelineTaskRecordE> taskSuccessRecordList = taskRecordEList.stream().filter(t -> t.getStatus().equals(WorkFlowStatus.SUCCESS.toValue())).collect(Collectors.toList());
+                List<PipelineTaskRecordE> taskFailedRecordList = taskRecordEList.stream().filter(t -> t.getStatus().equals(WorkFlowStatus.FAILED.toValue())).collect(Collectors.toList());
+                if (taskRecordEList.size() == (taskSuccessRecordList.size() + taskFailedRecordList.size())) {
+                    workFlowRepository.stopInstance(pipelineRecordE.getProjectId(), pipelineRecordE.getBusinessKey());
+                }
+            } else {
+                workFlowRepository.stopInstance(pipelineRecordE.getProjectId(), pipelineRecordE.getBusinessKey());
+            }
         }
     }
 
