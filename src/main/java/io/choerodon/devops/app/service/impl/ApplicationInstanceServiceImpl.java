@@ -133,7 +133,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsDeployValueRepository devopsDeployValueRepository;
 
 
-
     @Override
     public PageInfo<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                                          Long envId, Long versionId, Long appId, String params) {
@@ -387,7 +386,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public PageInfo<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds,
-                                                           Long appId, Date startTime, Date endTime) {
+                                                               Long appId, Date startTime, Date endTime) {
         if (envIds.length == 0) {
             return new PageInfo<>();
         }
@@ -398,8 +397,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public PageInfo<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds,
-                                                      Long envId,
-                                                      Date startTime, Date endTime) {
+                                                          Long envId,
+                                                          Date startTime, Date endTime) {
         if (appIds.length == 0) {
             return new PageInfo<>();
         }
@@ -613,8 +612,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvPreviewDTO.setDevopsEnvPreviewAppDTOS(devopsEnvPreviewAppDTOS);
         return devopsEnvPreviewDTO;
     }
-
-
 
 
     @Override
@@ -1084,6 +1081,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     instanceE.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentE.getId(), path);
         }
         appDeployRepository.updateInstanceId(instanceId);
+    }
+
+    @Override
+    public ReplaceResult previewValues(ReplaceResult previewReplaceResult, Long appVersionId) {
+        String versionValue = applicationVersionRepository.queryValue(appVersionId);
+        try {
+            FileUtil.checkYamlFormat(previewReplaceResult.getYaml());
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+        ReplaceResult replaceResult = getReplaceResult(versionValue, previewReplaceResult.getYaml());
+        replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
+        return replaceResult;
     }
 
     @Override

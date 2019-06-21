@@ -287,4 +287,14 @@ public interface ApplicationInstanceService {
     PageInfo<AppInstanceCommandLogDTO> listAppInstanceCommand(PageRequest pageRequest, Long appInstanceId, Date startTime, Date endTime);
 
     DevopsEnvResourceDTO listResourcesInHelmRelease(Long instanceId);
+
+    /**
+     * 获取预览 Value
+     *
+     * @param replaceResult yaml
+     * @param appVersionId  版本Id
+     * @return ReplaceResult
+     */
+    ReplaceResult previewValues(ReplaceResult replaceResult, Long appVersionId);
+
 }
