@@ -66,4 +66,6 @@ public interface ApplicationVersionMapper extends Mapper<ApplicationVersionDO> {
     String queryValueById(@Param("appId") Long appId);
 
     void updateRepository(@Param("helmUrl") String url);
+
+    ApplicationVersionDO queryByCommitSha(@Param("appId") Long appId, @Param("ref") String ref, @Param("commit") String commit);
 }

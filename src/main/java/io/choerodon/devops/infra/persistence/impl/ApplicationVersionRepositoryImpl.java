@@ -256,10 +256,8 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     }
 
     @Override
-    public ApplicationVersionE queryByCommitSha(String sha) {
-        ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO();
-        applicationVersionDO.setCommit(sha);
-        return ConvertHelper.convert(applicationVersionMapper.selectOne(applicationVersionDO), ApplicationVersionE.class);
+    public ApplicationVersionE queryByCommitSha(Long appId, String ref, String sha) {
+        return ConvertHelper.convert(applicationVersionMapper.queryByCommitSha(appId, ref, sha), ApplicationVersionE.class);
     }
 
     @Override

@@ -531,7 +531,7 @@ public class PipelineServiceImpl implements PipelineService {
         if (pipelineE.getIsEnabled() == 0) {
             throw new CommonException("error.pipeline.check.deploy");
         }
-        Long userId=pipelineE.getTriggerType().equals(AUTO)?pipelineE.getLastUpdatedBy():TypeUtil.objToLong(GitUserNameUtil.getUserId());
+        Long userId = pipelineE.getTriggerType().equals(AUTO) ? pipelineE.getLastUpdatedBy() : TypeUtil.objToLong(GitUserNameUtil.getUserId());
         PipelineCheckDeployDTO checkDeployDTO = new PipelineCheckDeployDTO();
         checkDeployDTO.setPermission(true);
         checkDeployDTO.setVersions(true);

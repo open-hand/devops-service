@@ -218,7 +218,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         devopsGitlabPipelineDOS.forEach(devopsGitlabPipelineDO -> {
             refs.add(devopsGitlabPipelineDO.getRef() + "-" + devopsGitlabPipelineDO.getSha());
             createDates.add(devopsGitlabPipelineDO.getPipelineCreationDate());
-            ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByCommitSha(devopsGitlabPipelineDO.getSha());
+            ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByCommitSha(appId, devopsGitlabPipelineDO.getRef(), devopsGitlabPipelineDO.getSha());
             if (applicationVersionE != null) {
                 versions.add(applicationVersionE.getVersion());
             } else {

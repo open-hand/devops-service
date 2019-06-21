@@ -69,6 +69,16 @@
         )
         OR dam.publish_level = 'public'
     </select>
+    <select id="queryByCommitSha" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        SELECT
+            dav.*
+        FROM
+            devops_app_version dav
+        WHERE
+            dav.app_id = #{appId}
+        AND dav.version LIKE CONCAT(CONCAT('%', #{ref}))
+        AND dav.`commit` = #{commit}
+    </select>
 
     <select id="listByAppIdAndEnvId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
         SELECT
