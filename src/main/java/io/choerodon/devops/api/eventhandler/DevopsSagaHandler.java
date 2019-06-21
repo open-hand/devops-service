@@ -352,14 +352,17 @@ public class DevopsSagaHandler {
         Long taskRecordId = applicationDeployDTO.getRecordId();
         Long stageRecordId = taskRecordRepository.queryById(taskRecordId).getStageRecordId();
         PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
+        PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(taskRecordId);
         Long pipelineRecordId = stageRecordE.getPipelineRecordId();
         try {
             ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
             if (!pipelineRecordRepository.queryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordE.getIsParallel() == 1) {
-                PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
-                pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
-                taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
-                LOGGER.info("create pipeline auto deploy instance success");
+                if(taskRecordE.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
+                    PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
+                    pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
+                    taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
+                    LOGGER.info("create pipeline auto deploy instance success");
+                }
             }
         } catch (Exception e) {
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
