@@ -816,7 +816,10 @@ public class PipelineServiceImpl implements PipelineService {
             createWorkFlow(pipelineE.getProjectId(), devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
             List<PipelineStageRecordE> stageRecordES = stageRecordRepository.queryByPipeRecordId(pipelineRecordE.getId(), null);
             if (stageRecordES != null && stageRecordES.size() > 0) {
-                updateStatus(null, stageRecordES.get(0).getId(), WorkFlowStatus.RUNNING.toValue(), null);
+                PipelineStageRecordE stageRecordE = stageRecordES.get(0);
+                stageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
+                stageRecordE.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis()));
+                stageRecordRepository.createOrUpdate(stageRecordE);
             }
         } catch (Exception e) {
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
