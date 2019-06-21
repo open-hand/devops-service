@@ -80,7 +80,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsConfigMapE devopsConfigMapE = ConvertHelper.convert(devopsConfigMapDTO, DevopsConfigMapE.class);
         devopsConfigMapE.setValue(gson.toJson(devopsConfigMapDTO.getValue()));
         //更新判断configMap key-value是否改变
-        if (devopsConfigMapDTO.getType().equals(DELETE_TYPE)) {
+        if (devopsConfigMapDTO.getType().equals(UPDATE_TYPE)) {
 
             //更新configMap的时候校验gitops库文件是否存在,处理部署configMap时，由于没有创gitops文件导致的部署失败
             checkOptionsHandler.check(devopsEnvironmentE, devopsConfigMapDTO.getId(), devopsConfigMapDTO.getName(), CONFIGMAP);
