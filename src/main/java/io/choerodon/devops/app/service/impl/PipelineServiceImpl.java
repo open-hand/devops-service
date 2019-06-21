@@ -753,6 +753,7 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRecordRepository.update(pipelineRecordE);
         stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null).forEach(t -> {
             t.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
+            t.setExecutionTime(TypeUtil.objToString(System.currentTimeMillis()));
             stageRecordRepository.update(t);
             taskRecordRepository.queryByStageRecordId(t.getId(), null).forEach(taskRecordE -> {
                 taskRecordE.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
