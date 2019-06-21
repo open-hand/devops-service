@@ -395,9 +395,4 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         return ConvertHelper.convert(applicationVersionRepository.queryByAppAndCode(appId, version), ApplicationVersionRepDTO.class);
     }
 
-
-    @Override
-    public void test() {
-        checkAutoDeploy(applicationVersionRepository.query(42736L));
-    }
 }

@@ -1303,7 +1303,11 @@ public class PipelineServiceImpl implements PipelineService {
     private Boolean checkRecordTriggerPermission(Long pipelineRecordId, Long stageRecordId) {
         String auditUser = null;
         if (pipelineRecordId != null) {
-            auditUser = pipelineRecordRepository.queryById(pipelineRecordId).getAuditUser();
+            PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
+            if (pipelineRecordE.getTriggerType().equals(AUTO)) {
+                return true;
+            }
+            auditUser = pipelineRecordE.getAuditUser();
         }
         if (stageRecordId != null) {
             auditUser = stageRecordRepository.queryById(stageRecordId).getAuditUser();

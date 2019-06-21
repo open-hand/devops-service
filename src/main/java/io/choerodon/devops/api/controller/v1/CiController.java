@@ -75,13 +75,4 @@ public class CiController {
         applicationVersionService.create(image, token, version, commit, file);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
-    @Permission(permissionPublic = true)
-    @ApiOperation(value = "获取应用版本信息")
-    @GetMapping("/test")
-    public ResponseEntity test() {
-        applicationVersionService.test();
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
 }
