@@ -338,7 +338,7 @@ export default class DeployMode extends Component {
         disabled={!(connect && permission)}
       >
         <span className={envClass} />
-        {name}（{code}）
+        {name}
       </Option>;
     });
 
