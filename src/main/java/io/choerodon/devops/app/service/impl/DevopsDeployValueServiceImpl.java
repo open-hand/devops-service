@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.infra.common.util.FileUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,9 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public DevopsDeployValueDTO createOrUpdate(Long projectId, DevopsDeployValueDTO pipelineValueDTO) {
+
+        FileUtil.checkYamlFormat(pipelineValueDTO.getValue());
+
         DevopsDeployValueE pipelineValueE = ConvertHelper.convert(pipelineValueDTO, DevopsDeployValueE.class);
         pipelineValueE.setProjectId(projectId);
         pipelineValueE = valueRepository.createOrUpdate(pipelineValueE);

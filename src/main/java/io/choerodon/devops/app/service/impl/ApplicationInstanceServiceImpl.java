@@ -718,6 +718,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ApplicationVersionE applicationVersionE =
                 applicationVersionRepository.query(applicationDeployDTO.getAppVersionId());
 
+        //values里面如果有些地方有空格会导致后面yaml.dump values异常，目前先清除格式不对的地方,后续找优化方式
+        applicationDeployDTO.setValues(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),applicationDeployDTO.getValues()).getYaml());
+
         //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
         ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO);
