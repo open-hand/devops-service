@@ -28,7 +28,7 @@ export default class Configuration extends Component {
     displayCreateModal: false,
   };
 
-  componentDidMount() {
+  async componentDidMount() {
     const {
       store,
       AppState: {
@@ -64,7 +64,10 @@ export default class Configuration extends Component {
     if (templateId) {
       store.loadTemplateValue(projectId, templateId);
     } else {
-      store.loadChartValue(projectId, mode, instanceId, version.id);
+      const response = await store.loadChartValue(projectId, mode, instanceId, version.id)
+      if (handlePromptError(response)) {
+        response.id && this.selectTemplate(response.id);
+      }
     }
   }
 
