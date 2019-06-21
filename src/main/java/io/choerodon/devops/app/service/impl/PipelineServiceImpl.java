@@ -701,6 +701,7 @@ public class PipelineServiceImpl implements PipelineService {
                     stageRecordDTO.setUserDTOS(getStageAuditUsers(recordDTOList.get(i).getStageId(), recordDTOList.get(i + 1).getId()));
                     if (recordDTOList.get(i).getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                         recordReqDTO.setType(STAGE);
+                        stageRecordDTO.setIndex(true);
                         recordReqDTO.setStageRecordId(recordDTOList.get(i + 1).getId());
                         recordReqDTO.setStageName(stageRecordDTO.getStageName());
                         recordReqDTO.setExecute(checkRecordTriggerPermission(null, stageRecordDTO.getId()));
