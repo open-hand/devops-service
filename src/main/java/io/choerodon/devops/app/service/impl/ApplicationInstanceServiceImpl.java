@@ -807,6 +807,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             code = applicationInstanceE.getCode();
             //更新实例的时候校验gitops库文件是否存在,处理部署实例时，由于没有创gitops文件导致的部署失败
             checkOptionsHandler.check(devopsEnvironmentE, applicationDeployDTO.getAppInstanceId(), code, C7NHELM_RELEASE);
+
+            //从未关联部署配置到关联部署配置，或者从一个部署配置关联另外一个部署配置，如果values是一样的，虽然getIsNotChange为false,但是此时也应该直接设置为isNotChange为true
+            DevopsEnvCommandE oldDevopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceRepository.selectById(applicationInstanceE.getId()).getCommandId());
+            String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
+            if (applicationDeployDTO.getAppVersionId().equals(oldDevopsEnvCommandE.getObjectVersionId()) && deployValue.equals(applicationDeployDTO.getValues())) {
+                applicationDeployDTO.setIsNotChange(true);
+            }
         }
 
 
@@ -819,45 +826,39 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (applicationDeployDTO.getIsNotChange()) {
             applicationInstanceE = restartDeploy(applicationDeployDTO, devopsEnvironmentE, applicationE, applicationVersionE, applicationInstanceE, devopsEnvCommandValueE, secretCode);
         } else {
-            String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
-            //从未关联部署配置到关联部署配置，或者从一个部署配置关联另外一个部署配置，如果values是一样的，虽然getIsNotChange为false,但是此时也应该直接走restart
-            if (devopsEnvCommandValueE.getValue().equals(deployValue)) {
-                restartDeploy(applicationDeployDTO, devopsEnvironmentE, applicationE, applicationVersionE, applicationInstanceE, devopsEnvCommandValueE, secretCode);
+            //存储数据
+            if (applicationDeployDTO.getType().equals(CREATE)) {
+                applicationInstanceE.setCode(code);
+                applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                devopsEnvCommandE.initDevopsEnvCommandValueE(
+                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                applicationInstanceRepository.update(applicationInstanceE);
             } else {
-                //存储数据
-                if (applicationDeployDTO.getType().equals(CREATE)) {
-                    applicationInstanceE.setCode(code);
-                    applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
-                    devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-                    devopsEnvCommandE.initDevopsEnvCommandValueE(
-                            devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                    applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-                    applicationInstanceRepository.update(applicationInstanceE);
-                } else {
-                    devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-                    devopsEnvCommandE.initDevopsEnvCommandValueE(
-                            devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                    applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-                    applicationInstanceRepository.update(applicationInstanceE);
-                }
-
-                //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-                String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
-
-                //在gitops库处理instance文件
-                ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
-                objectOperation.setType(getC7NHelmRelease(
-                        code, applicationVersionE, applicationDeployDTO, applicationE, secretCode));
-                Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-
-                objectOperation.operationEnvGitlabFile(
-                        RELEASE_PREFIX + code,
-                        projectId,
-                        applicationDeployDTO.getType(),
-                        userAttrE.getGitlabUserId(),
-                        applicationInstanceE.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentE.getId(), filePath);
-
+                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                devopsEnvCommandE.initDevopsEnvCommandValueE(
+                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                applicationInstanceRepository.update(applicationInstanceE);
             }
+
+            //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+            String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
+
+            //在gitops库处理instance文件
+            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
+            objectOperation.setType(getC7NHelmRelease(
+                    code, applicationVersionE, applicationDeployDTO, applicationE, secretCode));
+            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+
+            objectOperation.operationEnvGitlabFile(
+                    RELEASE_PREFIX + code,
+                    projectId,
+                    applicationDeployDTO.getType(),
+                    userAttrE.getGitlabUserId(),
+                    applicationInstanceE.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentE.getId(), filePath);
+
         }
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
