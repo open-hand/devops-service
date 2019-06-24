@@ -1,13 +1,13 @@
-import React, {Component, Fragment} from 'react';
+import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { Icon, Popover, Spin } from 'choerodon-ui';
-import _ from "lodash";
-import CodeQualityStore from "../../../../../stores/project/codeQuality";
-import Percentage from "../../../../../components/percentage/Percentage";
-import Rating from "../../../../../components/rating/Rating";
-import { QUALITY_LIST } from "../Constants";
+import _ from 'lodash';
+import CodeQualityStore from '../../../../../stores/project/codeQuality';
+import Percentage from '../../../../../components/percentage/Percentage';
+import Rating from '../../../../../components/rating/Rating';
+import { QUALITY_LIST } from '../Constants';
 
 import './QuaityCard.scss';
 
@@ -27,7 +27,7 @@ export default class StageTitle extends Component {
       },
     } = this.props;
     history.push({
-      pathname: "/devops/code-quality",
+      pathname: '/devops/code-quality',
       search,
       state: {
         backPath: `/devops/dev-console${search}`,
@@ -49,19 +49,21 @@ export default class StageTitle extends Component {
       const data = _.find(sonarContents, ({ key }) => item.key === key) || {};
       qualityList.push(Object.assign({}, item, data));
     });
-    const codeLines = _.find(sonarContents,({ key }) => key === "ncloc_language_distribution");
-    let linesKye = [];
+    const codeLines = _.find(sonarContents, ({ key }) => key === 'ncloc_language_distribution');
+    let linesKey = [];
     let tooltipsDom = null;
     if (codeLines && codeLines.value) {
-      linesKye = codeLines.value.match(/((^|(?<=;)).*?(?==))/g);
-      tooltipsDom = _.map(codeLines.value.split(";"), item => <div key={item}>{item}</div>)
+      const linesKeys = codeLines.value.split(';');
+      linesKey = _.map(linesKeys, item => item.split('=')[0]);
+      tooltipsDom = _.map(codeLines.value.split(';'), item => <div key={item}>{item}</div>);
     }
     return (
       <div className="c7n-dc-card-wrap c7n-dc-card-codeQuality" onClick={this.linkToQuality}>
         <div className="c7n-dc-card-title">
           <Icon type="quality" />
           <FormattedMessage id="codeQuality.content.title" />
-          <span className="codeQuality-title-date">{formatMessage({ id: "codeQuality.analysis"})}：{date.split('+')[0].replace(/T/g, ' ')}</span>
+          <span
+            className="codeQuality-title-date">{formatMessage({ id: 'codeQuality.analysis' })}：{date.split('+')[0].replace(/T/g, ' ')}</span>
         </div>
         <Spin spinning={getLoading}>
           <div className="c7n-card-codeQuality-content">
@@ -74,20 +76,20 @@ export default class StageTitle extends Component {
             {_.map(qualityList, ({ key, value, icon, rate }) => (
               <div className="codeQuality-content-block" key={key}>
                 <div className="codeQuality-content-block-detail mg-bottom-12">
-                  {key === "coverage" && <Percentage data={Number(value)} size={30} />}
+                  {key === 'coverage' && <Percentage data={Number(value)} size={30} />}
                   <span className="codeQuality-content-number">{value}</span>
-                  {key === "coverage" && <span className="content-number-percentage">%</span>}
+                  {key === 'coverage' && <span className="content-number-percentage">%</span>}
                   {rate && <Rating rating={rate} size="30px" fontSize="20px" />}
                 </div>
                 <div className="codeQuality-content-block-detail">
                   <Icon type={icon} />
-                  {key === "ncloc" ? (
+                  {key === 'ncloc' ? (
                     <Popover
-                      content={key === "ncloc" ? tooltipsDom : null}
+                      content={key === 'ncloc' ? tooltipsDom : null}
                     >
                       <span className="mg-left-8">
-                        {linesKye.slice(0, 2).join()}
-                        {linesKye.length > 2 && ",···"}
+                        {linesKey.slice(0, 2).join()}
+                        {linesKey.length > 2 && ',···'}
                       </span>
                     </Popover>) : <FormattedMessage id={`codeQuality.${key}`} />
                   }
