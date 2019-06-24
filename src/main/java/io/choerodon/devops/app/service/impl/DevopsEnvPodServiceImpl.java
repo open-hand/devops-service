@@ -49,10 +49,10 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
 
     @Override
-    public PageInfo<DevopsEnvPodDTO> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsEnvPodDTO> listAppPod(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-        PageInfo<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.listAppPod(projectId, envId, appId, pageRequest, searchParam);
+        PageInfo<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.listAppPod(projectId, envId, appId, instanceId, pageRequest, searchParam);
         devopsEnvPodEPage.getList().forEach(devopsEnvPodE -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsEnvPodE.getEnvId());
             devopsEnvPodE.setClusterId(devopsEnvironmentE.getClusterE().getId());

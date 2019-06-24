@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.dataobject;
 
-import javax.persistence.Transient;
 import java.util.List;
+import javax.persistence.Transient;
 
 /**
  * Created by Zenger on 2018/4/19.
@@ -24,8 +24,11 @@ public class DevopsServiceQueryDO {
     private List<ServiceInstanceDO> appInstance;
     private String loadBalanceIp;
 
+
     @Transient
     private Long appProjectId;
+    @Transient
+    private String instanceStatus;
     @Transient
     private String commandType;
     @Transient
@@ -184,5 +187,14 @@ public class DevopsServiceQueryDO {
 
     public void setLoadBalanceIp(String loadBalanceIp) {
         this.loadBalanceIp = loadBalanceIp;
+    }
+
+
+    public String getInstanceStatus() {
+        return instanceStatus;
+    }
+
+    public void setInstanceStatus(String instanceStatus) {
+        this.instanceStatus = instanceStatus;
     }
 }

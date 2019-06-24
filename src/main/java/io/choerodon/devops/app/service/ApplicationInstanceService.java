@@ -175,9 +175,15 @@ public interface ApplicationInstanceService {
      * 校验实例名唯一性
      *
      * @param instanceName 实例名
+     * @param envId 环境Id
      */
-    void checkName(String instanceName);
+    void checkName(String instanceName, Long envId);
 
+    /**
+     * @param versionValue
+     * @param deployValue
+     * @return
+     */
     ReplaceResult getReplaceResult(String versionValue, String deployValue);
 
     /**

@@ -1111,12 +1111,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public void checkName(String instanceName) {
+    public void checkName(String instanceName, Long envId) {
         AppInstanceValidator.checkName(instanceName);
         ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE();
         applicationInstanceE.setCode(instanceName);
-        applicationInstanceRepository.checkName(instanceName);
-        appDeployRepository.checkName(instanceName);
+        applicationInstanceRepository.checkName(instanceName, envId);
+        appDeployRepository.checkName(instanceName, envId);
     }
 
     private String getNameSpace(Long envId) {

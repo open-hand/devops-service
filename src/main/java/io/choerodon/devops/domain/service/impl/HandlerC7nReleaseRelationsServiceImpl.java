@@ -48,6 +48,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     private ApplicationVersionRepository applicationVersionRepository;
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
+    @Autowired
+    private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<C7nHelmRelease> c7nHelmReleases, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
@@ -188,6 +190,14 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                             applicationInstanceE.setCommandId(devopsEnvCommandE.getId());
                             applicationInstanceRepository.update(applicationInstanceE);
                         }
+                        List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = devopsServiceInstanceRepository.listByEnvIdAndInstanceCode(envId, c7nHelmRelease.getMetadata().getName());
+
+                        //删除实例之后，重新创建同名的实例，如果之前的实例关联的网络，此时需要把网络关联上新的实例
+                        Long instanceId = applicationInstanceDTO.getId();
+                        devopsServiceAppInstanceES.stream().filter(devopsServiceAppInstanceE -> !devopsServiceAppInstanceE.getAppInstanceId().equals(instanceId)).forEach(devopsServiceAppInstanceE -> {
+                            devopsServiceInstanceRepository.updateInstanceId(devopsServiceAppInstanceE.getId(), instanceId);
+                        });
+
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
@@ -234,7 +244,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO();
         applicationDeployDTO.setEnvironmentId(envId);
         applicationDeployDTO.setType(type);
-        applicationDeployDTO.setValues(applicationInstanceService.getReplaceResult(versionValue,c7nHelmRelease.getSpec().getValues()).getYaml());
+        applicationDeployDTO.setValues(applicationInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
         applicationDeployDTO.setAppId(applicationE.getId());
         applicationDeployDTO.setAppVersionId(applicationVersionE.getId());
         applicationDeployDTO.setInstanceName(c7nHelmRelease.getMetadata().getName());
