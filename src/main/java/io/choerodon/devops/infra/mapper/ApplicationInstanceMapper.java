@@ -21,6 +21,7 @@ public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDO>
                                                         @Param("envId") Long envId,
                                                         @Param("versionId") Long versionId,
                                                         @Param("appId") Long appId,
+                                                        @Param("instanceId") Long instanceId,
                                                         @Param("searchParam") Map<String, Object> searchParam,
                                                         @Param("param") String param);
 

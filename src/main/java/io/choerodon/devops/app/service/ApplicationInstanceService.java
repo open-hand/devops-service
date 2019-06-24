@@ -5,8 +5,21 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.AppInstanceCodeDTO;
+import io.choerodon.devops.api.dto.AppInstanceCommandLogDTO;
+import io.choerodon.devops.api.dto.ApplicationDeployDTO;
+import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.api.dto.ApplicationInstancesDTO;
+import io.choerodon.devops.api.dto.DeployDetailDTO;
+import io.choerodon.devops.api.dto.DeployFrequencyDTO;
+import io.choerodon.devops.api.dto.DeployTimeDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPreviewDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPreviewInstanceDTO;
+import io.choerodon.devops.api.dto.DevopsEnvResourceDTO;
+import io.choerodon.devops.api.dto.ErrorLineDTO;
+import io.choerodon.devops.api.dto.InstanceControllerDetailDTO;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 
@@ -28,7 +41,7 @@ public interface ApplicationInstanceService {
      */
 
     PageInfo<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                                  Long envId, Long versionId, Long appId, String params);
+                                                                  Long envId, Long versionId, Long appId, Long instanceId, String params);
 
     /**
      * 查询应用部署
@@ -42,9 +55,9 @@ public interface ApplicationInstanceService {
     /**
      * 查询value列表
      *
-     * @param type     部署类型
-     * @param instanceId     实例Id
-     * @param versionId 版本id
+     * @param type       部署类型
+     * @param instanceId 实例Id
+     * @param versionId  版本id
      * @return List
      */
     ReplaceResult queryValues(String type, Long instanceId, Long versionId);

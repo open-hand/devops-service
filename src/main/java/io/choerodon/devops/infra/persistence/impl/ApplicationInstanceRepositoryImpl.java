@@ -7,6 +7,8 @@ import java.util.Map;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -20,7 +22,6 @@ import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
-import org.springframework.stereotype.Service;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -38,13 +39,13 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
 
     @Override
     public PageInfo<ApplicationInstanceE> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                                  Long envId, Long versionId, Long appId, String params) {
+                                                                  Long envId, Long versionId, Long appId, Long instanceId, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         PageInfo<ApplicationInstanceDO> applicationInstanceDOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 applicationInstanceMapper
-                        .listApplicationInstance(projectId, envId, versionId, appId, searchParamMap, paramMap));
+                        .listApplicationInstance(projectId, envId, versionId, appId, instanceId, searchParamMap, paramMap));
         return ConvertPageHelper.convertPageInfo(applicationInstanceDOPage, ApplicationInstanceE.class);
     }
 

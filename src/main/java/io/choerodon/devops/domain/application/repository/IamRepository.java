@@ -3,7 +3,9 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
@@ -12,6 +14,8 @@ import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
+import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
 
 /**
  * Created by younger on 2018/3/29.
@@ -57,4 +61,8 @@ public interface IamRepository {
     IamAppPayLoad updateIamApp(Long organizationId, Long id, IamAppPayLoad iamAppPayLoad);
 
     IamAppPayLoad queryIamAppByCode(Long organizationId, String code);
+
+    ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO);
+
+    PageInfo<OrganizationSimplifyDTO> getAllOrgs(Integer page, Integer size);
 }

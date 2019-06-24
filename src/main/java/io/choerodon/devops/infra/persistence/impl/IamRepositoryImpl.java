@@ -13,6 +13,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
+import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.*;
 import io.choerodon.devops.domain.application.entity.ProjectE;
@@ -20,6 +21,8 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
+import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
@@ -284,5 +287,29 @@ public class IamRepositoryImpl implements IamRepository {
             throw new CommonException(e);
         }
         return iamAppPayLoadResponseEntity.getBody().getList().isEmpty() ? null : iamAppPayLoadResponseEntity.getBody().getList().get(0);
+    }
+
+    @Override
+    public ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO) {
+        try {
+            ResponseEntity<ProjectDTO> projectDTO = iamServiceClient
+                    .createProject(organizationId, projectCreateDTO);
+            return projectDTO.getBody();
+        } catch (FeignException e) {
+            LOGGER.error("error.create.iam.project");
+            return null;
+        }
+    }
+
+    @Override
+    public PageInfo<OrganizationSimplifyDTO> getAllOrgs(Integer page, Integer size) {
+        try {
+            ResponseEntity<PageInfo<OrganizationSimplifyDTO>> simplifyDTOs = iamServiceClient
+                    .getAllOrgs(page,size );
+            return simplifyDTOs.getBody();
+        } catch (FeignException e) {
+            LOGGER.error("error.get.all.organization");
+            return null;
+        }
     }
 }

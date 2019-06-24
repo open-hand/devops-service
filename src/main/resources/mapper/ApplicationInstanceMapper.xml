@@ -72,7 +72,14 @@
         WHERE de.project_id = #{projectId}
         AND dai.`status` != 'deleted'
         <include refid="sqlparam"/>
-        ORDER BY dai.id DESC
+        <choose>
+            <when test="instanceId !=null and instanceId != ''">
+                ORDER BY dai.id not in(#{instanceId}), dai.id DESC
+            </when>
+            <otherwise>
+                ORDER BY dai.id DESC
+            </otherwise>
+        </choose>
     </select>
 
     <select id="listApplicationInstanceCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
