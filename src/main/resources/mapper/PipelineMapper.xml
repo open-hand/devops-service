@@ -78,7 +78,7 @@
                 dp.project_id = #{projectId}
                 <include refid="sqlparam"/>
                 <if test='classifyParam.creator != null and classifyParam.userId != null'>
-                    AND dp.trigger_type='manual' and dp.created_by = #{classifyParam.userId}
+                    AND dp.created_by = #{classifyParam.userId}
                 </if>
             </otherwise>
         </choose>
