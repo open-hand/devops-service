@@ -217,7 +217,7 @@ const pageDetail = {
   'ist.detail.description':
     '您可在此查看该实例的运行详情及部署详情。运行详情包括各资源对象的基本信息；部署详情包括配置信息及部署阶段及日志。',
   'ist.networking.title': '实例"{name}"的关联网络与域名',
-  'ist.networking.description': '您可在此创建和查看实例相关的网络和域名。',
+  'ist.networking.description': '您可在此创建和查看平台中与此实例相关的网络和域名。',
   'ist.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
   'ist.detail.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
   'ist.edit.link': `${docServer}/user-guide/deployment-pipeline/instance/`,
@@ -311,7 +311,7 @@ const pageDetail = {
   'envoverview.link': `${docServer}/user-guide/deployment-pipeline/environments-overview/`,
   'envoverview.unlist': '暂无可用应用',
   'envOverview.confirm.reDeploy': '确认部署',
-  'envOverview.confirm.content.reDeploy': '未修改配置信息是否重新部署?',
+  'envOverview.confirm.content.reDeploy': '未修改此页面的配置信息，确定重新部署?',
 
   // 证书
   'ctf.description':
@@ -392,7 +392,7 @@ const pageDetail = {
 
   // 配置映射
   'configMap.title': '环境"{name}"的配置映射',
-  'configMap.create.title': '在环境"{name}"中创建配置映射',
+  'configMap.create.title': '在项目"{name}"中创建配置映射',
   'configMap.edit.title': '对映射配置"{name}"进行修改',
   'configMap.edit.description': '您可在此编辑配置映射的描述以及键值对的内容。',
   'configMap.create.description':
@@ -406,7 +406,7 @@ const pageDetail = {
 
   // 密文
   'secret.title': '环境"{name}"的密文',
-  'secret.create.title': '在环境"{name}"中创建密文',
+  'secret.create.title': '在项目"{name}"中创建密文',
   'secret.edit.title': '对密文"{name}"进行修改',
   'secret.edit.description': '您可在此编辑密文的描述以及键值对的内容。',
   'secret.create.description':
@@ -651,7 +651,7 @@ const zhCN = {
   'ist.yamlErr': '请先修改yaml格式错误',
   'ist.stopDes': '确定停用该实例吗？',
   'ist.startDes': '确定重启该实例吗？',
-  'ist.reDeployDes': '确定重新部署该实例吗？',
+  'ist.reDeployDes': '重新部署不会改变当前实例中的配置信息，确定是否重新部署？',
   'ist.expand.count': '更改pod数至',
   'ist.expand.stop.title': '停止Deployment {name}',
   'ist.expand.stop.describe': '确认停止该 Deployment 吗？',
@@ -861,7 +861,7 @@ const zhCN = {
   'deploy.step.one.version.title': '选择版本',
   'deploy.step.one.version': '应用版本',
   'deploy.step.config': '配置信息',
-  'deploy.step.config.template': '选择配置模版',
+  'deploy.step.config.template': '选择部署配置',
   'deploy.step.config.description':
     '该配置信息里的固有字段不可删除，仅允许在此基础上进行修改或新增！',
   'deploy.step.two.env.title': '选择环境',
@@ -1633,6 +1633,7 @@ const zhCN = {
   'secret.add': '添加密文',
   'secret.key': '键',
   'secret.des': '描述',
+  'secret.keyValueSpan': '键值对不能为空，请检查输入。',
 
   //组织层证书管理
   'certificate.head': '证书管理',
@@ -1695,9 +1696,10 @@ const zhCN = {
   'deploymentConfig.delete.tooltip': '确定删除该部署配置吗？',
   'deploymentConfig.name': '部署配置名称',
   'deploymentConfig.des': '部署配置描述',
-  'deployment.delete.unable': '仅能删除没有关联任务的部署配置',
+  'deployment.delete.unable': '仅能删除没有关联任务和关联实例的部署配置。',
   'task.name.check.failed': '名称不能包含空格',
   'deploymentConfig.no.configValue': '未使用部署配置',
+  'deploymentConfig.configValue.tips': '下方显示的为实例所选部署配置中最新的配置信息，而非实例正在使用的配置信息。',
   'deploymentConfig.cover.title': '覆盖至部署配置',
   'deploymentConfig.cover.des':
     '是否将此次修改覆盖至部署配置？覆盖后，您在下次部署过程中，选中该部署配置时，便能使用到此次修改的最新配置信息。',

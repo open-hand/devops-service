@@ -1,34 +1,33 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.infra.common.util.FileUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
+import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
-
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -49,13 +48,16 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     private PipelineAppDeployRepository appDeployRepository;
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
+    private ApplicationInstanceRepository applicationInstanceRepository;
 
     @Override
     public DevopsDeployValueDTO createOrUpdate(Long projectId, DevopsDeployValueDTO pipelineValueDTO) {
+
+        FileUtil.checkYamlFormat(pipelineValueDTO.getValue());
+
         DevopsDeployValueE pipelineValueE = ConvertHelper.convert(pipelineValueDTO, DevopsDeployValueE.class);
         pipelineValueE.setProjectId(projectId);
-        if (pipelineValueE.getId() == null) {
-            }
         pipelineValueE = valueRepository.createOrUpdate(pipelineValueE);
         return ConvertHelper.convert(pipelineValueE, DevopsDeployValueDTO.class);
     }
@@ -67,10 +69,14 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public PageInfo<DevopsDeployValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-
-        PageInfo<DevopsDeployValueDTO> valueDTOS = ConvertPageHelper.convertPageInfo(valueRepository.listByOptions(projectId, appId, envId, pageRequest, params), DevopsDeployValueDTO.class);
+        Long userId = null;
+        if (!iamRepository.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectE)) {
+            userId = DetailsHelper.getUserDetails().getUserId();
+        }
+        PageInfo<DevopsDeployValueDTO> valueDTOS = ConvertPageHelper.convertPageInfo(valueRepository.listByOptions(projectId, appId, envId, userId, pageRequest, params), DevopsDeployValueDTO.class);
         PageInfo<DevopsDeployValueDTO> page = new PageInfo<>();
         BeanUtils.copyProperties(valueDTOS, page);
         page.setList(valueDTOS.getList().stream().peek(t -> {
@@ -107,6 +113,12 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Override
     public Boolean checkDelete(Long projectId, Long valueId) {
         List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByValueId(valueId);
-        return appDeployEList == null || appDeployEList.isEmpty();
+        if (appDeployEList == null || appDeployEList.isEmpty()) {
+            List<ApplicationInstanceE> instanceEList = applicationInstanceRepository.listByValueId(valueId);
+            if (instanceEList == null || instanceEList.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

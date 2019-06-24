@@ -52,8 +52,9 @@ export default class DeploymentAppHome extends Component {
 
     if (state) {
       const { appId, version, prevPage } = state;
+      const isSecondStep = (prevPage === 'deploy' || prevPage === 'market') && appId && version;
 
-      if (prevPage === 'deploy' && appId && version) {
+      if (isSecondStep) {
         try {
           const [app, ver] = await Promise.all([
             DeployAppStore.queryAppDetail(projectId, appId),
@@ -61,7 +62,7 @@ export default class DeploymentAppHome extends Component {
           ]);
 
           if (handlePromptError(app)) {
-            if (String(app.projectId) === projectId) {
+            if (!app.appId) {
               app.appId = app.id;
             }
             DeployAppStore.setSelectedApp(app);
@@ -94,15 +95,16 @@ export default class DeploymentAppHome extends Component {
     const {
       DeployAppStore,
       history,
-      match: {
-        params: { prevPage },
+      location: {
+        state,
       },
     } = this.props;
 
-    if (prevPage) {
+    DeployAppStore.initAllData();
+
+    if (state && state.prevPage) {
       history.go(-1);
     } else {
-      DeployAppStore.initAllData();
       this.setState({
         currentStep: 0,
       });

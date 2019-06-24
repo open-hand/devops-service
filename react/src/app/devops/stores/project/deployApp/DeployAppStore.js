@@ -244,6 +244,7 @@ class DeployAppStore {
     }
 
     this.setValueLoading(false);
+    return response;
   }
 
   /**

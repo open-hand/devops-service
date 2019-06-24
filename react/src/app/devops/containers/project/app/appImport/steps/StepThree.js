@@ -186,7 +186,7 @@ class StepThree extends Component {
 
     let defaultHarbor;
     if (getHarborList.length) {
-      const privateHarbor = _.find(getHarborList, ['projectId', null]);
+      const privateHarbor = _.find(getHarborList, item => item.name.indexOf('project') !== -1);
       if (privateHarbor) {
         defaultHarbor = privateHarbor.id;
       } else {

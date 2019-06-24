@@ -3,14 +3,22 @@ package io.choerodon.devops.app.service.impl;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,13 +27,29 @@ import org.springframework.stereotype.Service;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.DevopsGitlabPipelineDTO;
+import io.choerodon.devops.api.dto.JobWebHookDTO;
+import io.choerodon.devops.api.dto.PipelineFrequencyDTO;
+import io.choerodon.devops.api.dto.PipelineTimeDTO;
+import io.choerodon.devops.api.dto.PipelineWebHookDTO;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
+import io.choerodon.devops.domain.application.entity.DevopsGitlabPipelineE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitlabPipelineRepository;
+import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.Stage;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -94,7 +118,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 .listJobs(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(pipelineWebHookDTO.getObjectAttributes().getId()), gitlabUserId).stream().map(GitlabJobE::getId).collect(Collectors.toList());
 
         Stage sonar = null;
-        List<CommitStatuseDO> commitStatuseDOS =  gitlabProjectRepository.getCommitStatuse(applicationE.getGitlabProjectE().getId(), pipelineWebHookDTO.getObjectAttributes().getSha(), ADMIN);
+        List<CommitStatuseDO> commitStatuseDOS = gitlabProjectRepository.getCommitStatuse(applicationE.getGitlabProjectE().getId(), pipelineWebHookDTO.getObjectAttributes().getSha(), ADMIN);
         for (CommitStatuseDO commitStatuseDO : commitStatuseDOS) {
             if (gitlabJobIds.contains(commitStatuseDO.getId())) {
                 Stage stage = getPipelibeStage(commitStatuseDO);
@@ -194,7 +218,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         devopsGitlabPipelineDOS.forEach(devopsGitlabPipelineDO -> {
             refs.add(devopsGitlabPipelineDO.getRef() + "-" + devopsGitlabPipelineDO.getSha());
             createDates.add(devopsGitlabPipelineDO.getPipelineCreationDate());
-            ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByCommitSha(devopsGitlabPipelineDO.getSha());
+            ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByCommitSha(appId, devopsGitlabPipelineDO.getRef(), devopsGitlabPipelineDO.getSha());
             if (applicationVersionE != null) {
                 versions.add(applicationVersionE.getVersion());
             } else {
@@ -331,7 +355,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 devopsGitlabPipelineDTO.setStatus(devopsGitlabPipelineDO.getStatus());
             }
             devopsGitlabPipelineDTO.setRef(devopsGitlabPipelineDO.getRef());
-            String  version  = applicationVersionRepository.queryByPipelineId(devopsGitlabPipelineDO.getPipelineId(),devopsGitlabPipelineDO.getRef());
+            String version = applicationVersionRepository.queryByPipelineId(devopsGitlabPipelineDO.getPipelineId(), devopsGitlabPipelineDO.getRef(), appId);
             if (version != null) {
                 devopsGitlabPipelineDTO.setVersion(version);
             }

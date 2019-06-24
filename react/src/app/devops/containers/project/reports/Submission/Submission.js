@@ -106,7 +106,7 @@ class Submission extends Component {
       .replace(/-/g, "/");
     this.setState({ appId: e });
     loadCommits(projectId, startTime, endTime, e);
-    loadCommitsRecord(projectId, startTime, endTime, e, 0);
+    loadCommitsRecord(projectId, startTime, endTime, e, 1);
   };
 
   handlePageChange = page => {

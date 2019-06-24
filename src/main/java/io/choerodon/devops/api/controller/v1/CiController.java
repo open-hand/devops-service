@@ -75,5 +75,4 @@ public class CiController {
         applicationVersionService.create(image, token, version, commit, file);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
 }

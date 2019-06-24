@@ -80,7 +80,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsConfigMapE devopsConfigMapE = ConvertHelper.convert(devopsConfigMapDTO, DevopsConfigMapE.class);
         devopsConfigMapE.setValue(gson.toJson(devopsConfigMapDTO.getValue()));
         //更新判断configMap key-value是否改变
-        if (devopsConfigMapDTO.getType().equals(DELETE_TYPE)) {
+        if (devopsConfigMapDTO.getType().equals(UPDATE_TYPE)) {
 
             //更新configMap的时候校验gitops库文件是否存在,处理部署configMap时，由于没有创gitops文件导致的部署失败
             checkOptionsHandler.check(devopsEnvironmentE, devopsConfigMapDTO.getId(), devopsConfigMapDTO.getName(), CONFIGMAP);
@@ -165,11 +165,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId());
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsConfigMapE.getDevopsEnvCommandE().getId());
-
-        //更新数据
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandRepository.listByObjectAll(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         devopsConfigMapRepository.delete(configMapId);
     }
 
@@ -182,7 +178,6 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentE.getId());
-//
 //        //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
@@ -216,6 +211,13 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return;
+        } else {
+            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                devopsConfigMapRepository.delete(configMapId);
+                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                return;
+            }
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
 

@@ -109,15 +109,15 @@ export default class CertificateCreate extends Component {
       store,
       showType,
       AppState: { currentMenuType: { organizationId } },
+      form: {
+        validateFieldsAndScroll,
+      },
     } = this.props;
 
     const {
       checked,
       createSelectedRowKeys,
       uploadMode,
-      form: {
-        validateFieldsAndScroll,
-      },
     } = this.state;
 
     this.setState({ submitting: true });

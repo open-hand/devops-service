@@ -125,7 +125,7 @@ public class DemoEnvSetupSagaHandler {
         SecurityContextHolder.clearContext();
     }
 
-    @SagaTask(code = "register-devops-init-demo-data", description = "初始化Demo环境的项目相关数据", sagaCode = "register-org", maxRetryCount = 0, seq = 150)
+    @SagaTask(code = "register-devops-init-demo-data", description = "初始化Demo环境的项目相关数据", sagaCode = "register-org", maxRetryCount = 3, seq = 150)
     public OrganizationRegisterEventPayload initDemoProject(String payload) {
         logInfoPayload("register-devops-init-demo-data", payload);
         OrganizationRegisterEventPayload registerInfo = gson.fromJson(payload, OrganizationRegisterEventPayload.class);

@@ -22,14 +22,6 @@ export default class CreateIngress extends Component {
   };
 
   componentDidMount() {
-    const {
-      AppState: { currentMenuType: { projectId } },
-      id,
-      type,
-    } = this.props;
-    if (id && type === 'edit') {
-      DomainStore.loadDataById(projectId, id);
-    }
   }
 
   /**
@@ -140,7 +132,6 @@ export default class CreateIngress extends Component {
             wrappedComponentRef={(form) => this.formRef = form}
             type={type}
             envId={envId}
-            singleData={getSingleData || {}}
             isInstancePage
           />
         </div>

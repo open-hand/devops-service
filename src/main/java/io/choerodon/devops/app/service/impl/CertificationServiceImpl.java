@@ -111,10 +111,10 @@ public class CertificationServiceImpl implements CertificationService {
             File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
             try {
                 SslUtil.validate(certPath, keyPath);
-            } catch (Exception e) {
+            } catch (CommonException e) {
                 FileUtil.deleteFile(certPath);
                 FileUtil.deleteFile(keyPath);
-                throw new CommonException(e);
+                throw e;
             }
             FileUtil.deleteFile(certPath);
             FileUtil.deleteFile(keyPath);
@@ -259,6 +259,13 @@ public class CertificationServiceImpl implements CertificationService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return;
+        } else {
+            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                certificationRepository.deleteById(certId);
+                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                return;
+            }
         }
         certificationE.setCommandId(createCertCommandE(CommandType.DELETE.getType(), certId, null));
         certificationRepository.updateCommandId(certificationE);
@@ -315,7 +322,7 @@ public class CertificationServiceImpl implements CertificationService {
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //实例相关对象数据库操作
-        devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.CERTIFICATE.toValue(), certificationE.getId()).forEach(t -> deployMsgHandlerService.deleteCommandById(t));
+        devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.CERTIFICATE.toValue(), certificationE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t));
         certificationRepository.deleteById(certId);
     }
 

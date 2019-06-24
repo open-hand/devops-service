@@ -20,6 +20,7 @@ import { handleCheckerProptError } from '../../../../utils';
 
 import '../../../main.scss';
 import './CertificateCreate.scss';
+import EnvOverviewStore from "../../../../stores/project/envOverview";
 
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;
@@ -161,9 +162,10 @@ export default class CertificateCreate extends Component {
         this.setState({ submitting: false });
 
         if (handleCheckerProptError(response)) {
+          EnvOverviewStore.setTpEnvId(_data.envId);
           store.initTableFilter();
 
-          store.loadCertData(true, projectId, envId);
+          store.loadCertData(true, projectId, _data.envId);
           this.handleClose(true);
         }
       } else {

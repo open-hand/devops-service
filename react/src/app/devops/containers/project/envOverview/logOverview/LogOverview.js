@@ -249,7 +249,7 @@ class LogOverview extends Component {
           filterBar={false}
           locale={tableLocale}
           loading={store.isLoading}
-          pagination={store.getPageInfo}
+          pagination={store.getLogPageInfo}
           columns={columns}
           onChange={this.tableChange}
           dataSource={log}

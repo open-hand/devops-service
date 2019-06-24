@@ -24,6 +24,7 @@ public class DevopsClusterDO extends BaseDTO {
     private String choerodonId;
     private String namespaces;
     private Boolean isInit;
+    private Long createdBy;
 
 
     public Long getId() {
@@ -104,5 +105,15 @@ public class DevopsClusterDO extends BaseDTO {
 
     public void setInit(Boolean init) {
         isInit = init;
+    }
+
+    @Override
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    @Override
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 }

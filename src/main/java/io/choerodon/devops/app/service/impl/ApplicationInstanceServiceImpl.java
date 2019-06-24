@@ -146,8 +146,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         PageInfo<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
                 .convertPageInfo(applicationInstanceEPage, ApplicationInstanceDTO.class);
-
-        return ConvertPageHelper.convertPageInfo(applicationInstanceDTOS,DevopsEnvPreviewInstanceDTO.class);
+        PageInfo<DevopsEnvPreviewInstanceDTO> devopsEnvPreviewInstanceDTOPageInfo = new PageInfo<>();
+        BeanUtils.copyProperties(applicationInstanceDTOS, devopsEnvPreviewInstanceDTOPageInfo);
+        return devopsEnvPreviewInstanceDTOPageInfo;
     }
 
 
@@ -385,7 +386,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public PageInfo<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds,
-                                                           Long appId, Date startTime, Date endTime) {
+                                                               Long appId, Date startTime, Date endTime) {
         if (envIds.length == 0) {
             return new PageInfo<>();
         }
@@ -396,8 +397,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public PageInfo<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds,
-                                                      Long envId,
-                                                      Date startTime, Date endTime) {
+                                                          Long envId,
+                                                          Date startTime, Date endTime) {
         if (appIds.length == 0) {
             return new PageInfo<>();
         }
@@ -613,8 +614,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
 
-
-
     @Override
     public DevopsEnvResourceDTO listResourcesInHelmRelease(Long instanceId) {
 
@@ -715,6 +714,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
         ApplicationVersionE applicationVersionE =
                 applicationVersionRepository.query(applicationDeployDTO.getAppVersionId());
+
+        //values里面如果有些地方有空格会导致后面yaml.dump values异常，目前先清除格式不对的地方,后续找优化方式
+        applicationDeployDTO.setValues(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),applicationDeployDTO.getValues()).getYaml());
 
         //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
         ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);
@@ -1044,6 +1046,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             return;
+        } else {
+            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                applicationInstanceRepository.deleteById(instanceId);
+                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                return;
+            }
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
                 .queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
@@ -1075,6 +1084,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
+    public ReplaceResult previewValues(ReplaceResult previewReplaceResult, Long appVersionId) {
+        String versionValue = applicationVersionRepository.queryValue(appVersionId);
+        try {
+            FileUtil.checkYamlFormat(previewReplaceResult.getYaml());
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+        ReplaceResult replaceResult = getReplaceResult(versionValue, previewReplaceResult.getYaml());
+        replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
+        return replaceResult;
+    }
+
+    @Override
     public void instanceDeleteByGitOps(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
 
@@ -1084,17 +1106,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        //实例相关对象数据库操作
-        DevopsEnvCommandE devopsEnvCommandE;
-        if (instanceE.getCommandId() == null) {
-            devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.INSTANCE.getType(), instanceE.getId());
-        } else {
-            devopsEnvCommandE = devopsEnvCommandRepository
-                    .query(instanceE.getCommandId());
-        }
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandRepository.listByObjectAll(ObjectType.INSTANCE.getType(), instanceId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         applicationInstanceRepository.deleteById(instanceId);
     }
 

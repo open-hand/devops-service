@@ -7,7 +7,6 @@ import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.api.dto.DevopsIngressPathDTO;
@@ -314,6 +313,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             }
             return;
 
+        } else {
+            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                devopsIngressRepository.deleteIngress(ingressId);
+                devopsIngressRepository.deleteIngressPath(ingressId);
+                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                return;
+            }
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
 
@@ -354,10 +361,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressDO.getCommandId());
-
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandRepository.listByObjectAll(ObjectType.INGRESS.getType(), ingressId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         devopsIngressRepository.deleteIngress(ingressId);
     }
 

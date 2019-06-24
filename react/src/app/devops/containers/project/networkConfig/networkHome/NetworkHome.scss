@@ -13,7 +13,7 @@
   .network-column-target {
     display: flex;
 
-    &:last-child {
+    &:nth-child(2) {
       margin-top: 5px;
     }
 
@@ -63,7 +63,7 @@
 
     .network-config-type {
       line-height: 20px;
-      width: 80px;
+      width: 85px;
     }
 
     .network-config-item {

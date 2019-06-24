@@ -28,13 +28,8 @@ class CreateDomain extends Component {
     const {
       AppState: { currentMenuType: { projectId } },
       store,
-      id,
-      type,
       envId,
     } = this.props;
-    if (id && type === 'edit') {
-      store.loadDataById(projectId, id);
-    }
     store.loadNetwork(projectId, envId);
     EnvOverviewStore.loadActiveEnv(projectId);
   }
@@ -82,7 +77,7 @@ class CreateDomain extends Component {
           postData.domainId = id;
           promise = store.updateData(projectId, id, postData);
         }
-        this.handleResponse(promise);
+        this.handleResponse(promise, envId);
       } else {
         this.setState({ submitting: false });
       }
@@ -93,12 +88,13 @@ class CreateDomain extends Component {
    * 处理创建修改域名请求返回的数据
    * @param promise
    */
-  handleResponse = promise => {
+  handleResponse = (promise, envId) => {
     if (promise) {
       promise
         .then(data => {
           this.setState({ submitting: false });
           if (data) {
+            EnvOverviewStore.setTpEnvId(envId);
             this.handleClose();
           }
         })
@@ -129,6 +125,7 @@ class CreateDomain extends Component {
       type,
       visible,
       envId,
+      id,
     } = this.props;
     const env = EnvOverviewStore.getEnvcard;
     const {
@@ -163,7 +160,7 @@ class CreateDomain extends Component {
               wrappedComponentRef={(form) => this.formRef = form}
               type={type}
               envId={env && env.length ? envId : null}
-              singleData={getSingleData || {}}
+              ingressId={id}
             />
             <InterceptMask visible={submitting} />
           </Content>

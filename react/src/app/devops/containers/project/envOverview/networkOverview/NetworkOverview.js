@@ -265,22 +265,26 @@ export default class NetworkOverview extends Component {
     return (
       <Fragment>
         {
-          _.map([node, port], (item, index) => (
-            <div className="network-column-target" key={index}>
-              {item[0] || null}
-              {endPoints && (<div className="network-column-targetIp">{item[1] || null}</div>)}
-              {item.length > len && (
-                <Popover
-                  arrowPointAtCenter
-                  placement="bottomRight"
-                  getPopupContainer={triggerNode => triggerNode.parentNode}
-                  content={<Fragment>{item}</Fragment>}
-                >
-                  <Icon type="expand_more" className="network-expend-icon" />
-                </Popover>
-              )}
-            </div>),
-          )
+          _.map([node, port], (item, index) => {
+            if (item.length) {
+              return (
+                <div className="network-column-target" key={index}>
+                  {item[0]}
+                  {endPoints && (<div className="network-column-targetIp">{item[1] || null}</div>)}
+                  {item.length > len && (
+                    <Popover
+                      arrowPointAtCenter
+                      placement="bottomRight"
+                      getPopupContainer={triggerNode => triggerNode.parentNode}
+                      content={<Fragment>{item}</Fragment>}
+                    >
+                      <Icon type="expand_more" className="network-expend-icon" />
+                    </Popover>
+                  )}
+                </div>
+              )
+            }
+          })
         }
       </Fragment>
     );

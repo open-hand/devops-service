@@ -4,6 +4,7 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
 
@@ -14,7 +15,7 @@ import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
  */
 public interface DevopsDeployValueRepository {
 
-    PageInfo<DevopsDeployValueE> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsDeployValueE> listByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params);
 
     DevopsDeployValueE createOrUpdate(DevopsDeployValueE pipelineRecordE);
 

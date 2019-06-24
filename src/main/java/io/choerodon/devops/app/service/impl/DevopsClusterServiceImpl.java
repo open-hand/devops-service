@@ -16,6 +16,7 @@ import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
@@ -23,6 +24,7 @@ import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,6 +78,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             }
         }
 
+        UserE userE = iamRepository.queryUserByUserId(GitUserNameUtil.getUserId().longValue());
+
         // 渲染激活环境的命令参数
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
         Map<String, String> params = new HashMap<>();
@@ -83,6 +87,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterE.getCode());
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsClusterE.getToken());
+        params.put("{EMAIL}", userE == null ? "" : userE.getEmail());
         params.put("{CHOERODONID}", devopsClusterE.getChoerodonId());
         params.put("{REPOURL}", agentRepoUrl);
         params.put("{CLUSTERID}", devopsClusterE
@@ -173,11 +178,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         } else {
             inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
         }
+        UserE userE = iamRepository.queryUserByUserId(devopsClusterE.getCreatedBy());
         Map<String, String> params = new HashMap<>();
         params.put("{VERSION}", agentExpectVersion);
         params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterE.getCode());
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsClusterE.getToken());
+        params.put("{EMAIL}", userE == null ? "" : userE.getEmail());
         params.put("{REPOURL}", agentRepoUrl);
         params.put("{CHOERODONID}", devopsClusterE.getChoerodonId());
         params.put("{CLUSTERID}", devopsClusterE
@@ -224,7 +231,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      */
     private List<ClusterWithNodesDTO> fromClusterE2ClusterWithNodesDTO(List<DevopsClusterE> clusterEList, Long organizationId) {
         // default three records of nodes in the instance
-        PageRequest pageRequest = new PageRequest(0, 3);
+        PageRequest pageRequest = new PageRequest(1, 3);
 
         return clusterEList.stream().map(cluster -> {
             ClusterWithNodesDTO clusterWithNodesDTO = new ClusterWithNodesDTO();

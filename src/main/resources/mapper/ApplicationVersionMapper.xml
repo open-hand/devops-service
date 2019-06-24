@@ -69,6 +69,16 @@
         )
         OR dam.publish_level = 'public'
     </select>
+    <select id="queryByCommitSha" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        SELECT
+            dav.*
+        FROM
+            devops_app_version dav
+        WHERE
+            dav.app_id = #{appId}
+        AND dav.version LIKE CONCAT(CONCAT('%', #{ref}))
+        AND dav.`commit` = #{commit}
+    </select>
 
     <select id="listByAppIdAndEnvId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
         SELECT
@@ -249,7 +259,7 @@
         FROM
         devops_gitlab_pipeline dgp
         LEFT JOIN devops_gitlab_commit dgc ON dgp.commit_id = dgc.id
-        LEFT JOIN devops_app_version dav ON dav.`commit` = dgc.commit_sha
+        LEFT JOIN devops_app_version dav ON dav.`commit` = dgc.commit_sha and dav.app_id=#{appId}
         WHERE
         dgp.pipeline_id = #{pipelineId}
         and dav.version LIKE CONCAT('%', #{branch, jdbcType=VARCHAR})

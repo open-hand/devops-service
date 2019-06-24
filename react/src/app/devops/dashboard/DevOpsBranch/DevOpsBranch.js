@@ -56,7 +56,7 @@ class DevOpsBranch extends Component {
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
-          this.setState({ branchList: data.content });
+          this.setState({ branchList: data.list });
         }
         this.setState({ loading: false });
       });

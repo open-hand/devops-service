@@ -21,6 +21,7 @@ import AppName from "../../../../components/appName";
 import "../../../main.scss";
 import "../createNetwork/CreateNetwork.scss";
 import "./EditNetwork.scss";
+import EnvOverviewStore from '../../../../stores/project/envOverview';
 import InterceptMask from "../../../../components/interceptMask/InterceptMask";
 import Tips from "../../../../components/Tips/Tips";
 
@@ -245,6 +246,7 @@ class EditNetwork extends Component {
             .then(res => {
               this.setState({ submitting: false });
               if (res) {
+                EnvOverviewStore.setTpEnvId(envId);
                 this.handleClose();
               }
             })
@@ -469,15 +471,33 @@ class EditNetwork extends Component {
    */
   removeGroup = (k, type) => {
     const {
-      form: { getFieldValue, setFieldsValue },
+      form: { getFieldValue, setFieldsValue, validateFields },
     } = this.props;
+    const { portKeys } = this.state;
     const keys = getFieldValue(type);
     if (keys.length === 1) {
       return;
     }
+
+    let list = [];
+    switch (type) {
+      case 'portKeys':
+        list = ['port', 'tport'];
+        portKeys !== "ClusterIP" && list.push('nport');
+        break;
+      case 'endPoints':
+        list = ['targetport'];
+        break;
+      case 'targetKeys':
+        list = ['keywords'];
+        break;
+      default:
+        break;
+    }
+
     setFieldsValue({
       [type]: _.filter(keys, key => key !== k),
-    });
+    }, () => validateFields(list, { force: true }));
   };
 
   /**
@@ -496,6 +516,19 @@ class EditNetwork extends Component {
       [type]: nextKeys,
     });
   };
+
+  /**
+   * 每当节点端口、端口、目标端口、关键字等输入改变，强制校验，消除重复的报错信息
+   */
+  changeValue = _.debounce((type) => {
+    const {
+      form: {
+        validateFields,
+      },
+    } = this.props;
+
+    validateFields([type], { force: true });
+  }, 400);
 
   /**
    * 选择应用, 加载实例, 生成初始网络名
@@ -919,6 +952,7 @@ class EditNetwork extends Component {
               <Input
                 type="text"
                 maxLength={5}
+                onChange={this.changeValue.bind(this, 'nport')}
                 label={<FormattedMessage id="network.config.nodePort" />}
               />
             )}
@@ -947,6 +981,7 @@ class EditNetwork extends Component {
               type="text"
               maxLength={5}
               disabled={!getFieldValue("envId")}
+              onChange={this.changeValue.bind(this, 'port')}
               label={<FormattedMessage id="network.config.port" />}
             />
           )}
@@ -974,6 +1009,7 @@ class EditNetwork extends Component {
               type="text"
               maxLength={5}
               disabled={!getFieldValue("envId")}
+              onChange={this.changeValue.bind(this, 'tport')}
               label={<FormattedMessage id="network.config.targetPort" />}
             />
           )}
@@ -1056,6 +1092,7 @@ class EditNetwork extends Component {
               type="text"
               maxLength={5}
               disabled={!getFieldValue("envId")}
+              onChange={this.changeValue.bind(this, 'targetport')}
               label={<FormattedMessage id="network.config.targetPort" />}
             />
           )}
@@ -1103,6 +1140,7 @@ class EditNetwork extends Component {
             <Input
               type="text"
               disabled={!getFieldValue("envId")}
+              onChange={this.changeValue.bind(this, 'keywords')}
               label={<FormattedMessage id="network.config.keyword" />}
               suffix={<Tips type="form" data="network.label.key.rule" />}
             />

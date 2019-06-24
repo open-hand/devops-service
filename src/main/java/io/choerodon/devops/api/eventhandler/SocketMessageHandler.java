@@ -78,9 +78,6 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                         CommandStatus.SUCCESS.getStatus(),
                         "");
                 break;
-            case HELM_RELEASE_DELETE:
-                deployMsgHandlerService.helmReleaseDelete(KeyParseTool.getResourceName(msg.getKey()), TypeUtil.objToLong(msg.getClusterId()));
-                break;
             case HELM_RELEASE_PRE_UPGRADE:
                 deployMsgHandlerService.helmReleasePreUpgrade(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));

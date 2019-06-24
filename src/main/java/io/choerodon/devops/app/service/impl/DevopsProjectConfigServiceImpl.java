@@ -272,11 +272,12 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                         harborClient.deleteMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue()).execute();
                     }
                     DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByName(projectId, "project_harbor_default");
+                    DevopsProjectConfigE newDevopsProjectConfigE = devopsProjectConfigRepository.queryByName(null, "harbor_default");
 
                     DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
                     devopsProjectE.setHarborProjectIsPrivate(false);
                     devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDO.class));
-                    applicationRepository.updateAppHarborConfig(projectId, null, devopsProjectConfigE.getId(), false);
+                    applicationRepository.updateAppHarborConfig(projectId, newDevopsProjectConfigE.getId(), devopsProjectConfigE.getId(), false);
                     devopsProjectConfigRepository.delete(devopsProjectConfigE.getId());
 
                 }
@@ -291,7 +292,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     public ProjectDefaultConfigDTO getProjectDefaultConfig(Long projectId) {
         ProjectDefaultConfigDTO projectDefaultConfigDTO = new ProjectDefaultConfigDTO();
         DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
-        projectDefaultConfigDTO.setHarborIsPrivate(devopsProjectE.isHarborProjectIsPrivate());
+        projectDefaultConfigDTO.setHarborIsPrivate(devopsProjectE.getHarborProjectIsPrivate());
         List<DevopsProjectConfigE> harborConfigs = devopsProjectConfigRepository.queryByIdAndType(projectId, HARBOR);
         Optional<DevopsProjectConfigE> devopsConfigE = harborConfigs.stream().filter(devopsProjectConfigE -> devopsProjectConfigE.getName().equals("project_harbor_default")).findFirst();
         if (devopsConfigE.isPresent()) {

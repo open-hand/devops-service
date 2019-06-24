@@ -138,30 +138,6 @@ export default class KeyValueSideBar extends Component {
   }
 
   /**
-   * 环境选择
-   * @param value
-   */
-  handleEnvSelect = (value) => {
-    const {
-      store,
-      title,
-      AppState: {
-        currentMenuType: {
-          id: projectId,
-        },
-      },
-    } = this.props;
-
-    const loadFnMap = {
-      configMap: () => store.loadConfigMap(true, projectId, value),
-      secret: () => store.loadSecret(true, projectId, value),
-    };
-
-    loadFnMap[title]();
-    EnvOverviewStore.setTpEnvId(value);
-  };
-
-  /**
    * 删除key-value
    * @param key
    */
@@ -252,6 +228,7 @@ export default class KeyValueSideBar extends Component {
       intl: {
         formatMessage,
       },
+      title,
     } = this.props;
 
     const _data = data || this.state.dataSource;
@@ -260,6 +237,7 @@ export default class KeyValueSideBar extends Component {
     const onlyHasKey = hasKey.filter(({ value }) => _.isEmpty(value));
     const hasErrorItem = onlyHasKey.length || onlyHasValue.length;
     const hasRepeatKey = hasKey.length !== _.uniqBy(hasKey, 'key').length;
+    const hasEmptyKey = title === 'secret' && (_.isEmpty(hasKey) || hasKey.length !== _data.length);
 
     let hasErrorKey;
     for (const { key } of hasKey) {
@@ -271,7 +249,7 @@ export default class KeyValueSideBar extends Component {
 
     }
 
-    if (!(hasErrorItem || hasErrorKey || hasRepeatKey)) {
+    if (!(hasErrorItem || hasErrorKey || hasRepeatKey || hasEmptyKey)) {
       this.setState({
         warningMes: '',
         hasItemError: false,
@@ -280,7 +258,7 @@ export default class KeyValueSideBar extends Component {
     }
 
     const errorMsg = formatMessage({
-      id: hasRepeatKey ? 'configMap.keyRepeat' : 'configMap.keyValueSpan',
+      id: hasRepeatKey ? 'configMap.keyRepeat' : `${title}.keyValueSpan`,
     });
 
     this.setConfigError(errorMsg);
@@ -372,6 +350,7 @@ export default class KeyValueSideBar extends Component {
                 this.setState({ submitting: false });
                 Choerodon.prompt(res.message);
               } else {
+                EnvOverviewStore.setTpEnvId(envId);
                 this.handleClose();
                 this.setState({ submitting: false });
               }
@@ -428,7 +407,6 @@ export default class KeyValueSideBar extends Component {
               id: 'ctf.env.placeholder',
             })}
             optionFilterProp="children"
-            onSelect={this.handleEnvSelect}
             filterOption={(input, option) =>
               option.props.children[1]
                 .toLowerCase()
@@ -682,6 +660,11 @@ export default class KeyValueSideBar extends Component {
       envId,
       title,
       modeSwitch,
+      AppState: {
+        currentMenuType: {
+          name: menuName,
+        },
+      },
     } = this.props;
     const {
       submitting,
@@ -692,8 +675,7 @@ export default class KeyValueSideBar extends Component {
       hasItemError,
     } = this.state;
 
-    const envName = (_.find(EnvOverviewStore.getEnvcard, ['id', envId]) || {}).name;
-    const titleName = id ? data.name : envName;
+    const titleName = id ? data.name : menuName;
     const titleCode = `${title}.${id ? 'edit' : 'create'}`;
     const disableBtn = hasYamlError || hasValueError || hasItemError;
 

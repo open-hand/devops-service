@@ -84,7 +84,7 @@ public class SagaHandler {
             description = "devops 创建 GitOps Group",
             sagaCode = "iam-create-project",
             maxRetryCount = 3,
-            seq = 2)
+            seq = 1)
     public String handleGitOpsGroupEvent(String msg) {
         ProjectEvent projectEvent = gson.fromJson(msg, ProjectEvent.class);
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
@@ -130,7 +130,7 @@ public class SagaHandler {
             description = "devops 创建 Harbor",
             sagaCode = "iam-create-project",
             maxRetryCount = 3,
-            seq = 1)
+            seq = 5)
     public String handleHarborEvent(String msg) {
         ProjectEvent projectEvent = gson.fromJson(msg, ProjectEvent.class);
         HarborPayload harborPayload = new HarborPayload(

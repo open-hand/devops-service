@@ -1,8 +1,10 @@
 package io.choerodon.devops.api.dto;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class ApplicationVersionRepDTO {
+
+public class ApplicationVersionRepDTO implements Serializable {
 
     private Long id;
     private String version;

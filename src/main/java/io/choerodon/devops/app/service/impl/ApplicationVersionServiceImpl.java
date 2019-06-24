@@ -1,7 +1,26 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
@@ -15,35 +34,41 @@ import io.choerodon.devops.api.dto.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
+import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
+import io.choerodon.devops.domain.application.entity.PipelineE;
+import io.choerodon.devops.domain.application.entity.PipelineTaskE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
+import io.choerodon.devops.domain.application.repository.PipelineRepository;
+import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
+import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -196,16 +221,18 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                 List<Long> pipelineList = stageList.stream()
                         .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
                         .distinct().collect(Collectors.toList());
-                pipelineList = pipelineList.stream()
-                        .filter(pipelineId -> {
-                            PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
-                            return pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType());
-                        }).collect(Collectors.toList());
-
+                List<PipelineE> pipelineES = new ArrayList<>();
                 pipelineList.forEach(pipelineId -> {
-                    if (pipelineService.checkDeploy(null,pipelineId).getVersions()) {
-                        LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertApplicationVersionE.getId(), insertApplicationVersionE.getVersion(), pipelineId);
-                        pipelineService.executeAutoDeploy(pipelineId);
+                    PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
+                    if (pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType())) {
+                        pipelineES.add(pipelineE);
+                    }
+                });
+
+                pipelineES.forEach(pipelineE -> {
+                    if (pipelineService.checkDeploy(pipelineE.getProjectId(), pipelineE.getId()).getVersions()) {
+                        LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertApplicationVersionE.getId(), insertApplicationVersionE.getVersion(), pipelineE.getId());
+                        pipelineService.executeAutoDeploy(pipelineE.getId());
                     }
                 });
             }
@@ -251,12 +278,12 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public PageInfo<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String  searchParams) {
+    public PageInfo<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String searchParams) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Boolean isProjectOwner = iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE);
         PageInfo<ApplicationVersionE> applicationVersionEPage = applicationVersionRepository.listApplicationVersionInApp(
-                projectId, appId, pageRequest, "", isProjectOwner, userAttrE.getIamUserId());
+                projectId, appId, pageRequest, searchParams, isProjectOwner, userAttrE.getIamUserId());
         return ConvertPageHelper.convertPageInfo(applicationVersionEPage, ApplicationVersionRepDTO.class);
     }
 
@@ -354,8 +381,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public Boolean queryByPipelineId(Long pipelineId, String branch) {
-        return applicationVersionRepository.queryByPipelineId(pipelineId, branch) != null;
+    public Boolean queryByPipelineId(Long pipelineId, String branch, Long appId) {
+        return applicationVersionRepository.queryByPipelineId(pipelineId, branch, appId) != null;
     }
 
     @Override
@@ -367,6 +394,5 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     public ApplicationVersionRepDTO queryByAppAndVersion(Long appId, String version) {
         return ConvertHelper.convert(applicationVersionRepository.queryByAppAndCode(appId, version), ApplicationVersionRepDTO.class);
     }
-
 
 }

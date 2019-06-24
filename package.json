@@ -3,7 +3,7 @@
   "routeName": "devops",
   "description": "",
   "license": "ISC",
-  "version": "0.17.3",
+  "version": "0.18.2",
   "keywords": [],
   "contributors": [
     "choerodon"
@@ -14,16 +14,17 @@
   ],
   "scripts": {
     "start": "choerodon-front-boot start --config ./react/config.js",
+    "start:local": "choerodon-front-boot start --config ./config-local.js",
     "dist": "choerodon-front-boot dist --config ./react/config.js",
     "lint-staged": "lint-staged",
     "lint-staged:es": "eslint",
-    "compile": "gulp compile",
-    "prepublish": "choerodon-front-boot prepublish",
-    "postpublish": "choerodon-front-boot postpublish"
+    "compile": "gulp compile"
+  },
+  "peerDependencies": {
+    "@choerodon/boot": "0.18.x",
+    "@choerodon/master": "0.18.x"
   },
   "dependencies": {
-    "@choerodon/boot": "0.17.x",
-    "@choerodon/master": "0.17.x",
     "diff-match-patch": "^1.0.4",
     "echarts": "^4.1.0",
     "echarts-for-react": "^2.0.12",
@@ -48,6 +49,8 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "@choerodon/boot": "0.18.x",
+    "@choerodon/master": "0.18.x",
     "babel-preset-env": "^1.7.0",
     "del": "^4.1.1",
     "gulp": "^3.9.1",

@@ -30,7 +30,7 @@ class Branch extends Component {
       paras: [],
       filters: {},
       sort: {
-        columnKey: 'creationDate',
+        columnKey: 'creation_date',
         order: 'ascend',
       },
     };
@@ -287,7 +287,7 @@ class Branch extends Component {
     const { BranchStore } = this.props;
     DevPipelineStore.setSelectApp(value);
     DevPipelineStore.setRecentApp(value);
-    BranchStore.setBranchData({ content: [] });
+    BranchStore.setBranchData({ list: [] });
     BranchStore.loadBranchList({ projectId });
   };
 
@@ -344,7 +344,7 @@ class Branch extends Component {
     BranchStore.setBranch(null);
     if (isload) {
       this.loadData(DevPipelineStore.selectedApp);
-      this.setState({ paras: [], filters: {}, sort: { columnKey: 'creationDate', order: 'ascend' } });
+      this.setState({ paras: [], filters: {}, sort: { columnKey: 'creation_date', order: 'ascend' } });
     }
   };
 
@@ -380,7 +380,7 @@ class Branch extends Component {
       this.setState({ submitting: false });
       Choerodon.handleResponseError(error);
     });
-    this.setState({ paras: [], filters: {}, sort: { columnKey: 'creationDate', order: 'ascend' } });
+    this.setState({ paras: [], filters: {}, sort: { columnKey: 'creation_date', order: 'ascend' } });
   };
 
   /**
@@ -395,7 +395,7 @@ class Branch extends Component {
     const menu = AppState.currentMenuType;
     const organizationId = menu.id;
     this.setState({ filters, paras, sort: sorter });
-    const sort = { field: 'creationDate', order: 'asc' };
+    const sort = { field: 'creation_date', order: 'asc' };
     if (sorter.column) {
       sort.field = sorter.field || sorter.columnKey;
       if (sorter.order === 'ascend') {

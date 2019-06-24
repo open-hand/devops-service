@@ -103,7 +103,8 @@ class CodeQuality extends Component {
                       <span className="detail-content-block-title">{formatMessage({ id: `codeQuality.${key}`})}：</span>
                       {url ? (
                         <a href={url} target="_blank" rel="nofollow me noopener noreferrer">
-                          <span className="block-number-link">{value}</span>
+                          <span className="block-number-link">{value.match(/\d+(\.\d+)?/g)}</span>
+                          <span className="block-number-percentage">{value.replace(/\d+(\.\d+)?/g, '')}</span>
                           {isPercent && <span className="block-number-percentage">%</span>}
                         </a>) : (
                         <span className={`block-number ${!value && "block-number-noValue"}`}>{value || formatMessage({ id: "nodata" })}</span>

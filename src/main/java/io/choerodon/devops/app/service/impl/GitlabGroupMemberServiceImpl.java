@@ -205,6 +205,12 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             if (groupMemberE != null && AccessLevel.OWNER.toValue() == (groupMemberE.getAccessLevel())) {
                 deleteGilabRole(groupMemberE, devopsProjectE, gitlabUserId, false);
             }
+            groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                    TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()),
+                    (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
+            if (groupMemberE != null && AccessLevel.OWNER.toValue() == (groupMemberE.getAccessLevel())) {
+                deleteGilabRole(groupMemberE, devopsProjectE, gitlabUserId, true);
+            }
             // 为当前项目下所有跳过权限检查的应用加上gitlab用户权限
             List<Integer> gitlabProjectIds = applicationRepository.listByProjectIdAndSkipCheck(resourceId).stream()
                     .filter(e -> e.getGitlabProjectE() != null)
@@ -244,14 +250,14 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                             (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
                     addOrUpdateGilabRole(accessLevel, groupMemberE,
                             TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()), userAttrE);
-                    if (accessLevel.equals(AccessLevel.OWNER)) {
-                        //给gitlab环境组分配owner角色
-                        groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                                TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()),
-                                (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-                        addOrUpdateGilabRole(accessLevel, groupMemberE,
-                                TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()), userAttrE);
-                    }
+
+                    //给gitlab环境组分配owner角色
+                    groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                            TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()),
+                            (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
+                    addOrUpdateGilabRole(accessLevel, groupMemberE,
+                            TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()), userAttrE);
+
                 } catch (Exception e) {
                     LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                 }

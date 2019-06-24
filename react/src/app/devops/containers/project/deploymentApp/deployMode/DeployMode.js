@@ -259,6 +259,8 @@ export default class DeployMode extends Component {
       instanceId: undefined,
       instanceDto: null,
     });
+    // NOTE: 需要改变全局的环境
+    EnvOverviewStore.setTpEnvId(value);
     store.loadInstances(projectId, appId, value);
     store.clearValue();
   };
@@ -336,7 +338,7 @@ export default class DeployMode extends Component {
         disabled={!(connect && permission)}
       >
         <span className={envClass} />
-        {name}（{code}）
+        {name}
       </Option>;
     });
 

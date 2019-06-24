@@ -28,6 +28,7 @@ import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.PipelineStageRecordE;
 import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
 import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
@@ -350,14 +351,18 @@ public class DevopsSagaHandler {
         ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
         Long taskRecordId = applicationDeployDTO.getRecordId();
         Long stageRecordId = taskRecordRepository.queryById(taskRecordId).getStageRecordId();
-        Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
+        PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
+        PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(taskRecordId);
+        Long pipelineRecordId = stageRecordE.getPipelineRecordId();
         try {
             ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
-            if (!pipelineRecordRepository.queryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
-                PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
-                pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
-                taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
-                LOGGER.info("create pipeline auto deploy instance success");
+            if (!pipelineRecordRepository.queryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordE.getIsParallel() == 1) {
+                if(!taskRecordE.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
+                    PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
+                    pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
+                    taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
+                    LOGGER.info("create pipeline auto deploy instance success");
+                }
             }
         } catch (Exception e) {
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();

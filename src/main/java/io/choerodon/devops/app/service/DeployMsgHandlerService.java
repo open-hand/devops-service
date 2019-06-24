@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -21,8 +20,6 @@ public interface DeployMsgHandlerService {
     void helmReleaseHookLogs(String key, String msg, Long clusterId);
 
     void updateInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String commandMsg);
-
-    void helmReleaseDelete(String key, Long clusterId);
 
     void handlerDomainCreateMessage(String key, String msg, Long clusterId);
 
@@ -81,7 +78,4 @@ public interface DeployMsgHandlerService {
     void handleConfigUpdate(String key, String msg, Long clusterId);
 
     void operateDockerRegistrySecretResp(String key, String msg, Long clusterId);
-
-    void deleteCommandById(DevopsEnvCommandE commandE);
-
 }
