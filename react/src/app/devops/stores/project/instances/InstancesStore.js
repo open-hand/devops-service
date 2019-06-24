@@ -148,11 +148,12 @@ class InstancesStore {
     }
   }
 
-  @action setAppPageInfo(page) {
+  @action setAppPageInfo({ pageNum, total, pageSize, pages }) {
     this.appPageInfo = {
-      current: page.pageNum,
-      total: page.total,
-      pageSize: page.pageSize,
+      current: pageNum,
+      total,
+      pageSize,
+      pages,
     };
   }
 
@@ -264,7 +265,7 @@ class InstancesStore {
    * 查询实例
    * @param fresh 刷新图案显示
    * @param projectId
-   * @param info { 环境id， 应用id }
+   * @param info { 环境id， 应用id, 实例id }
    * @param requireTime 发起请求的时间
    */
   loadInstanceAll = (fresh = true, projectId, info = {}, requireTime) => {
@@ -299,25 +300,27 @@ class InstancesStore {
       });
   };
 
-  loadAppNameByEnv = (projectId, envId, page, appPageSize) =>
-    axios
+  loadAppNameByEnv = (projectId, envId, page, appPageSize, appId) => {
+    const param = appId ? `&app_id=${appId}` : '';
+
+    return axios
       .get(
-        `devops/v1/projects/${projectId}/apps/pages?env_id=${envId}&page=${page}&size=${appPageSize}`,
+        `devops/v1/projects/${projectId}/apps/pages?env_id=${envId}&page=${page}&size=${appPageSize}${param}`,
       )
       .then(data => {
         const res = handleProptError(data);
         if (res) {
           this.setAppNameByEnv(data.list);
-          if (this.appId && !_.find(data.list, ['id', this.appId])) {
-            this.setAppId(null);
-          }
-          const { pageNum, pageSize, total, list } = data;
-          const pageInfo = { pageNum, pageSize, total };
-          this.setAppPageInfo(pageInfo);
-          return list;
+          // if (this.appId && !_.find(data.list, ['id', this.appId])) {
+          //   this.setAppId(null);
+          // }
+
+          this.setAppPageInfo(data);
+          return data.list;
         }
         return false;
       });
+  };
 
   loadMultiData = projectId =>
     axios
@@ -395,7 +398,7 @@ class InstancesStore {
         }
         this.changeNetworkingLoading(false);
         return data;
-      })
+      });
   };
 
   loadResource = (projectId, instanceId) =>

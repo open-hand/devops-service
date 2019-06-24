@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from "react";
 import { FormattedMessage, injectIntl } from "react-intl";
-import { observer, renderReporter } from "mobx-react";
+import { observer } from "mobx-react";
 import { withRouter } from "react-router-dom";
 import _ from "lodash";
 import TimeAgo from "timeago-react";

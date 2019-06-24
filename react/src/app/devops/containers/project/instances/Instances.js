@@ -41,6 +41,7 @@ class Instances extends Component {
     appId: null,
     resourceData: {},
     resourceLoading: {},
+    defaultIst: null,
   };
 
   componentDidMount() {
@@ -52,10 +53,24 @@ class Instances extends Component {
     } = this.props;
     if (!InstancesStore.getIsCache) {
       const { id: projectId } = AppState.currentMenuType;
-      EnvOverviewStore.loadActiveEnv(projectId, 'instance');
+      let instanceId;
+      let appId;
+      let envId;
+
       if (state) {
-        InstancesStore.setAppId(state.applicationId);
-        EnvOverviewStore.setTpEnvId(state.envId);
+        instanceId = state.instanceId;
+        appId = state.applicationId;
+        envId = state.envId;
+      }
+
+      this.setState({ defaultIst: instanceId });
+
+      EnvOverviewStore.setTpEnvId(envId);
+      InstancesStore.setAppId(appId);
+      EnvOverviewStore.loadActiveEnv(projectId, 'instance', appId, instanceId);
+
+      if (instanceId) {
+        this.ExpandChange(true, { id: instanceId });
       }
     } else {
       InstancesStore.setIsCache(false);
@@ -81,11 +96,15 @@ class Instances extends Component {
    * @param size
    */
   onPageChange = (page, size) => {
-    const { InstancesStore } = this.props;
+    const {
+      InstancesStore,
+    } = this.props;
     const { id: projectId } = AppState.currentMenuType;
     const envId = EnvOverviewStore.getTpEnvId;
+
     InstancesStore.setAppPage(page);
     InstancesStore.setAppPageSize(size);
+
     InstancesStore.loadAppNameByEnv(projectId, envId, page, size);
   };
 
@@ -97,9 +116,13 @@ class Instances extends Component {
     const { InstancesStore } = this.props;
     const currentApp = InstancesStore.getAppId;
     const nextApp = appId !== currentApp && appId;
+
+    this.setState({ defaultIst: null });
+
     InstancesStore.setAppId(nextApp);
     InstancesStore.setIstTableFilter(null);
     InstancesStore.setIstPage(null);
+
     this.reloadData(true, true, nextApp);
   };
 
@@ -140,9 +163,13 @@ class Instances extends Component {
     const { id: projectId } = AppState.currentMenuType;
     const { InstancesStore } = this.props;
     const { loadAppNameByEnv, getAppPage, getAppPageSize } = InstancesStore;
+
     EnvOverviewStore.setTpEnvId(id);
-    InstancesStore.setAppId(false);
-    loadAppNameByEnv(projectId, id, getAppPage - 1, getAppPageSize);
+    InstancesStore.setAppId(null);
+
+    this.setState({ defaultIst: null });
+
+    loadAppNameByEnv(projectId, id, getAppPage, getAppPageSize);
     this.reloadData(true, true);
   };
 
@@ -161,6 +188,8 @@ class Instances extends Component {
     const envId = EnvOverviewStore.getTpEnvId;
     const time = Date.now();
 
+    this.setState({ defaultIst: null });
+
     InstancesStore.setIstTableFilter({ filters, param });
     InstancesStore.setIstPage({ page: current, pageSize });
     InstancesStore.loadInstanceAll(true, projectId, {
@@ -175,10 +204,9 @@ class Instances extends Component {
   /**
    * 修改配置实例信息
    */
-  updateConfig = async (record) => {
+  updateConfig = async ({ code, id, envId, commandVersionId, appId }) => {
     const { InstancesStore } = this.props;
     const { id: projectId } = AppState.currentMenuType;
-    const { code, id, envId, commandVersionId, appId } = record;
 
     this.setState({
       idArr: {
@@ -188,7 +216,9 @@ class Instances extends Component {
       },
       name: code,
     });
+
     InstancesStore.setValue(null);
+
     let res = await InstancesStore.loadValue(projectId, id, commandVersionId);
     if (res) {
       this.setState({ changeVisible: true, id });
@@ -204,7 +234,9 @@ class Instances extends Component {
     const {
       InstancesStore: { reStarts, loadInstanceAll },
     } = this.props;
+    const { defaultIst } = this.state;
 
+    const appId = InstancesStore.getAppId;
     const envId = EnvOverviewStore.getTpEnvId;
 
     this.setState({ confirmLoading: true });
@@ -218,7 +250,7 @@ class Instances extends Component {
     const result = handleProptError(response);
     if (result) {
       const time = Date.now();
-      loadInstanceAll(true, projectId, { envId }, time)
+      loadInstanceAll(true, projectId, { envId, appId, instanceId: defaultIst }, time)
         .catch(err => {
           InstancesStore.changeLoading(false);
           Choerodon.handleResponseError(err);
@@ -292,12 +324,13 @@ class Instances extends Component {
   reloadData = (spin, clear, appId = false) => {
     const { id: projectId } = AppState.currentMenuType;
     const { InstancesStore } = this.props;
+    const { defaultIst } = this.state;
 
     const envId = EnvOverviewStore.getTpEnvId;
     clear && InstancesStore.setIstTableFilter(null);
 
     const time = Date.now();
-    InstancesStore.loadInstanceAll(spin, projectId, { envId, appId }, time)
+    InstancesStore.loadInstanceAll(spin, projectId, { envId, appId, instanceId: defaultIst }, time)
       .catch(
         err => {
           InstancesStore.changeLoading(false);
@@ -323,7 +356,7 @@ class Instances extends Component {
     } = this.props;
     const envId = EnvOverviewStore.getTpEnvId;
 
-    loadAppNameByEnv(projectId, envId, getAppPage - 1, getAppPageSize);
+    loadAppNameByEnv(projectId, envId, getAppPage, getAppPageSize, getAppId);
 
     this.reloadData(spin, clear, getAppId);
   };
@@ -339,8 +372,9 @@ class Instances extends Component {
     const { InstancesStore } = this.props;
     const { loadInstanceAll, deleteInstance, getAppId } = InstancesStore;
     const envId = EnvOverviewStore.getTpEnvId;
+    const { defaultIst } = this.state;
 
-    this.setState({ deleteLoading: true });
+    this.setState({ deleteLoading: true, defaultIst: null });
 
     const response = await deleteInstance(projectId, id)
       .catch(error => {
@@ -357,7 +391,7 @@ class Instances extends Component {
 
       InstancesStore.setIstTableFilter(null);
       InstancesStore.setIstPage(null);
-      loadInstanceAll(true, projectId, { envId, getAppId }, Date.now())
+      loadInstanceAll(true, projectId, { envId, getAppId, instanceId: defaultIst }, Date.now())
         .catch(err => {
           InstancesStore.changeLoading(false);
           Choerodon.handleResponseError(err);
@@ -430,6 +464,8 @@ class Instances extends Component {
       InstancesStore: { changeIstActive, loadInstanceAll },
     } = this.props;
     const envId = EnvOverviewStore.getTpEnvId;
+    const { defaultIst } = this.state;
+
     this.setState({
       confirmLoading: true,
     });
@@ -444,7 +480,7 @@ class Instances extends Component {
         InstancesStore.setAppId(null);
         InstancesStore.setIstTableFilter(null);
         const time = Date.now();
-        loadInstanceAll(true, projectId, { envId }, time).catch(err => {
+        loadInstanceAll(true, projectId, { envId, instanceId: defaultIst }, time).catch(err => {
           InstancesStore.changeLoading(false);
           Choerodon.handleResponseError(err);
         });
@@ -610,7 +646,7 @@ class Instances extends Component {
           />
         </Tooltip>
       </div>
-    )
+    );
   };
 
   ExpandChange = (expend, { id }) => {
@@ -624,20 +660,20 @@ class Instances extends Component {
     } = this.state;
     if (expend) {
       if (!resourceData[id]) {
-        this.setState({ resourceLoading: _.assign({}, resourceLoading, { [id]: true}) });
+        this.setState({ resourceLoading: _.assign({}, resourceLoading, { [id]: true }) });
       }
       InstancesStore.loadResource(projectId, id)
         .then(data => {
           if (!resourceData[id]) {
-            this.setState({ resourceLoading: _.assign({}, resourceLoading, { [id]: false}) });
+            this.setState({ resourceLoading: _.assign({}, resourceLoading, { [id]: false }) });
           }
           if (data && !data.failed) {
             if (resourceData[id] && _.isEqual(data, resourceData[id])) {
               return;
             }
-            this.setState({ resourceData: _.assign({}, resourceData, { [id]: data}) })
+            this.setState({ resourceData: _.assign({}, resourceData, { [id]: data }) });
           }
-        })
+        });
     }
   };
 
@@ -657,7 +693,7 @@ class Instances extends Component {
       getIstAll,
       getPageInfo,
       getAppNameByEnv,
-      getAppPageInfo: { current, total, pageSize },
+      getAppPageInfo: { current, total, pageSize, pages },
       getIsLoading,
       getIstParams: { filters, param },
       getAppId,
@@ -731,7 +767,7 @@ class Instances extends Component {
       {
         title: 'Networking',
         key: 'networking',
-        render: this.renderNetworking
+        render: this.renderNetworking,
       },
       {
         title: <FormattedMessage id="deploy.pod" />,
@@ -746,13 +782,17 @@ class Instances extends Component {
       },
     ];
 
+    const defaultExpandedRowKeys = pipelineDetailState && pipelineDetailState.instanceId
+      ? pipelineDetailState.instanceId
+      : null;
+
     const detailDom = (
       <Fragment>
         <div className="c7n-deploy-env-title">
           <FormattedMessage id="deploy.app" />
         </div>
         <div>{appNameDom}</div>
-        {getAppNameByEnv.length && total > 15 ? (
+        {getAppNameByEnv.length && pages > 1 ? (
           <div className="c7n-pagination_right">
             <Pagination
               tiny={false}
@@ -772,6 +812,7 @@ class Instances extends Component {
         <Table
           className="c7n-expand-table"
           filterBarPlaceholder={formatMessage({ id: 'filter' })}
+          defaultExpandedRowKeys={[defaultExpandedRowKeys]}
           onChange={this.tableChange}
           dataSource={getIstAll}
           loading={getIsLoading}
