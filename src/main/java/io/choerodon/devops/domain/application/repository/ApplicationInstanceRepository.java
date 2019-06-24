@@ -63,7 +63,7 @@ public interface ApplicationInstanceRepository {
 
     void deleteAppInstanceByEnvId(Long envId);
 
-    void checkName(String instanceName);
+    void checkName(String instanceName, Long envId);
 
 
     /**

@@ -9,7 +9,6 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
@@ -574,8 +573,10 @@ public class ApplicationInstanceController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
-            @RequestParam(value = "instance_name") String instanceName) {
-        applicationInstanceService.checkName(instanceName);
+            @RequestParam(value = "instance_name") String instanceName,
+            @ApiParam(value = "环境ID", required = true)
+            @RequestParam(value = "env_id") Long envId) {
+        applicationInstanceService.checkName(instanceName, envId);
     }
 
     /**

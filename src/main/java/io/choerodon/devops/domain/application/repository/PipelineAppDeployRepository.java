@@ -1,8 +1,8 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-
 import java.util.List;
+
+import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -20,7 +20,7 @@ public interface PipelineAppDeployRepository {
 
     List<PipelineAppDeployE> queryByAppId(Long appId);
 
-    void checkName(String name);
+    void checkName(String name, Long envId);
 
     List<PipelineAppDeployE> queryByValueId(Long valueId);
 

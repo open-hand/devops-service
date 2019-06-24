@@ -75,6 +75,9 @@
         <if test='appId != null'>
             AND da.id= #{appId}
         </if>
+        <if test='instanceId != null'>
+            AND dai.id= #{instanceId}
+        </if>
         <if test='envId != null'>
             AND de.id= #{envId}
         </if>

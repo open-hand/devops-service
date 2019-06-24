@@ -56,6 +56,13 @@ public class DevopsServiceInstanceRepositoryImpl implements DevopsServiceInstanc
     }
 
     @Override
+    public void updateInstanceId(Long serviceInstanceId, Long instanceId) {
+        DevopsServiceAppInstanceDO devopsServiceAppInstanceDO = devopsServiceAppInstanceMapper.selectByPrimaryKey(serviceInstanceId);
+        devopsServiceAppInstanceDO.setAppInstanceId(instanceId);
+        devopsServiceAppInstanceMapper.updateByPrimaryKeySelective(devopsServiceAppInstanceDO);
+    }
+
+    @Override
     public void deleteById(Long id) {
         devopsServiceAppInstanceMapper.deleteByPrimaryKey(id);
     }
@@ -66,5 +73,11 @@ public class DevopsServiceInstanceRepositoryImpl implements DevopsServiceInstanc
         devopsServiceAppInstanceDO.setAppInstanceId(instanceId);
         return ConvertHelper.convertList(devopsServiceAppInstanceMapper
                 .select(devopsServiceAppInstanceDO), DevopsServiceAppInstanceE.class);
+    }
+
+    @Override
+    public List<DevopsServiceAppInstanceE> listByEnvIdAndInstanceCode(Long envId, String instanceCode) {
+
+        return null;
     }
 }

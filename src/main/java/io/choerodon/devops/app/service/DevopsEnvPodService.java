@@ -11,14 +11,16 @@ import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
 public interface DevopsEnvPodService {
 
     /**
-     * 分页查询容器管理
      *
-     * @param projectId   项目id
-     * @param pageRequest 分页参数
-     * @param searchParam 查询参数
-     * @return page of devopsEnvPodDTO
+     * @param projectId
+     * @param envId
+     * @param appId
+     * @param instanceId
+     * @param pageRequest
+     * @param searchParam
+     * @return
      */
-    PageInfo<DevopsEnvPodDTO> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsEnvPodDTO> listAppPod(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam);
 
     void setContainers(DevopsEnvPodE devopsEnvPodE);
 

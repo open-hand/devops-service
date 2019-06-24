@@ -202,9 +202,10 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public void checkName(String instanceName) {
+    public void checkName(String instanceName, Long envId) {
         ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
         applicationInstanceDO.setCode(instanceName);
+        applicationInstanceDO.setEnvId(envId);
         if (applicationInstanceMapper.selectOne(applicationInstanceDO) != null) {
             throw new CommonException("error.app.instance.name.already.exist");
         }

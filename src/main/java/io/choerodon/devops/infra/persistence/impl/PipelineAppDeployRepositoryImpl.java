@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
@@ -8,8 +10,6 @@ import io.choerodon.devops.infra.dataobject.PipelineAppDeployDO;
 import io.choerodon.devops.infra.mapper.PipelineAppDeployMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -57,10 +57,11 @@ public class PipelineAppDeployRepositoryImpl implements PipelineAppDeployReposit
     }
 
     @Override
-    public void checkName(String name) {
+    public void checkName(String name, Long envId) {
         PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
         appDeployDO.setInstanceName(name);
-        if (appDeployMapper.select(appDeployDO).size() > 0) {
+        appDeployDO.setEnvId(envId);
+        if (appDeployMapper.selectOne(appDeployDO) == null) {
             throw new CommonException("error.app.instance.name.already.exist");
         }
     }

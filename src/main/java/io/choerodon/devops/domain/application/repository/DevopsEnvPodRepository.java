@@ -20,7 +20,7 @@ public interface DevopsEnvPodRepository {
 
     void update(DevopsEnvPodE devopsEnvPodE);
 
-    PageInfo<DevopsEnvPodE> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsEnvPodE> listAppPod(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam);
 
     void deleteByName(String name, String namespace);
 
