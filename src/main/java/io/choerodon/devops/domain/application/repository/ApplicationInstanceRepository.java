@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
@@ -16,7 +17,7 @@ import io.choerodon.devops.infra.dataobject.DeployDO;
 public interface ApplicationInstanceRepository {
 
     PageInfo<ApplicationInstanceE> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                           Long envId, Long versionId, Long appId, String params);
+                                                           Long envId, Long versionId, Long appId, Long instanceId, String params);
 
     ApplicationInstanceE selectByCode(String code, Long envId);
 
@@ -55,7 +56,7 @@ public interface ApplicationInstanceRepository {
                                                  Date startTime, Date endTime);
 
     PageInfo<DeployDO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long envId, Long[] appIds,
-                                        Date startTime, Date endTime);
+                                            Date startTime, Date endTime);
 
     List<ApplicationInstanceE> listByAppId(Long appId);
 

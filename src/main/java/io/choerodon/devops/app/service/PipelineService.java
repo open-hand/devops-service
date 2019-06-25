@@ -25,7 +25,7 @@ import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
  * Description:
  */
 public interface PipelineService {
-    PageInfo<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, PageRequest pageRequest, String params);
+    PageInfo<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params);
 
     PageInfo<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed);
 

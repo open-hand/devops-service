@@ -1,20 +1,34 @@
 package io.choerodon.devops.infra.feign;
 
-import javax.validation.Valid;
 import java.util.List;
+import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import io.choerodon.base.constant.PageConstant;
+import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.dto.iam.*;
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
+import io.choerodon.devops.api.dto.iam.RoleDTO;
+import io.choerodon.devops.api.dto.iam.RoleSearchDTO;
+import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
+import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
+import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
 import io.choerodon.devops.infra.feign.fallback.IamServiceClientFallback;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 /**
  * Created by younger on 2018/3/29.
@@ -68,15 +82,15 @@ public interface IamServiceClient {
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users/roles")
     ResponseEntity<PageInfo<UserWithRoleDTO>> queryUserByProjectId(@PathVariable("project_id") Long projectId,
-                                                               @RequestParam("page") int page,
-                                                               @RequestParam("size") int size,
-                                                               @RequestParam("doPage") Boolean doPage,
-                                                               @RequestBody @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+                                                                   @RequestParam("page") int page,
+                                                                   @RequestParam("size") int size,
+                                                                   @RequestParam("doPage") Boolean doPage,
+                                                                   @RequestBody @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     @GetMapping(value = "/v1/users/{id}/project_roles")
     ResponseEntity<PageInfo<ProjectWithRoleDTO>> listProjectWithRole(@PathVariable("id") Long id,
-                                                                 @RequestParam("page") int page,
-                                                                 @RequestParam("size") int size);
+                                                                     @RequestParam("page") int page,
+                                                                     @RequestParam("size") int size);
 
     @PostMapping(value = "/v1/roles/search")
     ResponseEntity<PageInfo<RoleDTO>> queryRoleIdByCode(@RequestBody @Valid RoleSearchDTO roleSearchDTO);
@@ -105,4 +119,11 @@ public interface IamServiceClient {
     @GetMapping(value = "/v1/organizations/{organization_id}/applications")
     ResponseEntity<PageInfo<IamAppPayLoad>> getIamApplication(@PathVariable("organization_id") Long organizationId, @RequestParam("code") String code);
 
+    @PostMapping("/v1/organizations/{organization_id}/projects")
+    ResponseEntity<ProjectDTO> createProject(@PathVariable(name = "organization_id") Long organizationId,
+                                             @RequestBody @Valid ProjectCreateDTO projectCreateDTO);
+
+    @PostMapping("/v1/organizations/all")
+    ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(@RequestParam(defaultValue = PageConstant.PAGE, required = false, value = "page") final int page,
+                                                                 @RequestParam(defaultValue = PageConstant.SIZE, required = false, value = "size") final int size);
 }

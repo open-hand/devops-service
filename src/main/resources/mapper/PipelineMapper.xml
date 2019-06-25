@@ -25,6 +25,15 @@
                 ) AS execute
                 FROM
                 devops_pipeline dp
+                <if test="classifyParam.envIds!=null and classifyParam.envIds.size>0">
+                    JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
+                    JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
+                    JOIN devops_pipeline_app_deploy dpad ON dpad.id = dpt.app_deploy_id
+                    AND dpad.env_id IN
+                    <foreach collection="classifyParam.envIds" item="envId" open="(" separator="," close=")">
+                        #{envId}
+                    </foreach>
+                </if>
                 WHERE
                 dp.project_id = #{projectId}
                 <include refid="sqlparam"/>
@@ -56,6 +65,15 @@
                 ) AS EXECUTE
                 FROM
                 devops_pipeline dp
+                <if test="classifyParam.envIds!=null and classifyParam.envIds.size>0">
+                    JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
+                    JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
+                    JOIN devops_pipeline_app_deploy dpad ON dpad.id = dpt.app_deploy_id
+                    AND dpad.env_id IN
+                    <foreach collection="classifyParam.envIds" item="envId" open="(" separator="," close=")">
+                        #{envId}
+                    </foreach>
+                </if>
                 WHERE
                 dp.project_id = #{projectId}
                 <include refid="sqlparam"/>
@@ -116,6 +134,15 @@
         devops_pipeline dp
         JOIN devops_pipeline_user_rel dpur ON dpur.pipeline_id = dp.id
         AND dpur.user_id =#{classifyParam.userId}
+        <if test="classifyParam.envIds!=null and classifyParam.envIds.size>0">
+            JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
+            JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
+            JOIN devops_pipeline_app_deploy dpad ON dpad.id = dpt.app_deploy_id
+            AND dpad.env_id IN
+            <foreach collection="classifyParam.envIds" item="envId" open="(" separator="," close=")">
+                #{envId}
+            </foreach>
+        </if>
         WHERE
         dp.project_id = #{projectId}
         <include refid="sqlparam"/>

@@ -3,7 +3,12 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -17,36 +22,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
 import feign.FeignException;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.gitlab.MemberDTO;
-import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
-import io.choerodon.devops.domain.application.event.IamAppPayLoad;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.*;
-import io.choerodon.devops.infra.common.util.*;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
-import io.choerodon.devops.infra.config.RetrofitHandler;
-import io.choerodon.devops.infra.dataobject.*;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
-import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.mapper.*;
 import io.kubernetes.client.models.V1Pod;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.api.Git;
@@ -60,6 +35,93 @@ import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
+
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
+import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.app.service.DevopsCheckLogService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.DevopsIngressService;
+import io.choerodon.devops.domain.application.entity.DevopsBranchE;
+import io.choerodon.devops.domain.application.entity.DevopsCheckLogE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
+import io.choerodon.devops.domain.application.entity.DevopsGitlabPipelineE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
+import io.choerodon.devops.domain.application.event.IamAppPayLoad;
+import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+import io.choerodon.devops.domain.application.repository.DevopsCheckLogRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvResourceDetailRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvResourceRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitlabPipelineRepository;
+import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.domain.application.repository.DevopsServiceInstanceRepository;
+import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
+import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
+import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
+import io.choerodon.devops.domain.application.repository.GitlabRepository;
+import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.OrgRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.valueobject.CheckLog;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
+import io.choerodon.devops.domain.application.valueobject.ProjectCategoryEDTO;
+import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
+import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.application.valueobject.Stage;
+import io.choerodon.devops.infra.common.util.EnvUtil;
+import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GitUtil;
+import io.choerodon.devops.infra.common.util.K8sUtil;
+import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.choerodon.devops.infra.config.RetrofitHandler;
+import io.choerodon.devops.infra.dataobject.ApplicationDO;
+import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
+import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO;
+import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
+import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
+import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
+import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
+import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.mapper.ApplicationMapper;
+import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
+import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
+import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
@@ -104,6 +166,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private GitlabRepository gitlabRepository;
+    @Autowired
+    private OrgRepository orgRepository;
     @Autowired
     private UserAttrRepository userAttrRepository;
     @Autowired
@@ -542,6 +606,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 syncSonarProject(logs);
             } else if ("0.18.0".equals(version)) {
                 syncDeployValues(logs);
+            } else if ("0.19.0".equals(version)) {
+                syncClusters(logs);
             } else {
                 LOGGER.info("version not matched");
             }
@@ -625,7 +691,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     {
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent(String.format("Sync instance deploy value of %s", applicationInstanceE.getCode()));
-                        LOGGER.info("Sync instance deploy value of {}",applicationInstanceE.getCode());
+                        LOGGER.info("Sync instance deploy value of {}", applicationInstanceE.getCode());
                         try {
                             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
                             String versionValue = applicationVersionRepository.queryValue(devopsEnvCommandE.getObjectVersionId());
@@ -634,11 +700,39 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             checkLog.setResult("success");
                         } catch (Exception e) {
                             checkLog.setResult("fail");
-                            LOGGER.info(e.getMessage(),e);
+                            LOGGER.info(e.getMessage(), e);
                         }
                         logs.add(checkLog);
                     }
             );
+        }
+
+        private void syncClusters(List<CheckLog> logs) {
+            PageInfo<OrganizationSimplifyDTO> organizations = iamRepository.getAllOrgs(0, 0);
+            organizations.getList().forEach(org -> {
+
+            });
+        }
+
+        private ProjectCategoryEDTO createProjectCatory(Long orgId) {
+            ProjectCategoryEDTO categoryEDTO = new ProjectCategoryEDTO();
+            categoryEDTO.setCode("ops-default");
+            categoryEDTO.setBuiltInFlag(false);
+            categoryEDTO.setDescription("运维管理项目");
+            categoryEDTO.setName("运维项目");
+//             return orgRepository.createProjectCategory();
+            return null;
+        }
+
+        private void createOpsProject(Long orgId, Long categoryId) {
+            ProjectCreateDTO createDTO = new ProjectCreateDTO();
+            List<Long> categoruIds = new ArrayList<>();
+            categoruIds.add(categoryId);
+            createDTO.setCategory("ops");
+            createDTO.setCategoryIds(categoruIds);
+            createDTO.setCode("ops-default");
+            createDTO.setName("运维专用项目");
+            iamRepository.createProject(orgId, createDTO);
         }
 
 
