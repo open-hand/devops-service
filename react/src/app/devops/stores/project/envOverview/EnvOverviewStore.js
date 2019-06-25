@@ -207,7 +207,8 @@ class EnvOverviewStore {
             switch (type) {
               case 'container':
                 const appId = ContainerStore.getappId;
-                ContainerStore.loadData(false, projectId, this.tpEnvId, appId);
+                const instanceId = ContainerStore.getInstanceId;
+                ContainerStore.loadData(false, projectId, this.tpEnvId, appId, instanceId);
                 break;
               case 'certificate':
                 CertificateStore.loadCertData(true, projectId, this.tpEnvId);

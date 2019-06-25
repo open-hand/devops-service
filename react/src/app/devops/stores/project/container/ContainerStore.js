@@ -1,7 +1,7 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import _ from 'lodash';
-import { handleProptError } from '../../../utils';
+import { handleProptError, handlePromptError } from '../../../utils';
 
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 @store('ContainerStore')
@@ -35,6 +35,10 @@ class ContainerStore {
   @observable envId = null;
 
   @observable appId = null;
+
+  @observable instanceData = [];
+
+  @observable instanceId = null;
 
   @action setPageInfo(page) {
     this.pageInfo.current = page.pageNum;
@@ -130,6 +134,23 @@ class ContainerStore {
     return this.appId;
   }
 
+  @action setInstanceId(id) {
+    this.instanceId = id;
+  }
+
+  @computed get getInstanceId() {
+    return this.instanceId;
+  }
+
+
+  @action setInstanceData(data) {
+    this.instanceData = data;
+  }
+
+  @computed get getInstanceData() {
+    return this.instanceData.slice();
+  }
+
 
   loadActiveEnv = projectId => axios.get(`devops/v1/projects/${projectId}/envs?active=true`)
     .then((data) => {
@@ -162,21 +183,32 @@ class ContainerStore {
    * @param proId 项目id
    * @param envId 环境id
    * @param appId 应用id
+   * @param instanceId 实例id
    * @param page
    * @param size
    * @param sort
    * @param datas 筛选条件
    */
-  loadData = (isRefresh = false, proId, envId = this.envId, appId = this.appId, page = 1, size = this.pageInfo.pageSize, sort = { field: 'id', order: 'desc' }, datas = {
-    searchParam: {},
-    param: '',
-  }) => {
+  loadData = (
+    isRefresh = false,
+    proId,
+    envId = this.envId,
+    appId = this.appId,
+    instanceId = this.instanceId,
+    page = 1,
+    size = this.pageInfo.pageSize,
+    sort = { field: 'id', order: 'desc' },
+    datas = {
+      searchParam: {},
+      param: '',
+    },
+  ) => {
     if (isRefresh) {
       this.changeIsRefresh(true);
     }
     this.changeLoading(true);
     let api = '';
-    _.forEach({envId, appId}, (value, key) => {
+    _.forEach({envId, appId, instanceId}, (value, key) => {
       if (value) {
         api = `${api}&${key}=${value}`;
       }
@@ -201,6 +233,15 @@ class ContainerStore {
 
   loadPodParam = (projectId, id, type) => axios.get(`devops/v1/projects/${projectId}/app_pod/${id}/containers/logs${type ? `/${type}` : ''}`)
     .then(data => handleProptError(data));
+
+  loadInstance = (projectId, envId, appId) =>
+    axios
+      .get(`/devops/v1/projects/${projectId}/app_instances/options?envId=${envId}&appId=${appId}`)
+      .then(data => {
+        if (handlePromptError(data)) {
+          this.setInstanceData(data);
+        }
+      })
 }
 
 const containerStore = new ContainerStore();

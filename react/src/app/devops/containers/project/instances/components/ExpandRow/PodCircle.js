@@ -147,6 +147,7 @@ export default class PodCircle extends PureComponent {
       handleLink,
       currentPage,
       appId,
+      instanceId,
       connect,
       name,
       count: { sum },
@@ -172,7 +173,7 @@ export default class PodCircle extends PureComponent {
     const backPath = `/devops/${currentPage}?type=${type}&id=${projectId}&name=${encodeURIComponent(
       projectName
     )}&organizationId=${organizationId}`;
-    const state = { appId, backPath };
+    const state = { appId, backPath, instanceId };
 
     return (
       <Fragment>

@@ -50,6 +50,8 @@ class ContainerHome extends Component {
     ContainerStore.setAllData([]);
     ContainerStore.setAppId();
     ContainerStore.setEnvId();
+    ContainerStore.setInstanceId();
+    ContainerStore.setInstanceData([]);
   }
 
   /**
@@ -84,8 +86,10 @@ class ContainerHome extends Component {
     const pagination = ContainerStore.getPageInfo;
     const { projectId } = AppState.currentMenuType;
     const envId = EnvOverviewStore.getTpEnvId;
+    const appId = ContainerStore.getAppId;
 
     ContainerStore.loadAppDataByEnv(projectId, envId);
+    appId && ContainerStore.loadInstance(projectId, envId, appId);
     this.tableChange(pagination, filters, sort, paras);
   };
 
@@ -101,6 +105,7 @@ class ContainerHome extends Component {
     const { id } = AppState.currentMenuType;
     const envId = EnvOverviewStore.getTpEnvId;
     const appId = ContainerStore.getAppId;
+    const instanceId = ContainerStore.getInstanceId;
 
     ContainerStore.setInfo({ filters, sort: sorter, paras });
 
@@ -124,6 +129,7 @@ class ContainerHome extends Component {
       id,
       envId,
       appId,
+      instanceId,
       page,
       pagination.pageSize,
       sort,
@@ -197,6 +203,16 @@ class ContainerHome extends Component {
                 </span>
             </MouserOverWrapper>
           </div>]),
+      },
+      {
+        title: <FormattedMessage id="ist.head" />,
+        dataIndex: 'instanceCode',
+        key: 'instanceCode',
+        render: text => (
+          <MouserOverWrapper text={text} width={0.115}>
+            <span>{text}</span>
+          </MouserOverWrapper>
+        )
       },
       {
         title: <FormattedMessage id="container.ip" />,
@@ -365,13 +381,16 @@ class ContainerHome extends Component {
     });
     const appId = ContainerStore.getAppId;
     const projectId = parseInt(AppState.currentMenuType.id, 10);
+    ContainerStore.setInstanceId();
     ContainerStore.loadAppDataByEnv(projectId, value).then(data => {
       const appData = ContainerStore.getAppData;
       if (!_.find(appData, app => app.id === appId)) {
         ContainerStore.setAppId(null);
         ContainerStore.loadData(false, projectId, value, null);
+        ContainerStore.setInstanceData([]);
       } else {
         ContainerStore.loadData(false, projectId, value, appId);
+        ContainerStore.loadInstance(projectId, value, appId);
       }
     });
   };
@@ -383,6 +402,7 @@ class ContainerHome extends Component {
   handleAppSelect = value => {
     const { ContainerStore } = this.props;
     ContainerStore.setAppId(value);
+    ContainerStore.setInstanceId();
     ContainerStore.setInfo({
       filters: {},
       sort: { columnKey: 'id', order: 'descend' },
@@ -391,6 +411,11 @@ class ContainerHome extends Component {
     const envId = EnvOverviewStore.getTpEnvId;
     const projectId = parseInt(AppState.currentMenuType.id, 10);
     ContainerStore.loadData(false, projectId, envId, value);
+    if (value) {
+      ContainerStore.loadInstance(projectId, envId, value);
+    } else {
+      ContainerStore.setInstanceData([]);
+    }
   };
 
   /**
@@ -531,9 +556,12 @@ class ContainerHome extends Component {
     } = this.props;
     const projectId = parseInt(AppState.currentMenuType.id, 10);
     const { selectProPage, selectPubPage } = this.state;
+    const envId = EnvOverviewStore.getTpEnvId;
     let appId = null;
-    if (state && state.appId) {
+    if (state && state.appId && state.instanceId) {
       appId = Number(state.appId);
+      ContainerStore.setInstanceId(Number(state.instanceId));
+      ContainerStore.loadInstance(projectId, envId, appId);
     }
     ContainerStore.setAppId(appId);
     EnvOverviewStore.loadActiveEnv(projectId, 'container').then(() =>
@@ -553,6 +581,19 @@ class ContainerHome extends Component {
       selectProPage: 0,
     });
     this.loadSelectData([0, 0], value);
+  };
+
+  /**
+   * 选择实例
+   * @param value
+   */
+  handleIstSelect = value => {
+    const { ContainerStore } = this.props;
+    const { projectId } =AppState.currentMenuType;
+    const envId = EnvOverviewStore.getTpEnvId;
+    const appId = ContainerStore.getAppId;
+    ContainerStore.setInstanceId(value);
+    ContainerStore.loadData(false, projectId, envId, appId, value);
   };
 
   render() {
@@ -582,6 +623,8 @@ class ContainerHome extends Component {
     const pubPageSize = 10 * selectPubPage + 3;
     const serviceData =
       ContainerStore.getAllData && ContainerStore.getAllData.slice();
+    const instanceData = ContainerStore.getInstanceData;
+    const instanceId = instanceData && instanceData.length ? ContainerStore.getInstanceId : undefined;
     const projectName = AppState.currentMenuType.name;
     const initApp =
       envData && envData.length && (appProDom.length || appPubDom.length)
@@ -717,6 +760,30 @@ class ContainerHome extends Component {
                 )}
               </OptGroup>
               {tempApp}
+            </Select>
+            <Select
+              className='c7n-app-select_247'
+              label={formatMessage({ id: 'container.chooseIst' })}
+              value={instanceId}
+              notFoundContent={formatMessage({ id: 'container.ist.empty' })}
+              optionFilterProp="children"
+              filter
+              allowClear
+              onChange={this.handleIstSelect}
+              filterOption={(input, option) =>
+                option.props.children
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {_.map(instanceData, ({ code, id }) => (
+                <Option
+                  key={Number(id)}
+                  value={Number(id)}
+                >
+                  {code}
+                </Option>
+              ))}
             </Select>
             <Table
               filterBarPlaceholder={formatMessage({ id: 'filter' })}
