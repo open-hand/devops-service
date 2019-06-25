@@ -89,6 +89,7 @@ import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.OrgRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.CheckLog;
+import io.choerodon.devops.domain.application.valueobject.MenuCodeDTO;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCategoryEDTO;
@@ -710,7 +711,18 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         private void syncClusters(List<CheckLog> logs) {
             PageInfo<OrganizationSimplifyDTO> organizations = iamRepository.getAllOrgs(0, 0);
             organizations.getList().forEach(org -> {
-
+                CheckLog checkLog = new CheckLog();
+                checkLog.setContent(String.format("Sync organization cluster to project,organizationId: %s", org.getId()));
+                LOGGER.info("Sync organization cluster to project,organizationId: {}", org.getId());
+                try {
+                    ProjectCategoryEDTO categoryEDTO = createProjectCatory(org.getId());
+                    createOpsProject(org.getId(), categoryEDTO.getId());
+                    checkLog.setResult("success");
+                } catch (Exception e) {
+                    checkLog.setResult("fail");
+                    LOGGER.info(e.getMessage(), e);
+                }
+                logs.add(checkLog);
             });
         }
 
@@ -720,8 +732,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             categoryEDTO.setBuiltInFlag(false);
             categoryEDTO.setDescription("运维管理项目");
             categoryEDTO.setName("运维项目");
-//             return orgRepository.createProjectCategory();
-            return null;
+            //todo
+            List<MenuCodeDTO> list = new ArrayList<>();
+            MenuCodeDTO menuCodeDTO = new MenuCodeDTO();
+            list.add(menuCodeDTO);
+            return orgRepository.createProjectCategory(orgId, categoryEDTO);
         }
 
         private void createOpsProject(Long orgId, Long categoryId) {
