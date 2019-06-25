@@ -125,4 +125,5 @@ public class ApplicationVersionDO extends BaseDTO {
     public void setReadmeValueId(Long readmeValueId) {
         this.readmeValueId = readmeValueId;
     }
+
 }

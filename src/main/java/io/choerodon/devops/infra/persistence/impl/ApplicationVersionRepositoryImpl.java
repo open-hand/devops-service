@@ -9,11 +9,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
@@ -30,6 +25,10 @@ import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
 import io.choerodon.devops.infra.dataobject.ApplicationVersionReadmeDO;
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -142,6 +141,10 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         for (Long id : appVersionIds) {
             applicationVersionDO.setId(id);
             applicationVersionDO.setObjectVersionNumber(applicationVersionMapper.selectByPrimaryKey(id).getObjectVersionNumber());
+            if (applicationVersionDO.getObjectVersionNumber() == null) {
+                applicationVersionMapper.updateObJectVersionNumber(id);
+                applicationVersionDO.setObjectVersionNumber(1L);
+            }
             applicationVersionMapper.updateByPrimaryKeySelective(applicationVersionDO);
         }
     }

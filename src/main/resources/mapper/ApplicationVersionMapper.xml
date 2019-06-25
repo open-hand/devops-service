@@ -282,4 +282,9 @@
      update devops_app_version set repository = CONCAT(#{helmUrl},repository);
     </update>
 
+
+    <update id="updateObJectVersionNumber">
+     update devops_app_version set object_version_number = 1 where id = #{versionId};
+    </update>
+
 </mapper>
