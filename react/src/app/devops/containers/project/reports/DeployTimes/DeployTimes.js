@@ -194,7 +194,11 @@ class DeployTimes extends Component {
     const successArr = this.successArr ? this.successArr.slice() : [];
     const failArr = this.failArr ? this.failArr.slice() : [];
     const allArr = this.allArr ? this.allArr.slice() : [];
-    const { xAxis, yAxis } = getAxis(startTime, endTime, this.dateArr ? this.dateArr.slice() : [], { successArr, failArr, allArr });
+    const { xAxis, yAxis } = getAxis(startTime, endTime, this.dateArr ? this.dateArr.slice() : [], {
+      successArr,
+      failArr,
+      allArr,
+    });
     return {
       tooltip: {
         trigger: 'axis',
@@ -356,7 +360,11 @@ class DeployTimes extends Component {
       {
         title: formatMessage({ id: 'app.active' }),
         key: 'status',
-        render: record => (<StatusTags name={formatMessage({ id: record.status })} colorCode={record.status} error={record.error} />),
+        render: record => (<StatusTags
+          name={formatMessage({ id: record.status })}
+          colorCode={record.status}
+          error={record.error}
+        />),
       }, {
         title: formatMessage({ id: 'report.deploy-duration.time' }),
         key: 'creationDate',
@@ -406,7 +414,9 @@ class DeployTimes extends Component {
   };
 
   @action
-  handleDateChoose = (type) => { this.dateType = type; };
+  handleDateChoose = (type) => {
+    this.dateType = type;
+  };
 
   maxTagNode = (data, value) => <MaxTagPopover dataSource={data} value={value} />;
 
@@ -417,9 +427,9 @@ class DeployTimes extends Component {
     const envData = ContainerStore.getEnvCard;
     const envs = _.filter(envData, ['permission', true]);
     const isRefresh = ReportsStore.getIsRefresh;
-    const backPath = search.includes("deploy-overview")
-      ? "deploy-overview"
-      : "reports";
+    const backPath = search.includes('deploy-overview')
+      ? 'deploy-overview'
+      : 'reports';
 
     const envDom = this.env.length ? _.map(this.env, d => (<Option key={d.id} value={d.id}>{d.name}</Option>)) : null;
 

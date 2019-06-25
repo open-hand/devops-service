@@ -18,6 +18,7 @@ import MouserOverWrapper from '../../../../components/MouseOverWrapper/MouserOve
 import EnvOverviewStore from '../../../../stores/project/envOverview';
 import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
 import RefreshBtn from '../../../../components/refreshBtn';
+import StatusTags from '../../../../components/StatusTags';
 import EnvFlag from '../../../../components/envFlag';
 import DeleteModal from '../../../../components/deleteModal';
 
@@ -355,27 +356,23 @@ export default class DomainHome extends Component {
         key: 'serviceName',
         filters: [],
         filteredValue: filters.serviceName || [],
-        render: record => (
-          <div>
-            {_.map(record.pathList, instance => (
-              <div
-                className="c7n-network-col_border c7n-network-service"
-                key={`${record.id}-${instance.path}-${instance.serviceId}`}
-              >
-                <div
-                  className={`c7n-domain-create-status c7n-domain-create-status_${
-                    instance.serviceStatus
-                    }`}
-                >
-                  <div>{formatMessage({ id: instance.serviceStatus })}</div>
-                </div>
-                <MouserOverWrapper text={instance.serviceName} width={0.1}>
-                  {instance.serviceName}
-                </MouserOverWrapper>
-              </div>
-            ))}
-          </div>
-        ),
+        render: record => _.map(record.pathList, ({ serviceStatus, serviceName }) =>
+          <div
+            className="c7n-network-service"
+            key={record.id}
+          >
+            <StatusTags
+              colorCode={serviceStatus}
+              name={formatMessage({ id: serviceStatus })}
+              style={{
+                minWidth: 40,
+                marginRight: 8,
+              }}
+            />
+            <MouserOverWrapper text={serviceName} width={0.1}>
+              {serviceName}
+            </MouserOverWrapper>
+          </div>),
       },
       {
         key: 'action',

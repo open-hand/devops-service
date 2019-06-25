@@ -278,15 +278,15 @@ class ContainerHome extends Component {
   /**
    * 获取状态
    * @param text
-   * @param record
+   * @param status
    * @returns {*}
    */
-  getActive = (text, record) => {
-    const { status } = record;
+  getActive = (text, { status }) => {
     const statusStyle = {
       textOverflow: 'ellipsis',
       width: '100%',
       height: 20,
+      lineHeight: '20px',
       overflow: 'hidden',
       whiteSpace: 'nowrap',
     };
@@ -314,10 +314,9 @@ class ContainerHome extends Component {
 
   /**
    * 获取 容器 列
-   * @param record
+   * @param containers
    */
-  getContainers = (record) => {
-    const { containers } = record;
+  getContainers = ({ containers }) => {
     const node = [];
     let item;
     if (containers && containers.length) {

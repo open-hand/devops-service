@@ -3,11 +3,24 @@ import { observer } from 'mobx-react';
 import { withRouter, Link } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
-import { Button, Select, Modal, Form, Icon, Collapse, Avatar, Pagination, Tooltip, Menu, Dropdown, Progress } from 'choerodon-ui';
+import {
+  Button,
+  Select,
+  Modal,
+  Form,
+  Icon,
+  Collapse,
+  Avatar,
+  Pagination,
+  Tooltip,
+  Menu,
+  Dropdown,
+  Progress,
+} from 'choerodon-ui';
 import ReactMarkdown from 'react-markdown';
 import _ from 'lodash';
 import moment from 'moment';
-import classNames from "classnames";
+import classNames from 'classnames';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LoadingBar from '../../../../components/loadingBar';
 import TimePopover from '../../../../components/timePopover/index';
@@ -32,8 +45,8 @@ import AppVersionStore from '../../../../stores/project/applicationVersion/AppVe
 import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
 import CiPipelineTable from '../../ciPipelineManage/ciPipelineTable';
 import AppVersionTable from '../../appVersion/appVersionTable';
-import QualityCard from "../components/qualityCard";
-import CodeQualityStore from "../../../../stores/project/codeQuality";
+import QualityCard from '../components/qualityCard';
+import CodeQualityStore from '../../../../stores/project/codeQuality';
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;
@@ -120,7 +133,6 @@ class DevConsole extends Component {
     MergeRequestStore.setMerge([], 'opened');
     MergeRequestStore.setMerge([], 'merged');
   }
-
 
   /**
    * 通过下拉选择器选择应用时，获取应用id
@@ -209,7 +221,7 @@ class DevConsole extends Component {
       CiPipelineStore.loadPipelinesByBc(appId, branch)
         .then((res) => {
           const ciPipelineOne = res.length ? res[0] : null;
-          this.setState({ versionState: ciPipelineOne ? ciPipelineOne.version : false })
+          this.setState({ versionState: ciPipelineOne ? ciPipelineOne.version : false });
         });
     } else {
       if (appId) {
@@ -265,7 +277,7 @@ class DevConsole extends Component {
    */
   displayModal = (flag, name, tagRelease) => {
     const { projectId } = AppState.currentMenuType;
-    switch ( flag ) {
+    switch (flag) {
       case 'editTag':
         this.setState({ tagName: name, tagRelease });
         break;
@@ -309,7 +321,7 @@ class DevConsole extends Component {
    * @param name 分支名称
    * @returns {*}
    */
-  getIcon =(name) => {
+  getIcon = (name) => {
     const nameArr = ['feature', 'release', 'bugfix', 'hotfix'];
     let type = '';
     if (name.includes('-') && nameArr.includes(name.split('-')[0])) {
@@ -417,12 +429,13 @@ class DevConsole extends Component {
         color = '#4d90fe';
     }
     return (<Fragment>
-        <Tooltip title={mes}>
-          <div style={{ color }} className={`c7n-dc-branch-issue-icon-${type}`}><i className={`icon icon-${icon}`} /></div>
-        </Tooltip>
-        <a onClick={this.showIssue.bind(this, s.issueId, s.branchName)} role="none">
-          <Tooltip title={s.issueName}>{s.issueCode}</Tooltip>
-        </a>
+      <Tooltip title={mes}>
+        <div style={{ color }} className={`c7n-dc-branch-issue-icon-${type}`}><i className={`icon icon-${icon}`} />
+        </div>
+      </Tooltip>
+      <a onClick={this.showIssue.bind(this, s.issueId, s.branchName)} role="none">
+        <Tooltip title={s.issueName}>{s.issueCode}</Tooltip>
+      </a>
     </Fragment>);
   };
 
@@ -498,27 +511,27 @@ class DevConsole extends Component {
   getCardContent(data) {
     this.loadPipelineThrottle(this.state.branchIssue);
     const { intl: { formatMessage } } = this.props;
-    let styles = "";
+    let styles = '';
     let status = null;
     if (!data) {
-      styles = "c7n-env-state-unexecuted";
+      styles = 'c7n-env-state-unexecuted';
     } else {
       status = data.status;
     }
     if (status === 'failed') {
-      styles = "c7n-env-state-failed";
+      styles = 'c7n-env-state-failed';
     } else if (status === 'passed') {
-      styles = "c7n-env-state-running";
+      styles = 'c7n-env-state-running';
     } else if (status === 'running') {
-      styles = "c7n-env-state-creating";
+      styles = 'c7n-env-state-creating';
     } else if (status === 'pending' || status === 'created') {
-      styles = "c7n-env-state-disconnect";
+      styles = 'c7n-env-state-disconnect';
     } else {
-      styles = "c7n-env-state-unexecuted";
+      styles = 'c7n-env-state-unexecuted';
     }
     return (
       <div className="c7n-env-card-content">
-        <div className={classNames("c7n-env-state", styles)}>
+        <div className={classNames('c7n-env-state', styles)}>
           {formatMessage({ id: `ci_${status || 'unexecuted'}` })}
         </div>
         <div className="c7n-env-des-wrap">
@@ -540,13 +553,13 @@ class DevConsole extends Component {
     const { history } = this.props;
     const { type, projectId, organizationId: orgId, name } = AppState.currentMenuType;
     history.push({
-      pathname: "/devops/reports/build-number",
+      pathname: '/devops/reports/build-number',
       search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(name)}&organizationId=${orgId}`,
       state: {
         appId: DevPipelineStore.getSelectApp,
-        backPath: "dev-console",
+        backPath: 'dev-console',
       },
-    })
+    });
   };
 
   /**
@@ -563,7 +576,9 @@ class DevConsole extends Component {
     const ciPipelines = CiPipelineStore.getCiPipelines;
     const ciPipelineOne = ciPipelines.length ? ciPipelines[0] : null;
     const branchOption = _.map(branchList, b => <Option key={b.sha} value={b.branchName}>{b.branchName}</Option>);
-    const branchOne = _.filter(branchList, ['branchName', branchIssue]).length ? _.filter(branchList, ['branchName', branchIssue])[0] : {branchName: <FormattedMessage id="devCs.allBranch" />};
+    const branchOne = _.filter(branchList, ['branchName', branchIssue]).length ? _.filter(branchList, ['branchName', branchIssue])[0] : {
+      branchName: <FormattedMessage id="devCs.allBranch" />,
+    };
     const issueDom = branchOne && (<div className='c7n-dc-branch-issue'>{branchOne.typeCode ?
       this.getOptionContent(branchOne, 'line') : null}</div>);
     const verContent = versionState ? (<div className="c7n-env-card-content">
@@ -574,102 +589,110 @@ class DevConsole extends Component {
         <span>{formatMessage({ id: 'devCs.ver' })}</span>
       </div>
     </div>) : (<div className="c7n-dc-version-content">
-      <div className="c7n-dc-noVersion"/>
+      <div className="c7n-dc-noVersion" />
       <span>{formatMessage({ id: 'report.build-duration.noversion' })}</span>
     </div>);
 
     return (<div className="c7n-dc-card-wrap">
-        <div className="c7n-dc-card-title">
-          <Icon type="line" />
-          <FormattedMessage id="app.pipeline" />
-        </div>
-        <div className="c7n-dc-line">
-          <div className={lineKey === 1 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'} onClick={this.cardChecked.bind(this, 1)}>
-            <div className="c7n-dc-line_card-arrow" />
-            <div className="c7n-dc-line_card-content">
-              <div className="c7n-dc-line_card-title">
-                <FormattedMessage id="app.branchManage" />
-                {branchList && branchList.length ? <Permission
-                  service={['devops-service.devops-git.createBranch']}
-                  type={type}
-                  projectId={projectId}
-                  organizationId={orgId}
-                >
-                  <Tooltip
-                    placement="bottom"
-                    title={<FormattedMessage id="branch.create" />}
-                  >
-                    <Button
-                      icon="add_branch"
-                      shape="circle"
-                      onClick={this.displayModal.bind(this, 'createBranch')}
-                    />
-                  </Tooltip>
-                </Permission> : null}
-              </div>
-              <Select
-                label={<FormattedMessage id="app.branch.select" />}
-                onChange={this.branchChange}
-                value={branchOne ? branchOne.branchName : null}
+      <div className="c7n-dc-card-title">
+        <Icon type="line" />
+        <FormattedMessage id="app.pipeline" />
+      </div>
+      <div className="c7n-dc-line">
+        <div className={lineKey === 1 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'}
+             onClick={this.cardChecked.bind(this, 1)}>
+          <div className="c7n-dc-line_card-arrow" />
+          <div className="c7n-dc-line_card-content">
+            <div className="c7n-dc-line_card-title">
+              <FormattedMessage id="app.branchManage" />
+              {branchList && branchList.length ? <Permission
+                service={['devops-service.devops-git.createBranch']}
+                type={type}
+                projectId={projectId}
+                organizationId={orgId}
               >
-                <Option key={'ALL'}><FormattedMessage id="devCs.allBranch" /></Option>
-                {branchOption}
-              </Select>
-            </div>
-          </div>
-          <div className="c7n-dc-line-arrow" >
-            {issueDom}
-          </div>
-          <div className={lineKey === 2 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'} onClick={this.cardChecked.bind(this, 2)}>
-            <div className="c7n-dc-line_card-arrow" />
-            <div className="c7n-dc-line_card-content">
-              <div className="c7n-dc-line_card-title">
-                <FormattedMessage id="ciPipeline.head" />
                 <Tooltip
                   placement="bottom"
-                  title={<FormattedMessage id="devCs.build" />}
+                  title={<FormattedMessage id="branch.create" />}
                 >
                   <Button
-                    icon="poll"
+                    icon="add_branch"
                     shape="circle"
-                    onClick={this.linkToBuild}
+                    onClick={this.displayModal.bind(this, 'createBranch')}
                   />
                 </Tooltip>
-              </div>
-              {CiPipelineStore.loading && loadingFlag ? <Progress className="c7n-dc-card-loading" type="loading" /> : this.getCardContent(ciPipelineOne)}
+              </Permission> : null}
             </div>
-          </div>
-          <div className="c7n-dc-line-arrow" />
-          <div className={lineKey === 3 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'} onClick={this.cardChecked.bind(this, 3)}>
-            <div className="c7n-dc-line_card-arrow" />
-            <div className="c7n-dc-line_card-content">
-              <div className="c7n-dc-line_card-title">
-                <FormattedMessage id="app.version" />
-              </div>
-              {CiPipelineStore.loading && loadingFlag ? <Progress className="c7n-dc-card-loading" type="loading" /> : verContent}
-            </div>
+            <Select
+              label={<FormattedMessage id="app.branch.select" />}
+              onChange={this.branchChange}
+              value={branchOne ? branchOne.branchName : null}
+            >
+              <Option key={'ALL'}><FormattedMessage id="devCs.allBranch" /></Option>
+              {branchOption}
+            </Select>
           </div>
         </div>
-      {lineKey === 1 ? <Fragment>{branchLoading && mergeLoading  && loadingFlag ? <LoadingBar display /> : (<Fragment>
+        <div className="c7n-dc-line-arrow">
+          {issueDom}
+        </div>
+        <div className={lineKey === 2 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'}
+             onClick={this.cardChecked.bind(this, 2)}>
+          <div className="c7n-dc-line_card-arrow" />
+          <div className="c7n-dc-line_card-content">
+            <div className="c7n-dc-line_card-title">
+              <FormattedMessage id="ciPipeline.head" />
+              <Tooltip
+                placement="bottom"
+                title={<FormattedMessage id="devCs.build" />}
+              >
+                <Button
+                  icon="poll"
+                  shape="circle"
+                  onClick={this.linkToBuild}
+                />
+              </Tooltip>
+            </div>
+            {CiPipelineStore.loading && loadingFlag ?
+              <Progress className="c7n-dc-card-loading" type="loading" /> : this.getCardContent(ciPipelineOne)}
+          </div>
+        </div>
+        <div className="c7n-dc-line-arrow" />
+        <div className={lineKey === 3 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'}
+             onClick={this.cardChecked.bind(this, 3)}>
+          <div className="c7n-dc-line_card-arrow" />
+          <div className="c7n-dc-line_card-content">
+            <div className="c7n-dc-line_card-title">
+              <FormattedMessage id="app.version" />
+            </div>
+            {CiPipelineStore.loading && loadingFlag ?
+              <Progress className="c7n-dc-card-loading" type="loading" /> : verContent}
+          </div>
+        </div>
+      </div>
+      {lineKey === 1 ? <Fragment>{branchLoading && mergeLoading && loadingFlag ? <LoadingBar display /> : (<Fragment>
         {this.getBranch()}
         {this.getMergeRequest()}
       </Fragment>)}
       </Fragment> : null}
-      {lineKey === 2 ? <Fragment>{CiPipelineStore.loading  && loadingFlag ? <LoadingBar display /> : (<div className="c7n-dc-branch c7n-ciPipeline">
+      {lineKey === 2 ? <Fragment>{CiPipelineStore.loading && loadingFlag ? <LoadingBar display /> : (
+        <div className="c7n-dc-branch c7n-ciPipeline">
           <div className="c7n-dc-card-subtitle">
             <FormattedMessage id="ciPipeline.head" />
           </div>
-          <CiPipelineTable store={CiPipelineStore} loading={CiPipelineStore.loading  && loadingFlag}/>
+          <CiPipelineTable store={CiPipelineStore} loading={CiPipelineStore.loading && loadingFlag} />
         </div>)}
       </Fragment> : null}
-      {lineKey === 3 ? <Fragment>{AppVersionStore.loading  && loadingFlag ? <LoadingBar display /> : (<div className="c7n-dc-branch c7n-ciPipeline">
+      {lineKey === 3 ? <Fragment>{AppVersionStore.loading && loadingFlag ? <LoadingBar display /> : (
+        <div className="c7n-dc-branch c7n-ciPipeline">
           <div className="c7n-dc-card-subtitle">
             <FormattedMessage id="app.version" />
           </div>
-          <AppVersionTable store={AppVersionStore} loading={AppVersionStore.loading  && loadingFlag} />
+          <AppVersionTable store={AppVersionStore} loading={AppVersionStore.loading && loadingFlag} />
         </div>)}
       </Fragment> : null}
-    </div>)};
+    </div>);
+  };
 
   /**
    * 获取分支内容
@@ -690,14 +713,15 @@ class DevConsole extends Component {
           <div className="c7n-branch-commit">
             <i className="icon icon-point branch-column-icon" />
             <a href={commitUrl} target="_blank" rel="nofollow me noopener noreferrer" className="branch-sha">
-              <span>{sha && sha.slice(0, 8) }</span>
+              <span>{sha && sha.slice(0, 8)}</span>
             </a>
             <i className="icon icon-schedule branch-col-icon branch-column-icon" />
             <div className="c7n-branch-time"><TimePopover content={commitDate} /></div>
             <Tooltip title={commitUserName}>
               {commitUserUrl
                 ? <Avatar size="small" src={commitUserUrl} className="c7n-branch-avatar" />
-                : <Avatar size="small" className="c7n-branch-avatar">{commitUserName ? commitUserName.toString().slice(0, 1).toUpperCase() : '?'}</Avatar>
+                : <Avatar size="small"
+                          className="c7n-branch-avatar">{commitUserName ? commitUserName.toString().slice(0, 1).toUpperCase() : '?'}</Avatar>
               }
             </Tooltip>
             <MouserOverWrapper text={commitContent} width={0.3}>{commitContent}</MouserOverWrapper>
@@ -712,7 +736,8 @@ class DevConsole extends Component {
                 service={['devops-service.devops-git.update']}
               >
                 <Tooltip title={<FormattedMessage id="branch.edit" />}>
-                  <Button size="small" shape="circle" icon="mode_edit" onClick={this.displayModal.bind(this, 'editBranch', branchName)} />
+                  <Button size="small" shape="circle" icon="mode_edit"
+                          onClick={this.displayModal.bind(this, 'editBranch', branchName)} />
                 </Tooltip>
               </Permission>
               <Tooltip title={<FormattedMessage id="branch.request" />}>
@@ -731,7 +756,8 @@ class DevConsole extends Component {
                 service={['devops-service.devops-git.delete']}
               >
                 <Tooltip title={<FormattedMessage id="delete" />}>
-                  <Button size="small" shape="circle" icon="delete_forever" onClick={this.displayModal.bind(this, 'deleteBranch', branchName)} />
+                  <Button size="small" shape="circle" icon="delete_forever"
+                          onClick={this.displayModal.bind(this, 'deleteBranch', branchName)} />
                 </Tooltip>
               </Permission>
             </div> : null}
@@ -744,7 +770,7 @@ class DevConsole extends Component {
         <FormattedMessage id="app.branch" />
       </div>
       {list}
-      </div>);
+    </div>);
   };
 
   /**
@@ -774,7 +800,13 @@ class DevConsole extends Component {
         const { type, projectId, organizationId: orgId } = AppState.currentMenuType;
         return (<div className="c7n-dc-branch-content" key={iid}>
           <div className="branch-content-title">
-            <StatusTags name={state} colorCode={state} />
+            <StatusTags
+              name={state}
+              colorCode={state}
+              style={{
+                width: 45,
+              }}
+            />
             <span className="c7n-merge-title">!{iid}</span>
             <MouserOverWrapper text={title} width={0.3}>{title}</MouserOverWrapper>
           </div>
@@ -790,7 +822,8 @@ class DevConsole extends Component {
               <Tooltip title={author ? author.name : null}>
                 {author && author.webUrl
                   ? <Avatar size="small" src={author.webUrl} className="c7n-branch-avatar" />
-                  : <Avatar size="small" className="c7n-branch-avatar">{author ? author.name.toString().slice(0, 1).toUpperCase() : '?'}</Avatar>
+                  : <Avatar size="small"
+                            className="c7n-branch-avatar">{author ? author.name.toString().slice(0, 1).toUpperCase() : '?'}</Avatar>
                 }
               </Tooltip>
               <span>{author ? author.name : 'unknown'}</span>
@@ -1089,118 +1122,120 @@ class DevConsole extends Component {
             <FormattedMessage id="refresh" />
           </Button>
         </Header>
-        <Content>
-          {/*page-header*/}
-          <div className="c7n-dc-page-content-header">
-            <div className="page-content-header">
-              <div className="title">{appData.length && appId ? `应用"${titleName}"的开发控制台` : `项目"${titleName}"的开发控制台`}</div>
-              {appData && appData.length ? <Fragment>
-                <div className="c7n-dc-app-code">
-                  <FormattedMessage id="ciPipeline.appCode" />：{currentApp ? currentApp.code : ''}
-                </div>
-                <div className="c7n-dc-url-wrap">
-                  <FormattedMessage id="app.url" />：
-                  {currentApp && currentApp.repoUrl ? (<a href={currentApp.repoUrl || null} rel="nofollow me noopener noreferrer" target="_blank">
-                    <Tooltip title={currentApp.repoUrl}>
-                      {`../${currentApp.repoUrl.split('/')[currentApp.repoUrl.split('/').length - 1]}`}
-                    </Tooltip>
-                  </a>) : ''}
-                  {currentApp && currentApp.repoUrl ? <Tooltip title={<FormattedMessage id="repository.copyUrl" />} placement="bottom">
-                    <CopyToClipboard
-                      text={currentApp.repoUrl || noRepoUrl}
-                      onCopy={this.handleCopy}
-                    >
-                      <Button shape="circle" size="small">
-                        <i className="icon icon-library_books" />
-                      </Button>
-                    </CopyToClipboard>
-                  </Tooltip> : null}
-                </div>
-              </Fragment> : <div className="c7n-tag-empty">
-                <Icon type="info" className="c7n-tag-empty-icon" />
-                <span className="c7n-tag-empty-text">{formatMessage({ id: `apptag.${empty}.empty` })}</span>
-              </div>}
-            </div>
-            <div className="c7n-dc-data-wrap">
-              <div className="commit-number">
-                <Link
-                  to={{
-                    pathname: `/devops/reports/submission`,
-                    search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(name)}&organizationId=${orgId}`,
-                    state: {
-                      backPath: `/devops/dev-console?type=${type}&id=${projectId}&name=${name}&organizationId=${orgId}`,
-                      appId: appData && appData.length ? [DevPipelineStore.getSelectApp] : [] },
-                  }}
-                >
-                  { totalCommitsDate ? totalCommitsDate.length : 0}
-                </Link>
-              </div>
-              <div className="c7n-commit-title"><FormattedMessage id="devCs.commit.number" /></div>
-            </div>
-            <div className="c7n-dc-data-wrap">
-              <table>
-                {
-                  _.map(numberData, item => (<tr className="c7n-data-number" key={item.name}>
-                    <td className="c7n-data-number_link">
-                      <Link
-                        to={{
-                          pathname: `/devops/${item.name}`,
-                          search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(name)}&organizationId=${orgId}`,
-                          state: { backPath: `/devops/dev-console?type=${type}&id=${projectId}&name=${name}&organizationId=${orgId}` },
-                        }}
-                      >
-                        {item.number}
-                      </Link>
-                    </td>
-                    <td>
-                      <Icon type={item.icon} />
-                      <FormattedMessage id={item.message} />
-                    </td>
-                  </tr>))
-                }
-              </table>
-            </div>
-          </div>
-          {/*dev-pipeline*/}
-          {this.getDevPipeline()}
-          {/*codeQuality card*/}
-          <QualityCard />
-          {/*tag card*/}
-          <div className="c7n-dc-card-wrap">
-            <div className="c7n-dc-card-title">
-              <Icon type="local_offer" />
-              <FormattedMessage id="apptag.head" />
-            </div>
-            {(loading || _.isNull(loading)) ? <LoadingBar display /> : <Fragment>
-              {tagList.length ? <Fragment>
-                <Collapse className="c7n-dc-collapse-padding" bordered={false}>{tagList}</Collapse>
-                <div className="c7n-tag-pagin">
-                  <Pagination
-                    total={total}
-                    current={current}
-                    pageSize={pageSize}
-                    onChange={this.handlePaginChange}
-                    onShowSizeChange={this.handlePaginChange}
-                  />
-                </div>
-              </Fragment> : (<Fragment>
-                {empty === 'tag' ? (
-                  <div className="c7n-tag-empty">
-                    <Icon type="info" className="c7n-tag-empty-icon" />
-                    <span className="c7n-tag-empty-text">{formatMessage({ id: `apptag.${empty}.empty` })}</span>
-                    <Button
-                      type="primary"
-                      funcType="raised"
-                      onClick={this.displayModal.bind(this, 'createTag')}
-                    >
-                      <FormattedMessage id="apptag.create" />
-                    </Button>
+          <Content>
+            <div className="c7n-dc-page-content-header">
+              <div className="page-content-header">
+                <div
+                  className="title">{appData.length && appId ? `应用"${titleName}"的开发控制台` : `项目"${titleName}"的开发控制台`}</div>
+                {appData && appData.length ? <Fragment>
+                  <div className="c7n-dc-app-code">
+                    <FormattedMessage id="ciPipeline.appCode" />：{currentApp ? currentApp.code : ''}
                   </div>
-                ) : null}
-              </Fragment>)}
-            </Fragment>}
-          </div>
-        </Content>
+                  <div className="c7n-dc-url-wrap">
+                    <FormattedMessage id="app.url" />：
+                    {currentApp && currentApp.repoUrl ? (
+                      <a href={currentApp.repoUrl || null} rel="nofollow me noopener noreferrer" target="_blank">
+                        <Tooltip title={currentApp.repoUrl}>
+                          {`../${currentApp.repoUrl.split('/')[currentApp.repoUrl.split('/').length - 1]}`}
+                        </Tooltip>
+                      </a>) : ''}
+                    {currentApp && currentApp.repoUrl ?
+                      <Tooltip title={<FormattedMessage id="repository.copyUrl" />} placement="bottom">
+                        <CopyToClipboard
+                          text={currentApp.repoUrl || noRepoUrl}
+                          onCopy={this.handleCopy}
+                        >
+                          <Button shape="circle" size="small">
+                            <i className="icon icon-library_books" />
+                          </Button>
+                        </CopyToClipboard>
+                      </Tooltip> : null}
+                  </div>
+                </Fragment> : <div className="c7n-tag-empty">
+                  <Icon type="info" className="c7n-tag-empty-icon" />
+                  <span className="c7n-tag-empty-text">{formatMessage({ id: `apptag.${empty}.empty` })}</span>
+                </div>}
+              </div>
+              <div className="c7n-dc-data-wrap">
+                <div className="commit-number">
+                  <Link
+                    to={{
+                      pathname: `/devops/reports/submission`,
+                      search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(name)}&organizationId=${orgId}`,
+                      state: {
+                        backPath: `/devops/dev-console?type=${type}&id=${projectId}&name=${name}&organizationId=${orgId}`,
+                        appId: appData && appData.length ? [DevPipelineStore.getSelectApp] : [],
+                      },
+                    }}
+                  >
+                    {totalCommitsDate ? totalCommitsDate.length : 0}
+                  </Link>
+                </div>
+                <div className="c7n-commit-title"><FormattedMessage id="devCs.commit.number" /></div>
+              </div>
+              <div className="c7n-dc-data-wrap">
+                <table>
+                  <tbody>
+                  {
+                    _.map(numberData, item => (<tr className="c7n-data-number" key={item.name}>
+                      <td className="c7n-data-number_link">
+                        <Link
+                          to={{
+                            pathname: `/devops/${item.name}`,
+                            search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(name)}&organizationId=${orgId}`,
+                            state: { backPath: `/devops/dev-console?type=${type}&id=${projectId}&name=${name}&organizationId=${orgId}` },
+                          }}
+                        >
+                          {item.number}
+                        </Link>
+                      </td>
+                      <td>
+                        <Icon type={item.icon} />
+                        <FormattedMessage id={item.message} />
+                      </td>
+                    </tr>))
+                  }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            {this.getDevPipeline()}
+            <QualityCard />
+            <div className="c7n-dc-card-wrap">
+              <div className="c7n-dc-card-title">
+                <Icon type="local_offer" />
+                <FormattedMessage id="apptag.head" />
+              </div>
+              {(loading || _.isNull(loading)) ? <LoadingBar display /> : <Fragment>
+                {tagList.length ? <Fragment>
+                  <Collapse className="c7n-dc-collapse-padding" bordered={false}>{tagList}</Collapse>
+                  <div className="c7n-tag-pagin">
+                    <Pagination
+                      total={total}
+                      current={current}
+                      pageSize={pageSize}
+                      onChange={this.handlePaginChange}
+                      onShowSizeChange={this.handlePaginChange}
+                    />
+                  </div>
+                </Fragment> : (<Fragment>
+                  {empty === 'tag' ? (
+                    <div className="c7n-tag-empty">
+                      <Icon type="info" className="c7n-tag-empty-icon" />
+                      <span className="c7n-tag-empty-text">{formatMessage({ id: `apptag.${empty}.empty` })}</span>
+                      <Button
+                        type="primary"
+                        funcType="raised"
+                        onClick={this.displayModal.bind(this, 'createTag')}
+                      >
+                        <FormattedMessage id="apptag.create" />
+                      </Button>
+                    </div>
+                  ) : null}
+                </Fragment>)}
+              </Fragment>}
+            </div>
+          </Content>
           {/*tag delete modal*/}
           <Modal
             confirmLoading={deleteLoading}
@@ -1208,8 +1243,9 @@ class DevConsole extends Component {
             title={`${formatMessage({ id: 'apptag.action.delete' })}“${tagName}”`}
             closable={false}
             footer={[
-              <Button key="back" onClick={this.displayModal.bind(this, 'close')} disabled={deleteLoading}>{<FormattedMessage
-                id="cancel" />}</Button>,
+              <Button key="back" onClick={this.displayModal.bind(this, 'close')} disabled={deleteLoading}>{
+                <FormattedMessage
+                  id="cancel" />}</Button>,
               <Button key="submit" type="danger" onClick={this.deleteTag} loading={deleteLoading}>
                 {formatMessage({ id: 'delete' })}
               </Button>,
@@ -1217,58 +1253,58 @@ class DevConsole extends Component {
           >
             <div className="c7n-padding-top_8">{formatMessage({ id: 'apptag.delete.tooltip' })}</div>
           </Modal>
-          {/*branch delete modal*/}
-        <Modal
-          confirmLoading={deleteLoading}
-          visible={modalDisplay === 'deleteBranch'}
-          title={`${formatMessage({ id: 'branch.action.delete' })}“${branchName}”`}
-          closable={false}
-          footer={[
-            <Button key="back" onClick={this.displayModal.bind(this, 'close')} disabled={deleteLoading}>{<FormattedMessage id="cancel" />}</Button>,
-            <Button key="submit" type="danger" onClick={this.deleteBranch} loading={deleteLoading}>
-              {formatMessage({ id: 'delete' })}
-            </Button>,
-          ]}
-        >
-          <div className="c7n-padding-top_8">{formatMessage({ id: 'branch.delete.tooltip' })}</div>
-        </Modal>
-        {modalDisplay === 'createTag' ? <AppTagCreate
-          app={titleName}
-          store={AppTagStore}
-          show={modalDisplay === 'createTag'}
-          close={this.displayModal.bind(this, 'close')}
-        /> : null}
-        {modalDisplay === 'editTag' ? <AppTagEdit
-          app={currentAppName}
-          store={AppTagStore}
-          tag={tagName}
-          release={tagRelease}
-          show={modalDisplay === 'editTag'}
-          close={this.displayModal.bind(this, 'close')}
-        /> : null}
-        {BranchStore.createBranchShow === 'create' ? <BranchCreate
-          name={titleName}
-          appId={DevPipelineStore.selectedApp}
-          store={BranchStore}
-          visible={BranchStore.createBranchShow === 'create'}
-          onClose={this.displayModal.bind(this, 'closeBranch')}
-          isDevConsole
-        /> : null}
-        {BranchStore.createBranchShow === 'detail' && <IssueDetail
-          name={branchName}
-          store={BranchStore}
-          visible={BranchStore.createBranchShow === 'detail'}
-          onClose={this.displayModal.bind(this, 'closeBranch')}
-          isDevConsole
-        />}
-        {BranchStore.createBranchShow === 'edit' && <BranchEdit
-          name={branchName}
-          appId={DevPipelineStore.selectedApp}
-          store={BranchStore}
-          visible={BranchStore.createBranchShow === 'edit'}
-          onClose={this.displayModal.bind(this, 'closeBranch')}
-          isDevConsole
-        />}</Fragment> : <DepPipelineEmpty title={<FormattedMessage id="devCs.head" />} type="app" />}
+          <Modal
+            confirmLoading={deleteLoading}
+            visible={modalDisplay === 'deleteBranch'}
+            title={`${formatMessage({ id: 'branch.action.delete' })}“${branchName}”`}
+            closable={false}
+            footer={[
+              <Button key="back" onClick={this.displayModal.bind(this, 'close')} disabled={deleteLoading}>{
+                <FormattedMessage id="cancel" />}</Button>,
+              <Button key="submit" type="danger" onClick={this.deleteBranch} loading={deleteLoading}>
+                {formatMessage({ id: 'delete' })}
+              </Button>,
+            ]}
+          >
+            <div className="c7n-padding-top_8">{formatMessage({ id: 'branch.delete.tooltip' })}</div>
+          </Modal>
+          {modalDisplay === 'createTag' ? <AppTagCreate
+            app={titleName}
+            store={AppTagStore}
+            show={modalDisplay === 'createTag'}
+            close={this.displayModal.bind(this, 'close')}
+          /> : null}
+          {modalDisplay === 'editTag' ? <AppTagEdit
+            app={currentAppName}
+            store={AppTagStore}
+            tag={tagName}
+            release={tagRelease}
+            show={modalDisplay === 'editTag'}
+            close={this.displayModal.bind(this, 'close')}
+          /> : null}
+          {BranchStore.createBranchShow === 'create' ? <BranchCreate
+            name={titleName}
+            appId={DevPipelineStore.selectedApp}
+            store={BranchStore}
+            visible={BranchStore.createBranchShow === 'create'}
+            onClose={this.displayModal.bind(this, 'closeBranch')}
+            isDevConsole
+          /> : null}
+          {BranchStore.createBranchShow === 'detail' && <IssueDetail
+            name={branchName}
+            store={BranchStore}
+            visible={BranchStore.createBranchShow === 'detail'}
+            onClose={this.displayModal.bind(this, 'closeBranch')}
+            isDevConsole
+          />}
+          {BranchStore.createBranchShow === 'edit' && <BranchEdit
+            name={branchName}
+            appId={DevPipelineStore.selectedApp}
+            store={BranchStore}
+            visible={BranchStore.createBranchShow === 'edit'}
+            onClose={this.displayModal.bind(this, 'closeBranch')}
+            isDevConsole
+          />}</Fragment> : <DepPipelineEmpty title={<FormattedMessage id="devCs.head" />} type="app" />}
       </Page>
     );
   }
