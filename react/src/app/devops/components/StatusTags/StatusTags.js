@@ -43,11 +43,12 @@ class StatusTags extends PureComponent {
       >
         <div style={ellipsis || {}}>
           <Tooltip title={ellipsis ? (name || '') : (error)}>
-            { name || '' }
+            {name || ''}
           </Tooltip>
         </div>
       </div>
     );
   }
 }
+
 export default StatusTags;

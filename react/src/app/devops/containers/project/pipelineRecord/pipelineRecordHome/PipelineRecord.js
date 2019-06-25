@@ -19,9 +19,9 @@ import {
 import _ from 'lodash';
 import TimePopover from '../../../../components/timePopover';
 import StatusTags from '../../../../components/StatusTags/StatusTags';
-import PendingCheckModal from "../components/pendingCheckModal/PendingCheckModal";
+import PendingCheckModal from '../components/pendingCheckModal/PendingCheckModal';
 import { HEIGHT } from '../../../../common/Constants';
-import { RELATED_TO_ME, STATUS_COLOR } from "../components/Constants";
+import { RELATED_TO_ME, STATUS_COLOR } from '../components/Constants';
 
 import '../../../main.scss';
 import './PipelineRecord.scss';
@@ -164,6 +164,7 @@ class PipelineRecord extends Component {
     } = PipelineRecordStore.getInfo;
     return [
       {
+        width: 110,
         title: formatMessage({ id: 'pipelineRecord.pipeline.status' }),
         key: 'status',
         dataIndex: 'status',
@@ -177,7 +178,11 @@ class PipelineRecord extends Component {
         )),
         filteredValue: filters.status || [],
         render: text => (
-          <StatusTags name={formatMessage({ id: `pipelineRecord.status.${text}` })} color={STATUS_COLOR[text]} />),
+          <StatusTags
+            name={formatMessage({ id: `pipelineRecord.status.${text}` })}
+            color={STATUS_COLOR[text]}
+            style={{ minWidth: 40 }}
+          />),
       },
       {
         title: formatMessage({ id: 'pipeline.trigger' }),
@@ -211,7 +216,7 @@ class PipelineRecord extends Component {
               <Icon type="error" className="c7n-name-error-icon" />
             </Tooltip>}
           </div>
-        )
+        ),
       },
       {
         title: formatMessage({ id: 'pipelineRecord.process' }),
@@ -319,7 +324,8 @@ class PipelineRecord extends Component {
         {
           _.map(stageDTOList, ({ status, id }) => {
             return (<div key={id} className="c7n-process-content">
-              <span className={`c7n-process-line ${stageRecordId === id && type === "stage" ? `c7n-process-line-${pipelineStatus}` : ""}`} />
+              <span
+                className={`c7n-process-line ${stageRecordId === id && type === 'stage' ? `c7n-process-line-${pipelineStatus}` : ''}`} />
               <span className={`c7n-process-status c7n-process-status-${status}`} />
             </div>);
           })
@@ -380,7 +386,7 @@ class PipelineRecord extends Component {
       .catch(e => {
         Choerodon.handleResponseError(e);
         this.setState({ submitting: false });
-      })
+      });
   };
 
   /**
@@ -524,7 +530,7 @@ class PipelineRecord extends Component {
             </Select>
             <Select
               mode="multiple"
-              label={formatMessage({ id: "pipelineRecord.search" })}
+              label={formatMessage({ id: 'pipelineRecord.search' })}
               allowClear
               className="c7n-pipelineRecord-select-380 c7n-pipelineRecord-search-related"
               onChange={this.handleSearch}

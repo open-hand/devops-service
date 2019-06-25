@@ -39,6 +39,11 @@ export default class Configuration extends Component {
       location: {
         state,
       },
+      AppState: {
+        currentMenuType: {
+          id,
+        },
+      },
     } = this.props;
     const {
       getSelectedApp: app,
@@ -51,7 +56,8 @@ export default class Configuration extends Component {
       getSelectedValue,
     } = store;
     const { templateId, configValue } = getSelectedValue;
-    const isMarketApp = state && (state.prevPage === 'market' || state.isLocalApp) || app.publishLevel;
+    const isCurrentProjectApp = String(app.projectId) === id;
+    const isMarketApp = !isCurrentProjectApp && state && (state.prevPage === 'market' || state.isLocalApp) || app.publishLevel;
 
     this.setState({ ...getSelectedValue });
 
@@ -64,7 +70,7 @@ export default class Configuration extends Component {
     if (templateId) {
       store.loadTemplateValue(projectId, templateId);
     } else {
-      const response = await store.loadChartValue(projectId, mode, instanceId, version.id)
+      const response = await store.loadChartValue(projectId, mode, instanceId, version.id);
       if (handlePromptError(response)) {
         response.id && this.selectTemplate(response.id);
       }
@@ -131,8 +137,14 @@ export default class Configuration extends Component {
       location: {
         state,
       },
+      AppState: {
+        currentMenuType: {
+          id,
+        },
+      },
     } = this.props;
-    const isMarketApp = state && (state.prevPage === 'market' || state.isLocalApp) || getSelectedApp.publishLevel;
+    const isCurrentProjectApp = String(getSelectedApp.projectId) === id;
+    const isMarketApp = !isCurrentProjectApp && state && (state.prevPage === 'market' || state.isLocalApp) || getSelectedApp.publishLevel;
 
     this.setState({
       configValue: value,
@@ -311,6 +323,11 @@ export default class Configuration extends Component {
       location: {
         state,
       },
+      AppState: {
+        currentMenuType: {
+          id,
+        },
+      },
     } = this.props;
     const {
       configValue,
@@ -336,7 +353,8 @@ export default class Configuration extends Component {
     ));
 
     const enableClick = !(configValue || getCurrentValue) || hasEditorError;
-    const disableSelectConfig = state && (state.prevPage === 'market' || state.isLocalApp) || !!app.publishLevel;
+    const isCurrentProjectApp = String(app.projectId) === id;
+    const disableSelectConfig = !isCurrentProjectApp && state && (state.prevPage === 'market' || state.isLocalApp) || !!app.publishLevel;
 
     return (
       <Fragment>

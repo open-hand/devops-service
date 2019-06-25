@@ -159,6 +159,7 @@ export default class KeyValueTable extends Component {
   renderStatus = ({ commandStatus }) => <StatusTags
     name={this.props.intl.formatMessage({ id: commandStatus })}
     colorCode={commandStatus}
+    style={{ minWidth: 40 }}
   />;
 
   renderName = ({ name, description }) => <MouserOverWrapper width={0.3}>
@@ -264,6 +265,7 @@ export default class KeyValueTable extends Component {
       {
         title: <FormattedMessage id="app.active" />,
         key: 'status',
+        width: 90,
         render: this.renderStatus,
       }, {
         title: <FormattedMessage id="app.name" />,

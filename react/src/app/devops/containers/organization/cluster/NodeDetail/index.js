@@ -172,7 +172,11 @@ class NodeDetail extends Component {
       {
         title: formatMessage({ id: 'status' }),
         key: 'status',
-        render: record => (<StatusTags name={record.status} colorCode={record.status} />),
+        render: record => (<StatusTags
+          name={record.status}
+          colorCode={record.status}
+          style={{ minWidth: 68 }}
+        />),
       }, {
         title: formatMessage({ id: 'node.podName' }),
         key: 'name',

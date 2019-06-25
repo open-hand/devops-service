@@ -115,7 +115,13 @@ class ClusterList extends Component {
       title: formatMessage({ id: 'status' }),
       dataIndex: 'status',
       width: 90,
-      render: status => <StatusTags name={status} colorCode={status} />,
+      render: status => <StatusTags
+        name={status}
+        colorCode={status}
+        style={{
+          minWidth: 63,
+        }}
+      />,
     }, {
       key: 'nodeName',
       title: formatMessage({ id: 'cluster.node' }),
