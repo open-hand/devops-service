@@ -64,7 +64,7 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
                                                           Date startDate, Date endDate) {
         List<CommitFormRecordDTO> commitFormRecordDTOList = new ArrayList<>();
 
-        PageInfo<DevopsGitlabCommitDO> devopsGitlabCommitDOPage = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(),
+        PageInfo<DevopsGitlabCommitDO> devopsGitlabCommitDOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(),
                 PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
                 () -> devopsGitlabCommitMapper.listCommits(projectId, appId, new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime())));
 
@@ -101,7 +101,7 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
 
     @Override
     public List<DevopsGitlabCommitE> queryByAppIdAndBranch(Long appId, String branch, Date startDate) {
-        return ConvertHelper.convertList(devopsGitlabCommitMapper.queryByAppIdAndBranch(appId, branch, new java.sql.Date(startDate.getTime())), DevopsGitlabCommitE.class);
+        return ConvertHelper.convertList(devopsGitlabCommitMapper.queryByAppIdAndBranch(appId, branch, startDate == null ? null : new java.sql.Date(startDate.getTime())), DevopsGitlabCommitE.class);
     }
 
 
