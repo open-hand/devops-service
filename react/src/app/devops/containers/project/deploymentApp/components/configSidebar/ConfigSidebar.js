@@ -75,6 +75,8 @@ export default class ConfigSidebar extends Component {
         if (handlePromptError(response)) {
           onOk(response.id);
         }
+      } else {
+        this.setState({ submitting: false });
       }
     });
   };

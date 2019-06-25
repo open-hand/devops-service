@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import {Content, Permission} from "@choerodon/boot";
+import { Content, Permission } from '@choerodon/boot';
 import { Modal, Button, Table, Tooltip, Popover, Icon } from 'choerodon-ui';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
@@ -46,13 +46,13 @@ export default class Networking extends Component {
       .then(data => {
         if (data && !data.failed) {
           this.setState({
-            expandedRowKeys: _.map(data.list, item => item.id)
-          })
+            expandedRowKeys: _.map(data.list, item => item.id),
+          });
         }
       })
       .catch(err => {
         store.changeNetworkingLoading(false);
-        Choerodon.handleResponseError(err)
+        Choerodon.handleResponseError(err);
       });
   };
 
@@ -110,7 +110,7 @@ export default class Networking extends Component {
    * 全部展开或收起
    */
   expendOrCollapse = () => {
-    const { store: { getNetworking }} = this.props;
+    const { store: { getNetworking } } = this.props;
     this.setState(({ isExpanded }) => ({
       isExpanded: !isExpanded,
       expandedRowKeys: isExpanded ? [] : _.map(getNetworking, ({ id }) => id),
@@ -178,7 +178,7 @@ export default class Networking extends Component {
           {popoverDom}
         </div>
       </div>
-    )
+    );
   };
 
   renderPorts = (record) => {
@@ -211,7 +211,7 @@ export default class Networking extends Component {
           {popoverDom}
         </div>
       </div>
-    )
+    );
   };
 
   render() {
@@ -231,7 +231,7 @@ export default class Networking extends Component {
 
     const envData = EnvOverviewStore.getEnvcard;
     const envId = EnvOverviewStore.getTpEnvId;
-    const envState = envData.length ?_.filter(envData, ['id', envId])[0] : { connect: false };
+    const envState = envData.length ? _.filter(envData, ['id', envId])[0] : { connect: false };
 
     let buttonTips;
     if (envState && !envState.connect) {
@@ -245,13 +245,13 @@ export default class Networking extends Component {
         title: <FormattedMessage id='ist.networking.service.name' />,
         key: 'name',
         dataIndex: 'name',
-        render: (text, {status, error}) => (
+        render: (text, { status, error }) => (
           <StatusIcon
             name={text}
             status={status}
             error={error}
           />
-        )
+        ),
       },
       {
         title: <FormattedMessage id='ist.networking.service.type' />,
@@ -270,7 +270,7 @@ export default class Networking extends Component {
       },
     ];
 
-    return(<Fragment>
+    return (<Fragment>
       <Sidebar
         title={formatMessage({ id: 'ist.networking.header' })}
         visible={show}
@@ -282,7 +282,7 @@ export default class Networking extends Component {
             type='primary'
             onClick={this.onClose.bind(this, false)}
           >
-            {formatMessage({ id: "close" })}
+            {formatMessage({ id: 'close' })}
           </Button>]
         }
       >
@@ -381,7 +381,7 @@ export default class Networking extends Component {
           onClose={this.closeModal}
         />
       )}
-    </Fragment>)
+    </Fragment>);
   }
 }
 

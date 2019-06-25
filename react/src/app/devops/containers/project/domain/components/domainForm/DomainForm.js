@@ -41,7 +41,7 @@ export default class DomainForm extends Component {
       protocol: 'normal',
       pathCountChange: false,
       selectEnv: props.envId,
-      singleData: {}
+      singleData: {},
     };
     this.pathKeys = 1;
   }
@@ -97,7 +97,7 @@ export default class DomainForm extends Component {
               });
             }
           }
-        })
+        });
     }
   }
 
@@ -282,7 +282,7 @@ export default class DomainForm extends Component {
    * @param callback
    */
   checkPorts = (ports, rule, value, callback) => {
-    const { intl: { formatMessage  } } = this.props;
+    const { intl: { formatMessage } } = this.props;
     if (ports && !ports.includes(value)) {
       callback(formatMessage({ id: 'domain.network.check.failed' }));
     } else {
@@ -317,7 +317,7 @@ export default class DomainForm extends Component {
    */
   addPath = () => {
     const {
-      form : { getFieldValue, setFieldsValue }
+      form: { getFieldValue, setFieldsValue },
     } = this.props;
     const keys = getFieldValue('paths');
     const uuid = this.pathKeys;
@@ -335,7 +335,7 @@ export default class DomainForm extends Component {
    */
   removePath = k => {
     const {
-      form : { getFieldValue, setFieldsValue }
+      form: { getFieldValue, setFieldsValue },
     } = this.props;
     const keys = getFieldValue('paths');
     if (keys.length === 1) {
@@ -352,7 +352,7 @@ export default class DomainForm extends Component {
    */
   triggerPathCheck = () => {
     const {
-      form: { getFieldValue, validateFields }
+      form: { getFieldValue, validateFields },
     } = this.props;
     const paths = getFieldValue('paths');
     const fields = [];
@@ -440,7 +440,7 @@ export default class DomainForm extends Component {
       intl: { formatMessage },
       type,
       isInstancePage,
-      envId
+      envId,
     } = this.props;
     const env = EnvOverviewStore.getEnvcard;
     const {
@@ -830,7 +830,7 @@ export default class DomainForm extends Component {
           </Tooltip>
         </div>
       </Form>
-    )
+    );
   }
 }
 

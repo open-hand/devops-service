@@ -212,7 +212,7 @@ class ContainerHome extends Component {
           <MouserOverWrapper text={text} width={0.115}>
             <span>{text}</span>
           </MouserOverWrapper>
-        )
+        ),
       },
       {
         title: <FormattedMessage id="container.ip" />,
@@ -588,7 +588,7 @@ class ContainerHome extends Component {
    */
   handleIstSelect = value => {
     const { ContainerStore } = this.props;
-    const { projectId } =AppState.currentMenuType;
+    const { projectId } = AppState.currentMenuType;
     const envId = EnvOverviewStore.getTpEnvId;
     const appId = ContainerStore.getAppId;
     ContainerStore.setInstanceId(value);

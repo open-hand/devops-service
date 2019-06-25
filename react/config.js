@@ -8,12 +8,7 @@ const config = {
     'primary-color': '#3f51b5',
     'icon-font-size-base': '16px',
   },
-  dashboard: {
-    devops: {
-      components: './react/src/app/devops/dashboard/*',
-      locale: './react/src/app/devops/locale/dashboard/*',
-    },
-  },
+  dashboard: {},
   resourcesLevel: ['site', 'organization', 'project', 'user'],
 };
 
