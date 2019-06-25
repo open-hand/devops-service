@@ -3,7 +3,7 @@
   "routeName": "devops",
   "description": "",
   "license": "ISC",
-  "version": "0.18.2",
+  "version": "0.18.1",
   "keywords": [],
   "contributors": [
     "choerodon"
@@ -17,7 +17,7 @@
     "start:local": "choerodon-front-boot start --config ./config-local.js",
     "dist": "choerodon-front-boot dist --config ./react/config.js",
     "lint-staged": "lint-staged",
-    "lint-staged:es": "eslint",
+    "lint-staged:es": "eslint react/**",
     "compile": "gulp compile"
   },
   "peerDependencies": {
@@ -62,7 +62,9 @@
     "lodash": "latest"
   },
   "lint-staged": {
-    "react/src/**/*.{js,jsx}": [],
+    "react/src/**/*.{js,jsx}": [
+      "npm run lint-staged:es"
+    ],
     "react/src/**/*.{scss,less}": "stylelint --syntax scss"
   },
   "husky": {

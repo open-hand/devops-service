@@ -564,7 +564,8 @@ input::-webkit-contacts-auto-fill-button {
 }
 
 // 实例和环境总览中查看详情的按钮样式
-.c7ncd-detail-btn {
+.c7ncd-detail-btn,
+.c7ncd-detail-btn-big {
   vertical-align: middle;
   padding: 0;
   height: 20px;
@@ -573,12 +574,6 @@ input::-webkit-contacts-auto-fill-button {
 
   &.c7ncd-detail-btn-right {
     margin-left: auto;
-  }
-
-  .icon {
-    width: 13px;
-    height: 13px;
-    font-size: 12px;
   }
 
   &.c7n-btn-flat:hover {
@@ -592,6 +587,14 @@ input::-webkit-contacts-auto-fill-button {
   & > div.btn-loading > span {
     background: #3f51b5;
     border-color: #3f51b5;
+  }
+}
+
+.c7ncd-detail-btn {
+  .icon {
+    width: 13px;
+    height: 13px;
+    font-size: 12px;
   }
 }
 

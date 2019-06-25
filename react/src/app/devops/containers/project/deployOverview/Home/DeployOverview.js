@@ -94,6 +94,7 @@ class DeployOverview extends Component {
       id: projectId,
       name,
       organizationId,
+      type,
     } = AppState.currentMenuType;
     history.push(`/devops/reports/deploy-times?type=${type}&id=${projectId}&name=${name}&organizationId=${organizationId}&deploy-overview`);
   };

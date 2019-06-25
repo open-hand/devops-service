@@ -1106,11 +1106,13 @@ class DevConsole extends Component {
           </Select>
           {branchList && branchList.length ? (<div className="c7n-dc-create-select">
             <Dropdown overlay={menu} trigger={['click']}>
-              <a href="#">
-                <Icon type="playlist_add" />
-                {formatMessage({ id: 'create' })}
+              <Button
+                className="c7ncd-detail-btn-big"
+                icon="playlist_add"
+              >
+                <FormattedMessage id="create" />
                 <Icon type="arrow_drop_down" />
-              </a>
+              </Button>
             </Dropdown>
           </div>) : null}
           <Button

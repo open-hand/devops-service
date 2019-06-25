@@ -34,7 +34,7 @@ export default class CoverConfigModal extends Component {
       id,
       configValue,
       objectVersionNumber,
-      AppState: { currentMenuType: { projectId } }
+      AppState: { currentMenuType: { projectId } },
     } = this.props;
     this.setState({ submitting: true });
     DeploymentConfigStore.createData(projectId, {
@@ -56,14 +56,12 @@ export default class CoverConfigModal extends Component {
       });
   };
 
-
   render() {
     const {
       intl: { formatMessage },
       show,
     } = this.props;
     const { submitting } = this.state;
-
 
     return (
       <Modal
