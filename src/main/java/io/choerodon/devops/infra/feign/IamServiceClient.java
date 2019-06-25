@@ -124,6 +124,6 @@ public interface IamServiceClient {
                                              @RequestBody @Valid ProjectCreateDTO projectCreateDTO);
 
     @PostMapping("/v1/organizations/all")
-    ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(@RequestParam(defaultValue = PageConstant.PAGE, required = false) final int page,
-                                                                 @RequestParam(defaultValue = PageConstant.SIZE, required = false) final int size);
+    ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(@RequestParam(defaultValue = PageConstant.PAGE, required = false, value = "page") final int page,
+                                                                 @RequestParam(defaultValue = PageConstant.SIZE, required = false, value = "size") final int size);
 }

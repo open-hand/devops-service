@@ -160,12 +160,13 @@ public class PipelineServiceImpl implements PipelineService {
     private NotifyClient notifyClient;
 
     @Override
-    public PageInfo<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, PageRequest pageRequest, String params) {
+    public PageInfo<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Map<String, Object> classifyParam = new HashMap<>();
         classifyParam.put("creator", creator);
         classifyParam.put("executor", executor);
         classifyParam.put("userId", DetailsHelper.getUserDetails().getUserId());
+        classifyParam.put("envIds", envIds);
         PageInfo<PipelineDTO> pipelineDTOS = ConvertPageHelper.convertPageInfo(pipelineRepository.listByOptions(projectId, pageRequest, params, classifyParam), PipelineDTO.class);
         PageInfo<PipelineDTO> page = new PageInfo<>();
         BeanUtils.copyProperties(pipelineDTOS, page);
