@@ -1200,6 +1200,8 @@ const zhCN = {
   'container.term.log': '日志',
   'container.log.header.title': '查看容器日志',
   'container.chooseEnv': '选择环境',
+  'container.chooseIst': '选择实例',
+  'container.ist.empty': '请先选择应用',
 
   // version feature
   'version.feature': '特性',
@@ -1845,6 +1847,7 @@ const zhCN = {
   'pipeline.search.creator': '我创建的',
   'pipeline.search.executor': '我能执行的',
   'pipeline.process.status': '流程状态 - ',
+  'pipeline.deploy.env': '部署环境',
 
   // 代码质量
   'codeQuality.head': '代码质量',

@@ -46,13 +46,27 @@ export default class Pipeline extends Component {
     executeLoading: false,
     executeEnv: null,
     searchData: null,
+    envIds: null,
   };
 
   componentDidMount() {
-    this.loadData();
+    this.loadAllData();
   }
 
   handleRefresh = (e, page) => {
+    this.loadAllData(page);
+  };
+
+  loadAllData = (page) => {
+    const {
+      PipelineStore,
+      AppState: {
+        currentMenuType: {
+          projectId,
+        },
+      },
+    } = this.props;
+    PipelineStore.loadEnvData(projectId);
     this.loadData(page);
   };
 
@@ -82,7 +96,7 @@ export default class Pipeline extends Component {
         },
       },
     } = this.props;
-    const { searchData } = this.state;
+    const { searchData, envIds } = this.state;
 
     const realSorter = _.isEmpty(sorter) ? null : sorter;
     this.setState({
@@ -102,6 +116,7 @@ export default class Pipeline extends Component {
         param: param.toString(),
       },
       searchData,
+      envIds,
     );
   };
 
@@ -118,7 +133,7 @@ export default class Pipeline extends Component {
         },
       },
     } = this.props;
-    const { page, pageSize, param, filters, sorter, searchData } = this.state;
+    const { page, pageSize, param, filters, sorter, searchData, envIds } = this.state;
     const currentPage = toPage || page;
     const {
       getPageInfo: {
@@ -136,6 +151,7 @@ export default class Pipeline extends Component {
         param: param.toString(),
       },
       searchData,
+      envIds,
     );
   };
 
@@ -170,7 +186,7 @@ export default class Pipeline extends Component {
 
     if (handleCheckerProptError(response)) {
       this.closeRemove();
-      this.handleRefresh(null, 0);
+      this.handleRefresh(null, 1);
     }
     this.setState({ deleteLoading: false });
   };
@@ -346,11 +362,11 @@ export default class Pipeline extends Component {
   }
 
   /**
-   * 快速搜索
+   * 快速搜索,选择部署环境
    * @param value
    */
-  handleSearch = (value) => {
-    this.setState({ searchData: value }, () => this.loadData(1));
+  handleSearch = (value, type) => {
+    this.setState({ [type]: value }, () => this.loadData(1));
   };
 
   renderAction = (record) => {
@@ -479,6 +495,7 @@ export default class Pipeline extends Component {
         getListData,
         getPageInfo,
         getLoading,
+        getEnvData,
       },
     } = this.props;
     const {
@@ -537,7 +554,7 @@ export default class Pipeline extends Component {
           label={formatMessage({ id: 'pipeline.search' })}
           allowClear
           className="c7ncd-pipeline-search"
-          onChange={this.handleSearch}
+          onChange={value => this.handleSearch(value, 'searchData')}
           choiceRemove={false}
         >
           {
@@ -550,6 +567,30 @@ export default class Pipeline extends Component {
               </Option>
             ))
           }
+        </Select>
+        <Select
+          mode="multiple"
+          className='c7ncd-pipeline-search'
+          label={formatMessage({ id: 'pipeline.deploy.env' })}
+          optionFilterProp="children"
+          filter
+          allowClear
+          choiceRemove={false}
+          onChange={value => this.handleSearch(value, 'envIds')}
+          filterOption={(input, option) =>
+            option.props.children
+              .toLowerCase()
+              .indexOf(input.toLowerCase()) >= 0
+          }
+        >
+          {_.map(getEnvData, ({ name, id }) => (
+            <Option
+              key={id}
+              value={id}
+            >
+              {name}
+            </Option>
+          ))}
         </Select>
         <Table
           filterBarPlaceholder={formatMessage({ id: 'filter' })}

@@ -1,13 +1,17 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import _ from 'lodash';
-import { handleProptError } from '../../../utils';
+import { handleProptError, handlePromptError } from '../../../utils';
 import { HEIGHT, SORTER_MAP } from '../../../common/Constants';
 
 @store('PipelineStore')
 class PipelineStore {
   @observable listData = [];
+
   @observable loading = false;
+
+  @observable envData = [];
+
   @observable pageInfo = {
     current: 1,
     total: 0,
@@ -68,18 +72,30 @@ class PipelineStore {
     return this.recordDate.slice();
   }
 
-  async loadListData(projectId, page, size, sort, param, searchData) {
+  @action setEnvData(data) {
+    this.envData = data;
+  }
+
+  @computed get getEnvData() {
+    return this.envData.slice();
+  }
+
+  async loadListData(projectId, page, size, sort, param, searchData, envIds) {
     this.setLoading(true);
     let searchPath = '';
+    let envPath = '';
     if(searchData && searchData.length) {
       _.forEach(searchData, item => {
         searchPath += `&${item}=true`
       })
     }
+    if (envIds && envIds.length) {
+      envPath = `&envIds=${envIds.join()}`;
+    }
     const sortPath = sort ? `&sort=${sort.field || sort.columnKey},${SORTER_MAP[sort.order] || 'desc'}` : '';
     const data = await axios
       .post(
-        `/devops/v1/projects/${projectId}/pipeline/list_by_options?page=${page}&size=${size}${sortPath}${searchPath}`,
+        `/devops/v1/projects/${projectId}/pipeline/list_by_options?page=${page}&size=${size}${sortPath}${searchPath}${envPath}`,
         JSON.stringify(param),
       )
       .catch(e => {
@@ -185,6 +201,15 @@ class PipelineStore {
       this.setRecordDate(result);
     }
   }
+
+  loadEnvData = projectId =>
+    axios
+      .get(`/devops/v1/projects/${projectId}/envs?active=true`)
+      .then((data) => {
+        if (handlePromptError(data)) {
+          this.setEnvData(data);
+        }
+      });
 }
 
 const pipelineStore = new PipelineStore();

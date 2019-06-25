@@ -225,6 +225,7 @@ class ExpandRow extends Component {
             connect={connect}
             appId={appId}
             envId={envId}
+            instanceId={id}
             name={name}
             count={{
               sum,
