@@ -896,6 +896,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         devopsRegistrySecretE.setSecretDetail(gson.toJson(devopsProjectConfigE.getConfig()));
                         devopsRegistrySecretRepository.update(devopsRegistrySecretE);
                         deployService.operateSecret(clusterId, namespace, devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), UPDATE);
+                    }else {
+                        if(!devopsRegistrySecretE.getStatus()) {
+                            deployService.operateSecret(clusterId, namespace, devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), UPDATE);
+                        }
                     }
                     secretCode = devopsRegistrySecretE.getSecretCode();
                 }
