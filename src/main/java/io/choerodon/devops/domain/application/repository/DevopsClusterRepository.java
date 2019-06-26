@@ -40,4 +40,6 @@ public interface DevopsClusterRepository {
     PageInfo<DevopsEnvPodE> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 
     DevopsClusterE queryByCode(Long organizationId, String code);
+
+    void updateProjectId(Long orgId,Long proId);
 }
