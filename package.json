@@ -17,7 +17,7 @@
     "start:local": "choerodon-front-boot start --config ./config-local.js",
     "dist": "choerodon-front-boot dist --config ./react/config.js",
     "lint-staged": "lint-staged",
-    "lint-staged:es": "eslint react/**",
+    "lint-staged:es": "eslint",
     "compile": "gulp compile"
   },
   "peerDependencies": {
