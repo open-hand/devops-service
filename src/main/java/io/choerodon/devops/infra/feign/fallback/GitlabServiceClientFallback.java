@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import java.util.List;
+import java.util.Map;
+
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
@@ -8,30 +11,17 @@ import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
-import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
-import io.choerodon.devops.infra.dataobject.gitlab.JobDO;
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO;
-import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
-import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO;
-import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
-import io.choerodon.devops.infra.dataobject.gitlab.UserDO;
+import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.List;
-import java.util.Map;
+import org.springframework.stereotype.Component;
 
 
 /**
  * Created by younger on 2018/3/29.
  */
+@Component
 public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override

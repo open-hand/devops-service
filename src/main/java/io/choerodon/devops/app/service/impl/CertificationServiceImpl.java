@@ -25,7 +25,6 @@ import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,8 +43,6 @@ public class CertificationServiceImpl implements CertificationService {
     private static final String CERTIFICATE_KIND = "certificate";
     public static final String UPLOAD = "upload";
 
-    @Value("${cert.testCert}")
-    private Boolean testCert;
 
     @Autowired
     private CertificationRepository certificationRepository;
@@ -199,7 +196,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         c7nCertification.setMetadata(new CertificationMetadata(name,
                 envCode));
-        CertificationSpec spec = new CertificationSpec(testCert);
+        CertificationSpec spec = new CertificationSpec(type);
         if (type.equals(CertificationType.REQUEST.getType())) {
             CertificationAcme acme = new CertificationAcme();
             acme.initConfig(new CertificationConfig(domains));

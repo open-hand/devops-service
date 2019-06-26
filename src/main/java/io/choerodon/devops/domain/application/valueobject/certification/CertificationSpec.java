@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import io.choerodon.devops.infra.common.util.enums.CertificationType;
+
 /**
  * Created by n!Ck
  * Date: 2018/8/20
@@ -13,6 +15,9 @@ import java.util.Objects;
  */
 
 public class CertificationSpec {
+    public static final String LETSENCRYPT_PROD = "letsencrypt-prod";
+    public static final String LOCALHOST = "localhost";
+    public static final String CLUSTER_ISSUER = "ClusterIssuer";
     private String commonName;
     private List<String> dnsNames;
     private CertificationAcme acme;
@@ -28,11 +33,14 @@ public class CertificationSpec {
     /**
      * construct test param
      */
-    public CertificationSpec(Boolean testCert) {
-        if (testCert) {
-            issuerRef = new HashMap<>();
-            issuerRef.put("name", "localhost");
-            issuerRef.put("kind", "ClusterIssuer");
+    public CertificationSpec(String type) {
+        issuerRef = new HashMap<>();
+        if (type.equals(CertificationType.REQUEST.getType())) {
+            issuerRef.put("name", LETSENCRYPT_PROD);
+            issuerRef.put("kind", CLUSTER_ISSUER);
+        } else if (type.equals(CertificationType.UPLOAD.getType())) {
+            issuerRef.put("name", LOCALHOST);
+            issuerRef.put("kind", CLUSTER_ISSUER);
         }
     }
 
