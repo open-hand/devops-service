@@ -17,6 +17,9 @@
     "react",
     "jsx-a11y"
   ],
+  "extends": [
+    "airbnb"
+  ],
   "rules": {
     "jsx-a11y/interactive-supports-focus": "off",
     "jsx-a11y/anchor-has-content": "off",
