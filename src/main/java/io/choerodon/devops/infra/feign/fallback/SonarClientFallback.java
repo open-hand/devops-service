@@ -4,11 +4,13 @@ import java.util.Map;
 
 import io.choerodon.devops.api.dto.sonar.*;
 import io.choerodon.devops.infra.feign.SonarClient;
+import org.springframework.stereotype.Component;
 import retrofit2.Call;
 
 /**
  * Created by Sheep on 2019/5/6.
  */
+@Component
 public class SonarClientFallback implements SonarClient {
 
     @Override

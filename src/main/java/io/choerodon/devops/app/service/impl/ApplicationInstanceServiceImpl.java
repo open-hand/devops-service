@@ -660,13 +660,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .convertList(applicationInstancesDOS, ApplicationInstanceE.class);
 
         setInstanceConnect(applicationInstanceES, connectedEnvList, updatedEnvList);
-        Map<String, List<ApplicationInstanceE>> resultMaps = applicationInstanceES.stream()
-                .collect(Collectors.groupingBy(t -> t.getApplicationE().getName()));
+        Map<Long, List<ApplicationInstanceE>> resultMaps = applicationInstanceES.stream()
+                .collect(Collectors.groupingBy(t -> t.getApplicationE().getId()));
         DevopsEnvPreviewDTO devopsEnvPreviewDTO = new DevopsEnvPreviewDTO();
         List<DevopsEnvPreviewAppDTO> devopsEnvPreviewAppDTOS = new ArrayList<>();
         resultMaps.forEach((key, value) -> {
             DevopsEnvPreviewAppDTO devopsEnvPreviewAppDTO = new DevopsEnvPreviewAppDTO();
-            devopsEnvPreviewAppDTO.setAppName(key);
+            devopsEnvPreviewAppDTO.setAppName(value.get(0).getApplicationE().getName());
             devopsEnvPreviewAppDTO.setAppCode(value.get(0).getAppCode());
             devopsEnvPreviewAppDTO.setProjectId(value.get(0).getProjectId());
             List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper
