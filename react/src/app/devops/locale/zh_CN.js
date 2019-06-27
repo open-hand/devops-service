@@ -66,8 +66,8 @@ const pageDetail = {
   'network.link': `${docServer}/user-guide/deployment-pipeline/service/`,
   'network.create.title': '在项目"{name}"中创建网络',
   'network.create.description':
-    '您可在此选择环境及实例，配置网络转发策略。目前支持内部和外部两种网络转发方式。\n' +
-    '        转发内部网络，则只需定义端口即可，系统会自动为您分配集群内部IP；转发外部网络，则需要定义外部IP及端口。',
+    '您可在此选择环境及实例，配置网络转发策略。目前支持内部和外部两种网络转发方式。\n'
+    + '        转发内部网络，则只需定义端口即可，系统会自动为您分配集群内部IP；转发外部网络，则需要定义外部IP及端口。',
   'network.create.link': `${docServer}/user-guide/deployment-pipeline/service/`,
   'network.update.title': '对网络"{name}"进行修改',
   'network.update.description': '您可在此修改网络配置信息。',
@@ -139,7 +139,7 @@ const pageDetail = {
   'release.editVersion.title': '查看应用"{name}"的版本',
   'release.editVersion.description':
     '您可在此查看未发布及已发布的版本，且可以发布未发布的版本。',
-  'release.addVersion.title': `添加应用"{name}"发布的版本`,
+  'release.addVersion.title': '添加应用"{name}"发布的版本',
   'release.addVersion.description': '您可在此勾选并添加需要发布的版本。',
 
   // container
@@ -893,6 +893,7 @@ const zhCN = {
   'deploy.config.update.submit': '覆盖',
   'deploy.config.update.success': '覆盖成功！',
   'deploy.config.update.failed': '覆盖失败！',
+  'deploy.app.noresult': '无符合搜索条件的应用。',
 
   // envPipeline
   'envPl.head': '环境管理',
@@ -1637,7 +1638,7 @@ const zhCN = {
   'secret.des': '描述',
   'secret.keyValueSpan': '键值对不能为空，请检查输入。',
 
-  //组织层证书管理
+  // 组织层证书管理
   'certificate.head': '证书管理',
   'certificate.file.add': '添加证书文件',
   'certificate.file.add.tip': '您需在此添加对应的文件内容，目前只支持base64格式的证书内容',
@@ -1686,7 +1687,7 @@ const zhCN = {
   'elements.docker.private.describe': '确认修改此项目的 Docker 仓库类型为私有？\n修改后，项目下所有应用均会默认置于该私库之中。',
   'elements.docker.open.describe': '确认修改此项目的 Docker 仓库类型为公开？',
 
-// terminal
+  // terminal
   'devops.term.close': '连接已关闭',
   'devops.term.error': '连接错误，请重新打开',
 

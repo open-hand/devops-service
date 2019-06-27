@@ -15,10 +15,6 @@ import './QuaityCard.scss';
 @withRouter
 @observer
 export default class StageTitle extends Component {
-
-  /**
-   * 跳转至代码质量页
-   */
   linkToQuality = () => {
     const {
       history,
@@ -45,7 +41,7 @@ export default class StageTitle extends Component {
       return null;
     }
     const qualityList = [];
-    _.map(QUALITY_LIST, item => {
+    _.map(QUALITY_LIST, (item) => {
       const data = _.find(sonarContents, ({ key }) => item.key === key) || {};
       qualityList.push(Object.assign({}, item, data));
     });
@@ -63,7 +59,8 @@ export default class StageTitle extends Component {
           <Icon type="quality" />
           <FormattedMessage id="codeQuality.content.title" />
           <span
-            className="codeQuality-title-date">{formatMessage({ id: 'codeQuality.analysis' })}：{date.split('+')[0].replace(/T/g, ' ')}</span>
+            className="codeQuality-title-date"
+          >{formatMessage({ id: 'codeQuality.analysis' })}：{date.split('+')[0].replace(/T/g, ' ')}</span>
         </div>
         <Spin spinning={getLoading}>
           <div className="c7n-card-codeQuality-content">

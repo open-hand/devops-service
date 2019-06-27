@@ -56,8 +56,8 @@ export default class Configuration extends Component {
       getSelectedValue,
     } = store;
     const { templateId, configValue } = getSelectedValue;
-    const isCurrentProjectApp = String(app.projectId) === id;
-    const isMarketApp = !isCurrentProjectApp && state && (state.prevPage === 'market' || state.isLocalApp) || app.publishLevel;
+    const isCurrentProjectApp = app && String(app.projectId) === id;
+    const isMarketApp = (!isCurrentProjectApp && state && (state.prevPage === 'market' || state.isLocalApp)) || app.publishLevel;
 
     this.setState({ ...getSelectedValue });
 
@@ -143,8 +143,8 @@ export default class Configuration extends Component {
         },
       },
     } = this.props;
-    const isCurrentProjectApp = String(getSelectedApp.projectId) === id;
-    const isMarketApp = !isCurrentProjectApp && state && (state.prevPage === 'market' || state.isLocalApp) || getSelectedApp.publishLevel;
+    const isCurrentProjectApp = getSelectedApp && String(getSelectedApp.projectId) === id;
+    const isMarketApp = (!isCurrentProjectApp && state && (state.prevPage === 'market' || state.isLocalApp)) || getSelectedApp.publishLevel;
 
     this.setState({
       configValue: value,
@@ -153,7 +153,7 @@ export default class Configuration extends Component {
     });
   };
 
-  handleYamlCheck = flag => {
+  handleYamlCheck = (flag) => {
     this.setState({ hasEditorError: flag });
   };
 
@@ -325,7 +325,7 @@ export default class Configuration extends Component {
       },
       AppState: {
         currentMenuType: {
-          id,
+          id: projectId,
         },
       },
     } = this.props;
@@ -353,8 +353,8 @@ export default class Configuration extends Component {
     ));
 
     const enableClick = !(configValue || getCurrentValue) || hasEditorError;
-    const isCurrentProjectApp = String(app.projectId) === id;
-    const disableSelectConfig = !isCurrentProjectApp && state && (state.prevPage === 'market' || state.isLocalApp) || !!app.publishLevel;
+    const isCurrentProjectApp = app && String(app.projectId) === projectId;
+    const disableSelectConfig = (!isCurrentProjectApp && state && (state.prevPage === 'market' || state.isLocalApp)) || !!app.publishLevel;
 
     return (
       <Fragment>
@@ -384,10 +384,9 @@ export default class Configuration extends Component {
               label={formatMessage({ id: 'deploy.step.config.template' })}
               onSelect={this.selectTemplate}
               onChange={this.clearTemplate}
-              filterOption={(input, option) =>
-                option.props.children
-                  .toLowerCase()
-                  .indexOf(input.toLowerCase()) >= 0
+              filterOption={(input, option) => option.props.children
+                .toLowerCase()
+                .indexOf(input.toLowerCase()) >= 0
               }
             >
               {configOptions}

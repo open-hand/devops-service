@@ -71,9 +71,15 @@ export default class AppList extends Component {
         },
       },
     } = this.props;
-    const { isMarket } = this.state;
+    const { isMarket, searchValue } = this.state;
 
-    AppListStore.loadAppsData({ projectId, isMarket, current, pageSize });
+    AppListStore.loadAppsData({
+      projectId,
+      isMarket,
+      current,
+      pageSize,
+      postData: { param: searchValue, searchParam: {} },
+    });
   };
 
   /**
@@ -109,7 +115,7 @@ export default class AppList extends Component {
    * 表格行选择应用
    * @param record
    */
-  handleRowSelectApp = (record) => ({
+  handleRowSelectApp = record => ({
     onClick: () => this.handleSelectApp(record),
   });
 
@@ -148,14 +154,15 @@ export default class AppList extends Component {
     this.setState({ searchValue: value });
     AppListStore.setSearchValue(value);
 
-    this.searchQuery(value);
+    // 将e传递给debounce函数时，e.target将会丢失，所以要直接传递值
+    this.searchQueryDebounce(value);
   };
 
   /**
    * 立即发起搜索请求
-   * @param value
+   * @param e
    */
-  searchQueryIm = (value) => {
+  searchQueryIm = (e) => {
     const {
       AppState: {
         currentMenuType: {
@@ -165,6 +172,10 @@ export default class AppList extends Component {
     } = this.props;
     const { isMarket } = this.state;
 
+    const value = typeof e === 'string' ? e : e.target.value;
+
+    this.setState({ searchValue: value });
+    AppListStore.setSearchValue(value);
     AppListStore.loadAppsData({
       projectId,
       isMarket,
@@ -173,10 +184,7 @@ export default class AppList extends Component {
     });
   };
 
-  /**
-   * 搜索节流
-   */
-  searchQuery = _.debounce(this.searchQueryIm, 500);
+  searchQueryDebounce = _.debounce(this.searchQueryIm, 500);
 
   /**
    * 清空搜索框数据
@@ -299,7 +307,7 @@ export default class AppList extends Component {
         pagination={getLocalPageInfo}
       />
     );
-  };
+  }
 
   /**
    * 应用市场应用
@@ -357,7 +365,7 @@ export default class AppList extends Component {
         pagination={getStorePageInfo}
       />
     );
-  };
+  }
 
   get renderSearch() {
     const {
@@ -396,17 +404,17 @@ export default class AppList extends Component {
       getLocalPageInfo,
     } = AppListStore;
 
-    const items = _.map(getLocalData, item => {
+    const items = getLocalData.length ? _.map(getLocalData, (item) => {
       const isCurrent = app && app.id === item.id && !isMarket;
 
       return renderProjectApp(item, isCurrent, this.handleSelectApp);
-    });
+    }) : <div className="c7n-deploy-noresult"><FormattedMessage id="deploy.app.noresult" /></div>;
 
     return <Fragment>
       <div>
         {items}
       </div>
-      {renderCardPagination({ ...getLocalPageInfo, callback: this.onPageChange })}
+      {getLocalData.length ? renderCardPagination({ ...getLocalPageInfo, callback: this.onPageChange }) : null}
     </Fragment>;
   }
 
@@ -420,17 +428,17 @@ export default class AppList extends Component {
       app,
     } = this.state;
 
-    const items = _.map(getStoreData, item => {
+    const items = getStoreData.length ? _.map(getStoreData, (item) => {
       const isCurrent = app && app.appId === item.appId && isMarket;
 
       return renderMarketApp(item, isCurrent, this.handleSelectApp);
-    });
+    }) : <div className="c7n-deploy-noresult"><FormattedMessage id="deploy.app.noresult" /></div>;
 
     return <Fragment>
       <div>
         {items}
       </div>
-      {renderCardPagination({ ...getStorePageInfo, callback: this.onPageChange })}
+      {getStoreData.length ? renderCardPagination({ ...getStorePageInfo, callback: this.onPageChange }) : null}
     </Fragment>;
   }
 
