@@ -3,7 +3,7 @@
   "routeName": "devops",
   "description": "",
   "license": "ISC",
-  "version": "0.18.2",
+  "version": "0.18.3",
   "keywords": [],
   "contributors": [
     "choerodon"
@@ -45,8 +45,7 @@
     "uuid": "^3.3.2",
     "webpack": "^3.7.0",
     "webpack-dev-server": "^2.9.1",
-    "xterm": "^3.12.0",
-    "yamljs": "^0.3.0"
+    "xterm": "^3.12.0"
   },
   "devDependencies": {
     "@choerodon/boot": "0.18.x",
