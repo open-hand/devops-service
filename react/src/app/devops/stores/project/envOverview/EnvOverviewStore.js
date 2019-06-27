@@ -172,7 +172,7 @@ class EnvOverviewStore {
     return this.isLoading;
   }
 
-  loadActiveEnv = (projectId, type) => {
+  loadActiveEnv = (projectId, type, defaultApp = null, defaultIst = null) => {
     if (Number(this.preProId) !== Number(projectId)) {
       this.setEnvcard([]);
       this.setTpEnvId(null);
@@ -223,10 +223,11 @@ class EnvOverviewStore {
                 const time = Date.now();
 
                 InstancesStore.setAppPageSize(appPageSize);
-                loadAppNameByEnv(projectId, this.tpEnvId, 1, appPageSize);
+                loadAppNameByEnv(projectId, this.tpEnvId, 1, appPageSize, defaultApp);
                 loadInstanceAll(true, projectId, {
                   envId: this.tpEnvId,
                   appId: getAppId,
+                  instanceId: defaultIst,
                 }, time).catch(err => {
                   InstancesStore.changeLoading(false);
                 });
@@ -377,7 +378,7 @@ class EnvOverviewStore {
 
   retry = (projectId, envId) =>
     axios
-      .get(`/devops//v1/projects/${projectId}/envs/${envId}/retry`)
+      .get(`/devops/v1/projects/${projectId}/envs/${envId}/retry`);
 }
 
 const envOverviewStore = new EnvOverviewStore();

@@ -893,6 +893,7 @@ const zhCN = {
   'deploy.config.update.submit': '覆盖',
   'deploy.config.update.success': '覆盖成功！',
   'deploy.config.update.failed': '覆盖失败！',
+  'deploy.app.noresult': '无符合搜索条件的应用。',
 
   // envPipeline
   'envPl.head': '环境管理',
