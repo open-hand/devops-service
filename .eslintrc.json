@@ -73,6 +73,7 @@
     "no-console": "error",
     "no-debugger": "error",
     "no-unused-expressions": "off",
+    "no-use-before-define": "off",
     "consistent-return": "off",
     "global-require": "off",
     "import/no-dynamic-require": "off",
