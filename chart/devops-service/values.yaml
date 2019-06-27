@@ -51,12 +51,9 @@ env:
     SERVICES_HARBOR_INSECURESKIPTLSVERIFY: true
     SERVICES_GATEWAY_URL: http://api.example.com
     AGENT_VERSION: 0.5.0.RELEASE
-    SECURITY_BASIC_ENABLE: false
-    SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**,/webhook/**,/workflow/**,/sonar/info
     AGENT_SERVICEURL: ws://devops-service.choerodon.com.cn/agent/
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
     AGENT_CERTMANAGERURL: https://openchart.choerodon.com.cn/choerodon/infra/
-    CERT_TESTCERT: false
     TEMPLATE_VERSION: 0.13.0
     TEMPLATE_URL: https://github.com/choerodon/choerodon-devops-templates.git
     PRO_API_HOST: gateway.choerodon.com.cn

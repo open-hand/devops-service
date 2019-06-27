@@ -162,7 +162,11 @@ public class ObjectOperation<T> {
                 newV1beta1Ingress = (V1beta1Ingress) t;
                 newV1beta1Ingress.getMetadata().setAnnotations(v1beta1Ingress.getMetadata().getAnnotations());
                 if (!deleteCert) {
-                    newV1beta1Ingress.getSpec().setTls(v1beta1Ingress.getSpec().getTls());
+                    if(!newV1beta1Ingress.getSpec().getTls().isEmpty()) {
+                        newV1beta1Ingress.getSpec().setTls(newV1beta1Ingress.getSpec().getTls());
+                    }else {
+                        newV1beta1Ingress.getSpec().setTls(v1beta1Ingress.getSpec().getTls());
+                    }
                 }
             } else {
                 return;

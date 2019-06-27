@@ -404,6 +404,7 @@ export default class AppList extends Component {
       getLocalPageInfo,
     } = AppListStore;
 
+
     const items = getLocalData.length ? _.map(getLocalData, (item) => {
       const isCurrent = app && app.id === item.id && !isMarket;
 
@@ -428,7 +429,9 @@ export default class AppList extends Component {
       app,
     } = this.state;
 
+
     const items = getStoreData.length ? _.map(getStoreData, (item) => {
+
       const isCurrent = app && app.appId === item.appId && isMarket;
 
       return renderMarketApp(item, isCurrent, this.handleSelectApp);

@@ -311,10 +311,6 @@ class InstancesStore {
         const res = handleProptError(data);
         if (res) {
           this.setAppNameByEnv(data.list);
-          // if (this.appId && !_.find(data.list, ['id', this.appId])) {
-          //   this.setAppId(null);
-          // }
-
           this.setAppPageInfo(data);
           return data.list;
         }

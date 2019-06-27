@@ -41,7 +41,9 @@
         AND dp.namespace = de.code
         AND de.id = dai.env_id
         ) podRunningCount,
-        ( SELECT count( 1 ) FROM devops_service_instance dsi WHERE dsi.app_instance_id = dai.id ) serviceCount,
+        (  select count(1) from devops_service ds
+        left join devops_service_instance dsi on ds.id = dsi.service_id
+        where dsi.app_instance_id = dai.id ) serviceCount,
         (
         SELECT
         count(distinct dip.ingress_id)

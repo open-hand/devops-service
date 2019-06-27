@@ -81,8 +81,6 @@ asgard-servie:
     ConnectTimeout: 50000
     ReadTimeout: 50000
 
-cert:
-  testCert: false # 证书是否为测试证书
 logging:
   level:
     io.choerodon.event.consumer: debug

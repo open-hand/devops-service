@@ -72,7 +72,7 @@
         de.project_id = #{projectId}
         AND de.id = #{envId}
         <if test="appId!=null and appId !=''">
-            ORDER BY da.id not in (#{appId})
+            ORDER BY da.id not in (#{appId}),da.id ASC
         </if>
     </select>
 
