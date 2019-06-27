@@ -405,7 +405,7 @@ export default class AppList extends Component {
     } = AppListStore;
 
 
-    const items = getLocalData.length ? _.map(getLocalData, (item) => {
+    const items = getLocalData.length ? _.map(getLocalData, item => {
       const isCurrent = app && app.id === item.id && !isMarket;
 
       return renderProjectApp(item, isCurrent, this.handleSelectApp);
@@ -430,8 +430,7 @@ export default class AppList extends Component {
     } = this.state;
 
 
-    const items = getStoreData.length ? _.map(getStoreData, (item) => {
-
+    const items = getStoreData.length ? _.map(getStoreData, item => {
       const isCurrent = app && app.appId === item.appId && isMarket;
 
       return renderMarketApp(item, isCurrent, this.handleSelectApp);

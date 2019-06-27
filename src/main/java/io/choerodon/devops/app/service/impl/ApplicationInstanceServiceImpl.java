@@ -689,7 +689,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
         ApplicationVersionE applicationVersionE =
                 applicationVersionRepository.query(applicationDeployDTO.getAppVersionId());
-        
+
         //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
         ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO);

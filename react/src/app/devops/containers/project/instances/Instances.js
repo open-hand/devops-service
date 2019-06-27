@@ -218,7 +218,8 @@ class Instances extends Component {
 
     InstancesStore.setValue(null);
 
-    const res = await InstancesStore.loadValue(projectId, id, commandVersionId);
+
+    let res = await InstancesStore.loadValue(projectId, id, commandVersionId);
     if (res) {
       this.setState({ changeVisible: true, id });
     }
@@ -240,6 +241,7 @@ class Instances extends Component {
     } = this.props;
     const { defaultIst } = this.state;
 
+    const appId = InstancesStore.getAppId;
     const envId = EnvOverviewStore.getTpEnvId;
 
     this.setState({ confirmLoading: true });
@@ -253,9 +255,11 @@ class Instances extends Component {
     const result = handleProptError(response);
     if (result) {
       const time = Date.now();
-      loadInstanceAll(true, projectId, { envId, getAppId, instanceId: defaultIst }, time)
-        .catch((err) => {
-          changeLoading(false);
+
+      loadInstanceAll(true, projectId, { envId, appId, instanceId: defaultIst }, time)
+        .catch(err => {
+          InstancesStore.changeLoading(false);
+
           Choerodon.handleResponseError(err);
         });
     }
@@ -377,7 +381,9 @@ class Instances extends Component {
       InstancesStore.setIstTableFilter(null);
       InstancesStore.setIstPage(null);
       loadInstanceAll(true, projectId, { envId, getAppId, instanceId: defaultIst }, Date.now())
-        .catch((err) => {
+
+        .catch(err => {
+
           InstancesStore.changeLoading(false);
           Choerodon.handleResponseError(err);
         });
@@ -472,8 +478,10 @@ class Instances extends Component {
         setAppId(null);
         setIstTableFilter(null);
         const time = Date.now();
-        loadInstanceAll(true, projectId, { envId, instanceId: defaultIst }, time).catch((err) => {
-          changeLoading(false);
+
+        loadInstanceAll(true, projectId, { envId, instanceId: defaultIst }, time).catch(err => {
+          InstancesStore.changeLoading(false);
+
           Choerodon.handleResponseError(err);
         });
         this.closeConfirm();
