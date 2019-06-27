@@ -9,23 +9,23 @@ import { Tooltip, Button, Modal, Collapse, Spin } from "choerodon-ui";
 import { formatDate } from "../../../../../utils/index";
 import DeploymentStore from "../../../../../stores/project/instances/DeploymentStore";
 import InstancesStore from "../../../../../stores/project/instances/InstancesStore";
-import InterceptMask from "../../../../../components/interceptMask/InterceptMask";
 import SimpleTable from "./SimpleTable";
 import PodCircle from "./PodCircle";
 
 import "./index.scss";
+
 
 const { AppState } = stores;
 const { Sidebar } = Modal;
 const { Panel } = Collapse;
 
 const PANEL_TYPE = [
-  "ports",
-  "volume",
-  "health",
-  "security",
-  "label",
-  "variables",
+  'ports',
+  'volume',
+  'health',
+  'security',
+  'label',
+  'variables',
 ];
 
 @observer
@@ -34,7 +34,7 @@ class ExpandRow extends Component {
     super(props);
     this.state = {
       visible: false,
-      sideName: "",
+      sideName: '',
       activeKey: [],
       isAllExpand: false,
     };
@@ -48,7 +48,7 @@ class ExpandRow extends Component {
     this.handleExpandAll = this.handleExpandAll.bind(this);
     this.containerLabel = (
       <span className="c7ncd-deploy-container-label">
-        {this.props.intl.formatMessage({ id: "ist.deploy.container" })}
+        {this.props.intl.formatMessage({ id: 'ist.deploy.container' })}
       </span>
     );
   }
@@ -76,28 +76,28 @@ class ExpandRow extends Component {
 
     const contentList = [
       {
-        title: "Deployments",
-        main: getPodContent("deploymentDTOS"),
+        title: 'Deployments',
+        main: getPodContent('deploymentDTOS'),
       },
       {
-        title: "Stateful Set",
-        main: getPodContent("statefulSetDTOS"),
+        title: 'Stateful Set',
+        main: getPodContent('statefulSetDTOS'),
       },
       {
-        title: "Daemon Set",
-        main: getPodContent("daemonSetDTOS"),
+        title: 'Daemon Set',
+        main: getPodContent('daemonSetDTOS'),
       },
       {
-        title: "PVC",
-        main: getNoPodContent("persistentVolumeClaimDTOS"),
+        title: 'PVC',
+        main: getNoPodContent('persistentVolumeClaimDTOS'),
       },
       {
-        title: "Service",
-        main: getNoPodContent("serviceDTOS"),
+        title: 'Service',
+        main: getNoPodContent('serviceDTOS'),
       },
       {
-        title: "Ingress",
-        main: getNoPodContent("ingressDTOS"),
+        title: 'Ingress',
+        main: getNoPodContent('ingressDTOS'),
       },
     ];
 
@@ -139,13 +139,13 @@ class ExpandRow extends Component {
 
     const POD_TYPE = {
       // 确保“当前/需要/可提供”的顺序
-      deploymentDTOS: ["current", "desired", "available"],
+      deploymentDTOS: ['current', 'desired', 'available'],
       daemonSetDTOS: [
-        "currentScheduled",
-        "desiredScheduled",
-        "numberAvailable",
+        'currentScheduled',
+        'desiredScheduled',
+        'numberAvailable',
       ],
-      statefulSetDTOS: ["currentReplicas", "desiredReplicas", "readyReplicas"],
+      statefulSetDTOS: ['currentReplicas', 'desiredReplicas', 'readyReplicas'],
     };
     const [current, desired, available] = POD_TYPE[podType];
 
@@ -153,8 +153,8 @@ class ExpandRow extends Component {
 
     // 计算 pod 数量和环形图占比
     const count = _.countBy(devopsEnvPodDTOS, pod => !!pod.ready);
-    const correctCount = count["true"] || 0;
-    const errorCount = count["false"] || 0;
+    const correctCount = count['true'] || 0;
+    const errorCount = count['false'] || 0;
     const sum = correctCount + errorCount;
     const correct = sum > 0 ? (correctCount / sum) * (Math.PI * 2 * 30) : 0;
 
@@ -163,9 +163,9 @@ class ExpandRow extends Component {
      * 从实例点过去的返回实例
      * 从环境总览点过去的返回实力总览
      */
-    const currentPage = window.location.href.includes("env-overview")
-      ? "env-overview"
-      : "instance";
+    const currentPage = window.location.href.includes('env-overview')
+      ? 'env-overview'
+      : 'instance';
 
     return (
       <div key={name} className="c7n-deploy-expanded-item">
@@ -183,8 +183,8 @@ class ExpandRow extends Component {
           </li>
           <li className="c7n-deploy-expanded-lists">
             <span className="c7n-deploy-expanded-keys">
-              {podType === "deploymentDTOS" ? (
-                "ReplicaSet"
+              {podType === 'deploymentDTOS' ? (
+                'ReplicaSet'
               ) : (
                 <FormattedMessage id={`ist.expand.net.status`} />
               )}
@@ -192,10 +192,10 @@ class ExpandRow extends Component {
             </span>
             <span
               title={`${item[available] || 0} available / ${item[current] ||
-                0} current / ${item[desired] || 0} desired`}
+              0} current / ${item[desired] || 0} desired`}
               className="c7n-deploy-expanded-values"
             >{`${item[available] || 0} available / ${item[current] ||
-              0} current / ${item[desired] || 0} desired`}</span>
+            0} current / ${item[desired] || 0} desired`}</span>
           </li>
           <li className="c7n-deploy-expanded-lists">
             <span className="c7n-deploy-expanded-keys">
@@ -205,7 +205,7 @@ class ExpandRow extends Component {
               <Tooltip title={formatDate(age)}>
                 <TimeAgo
                   datetime={age}
-                  locale={Choerodon.getMessage("zh_CN", "en")}
+                  locale={Choerodon.getMessage('zh_CN', 'en')}
                 />
               </Tooltip>
             </span>
@@ -252,32 +252,32 @@ class ExpandRow extends Component {
   getNoPodContent = (type, data) => {
     const TYPE_KEY = {
       serviceDTOS: {
-        leftItems: ["type", "externalIp", "age"],
-        rightItems: ["clusterIp", "port"],
+        leftItems: ['type', 'externalIp', 'age'],
+        rightItems: ['clusterIp', 'port'],
       },
       ingressDTOS: {
-        leftItems: ["type", "ports"],
-        rightItems: ["address", "age"],
+        leftItems: ['type', 'ports'],
+        rightItems: ['address', 'age'],
       },
       persistentVolumeClaimDTOS: {
-        leftItems: ["status", "accessModes"],
-        rightItems: ["capacity", "age"],
+        leftItems: ['status', 'accessModes'],
+        rightItems: ['capacity', 'age'],
       },
     };
     const content = key => {
       let text = null;
       switch (key) {
-        case "age":
+        case 'age':
           text = (
             <Tooltip title={formatDate(data[key])}>
               <TimeAgo
                 datetime={data[key]}
-                locale={Choerodon.getMessage("zh_CN", "en")}
+                locale={Choerodon.getMessage('zh_CN', 'en')}
               />
             </Tooltip>
           );
           break;
-        case "status":
+        case 'status':
           text = (
             <span className={`c7n-deploy-pvc c7n-deploy-pvc_${data[key]}`}>
               {data[key]}
@@ -354,7 +354,7 @@ class ExpandRow extends Component {
     let hasPorts = false;
 
     if (containers && containers.length) {
-      const colItems = ["name", "containerPort", "protocol", "hostPort"];
+      const colItems = ['name', 'containerPort', 'protocol', 'hostPort'];
 
       const columns = _.map(colItems, item => ({
         title: <FormattedMessage id={`ist.deploy.ports.${item}`} />,
@@ -416,8 +416,8 @@ class ExpandRow extends Component {
         const readinessProbe = item.readinessProbe || {};
         const livenessProbe = item.livenessProbe || {};
 
-        const readDom = _returnHealthDom("readiness", readinessProbe);
-        const liveDom = _returnHealthDom("liveness", livenessProbe);
+        const readDom = _returnHealthDom('readiness', readinessProbe);
+        const liveDom = _returnHealthDom('liveness', livenessProbe);
 
         return (
           <div key={name} className="c7ncd-deploy-health-wrap">
@@ -458,16 +458,16 @@ class ExpandRow extends Component {
   renderVar(containers, isLoading) {
     const columns = [
       {
-        width: "50%",
+        width: '50%',
         title: <FormattedMessage id="ist.deploy.variables.key" />,
-        key: "name",
-        dataIndex: "name",
+        key: 'name',
+        dataIndex: 'name',
       },
       {
-        width: "50%",
+        width: '50%',
         title: <FormattedMessage id="ist.deploy.variables.value" />,
-        key: "value",
-        dataIndex: "value",
+        key: 'value',
+        dataIndex: 'value',
       },
     ];
 
@@ -530,16 +530,16 @@ class ExpandRow extends Component {
 
     const columns = [
       {
-        width: "50%",
+        width: '50%',
         title: <FormattedMessage id="ist.deploy.key" />,
-        key: "key",
-        dataIndex: "key",
+        key: 'key',
+        dataIndex: 'key',
       },
       {
-        width: "50%",
+        width: '50%',
         title: <FormattedMessage id="ist.deploy.value" />,
-        key: "value",
-        dataIndex: "value",
+        key: 'value',
+        dataIndex: 'value',
       },
     ];
 
@@ -566,12 +566,12 @@ class ExpandRow extends Component {
 
     const _volumeType = (vol, mounts) => {
       const vDom = _volumesTemplate(vol);
-      const columnsItem = ["mountPath", "subPath", "readOnly"];
+      const columnsItem = ['mountPath', 'subPath', 'readOnly'];
       const columns = _.map(columnsItem, item => ({
         title: <FormattedMessage id={`ist.deploy.volume.${item}`} />,
         key: item,
         dataIndex: item,
-        width: item === "readOnly" ? "16%" : "42%",
+        width: item === 'readOnly' ? '16%' : '42%',
         render(text) {
           return _.isBoolean(text) ? text.toString() : text;
         },
@@ -657,21 +657,21 @@ class ExpandRow extends Component {
             {this.containerLabel}
           </div>
           <div className="c7ncd-deploy-security-block">
-            {_securityItem("imagePullPolicy", imagePullPolicy, "_flex")}
-            {_securityItem("privileged", privileged, "_flex")}
+            {_securityItem('imagePullPolicy', imagePullPolicy, '_flex')}
+            {_securityItem('privileged', privileged, '_flex')}
             {_securityItem(
-              "allowPrivilegeEscalation",
+              'allowPrivilegeEscalation',
               allowPrivilegeEscalation,
-              "_flex"
+              '_flex',
             )}
           </div>
           <div className="c7ncd-deploy-security-block">
-            {_securityItem("runAsNonRoot", runAsNonRoot)}
-            {_securityItem("readOnlyRootFilesystem", readOnlyRootFilesystem)}
+            {_securityItem('runAsNonRoot', runAsNonRoot)}
+            {_securityItem('readOnlyRootFilesystem', readOnlyRootFilesystem)}
           </div>
           <div className="c7ncd-deploy-security-block">
-            {_securityItem("capabilities.add", addArr)}
-            {_securityItem("capabilities.drop", dropArr)}
+            {_securityItem('capabilities.add', addArr)}
+            {_securityItem('capabilities.drop', dropArr)}
           </div>
         </Fragment>
       );
@@ -680,8 +680,8 @@ class ExpandRow extends Component {
     const securityContent = (
       <div className="c7ncd-deploy-security-wrap">
         <div className="c7ncd-deploy-security-block">
-          {_securityItem("hostIPC", hostIPC)}
-          {_securityItem("hostNetwork", hostNetwork)}
+          {_securityItem('hostIPC', hostIPC)}
+          {_securityItem('hostNetwork', hostNetwork)}
         </div>
         {securityCtx}
       </div>
@@ -756,7 +756,7 @@ class ExpandRow extends Component {
               <FormattedMessage id="close" />
             </Button>,
           ]}
-          title={formatMessage({ id: "ist.deploy.detail" })}
+          title={formatMessage({ id: 'ist.deploy.detail' })}
           visible={visible}
         >
           <Content
@@ -769,7 +769,7 @@ class ExpandRow extends Component {
                 className="c7ncd-expand-btn"
                 onClick={this.handleExpandAll}
               >
-                <FormattedMessage id={isExpand ? "collapseAll" : "expandAll"} />
+                <FormattedMessage id={isExpand ? 'collapseAll' : 'expandAll'} />
               </Button>
             </div>
             <Collapse
@@ -808,7 +808,7 @@ class ExpandRow extends Component {
  */
 function _textOrNA(text) {
   if (!text && !_.isBoolean(text)) {
-    return "n/a";
+    return 'n/a';
   }
   return String(text);
 }
@@ -820,11 +820,11 @@ function _textOrNA(text) {
  */
 function _returnHealthDom(name, data) {
   const items = [
-    "failureThreshold",
-    "initialDelaySeconds",
-    "periodSeconds",
-    "successThreshold",
-    "timeoutSeconds",
+    'failureThreshold',
+    'initialDelaySeconds',
+    'periodSeconds',
+    'successThreshold',
+    'timeoutSeconds',
   ];
 
   return (
@@ -869,7 +869,7 @@ function _volumesItem(name, data, isBool = false) {
 
 function _volumesTemplate(data) {
   let template = null;
-  const VOL_TYPE = ["configMap", "persistentVolumeClaim", "secret", "hostPath"];
+  const VOL_TYPE = ['configMap', 'persistentVolumeClaim', 'secret', 'hostPath'];
 
   const { name } = data;
   const vKey = Object.keys(data);
@@ -877,26 +877,26 @@ function _volumesTemplate(data) {
   let type = _.toString(_.filter(VOL_TYPE, item => vKey.includes(item)));
 
   switch (type) {
-    case "configMap":
-    case "secret":
+    case 'configMap':
+    case 'secret':
       const { defaultMode, items, optional, name, secretName } = data[type];
       let itemDom = null;
       if (items && items.length) {
         const columns = [
           {
             title: <FormattedMessage id="ist.deploy.volume.config.key" />,
-            key: "key",
-            dataIndex: "key",
+            key: 'key',
+            dataIndex: 'key',
           },
           {
             title: <FormattedMessage id="ist.deploy.volume.config.mode" />,
-            key: "mode",
-            dataIndex: "mode",
+            key: 'mode',
+            dataIndex: 'mode',
           },
           {
             title: <FormattedMessage id="ist.deploy.volume.config.path" />,
-            key: "path",
-            dataIndex: "path",
+            key: 'path',
+            dataIndex: 'path',
           },
         ];
         itemDom = <SimpleTable columns={columns} data={items} />;
@@ -909,9 +909,9 @@ function _volumesTemplate(data) {
       }
       template = (
         <div className="c7ncd-deploy-volume-main">
-          {_volumesItem("defaultMode", defaultMode)}
-          {_volumesItem("optional", optional, true)}
-          <div className={`c7ncd-deploy-volume-item${items ? "_full" : ""}`}>
+          {_volumesItem('defaultMode', defaultMode)}
+          {_volumesItem('optional', optional, true)}
+          <div className={`c7ncd-deploy-volume-item${items ? '_full' : ''}`}>
             <p className="c7ncd-deploy-detail-label">
               <FormattedMessage id="ist.deploy.volume.item" />
             </p>
@@ -920,41 +920,41 @@ function _volumesTemplate(data) {
         </div>
       );
       break;
-    case "persistentVolumeClaim":
+    case 'persistentVolumeClaim':
       const { claimName, readOnly } = data[type];
       template = (
         <div className="c7ncd-deploy-volume-main">
-          {_volumesItem("claimName", claimName)}
-          {_volumesItem("readOnly", readOnly, true)}
+          {_volumesItem('claimName', claimName)}
+          {_volumesItem('readOnly', readOnly, true)}
         </div>
       );
       break;
-    case "hostPath":
+    case 'hostPath':
       const { path, type: hostType } = data[type];
       template = (
         <div className="c7ncd-deploy-volume-main">
-          {_volumesItem("path", path)}
-          {_volumesItem("type", type)}
+          {_volumesItem('path', path)}
+          {_volumesItem('type', type)}
         </div>
       );
       break;
 
     default:
-      type = "未知";
+      type = '未知';
       break;
   }
   return (
     <Fragment>
       <div className="c7ncd-deploy-volume-main">
-        {_volumesItem("name", name)}
-        {_volumesItem("volume.type", type)}
+        {_volumesItem('name', name)}
+        {_volumesItem('volume.type', type)}
       </div>
       {template}
     </Fragment>
   );
 }
 
-function _securityItem(name, data, type = "") {
+function _securityItem(name, data, type = '') {
   let content =
     _.isArray(data) || _.isObject(data) ? (
       data
