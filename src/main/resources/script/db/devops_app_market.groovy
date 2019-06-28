@@ -40,10 +40,19 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
     }
 
     changeSet(author: 'younger', id: '2018-09-03-modify-index') {
-        dropIndex(indexName: "idx_app_id",tableName: "devops_app_market")
+        dropIndex(indexName: "idx_app_id", tableName: "devops_app_market")
 
         createIndex(indexName: "devops_market_idx_app_id", tableName: "devops_app_market") {
             column(name: "app_id")
         }
+    }
+    changeSet(author: 'scp', id: '2019-06-28-add-column') {
+        addColumn(tableName: 'devops_app_market') {
+            column(name: 'is_free', type: 'TINYINT UNSIGNED', remarks: '是否收费', afterColumn: "publish_level")
+        }
+    }
+
+    changeSet(id: '2019-06-28-rename-table', author: 'scp') {
+        renameTable(newTableName: 'devops_app_share', oldTableName: 'devops_app_market')
     }
 }
