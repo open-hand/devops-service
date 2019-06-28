@@ -62,4 +62,11 @@
           AND pod.node_name = #{nodeName}
     </select>
 
+    <update id="updateProjectId">
+        UPDATE devops_cluster dc
+        SET dc.project_id = #{proId}
+        WHERE
+            dc.organization_id = #{orgId}
+    </update>
+
 </mapper>

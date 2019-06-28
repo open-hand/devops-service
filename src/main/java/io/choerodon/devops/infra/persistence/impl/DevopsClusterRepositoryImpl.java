@@ -5,6 +5,11 @@ import java.util.Map;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -17,10 +22,6 @@ import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsClusterDO;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
@@ -88,10 +89,10 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
             devopsClusterEPage = PageHelper
-                    .startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsClusterMapper.listClusters(organizationId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
+                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsClusterMapper.listClusters(organizationId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
         } else {
             devopsClusterEPage = PageHelper.startPage(
-                    pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> devopsClusterMapper.listClusters(organizationId, null, null));
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsClusterMapper.listClusters(organizationId, null, null));
         }
         return ConvertPageHelper.convertPageInfo(devopsClusterEPage, DevopsClusterE.class);
     }
@@ -124,5 +125,10 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
         devopsClusterDO.setOrganizationId(organizationId);
         devopsClusterDO.setCode(code);
         return ConvertHelper.convert(devopsClusterMapper.selectOne(devopsClusterDO),DevopsClusterE.class);
+    }
+
+    @Override
+    public void updateProjectId(Long orgId, Long proId) {
+        devopsClusterMapper.updateProjectId(orgId, proId);
     }
 }

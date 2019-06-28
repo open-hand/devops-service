@@ -41,6 +41,7 @@ import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
@@ -68,6 +69,7 @@ import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepo
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsCheckLogRepository;
+import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvResourceDetailRepository;
@@ -225,6 +227,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private GitlabUserRepository gitlabUserRepository;
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper;
+    @Autowired
+    private DevopsClusterRepository clusterRepository;
     @Autowired
     private GitUtil gitUtil;
     @Autowired
@@ -715,8 +719,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 checkLog.setContent(String.format("Sync organization cluster to project,organizationId: %s", org.getId()));
                 LOGGER.info("Sync organization cluster to project,organizationId: {}", org.getId());
                 try {
-                    ProjectCategoryEDTO categoryEDTO = createProjectCatory(org.getId());
-                    createOpsProject(org.getId(), categoryEDTO.getId());
+                    Long categoryId = 1L;
+                    ProjectDTO projectDTO = createOpsProject(org.getId(), categoryId);
+                    clusterRepository.updateProjectId(org.getId(), projectDTO.getId());
                     checkLog.setResult("success");
                 } catch (Exception e) {
                     checkLog.setResult("fail");
@@ -739,7 +744,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             return orgRepository.createProjectCategory(orgId, categoryEDTO);
         }
 
-        private void createOpsProject(Long orgId, Long categoryId) {
+        private ProjectDTO createOpsProject(Long orgId, Long categoryId) {
             ProjectCreateDTO createDTO = new ProjectCreateDTO();
             List<Long> categoruIds = new ArrayList<>();
             categoruIds.add(categoryId);
@@ -747,7 +752,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             createDTO.setCategoryIds(categoruIds);
             createDTO.setCode("ops-default");
             createDTO.setName("运维专用项目");
-            iamRepository.createProject(orgId, createDTO);
+            return iamRepository.createProject(orgId, createDTO);
         }
 
 

@@ -40,4 +40,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
                 }
             }
 
+    changeSet(id: '2019-06-26-add-column', author: 'scp') {
+        addColumn(tableName: 'devops_cluster') {
+            column(name: 'project_id',type: 'BIGINT UNSIGNED',remarks:'项目Id', afterColumn: 'token')
+        }
+    }
+
 }
