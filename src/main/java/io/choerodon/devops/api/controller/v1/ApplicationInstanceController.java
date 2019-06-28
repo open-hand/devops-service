@@ -5,24 +5,45 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DevopsEnvResourceService;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
+
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.dto.AppInstanceCodeDTO;
+import io.choerodon.devops.api.dto.AppInstanceCommandLogDTO;
+import io.choerodon.devops.api.dto.ApplicationDeployDTO;
+import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.api.dto.ApplicationInstancesDTO;
+import io.choerodon.devops.api.dto.DeployDetailDTO;
+import io.choerodon.devops.api.dto.DeployFrequencyDTO;
+import io.choerodon.devops.api.dto.DeployTimeDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPreviewDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPreviewInstanceDTO;
+import io.choerodon.devops.api.dto.DevopsEnvResourceDTO;
+import io.choerodon.devops.api.dto.ErrorLineDTO;
+import io.choerodon.devops.api.dto.InstanceControllerDetailDTO;
+import io.choerodon.devops.api.dto.InstanceEventDTO;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -574,8 +595,10 @@ public class ApplicationInstanceController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
-            @RequestParam(value = "instance_name") String instanceName) {
-        applicationInstanceService.checkName(instanceName);
+            @RequestParam(value = "instance_name") String instanceName,
+            @ApiParam(value = "环境ID", required = true)
+            @RequestParam(value = "env_id") Long envId) {
+        applicationInstanceService.checkName(instanceName, envId);
     }
 
     /**

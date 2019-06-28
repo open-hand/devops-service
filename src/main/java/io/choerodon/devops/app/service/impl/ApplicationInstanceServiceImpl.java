@@ -266,20 +266,20 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public ReplaceResult queryValues(String type, Long instanceId, Long versionId) {
         ReplaceResult replaceResult = new ReplaceResult();
+        String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.queryValue(versionId));
 
         if (type.equals(UPDATE)) {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
             if (applicationInstanceE.getValueId() == null) {
-                replaceResult.setYaml(applicationInstanceRepository.queryValueByInstanceId(instanceId));
+                replaceResult.setYaml(getReplaceResult(versionValue,applicationInstanceRepository.queryValueByInstanceId(instanceId)).getYaml());
             } else {
                 DevopsDeployValueE devopsDeployValueE = devopsDeployValueRepository.queryById(applicationInstanceE.getValueId());
-                replaceResult.setYaml(devopsDeployValueE.getValue());
+                replaceResult.setYaml(getReplaceResult(versionValue,devopsDeployValueE.getValue()).getYaml());
                 replaceResult.setName(devopsDeployValueE.getName());
                 replaceResult.setId(devopsDeployValueE.getId());
                 replaceResult.setObjectVersionNumber(devopsDeployValueE.getObjectVersionNumber());
             }
         } else {
-            String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.queryValue(versionId));
             try {
                 FileUtil.checkYamlFormat(versionValue);
             } catch (Exception e) {
@@ -1113,12 +1113,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public void checkName(String instanceName) {
+    public void checkName(String instanceName, Long envId) {
         AppInstanceValidator.checkName(instanceName);
         ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE();
         applicationInstanceE.setCode(instanceName);
-        applicationInstanceRepository.checkName(instanceName);
-        appDeployRepository.checkName(instanceName);
+        applicationInstanceRepository.checkName(instanceName, envId);
+        appDeployRepository.checkName(instanceName, envId);
     }
 
     private String getNameSpace(Long envId) {
