@@ -60,6 +60,7 @@ export default class DeployMode extends Component {
       store,
     } = this.props;
     const pattern = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
+    const { envId } = this.state;
 
     if (value) {
       if (!pattern.test(value)) {
@@ -69,7 +70,7 @@ export default class DeployMode extends Component {
       }
 
       store
-        .checkIstName(projectId, value)
+        .checkIstName(projectId, value, envId)
         .then(data => {
           if (data && data.failed) {
             this.setState({ istNameOk: false });
@@ -185,7 +186,7 @@ export default class DeployMode extends Component {
   };
 
   handleSelectInstance = value => {
-    const { store  } = this.props;
+    const { store } = this.props;
     const instanceDto = _.find(store.getInstances, ['id', value]);
     const istName = (instanceDto || {}).code;
 
@@ -244,6 +245,7 @@ export default class DeployMode extends Component {
           id: projectId,
         },
       },
+      form: { setFieldsValue },
     } = this.props;
     const { getSelectedApp: app } = store;
 
@@ -252,6 +254,7 @@ export default class DeployMode extends Component {
     const appId = app.publishLevel ? app.appId : app.id;
     const istName = getRandomName(app.code);
 
+    setFieldsValue({ name: istName });
     this.setState({
       istName,
       envId: value,

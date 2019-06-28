@@ -398,9 +398,10 @@ class PipelineCreateStore {
    * 2. 校验已创建的实例
    * @param projectId
    * @param name
+   * @param envId
    * @returns {*}
    */
-  checkInstanceName(projectId, name) {
+  checkInstanceName(projectId, name, envId) {
     // 正在创建的流水线中是否存在同名实例
     const taskList = _.values(this.taskList).slice();
     let hasName = false;
@@ -414,7 +415,7 @@ class PipelineCreateStore {
 
     return hasName
       ? Promise.resolve({ failed: true })
-      : axios.get(`/devops/v1/projects/${projectId}/app_instances/check_name?instance_name=${name}`);
+      : axios.get(`/devops/v1/projects/${projectId}/app_instances/check_name?instance_name=${name}&env_id=${envId}`);
   }
 
   async loadEnvData(projectId) {

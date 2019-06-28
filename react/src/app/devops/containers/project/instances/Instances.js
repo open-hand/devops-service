@@ -55,7 +55,7 @@ class Instances extends Component {
       const { id: projectId } = AppState.currentMenuType;
       let instanceId;
       let appId;
-      let envId;
+      let envId = EnvOverviewStore.getTpEnvId;
 
       if (state) {
         instanceId = state.instanceId;
