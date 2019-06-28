@@ -1,19 +1,10 @@
 package io.choerodon.devops.api.controller.v1;
 
-import com.github.pagehelper.PageInfo;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
@@ -24,6 +15,13 @@ import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 
 /**
@@ -58,7 +56,7 @@ public class ApplicationInstanceController {
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "app_instance_id") Long appInstanceId) {
         return Optional.ofNullable(applicationInstanceService.queryInfoById(appInstanceId))
-                .map(info -> new ResponseEntity<>(info,HttpStatus.OK))
+                .map(info -> new ResponseEntity<>(info, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.query.instance.by.id"));
     }
 
