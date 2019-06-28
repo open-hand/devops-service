@@ -209,9 +209,9 @@ class DeployAppStore {
     this.setIstLoading(false);
   }
 
-  async checkIstName(projectId, value) {
+  async checkIstName(projectId, value, envId) {
     return await axios.get(
-      `/devops/v1/projects/${projectId}/app_instances/check_name?instance_name=${value}`,
+      `/devops/v1/projects/${projectId}/app_instances/check_name?instance_name=${value}&env_id=${envId}`,
     );
   }
 
