@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper">
+
+    <select id="queryAppByEnvId" resultType="java.lang.Long">
+        SELECT
+        d.app_id
+        FROM
+        devops_env_application d
+        WHERE
+        d.env_id = #{envId}
+    </select>
+</mapper>
