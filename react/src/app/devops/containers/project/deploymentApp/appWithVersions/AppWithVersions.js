@@ -126,11 +126,11 @@ export default class AppWithVersions extends Component {
   /**
    * 加载版本
    * @param appId
-   * @param isPublic
+   * @param isPublish
    * @param param
    * @param init
    */
-  handleLoadVersion = async (appId, isPublic, param = '', init) => {
+  handleLoadVersion = async (appId, isPublish, param = '', init) => {
     const {
       AppState: {
         currentMenuType: {
@@ -143,7 +143,7 @@ export default class AppWithVersions extends Component {
     this.setState({ versionLoading: true });
 
     const initId = init || '';
-    const data = await store.loadVersions({ projectId, appId, isPublic, page: 0, param, initId })
+    const data = await store.loadVersions({ projectId, appId, isPublish, page: 0, param, initId })
       .catch(() => {
         this.setState({ versionLoading: false });
       });
