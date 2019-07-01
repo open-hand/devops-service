@@ -10,6 +10,7 @@ import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 
+
 /**
  * Created by younger on 2018/4/9.
  */
@@ -142,13 +143,13 @@ public interface DevopsEnvironmentService {
      * @param envId 环境id
      * @return list
      */
-    List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId);
+    List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId, Long projectId);
 
     /**
      * 环境下为用户分配权限
      *
-     * @param envId     环境id
-     * @param userIds   有权限的用户ids
+     * @param envId   环境id
+     * @param userIds 有权限的用户ids
      */
     Boolean updateEnvUserPermission(Long envId, List<Long> userIds);
 
@@ -169,7 +170,8 @@ public interface DevopsEnvironmentService {
 
     /**
      * 设置环境状态为错误
-     * @param data 数据
+     *
+     * @param data      数据
      * @param projectId 可为空
      */
     void setEnvErrStatus(String data, Long projectId);
@@ -182,20 +184,17 @@ public interface DevopsEnvironmentService {
     DevopsEnviromentRepDTO queryByCode(Long clusterId, String code);
 
     /**
-     *
      * @param sagaClient
      */
     void initMockService(SagaClient sagaClient);
 
 
     /**
-     *
      * @param envId
      */
     void retryGitOps(Long envId);
 
     /**
-     *
      * @param devopsEnvironmentE
      * @param userAttrE
      */

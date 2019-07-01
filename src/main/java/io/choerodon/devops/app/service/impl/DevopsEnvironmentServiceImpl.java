@@ -49,6 +49,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 /**
  * Created by younger on 2018/4/9.
  */
@@ -756,8 +757,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId) {
-        return devopsEnvUserPermissionRepository.listALlUserPermission(envId);
+    public List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId, Long projectId) {
+        RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
+        Long ownerId = iamRepository.queryRoleIdByCode(PROJECT_OWNER);
+        List<Long> allOwnerUsers = iamRepository
+                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), roleAssignmentSearchDTO, ownerId, projectId, false)
+                .getList().stream().map(UserDTO::getId).collect(Collectors.toList());
+        List<DevopsEnvUserPermissionDTO> dtoList = devopsEnvUserPermissionRepository.listALlUserPermission(envId);
+        if (allOwnerUsers.isEmpty()) {
+            return dtoList;
+        } else {
+            // 否则过滤项目成员中含有项目所有者的人
+            return dtoList.stream().filter(e -> !allOwnerUsers.contains(e.getIamUserId())).collect(Collectors.toList());
+        }
     }
 
     @Override
