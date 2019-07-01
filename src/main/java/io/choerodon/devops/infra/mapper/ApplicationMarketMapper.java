@@ -3,11 +3,11 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
+import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created by ernst on 2018/5/12.
@@ -17,7 +17,9 @@ public interface ApplicationMarketMapper extends Mapper<DevopsAppShareDO> {
                                                           @Param("searchParam") Map<String, Object> searchParam,
                                                           @Param("param") String param);
 
-    List<DevopsAppShareDO> listMarketAppsBySite(@Param("searchParam") Map<String, Object> searchParam, @Param("param") String param);
+    List<DevopsAppShareDO> listMarketAppsBySite(@Param("publishLevel") String publishLevel,
+                                                @Param("searchParam") Map<String, Object> searchParam,
+                                                @Param("param") String param);
 
     List<DevopsAppShareDO> listMarketApplication(@Param("projectIds") List projectIds,
                                                  @Param("searchParam") Map<String, Object> searchParam,

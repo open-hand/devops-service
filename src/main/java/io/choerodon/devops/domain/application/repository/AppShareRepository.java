@@ -3,10 +3,11 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.DevopsAppShareE;
-import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
+import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
 
 /**
  * Created by ernst on 2018/5/12.
@@ -16,7 +17,7 @@ public interface AppShareRepository {
 
     PageInfo<DevopsAppShareE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam);
 
-    PageInfo<DevopsAppShareE> listMarketAppsBySite(PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsAppShareE> listMarketAppsBySite(String publishLevel, PageRequest pageRequest, String searchParam);
 
     PageInfo<DevopsAppShareE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam);
 

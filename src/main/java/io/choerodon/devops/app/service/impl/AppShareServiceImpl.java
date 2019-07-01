@@ -142,8 +142,8 @@ public class AppShareServiceImpl implements AppShareService {
     }
 
     @Override
-    public PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(PageRequest pageRequest, String searchParam) {
-        PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.listMarketAppsBySite(pageRequest, searchParam);
+    public PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(String publishLevel, PageRequest pageRequest, String searchParam) {
+        PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.listMarketAppsBySite(publishLevel, pageRequest, searchParam);
         return ConvertPageHelper.convertPageInfo(
                 applicationMarketEPage,
                 ApplicationReleasingDTO.class);
@@ -151,7 +151,7 @@ public class AppShareServiceImpl implements AppShareService {
 
     @Override
     public ApplicationReleasingDTO getAppDetailByShareId(Long shareId) {
-        return getMarketAppInProject(null,shareId);
+        return getMarketAppInProject(null, shareId);
     }
 
     @Override

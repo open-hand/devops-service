@@ -19,7 +19,6 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsAppShareE;
-import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.AppShareRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -71,13 +70,13 @@ public class ApplicationMarketRepositoryImpl implements AppShareRepository {
     }
 
     @Override
-    public PageInfo<DevopsAppShareE> listMarketAppsBySite(PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsAppShareE> listMarketAppsBySite(String publishLevel, PageRequest pageRequest, String searchParam) {
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(searchParam);
 
         PageInfo<DevopsAppShareDO> appShareDOPageInfo = PageHelper
                 .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
-                        applicationMarketMapper.listMarketAppsBySite((Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM)));
+                        applicationMarketMapper.listMarketAppsBySite(publishLevel,(Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM)));
         return ConvertPageHelper.convertPageInfo(appShareDOPageInfo, DevopsAppShareE.class);
     }
 

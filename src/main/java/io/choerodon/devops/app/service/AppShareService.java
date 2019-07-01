@@ -46,6 +46,7 @@ public interface AppShareService {
      * @return list of ApplicationReleasingDTO
      */
     PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(
+            String publishLevel,
             PageRequest pageRequest,
             String searchParam);
 

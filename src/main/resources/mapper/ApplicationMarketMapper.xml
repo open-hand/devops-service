@@ -328,7 +328,17 @@
         FROM
             devops_app_share dam
         JOIN devops_application da ON da.id = dam.app_id
-        WHERE
-            dam.publish_level = 'site'
+        <if test="publishLevel != null">
+            WHERE
+            <choose>
+                <when test="publishLevel='site'">
+                    dam.publish_level = 'site'
+                </when>
+                <otherwise>
+                    dam.publish_level = 'site' or dam.publish_level = 'projects'
+                </otherwise>
+            </choose>
+        </if>
+
     </select>
 </mapper>
