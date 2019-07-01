@@ -12,7 +12,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.eventhandler.DevopsSagaHandler;
@@ -63,7 +62,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
-    private ApplicationMarketService applicationMarketService;
+    private AppShareService applicationMarketService;
     @Autowired
     private ApplicationVersionService applicationVersionService;
     @Autowired

@@ -114,7 +114,7 @@ class ApplicationControllerSpec extends Specification {
     @Shared
     Long init_id = 1L
     @Shared
-    DevopsAppMarketDO devopsAppMarketDO = new DevopsAppMarketDO()
+    DevopsAppShareDO devopsAppMarketDO = new DevopsAppShareDO()
     @Shared
     DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
     @Shared

@@ -68,7 +68,7 @@ class DevopsEnvPodControllerSpec extends Specification {
     @Shared
     ApplicationDO applicationDO1 = new ApplicationDO()
     @Shared
-    DevopsAppMarketDO devopsAppMarketDO = new DevopsAppMarketDO()
+    DevopsAppShareDO devopsAppMarketDO = new DevopsAppShareDO()
     @Shared
     ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
     @Shared
@@ -203,9 +203,9 @@ class DevopsEnvPodControllerSpec extends Specification {
             }
         }
         // 删除appMarket
-        List<DevopsAppMarketDO> list3 = applicationMarketMapper.selectAll()
+        List<DevopsAppShareDO> list3 = applicationMarketMapper.selectAll()
         if (list3 != null && !list3.isEmpty()) {
-            for (DevopsAppMarketDO e : list3) {
+            for (DevopsAppShareDO e : list3) {
                 applicationMarketMapper.delete(e)
             }
         }

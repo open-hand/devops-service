@@ -4,21 +4,23 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
-import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
+import io.choerodon.devops.domain.application.entity.DevopsAppShareE;
+import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 
 /**
  * Created by ernst on 2018/5/12.
  */
-public interface ApplicationMarketRepository {
-    void create(ApplicationMarketE applicationMarketE);
+public interface AppShareRepository {
+    DevopsAppShareE create(DevopsAppShareE applicationMarketE);
 
-    PageInfo<ApplicationMarketE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsAppShareE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam);
 
-    PageInfo<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsAppShareE> listMarketAppsBySite(PageRequest pageRequest, String searchParam);
 
-    ApplicationMarketE getMarket(Long projectId, Long appMarketId);
+    PageInfo<DevopsAppShareE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam);
+
+    DevopsAppShareE getMarket(Long projectId, Long appMarketId);
 
     Boolean checkCanPub(Long appId);
 
@@ -34,14 +36,14 @@ public interface ApplicationMarketRepository {
 
     void updateVersion(Long appMarketId, Long versionId, Boolean isPublish);
 
-    void update(DevopsAppMarketDO devopsAppMarketDO);
+    void update(DevopsAppShareDO devopsAppMarketDO);
 
     List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish);
 
     PageInfo<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish,
                                                    PageRequest pageRequest, String searchParam);
 
-    ApplicationMarketE queryByAppId(Long appId);
+    DevopsAppShareE queryByAppId(Long appId);
 
     void checkMarketVersion(Long appMarketId, Long versionId);
 

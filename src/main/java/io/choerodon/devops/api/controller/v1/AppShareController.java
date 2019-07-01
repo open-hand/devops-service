@@ -17,7 +17,7 @@ import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
-import io.choerodon.devops.app.service.ApplicationMarketService;
+import io.choerodon.devops.app.service.AppShareService;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -33,11 +33,11 @@ import springfox.documentation.annotations.ApiIgnore;
  */
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/apps_market")
-public class ApplicationMarketController {
-    private ApplicationMarketService applicationMarketService;
+public class AppShareController {
+    private AppShareService appShareService;
 
-    public ApplicationMarketController(ApplicationMarketService applicationMarketService) {
-        this.applicationMarketService = applicationMarketService;
+    public AppShareController(AppShareService appShareService) {
+        this.appShareService = appShareService;
     }
 
     /**
@@ -56,7 +56,7 @@ public class ApplicationMarketController {
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody ApplicationReleasingDTO applicationReleaseDTO) {
         return Optional.ofNullable(
-                applicationMarketService.release(projectId, applicationReleaseDTO))
+                appShareService.release(projectId, applicationReleaseDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.release"));
     }
@@ -81,7 +81,7 @@ public class ApplicationMarketController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                applicationMarketService.listMarketAppsByProjectId(projectId, pageRequest, searchParam))
+                appShareService.listMarketAppsByProjectId(projectId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.applications.get"));
     }
@@ -106,7 +106,7 @@ public class ApplicationMarketController {
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(applicationMarketService.listMarketApps(projectId, pageRequest, searchParam))
+        return Optional.ofNullable(appShareService.listMarketApps(projectId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.applications.query"));
     }
@@ -127,7 +127,7 @@ public class ApplicationMarketController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
             @PathVariable(value = "app_market_id") Long appMarketId) {
-        return Optional.ofNullable(applicationMarketService.getMarketAppInProject(projectId, appMarketId))
+        return Optional.ofNullable(appShareService.getMarketAppInProject(projectId, appMarketId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.get"));
     }
@@ -148,7 +148,7 @@ public class ApplicationMarketController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
             @PathVariable(value = "app_market_id") Long appMarketId) {
-        return Optional.ofNullable(applicationMarketService.getMarketApp(appMarketId, null))
+        return Optional.ofNullable(appShareService.getMarketApp(appMarketId, null))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.get"));
     }
@@ -172,7 +172,7 @@ public class ApplicationMarketController {
             @PathVariable(value = "app_market_id") Long appMarketId,
             @ApiParam(value = "是否发布", required = false)
             @RequestParam(value = "is_publish", required = false) Boolean isPublish) {
-        return Optional.ofNullable(applicationMarketService.getAppVersions(projectId, appMarketId, isPublish))
+        return Optional.ofNullable(appShareService.getAppVersions(projectId, appMarketId, isPublish))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
     }
@@ -202,7 +202,7 @@ public class ApplicationMarketController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                applicationMarketService.getAppVersions(projectId, appMarketId, isPublish, pageRequest, searchParam))
+                appShareService.getAppVersions(projectId, appMarketId, isPublish, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.versions.query"));
     }
@@ -227,7 +227,7 @@ public class ApplicationMarketController {
             @ApiParam(value = "版本ID", required = true)
             @PathVariable(value = "version_id") Long versionId) {
         return Optional.ofNullable(
-                applicationMarketService.getMarketAppVersionReadme(appMarketId, versionId))
+                appShareService.getMarketAppVersionReadme(appMarketId, versionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.readme.get"));
     }
@@ -248,7 +248,7 @@ public class ApplicationMarketController {
             @PathVariable("app_market_id") Long appMarketId,
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody(required = true) ApplicationReleasingDTO applicationRelease) {
-        applicationMarketService.update(projectId, appMarketId, applicationRelease);
+        appShareService.update(projectId, appMarketId, applicationRelease);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -268,7 +268,7 @@ public class ApplicationMarketController {
             @PathVariable("app_market_id") Long appMarketId,
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody List<AppMarketVersionDTO> versionList) {
-        applicationMarketService.update(projectId, appMarketId, versionList);
+        appShareService.update(projectId, appMarketId, versionList);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -288,7 +288,7 @@ public class ApplicationMarketController {
             @ApiParam(value = "文件", required = true)
             @RequestParam(value = "file") MultipartFile file) {
         return Optional.ofNullable(
-                applicationMarketService.getMarketAppListInFile(projectId, file))
+                appShareService.getMarketAppListInFile(projectId, file))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.tgz.get"));
     }
@@ -312,7 +312,7 @@ public class ApplicationMarketController {
             @ApiParam(value = "是否公开")
             @RequestParam(value = "public", required = false) Boolean isPublic) {
         return Optional.ofNullable(
-                applicationMarketService.importApps(projectId, fileName, isPublic))
+                appShareService.importApps(projectId, fileName, isPublic))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.import"));
     }
@@ -332,7 +332,7 @@ public class ApplicationMarketController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "文件名", required = true)
             @RequestParam(value = "file_name") String fileName) {
-        applicationMarketService.deleteZip(projectId, fileName);
+        appShareService.deleteZip(projectId, fileName);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -354,7 +354,7 @@ public class ApplicationMarketController {
             @ApiParam(value = "导出包名字")
             @RequestParam(value = "fileName", required = false) String fileName,
             HttpServletResponse res) {
-        applicationMarketService.export(appMarkets, fileName);
+        appShareService.export(appMarkets, fileName);
         FileUtil.downloadFile(res, fileName + ".zip");
         try {
             Files.delete(new File(fileName + ".zip").toPath());

@@ -45,7 +45,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(ApplicationMarketController)
+@Subject(AppShareController)
 @Stepwise
 class ApplicationMarketControllerSpec extends Specification {
 
@@ -396,9 +396,9 @@ class ApplicationMarketControllerSpec extends Specification {
             }
         }
         // 删除appMarket
-        List<DevopsAppMarketDO> list5 = applicationMarketMapper.selectAll()
+        List<DevopsAppShareDO> list5 = applicationMarketMapper.selectAll()
         if (list5 != null && !list5.isEmpty()) {
-            for (DevopsAppMarketDO e : list5) {
+            for (DevopsAppShareDO e : list5) {
                 applicationMarketMapper.delete(e)
             }
         }

@@ -6,24 +6,26 @@ import java.util.Map;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
+import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 
 /**
  * Created by ernst on 2018/5/12.
  */
-public interface ApplicationMarketMapper extends Mapper<DevopsAppMarketDO> {
-    List<DevopsAppMarketDO> listMarketApplicationInProject(@Param("projectId") Long projectId,
-                                                           @Param("searchParam") Map<String, Object> searchParam,
-                                                           @Param("param") String param);
+public interface ApplicationMarketMapper extends Mapper<DevopsAppShareDO> {
+    List<DevopsAppShareDO> listMarketApplicationInProject(@Param("projectId") Long projectId,
+                                                          @Param("searchParam") Map<String, Object> searchParam,
+                                                          @Param("param") String param);
 
-    List<DevopsAppMarketDO> listMarketApplication(@Param("projectIds") List projectIds,
-                                                  @Param("searchParam") Map<String, Object> searchParam,
-                                                  @Param("param") String param);
+    List<DevopsAppShareDO> listMarketAppsBySite(@Param("searchParam") Map<String, Object> searchParam, @Param("param") String param);
 
-    DevopsAppMarketDO getMarketApplication(@Param("projectId") Long projectId,
-                                           @Param("appMarketId") Long appMarketId,
-                                           @Param("projectIds") List<Long> projectIds);
+    List<DevopsAppShareDO> listMarketApplication(@Param("projectIds") List projectIds,
+                                                 @Param("searchParam") Map<String, Object> searchParam,
+                                                 @Param("param") String param);
+
+    DevopsAppShareDO getMarketApplication(@Param("projectId") Long projectId,
+                                          @Param("appMarketId") Long appMarketId,
+                                          @Param("projectIds") List<Long> projectIds);
 
     int selectCountByAppId(@Param("appId") Long appId);
 

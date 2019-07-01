@@ -294,8 +294,8 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
         for (ApplicationVersionDO applicationVersionDO : applicationVersionDOList) {
             applicationVersionMapper.delete(applicationVersionDO)
         }
-        List<DevopsAppMarketDO> devopsAppMarketDOList = applicationMarketMapper.selectAll()
-        for (DevopsAppMarketDO devopsAppMarketDO : devopsAppMarketDOList) {
+        List<DevopsAppShareDO> devopsAppMarketDOList = applicationMarketMapper.selectAll()
+        for (DevopsAppShareDO devopsAppMarketDO : devopsAppMarketDOList) {
             applicationMarketMapper.delete(devopsAppMarketDO)
         }
         List<DevopsBranchDO> devopsBranchDOList = devopsBranchMapper.selectAll()
