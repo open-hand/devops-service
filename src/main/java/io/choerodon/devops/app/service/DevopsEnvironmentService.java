@@ -3,9 +3,16 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.DevopsClusterRepDTO;
+import io.choerodon.devops.api.dto.DevopsEnvGroupEnvsDTO;
+import io.choerodon.devops.api.dto.DevopsEnvUserPermissionDTO;
+import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
+import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
+import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
+import io.choerodon.devops.api.dto.EnvSyncStatusDTO;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 
 /**
@@ -124,7 +131,7 @@ public interface DevopsEnvironmentService {
      * @param envId 环境id
      * @return list
      */
-    List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId);
+    List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId, Long projectId);
 
     /**
      * 环境下为用户分配权限
@@ -151,7 +158,8 @@ public interface DevopsEnvironmentService {
 
     /**
      * 设置环境状态为错误
-     * @param data 数据
+     *
+     * @param data      数据
      * @param projectId 可为空
      */
     void setEnvErrStatus(String data, Long projectId);

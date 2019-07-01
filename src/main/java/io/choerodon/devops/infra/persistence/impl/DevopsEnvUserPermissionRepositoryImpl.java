@@ -6,11 +6,11 @@ import java.util.Map;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.base.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
@@ -25,7 +25,6 @@ import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
-
 
 
 /**
@@ -52,6 +51,14 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
         DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = ConvertHelper
                 .convert(devopsEnvUserPermissionE, DevopsEnvUserPermissionDO.class);
         devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO);
+    }
+
+    @Override
+    public void delete(Long envId, Long userId) {
+        DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO();
+        devopsEnvUserPermissionDO.setEnvId(envId);
+        devopsEnvUserPermissionDO.setIamUserId(userId);
+        devopsEnvUserPermissionMapper.delete(devopsEnvUserPermissionDO);
     }
 
     @Override

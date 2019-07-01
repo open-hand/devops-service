@@ -3,8 +3,8 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsEnvUserPermissionDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 
@@ -17,6 +17,8 @@ import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 public interface DevopsEnvUserPermissionRepository {
 
     void create(DevopsEnvUserPermissionE devopsEnvUserPermissionE);
+
+    void delete(Long envId, Long userId);
 
     PageInfo<DevopsEnvUserPermissionDTO> pageUserPermissionByOption(Long envId, PageRequest pageRequest, String params);
 

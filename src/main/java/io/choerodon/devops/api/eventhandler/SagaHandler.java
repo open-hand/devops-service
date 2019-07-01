@@ -1,22 +1,36 @@
 package io.choerodon.devops.api.eventhandler;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
-import io.choerodon.devops.api.dto.GitlabUserDTO;
-import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.event.*;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.infra.common.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
+
+import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
+import io.choerodon.devops.api.dto.GitlabUserDTO;
+import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
+import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.app.service.GitlabGroupService;
+import io.choerodon.devops.app.service.GitlabUserService;
+import io.choerodon.devops.app.service.HarborService;
+import io.choerodon.devops.app.service.OrganizationService;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
+import io.choerodon.devops.domain.application.event.HarborPayload;
+import io.choerodon.devops.domain.application.event.IamAppPayLoad;
+import io.choerodon.devops.domain.application.event.OrganizationEventPayload;
+import io.choerodon.devops.domain.application.event.ProjectEvent;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 
 
 /**
@@ -38,6 +52,8 @@ public class SagaHandler {
     private GitlabUserService gitlabUserService;
     private ApplicationService applicationService;
     private ApplicationRepository applicationRepository;
+    private DevopsEnvironmentRepository devopsEnviromentRepository;
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
 
 
     public SagaHandler(GitlabGroupService gitlabGroupService,
@@ -46,6 +62,8 @@ public class SagaHandler {
                        GitlabGroupMemberService gitlabGroupMemberService,
                        GitlabUserService gitlabUserService,
                        ApplicationService applicationService,
+                       DevopsEnvironmentRepository devopsEnviromentRepository,
+                       DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository,
                        ApplicationRepository applicationRepository) {
         this.gitlabGroupService = gitlabGroupService;
         this.harborService = harborService;
@@ -53,6 +71,8 @@ public class SagaHandler {
         this.gitlabGroupMemberService = gitlabGroupMemberService;
         this.gitlabUserService = gitlabUserService;
         this.applicationService = applicationService;
+        this.devopsEnviromentRepository = devopsEnviromentRepository;
+        this.devopsEnvUserPermissionRepository = devopsEnvUserPermissionRepository;
         this.applicationRepository = applicationRepository;
 
     }
@@ -263,6 +283,13 @@ public class SagaHandler {
                 new TypeToken<List<GitlabGroupMemberDTO>>() {
                 }.getType());
         loggerInfo(gitlabGroupMemberDTOList);
+        if (gitlabGroupMemberDTOList.size() > 0) {
+            List<Long> envIds = devopsEnviromentRepository.queryByprojectAndActive(gitlabGroupMemberDTOList.get(0).getResourceId(), null)
+                    .stream().map(DevopsEnvironmentE::getId).collect(Collectors.toList());
+            if (envIds != null && !envIds.isEmpty()) {
+                envIds.forEach(envId -> gitlabGroupMemberDTOList.forEach(gitlabGroupMemberDTO -> devopsEnvUserPermissionRepository.delete(envId, gitlabGroupMemberDTO.getUserId())));
+            }
+        }
         gitlabGroupMemberService.deleteGitlabGroupMemberRole(gitlabGroupMemberDTOList);
         return gitlabGroupMemberDTOList;
     }

@@ -301,7 +301,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
+        return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId,projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
     }
