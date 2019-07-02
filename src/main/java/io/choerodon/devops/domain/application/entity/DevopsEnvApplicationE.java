@@ -38,4 +38,20 @@ public class DevopsEnvApplicationE {
     public void setEnvId(Long envId) {
         this.envId = envId;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DevopsEnvApplicationE that = (DevopsEnvApplicationE) o;
+        return appId.equals(that.appId)  &&
+                envId.equals(that.envId);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = result * appId.intValue() * envId.intValue();
+        return result;
+    }
 }

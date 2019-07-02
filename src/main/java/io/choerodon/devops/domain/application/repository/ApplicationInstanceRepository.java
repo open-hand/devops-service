@@ -7,9 +7,11 @@ import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
+import io.choerodon.devops.infra.dataobject.DevopsEnvApplicationDO;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -18,6 +20,12 @@ public interface ApplicationInstanceRepository {
 
     PageInfo<ApplicationInstanceE> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                            Long envId, Long versionId, Long appId, Long instanceId, String params);
+
+    /**
+     * 查询所有应用部署的appId和envId
+     * 用于应用环境关联数据修复
+     */
+    List<DevopsEnvApplicationE> listAllEnvApp();
 
     ApplicationInstanceE selectByCode(String code, Long envId);
 
