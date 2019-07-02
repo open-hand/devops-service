@@ -197,6 +197,14 @@ public class AppShareServiceImpl implements AppShareService {
     }
 
     @Override
+    public void updateByShareId(Long shareId, Boolean isFree) {
+        DevopsAppShareDO devopsAppShareDO = new DevopsAppShareDO();
+        devopsAppShareDO.setId(shareId);
+        devopsAppShareDO.setFree(isFree);
+        appShareRepository.update(devopsAppShareDO);
+    }
+
+    @Override
     public PageInfo<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         if (projectE != null && projectE.getOrganization() != null) {

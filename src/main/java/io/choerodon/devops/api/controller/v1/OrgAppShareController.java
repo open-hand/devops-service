@@ -10,8 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +22,6 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
@@ -80,6 +79,23 @@ public class OrgAppShareController {
                 appShareService.getAppDetailByShareId(shareId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.detail.by.share.id"));
+    }
+
+    /**
+     * 根据shareId更新应用共享
+     *
+     * @return list of ApplicationReleasingDTO
+     */
+    @Permission(type = ResourceType.SITE)
+    @ApiOperation(value = "根据shareId更新应用共享")
+    @PutMapping(value = "/update")
+    public ResponseEntity updateByShareId(
+            @ApiParam(value = "shareId")
+            @RequestParam(value = "share_id") Long shareId,
+            @ApiParam(value = "是否收费")
+            @RequestParam(value = "is_free") Boolean isFree) {
+        appShareService.updateByShareId(shareId, isFree);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
@@ -141,7 +157,7 @@ public class OrgAppShareController {
             @ApiParam(value = "查询参数")
             @RequestParam(value = "version", required = false) String searchParam) {
         return Optional.ofNullable(
-                appShareService.getVersionsByAppId(appId,pageRequest, searchParam))
+                appShareService.getVersionsByAppId(appId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.versions.by.appId"));
     }

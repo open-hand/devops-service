@@ -63,6 +63,8 @@ public interface AppShareService {
 
     AppVersionAndValueDTO getValuesAndChart(Long versionId);
 
+    void updateByShareId(Long shareId, Boolean idFree);
+
     /**
      * 查询发布级别为全局或者在本组织下的所有应用市场的应用
      *

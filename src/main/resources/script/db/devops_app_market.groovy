@@ -55,4 +55,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
     changeSet(id: '2019-06-28-rename-table', author: 'scp') {
         renameTable(newTableName: 'devops_app_share', oldTableName: 'devops_app_market')
     }
+
+    changeSet(author: 'scp', id: '2019-07-02-add-column') {
+        addColumn(tableName: 'devops_app_share') {
+            column(name: 'is_site', type: 'TINYINT UNSIGNED', remarks: '是否发布到平台层', afterColumn: "publish_level", defaultValue: "0")
+        }
+    }
 }

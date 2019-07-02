@@ -151,10 +151,12 @@ public class ApplicationMarketRepositoryImpl implements AppShareRepository {
     }
 
     @Override
-    public void update(DevopsAppShareDO devopsAppMarketDO) {
-        devopsAppMarketDO.setObjectVersionNumber(
-                applicationMarketMapper.selectByPrimaryKey(devopsAppMarketDO.getId()).getObjectVersionNumber());
-        applicationMarketMapper.updateByPrimaryKeySelective(devopsAppMarketDO);
+    public void update(DevopsAppShareDO devopsAppShareDO) {
+        devopsAppShareDO.setObjectVersionNumber(
+                applicationMarketMapper.selectByPrimaryKey(devopsAppShareDO.getId()).getObjectVersionNumber());
+        if (applicationMarketMapper.updateByPrimaryKeySelective(devopsAppShareDO) != 1) {
+            throw new CommonException("error.update.share.application");
+        }
     }
 
     @Override
@@ -233,7 +235,7 @@ public class ApplicationMarketRepositoryImpl implements AppShareRepository {
     public PageInfo<DevopsAppShareE> queryByShareIds(PageRequest pageRequest, String param, List<Long> shareIds) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(param);
         PageInfo<DevopsAppShareDO> doPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
-                () -> applicationMarketMapper.queryByShareIds((Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM),shareIds));
+                () -> applicationMarketMapper.queryByShareIds((Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM), shareIds));
         return ConvertPageHelper.convertPageInfo(doPageInfo, DevopsAppShareE.class);
     }
 }
