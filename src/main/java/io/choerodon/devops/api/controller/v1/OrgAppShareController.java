@@ -47,7 +47,7 @@ public class OrgAppShareController {
      * @param searchParam  搜索参数
      * @return list of ApplicationReleasingDTO
      */
-    @Permission(type = ResourceType.SITE)
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "查询所有已发布的应用")
     @CustomPageRequest
     @PostMapping(value = "/listByOptions")
@@ -69,7 +69,7 @@ public class OrgAppShareController {
      *
      * @return list of ApplicationReleasingDTO
      */
-    @Permission(type = ResourceType.SITE)
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据shareId获取应用详情")
     @GetMapping(value = "/app_detail")
     public ResponseEntity<ApplicationReleasingDTO> getAppDetailByShareId(
@@ -86,7 +86,7 @@ public class OrgAppShareController {
      *
      * @return list of ApplicationReleasingDTO
      */
-    @Permission(type = ResourceType.SITE)
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据shareId更新应用共享")
     @PutMapping(value = "/update")
     public ResponseEntity updateByShareId(
@@ -104,7 +104,7 @@ public class OrgAppShareController {
      * @param releasingDTOList 发布应用的信息
      * @return Long
      */
-    @Permission(type = ResourceType.SITE)
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "批量发布应用到平台")
     @PostMapping(value = "/batch_release")
     public ResponseEntity<List<Long>> batchRelease(
@@ -122,7 +122,7 @@ public class OrgAppShareController {
      * @param shareIds 订阅Id
      * @return Long
      */
-    @Permission(type = ResourceType.SITE)
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据Ids获取应用详情")
     @CustomPageRequest
     @PostMapping(value = "/details")
@@ -145,7 +145,7 @@ public class OrgAppShareController {
      * @param appId 应用Id
      * @return Long
      */
-    @Permission(type = ResourceType.SITE)
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据应用Id获取已发布版本")
     @CustomPageRequest
     @PostMapping(value = "/list_versions")
@@ -168,7 +168,7 @@ public class OrgAppShareController {
      * @param versionId 版本Id
      * @return Long
      */
-    @Permission(type = ResourceType.SITE)
+    @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据版本Id获取values和chart")
     @GetMapping(value = "/values")
     public ResponseEntity<AppVersionAndValueDTO> getValuesAndChart(
