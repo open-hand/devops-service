@@ -112,28 +112,30 @@ public class AppShareServiceImpl implements AppShareService {
         if (!ORGANIZATION.equals(publishLevel) && !PROJECTS.equals(publishLevel)) {
             throw new CommonException("error.publishLevel");
         }
+        DevopsAppShareE devopsAppShareE = ApplicationMarketFactory.create();
         //校验应用和版本
-        appShareRepository.checkCanPub(applicationReleasingDTO.getAppId());
         if (projectId != null) {
+            appShareRepository.checkCanPub(applicationReleasingDTO.getAppId());
             List<AppMarketVersionDTO> appVersions = applicationReleasingDTO.getAppVersions();
             ids = appVersions.stream().map(AppMarketVersionDTO::getId)
                     .collect(Collectors.toCollection(ArrayList::new));
             applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
             applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
+            devopsAppShareE.initApplicationEById(applicationReleasingDTO.getAppId());
+            devopsAppShareE.setPublishLevel(applicationReleasingDTO.getPublishLevel());
+            devopsAppShareE.setActive(true);
+            devopsAppShareE.setContributor(applicationReleasingDTO.getContributor());
+            devopsAppShareE.setDescription(applicationReleasingDTO.getDescription());
+            devopsAppShareE.setCategory(applicationReleasingDTO.getCategory());
+            devopsAppShareE.setImgUrl(applicationReleasingDTO.getImgUrl());
+            devopsAppShareE.setFree(applicationReleasingDTO.getFree());
+        } else {
+            devopsAppShareE.setId(applicationReleasingDTO.getId());
+            devopsAppShareE.setSite(true);
         }
-        DevopsAppShareE devopsAppShareE = ApplicationMarketFactory.create();
-        devopsAppShareE.initApplicationEById(applicationReleasingDTO.getAppId());
-        devopsAppShareE.setPublishLevel(applicationReleasingDTO.getPublishLevel());
-        devopsAppShareE.setActive(true);
-        devopsAppShareE.setContributor(applicationReleasingDTO.getContributor());
-        devopsAppShareE.setDescription(applicationReleasingDTO.getDescription());
-        devopsAppShareE.setCategory(applicationReleasingDTO.getCategory());
-        devopsAppShareE.setImgUrl(applicationReleasingDTO.getImgUrl());
-        devopsAppShareE.setFree(applicationReleasingDTO.getFree());
-        devopsAppShareE.setSite(applicationReleasingDTO.getSite());
         devopsAppShareE = appShareRepository.createOrUpdate(devopsAppShareE);
         Long shareId = devopsAppShareE.getId();
-        if ("projects".equals(applicationReleasingDTO.getPublishLevel())) {
+        if (PROJECTS.equals(applicationReleasingDTO.getPublishLevel())) {
             applicationReleasingDTO.getProjectDTOS().forEach(t -> appShareRecouceRepository.create(new AppShareResourceE(shareId, t.getId())));
         }
         return appShareRepository.getMarketIdByAppId(applicationReleasingDTO.getAppId());
@@ -148,7 +150,7 @@ public class AppShareServiceImpl implements AppShareService {
                 ApplicationReleasingDTO.class);
         List<ApplicationReleasingDTO> appShareEList = applicationMarketEPage.getList();
         appShareEList.forEach(t -> {
-            if ("projects".equals(t.getPublishLevel())) {
+            if (PROJECTS.equals(t.getPublishLevel())) {
                 List<ProjectDTO> projectDTOS = appShareRecouceRepository.queryByShareId(t.getId()).stream()
                         .map(appShareResourceE -> {
                             ProjectE projectE = iamRepository.queryIamProject(appShareResourceE.getProjectId());

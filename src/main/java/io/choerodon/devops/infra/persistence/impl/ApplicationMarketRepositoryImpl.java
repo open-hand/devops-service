@@ -51,6 +51,7 @@ public class ApplicationMarketRepositoryImpl implements AppShareRepository {
         if (devopsAppShareDO.getId() == null) {
             applicationMarketMapper.insert(devopsAppShareDO);
         } else {
+            devopsAppShareDO.setObjectVersionNumber(applicationMarketMapper.selectByPrimaryKey(devopsAppShareDO).getObjectVersionNumber());
             applicationMarketMapper.updateByPrimaryKeySelective(devopsAppShareDO);
         }
         return ConvertHelper.convert(devopsAppShareDO, DevopsAppShareE.class);
