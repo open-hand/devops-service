@@ -5,11 +5,13 @@ import io.choerodon.devops.api.dto.DevopsEnvApplicationDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
 import io.choerodon.devops.infra.dataobject.DevopsEnvApplicationDO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * @author lizongwei
  * @date 2019/7/1
  */
+@Component
 public class DevopsEnvApplicationConvertor implements ConvertorI<DevopsEnvApplicationE, DevopsEnvApplicationDO, DevopsEnvApplicationDTO> {
 
     @Override
