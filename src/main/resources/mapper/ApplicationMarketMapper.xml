@@ -190,6 +190,7 @@
         dam.category,
         dam.img_url,
         dam.publish_level,
+        dam.is_free,
         EXISTS (
         SELECT
         1
@@ -351,11 +352,11 @@
         <if test="publishLevel != null">
             WHERE
             <choose>
-                <when test="publishLevel='site'">
+                <when test="publishLevel=='site'">
                     dam.publish_level = 'site'
                 </when>
                 <otherwise>
-                    dam.publish_level = 'site' or dam.publish_level = 'projects'
+                    dam.publish_level = #{publishLevel} or dam.publish_level = 'projects'
                 </otherwise>
             </choose>
         </if>

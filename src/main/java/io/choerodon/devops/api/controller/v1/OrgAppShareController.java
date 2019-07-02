@@ -23,6 +23,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.app.service.AppShareService;
@@ -71,8 +72,7 @@ public class OrgAppShareController {
      */
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "根据shareId获取应用详情")
-    @CustomPageRequest
-    @PostMapping(value = "/app_detail")
+    @GetMapping(value = "/app_detail")
     public ResponseEntity<ApplicationReleasingDTO> getAppDetailByShareId(
             @ApiParam(value = "shareId")
             @RequestParam(value = "share_id") Long shareId) {
@@ -146,23 +146,23 @@ public class OrgAppShareController {
                 .orElseThrow(() -> new CommonException("error.get.versions.by.appId"));
     }
 
-//    /**
-//     * 根据版本Id获取values和chart
-//     *
-//     * @param versionId 版本Id
-//     * @return Long
-//     */
-//    @Permission(type = ResourceType.SITE)
-//    @ApiOperation(value = "根据版本Id获取values和chart")
-//    @GetMapping(value = "/values")
-//    public ResponseEntity<PageInfo<ApplicationVersionRepDTO>> getValuesAndChart(
-//            @ApiParam(value = "应用Id")
-//            @RequestParam(value = "version_id") Long versionId) {
-//        return Optional.ofNullable(
-////                appShareService.getValuesAndChart(versionId))
-//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-//                .orElseThrow(() -> new CommonException("error.get.values.chart"));
-//    }
+    /**
+     * 根据版本Id获取values和chart
+     *
+     * @param versionId 版本Id
+     * @return Long
+     */
+    @Permission(type = ResourceType.SITE)
+    @ApiOperation(value = "根据版本Id获取values和chart")
+    @GetMapping(value = "/values")
+    public ResponseEntity<AppVersionAndValueDTO> getValuesAndChart(
+            @ApiParam(value = "应用Id")
+            @RequestParam(value = "version_id") Long versionId) {
+        return Optional.ofNullable(
+                appShareService.getValuesAndChart(versionId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.get.values.chart"));
+    }
 
 }
 

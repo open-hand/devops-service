@@ -9,6 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
+import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 
@@ -60,7 +61,7 @@ public interface AppShareService {
 
     PageInfo<ApplicationVersionRepDTO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params);
 
-    getValuesAndChart()
+    AppVersionAndValueDTO getValuesAndChart(Long versionId);
 
     /**
      * 查询发布级别为全局或者在本组织下的所有应用市场的应用

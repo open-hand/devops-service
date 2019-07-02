@@ -28,6 +28,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
+import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.app.service.AppShareService;
@@ -177,6 +178,22 @@ public class AppShareServiceImpl implements AppShareService {
     public PageInfo<ApplicationVersionRepDTO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params) {
         return ConvertPageHelper.convertPageInfo(
                 applicationVersionRepository.listByAppIdAndParamWithPage(appId, true, null, pageRequest, params), ApplicationVersionRepDTO.class);
+    }
+
+    @Override
+    public AppVersionAndValueDTO getValuesAndChart(Long versionId) {
+        AppVersionAndValueDTO appVersionAndValueDTO = new AppVersionAndValueDTO();
+        String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.queryValue(versionId));
+        try {
+            FileUtil.checkYamlFormat(versionValue);
+        } catch (Exception e) {
+            appVersionAndValueDTO.setValues(versionValue);
+        }
+        ApplicationVersionE applicationVersionE =
+                applicationVersionRepository.query(versionId);
+        appVersionAndValueDTO.setRepository(applicationVersionE.getRepository());
+        appVersionAndValueDTO.setVersion(applicationVersionE.getVersion());
+        return appVersionAndValueDTO;
     }
 
     @Override
