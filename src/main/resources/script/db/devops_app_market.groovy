@@ -48,7 +48,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
     }
     changeSet(author: 'scp', id: '2019-06-28-add-column') {
         addColumn(tableName: 'devops_app_market') {
-            column(name: 'is_free', type: 'TINYINT UNSIGNED', remarks: '是否收费', afterColumn: "publish_level")
+            column(name: 'is_free', type: 'TINYINT UNSIGNED', remarks: '是否收费', afterColumn: "publish_level", defaultValue: "1")
         }
     }
 

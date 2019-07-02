@@ -29,6 +29,7 @@ import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
+import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.app.service.AppShareService;
 import io.choerodon.devops.domain.application.entity.AppShareResourceE;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
@@ -163,6 +164,19 @@ public class AppShareServiceImpl implements AppShareService {
                 throw new CommonException("error.release.app.to.site");
             }
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public PageInfo<ApplicationReleasingDTO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds) {
+        return ConvertPageHelper.convertPageInfo(
+                appShareRepository.queryByShareIds(pageRequest, params, shareIds),
+                ApplicationReleasingDTO.class);
+    }
+
+    @Override
+    public PageInfo<ApplicationVersionRepDTO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params) {
+        return ConvertPageHelper.convertPageInfo(
+                applicationVersionRepository.listByAppIdAndParamWithPage(appId, true, null, pageRequest, params), ApplicationVersionRepDTO.class);
     }
 
     @Override

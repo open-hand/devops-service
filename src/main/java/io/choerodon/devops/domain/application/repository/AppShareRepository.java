@@ -48,4 +48,6 @@ public interface AppShareRepository {
 
     void checkMarketVersion(Long appMarketId, Long versionId);
 
+    PageInfo<DevopsAppShareE> queryByShareIds(PageRequest pageRequest, String params, List<Long> shareIds);
+
 }

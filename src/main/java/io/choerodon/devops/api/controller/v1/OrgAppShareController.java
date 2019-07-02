@@ -9,6 +9,8 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +22,9 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
+import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.app.service.AppShareService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
@@ -96,4 +100,69 @@ public class OrgAppShareController {
                 .orElseThrow(() -> new CommonException("error.batch.release"));
     }
 
+    /**
+     * 根据Ids获取应用详情
+     *
+     * @param shareIds 订阅Id
+     * @return Long
+     */
+    @Permission(type = ResourceType.SITE)
+    @ApiOperation(value = "根据Ids获取应用详情")
+    @CustomPageRequest
+    @PostMapping(value = "/details")
+    public ResponseEntity<PageInfo<ApplicationReleasingDTO>> getAppsDetail(
+            @ApiParam(value = "发布应用的信息", required = true)
+            @RequestBody List<Long> shareIds,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestParam(required = false) String params) {
+        return Optional.ofNullable(
+                appShareService.getAppsDetail(pageRequest, params, shareIds))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.get.app.detail.by.shareId"));
+    }
+
+    /**
+     * 根据应用Id获取已发布版本
+     *
+     * @param appId 应用Id
+     * @return Long
+     */
+    @Permission(type = ResourceType.SITE)
+    @ApiOperation(value = "根据应用Id获取已发布版本")
+    @CustomPageRequest
+    @PostMapping(value = "/list_versions")
+    public ResponseEntity<PageInfo<ApplicationVersionRepDTO>> getVersionsByAppId(
+            @ApiParam(value = "应用Id")
+            @RequestParam(value = "app_id") Long appId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestParam(value = "version", required = false) String searchParam) {
+        return Optional.ofNullable(
+                appShareService.getVersionsByAppId(appId,pageRequest, searchParam))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.get.versions.by.appId"));
+    }
+
+//    /**
+//     * 根据版本Id获取values和chart
+//     *
+//     * @param versionId 版本Id
+//     * @return Long
+//     */
+//    @Permission(type = ResourceType.SITE)
+//    @ApiOperation(value = "根据版本Id获取values和chart")
+//    @GetMapping(value = "/values")
+//    public ResponseEntity<PageInfo<ApplicationVersionRepDTO>> getValuesAndChart(
+//            @ApiParam(value = "应用Id")
+//            @RequestParam(value = "version_id") Long versionId) {
+//        return Optional.ofNullable(
+////                appShareService.getValuesAndChart(versionId))
+//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+//                .orElseThrow(() -> new CommonException("error.get.values.chart"));
+//    }
+
 }
+

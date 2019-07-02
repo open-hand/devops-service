@@ -76,7 +76,7 @@ public class ApplicationMarketRepositoryImpl implements AppShareRepository {
 
         PageInfo<DevopsAppShareDO> appShareDOPageInfo = PageHelper
                 .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
-                        applicationMarketMapper.listMarketAppsBySite(publishLevel,(Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM)));
+                        applicationMarketMapper.listMarketAppsBySite(publishLevel, (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM)));
         return ConvertPageHelper.convertPageInfo(appShareDOPageInfo, DevopsAppShareE.class);
     }
 
@@ -227,5 +227,13 @@ public class ApplicationMarketRepositoryImpl implements AppShareRepository {
             projectIds = null;
         }
         return projectIds;
+    }
+
+    @Override
+    public PageInfo<DevopsAppShareE> queryByShareIds(PageRequest pageRequest, String param, List<Long> shareIds) {
+        Map<String, Object> mapParams = TypeUtil.castMapParams(param);
+        PageInfo<DevopsAppShareDO> doPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
+                () -> applicationMarketMapper.queryByShareIds((Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM),shareIds));
+        return ConvertPageHelper.convertPageInfo(doPageInfo, DevopsAppShareE.class);
     }
 }

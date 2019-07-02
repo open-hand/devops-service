@@ -158,6 +158,26 @@
         <include refid="nameOrCateParamSql"/>
     </select>
 
+    <select id="queryByShareIds" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
+        select dam.id,
+        dam.app_id,
+        da.name,
+        da.code,
+        dam.publish_level,
+        dam.img_url,
+        dam.description,
+        dam.category,
+        dam.contributor
+        from devops_app_share dam,devops_application da
+        WHERE
+        da.id = dam.app_id
+        AND dam.id IN
+        <foreach collection="shareIds" item="shareId" open="(" separator="," close=")">
+            #{shareId}
+        </foreach>
+        <include refid="nameOrCateParamSql"/>
+    </select>
+
     <select id="getMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
         SELECT
         dam.id,

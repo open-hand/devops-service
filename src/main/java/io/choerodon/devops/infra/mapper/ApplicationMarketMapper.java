@@ -52,4 +52,8 @@ public interface ApplicationMarketMapper extends Mapper<DevopsAppShareDO> {
                                                    @Param("param") String param);
 
     Boolean checkVersion(@Param("appMarketId") Long appMarketId, @Param("versionId") Long versionId);
+
+    List<DevopsAppShareDO> queryByShareIds(@Param("searchParam") Map<String, Object> searchParam,
+                                           @Param("param") String param,
+                                           @Param("shareIds") List<Long> shareIds);
 }

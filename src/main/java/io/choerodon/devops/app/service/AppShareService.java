@@ -10,6 +10,7 @@ import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
+import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 
 /**
  * Created by ernst on 2018/5/12.
@@ -53,6 +54,13 @@ public interface AppShareService {
     ApplicationReleasingDTO getAppDetailByShareId(Long shareId);
 
     List<Long> batchRelease(List<ApplicationReleasingDTO> releasingDTOList);
+
+
+    PageInfo<ApplicationReleasingDTO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds);
+
+    PageInfo<ApplicationVersionRepDTO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params);
+
+    getValuesAndChart()
 
     /**
      * 查询发布级别为全局或者在本组织下的所有应用市场的应用
