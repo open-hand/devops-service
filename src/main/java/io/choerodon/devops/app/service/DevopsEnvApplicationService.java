@@ -2,7 +2,8 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.dto.ApplicationRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvApplicationDTO;
-import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
+import io.choerodon.devops.api.dto.DevopsEnvLabelDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPortDTO;
 
 import java.util.List;
 
@@ -17,4 +18,8 @@ public interface DevopsEnvApplicationService {
 
     //环境与应用关联数据修复
     void syncEnvAppRelevance();
+
+    List<DevopsEnvLabelDTO> queryLabelByAppEnvId(Long envId, Long appId);
+
+    List<DevopsEnvPortDTO> queryPortByAppEnvId(Long envId, Long appId);
 }

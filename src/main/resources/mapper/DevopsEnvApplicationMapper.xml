@@ -11,4 +11,18 @@
         WHERE
         d.env_id = #{envId}
     </select>
+
+    <select id="listResourceByEnvAndApp" resultType="io.choerodon.devops.domain.application.entity.DevopsEnvMessageE">
+        SELECT
+        der.name resourceName,
+        derd.message detail
+        FROM
+        devops_app_instance dai
+        JOIN devops_env_resource der ON der.app_instance_id = dai.id
+        JOIN devops_env_resource_detail derd ON derd.id = der.resource_detail_id
+        WHERE
+        dai.app_id = #{appId}
+        AND dai.env_id = #{envId}
+        AND der.kind = 'Deployment'
+    </select>
 </mapper>

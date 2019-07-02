@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.persistence.impl;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvMessageE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvApplicationRepostitory;
 import io.choerodon.devops.infra.dataobject.DevopsEnvApplicationDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
@@ -33,5 +34,10 @@ public class DevopsEnvApplicationRepostitoryImpl implements DevopsEnvApplication
     @Override
     public List<Long> queryAppByEnvId(Long envId) {
         return devopsEnvApplicationMapper.queryAppByEnvId(envId);
+    }
+
+    @Override
+    public List<DevopsEnvMessageE> listResourceByEnvAndApp(Long envId, Long appId) {
+        return devopsEnvApplicationMapper.listResourceByEnvAndApp(envId,appId);
     }
 }
