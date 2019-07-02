@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,5 +36,12 @@ public class AppShareRecourceRepositoryImpl implements AppShareRecouceRepository
         shareResourceDO.setShareId(shareId);
         shareResourceDO.setProjectId(projectId);
         appShareResourceMapper.deleteByPrimaryKey(shareResourceDO);
+    }
+
+    @Override
+    public List<AppShareResourceE> queryByShareId(Long shareId) {
+        AppShareResourceDO shareResourceDO = new AppShareResourceDO();
+        shareResourceDO.setShareId(shareId);
+        return ConvertHelper.convertList(appShareResourceMapper.select(shareResourceDO), AppShareResourceE.class);
     }
 }

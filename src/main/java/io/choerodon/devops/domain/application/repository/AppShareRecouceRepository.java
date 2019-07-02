@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
+import java.util.List;
+
 import io.choerodon.devops.domain.application.entity.AppShareResourceE;
 
 /**
@@ -11,4 +13,6 @@ public interface AppShareRecouceRepository {
     void create(AppShareResourceE appShareResourceE);
 
     void delete(Long shareId, Long projectId);
+
+    List<AppShareResourceE> queryByShareId(Long shareId);
 }

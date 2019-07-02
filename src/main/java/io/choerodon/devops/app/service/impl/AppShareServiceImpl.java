@@ -136,11 +136,18 @@ public class AppShareServiceImpl implements AppShareService {
     @Override
     public PageInfo<ApplicationReleasingDTO> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest,
                                                                        String searchParam) {
-        PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.listMarketAppsByProjectId(
-                projectId, pageRequest, searchParam);
-        return ConvertPageHelper.convertPageInfo(
-                applicationMarketEPage,
+        PageInfo<ApplicationReleasingDTO> applicationMarketEPage = ConvertPageHelper.convertPageInfo(
+                appShareRepository.listMarketAppsByProjectId(
+                        projectId, pageRequest, searchParam),
                 ApplicationReleasingDTO.class);
+        List<ApplicationReleasingDTO> appShareEList = applicationMarketEPage.getList();
+        appShareEList.forEach(t -> {
+            if ("projects".equals(t.getPublishLevel())) {
+                t.setProjectIds(appShareRecouceRepository.queryByShareId(t.getId()).stream().map(AppShareResourceE::getProjectId).collect(Collectors.toList()));
+            }
+        });
+        applicationMarketEPage.setList(appShareEList);
+        return applicationMarketEPage;
     }
 
     @Override

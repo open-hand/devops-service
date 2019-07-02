@@ -238,4 +238,9 @@ public class ApplicationMarketRepositoryImpl implements AppShareRepository {
                 () -> applicationMarketMapper.queryByShareIds((Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM), shareIds));
         return ConvertPageHelper.convertPageInfo(doPageInfo, DevopsAppShareE.class);
     }
+
+    @Override
+    public void updatePublishLevel() {
+        applicationMarketMapper.updatePublishLevel();
+    }
 }

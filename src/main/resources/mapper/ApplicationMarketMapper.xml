@@ -353,4 +353,11 @@
             WHERE dam.is_site = 1
         </if>
     </select>
+
+    <update id="updatePublishLevel">
+        UPDATE devops_app_share das
+        SET das.publish_level = 'organization'
+        WHERE
+            das.publish_level = 'public'
+    </update>
 </mapper>

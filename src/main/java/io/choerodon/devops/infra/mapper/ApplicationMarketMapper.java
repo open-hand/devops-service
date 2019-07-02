@@ -56,4 +56,6 @@ public interface ApplicationMarketMapper extends Mapper<DevopsAppShareDO> {
     List<DevopsAppShareDO> queryByShareIds(@Param("searchParam") Map<String, Object> searchParam,
                                            @Param("param") String param,
                                            @Param("shareIds") List<Long> shareIds);
+
+    void updatePublishLevel();
 }

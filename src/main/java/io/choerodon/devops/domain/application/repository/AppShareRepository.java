@@ -50,4 +50,6 @@ public interface AppShareRepository {
 
     PageInfo<DevopsAppShareE> queryByShareIds(PageRequest pageRequest, String params, List<Long> shareIds);
 
+    void updatePublishLevel();
+
 }
