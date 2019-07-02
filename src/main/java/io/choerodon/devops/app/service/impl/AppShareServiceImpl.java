@@ -16,6 +16,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.app.service.AppShareService;
 import io.choerodon.devops.domain.application.entity.AppShareResourceE;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
@@ -53,6 +55,7 @@ import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
+import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
 import io.choerodon.websocket.tool.UUIDTool;
 
 /**
@@ -63,7 +66,7 @@ public class AppShareServiceImpl implements AppShareService {
     private static final String CHARTS = "charts";
     private static final String CHART = "chart";
     private static final String ORGANIZATION = "organization";
-    private static final String PUBLIC = "public";
+    private static final String PROJECTS = "projects";
     private static final String IMAGES = "images";
     private static final String PUSH_IAMGES = "push_image.sh";
     private static final String JSON_FILE = ".json";
@@ -95,27 +98,29 @@ public class AppShareServiceImpl implements AppShareService {
     @Autowired
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
     @Autowired
+    private ApplicationVersionReadmeMapper applicationVersionReadmeMapper;
+    @Autowired
     private ChartUtil chartUtil;
 
     @Override
     public Long release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
         List<Long> ids;
-        if (applicationReleasingDTO != null) {
-            String publishLevel = applicationReleasingDTO.getPublishLevel();
-            if (!ORGANIZATION.equals(publishLevel) && !PUBLIC.equals(publishLevel)) {
-                throw new CommonException("error.publishLevel");
-            }
+        if (applicationReleasingDTO == null) {
+            throw new CommonException("error.app.check");
+        }
+        String publishLevel = applicationReleasingDTO.getPublishLevel();
+        if (!ORGANIZATION.equals(publishLevel) && !PROJECTS.equals(publishLevel)) {
+            throw new CommonException("error.publishLevel");
+        }
+        //校验应用和版本
+        appShareRepository.checkCanPub(applicationReleasingDTO.getAppId());
+        if (projectId != null) {
             List<AppMarketVersionDTO> appVersions = applicationReleasingDTO.getAppVersions();
             ids = appVersions.stream().map(AppMarketVersionDTO::getId)
                     .collect(Collectors.toCollection(ArrayList::new));
-        } else {
-            throw new CommonException("error.app.check");
+            applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
+            applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
         }
-        appShareRepository.checkCanPub(applicationReleasingDTO.getAppId());
-        //校验应用和版本
-        applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
-        applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
-
         DevopsAppShareE devopsAppShareE = ApplicationMarketFactory.create();
         devopsAppShareE.initApplicationEById(applicationReleasingDTO.getAppId());
         devopsAppShareE.setPublishLevel(applicationReleasingDTO.getPublishLevel());
@@ -125,10 +130,11 @@ public class AppShareServiceImpl implements AppShareService {
         devopsAppShareE.setCategory(applicationReleasingDTO.getCategory());
         devopsAppShareE.setImgUrl(applicationReleasingDTO.getImgUrl());
         devopsAppShareE.setFree(applicationReleasingDTO.getFree());
-        devopsAppShareE = appShareRepository.create(devopsAppShareE);
+        devopsAppShareE.setSite(applicationReleasingDTO.getSite());
+        devopsAppShareE = appShareRepository.createOrUpdate(devopsAppShareE);
         Long shareId = devopsAppShareE.getId();
         if ("projects".equals(applicationReleasingDTO.getPublishLevel())) {
-            applicationReleasingDTO.getProjectIds().forEach(t -> appShareRecouceRepository.create(new AppShareResourceE(shareId, t)));
+            applicationReleasingDTO.getProjectDTOS().forEach(t -> appShareRecouceRepository.create(new AppShareResourceE(shareId, t.getId())));
         }
         return appShareRepository.getMarketIdByAppId(applicationReleasingDTO.getAppId());
     }
@@ -143,7 +149,15 @@ public class AppShareServiceImpl implements AppShareService {
         List<ApplicationReleasingDTO> appShareEList = applicationMarketEPage.getList();
         appShareEList.forEach(t -> {
             if ("projects".equals(t.getPublishLevel())) {
-                t.setProjectIds(appShareRecouceRepository.queryByShareId(t.getId()).stream().map(AppShareResourceE::getProjectId).collect(Collectors.toList()));
+                List<ProjectDTO> projectDTOS = appShareRecouceRepository.queryByShareId(t.getId()).stream()
+                        .map(appShareResourceE -> {
+                            ProjectE projectE = iamRepository.queryIamProject(appShareResourceE.getProjectId());
+                            ProjectDTO projectDTO = new ProjectDTO();
+                            BeanUtils.copyProperties(projectE, projectDTO);
+                            return projectDTO;
+                        })
+                        .collect(Collectors.toList());
+                t.setProjectDTOS(projectDTOS);
             }
         });
         applicationMarketEPage.setList(appShareEList);
@@ -165,41 +179,44 @@ public class AppShareServiceImpl implements AppShareService {
 
     @Override
     public List<Long> batchRelease(List<ApplicationReleasingDTO> releasingDTOList) {
-        return releasingDTOList.stream().map(releasingDTO -> {
-            if ("site".equals(releasingDTO.getPublishLevel())) {
-                return release(null, releasingDTO);
-            } else {
-                throw new CommonException("error.release.app.to.site");
-            }
-        }).collect(Collectors.toList());
+        return releasingDTOList.stream().map(releasingDTO -> release(null, releasingDTO)).collect(Collectors.toList());
     }
 
     @Override
     public PageInfo<ApplicationReleasingDTO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds) {
-        return ConvertPageHelper.convertPageInfo(
-                appShareRepository.queryByShareIds(pageRequest, params, shareIds),
-                ApplicationReleasingDTO.class);
+        PageInfo<DevopsAppShareE> devopsAppShareEPageInfo = appShareRepository.queryByShareIds(pageRequest, params, shareIds);
+        return ConvertPageHelper.convertPageInfo(devopsAppShareEPageInfo, ApplicationReleasingDTO.class);
     }
 
     @Override
     public PageInfo<ApplicationVersionRepDTO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params) {
-        return ConvertPageHelper.convertPageInfo(
-                applicationVersionRepository.listByAppIdAndParamWithPage(appId, true, null, pageRequest, params), ApplicationVersionRepDTO.class);
+        PageInfo<ApplicationVersionE> applicationVersionEPageInfo = applicationVersionRepository.listByAppIdAndParamWithPage(appId, true, null, pageRequest, params);
+        if (applicationVersionEPageInfo.getList() == null) {
+            return new PageInfo<>();
+        }
+        return ConvertPageHelper.convertPageInfo(applicationVersionEPageInfo, ApplicationVersionRepDTO.class);
     }
 
     @Override
     public AppVersionAndValueDTO getValuesAndChart(Long versionId) {
         AppVersionAndValueDTO appVersionAndValueDTO = new AppVersionAndValueDTO();
         String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.queryValue(versionId));
-        try {
-            FileUtil.checkYamlFormat(versionValue);
-        } catch (Exception e) {
-            appVersionAndValueDTO.setValues(versionValue);
+        appVersionAndValueDTO.setValues(versionValue);
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(versionId);
+        if (applicationVersionE != null) {
+            appVersionAndValueDTO.setRepository(applicationVersionE.getRepository());
+            appVersionAndValueDTO.setVersion(applicationVersionE.getVersion());
+            appVersionAndValueDTO.setImage(applicationVersionE.getImage());
+            appVersionAndValueDTO.setReadMeValue(applicationVersionReadmeMapper.selectByPrimaryKey(applicationVersionE.getApplicationVersionReadmeV().getId()).getReadme());
+            ApplicationE applicationE = applicationRepository.query(applicationVersionE.getApplicationE().getId());
+            if (applicationE.getHarborConfigE() == null) {
+                appVersionAndValueDTO.setHarbor(devopsProjectConfigRepository.queryByName(null, "harbor_default").getConfig());
+                appVersionAndValueDTO.setChart(devopsProjectConfigRepository.queryByName(null, "chart_default").getConfig());
+            } else {
+                appVersionAndValueDTO.setHarbor(devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId()).getConfig());
+                appVersionAndValueDTO.setChart(devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getChartConfigE().getId()).getConfig());
+            }
         }
-        ApplicationVersionE applicationVersionE =
-                applicationVersionRepository.query(versionId);
-        appVersionAndValueDTO.setRepository(applicationVersionE.getRepository());
-        appVersionAndValueDTO.setVersion(applicationVersionE.getVersion());
         return appVersionAndValueDTO;
     }
 
@@ -347,7 +364,7 @@ public class AppShareServiceImpl implements AppShareService {
             String publishLevel = applicationRelease.getPublishLevel();
             if (publishLevel != null
                     && !ORGANIZATION.equals(publishLevel)
-                    && !PUBLIC.equals(publishLevel)) {
+                    && !PROJECTS.equals(publishLevel)) {
                 throw new CommonException("error.publishLevel");
             }
         } else {
@@ -725,12 +742,12 @@ public class AppShareServiceImpl implements AppShareService {
             if (canPub) {
                 DevopsAppShareE applicationMarketE = new DevopsAppShareE();
                 applicationMarketE.initApplicationEById(appId);
-                applicationMarketE.setPublishLevel(isPublic ? PUBLIC : ORGANIZATION);
+                applicationMarketE.setPublishLevel(isPublic ? PROJECTS : ORGANIZATION);
                 applicationMarketE.setActive(true);
                 applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
                 applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
                 applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
-                appShareRepository.create(applicationMarketE);
+                appShareRepository.createOrUpdate(applicationMarketE);
             }
         }
     }

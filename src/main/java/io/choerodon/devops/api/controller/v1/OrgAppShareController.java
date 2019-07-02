@@ -155,9 +155,9 @@ public class OrgAppShareController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
-            @RequestParam(value = "version", required = false) String searchParam) {
+            @RequestParam(required = false) String version) {
         return Optional.ofNullable(
-                appShareService.getVersionsByAppId(appId, pageRequest, searchParam))
+                appShareService.getVersionsByAppId(appId, pageRequest, version))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.versions.by.appId"));
     }

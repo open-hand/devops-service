@@ -15,6 +15,8 @@ public class ProjectDTO {
         this.permission = permission;
     }
 
+    public ProjectDTO() {
+    }
 
     public Long getId() {
         return id;

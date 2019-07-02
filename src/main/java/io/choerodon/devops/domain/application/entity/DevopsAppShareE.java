@@ -22,9 +22,18 @@ public class DevopsAppShareE {
     private Boolean isDeployed;
     private Date marketUpdatedDate;
     private Boolean isFree;
+    private Boolean isSite;
 
     public DevopsAppShareE() {
 
+    }
+
+    public Boolean getSite() {
+        return isSite;
+    }
+
+    public void setSite(Boolean site) {
+        isSite = site;
     }
 
     public Boolean getFree() {

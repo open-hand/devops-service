@@ -23,7 +23,16 @@ public class ApplicationReleasingDTO {
     private Date lastUpdatedDate;
     private Boolean isDeployed;
     private Boolean isFree;
-    private List<Long> projectIds;
+    private List<ProjectDTO> projectDTOS;
+    private Boolean isSite;
+
+    public Boolean getSite() {
+        return isSite;
+    }
+
+    public void setSite(Boolean site) {
+        isSite = site;
+    }
 
     public Boolean getFree() {
         return isFree;
@@ -33,12 +42,12 @@ public class ApplicationReleasingDTO {
         isFree = free;
     }
 
-    public List<Long> getProjectIds() {
-        return projectIds;
+    public List<ProjectDTO> getProjectDTOS() {
+        return projectDTOS;
     }
 
-    public void setProjectIds(List<Long> projectIds) {
-        this.projectIds = projectIds;
+    public void setProjectDTOS(List<ProjectDTO> projectDTOS) {
+        this.projectDTOS = projectDTOS;
     }
 
     public Long getId() {

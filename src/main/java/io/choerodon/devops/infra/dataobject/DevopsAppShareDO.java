@@ -24,6 +24,7 @@ public class DevopsAppShareDO extends BaseDTO {
     private String publishLevel;
     private Boolean isActive;
     private Boolean isFree;
+    private Boolean isSite;
 
     @Transient
     private String name;
@@ -39,6 +40,14 @@ public class DevopsAppShareDO extends BaseDTO {
     private Date appUpdatedDate;
     @Transient
     private Date marketUpdatedDate;
+
+    public Boolean getSite() {
+        return isSite;
+    }
+
+    public void setSite(Boolean site) {
+        isSite = site;
+    }
 
     public Long getId() {
         return id;

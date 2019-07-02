@@ -7,8 +7,44 @@ package io.choerodon.devops.api.dto;
  */
 public class AppVersionAndValueDTO {
     private String values;
+    private String image;
+    private String readMeValue;
     private String repository;
     private String version;
+    private ProjectConfigDTO harbor;
+    private ProjectConfigDTO chart;
+
+    public ProjectConfigDTO getHarbor() {
+        return harbor;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getReadMeValue() {
+        return readMeValue;
+    }
+
+    public void setReadMeValue(String readMeValue) {
+        this.readMeValue = readMeValue;
+    }
+
+    public void setHarbor(ProjectConfigDTO harbor) {
+        this.harbor = harbor;
+    }
+
+    public ProjectConfigDTO getChart() {
+        return chart;
+    }
+
+    public void setChart(ProjectConfigDTO chart) {
+        this.chart = chart;
+    }
 
     public String getValues() {
         return values;

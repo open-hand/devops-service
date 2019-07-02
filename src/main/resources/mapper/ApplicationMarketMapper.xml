@@ -345,7 +345,7 @@
 
     <select id="listMarketAppsBySite" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
         SELECT
-            dam.*, da.`name`
+            dam.*, da.`name`,da.code
         FROM
             devops_app_share dam
         JOIN devops_application da ON da.id = dam.app_id

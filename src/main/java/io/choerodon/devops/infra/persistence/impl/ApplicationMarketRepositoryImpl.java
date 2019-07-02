@@ -46,9 +46,13 @@ public class ApplicationMarketRepositoryImpl implements AppShareRepository {
 
 
     @Override
-    public DevopsAppShareE create(DevopsAppShareE applicationMarketE) {
+    public DevopsAppShareE createOrUpdate(DevopsAppShareE applicationMarketE) {
         DevopsAppShareDO devopsAppShareDO = ConvertHelper.convert(applicationMarketE, DevopsAppShareDO.class);
-        applicationMarketMapper.insert(devopsAppShareDO);
+        if (devopsAppShareDO.getId() == null) {
+            applicationMarketMapper.insert(devopsAppShareDO);
+        } else {
+            applicationMarketMapper.updateByPrimaryKeySelective(devopsAppShareDO);
+        }
         return ConvertHelper.convert(devopsAppShareDO, DevopsAppShareE.class);
     }
 

@@ -13,7 +13,7 @@ import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
  * Created by ernst on 2018/5/12.
  */
 public interface AppShareRepository {
-    DevopsAppShareE create(DevopsAppShareE applicationMarketE);
+    DevopsAppShareE createOrUpdate(DevopsAppShareE applicationMarketE);
 
     PageInfo<DevopsAppShareE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam);
 
