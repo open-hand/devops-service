@@ -35,6 +35,7 @@ export default class LogSidebar extends Component {
     };
     this.timer = null;
     this.socket = null;
+    this.following = true;
   }
 
   componentDidMount() {
@@ -105,6 +106,7 @@ export default class LogSidebar extends Component {
     this.setState({
       following: false,
     });
+    this.following = false;
   };
 
   /**
@@ -134,19 +136,21 @@ export default class LogSidebar extends Component {
    * 任意键退出全屏查看
    */
   setNormal = () => {
-    const cm = this.editorLog.getCodeMirror();
-    const wrap = cm.getWrapperElement();
-    wrap.className = wrap.className.replace(/\s*CodeMirror-fullScreen\b/, '');
-    this.setState({ fullScreen: false });
-    document.documentElement.style.overflow = '';
-    const info = cm.state.fullScreenRestore;
-    wrap.style.width = info.width;
-    wrap.style.height = info.height;
-    window.scrollTo(info.scrollLeft, info.scrollTop);
-    cm.refresh();
-    window.removeEventListener('keydown', e => {
-      this.setNormal(e.which);
-    });
+    if (this.editorLog) {
+      const cm = this.editorLog.getCodeMirror();
+      const wrap = cm.getWrapperElement();
+      wrap.className = wrap.className.replace(/\s*CodeMirror-fullScreen\b/, '');
+      this.setState({ fullScreen: false });
+      document.documentElement.style.overflow = '';
+      const info = cm.state.fullScreenRestore;
+      wrap.style.width = info.width;
+      wrap.style.height = info.height;
+      window.scrollTo(info.scrollLeft, info.scrollTop);
+      cm.refresh();
+      window.removeEventListener('keydown', e => {
+        this.setNormal(e.which);
+      });
+    }
   };
 
   /**
@@ -154,7 +158,7 @@ export default class LogSidebar extends Component {
    */
   loadLog = (isFollow = true) => {
     const { current: { namespace, clusterId } } = this.props;
-    const { logId, podName, containerName, following } = this.state;
+    const { logId, podName, containerName } = this.state;
     const authToken = document.cookie.split('=')[1];
     const url = `POD_WEBSOCKET_URL/ws/log?key=cluster:${clusterId}.log:${logId}&env=${namespace}&podName=${podName}&containerName=${containerName}&logId=${logId}&token=${authToken}`;
 
@@ -167,6 +171,7 @@ export default class LogSidebar extends Component {
       try {
         const ws = new WebSocket(url);
         this.setState({ following: true });
+        this.following = true;
         if (!isFollow) {
           editor.setValue('Loading...\n');
         }
@@ -188,11 +193,11 @@ export default class LogSidebar extends Component {
             clearInterval(this.timer);
             this.timer = null;
           }
-          if (following) {
+          if (this.following) {
             logs.push('\n连接已断开\n');
             editor.setValue(_.join(logs, ''));
+            editor.execCommand('goDocEnd');
           }
-          editor.execCommand('goDocEnd');
         };
 
         ws.onmessage = e => {

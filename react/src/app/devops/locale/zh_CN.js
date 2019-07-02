@@ -605,6 +605,7 @@ const zhCN = {
   'file.uploaded.failed': '上传失败！',
   'file.uploaded.success': '上传成功！',
   'file.type.error': '文件类型错误！',
+  'file.type.multiple': '请上传单个文件！',
 
   // ist
   ist_stop: '停止中',
