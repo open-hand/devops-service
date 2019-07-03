@@ -137,7 +137,8 @@
         SELECT
         dav.id,
         dav.version,
-        dav.publish_time
+        dav.publish_time,
+        dav.creation_time
         FROM
         devops_app_version dav
         WHERE
