@@ -30,6 +30,7 @@ import io.choerodon.devops.api.dto.AppInstanceCommandLogDTO;
 import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.api.dto.ApplicationInstancesDTO;
+import io.choerodon.devops.api.dto.ApplicationRemoteDeployDTO;
 import io.choerodon.devops.api.dto.DeployDetailDTO;
 import io.choerodon.devops.api.dto.DeployFrequencyDTO;
 import io.choerodon.devops.api.dto.DeployTimeDTO;
@@ -836,6 +837,21 @@ public class ApplicationInstanceController {
         return Optional.ofNullable(applicationInstanceService.getByAppIdAndEnvId(projectId, appId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APPINSTANCE_QUERY));
+    }
+
+    @ApiOperation(value = "部署远程应用")
+    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @PostMapping(value = "/remote")
+    public ResponseEntity<ApplicationInstanceDTO> deployRemote(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署信息", required = true)
+            @RequestBody ApplicationRemoteDeployDTO appRemoteDeployDTO) {
+        return Optional.ofNullable(applicationInstanceService.deployRemote(projectId, appRemoteDeployDTO))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.application.remote.deploy"));
     }
 
 }

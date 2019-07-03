@@ -1,15 +1,28 @@
 package io.choerodon.devops.app.service;
 
-import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import com.github.pagehelper.PageInfo;
+
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.dto.AppInstanceCodeDTO;
+import io.choerodon.devops.api.dto.AppInstanceCommandLogDTO;
+import io.choerodon.devops.api.dto.ApplicationDeployDTO;
+import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.api.dto.ApplicationInstancesDTO;
+import io.choerodon.devops.api.dto.ApplicationRemoteDeployDTO;
+import io.choerodon.devops.api.dto.DeployDetailDTO;
+import io.choerodon.devops.api.dto.DeployFrequencyDTO;
+import io.choerodon.devops.api.dto.DeployTimeDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPreviewDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPreviewInstanceDTO;
+import io.choerodon.devops.api.dto.DevopsEnvResourceDTO;
+import io.choerodon.devops.api.dto.ErrorLineDTO;
+import io.choerodon.devops.api.dto.InstanceControllerDetailDTO;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -296,4 +309,11 @@ public interface ApplicationInstanceService {
      */
     ReplaceResult previewValues(ReplaceResult replaceResult, Long appVersionId);
 
+    /**
+     * 部署远程应用
+     *
+     * @param appRemoteDeployDTO
+     * @return
+     */
+    ApplicationInstanceDTO deployRemote(Long projectId, ApplicationRemoteDeployDTO appRemoteDeployDTO);
 }

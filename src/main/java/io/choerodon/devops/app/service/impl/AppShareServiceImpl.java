@@ -34,6 +34,7 @@ import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
+import io.choerodon.devops.api.dto.ApplicationVersionRemoteDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.app.service.AppShareService;
@@ -212,13 +213,14 @@ public class AppShareServiceImpl implements AppShareService {
     public AppVersionAndValueDTO getValuesAndChart(Long versionId) {
         AppVersionAndValueDTO appVersionAndValueDTO = new AppVersionAndValueDTO();
         String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.queryValue(versionId));
-        appVersionAndValueDTO.setValues(versionValue);
+        ApplicationVersionRemoteDTO versionRemoteDTO = new ApplicationVersionRemoteDTO();
+        versionRemoteDTO.setValues(versionValue);
         ApplicationVersionE applicationVersionE = applicationVersionRepository.query(versionId);
         if (applicationVersionE != null) {
-            appVersionAndValueDTO.setRepository(applicationVersionE.getRepository());
-            appVersionAndValueDTO.setVersion(applicationVersionE.getVersion());
-            appVersionAndValueDTO.setImage(applicationVersionE.getImage());
-            appVersionAndValueDTO.setReadMeValue(applicationVersionReadmeMapper.selectByPrimaryKey(applicationVersionE.getApplicationVersionReadmeV().getId()).getReadme());
+            versionRemoteDTO.setRepository(applicationVersionE.getRepository());
+            versionRemoteDTO.setVersion(applicationVersionE.getVersion());
+            versionRemoteDTO.setImage(applicationVersionE.getImage());
+            versionRemoteDTO.setReadMeValue(applicationVersionReadmeMapper.selectByPrimaryKey(applicationVersionE.getApplicationVersionReadmeV().getId()).getReadme());
             ApplicationE applicationE = applicationRepository.query(applicationVersionE.getApplicationE().getId());
             if (applicationE.getHarborConfigE() == null) {
                 appVersionAndValueDTO.setHarbor(devopsProjectConfigRepository.queryByName(null, "harbor_default").getConfig());
@@ -227,6 +229,7 @@ public class AppShareServiceImpl implements AppShareService {
                 appVersionAndValueDTO.setHarbor(devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId()).getConfig());
                 appVersionAndValueDTO.setChart(devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getChartConfigE().getId()).getConfig());
             }
+            appVersionAndValueDTO.setVersionRemoteDTO(versionRemoteDTO);
         }
         return appVersionAndValueDTO;
     }

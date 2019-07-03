@@ -413,7 +413,7 @@ public class AppShareController {
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下查询远程应用版本")
+    @ApiOperation(value = "项目下查询远程应用版本详情")
     @CustomPageRequest
     @PostMapping(value = "/remote/config")
     public ResponseEntity<AppVersionAndValueDTO> getConfigInfoByVerionId(
