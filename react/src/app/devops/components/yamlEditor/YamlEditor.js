@@ -2,8 +2,8 @@ import React, { Component, Fragment } from 'react';
 import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { Icon } from 'choerodon-ui';
-import { checkFormat, changedValue } from './utils';
 import classnames from 'classnames';
+import { checkFormat, changedValue } from './utils';
 import 'codemirror/addon/merge/merge.css';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/lint/lint.css';
@@ -24,7 +24,6 @@ export default class YamlEditor extends Component {
     value: PropTypes.string.isRequired,
     readOnly: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
     originValue: PropTypes.string,
-    options: PropTypes.object,
     handleEnableNext: PropTypes.func,
     onValueChange: PropTypes.func,
     modeChange: PropTypes.bool,
@@ -127,7 +126,7 @@ export default class YamlEditor extends Component {
             value={value}
             originValue={originValue}
             onChange={this.onChange}
-            ref={instance => {
+            ref={(instance) => {
               this.yamlEditor = instance;
             }}
           />
