@@ -11,7 +11,8 @@ public enum ObjectType {
     INGRESS("ingress"),
     CERTIFICATE("certificate"),
     CONFIGMAP("configMap"),
-    SECRET("secret");
+    SECRET("secret"),
+    CUSTOM("custom");
 
     private String type;
 

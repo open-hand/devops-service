@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.feign;
 
+import java.util.List;
+import java.util.Map;
+import javax.validation.Valid;
+
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
@@ -8,40 +12,17 @@ import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
-import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
-import io.choerodon.devops.infra.dataobject.gitlab.JobDO;
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO;
-import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
-import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO;
-import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
-import io.choerodon.devops.infra.dataobject.gitlab.UserDO;
-import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
+import io.choerodon.devops.infra.dataobject.gitlab.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
+import org.springframework.web.bind.annotation.*;
 
 
 /**
  * gitlab服务 feign客户端
  * Created by Zenger on 2018/3/28.
  */
-@FeignClient(value = "gitlab-service", fallback = GitlabServiceClientFallback.class)
+@FeignClient(value = "gitlab-service")
 public interface GitlabServiceClient {
     @GetMapping(value = "/v1/users/{userId}")
     ResponseEntity<UserDO> queryUserByUserId(
@@ -234,9 +215,9 @@ public interface GitlabServiceClient {
                                                @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/statuse")
-    ResponseEntity<List<CommitStatuseDO>> getCommitStatuse(@PathVariable("projectId") Integer projectId,
-                                                           @RequestParam("sha") String sha,
-                                                           @RequestParam("userId") Integer userId);
+    ResponseEntity<List<CommitStatuseDO>> getCommitStatus(@PathVariable("projectId") Integer projectId,
+                                                          @RequestParam("sha") String sha,
+                                                          @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/branch")
     ResponseEntity<List<CommitDO>> getCommits(@PathVariable("projectId") Integer projectId,

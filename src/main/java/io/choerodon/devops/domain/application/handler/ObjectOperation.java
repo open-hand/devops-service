@@ -3,6 +3,7 @@ package io.choerodon.devops.domain.application.handler;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
@@ -15,6 +16,7 @@ import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.kubernetes.client.models.*;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -49,15 +51,14 @@ public class ObjectOperation<T> {
      * @param operationType      operation type
      * @param userId             GitLab user ID
      */
-    public void
-    operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType,
-                           Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Boolean deleteCert, Long envId, String filePath) {
+    public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType,
+                                       Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Boolean deleteCert, Long envId, String filePath) {
         GitlabRepository gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
         Tag tag = new Tag(type.getClass().toString());
-        Yaml yaml = getYamlObject(tag);
+        Yaml yaml = getYamlObject(tag, true);
         String endpointContent = null;
         if (v1Endpoints != null) {
-            Yaml newYaml = getYamlObject(new Tag(v1Endpoints.getClass().toString()));
+            Yaml newYaml = getYamlObject(new Tag(v1Endpoints.getClass().toString()), true);
             endpointContent = newYaml.dump(v1Endpoints).replace(ENDPOINTS, "---");
         }
         String content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
@@ -81,16 +82,19 @@ public class ObjectOperation<T> {
         }
     }
 
-    private Yaml getYamlObject(Tag tag) {
-        SkipNullRepresenterUtil skipNullRepresenter = new SkipNullRepresenterUtil();
-        skipNullRepresenter.addClassTag(type.getClass(), tag);
+    private Yaml getYamlObject(Tag tag, Boolean isTag) {
+        SkipNullRepresenterUtil skipNullRepresenter = null;
+        if (isTag) {
+            skipNullRepresenter = new SkipNullRepresenterUtil();
+            skipNullRepresenter.addClassTag(type.getClass(), tag);
+        }
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setAllowReadOnlyProperties(true);
-        return new Yaml(skipNullRepresenter, options);
+        return skipNullRepresenter == null ? new Yaml(options) : new Yaml(skipNullRepresenter, options);
     }
 
-    private String getUpdateContent(T t, Boolean deleteCert, String content, String filePath, String objectType, String path, String operationType) {
+    public String getUpdateContent(T t, Boolean deleteCert, String content, String filePath, String objectType, String path, String operationType) {
         Yaml yaml = new Yaml();
         StringBuilder resultBuilder = new StringBuilder();
         File file = new File(String.format("%s/%s", path, filePath));
@@ -104,9 +108,9 @@ public class ObjectOperation<T> {
                     case "Ingress":
                         handleIngress(t, deleteCert, objectType, operationType, resultBuilder, jsonObject);
                         break;
-                    case "Service":
-                        handleService(t, content, objectType, operationType, resultBuilder, jsonObject);
-                        break;
+//                    case "Service":
+//                        handleService(t, content, objectType, operationType, resultBuilder, jsonObject);
+//                        break;
                     case "C7nCertification":
                         handleC7nCertification(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
@@ -117,6 +121,7 @@ public class ObjectOperation<T> {
                         handleSecret(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
                     default:
+                        handleCustom(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
                 }
             }
@@ -130,7 +135,7 @@ public class ObjectOperation<T> {
         Yaml yaml3 = new Yaml();
         V1Service v1Service = yaml3.loadAs(jsonObject.toJSONString(), V1Service.class);
         V1Service newV1Service = new V1Service();
-        if (objectType.equals("Service") && v1Service.getMetadata().getName().equals(((V1Service) t).getMetadata().getName())) {
+        if (objectType.equals(ResourceType.SERVICE.getType()) && v1Service.getMetadata().getName().equals(((V1Service) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
                 Map<String, String> oldAnnotations = v1Service.getMetadata().getAnnotations();
                 newV1Service = (V1Service) t;
@@ -146,7 +151,7 @@ public class ObjectOperation<T> {
             }
         }
         Tag tag3 = new Tag(SVCTAG);
-        resultBuilder.append("\n").append(getYamlObject(tag3).dump(newV1Service).replace(SVCTAG, "---"));
+        resultBuilder.append("\n").append(getYamlObject(tag3, true).dump(newV1Service).replace(SVCTAG, "---"));
         if (content != null) {
             resultBuilder.append("\n").append(content);
         }
@@ -157,7 +162,7 @@ public class ObjectOperation<T> {
         V1beta1Ingress v1beta1Ingress = yaml2.loadAs(jsonObject.toJSONString(), V1beta1Ingress.class);
         V1beta1Ingress newV1beta1Ingress = new V1beta1Ingress();
 
-        if (objectType.equals("Ingress") && v1beta1Ingress.getMetadata().getName().equals(((V1beta1Ingress) t).getMetadata().getName())) {
+        if (objectType.equals(ResourceType.INGRESS.getType()) && v1beta1Ingress.getMetadata().getName().equals(((V1beta1Ingress) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
                 newV1beta1Ingress = (V1beta1Ingress) t;
                 newV1beta1Ingress.getMetadata().setAnnotations(v1beta1Ingress.getMetadata().getAnnotations());
@@ -173,13 +178,13 @@ public class ObjectOperation<T> {
             }
         }
         Tag tag2 = new Tag(INGTAG);
-        resultBuilder.append("\n").append(getYamlObject(tag2).dump(newV1beta1Ingress).replace(INGTAG, "---"));
+        resultBuilder.append("\n").append(getYamlObject(tag2, true).dump(newV1beta1Ingress).replace(INGTAG, "---"));
     }
 
     private void handleC7nHelmRelease(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
         Yaml yaml1 = new Yaml();
         C7nHelmRelease c7nHelmRelease = yaml1.loadAs(jsonObject.toJSONString(), C7nHelmRelease.class);
-        if (objectType.equals("C7NHelmRelease") && c7nHelmRelease.getMetadata().getName().equals(((C7nHelmRelease) t).getMetadata().getName())) {
+        if (objectType.equals(ResourceType.C7NHELMRELEASE.getType()) && c7nHelmRelease.getMetadata().getName().equals(((C7nHelmRelease) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
                 c7nHelmRelease = (C7nHelmRelease) t;
             } else {
@@ -187,14 +192,14 @@ public class ObjectOperation<T> {
             }
         }
         Tag tag1 = new Tag(C7NTAG);
-        resultBuilder.append("\n").append(getYamlObject(tag1).dump(c7nHelmRelease).replace(C7NTAG, "---"));
+        resultBuilder.append("\n").append(getYamlObject(tag1, true).dump(c7nHelmRelease).replace(C7NTAG, "---"));
     }
 
 
     private void handleC7nCertification(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
         Yaml yaml4 = new Yaml();
         C7nCertification c7nCertification = yaml4.loadAs(jsonObject.toJSONString(), C7nCertification.class);
-        if (objectType.equals("C7nCertification") && c7nCertification.getMetadata().getName().equals(((C7nCertification) t).getMetadata().getName())) {
+        if (objectType.equals(ResourceType.CERTIFICATE.getType()) && c7nCertification.getMetadata().getName().equals(((C7nCertification) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
                 c7nCertification = (C7nCertification) t;
             } else {
@@ -202,14 +207,14 @@ public class ObjectOperation<T> {
             }
         }
         Tag tag1 = new Tag(CERTTAG);
-        resultBuilder.append("\n").append(getYamlObject(tag1).dump(c7nCertification).replace(CERTTAG, "---"));
+        resultBuilder.append("\n").append(getYamlObject(tag1, true).dump(c7nCertification).replace(CERTTAG, "---"));
     }
 
     private void handleConfigMap(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
         Yaml yaml5 = new Yaml();
         V1ConfigMap v1ConfigMap = yaml5.loadAs(jsonObject.toJSONString(), V1ConfigMap.class);
         V1ConfigMap newV1ConfigMap = new V1ConfigMap();
-        if (objectType.equals("ConfigMap") && v1ConfigMap.getMetadata().getName().equals(((V1ConfigMap) t).getMetadata().getName())) {
+        if (objectType.equals(ResourceType.CONFIGMAP.getType()) && v1ConfigMap.getMetadata().getName().equals(((V1ConfigMap) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
                 newV1ConfigMap = (V1ConfigMap) t;
                 newV1ConfigMap.getMetadata().setAnnotations(v1ConfigMap.getMetadata().getAnnotations());
@@ -218,7 +223,7 @@ public class ObjectOperation<T> {
             }
         }
         Tag tag1 = new Tag(CONFIGMAPTAG);
-        resultBuilder.append("\n").append(getYamlObject(tag1).dump(newV1ConfigMap).replace(CONFIGMAPTAG, "---"));
+        resultBuilder.append("\n").append(getYamlObject(tag1, true).dump(newV1ConfigMap).replace(CONFIGMAPTAG, "---"));
     }
 
     private void handleSecret(T t, String objectType, String operationType, StringBuilder resultBuilder,
@@ -226,7 +231,7 @@ public class ObjectOperation<T> {
         Yaml yaml6 = new Yaml();
         V1Secret v1Secret = yaml6.loadAs(jsonObject.toJSONString(), V1Secret.class);
         V1Secret newV1Secret = new V1Secret();
-        if (objectType.equals("Secret") && v1Secret.getMetadata().getName()
+        if (objectType.equals(ResourceType.SECRET.getType()) && v1Secret.getMetadata().getName()
                 .equals(((V1Secret) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
                 newV1Secret = (V1Secret) t;
@@ -236,6 +241,24 @@ public class ObjectOperation<T> {
             }
         }
         Tag tag1 = new Tag(SECRET);
-        resultBuilder.append("\n").append(getYamlObject(tag1).dump(newV1Secret).replace(SECRET, "---"));
+        resultBuilder.append("\n").append(getYamlObject(tag1, true).dump(newV1Secret).replace(SECRET, "---"));
+    }
+
+    private void handleCustom(T t, String objectType, String operationType, StringBuilder resultBuilder,
+                              JSONObject jsonObject) {
+        Yaml yaml7 = new Yaml();
+        Object customResource = yaml7.load(jsonObject.toJSONString());
+        if (objectType.equals(ResourceType.CUSTOM.getType())) {
+            String oldResourceName = ((LinkedHashMap) (((Map<String, Object>) customResource).get("metadata"))).get("name").toString();
+            String newResourceName = ((LinkedHashMap) (((Map<String, Object>) t).get("metadata"))).get("name").toString();
+            if (oldResourceName.equals(newResourceName)) {
+                if (operationType.equals(UPDATE)) {
+                    customResource = t;
+                } else {
+                    return;
+                }
+            }
+        }
+        resultBuilder.append("---").append("\n").append(getYamlObject(null, false).dump(customResource)).append("\n");
     }
 }

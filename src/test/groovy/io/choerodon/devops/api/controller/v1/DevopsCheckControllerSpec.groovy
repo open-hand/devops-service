@@ -277,7 +277,7 @@ class DevopsCheckControllerSpec extends Specification {
 
         when(mockGitlabServiceClient.getPipeline(anyInt(), eq((int) TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId())), anyInt())).thenReturn(new ResponseEntity<>(createMockPipelineDO(), HttpStatus.OK))
         when(mockGitlabServiceClient.listJobs(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(createMockJobDOs(), HttpStatus.OK))
-        when(mockGitlabServiceClient.getCommitStatuse(anyInt(), anyString(), anyInt())).thenReturn(new ResponseEntity<>(createMockCommitStatusDOs(), HttpStatus.OK))
+        when(mockGitlabServiceClient.getCommitStatus(anyInt(), anyString(), anyInt())).thenReturn(new ResponseEntity<>(createMockCommitStatusDOs(), HttpStatus.OK))
 
         // 准备升级到0.11.0的数据
         UserWithRoleDTO userWithRoleDTO = new UserWithRoleDTO()

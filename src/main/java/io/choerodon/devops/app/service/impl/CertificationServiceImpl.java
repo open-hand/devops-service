@@ -14,7 +14,7 @@ import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.api.dto.OrgCertificationDTO;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.app.service.CertificationService;
-import io.choerodon.devops.app.service.DeployMsgHandlerService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
@@ -40,7 +40,6 @@ public class CertificationServiceImpl implements CertificationService {
 
     private static final String CERT_PREFIX = "cert-";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
-    private static final String CERTIFICATE_KIND = "certificate";
     public static final String UPLOAD = "upload";
 
 
@@ -67,7 +66,8 @@ public class CertificationServiceImpl implements CertificationService {
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
-    private DeployMsgHandlerService deployMsgHandlerService;
+    private DevopsEnvironmentService devopsEnvironmentService;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -76,13 +76,12 @@ public class CertificationServiceImpl implements CertificationService {
 
         Long envId = certificationDTO.getEnvId();
 
-        //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certificationDTO.getEnvId());
-
-        //校验环境是否链接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
 
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
 
 
         ProjectE projectE = iamRepository.queryIamProject(projectId);
@@ -230,15 +229,13 @@ public class CertificationServiceImpl implements CertificationService {
     public void deleteById(Long certId) {
         CertificationE certificationE = certificationRepository.queryById(certId);
         Long certEnvId = certificationE.getEnvironmentE().getId();
-        //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certEnvId);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certEnvId);
 
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
-
-
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
+
         Integer gitLabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
         String certificateType = ObjectType.CERTIFICATE.getType();
         String certName = certificationE.getName();

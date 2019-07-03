@@ -13,6 +13,7 @@ import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.api.dto.DevopsServiceDTO;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
@@ -84,6 +85,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private CheckOptionsHandler checkOptionsHandler;
     @Autowired
     private DevopsIngressRepository devopsIngressRepository;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
 
     @Override
@@ -175,12 +178,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
 
-        //校验用户是否有环境的权限
-//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId()
+        );
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
-        //校验环境是否链接
-//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
+
 
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
         List<String> beforeDevopsServiceAppInstanceES = new ArrayList<>();
@@ -198,7 +203,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             v1Endpoints = initV1EndPoints(devopsServiceReqDTO);
         }
         //在gitops库处理service文件
-        operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE);
+        operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE, userAttrE);
         return true;
     }
 
@@ -351,15 +356,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateDevopsService(Long projectId, Long id,
                                        DevopsServiceReqDTO devopsServiceReqDTO) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId()
+        );
 
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
-        //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
-
-        //校验环境是否链接
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
-
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
 
 
         //更新网络的时候校验gitops库文件是否存在,处理部署网络时，由于没有创gitops文件导致的部署失败
@@ -385,7 +388,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 v1Endpoints = initV1EndPoints(devopsServiceReqDTO);
             }
             //在gitops库处理service文件
-            operateEnvGitLabFile(v1Service, v1Endpoints, false, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE);
+            operateEnvGitLabFile(v1Service, v1Endpoints, false, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE, userAttrE);
         }
         return true;
     }
@@ -436,16 +439,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public void deleteDevopsService(Long id) {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
 
-        //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceE.getEnvId());
-
-        //校验环境是否链接
-        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsServiceE.getEnvId());
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceE.getEnvId()
+        );
 
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
@@ -681,13 +681,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                       DevopsServiceE devopsServiceE,
                                       List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES,
                                       List<String> beforeDevopsServiceAppInstanceES,
-                                      DevopsEnvCommandE devopsEnvCommandE) {
+                                      DevopsEnvCommandE devopsEnvCommandE,
+                                      UserAttrE userAttrE) {
 
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //操作网络数据库操作
         if (isCreate) {

@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.valueobject.Issue;
 import io.choerodon.devops.domain.application.valueobject.ProjectInfo;
 import io.choerodon.devops.infra.feign.AgileServiceClient;
@@ -16,6 +18,6 @@ public class AgileServiceClientFallback implements AgileServiceClient {
 
     @Override
     public ResponseEntity<ProjectInfo> queryProjectInfo(Long projectId) {
-        return new ResponseEntity("error.projectinfo.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.projectinfo.get");
     }
 }

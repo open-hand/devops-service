@@ -2,7 +2,10 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.domain.application.entity.gitlab.*;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabCommitE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 
@@ -25,9 +28,7 @@ public interface GitlabProjectRepository {
 
     Boolean cancel(Integer projectId, Integer pipelineId, Integer userId);
 
-    List<BranchE> listBranches(Integer projectId, Integer userId);
-
-    List<CommitStatuseDO> getCommitStatuse(Integer projectId, String sha, Integer useId);
+    List<CommitStatuseDO> getCommitStatus(Integer projectId, String sha, Integer useId);
 
     List<CommitDO> listCommits(Integer projectId, Integer userId, Integer page, Integer size);
 

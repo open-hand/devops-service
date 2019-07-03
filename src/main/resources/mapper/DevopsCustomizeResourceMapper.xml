@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCustomizeResourceMapper">
+    <select id="queryDetail" resultType="io.choerodon.devops.infra.dataobject.DevopsCustomizeResourceDO">
+     SELECT
+	dcr.id,
+	dcr.description,
+	dcr.k8s_kind,
+	dcrc.id contentId,
+	dcr.name,
+	dcrc.content resourceContent
+FROM
+	devops_customize_resource dcr
+	LEFT JOIN devops_customize_resource_content dcrc ON dcr.content_id = dcrc.id
+	where dcr.id = #{resourceId}
+    </select>
+
+
+    <select id="pageResources" resultType="io.choerodon.devops.infra.dataobject.DevopsCustomizeResourceDO">
+        SELECT
+        dcr.id,
+        dcr.env_id,
+        dcr.project_id,
+        dcr.k8s_kind,
+        dcr.`name`,
+        dcr.last_update_date,
+        dc.id commandId,
+        dc.`status` commandStatus,
+        dc.error commandError
+        FROM
+        devops_customize_resource dcr
+        LEFT JOIN devops_env_command dc ON dcr.command_id = dc.id
+        WHERE
+        env_id = #{envId}
+        <include refid="sqlparam"/>
+    </select>
+
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.name != null and searchParam.name.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                    dcr.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.k8sKind != null and searchParam.k8sKind.size > 0'>
+                AND
+                <foreach collection="searchParam.k8sKind" item="k8sKind" open="(" separator=" OR " close=")">
+                    dcr.k8s_kind LIKE CONCAT(CONCAT('%', #{k8sKind, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (dcr.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dcr.k8s_kind LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+    </sql>
+
+</mapper>

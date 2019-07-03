@@ -1,30 +1,10 @@
 package io.choerodon.devops.infra.common.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -39,6 +19,9 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.gson.Gson;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.domain.application.valueobject.HighlightMarker;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -48,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.composer.Composer;
 import org.yaml.snakeyaml.nodes.MappingNode;
@@ -57,10 +41,6 @@ import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.parser.ParserImpl;
 import org.yaml.snakeyaml.reader.StreamReader;
 import org.yaml.snakeyaml.resolver.Resolver;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.valueobject.HighlightMarker;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 
 /**
  * Created by younger on 2018/4/13.
@@ -939,6 +919,15 @@ public class FileUtil {
             logger.info(e.getMessage());
         }
         return sshkeys;
+    }
+
+
+    public static Yaml getYaml() {
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setAllowReadOnlyProperties(true);
+        Yaml newYaml = new Yaml(options);
+        return newYaml;
     }
 
 }

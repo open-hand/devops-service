@@ -13,6 +13,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
@@ -61,17 +62,30 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     private GitlabRepository gitlabRepository;
     @Autowired
     private CheckOptionsHandler checkOptionsHandler;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
     @Override
     @Transactional(rollbackFor=Exception.class)
     public void createOrUpdate(Long projectId, Boolean sync, DevopsConfigMapDTO devopsConfigMapDTO) {
+
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapDTO.getEnvId());
+
+        UserAttrE userAttrE = null;
+        if (!sync) {
+            userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        } else {
+            userAttrE = new UserAttrE();
+            userAttrE.setGitlabUserId(1L);
+        }
+
         //校验用户是否有环境的权限
         if(!sync) {
-            devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsConfigMapDTO.getEnvId());
+            //校验环境相关信息
+            devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
         }
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapDTO.getEnvId());
-        //校验环境是否连接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //初始化ConfigMap对象
         V1ConfigMap v1ConfigMap = initConfigMap(devopsConfigMapDTO);
@@ -91,15 +105,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             }
         }
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapDTO.getType());
-        UserAttrE userAttrE = null;
-        if(!sync) {
-             userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-        }else {
-            userAttrE = new UserAttrE();
-            userAttrE.setGitlabUserId(1L);
-        }
+
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
 
@@ -174,19 +180,17 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     public void delete(Long configMapId) {
         DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryById(configMapId);
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId());
-
-        //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentE.getId());
-//        //校验环境是否连接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
-
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE_TYPE);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId()
+        );
 
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
-        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
+
+
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE_TYPE);
+
 
         //更新ingress
         devopsEnvCommandE.setObjectId(configMapId);

@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.devops.domain.application.repository.AgileRepository;
 import io.choerodon.devops.domain.application.valueobject.Issue;
 import io.choerodon.devops.domain.application.valueobject.ProjectInfo;
 import io.choerodon.devops.infra.feign.AgileServiceClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AgileRepositoryImpl implements AgileRepository {
@@ -16,11 +16,11 @@ public class AgileRepositoryImpl implements AgileRepository {
 
     @Override
     public Issue queryIssue(Long projectId, Long issueId, Long organizationId) {
-        try {
-            return agileServiceClient.queryIssue(projectId, issueId, organizationId).getBody();
-        } catch (Exception e) {
+        ResponseEntity<Issue> responseEntity = agileServiceClient.queryIssue(projectId, issueId, organizationId);
+        if (responseEntity.getStatusCodeValue() == 500) {
             return null;
         }
+        return responseEntity.getBody();
     }
 
     @Override

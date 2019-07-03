@@ -1,11 +1,10 @@
 package io.choerodon.devops.infra.feign.fallback;
 
 import java.util.List;
-
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
-
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.*;
@@ -29,47 +28,47 @@ public class IamServiceClientFallback implements IamServiceClient {
 
     @Override
     public ResponseEntity<ProjectDO> queryIamProject(Long projectId) {
-        return new ResponseEntity("error.project.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.project.get");
     }
 
     @Override
     public ResponseEntity<OrganizationDO> queryOrganization() {
-        return new ResponseEntity("error.organization.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.organization.get");
     }
 
     @Override
     public ResponseEntity<OrganizationDO> queryOrganizationById(Long organizationId) {
-        return new ResponseEntity("error.organization.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.organization.get");
     }
 
     @Override
     public ResponseEntity<MemberRoleV> addMemberRole(Long projectId, MemberRoleV memberRoleVo) {
-        return new ResponseEntity("error.memberRole.add", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.memberRole.add");
     }
 
     @Override
     public ResponseEntity<UserDO> queryByLoginName(String loginName) {
-        return new ResponseEntity("error.user.get.byLoginName", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.user.get.byLoginName");
     }
 
     @Override
     public ResponseEntity<UserDO> queryById(Long id) {
-        return new ResponseEntity("error.user.get.byId", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.user.get.byId");
     }
 
     @Override
     public ResponseEntity<PageInfo<UserDO>> queryInProjectById(Long projectId, Long id) {
-        return new ResponseEntity("error.userInProject.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.userInProject.get");
     }
 
     @Override
     public ResponseEntity<PageInfo<ProjectDO>> queryProjectByOrgId(Long id, int page, int size, String name, String[] params) {
-        return new ResponseEntity("error.project.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.project.get");
     }
 
     @Override
     public ResponseEntity<List<UserDO>> listUsersByIds(Long[] ids) {
-        return new ResponseEntity("error.user.get.byIds", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.user.get.byIds");
     }
 
     @Override
@@ -80,7 +79,7 @@ public class IamServiceClientFallback implements IamServiceClient {
     @Override
     public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnProjectLevel(
             Long projectId, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return new ResponseEntity("error.roles.get.byProjectId", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.roles.get.byProjectId");
     }
 
     @Override
@@ -88,57 +87,57 @@ public class IamServiceClientFallback implements IamServiceClient {
                                                                                 Long sourceId,
                                                                                 Boolean doPage,
                                                                                 RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return new ResponseEntity("error.user.get.byRoleId", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.user.get.byRoleId");
     }
 
     @Override
     public ResponseEntity<PageInfo<UserWithRoleDTO>> queryUserByProjectId(Long projectId, int page, int size,
                                                                       Boolean doPage, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        return new ResponseEntity("error.user.get.byProjectId", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.user.get.byProjectId");
     }
 
     @Override
     public ResponseEntity<com.github.pagehelper.PageInfo<ProjectWithRoleDTO>> listProjectWithRole(Long id, int page, int size) {
-        return new ResponseEntity("error.project.role.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.project.role.get");
     }
 
     @Override
     public ResponseEntity<PageInfo<RoleDTO>> queryRoleIdByCode(RoleSearchDTO roleSearchDTO) {
-        return new ResponseEntity("error.roleId.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.roleId.get");
     }
 
     @Override
     public ResponseEntity<IamAppPayLoad> createIamApplication(Long organizationId, IamAppPayLoad iamAppPayLoad) {
-        return new ResponseEntity("error.iam.app.create", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.iam.app.create");
     }
 
     @Override
     public ResponseEntity<IamAppPayLoad> updateIamApplication(Long organizationId, Long id, IamAppPayLoad iamAppPayLoad) {
-        return new ResponseEntity("error.iam.app.update", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.iam.app.update");
     }
 
     @Override
     public ResponseEntity<IamAppPayLoad> disableIamApplication(Long organizationId, Long id) {
-        return new ResponseEntity("error.iam.app.disabled", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.iam.app.disable");
     }
 
     @Override
     public ResponseEntity<IamAppPayLoad> enableIamApplication(Long organizationId, Long id) {
-        return new ResponseEntity("error.iam.app.enabled", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.iam.app.enabled");
     }
 
     @Override
     public ResponseEntity<PageInfo<IamAppPayLoad>> getIamApplication(Long organizationId, String code) {
-        return new ResponseEntity("error.iam.app.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.iam.app.get");
     }
 
     @Override
     public ResponseEntity<ProjectDTO> createProject(Long organizationId, @Valid ProjectCreateDTO projectCreateDTO) {
-        return new ResponseEntity("error.iam.project.create", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.iam.project.create");
     }
 
     @Override
     public ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(int page, int size) {
-        return new ResponseEntity("error.get.all.organizations", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.get.all.organizations");
     }
 }
