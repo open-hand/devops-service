@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -142,6 +143,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
             applicationVersionDO.setId(id);
             applicationVersionDO.setObjectVersionNumber(applicationVersionMapper.selectByPrimaryKey(id).getObjectVersionNumber());
             if (applicationVersionDO.getObjectVersionNumber() == null) {
+                applicationVersionDO.setPublishTime(new java.sql.Date(new java.util.Date().getTime()));
                 applicationVersionMapper.updateObJectVersionNumber(id);
                 applicationVersionDO.setObjectVersionNumber(1L);
             }

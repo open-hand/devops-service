@@ -8,7 +8,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -21,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import retrofit2.Response;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
@@ -48,13 +51,17 @@ import io.choerodon.devops.domain.application.repository.ApplicationVersionRepos
 import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.MarketConnectInfoRepositpry;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
+import io.choerodon.devops.infra.dataobject.DevopsMarketConnectInfoDO;
+import io.choerodon.devops.infra.feign.AppShareClient;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
 import io.choerodon.websocket.tool.UUIDTool;
 
@@ -99,6 +106,8 @@ public class AppShareServiceImpl implements AppShareService {
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
     @Autowired
     private ApplicationVersionReadmeMapper applicationVersionReadmeMapper;
+    @Autowired
+    private MarketConnectInfoRepositpry marketConnectInfoRepositpry;
     @Autowired
     private ChartUtil chartUtil;
 
@@ -513,6 +522,77 @@ public class AppShareServiceImpl implements AppShareService {
                 fileName);
         File zipDirectory = new File(destPath);
         FileUtil.deleteDirectory(zipDirectory);
+    }
+
+
+    @Override
+    public PageInfo<ApplicationReleasingDTO> pageListRemoteApps(Long projectId, PageRequest pageRequest, String params) {
+        DevopsMarketConnectInfoDO marketConnectInfoDO = marketConnectInfoRepositpry.query();
+        if (marketConnectInfoDO == null) {
+            throw new CommonException("not.exist.remote token");
+        }
+        AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
+        Map<String, Object> map = new HashMap<>();
+        map.put("page", pageRequest.getPage());
+        map.put("size", pageRequest.getSize());
+        map.put("sort", pageRequest.getSort());
+        map.put("params", params);
+        Response<PageInfo<ApplicationReleasingDTO>> pageInfoResponse = null;
+        try {
+            pageInfoResponse = shareClient.getAppShares(marketConnectInfoDO.getAccessToken(), map).execute();
+            if (!pageInfoResponse.isSuccessful()) {
+                throw new CommonException("error.get.app.shares");
+            }
+        } catch (IOException e) {
+            throw new CommonException("error.get.app.shares");
+        }
+        return pageInfoResponse.body();
+    }
+
+    @Override
+    public PageInfo<ApplicationVersionRepDTO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params) {
+        DevopsMarketConnectInfoDO marketConnectInfoDO = marketConnectInfoRepositpry.query();
+        if (marketConnectInfoDO == null) {
+            throw new CommonException("not.exist.remote token");
+        }
+        AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
+        Map<String, Object> map = new HashMap<>();
+        map.put("page", pageRequest.getPage());
+        map.put("size", pageRequest.getSize());
+        map.put("sort", pageRequest.getSort());
+        map.put("params", params);
+        map.put("access_token", accessToken);
+        Response<PageInfo<ApplicationVersionRepDTO>> pageInfoResponse = null;
+        try {
+            pageInfoResponse = shareClient.listVersionByAppId(appId, map).execute();
+            if (!pageInfoResponse.isSuccessful()) {
+                throw new CommonException("error.get.app.shares");
+            }
+        } catch (IOException e) {
+            throw new CommonException("error.get.app.shares");
+        }
+        return pageInfoResponse.body();
+    }
+
+    @Override
+    public AppVersionAndValueDTO getConfigInfoByVerionId(Long appId, Long versionId, String accessToken) {
+        DevopsMarketConnectInfoDO marketConnectInfoDO = marketConnectInfoRepositpry.query();
+        if (marketConnectInfoDO == null) {
+            throw new CommonException("not.exist.remote token");
+        }
+        AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
+        Map<String, Object> map = new HashMap<>();
+        map.put("access_token", accessToken);
+        Response<AppVersionAndValueDTO> versionAndValueDTOResponse = null;
+        try {
+            versionAndValueDTOResponse = shareClient.getConfigInfoByVerionId(appId, versionId, map).execute();
+            if (!versionAndValueDTOResponse.isSuccessful()) {
+                throw new CommonException("error.get.app.shares");
+            }
+        } catch (IOException e) {
+            throw new CommonException("error.get.app.shares");
+        }
+        return versionAndValueDTOResponse.body();
     }
 
     private void analyzeAppFile(List<ApplicationReleasingDTO> appMarketVersionDTOS,

@@ -14,11 +14,11 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.feign.AppShareClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 
 public class RetrofitHandler {
@@ -144,5 +144,14 @@ public class RetrofitHandler {
         configurationProperties.setInsecureSkipTlsVerify(true);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         return retrofit.create(SonarClient.class);
+    }
+
+    public static AppShareClient getAppShareClient(String appShareUrl) {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(appShareUrl);
+        configurationProperties.setType("app_share");
+        configurationProperties.setInsecureSkipTlsVerify(true);
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        return retrofit.create(AppShareClient.class);
     }
 }

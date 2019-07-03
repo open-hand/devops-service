@@ -8,6 +8,21 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletResponse;
 
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
@@ -16,17 +31,12 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
+import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
+import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.app.service.AppShareService;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Created by ernst on 2018/5/12.
@@ -47,7 +57,7 @@ public class AppShareController {
      * @param applicationReleaseDTO 发布应用的信息
      * @return Long
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用发布")
     @PostMapping
     public ResponseEntity<Long> create(
@@ -69,7 +79,7 @@ public class AppShareController {
      * @param searchParam 搜索参数
      * @return list of ApplicationReleasingDTO
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下分页查询所有发布在应用市场的应用")
     @CustomPageRequest
     @PostMapping(value = "/list")
@@ -94,7 +104,7 @@ public class AppShareController {
      * @param searchParam 搜索参数
      * @return list of ApplicationReleasingDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询发布级别为全局或者在本组织下的所有应用市场的应用")
     @CustomPageRequest
@@ -118,7 +128,7 @@ public class AppShareController {
      * @param appMarketId 发布ID
      * @return ApplicationReleasingDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询项目下单个应用市场的应用详情")
     @GetMapping("/{app_market_id}/detail")
@@ -139,7 +149,7 @@ public class AppShareController {
      * @param appMarketId 发布ID
      * @return ApplicationReleasingDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个应用市场的应用")
     @GetMapping("/{app_market_id}")
@@ -161,7 +171,7 @@ public class AppShareController {
      * @param appMarketId 发布ID
      * @return List of AppMarketVersionDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下单个应用市场的应用的版本")
     @GetMapping("/{app_market_id}/versions")
@@ -185,7 +195,7 @@ public class AppShareController {
      * @param appMarketId 发布ID
      * @return Page of AppMarketVersionDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询项目下单个应用市场的应用的版本")
     @CustomPageRequest
@@ -215,7 +225,7 @@ public class AppShareController {
      * @param versionId   版本ID
      * @return String of readme
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个应用市场的应用的单个版本README")
     @GetMapping("/{app_market_id}/versions/{version_id}/readme")
@@ -238,7 +248,7 @@ public class AppShareController {
      * @param projectId   项目id
      * @param appMarketId 发布ID
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "更新单个应用市场的应用")
     @PutMapping("/{app_market_id}")
     public ResponseEntity update(
@@ -258,7 +268,7 @@ public class AppShareController {
      * @param projectId   项目id
      * @param appMarketId 发布ID
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "更新单个应用市场的应用")
     @PutMapping("/{app_market_id}/versions")
     public ResponseEntity updateVersions(
@@ -279,7 +289,7 @@ public class AppShareController {
      * @param file      文件
      * @return 应用列表
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用市场解析导入应用")
     @PostMapping("/upload")
     public ResponseEntity<AppMarketTgzDTO> uploadApps(
@@ -301,7 +311,7 @@ public class AppShareController {
      * @param isPublic  是否发布
      * @return 应用列表
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用市场导入应用")
     @PostMapping("/import")
     public ResponseEntity<Boolean> importApps(
@@ -324,7 +334,7 @@ public class AppShareController {
      * @param fileName  文件名
      * @return 应用列表
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用市场取消导入应用")
     @PostMapping("/import_cancel")
     public ResponseEntity deleteZip(
@@ -343,7 +353,7 @@ public class AppShareController {
      * @param appMarkets 应用市场应用信息
      * @return ResponseEntity
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "导出应用市场应用信息")
     @PostMapping("/export")
     public ResponseEntity exportFile(
@@ -362,5 +372,62 @@ public class AppShareController {
             throw new CommonException(e.getMessage());
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询远程应用")
+    @CustomPageRequest
+    @PostMapping(value = "/remote_list")
+    public ResponseEntity<PageInfo<ApplicationReleasingDTO>> pageListRemoteApps(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return Optional.ofNullable(
+                appShareService.pageListRemoteApps(projectId, pageRequest, searchParam))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.remote.applications.get"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询远程应用版本")
+    @CustomPageRequest
+    @PostMapping(value = "/remote_list/versions")
+    public ResponseEntity<PageInfo<ApplicationVersionRepDTO>> listVersionByAppId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用Id", required = true)
+            @PathVariable(value = "app_id") Long appId,
+            @ApiParam(value = "access_token", required = true)
+            @RequestParam(name = "access_token") String accessToken,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return Optional.ofNullable(
+                appShareService.listVersionByAppId(appId, accessToken, pageRequest, searchParam))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询远程应用版本")
+    @CustomPageRequest
+    @PostMapping(value = "/remote/config")
+    public ResponseEntity<AppVersionAndValueDTO> getConfigInfoByVerionId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用Id", required = true)
+            @RequestParam(value = "app_id") Long appId,
+            @ApiParam(value = "版本Id", required = true)
+            @RequestParam(name = "version_id") Long versionId,
+            @ApiParam(value = "access_token", required = true)
+            @RequestParam(name = "access_token") String accessToken) {
+        return Optional.ofNullable(
+                appShareService.getConfigInfoByVerionId(appId, versionId, accessToken))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.remote.version.config.get"));
     }
 }

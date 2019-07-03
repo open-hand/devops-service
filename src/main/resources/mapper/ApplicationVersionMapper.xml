@@ -136,7 +136,8 @@
     <select id="selectByAppIdAndParamWithPage" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
         SELECT
         dav.id,
-        dav.version
+        dav.version,
+        dav.publish_time
         FROM
         devops_app_version dav
         WHERE

@@ -49,4 +49,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
             column(name: 'version')
         }
     }
+
+    changeSet(author: 'scp', id: '2019-07-03-add-column') {
+        addColumn(tableName: 'devops_app_version') {
+            column(name: 'publish_time', type: 'DATETIME', remarks: 'publish time', afterColumn: 'is_publish')
+        }
+    }
 }

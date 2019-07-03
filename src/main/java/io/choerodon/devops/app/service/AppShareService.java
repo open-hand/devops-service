@@ -114,4 +114,10 @@ public interface AppShareService {
      * @param appMarkets 应用市场应用信息
      */
     void export(List<AppMarketDownloadDTO> appMarkets, String fileName);
+
+    PageInfo<ApplicationReleasingDTO> pageListRemoteApps(Long projectId, PageRequest pageRequest, String params);
+
+    PageInfo<ApplicationVersionRepDTO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params);
+
+    AppVersionAndValueDTO getConfigInfoByVerionId(Long appId, Long versionId, String accessToken);
 }
