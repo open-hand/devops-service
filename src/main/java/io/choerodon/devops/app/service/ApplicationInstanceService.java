@@ -64,14 +64,6 @@ public interface ApplicationInstanceService {
 
 
     /**
-     * 获取当前部署配置
-     *
-     * @param instanceId 实例Id
-     * @return
-     */
-    ReplaceResult queryDeployValue(Long instanceId);
-
-    /**
      * 部署应用
      *
      * @param applicationDeployDTO 部署信息
