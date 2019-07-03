@@ -12,8 +12,8 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Date:  14:21 2019/6/28
  * Description:
  */
-@Table(name = "market_connect_info")
-public class DevopsMarketConnectInfoDO extends BaseDTO {
+@Table(name = "devops_market_connect_info")
+public class DevopsMarketConnectInfoDO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -90,7 +90,7 @@ class ApplicationMarketControllerSpec extends Specification {
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
     @Shared
-    PageRequest pageRequest = new PageRequest()
+    PageRequest pageRequest = new PageRequest(1,0)
     @Shared
     Long project_id = 1L
     @Shared

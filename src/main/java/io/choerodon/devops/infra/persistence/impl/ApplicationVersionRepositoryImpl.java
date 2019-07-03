@@ -297,4 +297,9 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         applicationVersionDO.setVersion(appVersion);
         return ConvertHelper.convert(applicationVersionMapper.selectOne(applicationVersionDO), ApplicationVersionE.class);
     }
+
+    @Override
+    public void updatePublishTime() {
+        applicationVersionMapper.updatePublishTime();
+    }
 }

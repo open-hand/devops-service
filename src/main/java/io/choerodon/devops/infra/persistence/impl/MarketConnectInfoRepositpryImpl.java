@@ -26,15 +26,9 @@ public class MarketConnectInfoRepositpryImpl implements MarketConnectInfoReposit
         }
     }
 
-    @Override
-    public void delete(String accessToken) {
-        DevopsMarketConnectInfoDO marketConnectInfoDO = new DevopsMarketConnectInfoDO();
-        marketConnectInfoDO.setAccessToken(accessToken);
-        marketConnectInfoMapper.insert(marketConnectInfoDO);
-    }
 
     @Override
     public DevopsMarketConnectInfoDO query() {
-        return marketConnectInfoMapper.selectByPrimaryKey(1L);
+        return marketConnectInfoMapper.selectAll().get(0);
     }
 }

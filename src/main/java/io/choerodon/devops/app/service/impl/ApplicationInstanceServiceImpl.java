@@ -1327,6 +1327,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             DevopsProjectConfigE chartConfigE = createConfig(projectId, "chart", appRemoteDeployDTO.getAppRemoteDTO().getCode(), appRemoteDeployDTO.getChart());
             BeanUtils.copyProperties(appRemoteDeployDTO, applicationE);
             applicationE.setCode(code);
+            applicationE.setActive(true);
             applicationE.initProjectE(projectId);
             applicationE.initHarborConfig(harborConfigE.getId());
             applicationE.initChartConfig(chartConfigE.getId());

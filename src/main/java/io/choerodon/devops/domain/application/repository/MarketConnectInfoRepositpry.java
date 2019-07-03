@@ -10,7 +10,5 @@ import io.choerodon.devops.infra.dataobject.DevopsMarketConnectInfoDO;
 public interface MarketConnectInfoRepositpry {
     void create(DevopsMarketConnectInfoDO marketConnectInfoDO);
 
-    void delete(String accessToken);
-
     DevopsMarketConnectInfoDO query();
 }

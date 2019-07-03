@@ -29,6 +29,7 @@ public class AppShareConvertor implements ConvertorI<DevopsAppShareE, DevopsAppS
         ApplicationReleasingDTO applicationReleasingDTO = new ApplicationReleasingDTO();
         BeanUtils.copyProperties(entity, applicationReleasingDTO);
         applicationReleasingDTO.setAppId(entity.getApplicationE().getId());
+        applicationReleasingDTO.setLastUpdatedDate(entity.getMarketUpdatedDate());
         return applicationReleasingDTO;
     }
 

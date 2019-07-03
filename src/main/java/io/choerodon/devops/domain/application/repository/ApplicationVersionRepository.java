@@ -62,4 +62,6 @@ public interface ApplicationVersionRepository {
 
     ApplicationVersionE queryByAppAndCode(Long appId, String appVersion);
 
+    void updatePublishTime();
+
 }

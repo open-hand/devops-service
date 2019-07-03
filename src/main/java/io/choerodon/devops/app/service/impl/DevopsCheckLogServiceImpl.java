@@ -487,7 +487,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 .collect(Collectors.toList());
         projectIds.forEach(projectId -> {
             PageInfo<UserWithRoleDTO> allProjectUser = iamRepository
-                    .queryUserPermissionByProjectId(projectId, new PageRequest(1,0), false);
+                    .queryUserPermissionByProjectId(projectId, new PageRequest(0,0), false);
             if (!allProjectUser.getList().isEmpty()) {
                 allProjectUser.getList().forEach(userWithRoleDTO -> {
                     // 如果是项目成员
@@ -763,6 +763,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             LOGGER.info("update publish level to organization.");
             appShareRepository.updatePublishLevel();
             LOGGER.info("update publish level success.");
+            LOGGER.info("update publish Time.");
+            applicationVersionRepository.updatePublishTime();
+            LOGGER.info("update publish time success.");
         }
 
         private ProjectCategoryEDTO createProjectCatory(Long orgId) {

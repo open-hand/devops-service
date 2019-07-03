@@ -6,6 +6,8 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
+import io.choerodon.devops.api.dto.AccessTokenDTO;
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
@@ -120,4 +122,8 @@ public interface AppShareService {
     PageInfo<ApplicationVersionRepDTO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params);
 
     AppVersionAndValueDTO getConfigInfoByVerionId(Long appId, Long versionId, String accessToken);
+
+    AccessTokenCheckResultDTO checkToken(AccessTokenDTO tokenDTO);
+
+    void saveToken(AccessTokenDTO tokenDTO);
 }

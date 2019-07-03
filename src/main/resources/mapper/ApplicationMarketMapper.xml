@@ -191,7 +191,6 @@
         dam.img_url,
         dam.publish_level,
         dam.is_free,
-        dam.last_update_date,
         EXISTS (
         SELECT
         1

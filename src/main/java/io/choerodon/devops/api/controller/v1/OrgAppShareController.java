@@ -22,6 +22,8 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
+import io.choerodon.devops.api.dto.AccessTokenDTO;
 import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
@@ -180,7 +182,27 @@ public class OrgAppShareController {
                 .orElseThrow(() -> new CommonException("error.get.values.chart"));
     }
 
+    @Permission(type = ResourceType.SITE)
+    @ApiOperation(value = "token校验")
+    @PostMapping(value = "/check_token")
+    public ResponseEntity<AccessTokenCheckResultDTO> checkToken(
+            @ApiParam(value = "token")
+            @RequestBody AccessTokenDTO tokenDTO) {
+        return Optional.ofNullable(
+                appShareService.checkToken(tokenDTO))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.check.access.token"));
+    }
 
+    @Permission(type = ResourceType.SITE)
+    @ApiOperation(value = "token校验")
+    @PostMapping(value = "/save_token")
+    public ResponseEntity saveToken(
+            @ApiParam(value = "token")
+            @RequestBody AccessTokenDTO tokenDTO) {
+        appShareService.saveToken(tokenDTO);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
 }
 

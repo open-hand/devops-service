@@ -29,6 +29,8 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
+import io.choerodon.devops.api.dto.AccessTokenDTO;
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
@@ -538,7 +540,7 @@ public class AppShareServiceImpl implements AppShareService {
         Map<String, Object> map = new HashMap<>();
         map.put("page", pageRequest.getPage());
         map.put("size", pageRequest.getSize());
-        map.put("sort", pageRequest.getSort());
+//        map.put("sort", pageRequest.getSort());
         map.put("params", params);
         Response<PageInfo<ApplicationReleasingDTO>> pageInfoResponse = null;
         try {
@@ -835,5 +837,28 @@ public class AppShareServiceImpl implements AppShareService {
                 appShareRepository.createOrUpdate(applicationMarketE);
             }
         }
+    }
+
+    @Override
+    public AccessTokenCheckResultDTO checkToken(AccessTokenDTO tokenDTO) {
+        AppShareClient appShareClient = RetrofitHandler.getAppShareClient(tokenDTO.getSaasMarketUrl());
+        Response<AccessTokenCheckResultDTO> tokenDTOResponse = null;
+
+        try {
+            tokenDTOResponse = appShareClient.checkTokenExist(tokenDTO.getAccessToken()).execute();
+            if (!tokenDTOResponse.isSuccessful()) {
+                throw new CommonException("error.check.token");
+            }
+        } catch (IOException e) {
+            throw new CommonException("error.check.token");
+        }
+        return tokenDTOResponse.body();
+    }
+
+    @Override
+    public void saveToken(AccessTokenDTO tokenDTO) {
+        DevopsMarketConnectInfoDO connectInfoDO = new DevopsMarketConnectInfoDO();
+        BeanUtils.copyProperties(tokenDTO, connectInfoDO);
+        marketConnectInfoRepositpry.create(connectInfoDO);
     }
 }

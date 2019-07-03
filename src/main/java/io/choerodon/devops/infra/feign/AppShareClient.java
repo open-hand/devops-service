@@ -6,8 +6,10 @@ import com.github.pagehelper.PageInfo;
 import retrofit2.Call;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
 
+import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
 import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
@@ -31,5 +33,8 @@ public interface AppShareClient {
     Call<AppVersionAndValueDTO> getConfigInfoByVerionId(@Path("app_id") Long appId,
                                                         @Path("version_id") Long versionId,
                                                         @QueryMap Map<String, Object> map);
+
+    @POST("v1/public/app_shares/check_token")
+    Call<AccessTokenCheckResultDTO> checkTokenExist(@Query("access_token") String accessToken);
 
 }

@@ -138,7 +138,7 @@
         dav.id,
         dav.version,
         dav.publish_time,
-        dav.creation_time
+        dav.creation_date
         FROM
         devops_app_version dav
         WHERE
@@ -284,9 +284,15 @@
      update devops_app_version set repository = CONCAT(#{helmUrl},repository);
     </update>
 
-
     <update id="updateObJectVersionNumber">
      update devops_app_version set object_version_number = 1 where id = #{versionId};
+    </update>
+
+    <update id="updatePublishTime">
+        UPDATE devops_app_version dav
+        SET dav.publish_time = dav.last_update_date
+        WHERE
+            dav.is_publish = 1
     </update>
 
 </mapper>
