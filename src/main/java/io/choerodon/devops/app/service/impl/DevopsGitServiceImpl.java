@@ -771,12 +771,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsCustomizeResourceE.setEnvId(envId);
         devopsCustomizeResourceE.setFilePath(filePath);
         Map<String, Object> datas = data;
+        if (datas.get(KIND) == null) {
+            throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_KIND_NOT_FOUND.getError(), filePath);
+        }
         devopsCustomizeResourceE.setK8sKind(datas.get(KIND).toString());
         LinkedHashMap metadata = (LinkedHashMap) datas.get(METADATA);
+
         if (metadata == null) {
             throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_METADATA_NOT_FOUND.getError(), filePath);
         }
-        devopsCustomizeResourceE.setName((String) metadata.get(NAME));
+        if (metadata.get(NAME) == null) {
+            throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_NAME_NOT_FOUND.getError(), filePath);
+        }
+        devopsCustomizeResourceE.setName(metadata.get(NAME).toString());
 
         //添加自定义资源标签
         LinkedHashMap labels = (LinkedHashMap) metadata.get(LABELS);

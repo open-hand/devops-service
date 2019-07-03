@@ -102,27 +102,33 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         List<Object> objects = new ArrayList<>();
 
         //处理每个k8s资源对象
-        for (Object data : yaml.loadAll(content)) {
+        try {
+            for (Object data : yaml.loadAll(content)) {
 
-            Map<String, Object> datas = (Map<String, Object>) data;
-            String kind = datas.get(KIND).toString();
-            LinkedHashMap metadata = (LinkedHashMap) datas.get(METADATA);
-            //校验yaml文件内资源属性是否合法,并返回资源的name
-            String name = CheckResource(metadata, kind);
+                Map<String, Object> datas = (Map<String, Object>) data;
 
-            //添加自定义标签
-            LinkedHashMap labels = (LinkedHashMap) metadata.get(LABELS);
+                Object kind = datas.get(KIND);
 
-            if (labels == null) {
-                labels = new LinkedHashMap();
+                LinkedHashMap metadata = (LinkedHashMap) datas.get(METADATA);
+                //校验yaml文件内资源属性是否合法,并返回资源的name
+                String name = CheckResource(metadata, kind);
+
+                //添加自定义标签
+                LinkedHashMap labels = (LinkedHashMap) metadata.get(LABELS);
+
+                if (labels == null) {
+                    labels = new LinkedHashMap();
+                }
+                labels.put(CHOERODON_IO_RESOURCE, CUSTOM);
+                metadata.put(LABELS, labels);
+                datas.put(METADATA, metadata);
+                objects.add(datas);
+
+            HandleCoustomizeResource(projectId, envId, FileUtil.getYaml().dump(datas), kind.toString(), name, type, resourceId, resourceFilePath, null);
+
             }
-            labels.put(CHOERODON_IO_RESOURCE, CUSTOM);
-            metadata.put(LABELS, labels);
-            datas.put(METADATA, metadata);
-            objects.add(datas);
-
-            HandleCoustomizeResource(projectId, envId, FileUtil.getYaml().dump(datas), kind, name, type, resourceId, resourceFilePath, null);
-
+        }catch (Exception e) {
+            throw e;
         }
         if (type.equals(CREATE)) {
             gitlabRepository.createFile(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), resourceFilePath, FileUtil.getYaml().dumpAll(objects.iterator()),
@@ -327,23 +333,23 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     }
 
 
-    private String CheckResource(LinkedHashMap metadata, String kind) {
+    private String CheckResource(LinkedHashMap metadata, Object kind) {
         if (kind == null) {
             throw new CommonException("custom.resource.kind.not.found");
         }
         //禁止创建平台已有的资源
-        if (RESOURCETYPE.contains(kind)) {
+        if (RESOURCETYPE.contains(kind.toString())) {
             throw new CommonException("error.kind.is.forbidden");
         }
         if (metadata == null) {
             throw new CommonException("custom.resource.metadata.not.found");
         }
 
-        String name = (String) metadata.get("name");
+        Object name = metadata.get("name");
         if (name == null) {
             throw new CommonException("custom.resource.name.not.found");
         }
-        return name;
+        return name.toString();
     }
 
 

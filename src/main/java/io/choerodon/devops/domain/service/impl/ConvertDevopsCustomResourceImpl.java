@@ -51,11 +51,7 @@ public class ConvertDevopsCustomResourceImpl extends ConvertK8sObjectService<Dev
     @Override
     public void checkParameters(DevopsCustomizeResourceE devopsCustomizeResourceE, Map<String, String> objectPath) {
         String filePath = objectPath.get(TypeUtil.objToString(devopsCustomizeResourceE.hashCode()));
-        if (devopsCustomizeResourceE.getK8sKind() == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_KIND_NOT_FOUND.getError(), filePath);
-        } else if (devopsCustomizeResourceE.getName() == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_NAME_NOT_FOUND.getError(), filePath);
-        }
+
 
     }
 }
