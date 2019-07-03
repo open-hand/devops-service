@@ -11,17 +11,8 @@ import org.springframework.stereotype.Component;
 @Scope("prototype")
 public class DevopsEnvApplicationE {
 
-    private Long id;
     private Long appId;
     private Long envId;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Long getAppId() {
         return appId;
@@ -44,7 +35,7 @@ public class DevopsEnvApplicationE {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DevopsEnvApplicationE that = (DevopsEnvApplicationE) o;
-        return appId.equals(that.appId)  &&
+        return appId.equals(that.appId) &&
                 envId.equals(that.envId);
     }
 

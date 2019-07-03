@@ -6,17 +6,8 @@ package io.choerodon.devops.api.dto;
  */
 public class DevopsEnvApplicationDTO {
 
-    private Long id;
     private Long appId;
     private Long envId;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public Long getAppId() {
         return appId;
