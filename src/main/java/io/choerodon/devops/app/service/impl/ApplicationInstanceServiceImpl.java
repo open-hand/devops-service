@@ -1,12 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
@@ -50,6 +43,13 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -208,6 +208,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return appInstancesList;
     }
 
+    @Override
+    public List<DevopsEnvApplicationE> listAllEnvApp() {
+        return applicationInstanceRepository.listAllEnvApp();
+    }
+
     private void addAppInstance(ApplicationInstancesDTO instancesDTO, ApplicationInstancesDO instancesDO,
                                 Long latestVersionId) {
         EnvVersionDTO envVersionDTO = new EnvVersionDTO(
@@ -274,10 +279,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (type.equals(UPDATE)) {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
             if (applicationInstanceE.getValueId() == null) {
-                replaceResult.setYaml(getReplaceResult(versionValue,applicationInstanceRepository.queryValueByInstanceId(instanceId)).getYaml());
+                replaceResult.setYaml(getReplaceResult(versionValue, applicationInstanceRepository.queryValueByInstanceId(instanceId)).getYaml());
             } else {
                 DevopsDeployValueE devopsDeployValueE = devopsDeployValueRepository.queryById(applicationInstanceE.getValueId());
-                replaceResult.setYaml(getReplaceResult(versionValue,devopsDeployValueE.getValue()).getYaml());
+                replaceResult.setYaml(getReplaceResult(versionValue, devopsDeployValueE.getValue()).getYaml());
                 replaceResult.setName(devopsDeployValueE.getName());
                 replaceResult.setId(devopsDeployValueE.getId());
                 replaceResult.setObjectVersionNumber(devopsDeployValueE.getObjectVersionNumber());
@@ -501,7 +506,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         pageAppInstanceCommandLogDTOS.setList(appInstanceCommandLogDTOS);
         return pageAppInstanceCommandLogDTOS;
     }
-
 
 
     private PageInfo<DeployDetailDTO> getDeployDetailDTOS(PageInfo<DeployDO> deployDOS) {
@@ -810,8 +814,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         devopsRegistrySecretE.setSecretDetail(gson.toJson(devopsProjectConfigE.getConfig()));
                         devopsRegistrySecretRepository.update(devopsRegistrySecretE);
                         deployService.operateSecret(clusterId, namespace, devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), UPDATE);
-                    }else {
-                        if(!devopsRegistrySecretE.getStatus()) {
+                    } else {
+                        if (!devopsRegistrySecretE.getStatus()) {
                             deployService.operateSecret(clusterId, namespace, devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), UPDATE);
                         }
                     }
