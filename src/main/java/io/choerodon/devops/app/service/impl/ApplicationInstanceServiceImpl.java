@@ -1107,7 +1107,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         devopsEnvCommandRepository.listByObjectAll(ObjectType.INSTANCE.getType(), instanceId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
-        applicationInstanceRepository.deleteById(instanceId);
+        applicationInstanceRepository.deleteInstance(instanceId);
     }
 
     @Override

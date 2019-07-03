@@ -53,4 +53,6 @@ public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDO>
     List<DeployDO> listDeployFrequency(@Param("projectId") Long projectId, @Param("envIds") Long[] envIds, @Param("appId") Long appId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
     String getInstanceResourceDetailJson(@Param("instanceId") Long instanceId, @Param("resourceName") String resourceName, @Param("resourceType") String resourceType);
+
+    void deleteInstance(@Param("instanceId") Long instanceId);
 }

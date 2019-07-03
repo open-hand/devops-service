@@ -13,7 +13,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_customize_resource.groovy') {
             column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id')
             column(name: 'k8s_kind', type: 'VARCHAR(32)', remarks: 'k8s resource kind')
             column(name: 'name', type: 'VARCHAR(32)', remarks: 'k8s resource name')
-            column(name: 'file_path', type: 'VARCHAR(16)', remarks: 'gitOps file path')
+            column(name: 'file_path', type: 'VARCHAR(32)', remarks: 'gitOps file path')
             column(name: 'description', type: 'VARCHAR(5000)', remarks: 'k8s resource description')
 
 

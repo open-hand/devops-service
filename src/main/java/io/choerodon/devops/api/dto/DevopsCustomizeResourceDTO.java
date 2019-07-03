@@ -8,6 +8,7 @@ import java.util.Date;
 public class DevopsCustomizeResourceDTO {
 
     private Long id;
+    private Long envId;
     private Boolean envStatus;
     private String resourceContent;
     private String k8sKind;
@@ -87,5 +88,13 @@ public class DevopsCustomizeResourceDTO {
 
     public void setLastUpdateDate(Date lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }

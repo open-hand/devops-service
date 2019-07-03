@@ -37,10 +37,6 @@ public class DevopsCustomizeResourceController {
      * 创建其他k8s资源
      *
      * @param projectId
-     * @param envId
-     * @param resourceId
-     * @param type
-     * @param content
      * @param contentFile
      * @return
      */
