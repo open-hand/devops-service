@@ -4,22 +4,43 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.validator.AppInstanceValidator;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
+import io.choerodon.devops.domain.application.handler.ObjectOperation;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
+import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
+import io.choerodon.devops.domain.application.valueobject.Metadata;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
+import io.choerodon.devops.domain.service.DeployService;
+import io.choerodon.devops.infra.common.util.*;
+import io.choerodon.devops.infra.common.util.enums.*;
+import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
+import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
+import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
+import io.choerodon.devops.infra.dataobject.DeployDO;
+import io.choerodon.devops.infra.feign.NotifyClient;
+import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
+import io.choerodon.websocket.Msg;
+import io.choerodon.websocket.helper.CommandSender;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,94 +50,6 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.AppInstanceCodeDTO;
-import io.choerodon.devops.api.dto.AppInstanceCommandLogDTO;
-import io.choerodon.devops.api.dto.ApplicationDeployDTO;
-import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
-import io.choerodon.devops.api.dto.ApplicationInstancesDTO;
-import io.choerodon.devops.api.dto.DeployAppDTO;
-import io.choerodon.devops.api.dto.DeployAppDetail;
-import io.choerodon.devops.api.dto.DeployDetailDTO;
-import io.choerodon.devops.api.dto.DeployFrequencyDTO;
-import io.choerodon.devops.api.dto.DeployTimeDTO;
-import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
-import io.choerodon.devops.api.dto.DevopsEnvPreviewAppDTO;
-import io.choerodon.devops.api.dto.DevopsEnvPreviewDTO;
-import io.choerodon.devops.api.dto.DevopsEnvPreviewInstanceDTO;
-import io.choerodon.devops.api.dto.DevopsEnvResourceDTO;
-import io.choerodon.devops.api.dto.EnvInstanceDTO;
-import io.choerodon.devops.api.dto.EnvInstancesDTO;
-import io.choerodon.devops.api.dto.EnvVersionDTO;
-import io.choerodon.devops.api.dto.ErrorLineDTO;
-import io.choerodon.devops.api.dto.InstanceControllerDetailDTO;
-import io.choerodon.devops.api.validator.AppInstanceValidator;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DevopsEnvResourceService;
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandValueE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
-import io.choerodon.devops.domain.application.entity.DevopsRegistrySecretE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
-import io.choerodon.devops.domain.application.handler.ObjectOperation;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.DevopsNotificationRepository;
-import io.choerodon.devops.domain.application.repository.DevopsNotificationUserRelRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
-import io.choerodon.devops.domain.application.repository.DevopsRegistrySecretRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
-import io.choerodon.devops.domain.application.valueobject.Metadata;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
-import io.choerodon.devops.domain.service.DeployService;
-import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.JsonYamlConversionUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.CommandStatus;
-import io.choerodon.devops.infra.common.util.enums.CommandType;
-import io.choerodon.devops.infra.common.util.enums.HelmType;
-import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
-import io.choerodon.devops.infra.common.util.enums.ObjectType;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
-import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
-import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
-import io.choerodon.devops.infra.dataobject.DeployDO;
-import io.choerodon.devops.infra.feign.NotifyClient;
-import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
-import io.choerodon.websocket.Msg;
-import io.choerodon.websocket.helper.CommandSender;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -199,6 +132,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private NotifyClient notifyClient;
     @Autowired
     private DevopsDeployValueRepository devopsDeployValueRepository;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
 
     @Override
@@ -527,8 +462,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public void operationPodCount(String deploymentName, Long envId, Long count) {
-        //校验用户是否有环境的权限
-        DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(envId);
+
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
+
         //不能减少到0
         if (count == 0) {
             return;
@@ -562,14 +503,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return pageAppInstanceCommandLogDTOS;
     }
 
-    private DevopsEnvironmentE checkEnvPermission(Long envId) {
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
-                envId);
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                .queryById(envId);
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
-        return devopsEnvironmentE;
-    }
 
 
     private PageInfo<DeployDetailDTO> getDeployDetailDTOS(PageInfo<DeployDO> deployDOS) {
@@ -773,8 +706,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Transactional(rollbackFor = Exception.class)
     public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
 
-        //校验用户是否有环境的权限
-        DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(applicationDeployDTO.getEnvironmentId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
+
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
 
         //校验values
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
@@ -812,11 +749,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationDeployDTO.setIsNotChange(true);
             }
         }
-
-
-        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
 
@@ -1001,8 +933,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceStop(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        //校验用户是否有环境的权限
-        DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(instanceE.getDevopsEnvironmentE().getId());
+
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
         if (!instanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
             throw new CommonException("error.instance.notRunning");
         }
@@ -1025,8 +962,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        //校验用户是否有环境的权限
-        DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(instanceE.getDevopsEnvironmentE().getId());
+
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
+
         if (!instanceE.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {
             throw new CommonException("error.instance.notStop");
         }
@@ -1049,15 +992,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceReStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
-                instanceE.getDevopsEnvironmentE().getId());
+
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
+
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
         ApplicationE applicationE = applicationRepository.query(instanceE.getApplicationE().getId());
         ApplicationVersionE applicationVersionE = applicationVersionRepository
                 .query(devopsEnvCommandE.getObjectVersionId());
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                .queryById(instanceE.getDevopsEnvironmentE().getId());
+
         String value = applicationInstanceRepository.queryValueByInstanceId(instanceId);
         instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
         devopsEnvCommandE.setId(null);
@@ -1075,8 +1022,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Transactional(rollbackFor = Exception.class)
     public void instanceDelete(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        //校验用户是否有环境的权限
-        DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(instanceE.getDevopsEnvironmentE().getId());
+
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
 
         DevopsEnvCommandE devopsEnvCommandE;
         if (instanceE.getCommandId() == null) {
@@ -1089,10 +1041,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandE.setId(null);
-
-        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //实例相关对象数据库操作
         instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());

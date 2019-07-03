@@ -115,10 +115,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Autowired
     private DevopsCommandEventRepository devopsCommandEventRepository;
     @Autowired
-    private DevopsEnvCommandValueRepository commandValueRepository;
-    @Autowired
-    private DevopsEnvCommandLogRepository commandLogRepository;
-    @Autowired
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
     private DevopsEnvFileRepository devopsEnvFileRepository;
@@ -146,6 +142,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private DevopsRegistrySecretRepository devopsRegistrySecretRepository;
     @Autowired
     private DevopsConfigMapService devopsConfigMapService;
+    @Autowired
+    private DevopsCustomizeResourceRepository devopsCustomizeResourceRepository;
 
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
@@ -833,6 +831,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             syncSecret(envId, errorDevopsFiles, resourceCommit, objects);
                             break;
                         default:
+                            syncCustom(envId, errorDevopsFiles, resourceCommit, objects);
                             break;
                     }
                 });
@@ -851,6 +850,18 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsSecretE.setStatus(SecretStatus.SUCCESS.getStatus());
         }
         devopsSecretRepository.update(devopsSecretE);
+    }
+
+
+    private void syncCustom(Long envId, List<DevopsEnvFileErrorE> envFileErrorFiles, ResourceCommit resourceCommit,
+                            String[] objects) {
+        DevopsEnvFileResourceE devopsEnvFileResourceE;
+        DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository.queryByEnvIdAndKindAndName(envId, objects[0], objects[1]);
+        devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .queryByEnvIdAndResource(envId, devopsCustomizeResourceE.getId(), ObjectType.CUSTOM.getType());
+        updateEnvCommandStatus(resourceCommit, devopsCustomizeResourceE.getDevopsEnvCommandE().getId(), devopsEnvFileResourceE,
+                objects[0], devopsCustomizeResourceE.getName(), CommandStatus.SUCCESS.getStatus(), envFileErrorFiles);
+
     }
 
     private void syncCetificate(Long envId, List<DevopsEnvFileErrorE> errorDevopsFiles, ResourceCommit resourceCommit, String[] objects) {

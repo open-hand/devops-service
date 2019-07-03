@@ -52,11 +52,10 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
                 ApplicationTemplateDO.class);
         ResponseEntity<OrganizationDO> organizationDO =
                 iamServiceClient.queryOrganizationById(applicationTemplateDO.getOrganizationId());
-        if (organizationDO.getStatusCode().is2xxSuccessful()) {
-            applicationTemplateDO.setRepoUrl(
+        applicationTemplateDO.setRepoUrl(
                     organizationDO.getBody().getCode() + "_template" + "/"
                             + applicationTemplateE.getCode() + ".git");
-        }
+
         if (applicationTemplateMapper.insert(applicationTemplateDO) != 1) {
             throw new CommonException("error.insert.appTemplate");
         }

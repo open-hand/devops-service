@@ -3,12 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -21,43 +16,17 @@ import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
-import feign.FeignException;
-import io.kubernetes.client.models.V1Pod;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.nodes.Tag;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.app.service.DevopsCheckLogService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.DevopsIngressService;
-import io.choerodon.devops.domain.application.entity.DevopsBranchE;
-import io.choerodon.devops.domain.application.entity.DevopsCheckLogE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
-import io.choerodon.devops.domain.application.entity.DevopsGitlabPipelineE;
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
@@ -106,25 +75,27 @@ import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.config.RetrofitHandler;
-import io.choerodon.devops.infra.dataobject.ApplicationDO;
-import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
-import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO;
-import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
-import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
+import io.choerodon.devops.infra.dataobject.*;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.mapper.ApplicationMapper;
-import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
-import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
-import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import io.choerodon.devops.infra.mapper.*;
+import io.kubernetes.client.models.V1Pod;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
 
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
@@ -376,7 +347,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                     .stream().map(GitlabJobE::getId).collect(Collectors.toList());
 
                             gitlabProjectRepository
-                                    .getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(),
+                                    .getCommitStatus(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(),
                                             ADMIN)
                                     .forEach(commitStatuseDO -> {
                                         if (gitlabJobIds.contains(commitStatuseDO.getId())) {
@@ -421,7 +392,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId()),
                                         ADMIN).stream().map(GitlabJobE::getId).collect(Collectors.toList());
 
-                        gitlabProjectRepository.getCommitStatuse(applicationDO.getGitlabProjectId(),
+                        gitlabProjectRepository.getCommitStatus(applicationDO.getGitlabProjectId(),
                                 devopsGitlabCommitDO.getCommitSha(), ADMIN)
                                 .forEach(commitStatuseDO -> {
                                     if (gitlabJobIds.contains(commitStatuseDO.getId())) {
@@ -947,7 +918,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(group.getId()));
                         devopsProjectRepository.updateProjectAttr(devopsProjectDO);
                         checkLog.setResult(SUCCESS);
-                    } catch (FeignException e) {
+                    } catch (CommonException e) {
                         checkLog.setResult(e.getMessage());
                     }
                 } catch (Exception e) {

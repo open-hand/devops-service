@@ -21,7 +21,6 @@ import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.eventhandler.DemoEnvSetupSagaHandler;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
@@ -42,6 +41,7 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
+import io.choerodon.devops.infra.common.util.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.kubernetes.client.models.*;
@@ -67,6 +67,12 @@ import org.yaml.snakeyaml.Yaml;
  */
 @Service
 public class DevopsGitServiceImpl implements DevopsGitService {
+    public static final String CHOERODON_IO_RESOURCE = "choerodon.io/resource";
+    public static final String METADATA = "metadata";
+    public static final String CUSTOM = "custom";
+    public static final String LABELS = "labels";
+    public static final String KIND = "kind";
+    public static final String NAME = "name";
     private static final String SERVICE = "Service";
     private static final String INGRESS = "Ingress";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
@@ -134,6 +140,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Qualifier("handlerC7nSecretServiceImpl")
     private HandlerObjectFileRelationsService handlerC7nSecretRelationsService;
     @Autowired
+    @Qualifier("handlerCustomResourceServiceImpl")
+    private HandlerObjectFileRelationsService handlerCustomResourceService;
+    @Autowired
     private DevopsProjectRepository devopsProjectRepository;
     @Autowired
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
@@ -175,6 +184,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void createBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO) {
         DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
+
+        checkName(projectId, applicationId, devopsBranchDTO.getBranchName());
+
         Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
         devopsBranchE.setUserId(gitLabUser);
         devopsBranchE.initApplicationE(applicationId);
@@ -280,9 +292,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void deleteBranch(Long applicationId, String branchName) {
         ApplicationE applicationE = applicationRepository.query(applicationId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<BranchE> branchEList = gitlabProjectRepository.listBranches(applicationE.getGitlabProjectE().getId(),
+        List<BranchDO> branchEList = devopsGitRepository.listBranches(applicationE.getGitlabProjectE().getId(),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        Optional<BranchE> branchEOptional = branchEList
+        Optional<BranchDO> branchEOptional = branchEList
                 .stream().filter(e -> branchName.equals(e.getName())).findFirst();
         branchEOptional.ifPresent(
                 e -> gitlabProjectRepository.deleteBranch(applicationE.getGitlabProjectE().getId(), branchName,
@@ -454,29 +466,42 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             List<V1ConfigMap> v1ConfigMaps = new ArrayList<>();
             List<V1Secret> v1Secrets = new ArrayList<>();
             List<V1Endpoints> v1Endpoints = new ArrayList<>();
+            List<DevopsCustomizeResourceE> devopsCustomizeResourceES = new ArrayList<>();
+
 
             //从文件中读出对象,序列化为K8S对象
             objectPath = convertFileToK8sObjects(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses,
-                    v1ConfigMaps, v1Secrets, v1Endpoints, devopsEnvironmentE.getId(), new ArrayList<>(beforeSyncDelete),
+                    v1ConfigMaps, v1Secrets, v1Endpoints, devopsCustomizeResourceES, devopsEnvironmentE.getId(), new ArrayList<>(beforeSyncDelete),
                     c7nCertifications);
+
             LOGGER.info("序列化k8s对象成功！");
+
             List<DevopsEnvFileResourceE> beforeSyncFileResource = new ArrayList<>(beforeSync);
+
             //将k8s对象初始化为实例，网络，域名，证书，秘钥对象,处理对象文件关系
             handlerC7nReleaseRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, c7nHelmReleases, null, envId, projectId, path,
                             userId);
+
             handlerServiceRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, v1Services, v1Endpoints, envId, projectId, path, userId);
+
             handlerIngressRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, v1beta1Ingresses, null, envId, projectId, path,
                             userId);
+
             handlerC7nCertificationRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, c7nCertifications, null, envId, projectId, path,
                             userId);
+
             handlerConfigMapRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, v1ConfigMaps, null, envId, projectId, path, userId);
+
             handlerC7nSecretRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, v1Secrets, null, envId, projectId, path, userId);
+
+
+            handlerCustomResourceService.handlerRelations(objectPath, beforeSyncFileResource, devopsCustomizeResourceES, null, envId, projectId, path, userId);
             LOGGER.info("k8s对象转换平台对象成功！");
             //处理文件
             handleFiles(operationFiles, deletedFiles, devopsEnvironmentE, devopsEnvCommitE, path);
@@ -523,9 +548,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void checkName(Long projectId, Long applicationId, String branchName) {
         ApplicationE applicationE = applicationRepository.query(applicationId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<BranchE> branchEList = gitlabProjectRepository.listBranches(applicationE.getGitlabProjectE().getId(),
+        List<BranchDO> branchEList = devopsGitRepository.listBranches(applicationE.getGitlabProjectE().getId(),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        Optional<BranchE> branchEOptional = branchEList
+        Optional<BranchDO> branchEOptional = branchEList
                 .stream().filter(e -> branchName.equals(e.getName())).findFirst();
         branchEOptional.ifPresent(e -> {
             throw new CommonException("error.branch.exist");
@@ -627,6 +652,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                                         List<V1ConfigMap> configMaps,
                                                         List<V1Secret> secrets,
                                                         List<V1Endpoints> v1Endpoints,
+                                                        List<DevopsCustomizeResourceE> devopsCustomizeResourceES,
                                                         Long envId,
                                                         List<DevopsEnvFileResourceE> beforeSyncDelete,
                                                         List<C7nCertification> c7nCertifications) {
@@ -721,6 +747,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             v1Endpoints.add(v1Endpoints1);
                             break;
                         default:
+                            //初始化自定义资源对象
+                            DevopsCustomizeResourceE devopsCustomizeResourceE = getDevopsCustomizeResourceE(envId, filePath, (Map<String, Object>) data);
+                            objectPath.put(TypeUtil.objToString(devopsCustomizeResourceE.hashCode()), filePath);
+                            ConvertK8sObjectService<DevopsCustomizeResourceE> convertCustomResourceE = new ConvertDevopsCustomResourceImpl();
+                            // 校验对象是否在其它文件中已经定义
+                            convertCustomResourceE.checkIfExist(devopsCustomizeResourceES, envId, beforeSyncDelete, objectPath, devopsCustomizeResourceE);
+                            // 校验参数校验参数是否合法
+                            convertCustomResourceE.checkParameters(devopsCustomizeResourceE, objectPath);
                             break;
                     }
                 }
@@ -729,6 +763,33 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
         });
         return objectPath;
+    }
+
+    private DevopsCustomizeResourceE getDevopsCustomizeResourceE(Long envId, String filePath, Map<String, Object> data) {
+        DevopsCustomizeResourceE devopsCustomizeResourceE = new DevopsCustomizeResourceE();
+
+        devopsCustomizeResourceE.setEnvId(envId);
+        devopsCustomizeResourceE.setFilePath(filePath);
+        Map<String, Object> datas = data;
+        devopsCustomizeResourceE.setK8sKind(datas.get(KIND).toString());
+        LinkedHashMap metadata = (LinkedHashMap) datas.get(METADATA);
+        if (metadata == null) {
+            throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_METADATA_NOT_FOUND.getError(), filePath);
+        }
+        devopsCustomizeResourceE.setName((String) metadata.get(NAME));
+
+        //添加自定义资源标签
+        LinkedHashMap labels = (LinkedHashMap) metadata.get(LABELS);
+
+        if (labels == null) {
+            labels = new LinkedHashMap();
+        }
+        labels.put(CHOERODON_IO_RESOURCE, CUSTOM);
+        metadata.put(LABELS, labels);
+        datas.put(METADATA, metadata);
+
+        devopsCustomizeResourceE.setDevopsCustomizeResourceContentE(new DevopsCustomizeResourceContentE(FileUtil.getYaml().dump(datas)));
+        return devopsCustomizeResourceE;
     }
 
     private void commitBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {

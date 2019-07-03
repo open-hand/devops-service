@@ -6,12 +6,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-
-
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1Endpoints;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO;
@@ -31,6 +25,10 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
+import io.kubernetes.client.models.V1ConfigMap;
+import io.kubernetes.client.models.V1Endpoints;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRelationsService<V1ConfigMap> {
@@ -66,7 +64,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                     return devopsConfigMapE.getName();
                 }).collect(Collectors.toList());
 
-        //比较已存在实例和新增要处理的configMap,获取新增configMap，更新configMap，删除configMap
+        //比较已存在configMap和新增要处理的configMap,获取新增configMap，更新configMap，删除configMap
         List<V1ConfigMap> addConfigMaps = new ArrayList<>();
         List<V1ConfigMap> updateConfigMaps = new ArrayList<>();
         v1ConfigMaps.stream().forEach(configMap -> {

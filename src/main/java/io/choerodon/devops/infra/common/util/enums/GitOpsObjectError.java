@@ -65,6 +65,9 @@ public enum GitOpsObjectError {
     END_POINT_PORTS_NOT_FOUND("endPoints.ports.not.found"),
     END_POINT_ADDRESS_IP_NOT_FOUND("endPoints.address.ip.not.found"),
     END_POINT_PORTS_PORT_NOT_FOUND("endPoints.ports.port.not.found"),
+    CUSTOM_RESOURCE_NAME_NOT_FOUND("custom.resource.name.not.found"),
+    CUSTOM_RESOURCE_KIND_NOT_FOUND("custom.resource.kind.not.found"),
+    CUSTOM_RESOURCE_METADATA_NOT_FOUND("custom.resource.metadata.not.found"),
     OBJECT_EXIST("object.exist");
 
     private String error;

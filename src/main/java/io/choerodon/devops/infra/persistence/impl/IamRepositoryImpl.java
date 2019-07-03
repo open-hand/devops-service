@@ -49,41 +49,25 @@ public class IamRepositoryImpl implements IamRepository {
     @Override
     public ProjectE queryIamProject(Long projectId) {
         ResponseEntity<ProjectDO> projectDO = iamServiceClient.queryIamProject(projectId);
-        if (!projectDO.getStatusCode().is2xxSuccessful()) {
-            throw new CommonException("error.project.get");
-        }
         return ConvertHelper.convert(projectDO.getBody(), ProjectE.class);
     }
 
     @Override
     public Organization queryOrganization() {
         ResponseEntity<OrganizationDO> organization = iamServiceClient.queryOrganization();
-        if (organization.getStatusCode().is2xxSuccessful()) {
-            return ConvertHelper.convert(organization.getBody(), Organization.class);
-        } else {
-            throw new CommonException("error.organization.get");
-        }
+        return ConvertHelper.convert(organization.getBody(), Organization.class);
     }
 
     @Override
     public Organization queryOrganizationById(Long organizationId) {
         ResponseEntity<OrganizationDO> organization = iamServiceClient.queryOrganizationById(organizationId);
-        if (organization.getStatusCode().is2xxSuccessful()) {
-            return ConvertHelper.convert(organization.getBody(), Organization.class);
-        } else {
-            throw new CommonException("error.organization.get");
-        }
+        return ConvertHelper.convert(organization.getBody(), Organization.class);
     }
 
     @Override
     public UserE queryByLoginName(String userName) {
-        try {
-            ResponseEntity<UserDO> responseEntity = iamServiceClient.queryByLoginName(userName);
-            return ConvertHelper.convert(responseEntity.getBody(), UserE.class);
-        } catch (FeignException e) {
-            LOGGER.error("get user by longin name {} error", userName);
-            return null;
-        }
+        ResponseEntity<UserDO> responseEntity = iamServiceClient.queryByLoginName(userName);
+        return ConvertHelper.convert(responseEntity.getBody(), UserE.class);
     }
 
     @Override
@@ -130,12 +114,8 @@ public class IamRepositoryImpl implements IamRepository {
         List<UserE> userES = new ArrayList<>();
         if (ids != null && !ids.isEmpty()) {
             Long[] newIds = new Long[ids.size()];
-            try {
-                userES = ConvertHelper.convertList(iamServiceClient
-                        .listUsersByIds(ids.toArray(newIds)).getBody(), UserE.class);
-            } catch (Exception e) {
-                throw new CommonException("error.users.get", e);
-            }
+            userES = ConvertHelper.convertList(iamServiceClient
+                    .listUsersByIds(ids.toArray(newIds)).getBody(), UserE.class);
         }
         return userES;
     }
@@ -155,44 +135,33 @@ public class IamRepositoryImpl implements IamRepository {
     public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
                                                                     RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                                     Long roleId, Long projectId, Boolean doPage) {
-        try {
             return iamServiceClient
                     .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
                             projectId, doPage, roleAssignmentSearchDTO).getBody();
-        } catch (FeignException e) {
-            LOGGER.error("get users by role id {} and project id {} error", roleId, projectId);
-        }
-        return null;
     }
 
     @Override
     public PageInfo<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,
                                                                     Boolean doPage) {
-        try {
             RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
             ResponseEntity<PageInfo<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient
                     .queryUserByProjectId(projectId,
                             pageRequest.getPage(), pageRequest.getSize(), doPage, roleAssignmentSearchDTO);
             return userEPageResponseEntity.getBody();
-        } catch (FeignException e) {
-            LOGGER.error("get user permission by project id {} error", projectId);
-            return null;
-        }
     }
 
     @Override
     public UserE queryByEmail(Long projectId, String email) {
-        try {
-            ResponseEntity<PageInfo<UserDO>> userDOResponseEntity = iamServiceClient
-                    .listUsersByEmail(projectId, 0, 0, email);
+        ResponseEntity<PageInfo<UserDO>> userDOResponseEntity = iamServiceClient
+                .listUsersByEmail(projectId, 0, 0, email);
+        if (userDOResponseEntity.getStatusCodeValue() == 500) {
+            return null;
+        } else {
             if (userDOResponseEntity.getBody().getList().isEmpty()) {
                 return null;
             }
-            return ConvertHelper.convert(userDOResponseEntity.getBody().getList().get(0), UserE.class);
-        } catch (FeignException e) {
-            LOGGER.error("get user by email {} error", email);
-            return null;
         }
+        return ConvertHelper.convert(userDOResponseEntity.getBody().getList().get(0), UserE.class);
     }
 
     @Override
@@ -258,58 +227,34 @@ public class IamRepositoryImpl implements IamRepository {
 
     @Override
     public IamAppPayLoad createIamApp(Long organizationId, IamAppPayLoad iamAppPayLoad) {
-        ResponseEntity<IamAppPayLoad> iamAppPayLoadResponseEntity = null;
-        try {
-            iamAppPayLoadResponseEntity = iamServiceClient.createIamApplication(organizationId, iamAppPayLoad);
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
+        ResponseEntity<IamAppPayLoad> iamAppPayLoadResponseEntity = iamServiceClient.createIamApplication(organizationId, iamAppPayLoad);
         return iamAppPayLoadResponseEntity.getBody();
     }
 
     @Override
     public IamAppPayLoad updateIamApp(Long organizationId, Long id, IamAppPayLoad iamAppPayLoad) {
-        ResponseEntity<IamAppPayLoad> iamAppPayLoadResponseEntity = null;
-        try {
-            iamAppPayLoadResponseEntity = iamServiceClient.updateIamApplication(organizationId, id, iamAppPayLoad);
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
+        ResponseEntity<IamAppPayLoad> iamAppPayLoadResponseEntity = iamServiceClient.updateIamApplication(organizationId, id, iamAppPayLoad);
         return iamAppPayLoadResponseEntity.getBody();
     }
 
     @Override
     public IamAppPayLoad queryIamAppByCode(Long organizationId, String code) {
-        ResponseEntity<PageInfo<IamAppPayLoad>> iamAppPayLoadResponseEntity = null;
-        try {
-            iamAppPayLoadResponseEntity = iamServiceClient.getIamApplication(organizationId, code);
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
+        ResponseEntity<PageInfo<IamAppPayLoad>> iamAppPayLoadResponseEntity = iamServiceClient.getIamApplication(organizationId, code);
         return iamAppPayLoadResponseEntity.getBody().getList().isEmpty() ? null : iamAppPayLoadResponseEntity.getBody().getList().get(0);
     }
 
     @Override
     public ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO) {
-        try {
             ResponseEntity<ProjectDTO> projectDTO = iamServiceClient
                     .createProject(organizationId, projectCreateDTO);
             return projectDTO.getBody();
-        } catch (FeignException e) {
-            LOGGER.error("error.create.iam.project");
-            return null;
-        }
+
     }
 
     @Override
     public PageInfo<OrganizationSimplifyDTO> getAllOrgs(Integer page, Integer size) {
-        try {
             ResponseEntity<PageInfo<OrganizationSimplifyDTO>> simplifyDTOs = iamServiceClient
-                    .getAllOrgs(page,size );
+                    .getAllOrgs(page, size);
             return simplifyDTOs.getBody();
-        } catch (FeignException e) {
-            LOGGER.error("error.get.all.organization");
-            return null;
-        }
     }
 }

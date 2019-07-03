@@ -6,6 +6,8 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 
 /**
@@ -156,12 +158,31 @@ public interface DevopsEnvironmentService {
      */
     void setEnvErrStatus(String data, Long projectId);
 
-
+    /**
+     * @param clusterId
+     * @param code
+     * @return
+     */
     DevopsEnviromentRepDTO queryByCode(Long clusterId, String code);
 
-
+    /**
+     *
+     * @param sagaClient
+     */
     void initMockService(SagaClient sagaClient);
 
 
+    /**
+     *
+     * @param envId
+     */
     void retryGitOps(Long envId);
+
+    /**
+     *
+     * @param devopsEnvironmentE
+     * @param userAttrE
+     */
+    void checkEnv(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE);
+
 }

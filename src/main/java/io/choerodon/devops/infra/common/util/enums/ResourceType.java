@@ -5,13 +5,16 @@ public enum ResourceType {
     SERVICE("Service"),
     POD("Pod"),
     INGRESS("Ingress"),
+    CERTIFICATE("Certificate"),
+    C7NHELMRELEASE("C7NHelmRelease"),
     DEPLOYMENT("Deployment"),
     REPLICASET("ReplicaSet"),
     CONFIGMAP("ConfigMap"),
     SERVICEACCOUNT("ServiceAccount"),
     DAEMONSET("DaemonSet"),
     STATEFULSET("StatefulSet"),
-    SECRET("SECRET"),
+    SECRET("Secret"),
+    CUSTOM("Custom"),
     MISSTYPE("MissType"),
     PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim");
 

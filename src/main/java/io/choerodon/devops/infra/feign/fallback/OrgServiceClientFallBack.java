@@ -1,11 +1,10 @@
 package io.choerodon.devops.infra.feign.fallback;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.valueobject.ProjectCategoryEDTO;
 import io.choerodon.devops.infra.feign.OrgServiceClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -16,6 +15,6 @@ import io.choerodon.devops.infra.feign.OrgServiceClient;
 public class OrgServiceClientFallBack implements OrgServiceClient {
     @Override
     public ResponseEntity<ProjectCategoryEDTO> createProjectCategory(Long organizationId, ProjectCategoryEDTO createDTO) {
-        return new ResponseEntity("error.project.category.create", HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new CommonException("error.project.category.create");
     }
 }

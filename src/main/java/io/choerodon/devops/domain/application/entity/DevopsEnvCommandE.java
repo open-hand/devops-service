@@ -30,6 +30,12 @@ public class DevopsEnvCommandE {
         this.id = id;
     }
 
+    public DevopsEnvCommandE(Long id, String status, String error) {
+        this.id = id;
+        this.status = status;
+        this.error = error;
+    }
+
     public Long getId() {
         return id;
     }

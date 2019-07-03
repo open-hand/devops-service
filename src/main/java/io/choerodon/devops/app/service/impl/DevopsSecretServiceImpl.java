@@ -12,7 +12,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.SecretRepDTO;
 import io.choerodon.devops.api.dto.SecretReqDTO;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
-import io.choerodon.devops.app.service.DeployMsgHandlerService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
@@ -67,7 +67,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Autowired
     private CheckOptionsHandler checkOptionsHandler;
     @Autowired
-    private DeployMsgHandlerService deployMsgHandlerService;
+    private DevopsEnvironmentService devopsEnvironmentService;
 
     @Override
     @Transactional(rollbackFor=Exception.class)
@@ -75,14 +75,14 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         if (secretReqDTO.getValue() == null || secretReqDTO.getValue().size() == 0) {
             throw new CommonException("error.secret.value.is.null");
         }
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId()
+        );
+
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
-        //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
-                secretReqDTO.getEnvId());
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId());
-        //校验环境是否链接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
+
 
         // 处理secret对象
         DevopsSecretE devopsSecretE = handleSecret(secretReqDTO);
@@ -175,14 +175,13 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     @Transactional(rollbackFor=Exception.class)
     public Boolean deleteSecret(Long envId, Long secretId) {
+
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
-        //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository
-                .checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), envId);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        //校验环境是否链接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 

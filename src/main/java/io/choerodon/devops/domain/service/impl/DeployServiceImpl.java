@@ -92,6 +92,7 @@ public class DeployServiceImpl implements DeployService {
                 devopsEnvironmentE.getCode(),
                 devopsEnvironmentE.getId(),
                 releaseName));
+
         msg.setType(HelmType.HELM_RELEASE_PRE_UPGRADE.toValue());
         try {
             msg.setPayload(mapper.writeValueAsString(payload));

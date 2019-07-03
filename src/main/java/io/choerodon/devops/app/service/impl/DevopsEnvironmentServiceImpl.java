@@ -19,9 +19,9 @@ import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
-import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -116,13 +116,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private GitlabProjectRepository gitlabProjectRepository;
     @Autowired
-    private DeployMsgHandlerService deployMsgHandlerService;
-    @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
     @Autowired
     private DevopsGitService devopsGitService;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
@@ -343,6 +343,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return ConvertHelper.convert(devopsEnviromentRepository
                 .queryById(environmentId), DevopsEnvironmentUpdateDTO.class);
     }
+
+
+    @Override
+    public void checkEnv(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentE.getId());
+
+        //校验环境是否连接
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+
+
+        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+    }
+
 
     @Override
     public DevopsEnvironmentUpdateDTO update(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO, Long projectId) {

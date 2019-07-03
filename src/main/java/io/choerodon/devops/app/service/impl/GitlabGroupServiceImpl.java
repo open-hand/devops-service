@@ -66,13 +66,9 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
                 groupCodeSuffix));
         UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
         DevopsProjectE devopsProjectE = gitlabRepository.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        try {
-            if (devopsProjectE == null) {
+        if (devopsProjectE == null) {
                 devopsProjectE =
                         ConvertHelper.convert(gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getBody(), DevopsProjectE.class);
-            }
-        } catch (FeignException e) {
-            throw new CommonException(e);
         }
         DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
         if (groupCodeSuffix.isEmpty()) {
