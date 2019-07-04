@@ -1,14 +1,13 @@
 import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
-import { Modal, Select, Icon } from 'choerodon-ui';
+import { Modal, Select, Icon, Button } from 'choerodon-ui';
 import { stores, Content } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import YamlEditor from '../../../components/yamlEditor';
 import InterceptMask from '../../../components/interceptMask/InterceptMask';
 import LoadingBar from '../../../components/loadingBar';
-import CoverConfigModal from './components/CoverConfigModal';
 
 import './Instances.scss';
 import '../../main.scss';
@@ -27,43 +26,14 @@ class UpgradeIst extends Component {
       loading: false,
       submitting: false,
       hasEditorError: false,
-      hasChanged: false,
-      showCover: false,
     };
   }
 
   handleNextStepEnable = flag => this.setState({ hasEditorError: flag });
-  handleChangeValue = (values, changed = false) => this.setState({ values, hasChanged: changed });
+
+  handleChangeValue = values => this.setState({ values });
 
   onClose = () => this.props.onClose(false);
-
-  /**
-   * 判断是否显示覆盖弹窗
-   */
-  checkCover = () => {
-    const { store: { getValue } } = this.props;
-    const { hasChanged } = this.state;
-    if (hasChanged && getValue && getValue.id) {
-      this.setState({ showCover: true });
-    } else {
-      this.handleOk();
-    }
-  };
-
-  /**
-   * 关闭覆盖弹窗
-   * @param flag 是否覆盖
-   */
-  closeCover = (flag) => {
-    const { versionId } = this.state;
-    const { store: { getVerValue } } = this.props;
-    if (flag) {
-      this.handleVersionChange(versionId || (getVerValue.length ? getVerValue[0].id : undefined));
-    } else {
-      this.handleOk();
-    }
-    this.setState({ showCover: false });
-  };
 
   /**
    * 修改配置升级实例
@@ -91,7 +61,7 @@ class UpgradeIst extends Component {
 
     this.setState({ submitting: true });
     const res = await store.reDeploy(projectId, data)
-      .catch(e => {
+      .catch((e) => {
         this.setState({ submitting: false });
         onClose(true);
         Choerodon.handleResponseError(e);
@@ -112,7 +82,7 @@ class UpgradeIst extends Component {
   handleVersionChange = (id) => {
     const { store, appInstanceId } = this.props;
     const { id: projectId } = AppState.currentMenuType;
-    this.setState({ versionId: id, values: null, loading: true, hasChanged: false });
+    this.setState({ versionId: id, values: null, loading: true });
     store.setValue(null);
     store.loadValue(projectId, appInstanceId, id).then(() => {
       this.setState({ loading: false });
@@ -129,7 +99,7 @@ class UpgradeIst extends Component {
       name,
       visible,
     } = this.props;
-    const { values, submitting, loading, versionId, showCover } = this.state;
+    const { values, submitting, loading, versionId, hasEditorError } = this.state;
 
     const versionOptions = _.map(getVerValue, app => (
       <Option key={app.id} value={app.id}>
@@ -137,17 +107,33 @@ class UpgradeIst extends Component {
       </Option>
     ));
 
-    const { id, name: configName, yaml, objectVersionNumber } = getValue || {};
+    const initValue = getValue ? getValue.yaml : '';
 
-    return (<Fragment>
+    return (
       <Sidebar
         title={formatMessage({ id: 'ist.upgrade' })}
         visible={visible}
-        onOk={this.checkCover}
-        onCancel={this.onClose}
-        cancelText={formatMessage({ id: 'cancel' })}
-        okText={formatMessage({ id: 'ist.upgrade' })}
         confirmLoading={submitting}
+        footer={
+          [<Button
+            key="submit"
+            type="primary"
+            funcType="raised"
+            onClick={this.handleOk}
+            loading={submitting}
+            disabled={hasEditorError}
+          >
+            {formatMessage({ id: 'ist.upgrade' })}
+          </Button>,
+            <Button
+              funcType="raised"
+              key="back"
+              onClick={this.onClose}
+              disabled={submitting}
+            >
+              {formatMessage({ id: 'cancel' })}
+            </Button>]
+        }
       >
         <Content
           code="ist.upgrade"
@@ -166,16 +152,6 @@ class UpgradeIst extends Component {
             {versionOptions}
           </Select>
 
-          <div className='c7n-deploy-configValue-title'>
-            <FormattedMessage id='configValue' />
-          </div>
-          <div className="c7n-deploy-configValue-text">
-            <span>{formatMessage({ id: 'deployConfig' })}：</span>
-            <span className="c7n-deploy-configValue-name">
-              {configName || formatMessage({ id: 'deploymentConfig.no.configValue'})}
-            </span>
-          </div>
-
           {getVerValue.length === 0 ? (
             <div>
               <Icon type="error" className="c7n-noVer-waring" />
@@ -186,8 +162,8 @@ class UpgradeIst extends Component {
           <div className="c7n-config-section">
             {getValue ? <YamlEditor
               readOnly={false}
-              value={values || yaml}
-              originValue={yaml}
+              value={values || initValue}
+              originValue={initValue}
               handleEnableNext={this.handleNextStepEnable}
               onValueChange={this.handleChangeValue}
             /> : null}
@@ -197,16 +173,7 @@ class UpgradeIst extends Component {
 
         <InterceptMask visible={submitting} />
       </Sidebar>
-      {showCover && (
-        <CoverConfigModal
-          id={id}
-          objectVersionNumber={objectVersionNumber}
-          show={showCover}
-          configValue={values}
-          onClose={this.closeCover}
-        />
-      )}
-    </Fragment>);
+    );
   }
 }
 
