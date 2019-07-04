@@ -46,9 +46,9 @@ public class OrgAppShareController {
     /**
      * 查询所有已发布的应用
      *
-     * @param isSite is_site
-     * @param pageRequest  分页参数
-     * @param searchParam  搜索参数
+     * @param isSite      is_site
+     * @param pageRequest 分页参数
+     * @param searchParam 搜索参数
      * @return list of ApplicationReleasingDTO
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
@@ -58,12 +58,14 @@ public class OrgAppShareController {
     public ResponseEntity<PageInfo<ApplicationReleasingDTO>> pageListMarketAppsByProjectId(
             @ApiParam(value = "发布层级")
             @RequestParam(value = "is_site", required = false) Boolean isSite,
+            @ApiParam(value = "是否收费")
+            @RequestParam(value = "is_free", required = false) Boolean isFree,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                appShareService.listMarketAppsBySite(isSite, pageRequest, searchParam))
+                appShareService.listMarketAppsBySite(isSite, isFree, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.share.applications.by.site"));
     }

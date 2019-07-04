@@ -183,8 +183,8 @@ public class AppShareServiceImpl implements AppShareService {
     }
 
     @Override
-    public PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(Boolean isSite, PageRequest pageRequest, String searchParam) {
-        PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.listMarketAppsBySite(isSite, pageRequest, searchParam);
+    public PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(Boolean isSite, Boolean isFree, PageRequest pageRequest, String searchParam) {
+        PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.listMarketAppsBySite(isSite, isFree, pageRequest, searchParam);
         return ConvertPageHelper.convertPageInfo(
                 applicationMarketEPage,
                 ApplicationReleasingDTO.class);
@@ -550,10 +550,11 @@ public class AppShareServiceImpl implements AppShareService {
         map.put("page", pageRequest.getPage());
         map.put("size", pageRequest.getSize());
         map.put("sort", PageRequestUtil.getOrderByStr(pageRequest));
+        map.put("access_token", marketConnectInfoDO.getAccessToken());
         Response<PageInfo<ApplicationReleasingDTO>> pageInfoResponse = null;
         try {
             map.put("params", URLEncoder.encode(params, "UTF-8"));
-            pageInfoResponse = shareClient.getAppShares(marketConnectInfoDO.getAccessToken(), map).execute();
+            pageInfoResponse = shareClient.getAppShares(map).execute();
             if (!pageInfoResponse.isSuccessful()) {
                 throw new CommonException("error.get.app.shares");
             }
