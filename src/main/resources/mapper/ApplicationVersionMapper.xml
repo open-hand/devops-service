@@ -57,7 +57,7 @@
         dappv.app_id
         ) lv ON lv.id = dap.id
         JOIN devops_application da ON lv.app_id = da.id
-        LEFT JOIN devops_app_market dam on dam.app_id = da.id
+        LEFT JOIN devops_app_share dam on dam.app_id = da.id
         WHERE
         da.project_id = #{projectId}
         OR (

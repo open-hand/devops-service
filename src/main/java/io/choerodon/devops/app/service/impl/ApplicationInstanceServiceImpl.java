@@ -52,6 +52,7 @@ import io.choerodon.devops.api.dto.DevopsEnvPreviewAppDTO;
 import io.choerodon.devops.api.dto.DevopsEnvPreviewDTO;
 import io.choerodon.devops.api.dto.DevopsEnvPreviewInstanceDTO;
 import io.choerodon.devops.api.dto.DevopsEnvResourceDTO;
+import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
 import io.choerodon.devops.api.dto.EnvInstanceDTO;
 import io.choerodon.devops.api.dto.EnvInstancesDTO;
 import io.choerodon.devops.api.dto.EnvVersionDTO;
@@ -164,7 +165,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private ApplicationRepository applicationRepository;
     @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    @ApiParam
+    @Autowired
     private ApplicationVersionValueRepository versionValueRepository;
     @Autowired
     private DeployService deployService;
@@ -1313,7 +1314,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         BeanUtils.copyProperties(appRemoteDeployDTO, applicationDeployDTO);
         applicationDeployDTO.setAppId(applicationE.getId());
         applicationDeployDTO.setAppVersionId(versionE.getId());
-        applicationDeployDTO.setValues(versionE.getApplicationVersionValueE().getValue());
+        applicationDeployDTO.setValues(appRemoteDeployDTO.getVersionRemoteDTO().getValues());
         return createOrUpdate(applicationDeployDTO);
     }
 
@@ -1325,8 +1326,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             applicationE = new ApplicationE();
             DevopsProjectConfigE harborConfigE = createConfig(projectId, "harbor", appRemoteDeployDTO.getAppRemoteDTO().getCode(), appRemoteDeployDTO.getHarbor());
             DevopsProjectConfigE chartConfigE = createConfig(projectId, "chart", appRemoteDeployDTO.getAppRemoteDTO().getCode(), appRemoteDeployDTO.getChart());
-            BeanUtils.copyProperties(appRemoteDeployDTO, applicationE);
+            applicationE.setType(appRemoteDeployDTO.getAppRemoteDTO().getType());
             applicationE.setCode(code);
+            applicationE.setName(appRemoteDeployDTO.getAppRemoteDTO().getName());
             applicationE.setActive(true);
             applicationE.initProjectE(projectId);
             applicationE.initHarborConfig(harborConfigE.getId());
@@ -1368,7 +1370,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String name = code + "_remote_" + type;
         DevopsProjectConfigE devopsPrpjectConfigE = devopsProjectConfigRepository.queryByName(projectId, name);
         if (devopsPrpjectConfigE == null) {
-            devopsPrpjectConfigE = ConvertHelper.convert(projectConfigDTO, DevopsProjectConfigE.class);
+            DevopsProjectConfigDTO devopsProjectConfigDTO = new DevopsProjectConfigDTO();
+            devopsProjectConfigDTO.setConfig(projectConfigDTO);
+            devopsPrpjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
             devopsPrpjectConfigE.setProjectId(projectId);
             devopsPrpjectConfigE.setName(name);
             devopsPrpjectConfigE.setType(type);

@@ -70,7 +70,7 @@
         JOIN devops_app_version dav ON dai.app_version_id = dav.id
         JOIN devops_application da ON dav.app_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
-        LEFT JOIN devops_app_market dam on dam.app_id = da.id
+        LEFT JOIN devops_app_share dam on dam.app_id = da.id
         WHERE de.project_id = #{projectId}
         <if test='appId != null'>
             AND da.id= #{appId}

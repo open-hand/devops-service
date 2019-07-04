@@ -8,7 +8,7 @@ import io.choerodon.devops.infra.dataobject.DevopsMarketConnectInfoDO;
  * Description:
  */
 public interface MarketConnectInfoRepositpry {
-    void create(DevopsMarketConnectInfoDO marketConnectInfoDO);
+    void createOrUpdate(DevopsMarketConnectInfoDO marketConnectInfoDO);
 
     DevopsMarketConnectInfoDO query();
 }

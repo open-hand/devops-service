@@ -859,6 +859,6 @@ public class AppShareServiceImpl implements AppShareService {
     public void saveToken(AccessTokenDTO tokenDTO) {
         DevopsMarketConnectInfoDO connectInfoDO = new DevopsMarketConnectInfoDO();
         BeanUtils.copyProperties(tokenDTO, connectInfoDO);
-        marketConnectInfoRepositpry.create(connectInfoDO);
+        marketConnectInfoRepositpry.createOrUpdate(connectInfoDO);
     }
 }

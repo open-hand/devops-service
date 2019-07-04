@@ -19,10 +19,16 @@ public class MarketConnectInfoRepositpryImpl implements MarketConnectInfoReposit
     private MarketConnectInfoMapper marketConnectInfoMapper;
 
     @Override
-    public void create(DevopsMarketConnectInfoDO marketConnectInfoDO) {
+    public void createOrUpdate(DevopsMarketConnectInfoDO marketConnectInfoDO) {
         marketConnectInfoDO.setId(1L);
-        if (marketConnectInfoMapper.insert(marketConnectInfoDO) != 1) {
-            throw new CommonException("error.create.market.connect.info");
+        if (marketConnectInfoMapper.selectByPrimaryKey(1L) == null) {
+            if (marketConnectInfoMapper.insert(marketConnectInfoDO) != 1) {
+                throw new CommonException("error.create.market.connect.info");
+            }
+        } else {
+            if (marketConnectInfoMapper.updateByPrimaryKey(marketConnectInfoDO) != 1) {
+                throw new CommonException("error.update.market.connect.info");
+            }
         }
     }
 
