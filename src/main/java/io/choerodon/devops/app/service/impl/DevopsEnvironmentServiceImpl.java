@@ -545,14 +545,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     false);
         }
         devopsEnvironmentE.initGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));
-        if (gitlabRepository.getDeployKeys(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId()).isEmpty()) {
-            gitlabRepository.createDeployKey(
-                    gitlabProjectDO.getId(),
-                    gitlabProjectPayload.getPath(),
-                    devopsEnvironmentE.getEnvIdRsaPub(),
-                    true,
-                    gitlabProjectPayload.getUserId());
-        }
+
+        gitlabRepository.createDeployKey(
+                gitlabProjectDO.getId(),
+                gitlabProjectPayload.getPath() + "-" + devopsEnvironmentE.getClusterE().getId(),
+                devopsEnvironmentE.getEnvIdRsaPub(),
+                true,
+                gitlabProjectPayload.getUserId());
+
         ProjectHook projectHook = ProjectHook.allHook();
         projectHook.setEnableSslVerification(true);
         projectHook.setProjectId(gitlabProjectDO.getId());
