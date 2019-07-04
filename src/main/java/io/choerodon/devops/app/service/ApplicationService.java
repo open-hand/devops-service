@@ -37,14 +37,6 @@ public interface ApplicationService {
     ApplicationRepDTO query(Long projectId, Long applicationId);
 
     /**
-     * 项目下批量查询应用信息
-     *
-     * @param applicationIds 应用Id List
-     * @return ApplicationRepDTO
-     */
-    List<ApplicationRepDTO> queryApps(List<Long> applicationIds);
-
-    /**
      * 项目下删除创建失败应用
      *
      * @param projectId     项目id

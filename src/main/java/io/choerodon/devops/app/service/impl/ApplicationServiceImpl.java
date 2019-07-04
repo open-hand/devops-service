@@ -242,15 +242,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<ApplicationRepDTO> queryApps(List<Long> applicationIds) {
-        List<ApplicationRepDTO> repDTOS = new ArrayList<>();
-        applicationIds.forEach(v ->
-                repDTOS.add(ConvertHelper.convert(applicationRepository.query(v), ApplicationRepDTO.class))
-        );
-        return repDTOS;
-    }
-
-    @Override
     @Saga(code = "devops-delete-application",
             description = "Devops删除创建失败应用", inputSchema = "{}")
     public void delete(Long projectId, Long applicationId) {

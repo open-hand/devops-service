@@ -208,11 +208,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return appInstancesList;
     }
 
-    @Override
-    public List<DevopsEnvApplicationE> listAllEnvApp() {
-        return applicationInstanceRepository.listAllEnvApp();
-    }
-
     private void addAppInstance(ApplicationInstancesDTO instancesDTO, ApplicationInstancesDO instancesDO,
                                 Long latestVersionId) {
         EnvVersionDTO envVersionDTO = new EnvVersionDTO(

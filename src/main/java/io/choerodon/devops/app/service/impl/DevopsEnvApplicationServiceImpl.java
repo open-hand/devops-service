@@ -1,24 +1,25 @@
 package io.choerodon.devops.app.service.impl;
 
-import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.dto.ApplicationRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvApplicationDTO;
 import io.choerodon.devops.api.dto.DevopsEnvLabelDTO;
 import io.choerodon.devops.api.dto.DevopsEnvPortDTO;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvMessageE;
+import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvApplicationRepostitory;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.V1Container;
+import io.kubernetes.client.models.V1ContainerPort;
+import io.kubernetes.client.models.V1beta2Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -28,16 +29,16 @@ import java.util.Optional;
 @Service
 public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationService {
 
-    private static Gson gson = new Gson();
+    private static JSON json = new JSON();
 
     @Autowired
     DevopsEnvApplicationRepostitory devopsEnvApplicationRepostitory;
 
     @Autowired
-    ApplicationService applicationService;
+    ApplicationRepository applicationRepository;
 
     @Autowired
-    ApplicationInstanceService instanceService;
+    ApplicationInstanceRepository applicationInstanceRepository;
 
     @Override
     public DevopsEnvApplicationDTO create(DevopsEnvApplicationDTO devopsEnvApplicationDTO) {
@@ -48,13 +49,11 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Override
     public List<ApplicationRepDTO> queryAppByEnvId(Long envId) {
         List<Long> appIds = devopsEnvApplicationRepostitory.queryAppByEnvId(envId);
-        return applicationService.queryApps(appIds);
-    }
-
-    @Override
-    public void syncEnvAppRelevance() {
-        List<DevopsEnvApplicationE> envApplicationES = instanceService.listAllEnvApp();
-        envApplicationES.stream().distinct().forEach(v -> devopsEnvApplicationRepostitory.create(v));
+        List<ApplicationRepDTO> repDTOS = new ArrayList<>();
+        appIds.forEach(v ->
+                repDTOS.add(ConvertHelper.convert(applicationRepository.query(v), ApplicationRepDTO.class))
+        );
+        return repDTOS;
     }
 
     @Override
@@ -64,8 +63,9 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
         messageES.forEach(v -> {
             DevopsEnvLabelDTO labelDTO = new DevopsEnvLabelDTO();
             labelDTO.setResourceName(v.getResourceName());
-            Map map = gson.fromJson(v.getDetail(), Map.class);
-            labelDTO.setLabels((LinkedTreeMap) ((Map) ((Map) map.get("spec")).get("selector")).get("matchLabels"));
+            V1beta2Deployment v1beta2Deployment = json.deserialize(
+                    v.getDetail(), V1beta2Deployment.class);
+            labelDTO.setLabels(v1beta2Deployment.getSpec().getSelector().getMatchLabels());
             labelDTOS.add(labelDTO);
         });
         return labelDTOS;
@@ -76,18 +76,18 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
         List<DevopsEnvMessageE> messageES = devopsEnvApplicationRepostitory.listResourceByEnvAndApp(envId, appId);
         List<DevopsEnvPortDTO> portDTOS = new ArrayList<>();
         messageES.forEach(v -> {
-            Map map = gson.fromJson(v.getDetail(), Map.class);
-            List<LinkedTreeMap> containers = (ArrayList<LinkedTreeMap>) ((Map) ((Map) ((Map) map.get("spec")).get("template")).get("spec")).get("containers");
-
-            for (LinkedTreeMap container : containers) {
-                List<LinkedTreeMap> ports = (ArrayList<LinkedTreeMap>) container.get("ports");
+            V1beta2Deployment v1beta2Deployment = json.deserialize(
+                    v.getDetail(), V1beta2Deployment.class);
+            List<V1Container> containers = v1beta2Deployment.getSpec().getTemplate().getSpec().getContainers();
+            for (V1Container container : containers) {
+                List<V1ContainerPort> ports = container.getPorts();
 
                 Optional.ofNullable(ports).ifPresent(portList -> {
-                    for (LinkedTreeMap port : portList) {
+                    for (V1ContainerPort port : portList) {
                         DevopsEnvPortDTO portDTO = new DevopsEnvPortDTO();
                         portDTO.setResourceName(v.getResourceName());
-                        portDTO.setPortName((String) port.get("name"));
-                        portDTO.setPortValue((Double) port.get("containerPort"));
+                        portDTO.setPortName(port.getName());
+                        portDTO.setPortValue(port.getContainerPort());
                         portDTOS.add(portDTO);
                     }
                 });
@@ -95,5 +95,4 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
         });
         return portDTOS;
     }
-
 }

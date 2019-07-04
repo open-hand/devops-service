@@ -10,7 +10,7 @@ public class DevopsEnvPortDTO {
 
     private String portName;
 
-    private Double portValue;
+    private Integer portValue;
 
     public String getResourceName() {
         return resourceName;
@@ -28,11 +28,11 @@ public class DevopsEnvPortDTO {
         this.portName = portName;
     }
 
-    public Double getPortValue() {
+    public Integer getPortValue() {
         return portValue;
     }
 
-    public void setPortValue(Double portValue) {
+    public void setPortValue(Integer portValue) {
         this.portValue = portValue;
     }
 }

@@ -1,16 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
@@ -34,45 +23,9 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.DevopsCheckLogRepository;
-import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvResourceDetailRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvResourceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
-import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
-import io.choerodon.devops.domain.application.repository.DevopsGitlabPipelineRepository;
-import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.DevopsServiceInstanceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.OrgRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-import io.choerodon.devops.domain.application.valueobject.CheckLog;
-import io.choerodon.devops.domain.application.valueobject.MenuCodeDTO;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
-import io.choerodon.devops.domain.application.valueobject.ProjectCategoryEDTO;
-import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
-import io.choerodon.devops.domain.application.valueobject.ProjectHook;
-import io.choerodon.devops.domain.application.valueobject.Stage;
-import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GitUtil;
-import io.choerodon.devops.infra.common.util.K8sUtil;
-import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.*;
+import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.*;
@@ -96,6 +49,17 @@ import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
@@ -214,6 +178,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
+    @Autowired
+    private DevopsEnvApplicationRepostitory devopsEnvApplicationRepostitory;
+
 
     @Override
     public void checkLog(String version) {
@@ -583,6 +550,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } else if ("0.18.0".equals(version)) {
                 syncDeployValues(logs);
             } else if ("0.19.0".equals(version)) {
+                syncEnvAppRelevance(logs);
                 syncClusters(logs);
             } else {
                 LOGGER.info("version not matched");
@@ -693,6 +661,24 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     Long categoryId = 1L;
                     ProjectDTO projectDTO = createOpsProject(org.getId(), categoryId);
                     clusterRepository.updateProjectId(org.getId(), projectDTO.getId());
+                    checkLog.setResult("success");
+                } catch (Exception e) {
+                    checkLog.setResult("fail");
+                    LOGGER.info(e.getMessage(), e);
+                }
+                logs.add(checkLog);
+            });
+        }
+
+        private void syncEnvAppRelevance(List<CheckLog> logs) {
+            List<DevopsEnvApplicationE> envApplicationES = applicationInstanceRepository.listAllEnvApp();
+
+            envApplicationES.stream().distinct().forEach(v -> {
+                CheckLog checkLog = new CheckLog();
+                checkLog.setContent(String.format(
+                        "Sync environment application relationship,envId: %s, appId: %s", v.getEnvId(), v.getAppId()));
+                try {
+                    devopsEnvApplicationRepostitory.create(v);
                     checkLog.setResult("success");
                 } catch (Exception e) {
                     checkLog.setResult("fail");

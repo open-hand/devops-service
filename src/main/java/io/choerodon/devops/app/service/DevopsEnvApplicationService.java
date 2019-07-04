@@ -16,9 +16,6 @@ public interface DevopsEnvApplicationService {
 
     List<ApplicationRepDTO> queryAppByEnvId(Long envId);
 
-    //环境与应用关联数据修复
-    void syncEnvAppRelevance();
-
     List<DevopsEnvLabelDTO> queryLabelByAppEnvId(Long envId, Long appId);
 
     List<DevopsEnvPortDTO> queryPortByAppEnvId(Long envId, Long appId);

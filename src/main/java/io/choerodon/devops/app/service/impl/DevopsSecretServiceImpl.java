@@ -1,9 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
@@ -31,6 +27,10 @@ import io.kubernetes.client.models.V1Secret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by n!Ck
@@ -68,9 +68,11 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private CheckOptionsHandler checkOptionsHandler;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsAppResourceRepository appResourceRepository;
 
     @Override
-    @Transactional(rollbackFor=Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public SecretRepDTO createOrUpdate(SecretReqDTO secretReqDTO) {
         if (secretReqDTO.getValue() == null || secretReqDTO.getValue().size() == 0) {
             throw new CommonException("error.secret.value.is.null");
@@ -110,7 +112,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         // 在gitops库处理secret文件
         operateEnvGitLabFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1Secret, devopsSecretE,
-                devopsEnvCommandE, CREATE.equals(secretReqDTO.getType()), userAttrE);
+                devopsEnvCommandE, CREATE.equals(secretReqDTO.getType()), userAttrE, secretReqDTO.getAppId());
 
         return ConvertHelper.convert(devopsSecretRepository.queryBySecretId(devopsSecretE.getId()), SecretRepDTO.class);
     }
@@ -145,13 +147,21 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     private void operateEnvGitLabFile(Integer gitlabEnvGroupProjectId, V1Secret v1Secret, DevopsSecretE devopsSecretE,
-                                      DevopsEnvCommandE devopsEnvCommandE, Boolean isCreate, UserAttrE userAttrE) {
+                                      DevopsEnvCommandE devopsEnvCommandE, Boolean isCreate, UserAttrE userAttrE, Long appId) {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
 
         //操作secret数据库
         if (isCreate) {
             Long secretId = devopsSecretRepository.create(devopsSecretE).getId();
+            //创建应用资源关系
+            if (appId != null) {
+                DevopsAppResourceE resourceE = new DevopsAppResourceE();
+                resourceE.setAppId(appId);
+                resourceE.setResourceType(ObjectType.SERVICE.getType());
+                resourceE.setResourceId(secretId);
+                appResourceRepository.insert(resourceE);
+            }
             devopsEnvCommandE.setObjectId(secretId);
             devopsSecretE.setId(secretId);
             devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
@@ -173,7 +183,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    @Transactional(rollbackFor=Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Boolean deleteSecret(Long envId, Long secretId) {
 
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -200,6 +210,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), secretId, SECRET);
         if (devopsEnvFileResourceE == null) {
             devopsSecretRepository.deleteSecret(secretId);
+            appResourceRepository.deleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     "sct-" + devopsSecretE.getName() + ".yaml")) {
                 gitlabRepository.deleteFile(
@@ -213,6 +224,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsSecretRepository.deleteSecret(secretId);
+                appResourceRepository.deleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
                 return true;
             }
@@ -251,6 +263,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.SECRET.toValue(), devopsSecretE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t));
         devopsSecretRepository.deleteSecret(secretId);
+        appResourceRepository.deleteByResourceIdAndType(secretId,ObjectType.SECRET.getType());
     }
 
     @Override

@@ -3,6 +3,7 @@ package io.choerodon.devops.api.dto;
 import com.google.gson.internal.LinkedTreeMap;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author lizongwei
@@ -12,7 +13,7 @@ public class DevopsEnvLabelDTO {
 
     private String resourceName;
 
-    private LinkedTreeMap labels;
+    private Map labels;
 
     public String getResourceName() {
         return resourceName;
@@ -22,11 +23,11 @@ public class DevopsEnvLabelDTO {
         this.resourceName = resourceName;
     }
 
-    public LinkedTreeMap getLabels() {
+    public Map getLabels() {
         return labels;
     }
 
-    public void setLabels(LinkedTreeMap labels) {
+    public void setLabels(Map labels) {
         this.labels = labels;
     }
 }

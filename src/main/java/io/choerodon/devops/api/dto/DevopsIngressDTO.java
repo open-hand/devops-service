@@ -13,6 +13,7 @@ import java.util.Objects;
 public class DevopsIngressDTO {
 
     private Long id;
+    private Long appId;
     private String domain;
     private String name;
     private Long envId;
@@ -51,6 +52,14 @@ public class DevopsIngressDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 
     public String getDomain() {

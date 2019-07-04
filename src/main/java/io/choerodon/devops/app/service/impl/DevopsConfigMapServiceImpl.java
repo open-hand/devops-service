@@ -64,6 +64,8 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     private CheckOptionsHandler checkOptionsHandler;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsAppResourceRepository appResourceRepository;
 
     @Override
     @Transactional(rollbackFor=Exception.class)
@@ -112,7 +114,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapDTO.getType().equals(CREATE_TYPE), filePath, devopsConfigMapE, userAttrE, devopsEnvCommandE);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapDTO.getType().equals(CREATE_TYPE), filePath, devopsConfigMapE, userAttrE, devopsEnvCommandE,devopsConfigMapDTO.getAppId());
     }
 
 
@@ -173,6 +175,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         devopsEnvCommandRepository.listByObjectAll(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         devopsConfigMapRepository.delete(configMapId);
+        appResourceRepository.deleteByResourceIdAndType(configMapId,ObjectType.CONFIGMAP.getType());
     }
 
     @Override
@@ -206,6 +209,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), configMapId, CONFIGMAP);
         if (devopsEnvFileResourceE == null) {
             devopsConfigMapRepository.delete(configMapId);
+            appResourceRepository.deleteByResourceIdAndType(configMapId,ObjectType.CONFIGMAP.getType());
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     CONFIG_MAP_PREFIX + devopsConfigMapE.getName() + ".yaml")) {
                 gitlabRepository.deleteFile(
@@ -219,6 +223,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsConfigMapRepository.delete(configMapId);
+                appResourceRepository.deleteByResourceIdAndType(configMapId,ObjectType.CONFIGMAP.getType());
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
                 return;
             }
@@ -278,12 +283,19 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                                       Boolean isCreate,
                                       String path,
                                       DevopsConfigMapE devopsConfigMapE,
-                                      UserAttrE userAttrE, DevopsEnvCommandE devopsEnvCommandE) {
+                                      UserAttrE userAttrE, DevopsEnvCommandE devopsEnvCommandE,Long appId) {
 
 
         //操作configMap数据库
         if (isCreate) {
             Long configMapId = devopsConfigMapRepository.create(devopsConfigMapE).getId();
+            if (appId != null) {
+                DevopsAppResourceE resourceE = new DevopsAppResourceE();
+                resourceE.setAppId(appId);
+                resourceE.setResourceType(ObjectType.CONFIGMAP.getType());
+                resourceE.setResourceId(configMapId);
+                appResourceRepository.insert(resourceE);
+            }
             devopsEnvCommandE.setObjectId(configMapId);
             devopsConfigMapE.setId(configMapId);
             devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());

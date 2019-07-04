@@ -41,12 +41,6 @@ public interface ApplicationInstanceService {
     List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId);
 
     /**
-     * 查询所有应用部署的appId和envId
-     * 用于应用环境关联数据修复
-     */
-    List<DevopsEnvApplicationE> listAllEnvApp();
-
-    /**
      * 查询value列表
      *
      * @param type       部署类型

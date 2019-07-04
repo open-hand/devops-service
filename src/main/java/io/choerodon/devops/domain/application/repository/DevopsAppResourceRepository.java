@@ -14,5 +14,7 @@ public interface DevopsAppResourceRepository {
 
     void deleteByAppIdAndType(Long appId, String type);
 
+    void deleteByResourceIdAndType(Long resourceId, String type);
+
     List<DevopsAppResourceE> queryByAppAndType(Long appId, String type);
 }

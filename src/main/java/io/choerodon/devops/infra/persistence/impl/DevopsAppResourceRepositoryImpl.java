@@ -45,6 +45,14 @@ public class DevopsAppResourceRepositoryImpl implements DevopsAppResourceReposit
     }
 
     @Override
+    public void deleteByResourceIdAndType(Long resourceId, String type) {
+        DevopsAppResourceDO resourceDO = new DevopsAppResourceDO();
+        resourceDO.setResourceId(resourceId);
+        resourceDO.setResourceType(type);
+        resourceMapper.delete(resourceDO);
+    }
+
+    @Override
     public List<DevopsAppResourceE> queryByAppAndType(Long appId, String type) {
         DevopsAppResourceDO resourceDO = new DevopsAppResourceDO();
         resourceDO.setAppId(appId);

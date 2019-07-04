@@ -24,9 +24,6 @@ public class DevopsTask {
     @Autowired
     private DevopsCheckLogService devopsCheckLogService;
 
-    @Autowired
-    private DevopsEnvApplicationService devopsEnvApplicationService;
-
     @JobTask(maxRetryCount = 3, code = "syncDeployValue", params = {
             @JobParam(name = "test", defaultValue = "test")
     }, description = "升级到0.18.0,修复部署values")
@@ -51,7 +48,7 @@ public class DevopsTask {
     })
     public void syncEnvAppRelevance(Map<String, Object> map) {
         logger.info("begin to upgrade 0.18.0 to 0.19.0");
-        devopsEnvApplicationService.syncEnvAppRelevance();
+        devopsCheckLogService.checkLog("0.19.0");
     }
 
 

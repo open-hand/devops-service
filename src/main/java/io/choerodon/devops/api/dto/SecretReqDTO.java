@@ -14,6 +14,9 @@ public class SecretReqDTO {
     @ApiModelProperty(value = "密钥id/更新时必填")
     private Long id;
 
+    @ApiModelProperty(value = "应用id/非必填")
+    private Long appId;
+
     @ApiModelProperty(value = "环境id/必填")
     private Long envId;
 
@@ -37,6 +40,14 @@ public class SecretReqDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 
     public Long getEnvId() {
