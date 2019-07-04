@@ -11,14 +11,10 @@ import InstancesStore from '../stores/project/instances/InstancesStore';
 // organization
 const Template = asyncRouter(() => import('./organization/template'));
 const Cluster = asyncRouter(() => import('./organization/cluster'));
-const CertificateManage = asyncRouter(() =>
-  import('./organization/certificate'),
-);
+const CertificateManage = asyncRouter(() => import('./organization/certificate'),);
 // project
 const EnvPipelineIndex = asyncRouter(() => import('./project/envPipeline'));
-const CiPipelineManageIndex = asyncRouter(() =>
-  import('./project/ciPipelineManage'),
-);
+const CiPipelineManageIndex = asyncRouter(() => import('./project/ciPipelineManage'),);
 const AppVersion = asyncRouter(() => import('./project/appVersion'));
 const App = asyncRouter(() => import('./project/app'));
 const AppStore = asyncRouter(() => import('./project/appStore'));
@@ -45,15 +41,14 @@ const DeploymentConfig = asyncRouter(() => import('./project/deploymentConfig'))
 const PipelineRecord = asyncRouter(() => import('./project/pipelineRecord'));
 const CodeQuality = asyncRouter(() => import('./project/codeQuality'));
 const Notifications = asyncRouter(() => import('./project/notifications'));
+const Resource = asyncRouter(() => import('./project/resource'));
 
 @inject('AppState')
 class DEVOPSIndex extends React.Component {
   render() {
     const { match, AppState } = this.props;
     const language = AppState.currentLanguage;
-    const IntlProviderAsync = asyncLocaleProvider(language, () =>
-      import(`../locale/${language}`),
-    );
+    const IntlProviderAsync = asyncLocaleProvider(language, () => import(`../locale/${language}`),);
 
     /**
      * 从实例详情页面跳转到实例页面或容器不重新加载
@@ -99,11 +94,12 @@ class DEVOPSIndex extends React.Component {
           <Route path={`${match.url}/secret`} component={Secret} />
           <Route path={`${match.url}/elements`} component={Elements} />
           <Route path={`${match.url}/certificate-manage`} component={CertificateManage} />
-          <Route path={`${match.url}/pipeline`} component={PipelineIndex}/>
-          <Route path={`${match.url}/pipeline-record`} component={PipelineRecord}/>
+          <Route path={`${match.url}/pipeline`} component={PipelineIndex} />
+          <Route path={`${match.url}/pipeline-record`} component={PipelineRecord} />
           <Route path={`${match.url}/deployment-config`} component={DeploymentConfig} />
           <Route path={`${match.url}/code-quality`} component={CodeQuality} />
-          <Route path={`${match.url}/notifications`} component={Notifications}/>
+          <Route path={`${match.url}/notifications`} component={Notifications} />
+          <Route path={`${match.url}/custom-resource`} component={Resource} />
           <Route path="*" component={nomatch} />
         </Switch>
       </IntlProviderAsync>

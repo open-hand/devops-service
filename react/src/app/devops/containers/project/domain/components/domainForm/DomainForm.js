@@ -56,7 +56,7 @@ export default class DomainForm extends Component {
     } = this.props;
     if (ingressId && type === 'edit') {
       DomainStore.loadDataById(projectId, ingressId)
-        .then(data => {
+        .then((data) => {
           const {
             pathList,
             envId: domainEnv,
@@ -131,7 +131,7 @@ export default class DomainForm extends Component {
       if (selectEnv) {
         DomainStore
           .checkName(projectId, value, selectEnv)
-          .then(data => {
+          .then((data) => {
             if (data) {
               callback();
             } else {
@@ -216,14 +216,14 @@ export default class DomainForm extends Component {
     const { intl: { formatMessage } } = this.props;
     if (promise) {
       promise
-        .then(data => {
+        .then((data) => {
           if (data) {
             callback();
           } else {
             callback(formatMessage({ id: 'domain.path.check.exist' }));
           }
         })
-        .catch(err => {
+        .catch((err) => {
           Choerodon.handleResponseError(err);
           callback();
         });
@@ -294,7 +294,7 @@ export default class DomainForm extends Component {
    * 选择环境
    * @param value
    */
-  handleSelectEnv = value => {
+  handleSelectEnv = (value) => {
     const {
       form: { resetFields },
       AppState: { currentMenuType: { projectId } },
@@ -333,7 +333,7 @@ export default class DomainForm extends Component {
    * 删除路径
    * @param k
    */
-  removePath = k => {
+  removePath = (k) => {
     const {
       form: { getFieldValue, setFieldsValue },
     } = this.props;
@@ -372,7 +372,7 @@ export default class DomainForm extends Component {
       form: { setFieldsValue },
     } = this.props;
     const portArr = [];
-    _.forEach(data, item => {
+    _.forEach(data, (item) => {
       if (id === item.id) {
         const {
           config: { ports },
@@ -391,19 +391,25 @@ export default class DomainForm extends Component {
    * 切换网络协议
    * @param e
    */
-  handleTypeChange = e => {
+  handleTypeChange = (e) => {
     const {
-      form: { getFieldValue, getFieldError },
+      form: { getFieldValue, getFieldError, setFieldsValue },
     } = this.props;
+    const { singleData } = this.state;
 
     const protocol = e.target.value;
-
-    this.setState({ protocol });
 
     const domain = getFieldValue('domain');
     if (domain && !getFieldError('domain')) {
       this.loadCertByDomain(domain, protocol);
     }
+
+    this.setState({ protocol }, () => {
+      const { certId, domain: oldDomain } = singleData;
+      if (protocol === 'secret' && certId && oldDomain && oldDomain === domain) {
+        setFieldsValue({ certId });
+      }
+    });
   };
 
   /**
@@ -500,7 +506,7 @@ export default class DomainForm extends Component {
       const initPath = hasServerInit ? pathList[k].path : '/';
       // 网络拥有的端口
       const portWithNetwork = {};
-      _.forEach(network, item => {
+      _.forEach(network, (item) => {
         const {
           config: { ports },
           id,
@@ -510,17 +516,16 @@ export default class DomainForm extends Component {
         portWithNetwork[id] = port;
       });
       // 生成端口选项
-      const portOption =
-        type === 'edit' && !portInNetwork[k] && hasServerInit
-          ? portWithNetwork[pathList[k].serviceId]
-          : portInNetwork[k];
+      const portOption = type === 'edit' && !portInNetwork[k] && hasServerInit
+        ? portWithNetwork[pathList[k].serviceId]
+        : portInNetwork[k];
       // 生成网络选项
-      const networkOption = _.map(network, ({ id, name }) => (
+      const networkOption = _.map(network, ({ id, name: networkName }) => (
         <Option value={id} key={`${id}-network`}>
           <div className="c7n-domain-create-status c7n-domain-create-status_running">
             <div>{formatMessage({ id: 'running' })}</div>
           </div>
-          <Tooltip title={name}>{name}</Tooltip>
+          <Tooltip title={networkName}>{networkName}</Tooltip>
         </Option>
       ));
       return (
@@ -573,10 +578,9 @@ export default class DomainForm extends Component {
                 size="default"
                 optionFilterProp="children"
                 optionLabelProp="children"
-                filterOption={(input, option) =>
-                  option.props.children[1].props.children
-                    .toLowerCase()
-                    .indexOf(input.toLowerCase()) >= 0
+                filterOption={(input, option) => option.props.children[1].props.children
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0
                 }
               >
                 {delNetOption}
@@ -632,7 +636,7 @@ export default class DomainForm extends Component {
     });
 
     return (
-      <Form layout="vertical" className='c7n-domainCreate-Form-wrapper'>
+      <Form layout="vertical" className="c7n-domainCreate-Form-wrapper">
         {!isInstancePage && (
           <FormItem
             className="c7n-domain-formItem c7n-select_512"
@@ -658,15 +662,14 @@ export default class DomainForm extends Component {
                 onSelect={this.handleSelectEnv}
                 disabled={type === 'edit'}
                 getPopupContainer={triggerNode => triggerNode.parentNode}
-                filterOption={(input, option) =>
-                  option.props.children[1]
-                    .toLowerCase()
-                    .indexOf(input.toLowerCase()) >= 0
+                filterOption={(input, option) => option.props.children[1]
+                  .toLowerCase()
+                  .indexOf(input.toLowerCase()) >= 0
                 }
                 filter
                 showSearch
               >
-                {_.map(env, ({ id, connect, name, permission }) => (
+                {_.map(env, ({ id, connect, name: envName, permission }) => (
                   <Option
                     key={id}
                     value={id}
@@ -677,7 +680,7 @@ export default class DomainForm extends Component {
                     ) : (
                       <span className="c7ncd-status c7ncd-status-disconnect" />
                     )}
-                    {name}
+                    {envName}
                   </Option>
                 ))}
               </Select>,
@@ -788,13 +791,11 @@ export default class DomainForm extends Component {
                   notFoundContent={
                     <FormattedMessage id="domain.cert.none" />
                   }
-                  getPopupContainer={triggerNode =>
-                    triggerNode.parentNode
+                  getPopupContainer={triggerNode => triggerNode.parentNode
                   }
-                  filterOption={(input, option) =>
-                    option.props.children
-                      .toLowerCase()
-                      .indexOf(input.toLowerCase()) >= 0
+                  filterOption={(input, option) => option.props.children
+                    .toLowerCase()
+                    .indexOf(input.toLowerCase()) >= 0
                   }
                   filter
                   showSearch
