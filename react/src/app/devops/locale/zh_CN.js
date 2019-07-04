@@ -316,7 +316,7 @@ const pageDetail = {
 
   // 证书
   'ctf.description':
-    '域名证书是受法律认可的证书文件，确定了域名注册者对域名的拥有权与拥有时限。您在每个环境中添加的所有域名都需要有域名证书。',
+    '证书是遵守某种网络安全协议，具有服务器身份验证和数据传输加密功能的数字证书。此处的证书可用于在平台中创建加密类型的域名。',
   'ctf.title': '项目"{name}"的证书',
   'ctf.link': `${docServer}/user-guide/deployment-pipeline/certificate`,
   'ctf.create.title': '在项目"{name}"中创建证书',
@@ -422,7 +422,7 @@ const pageDetail = {
   // 组织层证书
   'certificate.title': '组织"{name}"的证书',
   'certificate.description':
-    '域名证书是受法律认可的证书文件，确定了域名注册者对域名的拥有权与拥有时限。',
+    '证书是遵守某种网络安全协议，具有服务器身份验证和数据传输加密功能的数字证书。此处的证书可共享至该组织下任意的项目。',
   'certificate.link': `${docServer}/user-guide/certificate-management/certificate`,
   'certificate.create.title': '在组织"{name}"中创建证书',
   'certificate.create.description':

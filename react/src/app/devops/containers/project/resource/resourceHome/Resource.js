@@ -22,7 +22,9 @@ import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import EnvOverviewStore from '../../../../stores/project/envOverview';
 import ResourceSidebar from '../resourceSidebar/ResourceSidebar';
 import ResourceDetail from '../components/resourceDetail/ResourceDetail';
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
 import { handlePromptError } from '../../../../utils';
+import { HEIGHT } from '../../../../common/Constants';
 
 import '../../../main.scss';
 
@@ -49,6 +51,21 @@ export default class Resource extends Component {
       },
     } = this.props;
     EnvOverviewStore.loadActiveEnv(projectId, 'customResource');
+  }
+
+  componentWillUnmount() {
+    const { ResourceStore } = this.props;
+    ResourceStore.setResourceList([]);
+    ResourceStore.setPageInfo({
+      current: 1,
+      pageSize: HEIGHT <= 900 ? 10 : 15,
+      total: 0,
+    });
+    ResourceStore.setInfo({
+      filters: {},
+      sort: null,
+      paras: [],
+    });
   }
 
   /**
@@ -169,7 +186,7 @@ export default class Resource extends Component {
             >
               <Tooltip
                 placement="bottom"
-                title={<FormattedMessage id="edit" />}
+                title={<FormattedMessage id="detail" />}
               >
                 <Button
                   icon="find_in_page"
@@ -292,6 +309,7 @@ export default class Resource extends Component {
       getTpEnvId,
     } = EnvOverviewStore;
     const envState = _.filter(getEnvcard, { id: getTpEnvId, connect: true });
+    const hasEnv = getEnvcard && getEnvcard.length && getTpEnvId;
     const selectClass = classnames({
       'c7n-header-select': true,
       'c7n-select_min100': !getTpEnvId,
@@ -328,81 +346,88 @@ export default class Resource extends Component {
           'devops-service.devops-customize-resource.getResource',
         ]}
       >
-        <Header title={formatMessage({ id: 'resource.header' })}>
-          <Select
-            className={selectClass}
-            dropdownClassName="c7n-header-env_drop"
-            placeholder={formatMessage({ id: 'envoverview.noEnv' })}
-            value={getTpEnvId || undefined}
-            disabled={getEnvcard && getEnvcard.length === 0}
-            onChange={this.handleEnvSelect}
-          >
-            {envOptions}
-          </Select>
-          <Permission
-            service={['devops-service.devops-customize-resource.createResource']}
-          >
-            <Tooltip title={formatMessage({ id: 'envoverview.envinfo' })}>
-              <Button
-                onClick={this.showSidebar.bind(this, 'create')}
-                disabled={!(envState && envState.length)}
-                icon="playlist_add"
-              >
-                <FormattedMessage id="resource.create.header" />
-              </Button>
-            </Tooltip>
-          </Permission>
-          <Button
-            onClick={this.handleRefresh}
-            icon="refresh"
-          >
-            <FormattedMessage id="refresh" />
-          </Button>
-        </Header>
-        <Content code="resource">
-          <Table
-            filterBarPlaceholder={formatMessage({ id: 'filter' })}
-            loading={getLoading}
-            onChange={this.tableChange}
-            pagination={getPageInfo}
-            columns={this.getColumns()}
-            dataSource={getResourceList}
-            rowKey={record => record.id}
-            filters={paras.slice()}
-          />
-        </Content>
-        {sidebarType === 'delete' && (
-          <Modal
-            confirmLoading={deleteLoading}
-            visible={sidebarType === 'delete'}
-            title={formatMessage({ id: 'resource.delete.header' }, { name })}
-            closable={false}
-            onOk={this.handleDelete}
-            onCancel={this.handClose.bind(this, false)}
-            okText={formatMessage({ id: 'delete' })}
-            okType="danger"
-          >
-            <div className="c7n-padding-top_8">
-              <FormattedMessage id="resource.delete.tips" />
-            </div>
-          </Modal>
-        )}
-        {(sidebarType === 'create' || sidebarType === 'edit') && (
-          <ResourceSidebar
-            id={id}
-            envId={getTpEnvId}
-            type={sidebarType}
-            store={ResourceStore}
-            visible={sidebarType === 'create' || sidebarType === 'edit'}
-            onClose={this.handClose}
-          />
-        )}
-        {sidebarType === 'view' && (
-          <ResourceDetail
-            id={id}
-            store={ResourceStore}
-            visible={sidebarType === 'view'}
-            onClose={this.handClose}
+        {hasEnv ? <Fragment>
+          <Header title={formatMessage({ id: 'resource.header' })}>
+            <Select
+              className={selectClass}
+              dropdownClassName="c7n-header-env_drop"
+              placeholder={formatMessage({ id: 'envoverview.noEnv' })}
+              value={getTpEnvId || undefined}
+              disabled={getEnvcard && getEnvcard.length === 0}
+              onChange={this.handleEnvSelect}
+            >
+              {envOptions}
+            </Select>
+            <Permission
+              service={['devops-service.devops-customize-resource.createResource']}
+            >
+              <Tooltip title={formatMessage({ id: 'envoverview.envinfo' })}>
+                <Button
+                  onClick={this.showSidebar.bind(this, 'create')}
+                  disabled={!(envState && envState.length)}
+                  icon="playlist_add"
+                >
+                  <FormattedMessage id="resource.create.header" />
+                </Button>
+              </Tooltip>
+            </Permission>
+            <Button
+              onClick={this.handleRefresh}
+              icon="refresh"
+            >
+              <FormattedMessage id="refresh" />
+            </Button>
+          </Header>
+          <Content code="resource">
+            <Table
+              filterBarPlaceholder={formatMessage({ id: 'filter' })}
+              loading={getLoading}
+              onChange={this.tableChange}
+              pagination={getPageInfo}
+              columns={this.getColumns()}
+              dataSource={getResourceList}
+              rowKey={record => record.id}
+              filters={paras.slice()}
+            />
+          </Content>
+          {sidebarType === 'delete' && (
+            <Modal
+              confirmLoading={deleteLoading}
+              visible={sidebarType === 'delete'}
+              title={formatMessage({ id: 'resource.delete.header' }, { name })}
+              closable={false}
+              onOk={this.handleDelete}
+              onCancel={this.handClose.bind(this, false)}
+              okText={formatMessage({ id: 'delete' })}
+              okType="danger"
+            >
+              <div className="c7n-padding-top_8">
+                <FormattedMessage id="resource.delete.tips" />
+              </div>
+            </Modal>
+          )}
+          {(sidebarType === 'create' || sidebarType === 'edit') && (
+            <ResourceSidebar
+              id={id}
+              envId={getTpEnvId}
+              type={sidebarType}
+              store={ResourceStore}
+              visible={sidebarType === 'create' || sidebarType === 'edit'}
+              onClose={this.handClose}
+            />
+          )}
+          {sidebarType === 'view' && (
+            <ResourceDetail
+              id={id}
+              store={ResourceStore}
+              visible={sidebarType === 'view'}
+              onClose={this.handClose}
+            />
+          )}
+        </Fragment> : (
+          <DepPipelineEmpty
+            title={<FormattedMessage id="resource.header" />}
+            type="env"
           />
         )}
       </Page>
