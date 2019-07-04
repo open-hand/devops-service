@@ -5,6 +5,7 @@ const commonField = {
   name: '名称',
   creator: '创建者',
   updateDate: '更新时间',
+  type: '类型',
 
   // 操作
   active: '启用',
@@ -496,6 +497,20 @@ const pageDetail = {
   'notification.edit.title': '修改项目"{name}"中的通知',
   'notification.edit.description': '您可在此修改该通知内的环境，触发事件，通知方式以及通知对象。',
   'notification.edit.link': `${docServer}/user-guide/system-configuration/project/devops-notifications`,
+
+  // 自定义资源
+  'resource.title': '项目"{name}"的自定义资源',
+  'resource.description': '此处的自定义资源不包含c7n平台中已有的实例、网络、域名、证书、配置映射和密文，即平台中已支持的资源类型将不能在此处进行创建。',
+  'resource.link': `${docServer}/user-guide/system-configuration/project/devops-notifications`,
+  'resource.create.title': '在项目"{name}"中创建自定义资源',
+  'resource.create.description': '您可在此上传或粘贴YMAL文件来创建自定义资源。',
+  'resource.create.link': `${docServer}/user-guide/system-configuration/project/devops-notifications`,
+  'resource.edit.title': '修改自定义资源"{name}"',
+  'resource.edit.description': '您可在此修改YMAL文件中的内容来修改自定义资源。',
+  'resource.edit.link': `${docServer}/user-guide/system-configuration/project/devops-notifications`,
+  'resource.view.title': '查看自定义资源"{name}"的详情',
+  'resource.view.description': '您可在此查看资源详情。',
+  'resource.view.link': `${docServer}/user-guide/system-configuration/project/devops-notifications`,
 };
 
 const zhCN = {
@@ -1903,6 +1918,21 @@ const zhCN = {
   'notification.target.specifier': '指定用户',
   'notification.event.tips': '所选环境中的此事件已有通知设置',
   'notification.env.select': '选择环境',
+
+  // 自定义资源
+  'resource.header': '自定义资源',
+  'resource.create.header': '创建自定义资源',
+  'resource.edit.header': '修改自定义资源',
+  'resource.delete.header': '删除自定义资源"{name}"',
+  'resource.view.header': '查看资源详情',
+  'resource.create.tips': '平台中已支持的资源类型将不能在此处进行创建',
+  'resource.delete.tips': '确定要删除该自定义资源吗？',
+  'resource.add': '添加YAML文件',
+  'resource.mode': '选择添加模式',
+  'resource.mode.paste': '粘贴文件内容添加',
+  'resource.mode.upload': '直接上传文件添加',
+  'resource.required': '请上传YAML文件',
+  'resource.one.file': '仅能上传一个文件',
 
   ...pageDetail,
 };
