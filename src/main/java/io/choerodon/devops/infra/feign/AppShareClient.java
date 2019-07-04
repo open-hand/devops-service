@@ -23,9 +23,8 @@ import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
  */
 public interface AppShareClient {
 
-    @POST("v1/public/app_shares/by_token/{access_token}")
-    Call<PageInfo<ApplicationReleasingDTO>> getAppShares(@Path("access_token") String accessToken,
-                                                         @QueryMap Map<String, Object> map);
+    @POST("v1/public/app_shares/by_token")
+    Call<PageInfo<ApplicationReleasingDTO>> getAppShares(@QueryMap Map<String, Object> map);
 
     @POST("v1/public/app_shares/{app_id}/list_versions")
     Call<PageInfo<ApplicationVersionRepDTO>> listVersionByAppId(@Path("app_id") Long appId,

@@ -51,6 +51,7 @@ public interface AppShareService {
      */
     PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(
             Boolean isSite,
+            Boolean isFree,
             PageRequest pageRequest,
             String searchParam);
 

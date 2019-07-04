@@ -345,9 +345,9 @@
 
     <select id="listMarketAppsBySite" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
         SELECT
-            dam.*, da.`name`,da.code
+        dam.*, da.`name`,da.code
         FROM
-            devops_app_share dam
+        devops_app_share dam
         JOIN devops_application da ON da.id = dam.app_id
         WHERE
         <choose>
@@ -358,6 +358,28 @@
                 dam.publish_level = 'organization'
             </otherwise>
         </choose>
+        <if test='isFree != null'>
+            and dam.is_free=#{isFree}
+        </if>
+        <if test='searchParam != null'>
+            <if test='searchParam.code != null and searchParam.code.size > 0'>
+                AND
+                <foreach collection="searchParam.code" item="code">
+                    da.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.name != null and searchParam.name.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name">
+                    da.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
     </select>
 
     <update id="updatePublishLevel">

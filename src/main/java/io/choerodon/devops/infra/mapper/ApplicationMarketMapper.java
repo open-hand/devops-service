@@ -18,6 +18,7 @@ public interface ApplicationMarketMapper extends Mapper<DevopsAppShareDO> {
                                                           @Param("param") String param);
 
     List<DevopsAppShareDO> listMarketAppsBySite(@Param("isSite") Boolean isSite,
+                                                @Param("isFree") Boolean isFree,
                                                 @Param("searchParam") Map<String, Object> searchParam,
                                                 @Param("param") String param);
 

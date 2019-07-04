@@ -17,7 +17,7 @@ public interface AppShareRepository {
 
     PageInfo<DevopsAppShareE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam);
 
-    PageInfo<DevopsAppShareE> listMarketAppsBySite(Boolean isSite, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsAppShareE> listMarketAppsBySite(Boolean isSite, Boolean isFree, PageRequest pageRequest, String searchParam);
 
     PageInfo<DevopsAppShareE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam);
 
