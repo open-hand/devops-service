@@ -184,11 +184,11 @@ public class IamRepositoryImpl implements IamRepository {
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
         List<Long> memberIds =
-                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), memberId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(1,0), new RoleAssignmentSearchDTO(), memberId,
                         projectId, false).getList().stream().map(UserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         List<Long> ownerIds =
-                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), ownerId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(1,0), new RoleAssignmentSearchDTO(), ownerId,
                         projectId, false).getList().stream().map(UserDTO::getId).collect(Collectors.toList());
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
     }
@@ -200,11 +200,11 @@ public class IamRepositoryImpl implements IamRepository {
         // 获取项目所有者id
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
-        List<UserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), memberId,
+        List<UserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(1,0), new RoleAssignmentSearchDTO(), memberId,
                 projectId, false).getList();
         List<Long> memberIds = list.stream().filter(userDTO -> userDTO.getEnabled()).map(UserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
-        this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), ownerId,
+        this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(1,0), new RoleAssignmentSearchDTO(), ownerId,
                 projectId, false).getList().stream().filter(userDTO -> userDTO.getEnabled()).forEach(t -> {
             if (!memberIds.contains(t.getId())) {
                 list.add(t);

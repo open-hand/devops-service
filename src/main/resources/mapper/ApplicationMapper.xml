@@ -67,7 +67,7 @@
         devops_application da
         JOIN devops_app_instance dai ON dai.app_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
-        left join devops_app_market dam on dam.app_id = da.id
+        left join devops_app_share dam on dam.app_id = da.id
         WHERE
         de.project_id = #{projectId}
         AND de.id = #{envId}
@@ -99,7 +99,7 @@
         JOIN devops_app_instance dai ON dai.app_id = da.id
         AND dai.`status` != 'deleted'
         JOIN devops_env de ON dai.env_id = de.id
-        LEFT JOIN devops_app_market dam ON dam.app_id = da.id
+        LEFT JOIN devops_app_share dam ON dam.app_id = da.id
         WHERE
         da.is_active
         AND de.project_id = #{projectId}
@@ -171,7 +171,7 @@
         WHERE
         da.project_id = #{projectId}
         AND da.is_active = #{active}
-        AND ((select count(1) from devops_app_market dam where da.id=dam.app_id)=0)
+        AND ((select count(1) from devops_app_share dam where da.id=dam.app_id)=0)
         AND ((select count(1) from devops_app_version dav where da.id=dav.app_id)>0)
         AND da.type = 'normal'
         <include refid="sqlparam"/>
@@ -204,7 +204,7 @@
         FROM
         devops_application da
         WHERE
-        NOT EXISTS ( SELECT 1 FROM devops_app_market dam WHERE dam.app_id = da.id )
+        NOT EXISTS ( SELECT 1 FROM devops_app_share dam WHERE dam.app_id = da.id )
         AND NOT EXISTS ( SELECT 1 FROM devops_app_instance dai JOIN devops_app_version dav ON dav.id =
         dai.app_version_id WHERE dai.`status` != 'deleted' AND dav.app_id = da.id )
         AND da.id = #{applicationId}
@@ -216,7 +216,7 @@
         da.project_id
         FROM
         devops_application da
-        JOIN devops_app_market dam ON da.id = dam.app_id
+        JOIN devops_app_share dam ON da.id = dam.app_id
         WHERE
         da.code = #{code}
     </select>

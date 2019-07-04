@@ -1,6 +1,12 @@
 package io.choerodon.devops.infra.dataobject;
 
-import javax.persistence.*;
+
+import java.util.Date;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
@@ -22,6 +28,7 @@ public class ApplicationVersionDO extends BaseDTO {
     private String commit;
     private String repository;
     private Long isPublish;
+    private Date publishTime;
 
     @Transient
     private String appName;
@@ -29,6 +36,14 @@ public class ApplicationVersionDO extends BaseDTO {
     private String appCode;
     @Transient
     private Boolean appStatus;
+
+    public Date getPublishTime() {
+        return publishTime;
+    }
+
+    public void setPublishTime(Date publishTime) {
+        this.publishTime = publishTime;
+    }
 
     public Long getId() {
         return id;

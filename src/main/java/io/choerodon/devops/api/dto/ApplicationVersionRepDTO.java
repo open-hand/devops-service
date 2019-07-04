@@ -14,7 +14,16 @@ public class ApplicationVersionRepDTO implements Serializable {
     private Long appId;
     private Boolean appStatus;
     private Date creationDate;
+    private Date publishTime;
     private Boolean permission;
+
+    public Date getPublishTime() {
+        return publishTime;
+    }
+
+    public void setPublishTime(Date publishTime) {
+        this.publishTime = publishTime;
+    }
 
     public Long getId() {
         return id;

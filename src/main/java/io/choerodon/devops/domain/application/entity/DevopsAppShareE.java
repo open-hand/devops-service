@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Scope("prototype")
-public class ApplicationMarketE {
+public class DevopsAppShareE {
 
     private Long id;
     private ApplicationE applicationE;
@@ -21,12 +21,30 @@ public class ApplicationMarketE {
     private String description;
     private Boolean isDeployed;
     private Date marketUpdatedDate;
+    private Boolean isFree;
+    private Boolean isSite;
 
-    public ApplicationMarketE() {
+    public DevopsAppShareE() {
 
     }
 
-    public ApplicationMarketE(Long id) {
+    public Boolean getSite() {
+        return isSite;
+    }
+
+    public void setSite(Boolean site) {
+        isSite = site;
+    }
+
+    public Boolean getFree() {
+        return isFree;
+    }
+
+    public void setFree(Boolean free) {
+        isFree = free;
+    }
+
+    public DevopsAppShareE(Long id) {
         this.id = id;
     }
 

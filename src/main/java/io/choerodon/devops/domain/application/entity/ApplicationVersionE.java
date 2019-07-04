@@ -19,11 +19,20 @@ public class ApplicationVersionE {
     private ApplicationE applicationE;
     private String repository;
     private Long isPublish;
+    private Date publishTime;
     private ApplicationVersionValueE applicationVersionValueE;
     private ApplicationVersionReadmeV applicationVersionReadmeV;
 
     public ApplicationVersionE() {
 
+    }
+
+    public Date getPublishTime() {
+        return publishTime;
+    }
+
+    public void setPublishTime(Date publishTime) {
+        this.publishTime = publishTime;
     }
 
     public ApplicationVersionE(Long id) {

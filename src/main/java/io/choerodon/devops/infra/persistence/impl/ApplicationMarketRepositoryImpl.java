@@ -1,7 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -9,32 +8,31 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
-import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
+import io.choerodon.devops.domain.application.entity.DevopsAppShareE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
+import io.choerodon.devops.domain.application.repository.AppShareRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
+import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
 import io.choerodon.devops.infra.mapper.ApplicationMarketMapper;
 
 /**
  * Created by ernst on 2018/3/28.
  */
 @Service
-public class ApplicationMarketRepositoryImpl implements ApplicationMarketRepository {
+public class ApplicationMarketRepositoryImpl implements AppShareRepository {
 
     private JSON json = new JSON();
 
@@ -48,51 +46,68 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
 
     @Override
-    public void create(ApplicationMarketE applicationMarketE) {
-        DevopsAppMarketDO devopsAppMarketDO = ConvertHelper.convert(applicationMarketE, DevopsAppMarketDO.class);
-        applicationMarketMapper.insert(devopsAppMarketDO);
+    public DevopsAppShareE createOrUpdate(DevopsAppShareE applicationMarketE) {
+        DevopsAppShareDO devopsAppShareDO = ConvertHelper.convert(applicationMarketE, DevopsAppShareDO.class);
+        if (devopsAppShareDO.getId() == null) {
+            applicationMarketMapper.insert(devopsAppShareDO);
+        } else {
+            devopsAppShareDO.setObjectVersionNumber(applicationMarketMapper.selectByPrimaryKey(devopsAppShareDO).getObjectVersionNumber());
+            applicationMarketMapper.updateByPrimaryKeySelective(devopsAppShareDO);
+        }
+        return ConvertHelper.convert(devopsAppShareDO, DevopsAppShareE.class);
     }
 
     @Override
-    public PageInfo<ApplicationMarketE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam) {
-        PageInfo<DevopsAppMarketDO> applicationMarketQueryDOPage;
+    public PageInfo<DevopsAppShareE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam) {
+        PageInfo<DevopsAppShareDO> applicationMarketQueryDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             applicationMarketQueryDOPage = PageHelper.startPage(
-                    pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMarketMapper.listMarketApplicationInProject(
-                            projectId,
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMarketMapper.listMarketApplicationInProject(
+                    projectId,
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
         } else {
             applicationMarketQueryDOPage = PageHelper.startPage(
-                    pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> applicationMarketMapper.listMarketApplicationInProject(projectId, null, null));
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMarketMapper.listMarketApplicationInProject(projectId, null, null));
         }
-        return ConvertPageHelper.convertPageInfo(applicationMarketQueryDOPage, ApplicationMarketE.class);
+        return ConvertPageHelper.convertPageInfo(applicationMarketQueryDOPage, DevopsAppShareE.class);
     }
 
     @Override
-    public PageInfo<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam) {
-        PageInfo<DevopsAppMarketDO> applicationMarketQueryDOPage;
+    public PageInfo<DevopsAppShareE> listMarketAppsBySite(Boolean isSite, PageRequest pageRequest, String searchParam) {
+
+        Map<String, Object> mapParams = TypeUtil.castMapParams(searchParam);
+
+        PageInfo<DevopsAppShareDO> appShareDOPageInfo = PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+                        applicationMarketMapper.listMarketAppsBySite(isSite, (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM)));
+        return ConvertPageHelper.convertPageInfo(appShareDOPageInfo, DevopsAppShareE.class);
+    }
+
+    @Override
+    public PageInfo<DevopsAppShareE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam) {
+        PageInfo<DevopsAppShareDO> applicationMarketQueryDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             applicationMarketQueryDOPage = PageHelper.startPage(
-                    pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> applicationMarketMapper.listMarketApplication(
-                            projectIds,
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMarketMapper.listMarketApplication(
+                    projectIds,
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
         } else {
             applicationMarketQueryDOPage = PageHelper.startPage(
-                    pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> applicationMarketMapper.listMarketApplication(projectIds, null, null));
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMarketMapper.listMarketApplication(projectIds, null, null));
         }
-        return ConvertPageHelper.convertPageInfo(applicationMarketQueryDOPage, ApplicationMarketE.class);
+        return ConvertPageHelper.convertPageInfo(applicationMarketQueryDOPage, DevopsAppShareE.class);
     }
 
     @Override
-    public ApplicationMarketE getMarket(Long projectId, Long appMarketId) {
+    public DevopsAppShareE getMarket(Long projectId, Long appMarketId) {
         List<Long> projectIds = getProjectIds(projectId);
         return ConvertHelper.convert(
                 applicationMarketMapper.getMarketApplication(projectId, appMarketId, projectIds),
-                ApplicationMarketE.class);
+                DevopsAppShareE.class);
     }
 
     @Override
@@ -141,10 +156,12 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     }
 
     @Override
-    public void update(DevopsAppMarketDO devopsAppMarketDO) {
-        devopsAppMarketDO.setObjectVersionNumber(
-                applicationMarketMapper.selectByPrimaryKey(devopsAppMarketDO.getId()).getObjectVersionNumber());
-        applicationMarketMapper.updateByPrimaryKeySelective(devopsAppMarketDO);
+    public void update(DevopsAppShareDO devopsAppShareDO) {
+        devopsAppShareDO.setObjectVersionNumber(
+                applicationMarketMapper.selectByPrimaryKey(devopsAppShareDO.getId()).getObjectVersionNumber());
+        if (applicationMarketMapper.updateByPrimaryKeySelective(devopsAppShareDO) != 1) {
+            throw new CommonException("error.update.share.application");
+        }
     }
 
     @Override
@@ -155,7 +172,7 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public PageInfo<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish,
-                                                      PageRequest pageRequest, String params) {
+                                                          PageRequest pageRequest, String params) {
         Sort sort = pageRequest.getSort();
         String sortResult = "";
         if (sort != null) {
@@ -185,17 +202,17 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         Map<String, Object> finalSearchParam = searchParam;
         String finalParam = param;
         List<Long> projectIds = getProjectIds(projectId);
-        return PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(),sortResult).doSelectPageInfo(
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(
                 () -> applicationMarketMapper.listAppVersions(
                         projectIds, appMarketId, isPublish,
                         finalSearchParam, finalParam));
     }
 
     @Override
-    public ApplicationMarketE queryByAppId(Long appId) {
-        DevopsAppMarketDO applicationMarketDO = new DevopsAppMarketDO();
+    public DevopsAppShareE queryByAppId(Long appId) {
+        DevopsAppShareDO applicationMarketDO = new DevopsAppShareDO();
         applicationMarketDO.setAppId(appId);
-        return ConvertHelper.convert(applicationMarketMapper.selectOne(applicationMarketDO), ApplicationMarketE.class);
+        return ConvertHelper.convert(applicationMarketMapper.selectOne(applicationMarketDO), DevopsAppShareE.class);
     }
 
     @Override
@@ -217,5 +234,18 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
             projectIds = null;
         }
         return projectIds;
+    }
+
+    @Override
+    public PageInfo<DevopsAppShareE> queryByShareIds(PageRequest pageRequest, String param, List<Long> shareIds) {
+        Map<String, Object> mapParams = TypeUtil.castMapParams(param);
+        PageInfo<DevopsAppShareDO> doPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
+                () -> applicationMarketMapper.queryByShareIds((Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM), shareIds));
+        return ConvertPageHelper.convertPageInfo(doPageInfo, DevopsAppShareE.class);
+    }
+
+    @Override
+    public void updatePublishLevel() {
+        applicationMarketMapper.updatePublishLevel();
     }
 }

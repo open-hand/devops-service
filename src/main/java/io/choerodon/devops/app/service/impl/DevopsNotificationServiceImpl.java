@@ -248,7 +248,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         } else if (devopsNotificationE.getNotifyObject().equals(TriggerObject.OWNER.getObject())) {
             Long ownerId = iamRepository.queryRoleIdByCode(PROJECT_OWNER);
             PageInfo<UserDTO> allOwnerUsersPage = iamRepository
-                    .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(),
+                    .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(1,0), new RoleAssignmentSearchDTO(),
                             ownerId, devopsEnvironmentE.getProjectE().getId(), false);
             List<NoticeSendDTO.User> users = new ArrayList<>();
             if (!allOwnerUsersPage.getList().isEmpty()) {

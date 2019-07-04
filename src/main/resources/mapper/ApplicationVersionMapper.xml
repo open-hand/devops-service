@@ -57,7 +57,7 @@
         dappv.app_id
         ) lv ON lv.id = dap.id
         JOIN devops_application da ON lv.app_id = da.id
-        LEFT JOIN devops_app_market dam on dam.app_id = da.id
+        LEFT JOIN devops_app_share dam on dam.app_id = da.id
         WHERE
         da.project_id = #{projectId}
         OR (
@@ -136,7 +136,9 @@
     <select id="selectByAppIdAndParamWithPage" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
         SELECT
         dav.id,
-        dav.version
+        dav.version,
+        dav.publish_time,
+        dav.creation_date
         FROM
         devops_app_version dav
         WHERE
@@ -282,9 +284,15 @@
      update devops_app_version set repository = CONCAT(#{helmUrl},repository);
     </update>
 
-
     <update id="updateObJectVersionNumber">
      update devops_app_version set object_version_number = 1 where id = #{versionId};
+    </update>
+
+    <update id="updatePublishTime">
+        UPDATE devops_app_version dav
+        SET dav.publish_time = dav.last_update_date
+        WHERE
+            dav.is_publish = 1
     </update>
 
 </mapper>

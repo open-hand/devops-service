@@ -152,7 +152,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private SagaClient sagaClient;
     @Autowired
-    private ApplicationMarketRepository applicationMarketRepository;
+    private AppShareRepository applicationMarketRepository;
     @Autowired
     private AppUserPermissionRepository appUserPermissionRepository;
     @Autowired
@@ -993,7 +993,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             ApplicationE applicationE = applicationRepository.query(appId);
             ApplicationCodeDTO applicationCodeDTO = new ApplicationCodeDTO();
             BeanUtils.copyProperties(applicationE, applicationCodeDTO);
-            ApplicationMarketE applicationMarketE = applicationMarketRepository.queryByAppId(appId);
+            DevopsAppShareE applicationMarketE = applicationMarketRepository.queryByAppId(appId);
             if (applicationMarketE != null) {
                 applicationCodeDTO.setPublishLevel(applicationMarketE.getPublishLevel());
                 applicationCodeDTO.setContributor(applicationMarketE.getContributor());

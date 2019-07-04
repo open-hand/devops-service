@@ -20,4 +20,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project_config.groovy') {
         addUniqueConstraint(tableName: 'devops_project_config',
                 constraintName: 'uk_project_name', columnNames: 'project_id,name')
     }
+
+    changeSet(author: 'scp', id: '2019-07-03-modify-column-type') {
+        modifyDataType(tableName: 'devops_project_config', columnName: 'name', newDataType: 'VARCHAR(80)')
+
+    }
+
 }

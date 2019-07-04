@@ -3,16 +3,22 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.core.domain.Page;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
+import io.choerodon.devops.api.dto.AccessTokenDTO;
+import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
+import io.choerodon.devops.api.dto.AppMarketTgzDTO;
+import io.choerodon.devops.api.dto.AppMarketVersionDTO;
+import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
+import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
+import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 
 /**
  * Created by ernst on 2018/5/12.
  */
-public interface ApplicationMarketService {
+public interface AppShareService {
 
     /**
      * 项目下发布应用
@@ -35,6 +41,31 @@ public interface ApplicationMarketService {
             Long projectId,
             PageRequest pageRequest,
             String searchParam);
+
+    /**
+     * 平台下查询所有发布在平台层的应用
+     *
+     * @param pageRequest 分页参数
+     * @param searchParam 模糊查询参数
+     * @return list of ApplicationReleasingDTO
+     */
+    PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(
+            Boolean isSite,
+            PageRequest pageRequest,
+            String searchParam);
+
+    ApplicationReleasingDTO getAppDetailByShareId(Long shareId);
+
+    List<Long> batchRelease(List<ApplicationReleasingDTO> releasingDTOList);
+
+
+    PageInfo<ApplicationReleasingDTO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds);
+
+    PageInfo<ApplicationVersionRepDTO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params);
+
+    AppVersionAndValueDTO getValuesAndChart(Long versionId);
+
+    void updateByShareId(Long shareId, Boolean idFree);
 
     /**
      * 查询发布级别为全局或者在本组织下的所有应用市场的应用
@@ -71,7 +102,7 @@ public interface ApplicationMarketService {
     List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish);
 
     PageInfo<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish,
-                                             PageRequest pageRequest, String searchParam);
+                                                 PageRequest pageRequest, String searchParam);
 
     AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file);
 
@@ -85,4 +116,14 @@ public interface ApplicationMarketService {
      * @param appMarkets 应用市场应用信息
      */
     void export(List<AppMarketDownloadDTO> appMarkets, String fileName);
+
+    PageInfo<ApplicationReleasingDTO> pageListRemoteApps(Long projectId, PageRequest pageRequest, String params);
+
+    PageInfo<ApplicationVersionRepDTO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params);
+
+    AppVersionAndValueDTO getConfigInfoByVerionId(Long appId, Long versionId, String accessToken);
+
+    AccessTokenCheckResultDTO checkToken(AccessTokenDTO tokenDTO);
+
+    void saveToken(AccessTokenDTO tokenDTO);
 }

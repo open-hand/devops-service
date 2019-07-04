@@ -584,7 +584,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         List<Long> userIds = gitlabProjectPayload.getUserIds();
         // 获取项目下所有项目成员
-        PageInfo<UserDTO> allProjectMemberPage = getMembersFromProject(new PageRequest(), projectId, "");
+        PageInfo<UserDTO> allProjectMemberPage = getMembersFromProject(new PageRequest(1,0), projectId, "");
         // 所有项目成员中有权限的
         if (userIds != null && !userIds.isEmpty()) {
             allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
@@ -712,7 +712,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Long memberId = iamRepository.queryRoleIdByCode(PROJECT_MEMBER);
         // 所有项目成员，可能还带有项目所有者的角色，需要过滤
         PageInfo<UserDTO> allMemberWithOtherUsersPage = iamRepository
-                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), roleAssignmentSearchDTO,
+                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(1,0), roleAssignmentSearchDTO,
                         memberId, projectId, false);
         // 如果项目成员查出来为空，则直接返回空列表
         if (allMemberWithOtherUsersPage.getList().isEmpty()) {
@@ -720,7 +720,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         // 所有项目所有者
         PageInfo<UserDTO> allOwnerUsersPage = iamRepository
-                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), roleAssignmentSearchDTO,
+                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(1,0), roleAssignmentSearchDTO,
                         ownerId, projectId, false);
         // 如果项目所有者查出来为空，则返回之前的项目成员列表
         if (allOwnerUsersPage.getList().isEmpty()) {

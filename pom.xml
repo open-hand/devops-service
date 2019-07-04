@@ -17,7 +17,7 @@
 
 
     <properties>
-        <choerodon.starters.version>0.11.0.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.11.2.RELEASE</choerodon.starters.version>
         <!--use powermock-->
         <powermock.version>2.0.0-beta.5</powermock.version>
         <choerodon.serviceBuild>true</choerodon.serviceBuild>
@@ -231,6 +231,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>logging-interceptor</artifactId>
+            <version>3.7.0</version>
         </dependency>
 
         <!--use powermock-->

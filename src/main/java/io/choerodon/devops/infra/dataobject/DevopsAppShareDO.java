@@ -10,8 +10,8 @@ import io.choerodon.mybatis.entity.BaseDTO;
 /**
  * Created by ernst on 2018/5/12.
  */
-@Table(name = "devops_app_market")
-public class DevopsAppMarketDO extends BaseDTO {
+@Table(name = "devops_app_share")
+public class DevopsAppShareDO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +23,8 @@ public class DevopsAppMarketDO extends BaseDTO {
     private String imgUrl;
     private String publishLevel;
     private Boolean isActive;
+    private Boolean isFree;
+    private Boolean isSite;
 
     @Transient
     private String name;
@@ -38,6 +40,14 @@ public class DevopsAppMarketDO extends BaseDTO {
     private Date appUpdatedDate;
     @Transient
     private Date marketUpdatedDate;
+
+    public Boolean getSite() {
+        return isSite;
+    }
+
+    public void setSite(Boolean site) {
+        isSite = site;
+    }
 
     public Long getId() {
         return id;
@@ -159,6 +169,14 @@ public class DevopsAppMarketDO extends BaseDTO {
         this.marketUpdatedDate = marketUpdatedDate;
     }
 
+    public Boolean getFree() {
+        return isFree;
+    }
+
+    public void setFree(Boolean free) {
+        isFree = free;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -167,7 +185,7 @@ public class DevopsAppMarketDO extends BaseDTO {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DevopsAppMarketDO that = (DevopsAppMarketDO) o;
+        DevopsAppShareDO that = (DevopsAppShareDO) o;
         return Objects.equals(id, that.id)
                 && Objects.equals(appId, that.appId)
                 && Objects.equals(contributor, that.contributor)

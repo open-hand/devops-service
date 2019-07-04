@@ -22,6 +22,33 @@ public class ApplicationReleasingDTO {
     private String readme;
     private Date lastUpdatedDate;
     private Boolean isDeployed;
+    private Boolean isFree;
+    private List<ProjectDTO> projectDTOS;
+    private Boolean isSite;
+
+    public Boolean getSite() {
+        return isSite;
+    }
+
+    public void setSite(Boolean site) {
+        isSite = site;
+    }
+
+    public Boolean getFree() {
+        return isFree;
+    }
+
+    public void setFree(Boolean free) {
+        isFree = free;
+    }
+
+    public List<ProjectDTO> getProjectDTOS() {
+        return projectDTOS;
+    }
+
+    public void setProjectDTOS(List<ProjectDTO> projectDTOS) {
+        this.projectDTOS = projectDTOS;
+    }
 
     public Long getId() {
         return id;

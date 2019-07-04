@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -65,7 +66,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         if (applicationVersionMapper.insert(applicationVersionDO) != 1) {
             throw new CommonException("error.version.insert");
         }
-        return ConvertHelper.convert(applicationVersionMapper.selectOne(applicationVersionDO), ApplicationVersionE.class);
+        return ConvertHelper.convert(applicationVersionDO, ApplicationVersionE.class);
     }
 
     @Override
@@ -142,6 +143,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
             applicationVersionDO.setId(id);
             applicationVersionDO.setObjectVersionNumber(applicationVersionMapper.selectByPrimaryKey(id).getObjectVersionNumber());
             if (applicationVersionDO.getObjectVersionNumber() == null) {
+                applicationVersionDO.setPublishTime(new java.sql.Date(new java.util.Date().getTime()));
                 applicationVersionMapper.updateObJectVersionNumber(id);
                 applicationVersionDO.setObjectVersionNumber(1L);
             }
@@ -294,5 +296,10 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         applicationVersionDO.setAppId(appId);
         applicationVersionDO.setVersion(appVersion);
         return ConvertHelper.convert(applicationVersionMapper.selectOne(applicationVersionDO), ApplicationVersionE.class);
+    }
+
+    @Override
+    public void updatePublishTime() {
+        applicationVersionMapper.updatePublishTime();
     }
 }

@@ -1,22 +1,16 @@
 package io.choerodon.devops.api.dto;
 
-public class ProjectDTO {
-
+/**
+ * Creator: ChangpingShi0213@gmail.com
+ * Date:  10:49 2019/7/3
+ * Description:
+ */
+public class ApplicationRemoteDTO {
     private Long id;
     private String name;
     private String code;
-    private Boolean permission;
-
-
-    public ProjectDTO(Long id, String name, String code, Boolean permission) {
-        this.id = id;
-        this.name = name;
-        this.code = code;
-        this.permission = permission;
-    }
-
-    public ProjectDTO() {
-    }
+    private Long projectId;
+    private String type;
 
     public Long getId() {
         return id;
@@ -34,14 +28,6 @@ public class ProjectDTO {
         this.name = name;
     }
 
-    public Boolean getPermission() {
-        return permission;
-    }
-
-    public void setPermission(Boolean permission) {
-        this.permission = permission;
-    }
-
     public String getCode() {
         return code;
     }
@@ -50,4 +36,19 @@ public class ProjectDTO {
         this.code = code;
     }
 
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 }

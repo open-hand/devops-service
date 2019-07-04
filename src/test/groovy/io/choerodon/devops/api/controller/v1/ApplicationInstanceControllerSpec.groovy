@@ -34,7 +34,6 @@ import io.choerodon.devops.infra.mapper.*
 import io.choerodon.websocket.Msg
 import io.choerodon.websocket.helper.CommandSender
 import io.choerodon.websocket.helper.EnvListener
-import io.choerodon.websocket.helper.EnvSession
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -119,7 +118,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Shared
     DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
     @Shared
-    DevopsAppMarketDO devopsAppMarketDO = new DevopsAppMarketDO()
+    DevopsAppShareDO devopsAppMarketDO = new DevopsAppShareDO()
     @Shared
     DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO()
     @Shared
@@ -1098,9 +1097,9 @@ class ApplicationInstanceControllerSpec extends Specification {
             }
         }
         // 删除appMarket
-        List<DevopsAppMarketDO> list1 = applicationMarketMapper.selectAll()
+        List<DevopsAppShareDO> list1 = applicationMarketMapper.selectAll()
         if (list1 != null && !list1.isEmpty()) {
-            for (DevopsAppMarketDO e : list1) {
+            for (DevopsAppShareDO e : list1) {
                 applicationMarketMapper.delete(e)
             }
         }
@@ -1112,9 +1111,9 @@ class ApplicationInstanceControllerSpec extends Specification {
             }
         }
         // 删除appMarket
-        List<DevopsAppMarketDO> list3 = applicationMarketMapper.selectAll()
+        List<DevopsAppShareDO> list3 = applicationMarketMapper.selectAll()
         if (list3 != null && !list3.isEmpty()) {
-            for (DevopsAppMarketDO e : list3) {
+            for (DevopsAppShareDO e : list3) {
                 applicationMarketMapper.delete(e)
             }
         }

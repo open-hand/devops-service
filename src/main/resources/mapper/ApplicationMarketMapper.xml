@@ -117,7 +117,7 @@
         </if>
     </sql>
 
-    <select id="listMarketApplicationInProject" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
+    <select id="listMarketApplicationInProject" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
         SELECT
         dam.id,
         dam.app_id,
@@ -130,14 +130,14 @@
         dam.publish_level
         FROM
         devops_application da
-        JOIN devops_app_market dam ON da.id = dam.app_id
+        JOIN devops_app_share dam ON da.id = dam.app_id
         AND dam.is_active = 1
         WHERE
         da.project_id = #{projectId}
         <include refid="sqlparam"/>
     </select>
 
-    <select id="listMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
+    <select id="listMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
         select dam.id,
         dam.app_id,
         da.name,
@@ -147,7 +147,7 @@
         dam.description,
         dam.category,
         dam.contributor
-        from devops_app_market dam,devops_application da
+        from devops_app_share dam,devops_application da
         WHERE
         da.id = dam.app_id
         AND ( dam.publish_level = 'public' OR ( dam.publish_level = 'organization' AND da.project_id IN
@@ -158,7 +158,27 @@
         <include refid="nameOrCateParamSql"/>
     </select>
 
-    <select id="getMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
+    <select id="queryByShareIds" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
+        select dam.id,
+        dam.app_id,
+        da.name,
+        da.code,
+        dam.publish_level,
+        dam.img_url,
+        dam.description,
+        dam.category,
+        dam.contributor
+        from devops_app_share dam,devops_application da
+        WHERE
+        da.id = dam.app_id
+        AND dam.id IN
+        <foreach collection="shareIds" item="shareId" open="(" separator="," close=")">
+            #{shareId}
+        </foreach>
+        <include refid="nameOrCateParamSql"/>
+    </select>
+
+    <select id="getMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
         SELECT
         dam.id,
         dam.app_id,
@@ -170,6 +190,7 @@
         dam.category,
         dam.img_url,
         dam.publish_level,
+        dam.is_free,
         EXISTS (
         SELECT
         1
@@ -188,7 +209,7 @@
         ) is_deployed
         FROM
         devops_application da
-        JOIN devops_app_market dam ON da.id = dam.app_id
+        JOIN devops_app_share dam ON da.id = dam.app_id
         AND dam.is_active = 1
         WHERE
         dam.id = #{appMarketId}
@@ -201,7 +222,7 @@
         SELECT
         count(1)
         FROM
-        devops_app_market dam
+        devops_app_share dam
         WHERE
         dam.app_id = #{appId}
         AND dam.is_active=1
@@ -211,7 +232,7 @@
         SELECT
         dam.id
         FROM
-        devops_app_market dam
+        devops_app_share dam
         WHERE
         dam.app_id = #{appId}
     </select>
@@ -220,7 +241,7 @@
         SELECT
         count( 1 )
         FROM
-        devops_app_market dam
+        devops_app_share dam
         JOIN devops_application da ON da.id = dam.app_id
         WHERE
         dam.id = #{appMarketId}
@@ -230,7 +251,7 @@
         SELECT
         count( 1 )
         FROM
-        devops_app_market dam
+        devops_app_share dam
         JOIN devops_app_instance dai ON dai.app_id = dam.app_id
         JOIN devops_application da ON da.id = dam.app_id
         JOIN devops_env de ON de.id = dai.env_id
@@ -249,11 +270,11 @@
         AND da.project_id = #{projectId}
     </select>
 
-    <update id="changeApplicationVersions" parameterType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
+    <update id="changeApplicationVersions" parameterType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
         UPDATE devops_app_version dav
         SET dav.is_publish = #{isPublish}
         WHERE
-        dav.app_id IN ( SELECT dam.app_id FROM devops_app_market dam WHERE dam.id = #{appMarketId} )
+        dav.app_id IN ( SELECT dam.app_id FROM devops_app_share dam WHERE dam.id = #{appMarketId} )
         <if test='versionId != null'>
             AND dav.id = #{versionId}
         </if>
@@ -268,7 +289,7 @@
         dav.is_publish
         FROM
         devops_app_version dav
-        JOIN devops_app_market dam ON dam.app_id = dav.app_id
+        JOIN devops_app_share dam ON dam.app_id = dav.app_id
         JOIN devops_application da ON da.id = dam.app_id
         WHERE
         dam.id = #{appMarketId}
@@ -314,11 +335,35 @@
         SELECT
         count( 0 ) = 1 exist
         FROM
-        devops_app_market dam
+        devops_app_share dam
         JOIN devops_app_version dav ON dav.app_id = dam.app_id
         WHERE
         dav.id = #{versionId}
         AND dam.id = #{appMarketId}
         AND dav.is_publish = TRUE
     </select>
+
+    <select id="listMarketAppsBySite" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
+        SELECT
+            dam.*, da.`name`,da.code
+        FROM
+            devops_app_share dam
+        JOIN devops_application da ON da.id = dam.app_id
+        WHERE
+        <choose>
+            <when test="isSite != null and isSite==true">
+                dam.is_site = 1
+            </when>
+            <otherwise>
+                dam.publish_level = 'organization'
+            </otherwise>
+        </choose>
+    </select>
+
+    <update id="updatePublishLevel">
+        UPDATE devops_app_share das
+        SET das.publish_level = 'organization'
+        WHERE
+            das.publish_level = 'public'
+    </update>
 </mapper>

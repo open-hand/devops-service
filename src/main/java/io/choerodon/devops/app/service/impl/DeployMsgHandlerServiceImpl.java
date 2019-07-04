@@ -111,7 +111,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Autowired
     private ApplicationMarketMapper applicationMarketMapper;
     @Autowired
-    private ApplicationMarketRepository applicationMarketRepository;
+    private AppShareRepository applicationMarketRepository;
     @Autowired
     private DevopsCommandEventRepository devopsCommandEventRepository;
     @Autowired
@@ -1177,7 +1177,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         if (!applicationES.isEmpty()) {
             applicationES.forEach(applicationE -> {
-                ApplicationMarketE applicationMarketE =
+                DevopsAppShareE applicationMarketE =
                         applicationMarketRepository.queryByAppId(applicationE.getId());
                 if (applicationMarketE != null
                         || !applicationMarketE.getPublishLevel().equals(PUBLIC)) {
