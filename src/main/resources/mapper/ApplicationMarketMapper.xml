@@ -349,17 +349,15 @@
         FROM
             devops_app_share dam
         JOIN devops_application da ON da.id = dam.app_id
-        <if test="publishLevel != null">
-            WHERE
-            <choose>
-                <when test="publishLevel=='site'">
-                    dam.is_site = 1
-                </when>
-                <otherwise>
-                    dam.publish_level = #{publishLevel}
-                </otherwise>
-            </choose>
-        </if>
+        WHERE
+        <choose>
+            <when test="isSite != null and isSite==true">
+                dam.is_site = 1
+            </when>
+            <otherwise>
+                dam.publish_level = 'organization'
+            </otherwise>
+        </choose>
     </select>
 
     <update id="updatePublishLevel">

@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.common.util;
 
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -26,6 +27,16 @@ public class PageRequestUtil {
         if (sort != null) {
             return Lists.newArrayList(pageRequest.getSort().iterator()).stream()
                     .map(t -> t.getProperty() + " " + t.getDirection())
+                    .collect(Collectors.joining(","));
+        }
+        return "";
+    }
+
+    public static String getOrderByStr(PageRequest pageRequest){
+        Sort sort = pageRequest.getSort();
+        if (sort != null) {
+            return Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                    .map(t -> t.getProperty() + "," + t.getDirection())
                     .collect(Collectors.joining(","));
         }
         return "";

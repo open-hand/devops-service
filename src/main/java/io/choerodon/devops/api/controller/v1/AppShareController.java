@@ -401,15 +401,15 @@ public class AppShareController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = true)
-            @PathVariable(value = "app_id") Long appId,
+            @RequestParam(value = "app_id") Long appId,
             @ApiParam(value = "access_token", required = true)
             @RequestParam(name = "access_token") String accessToken,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String searchParam) {
+            @RequestParam(value = "version",required = false) String version) {
         return Optional.ofNullable(
-                appShareService.listVersionByAppId(appId, accessToken, pageRequest, searchParam))
+                appShareService.listVersionByAppId(appId, accessToken, pageRequest, version))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
     }

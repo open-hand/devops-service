@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -59,6 +62,7 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
@@ -179,8 +183,8 @@ public class AppShareServiceImpl implements AppShareService {
     }
 
     @Override
-    public PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(String publishLevel, PageRequest pageRequest, String searchParam) {
-        PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.listMarketAppsBySite(publishLevel, pageRequest, searchParam);
+    public PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(Boolean isSite, PageRequest pageRequest, String searchParam) {
+        PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.listMarketAppsBySite(isSite, pageRequest, searchParam);
         return ConvertPageHelper.convertPageInfo(
                 applicationMarketEPage,
                 ApplicationReleasingDTO.class);
@@ -198,6 +202,11 @@ public class AppShareServiceImpl implements AppShareService {
 
     @Override
     public PageInfo<ApplicationReleasingDTO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds) {
+        try {
+            params = URLDecoder.decode(params, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new CommonException("error.decode.params");
+        }
         PageInfo<DevopsAppShareE> devopsAppShareEPageInfo = appShareRepository.queryByShareIds(pageRequest, params, shareIds);
         return ConvertPageHelper.convertPageInfo(devopsAppShareEPageInfo, ApplicationReleasingDTO.class);
     }
@@ -540,10 +549,10 @@ public class AppShareServiceImpl implements AppShareService {
         Map<String, Object> map = new HashMap<>();
         map.put("page", pageRequest.getPage());
         map.put("size", pageRequest.getSize());
-//        map.put("sort", pageRequest.getSort());
-        map.put("params", params);
+        map.put("sort", PageRequestUtil.getOrderByStr(pageRequest));
         Response<PageInfo<ApplicationReleasingDTO>> pageInfoResponse = null;
         try {
+            map.put("params", URLEncoder.encode(params, "UTF-8"));
             pageInfoResponse = shareClient.getAppShares(marketConnectInfoDO.getAccessToken(), map).execute();
             if (!pageInfoResponse.isSuccessful()) {
                 throw new CommonException("error.get.app.shares");
@@ -564,8 +573,10 @@ public class AppShareServiceImpl implements AppShareService {
         Map<String, Object> map = new HashMap<>();
         map.put("page", pageRequest.getPage());
         map.put("size", pageRequest.getSize());
-        map.put("sort", pageRequest.getSort());
-        map.put("params", params);
+        map.put("sort", PageRequestUtil.getOrderByStr(pageRequest));
+        if (params != null) {
+            map.put("params", params);
+        }
         map.put("access_token", accessToken);
         Response<PageInfo<ApplicationVersionRepDTO>> pageInfoResponse = null;
         try {

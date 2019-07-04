@@ -621,7 +621,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 syncDeployValues(logs);
             } else if ("0.19.0".equals(version)) {
                 syncEnvAppRelevance(logs);
-                syncClusters(logs);
+//                syncClusters(logs);
                 syncAppShare();
             } else {
                 LOGGER.info("version not matched");

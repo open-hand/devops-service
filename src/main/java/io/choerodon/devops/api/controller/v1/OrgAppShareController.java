@@ -20,6 +20,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
@@ -28,6 +29,7 @@ import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.app.service.AppShareService;
+import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -44,7 +46,7 @@ public class OrgAppShareController {
     /**
      * 查询所有已发布的应用
      *
-     * @param publishLevel publish_level
+     * @param is_site is_site
      * @param pageRequest  分页参数
      * @param searchParam  搜索参数
      * @return list of ApplicationReleasingDTO
@@ -55,13 +57,13 @@ public class OrgAppShareController {
     @PostMapping(value = "/listByOptions")
     public ResponseEntity<PageInfo<ApplicationReleasingDTO>> pageListMarketAppsByProjectId(
             @ApiParam(value = "发布层级")
-            @RequestParam(value = "publish_level", required = false) String publishLevel,
+            @RequestParam(value = "is_site", required = false) Boolean isSite,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                appShareService.listMarketAppsBySite(publishLevel, pageRequest, searchParam))
+                appShareService.listMarketAppsBySite(isSite, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.share.applications.by.site"));
     }
