@@ -60,8 +60,9 @@ export default class ResourceSidebar extends Component {
     } = this.props;
     if (id && type === 'edit') {
       store.loadSingleData(projectId, id);
+    } else {
+      store.loadEnvData(projectId);
     }
-    store.loadEnvData(projectId);
   }
 
   componentWillUnmount() {
@@ -87,12 +88,15 @@ export default class ResourceSidebar extends Component {
     if (hasEditorError) return;
     this.setState({ submitting: true });
     if (type === 'edit') {
-      const { getSingleData: { id } } = store;
+      const { getSingleData: { id, envId } } = store;
+      const data = {
+        envId: envId || propsEnv,
+        type: 'update',
+        content: changedValue,
+        resourceId: id,
+      };
       const formData = new FormData();
-      formData.append('envId', propsEnv);
-      formData.append('type', 'update');
-      formData.append('content', changedValue);
-      formData.append('resourceId', id);
+      _.forEach(data, (value, key) => formData.append(key, value));
       const promise = store.createData(projectId, formData);
       this.handleResponse(promise);
     } else {
