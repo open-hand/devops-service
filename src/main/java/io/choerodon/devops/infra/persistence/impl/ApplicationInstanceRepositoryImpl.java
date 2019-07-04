@@ -216,4 +216,9 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     public String getInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType) {
         return applicationInstanceMapper.getInstanceResourceDetailJson(instanceId, resourceName, resourceType.getType());
     }
+
+    @Override
+    public void deleteInstance(Long instanceId) {
+        applicationInstanceMapper.deleteInstance(instanceId);
+    }
 }

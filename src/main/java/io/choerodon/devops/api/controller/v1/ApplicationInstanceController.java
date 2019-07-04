@@ -142,27 +142,6 @@ public class ApplicationInstanceController {
 
 
     /**
-     * 获取最当前部署的部署配置
-     *
-     * @param projectId     项目id
-     * @param appInstanceId 实例id
-     * @return string
-     */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取配置")
-    @GetMapping(value = "/{appInstanceId}/deployValue")
-    public ResponseEntity<ReplaceResult> queryDeployValue(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "部署ID", required = true)
-            @PathVariable Long appInstanceId) {
-        return Optional.ofNullable(applicationInstanceService.queryDeployValue(appInstanceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.instance.value.get"));
-    }
-
-    /**
      * 根据实例id和deployment name获取更多部署详情(Json格式)
      *
      * @param projectId      项目id

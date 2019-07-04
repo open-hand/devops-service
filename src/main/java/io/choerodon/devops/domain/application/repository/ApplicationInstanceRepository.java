@@ -76,4 +76,11 @@ public interface ApplicationInstanceRepository {
      * @return 详情json字符串
      */
     String getInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
+
+    /** 删除实例以及实例所有关联信息
+     *
+     * @param instanceId
+     */
+    void deleteInstance(Long instanceId);
+
 }

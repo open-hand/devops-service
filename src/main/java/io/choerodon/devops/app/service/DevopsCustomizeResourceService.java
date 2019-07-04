@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.DevopsCustomizeResourceDTO;
+import io.choerodon.devops.api.dto.DevopsCustomizeResourceReqDTO;
 import io.choerodon.devops.domain.application.entity.DevopsCustomizeResourceE;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,14 +13,12 @@ import org.springframework.web.multipart.MultipartFile;
 public interface DevopsCustomizeResourceService {
 
     /**
+     *
      * @param projectId
-     * @param envId
-     * @param resourceId
-     * @param type
-     * @param content
+     * @param devopsCustomizeResourceReqDTO
      * @param contentFile
      */
-    void createOrUpdateResource(Long projectId, Long envId, Long resourceId, String type, String content, MultipartFile contentFile);
+    void createOrUpdateResource(Long projectId, DevopsCustomizeResourceReqDTO devopsCustomizeResourceReqDTO, MultipartFile contentFile);
 
 
     /**

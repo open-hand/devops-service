@@ -13,6 +13,8 @@ import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
+import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
+import org.eclipse.jgit.api.Git;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
  * gitlab服务 feign客户端
  * Created by Zenger on 2018/3/28.
  */
-@FeignClient(value = "gitlab-service")
+@FeignClient(value = "gitlab-service", fallback= GitlabServiceClientFallback.class)
 public interface GitlabServiceClient {
     @GetMapping(value = "/v1/users/{userId}")
     ResponseEntity<UserDO> queryUserByUserId(

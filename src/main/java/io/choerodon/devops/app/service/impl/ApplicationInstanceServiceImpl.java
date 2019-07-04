@@ -302,7 +302,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ReplaceResult replaceResult = new ReplaceResult();
         if (applicationInstanceE.getValueId() != null) {
             DevopsDeployValueE devopsDeployValueE = devopsDeployValueRepository.queryById(applicationInstanceE.getValueId());
-            yaml = devopsDeployValueE.getValue();
             replaceResult.setName(devopsDeployValueE.getName());
             replaceResult.setId(devopsDeployValueE.getId());
             replaceResult.setObjectVersionNumber(devopsDeployValueE.getObjectVersionNumber());
@@ -526,23 +525,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public ReplaceResult queryValue(Long instanceId) {
-        ReplaceResult replaceResult = new ReplaceResult();
-        String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(
-                instanceId));
-        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
-        if (applicationInstanceE.getValueId() != null) {
-            DevopsDeployValueE devopsDeployValueE = devopsDeployValueRepository.queryById(applicationInstanceE.getValueId());
-            yaml = devopsDeployValueE.getValue();
-            replaceResult.setName(devopsDeployValueE.getName());
-            replaceResult.setId(devopsDeployValueE.getId());
-            replaceResult.setObjectVersionNumber(devopsDeployValueE.getObjectVersionNumber());
-        }
-        replaceResult.setYaml(yaml);
-        return replaceResult;
-    }
-
-    @Override
-    public ReplaceResult queryDeployValue(Long instanceId) {
         ReplaceResult replaceResult = new ReplaceResult();
         String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(
                 instanceId));
@@ -1125,7 +1107,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         devopsEnvCommandRepository.listByObjectAll(ObjectType.INSTANCE.getType(), instanceId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
-        applicationInstanceRepository.deleteById(instanceId);
+        applicationInstanceRepository.deleteInstance(instanceId);
     }
 
     @Override
