@@ -44,4 +44,28 @@
         </if>
     </sql>
 
+    <select id="listConfigMapByApp" resultType="io.choerodon.devops.infra.dataobject.DevopsConfigMapDO">
+        SELECT
+        dcm.id,
+        dcm.name,
+        dcm.value,
+        dcm.env_id,
+        dcm.description,
+        dcm.last_update_date,
+        de.code envCode,
+        dc.command_type commandType,
+        dc.status commandStatus
+        FROM
+        devops_config_map dcm
+        LEFT JOIN devops_env de ON dcm.env_id = de.id
+        LEFT JOIN devops_env_command dc ON dcm.command_id = dc.id
+        WHERE dcm.id IN
+        <foreach collection="configMapIds" item="configMapId" open="(" close=")" separator=",">
+            #{configMapId}
+        </foreach>
+        <include refid="sqlparam"/>
+    </select>
+
+
+
 </mapper>

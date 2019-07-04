@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
+import org.nutz.dao.pager.Pager;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO;
@@ -20,5 +22,7 @@ public interface DevopsConfigMapService {
     DevopsConfigMapRepDTO query(Long configMapId);
 
     PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
+
+    PageInfo<DevopsConfigMapRepDTO> listConfigMapByApp(Long appId, PageRequest pageRequest,String searchParam);
 
 }

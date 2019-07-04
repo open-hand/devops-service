@@ -145,4 +145,31 @@ public class DevopsSecretController {
             @RequestParam(value = "secret_name") String secretName) {
         devopsSecretService.checkName(envId, secretName);
     }
+
+    /**
+     * 分页查询应用下secret
+     *
+     * @param appId       应用id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return Page
+     */
+    @Permission(type= ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @CustomPageRequest
+    @ApiOperation(value = "分页查询应用下secret")
+    @PostMapping("/{app_id}/listByApp")
+    public ResponseEntity<PageInfo<SecretRepDTO>> listSecretByApp(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable(value = "app_id") Long appId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsSecretService.listSecretByApp(appId, pageRequest, params))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.secret.list"));
+    }
 }

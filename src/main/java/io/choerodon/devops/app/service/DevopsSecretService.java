@@ -54,6 +54,16 @@ public interface DevopsSecretService {
     void updateDevopsSecretByGitOps(Long projectId, Long id, SecretReqDTO secretReqDTO, Long userId);
 
     /**
+     * 分页查询应用下secret
+     *
+     * @param appId       应用id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return Page
+     */
+    PageInfo<SecretRepDTO> listSecretByApp(Long appId, PageRequest pageRequest, String params);
+
+    /**
      * 分页查询secret
      *
      * @param envId       环境id

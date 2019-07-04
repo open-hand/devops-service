@@ -98,6 +98,18 @@ public class DevopsSecretRepositoryImpl implements DevopsSecretRepository {
     }
 
     @Override
+    public PageInfo<DevopsSecretE> listSecretByApp(List<Long> secretIds, PageRequest pageRequest, String params) {
+        Map maps = gson.fromJson(params, Map.class);
+        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        PageInfo<DevopsSecretDO> devopsSecretDOPage = PageHelper
+                .startPage(pageRequest.getPage(),pageRequest.getSize(),
+                        PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+                        devopsSecretMapper.listSecretByApp(secretIds, searchParamMap, paramMap));
+        return ConvertPageHelper.convertPageInfo(devopsSecretDOPage, DevopsSecretE.class);
+    }
+
+    @Override
     public List<DevopsSecretE> listByEnv(Long envId) {
         DevopsSecretDO devopsSecretDO = new DevopsSecretDO();
         devopsSecretDO.setEnvId(envId);
