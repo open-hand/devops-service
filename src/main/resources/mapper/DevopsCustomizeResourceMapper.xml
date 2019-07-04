@@ -5,6 +5,7 @@
     <select id="queryDetail" resultType="io.choerodon.devops.infra.dataobject.DevopsCustomizeResourceDO">
      SELECT
 	dcr.id,
+	dcr.env_id,
 	dcr.description,
 	dcr.k8s_kind,
 	dcrc.id contentId,
