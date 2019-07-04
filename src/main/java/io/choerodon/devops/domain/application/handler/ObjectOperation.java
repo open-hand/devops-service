@@ -15,6 +15,7 @@ import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.kubernetes.client.models.*;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -157,12 +158,16 @@ public class ObjectOperation<T> {
         V1beta1Ingress v1beta1Ingress = yaml2.loadAs(jsonObject.toJSONString(), V1beta1Ingress.class);
         V1beta1Ingress newV1beta1Ingress = new V1beta1Ingress();
 
-        if (objectType.equals("Ingress") && v1beta1Ingress.getMetadata().getName().equals(((V1beta1Ingress) t).getMetadata().getName())) {
+        if (objectType.equals(ResourceType.INGRESS.getType()) && v1beta1Ingress.getMetadata().getName().equals(((V1beta1Ingress) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
                 newV1beta1Ingress = (V1beta1Ingress) t;
                 newV1beta1Ingress.getMetadata().setAnnotations(v1beta1Ingress.getMetadata().getAnnotations());
                 if (!deleteCert) {
-                    newV1beta1Ingress.getSpec().setTls(v1beta1Ingress.getSpec().getTls());
+                    if(!newV1beta1Ingress.getSpec().getTls().isEmpty()) {
+                        newV1beta1Ingress.getSpec().setTls(newV1beta1Ingress.getSpec().getTls());
+                    }else {
+                        newV1beta1Ingress.getSpec().setTls(v1beta1Ingress.getSpec().getTls());
+                    }
                 }
             } else {
                 return;
