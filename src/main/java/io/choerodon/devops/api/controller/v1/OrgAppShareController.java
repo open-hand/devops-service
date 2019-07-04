@@ -46,7 +46,7 @@ public class OrgAppShareController {
     /**
      * 查询所有已发布的应用
      *
-     * @param is_site is_site
+     * @param isSite is_site
      * @param pageRequest  分页参数
      * @param searchParam  搜索参数
      * @return list of ApplicationReleasingDTO

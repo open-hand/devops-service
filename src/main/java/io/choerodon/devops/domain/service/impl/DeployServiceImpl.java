@@ -23,6 +23,7 @@ import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 /**
@@ -42,6 +43,7 @@ public class DeployServiceImpl implements DeployService {
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper mapper = new ObjectMapper();
     @Autowired
+    @Lazy
     private CommandSender commandSender;
 
     @Autowired
