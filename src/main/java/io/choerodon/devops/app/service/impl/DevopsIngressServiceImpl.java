@@ -78,6 +78,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private CheckOptionsHandler checkOptionsHandler;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsAppResourceRepository appResourceRepository;
 
     @Override
     @Transactional(rollbackFor=Exception.class)
@@ -110,7 +112,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), false, v1beta1Ingress, true, null, devopsIngressDO, userAttrE, devopsEnvCommandE);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), false, v1beta1Ingress, true, null, devopsIngressDO, userAttrE, devopsEnvCommandE,devopsIngressDTO.getAppId());
     }
 
     private String getCertName(Long certId) {
@@ -203,7 +205,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), deleteCert, v1beta1Ingress, false, path, devopsIngressDO, userAttrE, devopsEnvCommandE);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), deleteCert, v1beta1Ingress, false, path, devopsIngressDO, userAttrE, devopsEnvCommandE,null);
     }
 
     @Override
@@ -292,6 +294,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, INGRESS);
         if (devopsEnvFileResourceE == null) {
             devopsIngressRepository.deleteIngress(ingressId);
+            appResourceRepository.deleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
             devopsIngressRepository.deleteIngressPath(ingressId);
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     "ing-" + ingressDO.getName() + ".yaml")) {
@@ -307,6 +310,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsIngressRepository.deleteIngress(ingressId);
+                appResourceRepository.deleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
                 devopsIngressRepository.deleteIngressPath(ingressId);
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
                 return;
@@ -353,6 +357,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         devopsEnvCommandRepository.listByObjectAll(ObjectType.INGRESS.getType(), ingressId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         devopsIngressRepository.deleteIngress(ingressId);
+        appResourceRepository.deleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
     }
 
 
@@ -424,11 +429,20 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                                       Boolean isCreate,
                                       String path,
                                       DevopsIngressDO devopsIngressDO,
-                                      UserAttrE userAttrE, DevopsEnvCommandE devopsEnvCommandE) {
+                                      UserAttrE userAttrE,
+                                      DevopsEnvCommandE devopsEnvCommandE,
+                                      Long appId) {
 
         //操作域名数据库
         if (isCreate) {
             Long ingressId = devopsIngressRepository.createIngress(devopsIngressDO).getId();
+            if (appId != null) {
+                DevopsAppResourceE resourceE = new DevopsAppResourceE();
+                resourceE.setAppId(appId);
+                resourceE.setResourceType(ObjectType.INSTANCE.getType());
+                resourceE.setResourceId(ingressId);
+                appResourceRepository.insert(resourceE);
+            }
             devopsEnvCommandE.setObjectId(ingressId);
             devopsIngressDO.setId(ingressId);
             devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());

@@ -5,6 +5,7 @@ import java.util.Map;
 public class DevopsConfigMapDTO {
 
     private Long id;
+    private Long appId;
     private Long envId;
     private String name;
     private String description;
@@ -18,6 +19,14 @@ public class DevopsConfigMapDTO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 
     public Long getEnvId() {

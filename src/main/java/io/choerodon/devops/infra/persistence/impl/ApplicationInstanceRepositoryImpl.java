@@ -1,19 +1,14 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -22,6 +17,11 @@ import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -47,6 +47,11 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
                 applicationInstanceMapper
                         .listApplicationInstance(projectId, envId, versionId, appId, instanceId, searchParamMap, paramMap));
         return ConvertPageHelper.convertPageInfo(applicationInstanceDOPage, ApplicationInstanceE.class);
+    }
+
+    @Override
+    public List<DevopsEnvApplicationE> listAllEnvApp() {
+        return applicationInstanceMapper.listAllEnvApp();
     }
 
     @Override

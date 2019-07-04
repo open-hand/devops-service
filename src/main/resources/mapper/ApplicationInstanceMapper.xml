@@ -41,7 +41,7 @@
         AND dp.namespace = de.code
         AND de.id = dai.env_id
         ) podRunningCount,
-        (  select count(1) from devops_service ds
+        ( select count(1) from devops_service ds
         left join devops_service_instance dsi on ds.id = dsi.service_id
         where dsi.app_instance_id = dai.id ) serviceCount,
         (
@@ -82,6 +82,14 @@
                 ORDER BY dai.id DESC
             </otherwise>
         </choose>
+    </select>
+
+    <select id="listAllEnvApp" resultType="io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE">
+        SELECT
+        dai.app_id,
+        dai.env_id
+        FROM
+        devops_app_instance dai
     </select>
 
     <select id="listApplicationInstanceCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
@@ -425,7 +433,7 @@
         JOIN devops_application da ON dai.app_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
         LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
-        where  cmd.command_type in ('create','update')
+        where cmd.command_type in ('create','update')
         and cmd.`status` not in ('doing','operating')
         <if test="startTime != null">
             AND cmd.creation_date >= CONCAT('','${startTime}',' 00:00:00')

@@ -1,8 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
@@ -36,6 +33,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -87,6 +87,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsIngressRepository devopsIngressRepository;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsAppResourceRepository appResourceRepository;
 
 
     @Override
@@ -178,8 +180,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId()
-        );
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
 
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -204,6 +205,15 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         //在gitops库处理service文件
         operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE, userAttrE);
+
+        //创建应用资源关系
+        if (devopsServiceReqDTO.getAppId() != null) {
+            DevopsAppResourceE resourceE = new DevopsAppResourceE();
+            resourceE.setAppId(devopsServiceReqDTO.getAppId());
+            resourceE.setResourceType(ObjectType.SERVICE.getType());
+            resourceE.setResourceId(devopsServiceE.getId());
+            appResourceRepository.insert(resourceE);
+        }
         return true;
     }
 
@@ -470,12 +480,16 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
+            //删除网络的关联关系
+            appResourceRepository.deleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
             return;
         } else {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsServiceRepository.delete(id);
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                //删除网络的关联关系
+                appResourceRepository.deleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
                 return;
             }
         }
@@ -520,6 +534,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //更新数据
         devopsEnvCommandRepository.listByObjectAll(ObjectType.SERVICE.getType(), devopsServiceE.getId()).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         devopsServiceRepository.delete(id);
+
+        //删除网络的关联关系
+        appResourceRepository.deleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
     }
 
     /**

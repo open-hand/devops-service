@@ -1,15 +1,15 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.sql.Date;
-import java.util.List;
-import java.util.Map;
-
-import io.choerodon.mybatis.common.Mapper;
-import org.apache.ibatis.annotations.Param;
-
+import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
+import io.choerodon.mybatis.common.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.sql.Date;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -24,6 +24,12 @@ public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDO>
                                                         @Param("instanceId") Long instanceId,
                                                         @Param("searchParam") Map<String, Object> searchParam,
                                                         @Param("param") String param);
+
+    /**
+     * 查询所有应用部署的appId和envId
+     * 用于应用环境关联数据修复
+     */
+    List<DevopsEnvApplicationE> listAllEnvApp();
 
     List<ApplicationInstanceDO> listApplicationInstanceCode(@Param("projectId") Long projectId,
                                                             @Param("envId") Long envId,
