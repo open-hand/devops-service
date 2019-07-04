@@ -2,11 +2,10 @@ import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl } from 'react-intl';
-import { Modal, Button, Icon } from 'choerodon-ui';
+import { Modal, Button } from 'choerodon-ui';
 import { Content, stores } from '@choerodon/boot';
 import YamlEditor from '../../../components/yamlEditor';
 import InterceptMask from '../../../components/interceptMask/InterceptMask';
-import CoverConfigModal from './components/CoverConfigModal';
 
 import './Instances.scss';
 import '../../main.scss';
@@ -24,7 +23,6 @@ class ValueConfig extends Component {
       hasChanged: false,
       modalDisplay: false,
       hasEditorError: false,
-      showCover: false,
     };
   }
 
@@ -38,24 +36,11 @@ class ValueConfig extends Component {
    */
   handleOk = () => {
     const { hasChanged } = this.state;
-    const { store: { getValue } } = this.props;
     if (hasChanged) {
-      if (getValue && getValue.id) {
-        this.setState({ showCover: true });
-      } else {
-        this.reDeploy();
-      }
+      this.reDeploy();
     } else {
       this.setState({ modalDisplay: true });
     }
-  };
-
-  /**
-   * 关闭覆盖部署配置弹窗
-   */
-  closeCover = () => {
-    this.setState({ showCover: false });
-    this.reDeploy();
   };
 
   /**
@@ -76,7 +61,7 @@ class ValueConfig extends Component {
 
     this.setState({ modalDisplay: false, loading: true });
     const res = await store.reDeploy(projectId, data)
-      .catch(e => {
+      .catch((e) => {
         this.setState({ loading: false });
         onClose(true);
         Choerodon.handleResponseError(e);
@@ -115,28 +100,14 @@ class ValueConfig extends Component {
       name,
       visible,
     } = this.props;
-    const { loading, modalDisplay, hasEditorError, showCover, value } = this.state;
-    const { id, name: configName, yaml, objectVersionNumber } = getValue || {};
+    const { loading, modalDisplay, hasEditorError } = this.state;
+    const configValue = getValue ? getValue.yaml : '';
     const sideDom = (
       <Content code="ist.edit" values={{ name }} className="sidebar-content">
-        <div className="c7n-deploy-configValue-text">
-          <span>{formatMessage({ id: 'deployConfig' })}：</span>
-          <span className="c7n-deploy-configValue-name">
-            {configName || formatMessage({ id: 'deploymentConfig.no.configValue'})}
-          </span>
-        </div>
-        {configName && (
-          <div className='c7n-deploy-configValue-tips'>
-            <Icon type='error' className='c7n-configValue-tips-icon' />
-            <span className='c7n-deploy-configValue-name'>
-              {formatMessage({ id: 'deploymentConfig.configValue.tips' })}
-            </span>
-          </div>
-        )}
         <YamlEditor
           readOnly={false}
-          value={yaml}
-          originValue={yaml}
+          value={configValue}
+          originValue={configValue}
           onValueChange={this.handleChangeValue}
           handleEnableNext={this.handleEnableNext}
         />
@@ -186,15 +157,6 @@ class ValueConfig extends Component {
             {formatMessage({ id: 'envOverview.confirm.content.reDeploy' })}
           </span>
         </Modal>
-        {showCover && (
-          <CoverConfigModal
-            id={id}
-            objectVersionNumber={objectVersionNumber}
-            show={showCover}
-            configValue={value}
-            onClose={this.closeCover}
-          />
-        )}
       </Fragment>
     );
   }

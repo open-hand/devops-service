@@ -1,14 +1,14 @@
-import { observable, action, computed } from "mobx";
-import { axios, store } from "@choerodon/boot";
+import { observable, action, computed } from 'mobx';
+import { axios, store } from '@choerodon/boot';
 import { handleProptError } from '../../../utils';
 
-@store("InstanceDetailStore")
+@store('InstanceDetailStore')
 class InstanceDetailStore {
   @observable isLoading = true;
 
   @observable logVisible = false;
 
-  @observable value = "";
+  @observable value = '';
 
   @observable istEvent = [];
 
@@ -96,21 +96,20 @@ class InstanceDetailStore {
     return this.logTotal;
   }
 
-  getInstanceValue = (projectId, id) =>
-    axios
-      .get(`/devops/v1/projects/${projectId}/app_instances/${id}/deployValue`)
-      .then(stage => {
-        const res = handleProptError(stage);
-        if (res) {
-          this.setValue(stage);
-        }
-      });
+  getInstanceValue = (projectId, id) => axios
+    .get(`/devops/v1/projects/${projectId}/app_instances/${id}/value`)
+    .then((stage) => {
+      const res = handleProptError(stage);
+      if (res) {
+        this.setValue(stage);
+      }
+    });
 
   loadIstEvent = (projectId, id) => {
     this.changeLoading(true);
     return axios
       .get(`/devops/v1/projects/${projectId}/app_instances/${id}/events`)
-      .then(event => {
+      .then((event) => {
         const res = handleProptError(event);
         if (res) {
           this.setIstEvent(event);
@@ -123,7 +122,7 @@ class InstanceDetailStore {
     this.changeLoading(true);
     return axios
       .get(`/devops/v1/projects/${proId}/app_instances/${id}/resources`)
-      .then(stage => {
+      .then((stage) => {
         const res = handleProptError(stage);
         if (res) {
           this.setResource(stage);
@@ -132,15 +131,15 @@ class InstanceDetailStore {
       });
   };
 
-  loadIstLog = (projectId, id, page=1, size=15, startTime, endTime, flag = true) => {
+  loadIstLog = (projectId, id, page = 1, size = 15, startTime, endTime, flag = true) => {
     if (flag) {
       this.setLogLoading(true);
     }
     return axios
       .post(
-        `/devops/v1/projects/${projectId}/app_instances/command_log/${id}?page=${page}&size=${size}${startTime ? `&startTime=${startTime}&endTime=${endTime}` : ""}`
+        `/devops/v1/projects/${projectId}/app_instances/command_log/${id}?page=${page}&size=${size}${startTime ? `&startTime=${startTime}&endTime=${endTime}` : ''}`
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.setIstLog(data.list, flag);

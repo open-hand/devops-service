@@ -3,6 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Content } from '@choerodon/boot';
 import { Modal, Button } from 'choerodon-ui';
+import YamlEditor from '../../../../../components/yamlEditor';
 
 import '../../../../main.scss';
 import './ResourceDetail.scss';
@@ -82,9 +83,10 @@ export default class ResourceDetail extends Component {
               <FormattedMessage id="type" />:
               <span className="c7n-resource-detail-text">{k8sKind}</span>
             </div>
-            <div className="resource-detail-value">
-              {description}
-            </div>
+            <YamlEditor
+              readOnly
+              value={description}
+            />
           </Content>
         </Sidebar>
       </div>
