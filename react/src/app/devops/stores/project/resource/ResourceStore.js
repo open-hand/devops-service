@@ -74,6 +74,7 @@ class ResourceStore {
   }
 
   loadResource = (
+    spin,
     projectId,
     envId,
     page = 1,
@@ -84,7 +85,7 @@ class ResourceStore {
       param: '',
     },
   ) => {
-    this.changeLoading(true);
+    spin && this.changeLoading(true);
     const sortPath = sort
       ? `&sort=${sort.field || sort.columnKey},${SORTER_MAP[sort.order] || 'desc'}`
       : '';
@@ -97,7 +98,7 @@ class ResourceStore {
           this.setResourceList(list);
           this.setPageInfo({ current: pageNum, pageSize, total });
         }
-        this.changeLoading(false);
+        spin && this.changeLoading(false);
       })
       .catch((e) => {
         this.changeLoading(false);

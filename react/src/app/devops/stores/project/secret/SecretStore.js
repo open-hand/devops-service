@@ -1,14 +1,11 @@
-import { observable, action, computed } from "mobx";
-import { axios, store, stores } from "@choerodon/boot";
-import { handleProptError } from "../../../utils/index";
+import { observable, action, computed } from 'mobx';
+import { axios, store, stores } from '@choerodon/boot';
+import { handleProptError } from '../../../utils/index';
+import { HEIGHT } from '../../../common/Constants';
 
 const { AppState } = stores;
 
-const HEIGHT =
-  window.innerHeight ||
-  document.documentElement.clientHeight ||
-  document.body.clientHeight;
-@store("SecretStore")
+@store('SecretStore')
 class SecretStore {
   @observable data = [];
 
@@ -26,7 +23,7 @@ class SecretStore {
 
   @observable Info = {
     filters: {},
-    sort: { columnKey: "id", order: "descend" },
+    sort: { columnKey: 'id', order: 'descend' },
     paras: [],
   };
 
@@ -92,10 +89,10 @@ class SecretStore {
     envId,
     page = this.pageInfo.current,
     size = this.pageInfo.pageSize,
-    sort = { field: "id", order: "desc" },
+    sort = { field: 'id', order: 'desc' },
     postData = {
       searchParam: {},
-      param: "",
+      param: '',
     }
   ) => {
     if (Number(this.preProId) !== Number(projectId)) {
@@ -104,14 +101,13 @@ class SecretStore {
     this.setPreProId(projectId);
     spin && this.changeLoading(true);
     return axios
-      .post(`/devops/v1/projects/${projectId}/secret/${envId}/list_by_option?page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(postData))
-      .then(data => {
+      .post(`/devops/v1/projects/${projectId}/secret/list_by_option?env_id=${envId}&page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(postData))
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           const { pageNum, pageSize, total, list } = data;
           this.setData(list);
-          const page = { pageNum, pageSize, total };
-          this.setPageInfo(page);
+          this.setPageInfo({ pageNum, pageSize, total });
           spin && this.changeLoading(false);
         }
       });
@@ -120,7 +116,7 @@ class SecretStore {
   loadKVById(projectId, id) {
     return axios
       .get(`/devops/v1/projects/${projectId}/secret/${id}`)
-      .then(data => {
+      .then((data) => {
         if (data && data.failed) {
           Choerodon.prompt(data.message);
         } else {
@@ -139,7 +135,7 @@ class SecretStore {
     return axios.delete(`/devops/v1/projects/${projectId}/secret/${envId}/${id}`);
   }
 
-  checkName(projectId, envId, name){
+  checkName(projectId, envId, name) {
     return axios.get(`/devops/v1/projects/${projectId}/secret/${envId}/check_name?secret_name=${name}`);
   }
 }
