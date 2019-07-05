@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
@@ -6,6 +6,8 @@ import { Steps } from 'choerodon-ui';
 import { Content, Header, Page } from '@choerodon/boot';
 import _ from 'lodash';
 import { handlePromptError } from '../../../../utils';
+import DeploymentPipelineStore from '../../../../stores/project/deploymentPipeline';
+import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
 import AppWithVersions from '../appWithVersions';
 import DeployMode from '../deployMode';
 import Configuration from '../configuration';
@@ -49,6 +51,8 @@ export default class DeploymentAppHome extends Component {
         },
       },
     } = this.props;
+
+    DeploymentPipelineStore.loadActiveEnv(projectId);
 
     if (state) {
       const { appId, version, prevPage } = state;
@@ -122,6 +126,7 @@ export default class DeploymentAppHome extends Component {
       },
     } = this.props;
     const { currentStep } = this.state;
+    const envData = _.filter(DeploymentPipelineStore.getEnvLine, ['permission', true]);
 
     const STEP_LIST = ['one', 'two', 'three', 'four'];
     const stepDom = _.map(STEP_LIST, item => (
@@ -143,19 +148,26 @@ export default class DeploymentAppHome extends Component {
 
     return (
       <Page service={PERMISSION}>
-        <Header title={<FormattedMessage id="deploy.header.title" />} />
-        <Content
-          className="c7n-deploy-wrapper c7ncd-step-page"
-          code="deploy"
-          values={{ name: projectName }}
-        >
-          <div className="c7ncd-step-wrap">
-            <Steps className="c7ncd-step-bar" current={currentStep}>
-              {stepDom}
-            </Steps>
-            <div className="c7ncd-step-card">{stepRender[currentStep]()}</div>
-          </div>
-        </Content>
+        {envData && envData.length ? (<Fragment>
+          <Header title={<FormattedMessage id="deploy.header.title" />} />
+          <Content
+            className="c7n-deploy-wrapper c7ncd-step-page"
+            code="deploy"
+            values={{ name: projectName }}
+          >
+            <div className="c7ncd-step-wrap">
+              <Steps className="c7ncd-step-bar" current={currentStep}>
+                {stepDom}
+              </Steps>
+              <div className="c7ncd-step-card">{stepRender[currentStep]()}</div>
+            </div>
+          </Content>
+        </Fragment>) : (
+          <DepPipelineEmpty
+            title={<FormattedMessage id="deploy.header.title" />}
+            type="env"
+          />
+        )}
       </Page>
     );
   }
