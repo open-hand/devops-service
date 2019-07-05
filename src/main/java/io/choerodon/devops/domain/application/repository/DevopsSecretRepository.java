@@ -27,9 +27,7 @@ public interface DevopsSecretRepository {
 
     DevopsSecretE selectByEnvIdAndName(Long envId, String name);
 
-    PageInfo<DevopsSecretE> listByOption(Long envId, PageRequest pageRequest, String params);
-
-    PageInfo<DevopsSecretE> listSecretByApp(List<Long> secretIds, PageRequest pageRequest, String params);
+    PageInfo<DevopsSecretE> listByOption(Long envId, PageRequest pageRequest, String params, Long appId);
 
     List<DevopsSecretE> listByEnv(Long envId);
 }

@@ -315,15 +315,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         devopsSecretRepository.update(devopsSecretE);
     }
 
-    @Override
-    public PageInfo<SecretRepDTO> listSecretByApp(Long appId, PageRequest pageRequest, String params) {
-        List<Long> secretIds = appResourceRepository.queryByAppAndType(appId, ObjectType.SECRET.getType()).
-                stream().map(DevopsAppResourceE::getResourceId).collect(Collectors.toList());
-
-        return ConvertPageHelper.convertPageInfo(
-                devopsSecretRepository.listSecretByApp(secretIds, pageRequest, params), SecretRepDTO.class);
-    }
-
     private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
         devopsEnvCommandE.setCommandType(type);
@@ -333,9 +324,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public PageInfo<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params,Long appId) {
         return ConvertPageHelper
-                .convertPageInfo(devopsSecretRepository.listByOption(envId, pageRequest, params), SecretRepDTO.class);
+                .convertPageInfo(devopsSecretRepository.listByOption(envId, pageRequest, params,appId), SecretRepDTO.class);
     }
 
     @Override

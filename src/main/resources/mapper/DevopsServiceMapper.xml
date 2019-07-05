@@ -38,6 +38,7 @@
         </if>
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
+        LEFT JOIN devops_app_resource das ON ds.id = das.resource_id
         LEFT JOIN devops_application da ON da.id = ds.app_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
@@ -46,6 +47,10 @@
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
         </if>
+        <if test="appId != null">
+            AND das.app_id = #{appId}
+        </if>
+        AND das.resource_type='service'
         <include refid="sqlparam"/>
         ) t
     </select>
@@ -104,6 +109,7 @@
         </if>
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
+        LEFT JOIN devops_app_resource das ON ds.id = das.resource_id
         LEFT JOIN devops_env_command cmd ON ds.command_id = cmd.id
         LEFT JOIN devops_application da ON da.id = ds.app_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
@@ -112,6 +118,10 @@
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
         </if>
+        <if test="appId != null">
+            AND das.app_id = #{appId}
+        </if>
+        AND das.resource_type='service'
         <include refid="sqlparam"/>
     </select>
 

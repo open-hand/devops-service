@@ -66,23 +66,13 @@ public class DevopsConfigMapRepositoryImpl implements DevopsConfigMapRepository 
     }
 
     @Override
-    public PageInfo<DevopsConfigMapE> pageByEnv(Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsConfigMapE> pageByEnv(Long envId, PageRequest pageRequest, String params, Long appId) {
         Map maps = gson.fromJson(params, Map.class);
         PageInfo<DevopsConfigMapDO> devopsConfigMapDOS = PageHelper
                 .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAM))));
-        return ConvertPageHelper.convertPageInfo(devopsConfigMapDOS, DevopsConfigMapE.class);
-    }
-
-    @Override
-    public PageInfo<DevopsConfigMapE> pageByApp(List<Long> configMapIds, PageRequest pageRequest, String params) {
-        Map maps = gson.fromJson(params, Map.class);
-        PageInfo<DevopsConfigMapDO> devopsConfigMapDOS = PageHelper
-                .startPage(pageRequest.getPage(), pageRequest.getSize(),
-                        PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsConfigMapMapper.listConfigMapByApp(configMapIds,
-                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                        TypeUtil.cast(maps.get(TypeUtil.PARAM)),
+                        appId));
         return ConvertPageHelper.convertPageInfo(devopsConfigMapDOS, DevopsConfigMapE.class);
     }
 

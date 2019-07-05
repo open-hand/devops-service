@@ -101,7 +101,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public PageInfo<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
         PageInfo<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
-                projectId, envId, null, pageRequest, searchParam);
+                projectId, envId, null, pageRequest, searchParam,null);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         devopsServiceByPage.getList().forEach(devopsServiceV -> {
@@ -116,9 +116,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     @Override
-    public PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest) {
+    public PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest,Long appId) {
         PageInfo<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
-                projectId, null, instanceId, pageRequest, null);
+                projectId, null, instanceId, pageRequest, null,appId);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         if (!devopsServiceByPage.getList().isEmpty()) {
@@ -144,46 +144,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         return ConvertPageHelper.convertPageInfo(devopsServiceByPage, DevopsServiceDTO.class);
     }
-
-    @Override
-    public PageInfo<DevopsServiceDTO> listByApp(Long projectId, Long appId, PageRequest pageRequest) {
-        //关联表查询应用下的所有网络
-        List<Long> serviceIds = appResourceRepository.queryByAppAndType(appId, ObjectType.SERVICE.getType()).
-                stream().map(DevopsAppResourceE::getResourceId).collect(Collectors.toList());
-
-        List<DevopsServiceV> devopsServiceVList = new ArrayList<>();
-        serviceIds.forEach(v -> devopsServiceVList.add(devopsServiceRepository.selectById(v)));
-
-        //查询每个网络下的所有域名
-        devopsServiceVList.stream().forEach(devopsServiceV -> {
-            PageInfo<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository
-                    .getIngress(projectId, null, devopsServiceV.getId(), new PageRequest(0, 100), "");
-            if (devopsServiceV.getEnvStatus() != null && devopsServiceV.getEnvStatus()) {
-                devopsIngressDTOS.getList().stream().forEach(devopsIngressDTO -> devopsIngressDTO.setEnvStatus(true));
-            }
-            devopsServiceV.setDevopsIngressDTOS(devopsIngressDTOS.getList());
-        });
-
-        //手动分页
-        int page = pageRequest.getPage() <= 1 ? 1 : pageRequest.getPage();
-        int start = (page - 1) * pageRequest.getSize();
-        int end = start + pageRequest.getSize();
-
-        PageInfo<DevopsServiceV> result = new PageInfo();
-        result.setPageSize(pageRequest.getSize());
-        result.setPageNum(pageRequest.getPage());
-        result.setTotal(devopsServiceVList.size());
-        result.setList(devopsServiceVList.subList(start, end > devopsServiceVList.size() ? devopsServiceVList.size() : end));
-
-        if (devopsServiceVList.size() < pageRequest.getSize() * pageRequest.getPage()) {
-            result.setSize(TypeUtil.objToInt(devopsServiceVList.size()) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
-        } else {
-            result.setSize(pageRequest.getSize());
-        }
-
-        return ConvertPageHelper.convertPageInfo(result, DevopsServiceDTO.class);
-    }
-
 
     @Override
     public DevopsServiceDTO queryByName(Long envId, String serviceName) {

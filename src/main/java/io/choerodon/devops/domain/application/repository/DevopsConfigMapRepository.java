@@ -19,9 +19,7 @@ public interface DevopsConfigMapRepository {
 
     void delete(Long id);
 
-    PageInfo<DevopsConfigMapE> pageByEnv(Long envId, PageRequest pageRequest, String params);
-
-    PageInfo<DevopsConfigMapE> pageByApp(List<Long> configMapIds, PageRequest pageRequest, String params);
+    PageInfo<DevopsConfigMapE> pageByEnv(Long envId, PageRequest pageRequest, String params,Long appId);
 
     List<DevopsConfigMapE> listByEnv(Long envId);
 

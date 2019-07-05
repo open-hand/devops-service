@@ -21,8 +21,6 @@ public interface DevopsConfigMapService {
 
     DevopsConfigMapRepDTO query(Long configMapId);
 
-    PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
-
-    PageInfo<DevopsConfigMapRepDTO> listConfigMapByApp(Long appId, PageRequest pageRequest,String searchParam);
+    PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam,Long appId);
 
 }

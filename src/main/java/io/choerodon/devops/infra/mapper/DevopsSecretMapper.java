@@ -20,9 +20,6 @@ public interface DevopsSecretMapper extends Mapper<DevopsSecretDO> {
 
     List<DevopsSecretDO> listByOption(@Param("envId") Long envId,
                                       @Param("searchParam") Map<String, Object> searchParam,
-                                      @Param("param") String param);
-
-    List<DevopsSecretDO> listSecretByApp(@Param("secretIds") List<Long> secretIds,
-                                           @Param("searchParam") Map<String, Object> searchParam,
-                                           @Param("param") String param);
+                                      @Param("param") String param,
+                                      @Param("appId") Long appId);
 }

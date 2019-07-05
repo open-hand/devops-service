@@ -155,9 +155,9 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
     @Override
-    public PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam,Long appId) {
         PageInfo<DevopsConfigMapE> devopsConfigMapES = devopsConfigMapRepository.pageByEnv(
-                envId, pageRequest, searchParam);
+                envId, pageRequest, searchParam,appId);
         devopsConfigMapES.getList().forEach(devopsConfigMapE -> {
             List<String> keys = new ArrayList<>();
             gson.fromJson(devopsConfigMapE.getValue(), Map.class).forEach((key, value) ->
@@ -165,14 +165,6 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             devopsConfigMapE.setKey(keys);
         });
         return ConvertPageHelper.convertPageInfo(devopsConfigMapES, DevopsConfigMapRepDTO.class);
-    }
-
-    @Override
-    public PageInfo<DevopsConfigMapRepDTO> listConfigMapByApp(Long appId, PageRequest pageRequest, String searchParam) {
-        List<Long> configMapIds = appResourceRepository.queryByAppAndType(appId, ObjectType.CONFIGMAP.getType()).
-                stream().map(DevopsAppResourceE::getResourceId).collect(Collectors.toList());
-        return ConvertPageHelper.convertPageInfo(devopsConfigMapRepository.pageByApp(
-                configMapIds, pageRequest, searchParam), DevopsConfigMapRepDTO.class);
     }
 
 

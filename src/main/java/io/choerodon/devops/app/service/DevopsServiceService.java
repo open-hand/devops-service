@@ -128,17 +128,8 @@ public interface DevopsServiceService {
      * @param projectId   项目id
      * @param instanceId  实例Id
      * @param pageRequest 分页参数
-     * @return Page of DevopsServiceDTO
-     */
-    PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest);
-
-    /**
-     * 应用下网络与域名联合查询
-     *
-     * @param projectId   项目id
      * @param appId       应用id
-     * @param pageRequest 分页参数
      * @return Page of DevopsServiceDTO
      */
-    PageInfo<DevopsServiceDTO> listByApp(Long projectId, Long appId, PageRequest pageRequest);
+    PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest,Long appId);
 }

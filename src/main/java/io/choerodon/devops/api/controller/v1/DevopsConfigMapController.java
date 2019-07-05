@@ -122,6 +122,7 @@ public class DevopsConfigMapController {
      * @param envId       环境id
      * @param pageRequest 分页参数
      * @param searchParam 查询参数
+     * @param appId       应用id
      * @return Page of DevopsServiceDTO
      */
     @Permission(type = ResourceType.PROJECT,
@@ -129,50 +130,22 @@ public class DevopsConfigMapController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境配置映射查询")
     @CustomPageRequest
-    @PostMapping(value = "/{envId}/listByEnv")
+    @PostMapping(value = "/listByEnv")
     public ResponseEntity<PageInfo<DevopsConfigMapRepDTO>> listByEnv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "envId") Long envId,
+            @ApiParam(value = "环境id")
+            @RequestParam(value = "envId", required = false) Long envId,
+            @ApiParam(value = "应用id")
+            @RequestParam(value = "app_id", required = false) Long appId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsConfigMapService.listByEnv(projectId, envId, pageRequest, searchParam))
+        return Optional.ofNullable(devopsConfigMapService.listByEnv(projectId, envId, pageRequest, searchParam, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.configMap.query"));
-    }
-
-    /**
-     * 应用下配置映射分页查询
-     *
-     * @param projectId   项目id
-     * @param appId       应用id
-     * @param pageRequest 分页参数
-     * @param searchParam 查询参数
-     * @return Page of DevopsConfigMapRepDTO
-     */
-    @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "应用下配置映射分页查询")
-    @CustomPageRequest
-    @PostMapping(value = "/{app_id}/listConfigMapByApp")
-    public ResponseEntity<PageInfo<DevopsConfigMapRepDTO>> listConfigMapByApp(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "app_id") Long appId,
-            @ApiParam(value = "分页参数")
-            @SortDefault(value = "id", direction = Sort.Direction.DESC)
-            @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsConfigMapService.listConfigMapByApp(appId, pageRequest, searchParam))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.configMap.query"));
     }
 
 }

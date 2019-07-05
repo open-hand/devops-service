@@ -1,11 +1,15 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Lists;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
@@ -18,9 +22,6 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
 import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Component;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -48,7 +49,7 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
 
     @Override
     public PageInfo<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, Long instanceId, PageRequest pageRequest,
-                                                            String searchParam) {
+                                                            String searchParam, Long appId) {
 
         Sort sort = pageRequest.getSort();
         String sortResult = "";
@@ -84,20 +85,20 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             count = devopsServiceMapper.selectCountByName(
                     projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)));
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), appId);
 
             result.setTotal(count);
             devopsServiceQueryDOList = devopsServiceMapper.listDevopsServiceByPage(
                     projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), sortResult);
-            result.setList(devopsServiceQueryDOList.subList(start, stop > devopsServiceQueryDOList.size() ? devopsServiceQueryDOList.size()  : stop));
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), sortResult, appId);
+            result.setList(devopsServiceQueryDOList.subList(start, stop > devopsServiceQueryDOList.size() ? devopsServiceQueryDOList.size() : stop));
         } else {
             count = devopsServiceMapper
-                    .selectCountByName(projectId, envId, instanceId, null, null);
+                    .selectCountByName(projectId, envId, instanceId, null, null, appId);
             result.setTotal(count);
             devopsServiceQueryDOList =
                     devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, envId, instanceId, null, null, sortResult);
+                            projectId, envId, instanceId, null, null, sortResult, appId);
             result.setList(devopsServiceQueryDOList.subList(start, stop > devopsServiceQueryDOList.size() ? devopsServiceQueryDOList.size() : stop));
         }
         if (devopsServiceQueryDOList.size() < pageRequest.getSize() * pageRequest.getPage()) {
