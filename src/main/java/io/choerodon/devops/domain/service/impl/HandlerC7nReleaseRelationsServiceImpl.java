@@ -194,7 +194,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
                         //删除实例之后，重新创建同名的实例，如果之前的实例关联的网络，此时需要把网络关联上新的实例
                         Long instanceId = applicationInstanceDTO.getId();
-                        if(!devopsServiceAppInstanceES.isEmpty()) {
+                        if(devopsServiceAppInstanceES!=null&&!devopsServiceAppInstanceES.isEmpty()) {
                             devopsServiceAppInstanceES.stream().filter(devopsServiceAppInstanceE -> !devopsServiceAppInstanceE.getAppInstanceId().equals(instanceId)).forEach(devopsServiceAppInstanceE -> {
                                 devopsServiceInstanceRepository.updateInstanceId(devopsServiceAppInstanceE.getId(), instanceId);
                             });
