@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import io.choerodon.asgard.saga.feign.SagaConsumerClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.dto.UserAttrDTO;
 import io.choerodon.devops.app.service.UserAttrService;
@@ -12,6 +13,8 @@ public class UserAttrServiceImpl implements UserAttrService {
 
     @Autowired
     private UserAttrRepository userAttrRepository;
+    @Autowired
+    private SagaConsumerClient sagaConsumerClient;
 
     @Override
     public UserAttrDTO queryByUserId(Long userId) {

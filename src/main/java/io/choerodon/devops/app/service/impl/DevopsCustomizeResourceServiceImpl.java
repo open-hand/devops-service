@@ -138,7 +138,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                     "ADD FILE", TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         } else {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String gitOpsPath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
+            String gitOpsPath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
             DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository.query(devopsCustomizeResourceReqDTO.getResourceId());
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
@@ -178,7 +178,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         HandleCoustomizeResource(null, null, null, null, null, DELETE, resourceId, null, null);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String gitOpsPath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
+        String gitOpsPath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //判断gitops库里面是否有该文件，没有文件直接删除对象
         if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.github.pagehelper.util.StringUtil;
+import feign.FeignException;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -81,27 +82,38 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public void createTag(Integer gitLabProjectId, String tag, String ref, String msg, String releaseNotes, Integer userId) {
-        if (msg == null) {
-            msg = "No ReleaseNote";
+        try {
+            if (msg == null) {
+                msg = "No ReleaseNote";
+            }
+            if (releaseNotes == null) {
+                releaseNotes = "No ReleaseNote";
+            }
+            gitlabServiceClient.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, userId);
+        } catch (FeignException e) {
+            throw new CommonException("create gitlab tag failed: " + e.getMessage(), e);
         }
-        if (releaseNotes == null) {
-            releaseNotes = "No ReleaseNote";
-        }
-        gitlabServiceClient.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, userId);
     }
 
     @Override
     public TagDO updateTag(Integer gitLabProjectId, String tag, String releaseNotes, Integer userId) {
+        try {
             if (releaseNotes == null) {
                 releaseNotes = "";
             }
             return gitlabServiceClient.updateTagRelease(gitLabProjectId, tag, releaseNotes, userId).getBody();
-
+        } catch (FeignException e) {
+            throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public void deleteTag(Integer gitLabProjectId, String tag, Integer userId) {
-        gitlabServiceClient.deleteTag(gitLabProjectId, tag, userId);
+        try {
+            gitlabServiceClient.deleteTag(gitLabProjectId, tag, userId);
+        } catch (FeignException e) {
+            throw new CommonException("delete gitlab tag failed: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -145,14 +157,25 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public BranchDO createBranch(Integer projectId, String branchName, String baseBranch, Integer userId) {
-        ResponseEntity<BranchDO> responseEntity =
+        ResponseEntity<BranchDO> responseEntity;
+        try {
+            responseEntity =
                     gitlabServiceClient.createBranch(projectId, branchName, baseBranch, userId);
+        } catch (FeignException e) {
+            throw new CommonException("error.branch.create", e);
+        }
         return responseEntity.getBody();
     }
 
     @Override
     public List<BranchDO> listGitLabBranches(Integer projectId, String path, Integer userId) {
-        ResponseEntity<List<BranchDO>> responseEntity = gitlabServiceClient.listBranches(projectId, userId);
+        ResponseEntity<List<BranchDO>> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.listBranches(projectId, userId);
+        } catch (FeignException e) {
+            throw new CommonException("error.branch.get", e);
+
+        }
         List<BranchDO> branches = responseEntity.getBody();
         branches.forEach(t -> t.getCommit().setUrl(
                 String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId())));
@@ -314,19 +337,33 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public List<TagDO> getGitLabTags(Integer projectId, Integer userId) {
-        ResponseEntity<List<TagDO>> tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
+        ResponseEntity<List<TagDO>> tagResponseEntity;
+        try {
+            tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
+        } catch (FeignException e) {
+            throw new CommonException("error.tags.get", e);
+        }
         return tagResponseEntity.getBody();
     }
 
 
     @Override
     public BranchDO getBranch(Integer gitlabProjectId, String branch) {
+        try {
             return gitlabServiceClient.getBranch(gitlabProjectId, branch).getBody();
+        } catch (FeignException e) {
+            throw new CommonException("error.branch.get", e);
+
+        }
     }
 
     @Override
     public CompareResultsE getCompareResults(Integer gitlabProjectId, String from, String to) {
-        return gitlabServiceClient.getCompareResults(gitlabProjectId, from, to).getBody();
+        try {
+            return gitlabServiceClient.getCompareResults(gitlabProjectId, from, to).getBody();
+        } catch (FeignException e) {
+            throw new CommonException("error.diffs.get", e);
+        }
     }
 
     @Override
@@ -435,14 +472,15 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                 .getUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId());
         Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
         Integer gitlabUserId = devopsGitRepository.getGitlabUserId();
-        ResponseEntity<List<CommitDO>> commitDOResponseEntity = gitlabServiceClient.listCommits(
-                devopsMergeRequestE.getProjectId().intValue(),
-                gitlabMergeRequestId.intValue(), gitlabUserId);
-
-        if (commitDOResponseEntity.getStatusCodeValue() != 500) {
-            mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDOResponseEntity.getBody(), CommitDTO.class));
+        List<CommitDO> commitDOS = new ArrayList<>();
+        try {
+            commitDOS = gitlabServiceClient.listCommits(
+                    devopsMergeRequestE.getProjectId().intValue(),
+                    gitlabMergeRequestId.intValue(), gitlabUserId).getBody();
+            mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDOS, CommitDTO.class));
+        } catch (FeignException e) {
+            LOGGER.info(e.getMessage());
         }
-
         UserE authorUser = iamRepository.queryUserByUserId(authorUserId);
         if (authorUser != null) {
             AuthorDTO authorDTO = new AuthorDTO();
@@ -512,11 +550,19 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public List<CommitDO> getCommits(Integer gitLabProjectId, String branchName, String date) {
-        return gitlabServiceClient.getCommits(gitLabProjectId, branchName, date).getBody();
+        try {
+            return gitlabServiceClient.getCommits(gitLabProjectId, branchName, date).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override
     public List<BranchDO> listBranches(Integer gitlabProjectId, Integer userId) {
-        return gitlabServiceClient.listBranches(gitlabProjectId, userId).getBody();
+        try {
+            return gitlabServiceClient.listBranches(gitlabProjectId, userId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 }
