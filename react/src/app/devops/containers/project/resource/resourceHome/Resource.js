@@ -23,6 +23,8 @@ import EnvOverviewStore from '../../../../stores/project/envOverview';
 import ResourceSidebar from '../resourceSidebar/ResourceSidebar';
 import ResourceDetail from '../components/resourceDetail/ResourceDetail';
 import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import RefreshBtn from '../../../../components/refreshBtn';
+import DevopsStore from '../../../../stores/DevopsStore';
 import { handlePromptError } from '../../../../utils';
 import { HEIGHT } from '../../../../common/Constants';
 
@@ -66,6 +68,7 @@ export default class Resource extends Component {
       sort: null,
       paras: [],
     });
+    DevopsStore.clearAutoRefresh();
   }
 
   /**
@@ -77,13 +80,13 @@ export default class Resource extends Component {
       AppState: { currentMenuType: { projectId } },
     } = this.props;
     const envId = EnvOverviewStore.getTpEnvId;
-    ResourceStore.loadResource(projectId, envId);
+    ResourceStore.loadResource(true, projectId, envId);
   };
 
   /**
    * 处理刷新函数
    */
-  handleRefresh = () => {
+  handleRefresh = (spin = true) => {
     const { ResourceStore } = this.props;
     const {
       getPageInfo,
@@ -93,7 +96,7 @@ export default class Resource extends Component {
         paras,
       },
     } = ResourceStore;
-    this.tableChange(getPageInfo, filters, sort, paras);
+    this.tableChange(getPageInfo, filters, sort, paras, spin);
   };
 
   /**
@@ -103,7 +106,7 @@ export default class Resource extends Component {
    * @param sorter
    * @param paras
    */
-  tableChange = ({ current, pageSize }, filters, sorter, paras) => {
+  tableChange = ({ current, pageSize }, filters, sorter, paras, spin = true) => {
     const {
       ResourceStore,
       AppState: { currentMenuType: { projectId } },
@@ -117,6 +120,7 @@ export default class Resource extends Component {
 
     ResourceStore.setInfo({ filters, sort, paras });
     ResourceStore.loadResource(
+      spin,
       projectId,
       envId,
       current,
@@ -310,6 +314,9 @@ export default class Resource extends Component {
     } = EnvOverviewStore;
     const envState = _.filter(getEnvcard, { id: getTpEnvId, connect: true });
     const hasEnv = getEnvcard && getEnvcard.length && getTpEnvId;
+    if (hasEnv) {
+      DevopsStore.initAutoRefresh('resource', this.handleRefresh);
+    }
     const selectClass = classnames({
       'c7n-header-select': true,
       'c7n-select_min100': !getTpEnvId,
@@ -371,12 +378,7 @@ export default class Resource extends Component {
                 </Button>
               </Tooltip>
             </Permission>
-            <Button
-              onClick={this.handleRefresh}
-              icon="refresh"
-            >
-              <FormattedMessage id="refresh" />
-            </Button>
+            <RefreshBtn name="resource" onFresh={this.handleRefresh} />
           </Header>
           <Content code="resource">
             <Table

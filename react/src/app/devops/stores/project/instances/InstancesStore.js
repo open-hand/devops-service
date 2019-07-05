@@ -1,6 +1,6 @@
+/* eslint-disable no-restricted-syntax, no-prototype-builtins */
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
-import _ from 'lodash';
 import { handleProptError } from '../../../utils/index';
 
 const height = window.screen.height;
@@ -280,16 +280,16 @@ class InstancesStore {
     }
 
     const { param, filters } = this.istParams;
-    const { pageSize, page } = this.istPage;
+    const { pageSize: size, page } = this.istPage;
 
     this.setRequireTime(requireTime);
 
     return axios
       .post(
-        `devops/v1/projects/${projectId}/app_instances/list_by_options?page=${page}&size=${pageSize}${search}`,
+        `devops/v1/projects/${projectId}/app_instances/list_by_options?page=${page}&size=${size}${search}`,
         JSON.stringify({ searchParam: filters, param: String(param) }),
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           const { pageNum, pageSize, total, list } = data;
@@ -307,7 +307,7 @@ class InstancesStore {
       .get(
         `devops/v1/projects/${projectId}/apps/pages?env_id=${envId}&page=${page}&size=${appPageSize}${param}`,
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.setAppNameByEnv(data.list);
@@ -318,17 +318,16 @@ class InstancesStore {
       });
   };
 
-  loadMultiData = projectId =>
-    axios
-      .get(`devops/v1/projects/${projectId}/app_instances/all`)
-      .then(data => {
-        this.changeLoading(true);
-        const res = handleProptError(data);
-        if (res) {
-          this.setMutiData(data);
-          this.changeLoading(false);
-        }
-      });
+  loadMultiData = projectId => axios
+    .get(`devops/v1/projects/${projectId}/app_instances/all`)
+    .then((data) => {
+      this.changeLoading(true);
+      const res = handleProptError(data);
+      if (res) {
+        this.setMutiData(data);
+        this.changeLoading(false);
+      }
+    });
 
   async loadValue(projectId, id, verId) {
     try {
@@ -344,10 +343,9 @@ class InstancesStore {
     }
   }
 
-  changeIstActive = (projectId, istId, active) =>
-    axios.put(
-      `devops/v1/projects/${projectId}/app_instances/${istId}/${active}`,
-    );
+  changeIstActive = (projectId, istId, active) => axios.put(
+    `devops/v1/projects/${projectId}/app_instances/${istId}/${active}`,
+  );
 
   /**
    * 修改配置信息、重新部署
@@ -355,37 +353,33 @@ class InstancesStore {
    * @param data
    * @returns {*}
    */
-  reDeploy = (projectId, data) =>
-    axios.post(
-      `devops/v1/projects/${projectId}/app_instances`,
-      JSON.stringify(data),
-    );
+  reDeploy = (projectId, data) => axios.post(
+    `devops/v1/projects/${projectId}/app_instances`,
+    JSON.stringify(data),
+  );
 
-  deleteInstance = (projectId, istId) =>
-    axios.delete(
-      `devops/v1/projects/${projectId}/app_instances/${istId}/delete`,
-    );
+  deleteInstance = (projectId, istId) => axios.delete(
+    `devops/v1/projects/${projectId}/app_instances/${istId}/delete`,
+  );
 
-  reStarts = (projectId, id) =>
-    axios.put(`devops/v1/projects/${projectId}/app_instances/${id}/restart`);
+  reStarts = (projectId, id) => axios.put(`devops/v1/projects/${projectId}/app_instances/${id}/restart`);
 
-  loadUpVersion = (projectId, verId) =>
-    axios
-      .get(
-        `devops/v1/projects/${projectId}/app_versions/version/${verId}/upgrade_version`,
-      )
-      .then(data => {
-        if (data) {
-          this.setVerValue(data);
-        }
-        return data;
-      });
+  loadUpVersion = (projectId, verId) => axios
+    .get(
+      `devops/v1/projects/${projectId}/app_versions/version/${verId}/upgrade_version`,
+    )
+    .then((data) => {
+      if (data) {
+        this.setVerValue(data);
+      }
+      return data;
+    });
 
-  loadNetworking = (projectId, instanceId, page = 1, pageSize = (height <= 900 ? 10 : 15)) => {
+  loadNetworking = (projectId, instanceId, page = 1, size = (height <= 900 ? 10 : 15)) => {
     this.changeNetworkingLoading(true);
     return axios
-      .post(`/devops/v1/projects/${projectId}/service/${instanceId}/listByInstance?page=${page}&size=${pageSize}`)
-      .then(data => {
+      .post(`/devops/v1/projects/${projectId}/service/listByInstance?instance_id=${instanceId}&page=${page}&size=${size}`)
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           const { list, pageNum, total, pageSize } = res;
@@ -397,13 +391,12 @@ class InstancesStore {
       });
   };
 
-  loadResource = (projectId, instanceId) =>
-    axios
-      .get(`/devops/v1/projects/${projectId}/app_instances/${instanceId}/resources`)
-      .then(data => {
-        const res = handleProptError(data);
-        return res;
-      });
+  loadResource = (projectId, instanceId) => axios
+    .get(`/devops/v1/projects/${projectId}/app_instances/${instanceId}/resources`)
+    .then((data) => {
+      const res = handleProptError(data);
+      return res;
+    });
 }
 
 const instancesStore = new InstancesStore();

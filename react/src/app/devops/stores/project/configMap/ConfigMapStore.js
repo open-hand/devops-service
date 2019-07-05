@@ -1,13 +1,9 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/boot';
 import { handleProptError } from '../../../utils';
+import { HEIGHT } from '../../../common/Constants';
 
 const { AppState } = stores;
-
-const HEIGHT =
-  window.innerHeight ||
-  document.documentElement.clientHeight ||
-  document.body.clientHeight;
 
 @store('ConfigMapStore')
 class ConfigMapStore {
@@ -105,14 +101,13 @@ class ConfigMapStore {
     this.setPreProId(projectId);
     spin && this.changeLoading(true);
     return axios
-      .post(`/devops/v1/projects/${projectId}/config_maps/${envId}/listByEnv?page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(postData))
-      .then(data => {
+      .post(`/devops/v1/projects/${projectId}/config_maps/listByEnv?env_id=${envId}&page=${page}&size=${size}&sort=${sort.field || 'id'},${sort.order}`, JSON.stringify(postData))
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           const { pageNum, pageSize, total, list } = data;
           this.setData(list);
-          const page = { pageNum, pageSize, total };
-          this.setPageInfo(page);
+          this.setPageInfo({ pageNum, pageSize, total });
           spin && this.changeLoading(false);
         }
       });
@@ -121,7 +116,7 @@ class ConfigMapStore {
   loadKVById(projectId, id) {
     return axios
       .get(`/devops/v1/projects/${projectId}/config_maps/${id}`)
-      .then(data => {
+      .then((data) => {
         if (data && data.failed) {
           Choerodon.prompt(data.message);
         } else {

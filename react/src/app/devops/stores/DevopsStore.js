@@ -1,7 +1,7 @@
+/* eslint-disable no-restricted-syntax, no-underscore-dangle */
 import { observable, action, computed } from 'mobx';
 import { store, axios } from '@choerodon/boot';
 import { storage } from '../utils';
-import { handleProptError } from '../utils';
 
 const REFRESH_INTERVAL = 1000 * 10;
 const REFRESH_AGE = 7 * 24 * 60 * 60 * 1000;
@@ -73,6 +73,7 @@ class DevopsStore {
           cert: false,
           configMap: false,
           secret: false,
+          resourceno: false,
         };
       }
       this.isAuto = flags;
@@ -86,18 +87,14 @@ class DevopsStore {
     }
   }
 
-  deleteCheck = (projectId, envId, objectType) =>
-    axios
-      .get(`/devops/v1/projects/${projectId}/notification/check_delete_resource?env_id=${envId}&objectType=${objectType}`);
+  deleteCheck = (projectId, envId, objectType) => axios
+    .get(`/devops/v1/projects/${projectId}/notification/check_delete_resource?env_id=${envId}&objectType=${objectType}`);
 
-  sendMessage = (projectId, envId, objectId, notificationId, objectType) =>
-    axios
-      .get(`/devops/v1/projects/${projectId}/notification/send_message?env_id=${envId}&object_id=${objectId}&notification_id=${notificationId}&objectType=${objectType}`);
+  sendMessage = (projectId, envId, objectId, notificationId, objectType) => axios
+    .get(`/devops/v1/projects/${projectId}/notification/send_message?env_id=${envId}&object_id=${objectId}&notification_id=${notificationId}&objectType=${objectType}`);
 
-  validateCaptcha = (projectId, envId, objectId, captcha, objectType) =>
-    axios
-      .get(`/devops/v1/projects/${projectId}/notification/validate_captcha?env_id=${envId}&object_id=${objectId}&captcha=${captcha}&objectType=${objectType}`);
-
+  validateCaptcha = (projectId, envId, objectId, captcha, objectType) => axios
+    .get(`/devops/v1/projects/${projectId}/notification/validate_captcha?env_id=${envId}&object_id=${objectId}&captcha=${captcha}&objectType=${objectType}`);
 }
 
 /**

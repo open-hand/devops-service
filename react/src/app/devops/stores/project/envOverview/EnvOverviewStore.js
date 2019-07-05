@@ -237,7 +237,7 @@ class EnvOverviewStore {
                 SecretStore.loadSecret(true, projectId, this.tpEnvId);
                 break;
               case 'customResource':
-                ResourceStore.loadResource(projectId, this.tpEnvId);
+                ResourceStore.loadResource(true, projectId, this.tpEnvId);
                 break;
               case 'all':
                 break;
