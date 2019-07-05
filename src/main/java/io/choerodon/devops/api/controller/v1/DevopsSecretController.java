@@ -1,8 +1,15 @@
 package io.choerodon.devops.api.controller.v1;
 
+import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import java.util.Optional;
 
-import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
@@ -12,12 +19,6 @@ import io.choerodon.devops.api.dto.SecretRepDTO;
 import io.choerodon.devops.api.dto.SecretReqDTO;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Created by n!Ck
@@ -42,7 +43,7 @@ public class DevopsSecretController {
      * @param secretReqDTO 请求体
      * @return SecretRepDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建或更新密钥")
     @PutMapping
@@ -63,7 +64,7 @@ public class DevopsSecretController {
      * @param secretId 密钥id
      * @return Boolean
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除密钥")
     @DeleteMapping("/{env_id}/{secret_id}")
@@ -85,23 +86,26 @@ public class DevopsSecretController {
      * @param envId       环境id
      * @param pageRequest 分页参数
      * @param params      查询参数
+     * @param params      应用id
      * @return Page
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "分页查询secret")
-    @PostMapping("/{env_id}/list_by_option")
+    @PostMapping("/list_by_option")
     public ResponseEntity<PageInfo<SecretRepDTO>> listByOption(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
+            @ApiParam(value = "环境id")
+            @RequestParam(value = "env_id", required = false) Long envId,
+            @ApiParam(value = "应用id")
+            @RequestParam(value = "app_id", required = false) Long appId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsSecretService.listByOption(envId, pageRequest, params))
+        return Optional.ofNullable(devopsSecretService.listByOption(envId, pageRequest, params, appId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.list"));
     }
@@ -112,7 +116,7 @@ public class DevopsSecretController {
      * @param secretId 密钥id
      * @return SecretRepDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据密钥id查询密钥")
     @GetMapping("/{secret_id}")
@@ -132,7 +136,7 @@ public class DevopsSecretController {
      * @param envId      环境id
      * @param secretName 密钥名
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验名字唯一性")
     @GetMapping("/{env_id}/check_name")

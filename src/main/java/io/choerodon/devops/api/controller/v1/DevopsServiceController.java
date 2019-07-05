@@ -14,6 +14,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.DevopsServiceDTO;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
 import io.choerodon.devops.app.service.DevopsServiceService;
+import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -238,16 +239,18 @@ public class DevopsServiceController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询实例下关联的网络域名（不包含chart）")
     @CustomPageRequest
-    @PostMapping(value = "/{instanceId}/listByInstance")
+    @PostMapping(value = "/listByInstance")
     public ResponseEntity<PageInfo<DevopsServiceDTO>> listByInstance(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "instanceId") Long instanceId,
+            @ApiParam(value = "实例id")
+            @RequestParam(value = "instance_id",required = false) Long instanceId,
+            @ApiParam(value = "应用id")
+            @RequestParam(value = "app_id",required = false) Long appId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(devopsServiceService.listByInstanceId(projectId, instanceId, pageRequest))
+        return Optional.ofNullable(devopsServiceService.listByInstanceId(projectId, instanceId, pageRequest,appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
     }

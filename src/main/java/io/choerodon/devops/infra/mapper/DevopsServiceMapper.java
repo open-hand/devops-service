@@ -20,7 +20,8 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDO> {
             @Param("instanceId") Long instanceId,
             @Param("searchParam") Map<String, Object> searchParam,
             @Param("param") String param,
-            @Param("sort") String sort);
+            @Param("sort") String sort,
+            @Param("appId") Long appId);
 
     List<DevopsServiceQueryDO> listDevopsService(@Param("envId") Long envId);
 
@@ -31,7 +32,7 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDO> {
     int selectCountByOptions(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("name") String name);
 
     int selectCountByName(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("instanceId") Long instanceId, @Param("searchParam") Map<String, Object> searchParam,
-                          @Param("param") String param);
+                          @Param("param") String param,@Param("appId") Long appId);
 
     Boolean checkEnvHasService(@Param("envId") Long envId);
 

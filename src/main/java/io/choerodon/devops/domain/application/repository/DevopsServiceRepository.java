@@ -1,8 +1,9 @@
 package io.choerodon.devops.domain.application.repository;
 
+import com.github.pagehelper.PageInfo;
+
 import java.util.List;
 
-import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.DevopsServiceE;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
@@ -24,7 +25,7 @@ public interface DevopsServiceRepository {
 
 
     PageInfo<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, Long instanceId,
-                                                     PageRequest pageRequest, String searchParam);
+                                                     PageRequest pageRequest, String searchParam, Long appId);
 
     List<DevopsServiceV> listDevopsService(Long envId);
 

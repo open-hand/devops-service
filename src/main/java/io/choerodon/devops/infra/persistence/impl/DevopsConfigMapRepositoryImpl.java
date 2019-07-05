@@ -1,21 +1,21 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.List;
-import java.util.Map;
-
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsConfigMapE;
 import io.choerodon.devops.domain.application.repository.DevopsConfigMapRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsConfigMapDO;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapMapper;
@@ -66,12 +66,13 @@ public class DevopsConfigMapRepositoryImpl implements DevopsConfigMapRepository 
     }
 
     @Override
-    public PageInfo<DevopsConfigMapE> pageByEnv(Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsConfigMapE> pageByEnv(Long envId, PageRequest pageRequest, String params, Long appId) {
         Map maps = gson.fromJson(params, Map.class);
         PageInfo<DevopsConfigMapDO> devopsConfigMapDOS = PageHelper
-                .startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                        TypeUtil.cast(maps.get(TypeUtil.PARAM)),
+                        appId));
         return ConvertPageHelper.convertPageInfo(devopsConfigMapDOS, DevopsConfigMapE.class);
     }
 

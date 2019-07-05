@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.dto.SecretRepDTO;
 import io.choerodon.devops.api.dto.SecretReqDTO;
@@ -61,7 +62,7 @@ public interface DevopsSecretService {
      * @param params      查询参数
      * @return Page
      */
-    PageInfo<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params);
+    PageInfo<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params, Long appId);
 
     /**
      * 根据密钥id查询密钥

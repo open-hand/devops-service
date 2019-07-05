@@ -1,6 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
 import com.github.pagehelper.PageInfo;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1Secret;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -22,15 +33,6 @@ import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.HelmObjectKind;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.SecretStatus;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1Secret;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by n!Ck
@@ -263,7 +265,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.SECRET.toValue(), devopsSecretE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t));
         devopsSecretRepository.deleteSecret(secretId);
-        appResourceRepository.deleteByResourceIdAndType(secretId,ObjectType.SECRET.getType());
+        appResourceRepository.deleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
     }
 
     @Override
@@ -322,9 +324,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public PageInfo<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params,Long appId) {
         return ConvertPageHelper
-                .convertPageInfo(devopsSecretRepository.listByOption(envId, pageRequest, params), SecretRepDTO.class);
+                .convertPageInfo(devopsSecretRepository.listByOption(envId, pageRequest, params,appId), SecretRepDTO.class);
     }
 
     @Override

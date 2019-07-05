@@ -3,9 +3,16 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.DevopsServiceDTO;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -70,8 +77,8 @@ public interface DevopsServiceService {
     /**
      * 检查网络唯一性
      *
-     * @param envId     环境Id
-     * @param name      网络名
+     * @param envId 环境Id
+     * @param name  网络名
      * @return Boolean
      */
     Boolean checkName(Long envId, String name);
@@ -109,8 +116,8 @@ public interface DevopsServiceService {
     /**
      * 根据网络名查询网络
      *
-     * @param envId   网络id
-     * @param serviceName  网络名
+     * @param envId       网络id
+     * @param serviceName 网络名
      * @return DevopsServiceDTO
      */
     DevopsServiceDTO queryByName(Long envId, String serviceName);
@@ -121,9 +128,8 @@ public interface DevopsServiceService {
      * @param projectId   项目id
      * @param instanceId  实例Id
      * @param pageRequest 分页参数
+     * @param appId       应用id
      * @return Page of DevopsServiceDTO
      */
-    PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest);
-
-
+    PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest,Long appId);
 }

@@ -1,11 +1,18 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.github.pagehelper.PageInfo;
+import com.google.gson.Gson;
+import io.kubernetes.client.models.V1ConfigMap;
+import io.kubernetes.client.models.V1ObjectMeta;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.github.pagehelper.PageInfo;
-import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -25,11 +32,6 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1ObjectMeta;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
@@ -68,7 +70,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     private DevopsAppResourceRepository appResourceRepository;
 
     @Override
-    @Transactional(rollbackFor=Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void createOrUpdate(Long projectId, Boolean sync, DevopsConfigMapDTO devopsConfigMapDTO) {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapDTO.getEnvId());
@@ -84,7 +86,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         }
 
         //校验用户是否有环境的权限
-        if(!sync) {
+        if (!sync) {
             //校验环境相关信息
             devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
         }
@@ -114,7 +116,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapDTO.getType().equals(CREATE_TYPE), filePath, devopsConfigMapE, userAttrE, devopsEnvCommandE,devopsConfigMapDTO.getAppId());
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapDTO.getType().equals(CREATE_TYPE), filePath, devopsConfigMapE, userAttrE, devopsEnvCommandE, devopsConfigMapDTO.getAppId());
     }
 
 
@@ -153,9 +155,9 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
     @Override
-    public PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam,Long appId) {
         PageInfo<DevopsConfigMapE> devopsConfigMapES = devopsConfigMapRepository.pageByEnv(
-                envId, pageRequest, searchParam);
+                envId, pageRequest, searchParam,appId);
         devopsConfigMapES.getList().forEach(devopsConfigMapE -> {
             List<String> keys = new ArrayList<>();
             gson.fromJson(devopsConfigMapE.getValue(), Map.class).forEach((key, value) ->
@@ -175,11 +177,11 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         devopsEnvCommandRepository.listByObjectAll(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         devopsConfigMapRepository.delete(configMapId);
-        appResourceRepository.deleteByResourceIdAndType(configMapId,ObjectType.CONFIGMAP.getType());
+        appResourceRepository.deleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
     }
 
     @Override
-    @Transactional(rollbackFor=Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void delete(Long configMapId) {
         DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryById(configMapId);
 
@@ -209,7 +211,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), configMapId, CONFIGMAP);
         if (devopsEnvFileResourceE == null) {
             devopsConfigMapRepository.delete(configMapId);
-            appResourceRepository.deleteByResourceIdAndType(configMapId,ObjectType.CONFIGMAP.getType());
+            appResourceRepository.deleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     CONFIG_MAP_PREFIX + devopsConfigMapE.getName() + ".yaml")) {
                 gitlabRepository.deleteFile(
@@ -223,7 +225,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsConfigMapRepository.delete(configMapId);
-                appResourceRepository.deleteByResourceIdAndType(configMapId,ObjectType.CONFIGMAP.getType());
+                appResourceRepository.deleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
                 return;
             }
@@ -283,7 +285,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                                       Boolean isCreate,
                                       String path,
                                       DevopsConfigMapE devopsConfigMapE,
-                                      UserAttrE userAttrE, DevopsEnvCommandE devopsEnvCommandE,Long appId) {
+                                      UserAttrE userAttrE, DevopsEnvCommandE devopsEnvCommandE, Long appId) {
 
 
         //操作configMap数据库
