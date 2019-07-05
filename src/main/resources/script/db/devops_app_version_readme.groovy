@@ -39,5 +39,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_version_readme.groovy') {
     }
 
 
+    changeSet(author: 'Sheep', id: '2019-07-05-updateDataType') {
+        modifyDataType(tableName: 'devops_app_version_readme', columnName: 'readme', newDataType: 'MEDIUMTEXT')
+    }
+
 
 }
