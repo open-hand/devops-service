@@ -273,8 +273,6 @@
         where da.id = #{appId}
     </update>
 
-
-
     <update id="updateAppHarborConfig" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDO">
         UPDATE devops_application da
         <if test='harborPrivate != null'>
@@ -289,4 +287,14 @@
         </if>
         AND da.project_id = #{projectId}
     </update>
+
+    <select id="queryByCodeWithNoProject" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        SELECT
+            da.*
+        FROM
+            devops_application da
+        WHERE
+            da.code = #{code}
+          AND da.project_id is null
+    </select>
 </mapper>

@@ -849,7 +849,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
             @RequestBody ApplicationRemoteDeployDTO appRemoteDeployDTO) {
-        return Optional.ofNullable(applicationInstanceService.deployRemote(projectId, appRemoteDeployDTO))
+        return Optional.ofNullable(applicationInstanceService.deployRemote(appRemoteDeployDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.remote.deploy"));
     }

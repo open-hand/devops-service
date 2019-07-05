@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1307,8 +1306,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public ApplicationInstanceDTO deployRemote(Long projectId, ApplicationRemoteDeployDTO appRemoteDeployDTO) {
-        ApplicationE applicationE = createApplication(projectId, appRemoteDeployDTO);
+    public ApplicationInstanceDTO deployRemote(ApplicationRemoteDeployDTO appRemoteDeployDTO) {
+        ApplicationE applicationE = createApplication(appRemoteDeployDTO);
         ApplicationVersionE versionE = createVersion(applicationE, appRemoteDeployDTO.getVersionRemoteDTO());
         ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO();
         BeanUtils.copyProperties(appRemoteDeployDTO, applicationDeployDTO);
@@ -1319,18 +1318,20 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
 
-    private ApplicationE createApplication(Long projectId, ApplicationRemoteDeployDTO appRemoteDeployDTO) {
-        String code = appRemoteDeployDTO.getAppRemoteDTO().getCode() + "_remote";
-        ApplicationE applicationE = applicationRepository.queryByCode(code, projectId);
+    private ApplicationE createApplication(ApplicationRemoteDeployDTO appRemoteDeployDTO) {
+        String code = appRemoteDeployDTO.getAppRemoteDTO().getCode();
+        String name = appRemoteDeployDTO.getAppRemoteDTO().getName();
+        ApplicationE applicationE = applicationRepository.queryByCodeWithNullProject(code);
         if (applicationE == null) {
             applicationE = new ApplicationE();
-            DevopsProjectConfigE harborConfigE = createConfig(projectId, "harbor", appRemoteDeployDTO.getAppRemoteDTO().getCode(), appRemoteDeployDTO.getHarbor());
-            DevopsProjectConfigE chartConfigE = createConfig(projectId, "chart", appRemoteDeployDTO.getAppRemoteDTO().getCode(), appRemoteDeployDTO.getChart());
+            DevopsProjectConfigE harborConfigE = createConfig("harbor", appRemoteDeployDTO.getAppRemoteDTO().getCode(), appRemoteDeployDTO.getHarbor());
+            DevopsProjectConfigE chartConfigE = createConfig("chart", appRemoteDeployDTO.getAppRemoteDTO().getCode(), appRemoteDeployDTO.getChart());
             applicationE.setType(appRemoteDeployDTO.getAppRemoteDTO().getType());
             applicationE.setCode(code);
-            applicationE.setName(appRemoteDeployDTO.getAppRemoteDTO().getName());
+            applicationE.setName(name);
             applicationE.setActive(true);
-            applicationE.initProjectE(projectId);
+            applicationE.setSynchro(true);
+            applicationE.setIsSkipCheckPermission(true);
             applicationE.initHarborConfig(harborConfigE.getId());
             applicationE.initChartConfig(chartConfigE.getId());
             return applicationRepository.create(applicationE);
@@ -1360,20 +1361,18 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     /**
      * 创建远程配置
      *
-     * @param projectId
      * @param type
      * @param code
      * @param projectConfigDTO
      * @return
      */
-    private DevopsProjectConfigE createConfig(Long projectId, String type, String code, ProjectConfigDTO projectConfigDTO) {
-        String name = code + "_remote_" + type;
-        DevopsProjectConfigE devopsPrpjectConfigE = devopsProjectConfigRepository.queryByName(projectId, name);
+    private DevopsProjectConfigE createConfig(String type, String code, ProjectConfigDTO projectConfigDTO) {
+        String name = code + "-" + type;
+        DevopsProjectConfigE devopsPrpjectConfigE = devopsProjectConfigRepository.queryByNameWithNullProject(name);
         if (devopsPrpjectConfigE == null) {
             DevopsProjectConfigDTO devopsProjectConfigDTO = new DevopsProjectConfigDTO();
             devopsProjectConfigDTO.setConfig(projectConfigDTO);
             devopsPrpjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
-            devopsPrpjectConfigE.setProjectId(projectId);
             devopsPrpjectConfigE.setName(name);
             devopsPrpjectConfigE.setType(type);
             return devopsProjectConfigRepository.create(devopsPrpjectConfigE);

@@ -93,4 +93,14 @@
                 da.chart_config_id = #{configId}
             OR da.harbor_config_id = #{configId}
     </select>
+
+    <select id="queryByNameWithNoProject" resultType="io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO">
+        SELECT
+            dpc.*
+        FROM
+            devops_project_config dpc
+        WHERE
+            dpc.name
+        AND dpc.project_id is null
+    </select>
 </mapper>

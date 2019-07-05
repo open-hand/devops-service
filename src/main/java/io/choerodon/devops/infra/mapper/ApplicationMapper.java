@@ -1,11 +1,12 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.ApplicationDO;
-import io.choerodon.mybatis.common.Mapper;
-import org.apache.ibatis.annotations.Param;
-
 import java.util.List;
 import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dataobject.ApplicationDO;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created by younger on 2018/3/28.
@@ -45,6 +46,8 @@ public interface ApplicationMapper extends Mapper<ApplicationDO> {
     Integer checkAppCanDisable(@Param("applicationId") Long applicationId);
 
     List<ApplicationDO> listByCode(@Param("code") String code);
+
+    ApplicationDO queryByCodeWithNoProject(@Param("code") String code);
 
     List<ApplicationDO> listByGitLabProjectIds(@Param("gitlabProjectIds") List<Long> gitlabProjectIds);
 
