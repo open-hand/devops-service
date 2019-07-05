@@ -38,7 +38,7 @@
         WHERE
         d.object = #{objectType} and d.object_id = #{objectId}
         and d.command_type in ('update','create')
-        ORDER BY d.id DESC LIMIT 4
+        ORDER BY d.id DESC
     </select>
 
 

@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.dto;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by younger on 2018/4/25.
@@ -12,6 +13,8 @@ public class DeploymentDTO {
     private Long upToDate;
     private Long available;
     private String age;
+    private List<Integer> ports;
+    private Map<String,String> labels;
     private List<DevopsEnvPodDTO> devopsEnvPodDTOS;
 
     public String getName() {
@@ -60,6 +63,22 @@ public class DeploymentDTO {
 
     public void setAge(String age) {
         this.age = age;
+    }
+
+    public List<Integer> getPorts() {
+        return ports;
+    }
+
+    public void setPorts(List<Integer> ports) {
+        this.ports = ports;
+    }
+
+    public Map<String, String> getLabels() {
+        return labels;
+    }
+
+    public void setLabels(Map<String, String> labels) {
+        this.labels = labels;
     }
 
     public List<DevopsEnvPodDTO> getDevopsEnvPodDTOS() {
