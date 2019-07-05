@@ -315,5 +315,5 @@ public interface ApplicationInstanceService {
      * @param appRemoteDeployDTO
      * @return
      */
-    ApplicationInstanceDTO deployRemote(Long projectId, ApplicationRemoteDeployDTO appRemoteDeployDTO);
+    ApplicationInstanceDTO deployRemote(ApplicationRemoteDeployDTO appRemoteDeployDTO);
 }

@@ -21,4 +21,6 @@ public interface DevopsProjectConfigMapper extends Mapper<DevopsProjectConfigDO>
     List<DevopsProjectConfigDO> queryByIdAndType(@Param("projectId") Long projectId, @Param("type") String type);
 
     List<Integer> checkIsUsed(@Param("configId") Long configId);
+
+    DevopsProjectConfigDO queryByNameWithNoProject(@Param("name") String name);
 }

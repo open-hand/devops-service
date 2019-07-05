@@ -1,10 +1,11 @@
 package io.choerodon.devops.domain.application.repository;
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
-
-import java.util.List;
 
 /**
  * Created by younger on 2018/3/28.
@@ -19,6 +20,8 @@ public interface ApplicationRepository {
     void checkCode(Long projectId, String code);
 
     ApplicationE queryByCode(String code, Long projectId);
+
+    ApplicationE queryByCodeWithNullProject(String code);
 
     int update(ApplicationE applicationE);
 

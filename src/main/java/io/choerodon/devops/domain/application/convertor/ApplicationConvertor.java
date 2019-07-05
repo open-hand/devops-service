@@ -1,12 +1,13 @@
 package io.choerodon.devops.domain.application.convertor;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.dto.ApplicationReqDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
 
 /**
  * Created by Zenger on 2018/4/2.
@@ -39,7 +40,9 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
     public ApplicationDO entityToDo(ApplicationE applicationE) {
         ApplicationDO applicationDO = new ApplicationDO();
         BeanUtils.copyProperties(applicationE, applicationDO);
-        applicationDO.setProjectId(applicationE.getProjectE().getId());
+        if (applicationE.getProjectE() != null) {
+            applicationDO.setProjectId(applicationE.getProjectE().getId());
+        }
         if (applicationE.getApplicationTemplateE() != null) {
             applicationDO.setAppTemplateId(applicationE.getApplicationTemplateE().getId());
         }
@@ -60,7 +63,9 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
     public ApplicationE dtoToEntity(ApplicationReqDTO applicationReqDTO) {
         ApplicationE applicationE = ApplicationFactory.createApplicationE();
         BeanUtils.copyProperties(applicationReqDTO, applicationE);
-        applicationE.initProjectE(applicationReqDTO.getProjectId());
+        if (applicationReqDTO.getProjectId() != null) {
+            applicationE.initProjectE(applicationReqDTO.getProjectId());
+        }
         if (applicationReqDTO.getApplicationTemplateId() != null) {
             applicationE.initApplicationTemplateE(applicationReqDTO.getApplicationTemplateId());
         }

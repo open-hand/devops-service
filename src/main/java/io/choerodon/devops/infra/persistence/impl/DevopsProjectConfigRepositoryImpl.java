@@ -76,6 +76,11 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
     }
 
     @Override
+    public DevopsProjectConfigE queryByNameWithNullProject(String name) {
+        return ConvertHelper.convert(configMapper.queryByNameWithNoProject(name), DevopsProjectConfigE.class);
+    }
+
+    @Override
     public PageInfo<DevopsProjectConfigE> listByOptions(Long projectId, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
 
