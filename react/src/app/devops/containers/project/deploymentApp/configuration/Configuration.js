@@ -11,7 +11,6 @@ import _ from 'lodash';
 import ButtonGroup from '../components/buttonGroup';
 import YamlEditor from '../../../../components/yamlEditor';
 import ConfigSidebar from '../components/configSidebar';
-import { handlePromptError } from '../../../../utils';
 
 const { Option } = Select;
 
@@ -70,10 +69,7 @@ export default class Configuration extends Component {
     if (templateId) {
       store.loadTemplateValue(projectId, templateId);
     } else {
-      const response = await store.loadChartValue(projectId, mode, instanceId, version.id);
-      if (handlePromptError(response)) {
-        response.id && this.selectTemplate(response.id);
-      }
+      store.loadChartValue(projectId, mode, instanceId, version.id);
     }
   }
 
@@ -133,6 +129,10 @@ export default class Configuration extends Component {
     const {
       store: {
         getSelectedApp,
+        getSelectedInstance: {
+          mode,
+          instanceId,
+        },
       },
       location: {
         state,
@@ -143,13 +143,15 @@ export default class Configuration extends Component {
         },
       },
     } = this.props;
+    const { templateId } = this.state;
     const isCurrentProjectApp = getSelectedApp && String(getSelectedApp.projectId) === id;
     const isMarketApp = (!isCurrentProjectApp && state && (state.prevPage === 'market' || state.isLocalApp)) || getSelectedApp.publishLevel;
+    const isUpdate = mode === 'update' && (instanceId || instanceId === 0);
 
     this.setState({
       configValue: value,
       isValueChanged: changed,
-      shouldDisplayModal: !isMarketApp && changed,
+      shouldDisplayModal: !isMarketApp && changed && !templateId && !isUpdate,
     });
   };
 
@@ -210,50 +212,6 @@ export default class Configuration extends Component {
     });
   };
 
-  handleUpdateTemplate = async () => {
-    const {
-      intl: { formatMessage },
-      store,
-      AppState: {
-        currentMenuType: {
-          id: projectId,
-        },
-      },
-    } = this.props;
-    const { getConfigList } = store;
-    const { templateId, configValue } = this.state;
-    const config = _.find(getConfigList, ['id', templateId]);
-
-    if (config) {
-      const items = _.pick(config, ['appId', 'description', 'id', 'name', 'objectVersionNumber']);
-      const data = {
-        ...items,
-        value: configValue,
-      };
-
-      this.setState({ modalLoading: true });
-
-      const response = await store.changeConfig(projectId, data)
-        .catch((error) => {
-          Choerodon.handleResponseError(error);
-        });
-
-      if (handlePromptError(response)) {
-        this.setState({
-          shouldDisplayModal: false,
-          displayModal: false,
-        });
-        Choerodon.prompt(formatMessage({ id: 'deploy.config.update.success' }));
-        this.setState({ modalLoading: false });
-
-        store.loadTemplateValue(projectId, templateId);
-        this.stepToNext();
-      }
-    } else {
-      Choerodon.prompt(formatMessage({ id: 'deploy.config.update.failed' }));
-    }
-  };
-
   handleCancelCreate = () => {
     this.setState({
       displayCreateModal: false,
@@ -292,25 +250,22 @@ export default class Configuration extends Component {
 
   get renderModal() {
     const {
-      templateId,
       displayModal,
       modalLoading,
     } = this.state;
 
-    const mode = templateId ? 'update' : 'create';
-
     return <Modal
       visible={displayModal}
-      cancelText={<FormattedMessage id={`deploy.config.${mode}.cancel`} />}
-      title={<FormattedMessage id={`deploy.config.${mode}.title`} />}
-      okText={<FormattedMessage id={`deploy.config.${mode}.submit`} />}
+      cancelText={<FormattedMessage id="deploy.config.create.cancel" />}
+      title={<FormattedMessage id="deploy.config.create.title" />}
+      okText={<FormattedMessage id="deploy.config.create.submit" />}
       closable={false}
-      onOk={mode === 'create' ? this.handleCreateTemplate : this.handleUpdateTemplate}
+      onOk={this.handleCreateTemplate}
       onCancel={this.stepToNext}
       confirmLoading={modalLoading}
     >
       <div className="c7n-padding-top_8">
-        <FormattedMessage id={`deploy.config.${mode}.describe`} />
+        <FormattedMessage id="deploy.config.create.describe" />
       </div>
     </Modal>;
   }
