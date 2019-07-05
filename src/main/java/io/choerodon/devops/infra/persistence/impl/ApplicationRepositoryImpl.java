@@ -81,7 +81,9 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public ApplicationE create(ApplicationE applicationE) {
         ApplicationDO applicationDO = ConvertHelper.convert(applicationE, ApplicationDO.class);
-        applicationMapper.insert(applicationDO);
+        if (applicationMapper.insert(applicationDO) != 1) {
+            throw new CommonException("error.application.create.insert");
+        }
         return ConvertHelper.convert(applicationDO, ApplicationE.class);
     }
 

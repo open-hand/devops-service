@@ -5,23 +5,40 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
+import io.choerodon.devops.api.dto.ApplicationCodeDTO;
+import io.choerodon.devops.api.dto.ApplicationImportDTO;
+import io.choerodon.devops.api.dto.ApplicationRepDTO;
+import io.choerodon.devops.api.dto.ApplicationReqDTO;
+import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
+import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
+import io.choerodon.devops.api.dto.SonarContentsDTO;
+import io.choerodon.devops.api.dto.SonarTableDTO;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Created by younger on 2018/4/4.
@@ -30,8 +47,8 @@ import springfox.documentation.annotations.ApiIgnore;
 @RequestMapping(value = "/v1/projects/{project_id}/apps")
 public class ApplicationController {
 
-    private ApplicationService applicationService;
     private static final String ERROR_APPLICATION_GET = "error.application.get";
+    private ApplicationService applicationService;
 
     public ApplicationController(ApplicationService applicationService) {
         this.applicationService = applicationService;
@@ -44,7 +61,7 @@ public class ApplicationController {
      * @param applicationReqDTO 应用信息
      * @return ApplicationRepDTO
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建应用")
     @PostMapping
     public ResponseEntity<ApplicationRepDTO> create(
@@ -64,7 +81,7 @@ public class ApplicationController {
      * @param applicationImportDTO 应用信息
      * @return ApplicationRepDTO
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下从外部代码库导入应用")
     @PostMapping("/import")
     public ResponseEntity<ApplicationRepDTO> importApp(
@@ -84,7 +101,7 @@ public class ApplicationController {
      * @param applicationId 应用Id
      * @return ApplicationRepDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询单个应用信息")
     @GetMapping("/{applicationId}/detail")
@@ -105,7 +122,7 @@ public class ApplicationController {
      * @param applicationUpdateDTO 应用Id
      * @return Boolean
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新应用信息")
     @PutMapping
     public ResponseEntity<Boolean> update(
@@ -126,7 +143,7 @@ public class ApplicationController {
      * @param active        启用停用
      * @return Boolean
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下启用停用应用信息")
     @PutMapping("/{applicationId}")
     public ResponseEntity<Boolean> queryByAppIdAndActive(
@@ -148,7 +165,7 @@ public class ApplicationController {
      * @param applicationId 应用id
      * @return Boolean
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除创建失败应用")
     @DeleteMapping("/{applicationId}")
     public ResponseEntity deleteByAppId(
@@ -165,12 +182,12 @@ public class ApplicationController {
      *
      * @param projectId   项目id
      * @param isActive    项目是否启用
-     * @param appMarket  应用市场导入
+     * @param appMarket   应用市场导入
      * @param pageRequest 分页参数
      * @param params      参数
      * @return Page
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询应用")
     @CustomPageRequest
@@ -204,7 +221,7 @@ public class ApplicationController {
      * @param projectId 项目id
      * @return Page
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境id分页获取已部署正在运行实例的应用")
     @CustomPageRequest
@@ -231,7 +248,7 @@ public class ApplicationController {
      * @param status    实例状态
      * @return List
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境id获取已部署正在运行实例的应用")
     @GetMapping("/options")
@@ -255,7 +272,7 @@ public class ApplicationController {
      * @param projectId 项目id
      * @return List
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询所有已经启用的应用")
     @GetMapping
@@ -273,7 +290,7 @@ public class ApplicationController {
      * @param projectId 项目id
      * @return List
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "本项目下或者应用市场在该项目下部署过的应用")
     @GetMapping(value = "/list_all")
@@ -291,7 +308,7 @@ public class ApplicationController {
      * @param projectId 项目id
      * @param name      应用name
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建应用校验名称是否存在")
     @GetMapping(value = "/check_name")
     public void checkName(
@@ -308,7 +325,7 @@ public class ApplicationController {
      * @param projectId 项目ID
      * @param code      应用code
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建应用校验编码是否存在")
     @GetMapping(value = "/check_code")
     public void checkCode(
@@ -325,7 +342,7 @@ public class ApplicationController {
      * @param projectId 项目ID
      * @param code      应用code
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据应用编码查询应用")
     @GetMapping(value = "/query_by_code")
     public ResponseEntity<ApplicationRepDTO> queryByCode(
@@ -344,7 +361,7 @@ public class ApplicationController {
      * @param projectId 项目ID
      * @return Page
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询所有应用模板")
     @GetMapping("/template")
     public ResponseEntity<List<ApplicationTemplateRepDTO>> listTemplate(
@@ -365,7 +382,7 @@ public class ApplicationController {
      * @param params      查询参数
      * @return Page
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的应用")
     @CustomPageRequest
     @PostMapping(value = "/list_unpublish")
@@ -389,7 +406,7 @@ public class ApplicationController {
      * @param params      参数
      * @return Page
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询代码仓库")
@@ -415,7 +432,7 @@ public class ApplicationController {
      * @param appId 应用id
      * @return List
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取应用下所有用户权限")
     @GetMapping(value = "/{appId}/list_all")
     public ResponseEntity<List<AppUserPermissionRepDTO>> listAllUserPermission(
@@ -438,7 +455,7 @@ public class ApplicationController {
      * @param project  harbor项目
      * @param email    harbor邮箱
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验harbor配置信息是否正确")
     @GetMapping(value = "/check_harbor")
     public void checkHarbor(
@@ -463,7 +480,7 @@ public class ApplicationController {
      *
      * @param url chartmusume地址
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验chart配置信息是否正确")
     @GetMapping(value = "/check_chart")
     public void checkChart(
@@ -482,7 +499,7 @@ public class ApplicationController {
      * @param accessToken  gitlab授权的access token
      * @return true 如果有效
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation("验证用于克隆仓库的url及授权的access token是否有效")
     @GetMapping("/url_validation")
     public ResponseEntity<Object> validateUrlAndAccessToken(
@@ -505,7 +522,7 @@ public class ApplicationController {
      * @param appId     应用id
      * @return
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation("查看sonarqube相关信息")
     @GetMapping("/{app_id}/sonarqube")
     public ResponseEntity<SonarContentsDTO> getSonarQube(
@@ -525,7 +542,7 @@ public class ApplicationController {
      * @param appId     应用id
      * @return
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation("查看sonarqube相关信息")
     @GetMapping("/{app_id}/sonarQubeTable")
     public ResponseEntity<SonarTableDTO> getSonarQubeTable(
@@ -542,6 +559,24 @@ public class ApplicationController {
         return Optional.ofNullable(applicationService.getSonarTable(projectId, appId, type, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.sonarqube.content.get"));
+    }
+
+    /**
+     * 应用删除
+     * @param projectId
+     * @param appId
+     * @return
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation("应用删除")
+    @DeleteMapping("/{app_id}")
+    public ResponseEntity<SonarTableDTO> delete(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable(value = "app_id") Long appId) {
+        applicationService.deleteById(projectId, appId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }

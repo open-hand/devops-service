@@ -4,8 +4,17 @@ import java.util.Date;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
+import io.choerodon.devops.api.dto.ApplicationCodeDTO;
+import io.choerodon.devops.api.dto.ApplicationImportDTO;
+import io.choerodon.devops.api.dto.ApplicationRepDTO;
+import io.choerodon.devops.api.dto.ApplicationReqDTO;
+import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
+import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
+import io.choerodon.devops.api.dto.SonarContentsDTO;
+import io.choerodon.devops.api.dto.SonarTableDTO;
 import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
@@ -68,7 +77,7 @@ public interface ApplicationService {
      *
      * @param projectId   项目id
      * @param isActive    是否启用
-     * @param appMarket  应用市场导入
+     * @param appMarket   应用市场导入
      * @param hasVersion  是否存在版本
      * @param pageRequest 分页参数
      * @param params      参数
@@ -304,4 +313,6 @@ public interface ApplicationService {
      * @return
      */
     SonarTableDTO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime);
+
+    void deleteById(Long projectId, Long appId);
 }

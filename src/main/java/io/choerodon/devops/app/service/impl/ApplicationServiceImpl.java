@@ -1,49 +1,27 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.api.dto.gitlab.MemberDTO;
-import io.choerodon.devops.api.dto.gitlab.VariableDTO;
-import io.choerodon.devops.api.dto.sonar.*;
-import io.choerodon.devops.api.validator.ApplicationValidator;
-import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
-import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
-import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
-import io.choerodon.devops.domain.application.event.IamAppPayLoad;
-import io.choerodon.devops.domain.application.factory.ApplicationFactory;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.domain.application.valueobject.ProjectHook;
-import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.common.util.*;
-import io.choerodon.devops.infra.common.util.enums.*;
-import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-import io.choerodon.devops.infra.config.RetrofitHandler;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.dataobject.harbor.ProjectDetail;
-import io.choerodon.devops.infra.dataobject.harbor.User;
-import io.choerodon.devops.infra.feign.ChartClient;
-import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.websocket.tool.UUIDTool;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -63,17 +41,96 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
+import io.choerodon.devops.api.dto.ApplicationCodeDTO;
+import io.choerodon.devops.api.dto.ApplicationImportDTO;
+import io.choerodon.devops.api.dto.ApplicationRepDTO;
+import io.choerodon.devops.api.dto.ApplicationReqDTO;
+import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
+import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
+import io.choerodon.devops.api.dto.ProjectConfigDTO;
+import io.choerodon.devops.api.dto.SonarContentDTO;
+import io.choerodon.devops.api.dto.SonarContentsDTO;
+import io.choerodon.devops.api.dto.SonarTableDTO;
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
+import io.choerodon.devops.api.dto.gitlab.VariableDTO;
+import io.choerodon.devops.api.dto.sonar.Bug;
+import io.choerodon.devops.api.dto.sonar.Component;
+import io.choerodon.devops.api.dto.sonar.Facet;
+import io.choerodon.devops.api.dto.sonar.Projects;
+import io.choerodon.devops.api.dto.sonar.Quality;
+import io.choerodon.devops.api.dto.sonar.SonarAnalyses;
+import io.choerodon.devops.api.dto.sonar.SonarComponent;
+import io.choerodon.devops.api.dto.sonar.SonarHistroy;
+import io.choerodon.devops.api.dto.sonar.SonarTables;
+import io.choerodon.devops.api.dto.sonar.Vulnerability;
+import io.choerodon.devops.api.validator.ApplicationValidator;
+import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.domain.application.entity.AppUserPermissionE;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
+import io.choerodon.devops.domain.application.entity.DevopsAppShareE;
+import io.choerodon.devops.domain.application.entity.DevopsBranchE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.event.DevOpsAppDelPayload;
+import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
+import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
+import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
+import io.choerodon.devops.domain.application.event.IamAppPayLoad;
+import io.choerodon.devops.domain.application.factory.ApplicationFactory;
+import io.choerodon.devops.domain.application.repository.AppShareRepository;
+import io.choerodon.devops.domain.application.repository.AppUserPermissionRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
+import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
+import io.choerodon.devops.domain.application.repository.GitlabRepository;
+import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.application.valueobject.Variable;
+import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GenerateUUID;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.GitUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.AccessLevel;
+import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
+import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
+import io.choerodon.devops.infra.common.util.enums.Rate;
+import io.choerodon.devops.infra.common.util.enums.SonarQubeType;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.config.RetrofitHandler;
+import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.dataobject.harbor.ProjectDetail;
+import io.choerodon.devops.infra.dataobject.harbor.User;
+import io.choerodon.devops.infra.feign.ChartClient;
+import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.websocket.tool.UUIDTool;
 
 /**
  * Created by younger on 2018/3/28.
@@ -1106,12 +1163,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         // 创建应用
         applicationE = applicationRepository.create(applicationE);
-
-        // 校验创建成功与否
         Long appId = applicationE.getId();
-        if (appId == null) {
-            throw new CommonException("error.application.create.insert");
-        }
 
         // 创建saga payload
         DevOpsAppImportPayload devOpsAppImportPayload = new DevOpsAppImportPayload();
@@ -1841,5 +1893,32 @@ public class ApplicationServiceImpl implements ApplicationService {
         map.put("facets", "severities,types");
         map.put("additionalFields", "_all");
         return map;
+    }
+
+    @Override
+    @Saga(code = "devops-app-delete", description = "Devops删除应用", inputSchema = "{}")
+    public void deleteById(Long projectId, Long appId) {
+        ProjectE projectE=iamRepository.queryIamProject(projectId);
+        //删除应用权限
+        appUserPermissionRepository.deleteByAppId(appId);
+        //删除gitlab project
+        ApplicationE applicationE = applicationRepository.query(appId);
+        if (applicationE.getGitlabProjectE() != null) {
+            Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
+            GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectById(gitlabProjectId);
+            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
+                gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
+            }
+        }
+        applicationRepository.delete(appId);
+        //iam
+        DevOpsAppDelPayload appDelPayload=new DevOpsAppDelPayload();
+        appDelPayload.setProjectId(projectId);
+        appDelPayload.setOrganizationId(projectE.getOrganization().getId());
+        appDelPayload.setCode(applicationE.getCode());
+        String input = gson.toJson(appDelPayload);
+        sagaClient.startSaga("devops-app-delete", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
     }
 }
