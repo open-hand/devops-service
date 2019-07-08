@@ -108,9 +108,9 @@ public class ObjectOperation<T> {
                     case "Ingress":
                         handleIngress(t, deleteCert, objectType, operationType, resultBuilder, jsonObject);
                         break;
-//                    case "Service":
-//                        handleService(t, content, objectType, operationType, resultBuilder, jsonObject);
-//                        break;
+                    case "Service":
+                        handleService(t, content, objectType, operationType, resultBuilder, jsonObject);
+                        break;
                     case "C7nCertification":
                         handleC7nCertification(t, objectType, operationType, resultBuilder, jsonObject);
                         break;

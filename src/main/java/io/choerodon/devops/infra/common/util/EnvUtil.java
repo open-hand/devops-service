@@ -141,10 +141,10 @@ public class EnvUtil {
                 projectE.getCode(), envCode);
 
         File file = new File(path);
-//        gitUtil.setSshKey(envRsa);
-//        if (!file.exists()) {
-//            gitUtil.cloneBySsh(path, url);
-//        }
+        gitUtil.setSshKey(envRsa);
+        if (!file.exists()) {
+            gitUtil.cloneBySsh(path, url);
+        }
         return path;
     }
 }
