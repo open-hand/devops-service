@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
@@ -18,10 +22,6 @@ import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -223,7 +223,7 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public void deleteInstance(Long instanceId) {
-        applicationInstanceMapper.deleteInstance(instanceId);
+    public void deleteInstanceRelInfo(Long instanceId) {
+        applicationInstanceMapper.deleteInstanceRelInfo(instanceId);
     }
 }

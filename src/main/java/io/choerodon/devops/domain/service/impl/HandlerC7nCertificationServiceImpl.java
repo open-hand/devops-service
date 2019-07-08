@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.kubernetes.client.models.V1Endpoints;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.domain.application.entity.CertificationE;
@@ -27,6 +24,9 @@ import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
+import io.kubernetes.client.models.V1Endpoints;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 @Service
@@ -84,11 +84,6 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                 .forEach(certName -> {
                     CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
                     if (certificationE != null) {
-                        if (!CommandType.DELETE.getType().equals(certificationE.getCommandType())) {
-                            certificationE.setCommandId(certificationService
-                                    .createCertCommandE(CommandType.DELETE.getType(), certificationE.getId(), userId));
-                            certificationRepository.updateCommandId(certificationE);
-                        }
                         certificationService.certDeleteByGitOps(certificationE.getId());
                         devopsEnvFileResourceRepository
                                 .deleteByEnvIdAndResource(envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());

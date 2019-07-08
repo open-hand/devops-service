@@ -466,21 +466,19 @@
 
 
 
-    <delete id="deleteInstance">
+    <delete id="deleteInstanceRelInfo">
  	DELETE
-    devops_app_instance,
     devops_env_command,
     devops_command_event,
     devops_env_command_log,
     devops_env_command_value
     FROM
-	  devops_app_instance
-    LEFT JOIN devops_env_command ON  devops_app_instance.id = devops_env_command.object_id
+	  devops_env_command
 	LEFT JOIN devops_command_event  ON devops_env_command.id = devops_command_event.command_id
 	LEFT JOIN devops_env_command_log  ON devops_env_command.id = devops_env_command_log.command_id
 	LEFT JOIN devops_env_command_value  ON devops_env_command.value_id = devops_env_command_value.id
     WHERE
-	devops_app_instance.id = #{instanceId}
+	devops_env_command.object_id = #{instanceId}
 	and devops_env_command.object = "instance"
     </delete>
 </mapper>

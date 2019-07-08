@@ -6,49 +6,26 @@ import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.devops.api.dto.ApplicationDeployDTO;
-import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
-import io.choerodon.devops.api.dto.PipelineWebHookDTO;
-import io.choerodon.devops.api.dto.PushWebHookDTO;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.app.service.ApplicationTemplateService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
-import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.PipelineStageRecordE;
-import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
+import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
-import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
-import io.choerodon.devops.infra.feign.NotifyClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -68,60 +45,33 @@ public class DevopsSagaHandler {
     private final Gson gson = new Gson();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final DevopsEnvironmentService devopsEnvironmentService;
-    private final DevopsGitService devopsGitService;
-    private final ApplicationTemplateService applicationTemplateService;
-    private final ApplicationService applicationService;
-    private final DevopsGitlabPipelineService devopsGitlabPipelineService;
-    private final ApplicationRepository applicationRepository;
-    private final ApplicationTemplateRepository applicationTemplateRepository;
-    private final DevopsEnvironmentRepository devopsEnvironmentRepository;
-    private final ApplicationInstanceService applicationInstanceService;
-    private final GitlabRepository gitlabRepository;
-    private final PipelineTaskRecordRepository taskRecordRepository;
-    private final PipelineAppDeployRepository appDeployRepository;
-    private final PipelineStageRecordRepository stageRecordRepository;
-    private final PipelineService pipelineService;
-    private PipelineRecordRepository pipelineRecordRepository;
-    private WorkFlowRepository workFlowRepository;
-    private NotifyClient notifyClient;
-
     @Autowired
-    public DevopsSagaHandler(DevopsEnvironmentService devopsEnvironmentService,
-                             DevopsGitService devopsGitService,
-                             ApplicationTemplateService applicationTemplateService,
-                             ApplicationService applicationService,
-                             DevopsGitlabPipelineService devopsGitlabPipelineService,
-                             ApplicationRepository applicationRepository,
-                             ApplicationTemplateRepository applicationTemplateRepository,
-                             DevopsEnvironmentRepository devopsEnvironmentRepository,
-                             PipelineTaskRecordRepository taskRecordRepository,
-                             PipelineAppDeployRepository appDeployRepository,
-                             PipelineStageRecordRepository stageRecordRepository,
-                             GitlabRepository gitlabRepository,
-                             PipelineService pipelineService,
-                             PipelineRecordRepository pipelineRecordRepository,
-                             WorkFlowRepository workFlowRepository,
-                             NotifyClient notifyClient,
-                             ApplicationInstanceService applicationInstanceService) {
-        this.devopsEnvironmentService = devopsEnvironmentService;
-        this.devopsGitService = devopsGitService;
-        this.applicationTemplateService = applicationTemplateService;
-        this.applicationService = applicationService;
-        this.devopsGitlabPipelineService = devopsGitlabPipelineService;
-        this.applicationRepository = applicationRepository;
-        this.applicationTemplateRepository = applicationTemplateRepository;
-        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
-        this.taskRecordRepository = taskRecordRepository;
-        this.appDeployRepository = appDeployRepository;
-        this.gitlabRepository = gitlabRepository;
-        this.pipelineService = pipelineService;
-        this.stageRecordRepository = stageRecordRepository;
-        this.applicationInstanceService = applicationInstanceService;
-        this.pipelineRecordRepository = pipelineRecordRepository;
-        this.workFlowRepository = workFlowRepository;
-        this.notifyClient = notifyClient;
-    }
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsGitService devopsGitService;
+    @Autowired
+    private ApplicationTemplateService applicationTemplateService;
+    @Autowired
+    private ApplicationService applicationService;
+    @Autowired
+    private DevopsGitlabPipelineService devopsGitlabPipelineService;
+    @Autowired
+    private ApplicationRepository applicationRepository;
+    @Autowired
+    private ApplicationTemplateRepository applicationTemplateRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    @Autowired
+    private ApplicationInstanceService applicationInstanceService;
+    @Autowired
+    private PipelineTaskRecordRepository taskRecordRepository;
+    @Autowired
+    private PipelineStageRecordRepository stageRecordRepository;
+    @Autowired
+    private PipelineService pipelineService;
+    @Autowired
+    private PipelineRecordRepository pipelineRecordRepository;
+
 
     /**
      * devops创建环境
@@ -378,4 +328,32 @@ public class DevopsSagaHandler {
         }
     }
 
+    /**
+     * devops创建分支
+     */
+    @SagaTask(code = "devopsCreateBranch",
+            description = "devops创建分支",
+            sagaCode = "devops-create-branch",
+            maxRetryCount = 3,
+            seq = 1)
+    public String devopsCreateBranch(String data) {
+        BranchSagaDTO branchSagaDTO = gson.fromJson(data, BranchSagaDTO.class);
+        devopsGitService.createBranchBySaga(branchSagaDTO);
+        return data;
+    }
+
+
+    /**
+     * devops创建实例
+     */
+    @SagaTask(code = "devopsCreateInstance",
+            description = "devops创建实例",
+            sagaCode = "devops-create-instance",
+            maxRetryCount = 3,
+            seq = 1)
+    public String devopsCreateInstance(String data) {
+        InstanceSagaDTO instanceSagaDTO = gson.fromJson(data, InstanceSagaDTO.class);
+        applicationInstanceService.createInstanceBySaga(instanceSagaDTO);
+        return data;
+    }
 }

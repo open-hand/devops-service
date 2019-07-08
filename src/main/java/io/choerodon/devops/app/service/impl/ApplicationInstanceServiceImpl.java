@@ -1,18 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.pagehelper.PageInfo;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,16 +8,37 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageInfo;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import io.choerodon.core.iam.ResourceLevel;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
+
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
+
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
@@ -44,10 +52,11 @@ import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
-import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
+
+
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -113,8 +122,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private GitlabRepository gitlabRepository;
     @Autowired
-    private GitlabGroupMemberService gitlabGroupMemberService;
-    @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
     private CheckOptionsHandler checkOptionsHandler;
@@ -125,17 +132,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private PipelineAppDeployRepository appDeployRepository;
     @Autowired
-    private DevopsNotificationRepository devopsNotificationRepository;
-    @Autowired
-    private DevopsNotificationUserRelRepository devopsNotificationUserRelRepository;
-    @Autowired
-    private RedisTemplate redisTemplate;
-    @Autowired
-    private NotifyClient notifyClient;
-    @Autowired
     private DevopsDeployValueRepository devopsDeployValueRepository;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private SagaClient sagaClient;
 
 
     @Override
@@ -660,6 +661,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
+    @Saga(code = "devops-create-instance",
+            description = "Devops创建实例", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
 
@@ -728,26 +731,52 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
                 applicationInstanceRepository.update(applicationInstanceE);
             }
+        }
+        applicationDeployDTO.setAppInstanceId(applicationInstanceE.getId());
+        InstanceSagaDTO instanceSagaDTO = new InstanceSagaDTO(applicationE.getProjectE().getId(), userAttrE.getGitlabUserId(), secretCode);
+        instanceSagaDTO.setApplicationE(applicationE);
+        instanceSagaDTO.setApplicationVersionE(applicationVersionE);
+        instanceSagaDTO.setApplicationDeployDTO(applicationDeployDTO);
+        instanceSagaDTO.setDevopsEnvironmentE(devopsEnvironmentE);
 
+        String input = gson.toJson(instanceSagaDTO);
+
+
+        sagaClient.startSaga("devops-create-instance", new StartInstanceDTO(input, "env", devopsEnvironmentE.getId().toString(), ResourceLevel.PROJECT.value(), devopsEnvironmentE.getProjectE().getId()));
+
+        return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
+    }
+
+    @Override
+    public void createInstanceBySaga(InstanceSagaDTO instanceSagaDTO) {
+
+        try {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
+            String filePath = envUtil.handDevopsEnvGitRepository(instanceSagaDTO.getProjectId(), instanceSagaDTO.getDevopsEnvironmentE().getCode(), instanceSagaDTO.getDevopsEnvironmentE().getEnvIdRsa());
 
             //在gitops库处理instance文件
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
             objectOperation.setType(getC7NHelmRelease(
-                    code, applicationVersionE, applicationDeployDTO, applicationE, secretCode));
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                    instanceSagaDTO.getApplicationDeployDTO().getInstanceName(), instanceSagaDTO.getApplicationVersionE().getRepository(), instanceSagaDTO.getApplicationE().getCode(), instanceSagaDTO.getApplicationVersionE().getVersion(), instanceSagaDTO.getApplicationDeployDTO().getValues(), instanceSagaDTO.getApplicationDeployDTO().getAppVersionId(), instanceSagaDTO.getSecretCode()));
 
             objectOperation.operationEnvGitlabFile(
-                    RELEASE_PREFIX + code,
-                    projectId,
-                    applicationDeployDTO.getType(),
-                    userAttrE.getGitlabUserId(),
-                    applicationInstanceE.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentE.getId(), filePath);
-
+                    RELEASE_PREFIX + instanceSagaDTO.getApplicationDeployDTO().getInstanceName(),
+                    instanceSagaDTO.getDevopsEnvironmentE().getGitlabEnvProjectId().intValue(),
+                    instanceSagaDTO.getApplicationDeployDTO().getType(),
+                    instanceSagaDTO.getGitlabUserId(),
+                    instanceSagaDTO.getApplicationDeployDTO().getAppInstanceId(), C7NHELM_RELEASE, null, false, instanceSagaDTO.getDevopsEnvironmentE().getId(), filePath);
+        } catch (Exception e) {
+            //有异常更新实例以及command的状态
+            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceSagaDTO.getApplicationDeployDTO().getAppInstanceId());
+            applicationInstanceE.setStatus(CommandStatus.FAILED.getStatus());
+            applicationInstanceRepository.update(applicationInstanceE);
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
+            devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
+            devopsEnvCommandE.setError("create or update gitOps file failed!");
+            devopsEnvCommandRepository.update(devopsEnvCommandE);
         }
-        return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
+
 
     private ApplicationInstanceE restartDeploy(ApplicationDeployDTO applicationDeployDTO, DevopsEnvironmentE devopsEnvironmentE, ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvCommandValueE devopsEnvCommandValueE, String secretCode) {
         DevopsEnvCommandE devopsEnvCommandE;
@@ -1005,13 +1034,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceRepository.update(instanceE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
+        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, C7NHELM_RELEASE);
         if (devopsEnvFileResourceE == null) {
-            applicationInstanceRepository.deleteById(instanceId);
+            applicationInstanceRepository.deleteInstanceRelInfo(instanceId);
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     RELEASE_PREFIX + instanceE.getCode() + YAML_SUFFIX)) {
                 gitlabRepository.deleteFile(
@@ -1024,7 +1053,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         } else {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
-                applicationInstanceRepository.deleteById(instanceId);
+                applicationInstanceRepository.deleteInstanceRelInfo(instanceId);
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
                 return;
             }
@@ -1081,9 +1110,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        devopsEnvCommandRepository.listByObjectAll(ObjectType.INSTANCE.getType(), instanceId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
-        applicationInstanceRepository.deleteInstance(instanceId);
+        applicationInstanceRepository.deleteInstanceRelInfo(instanceId);
+        applicationInstanceRepository.deleteById(instanceId);
     }
+
 
     @Override
     public void checkName(String instanceName, Long envId) {
@@ -1150,19 +1180,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         );
     }
 
-    private C7nHelmRelease getC7NHelmRelease(String code, ApplicationVersionE applicationVersionE,
-                                             ApplicationDeployDTO applicationDeployDTO, ApplicationE applicationE, String secretName) {
+    private C7nHelmRelease getC7NHelmRelease(String code, String repository, String appCode, String version, String deployValue, Long deployVersionId,
+                                             String secretName) {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(code);
-        c7nHelmRelease.getSpec().setRepoUrl(applicationVersionE.getRepository());
-        c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
-        c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
+        c7nHelmRelease.getSpec().setRepoUrl(repository);
+        c7nHelmRelease.getSpec().setChartName(appCode);
+        c7nHelmRelease.getSpec().setChartVersion(version);
         if (secretName != null) {
             c7nHelmRelease.getSpec().setImagePullSecrets(Arrays.asList(new ImagePullSecret(secretName)));
         }
         c7nHelmRelease.getSpec().setValues(
-                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),
-                        applicationDeployDTO.getValues()).getDeltaYaml().trim());
+                getReplaceResult(applicationVersionRepository.queryValue(deployVersionId),
+                        deployValue).getDeltaYaml().trim());
         return c7nHelmRelease;
     }
 

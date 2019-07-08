@@ -12,7 +12,10 @@ import io.choerodon.devops.api.dto.DevopsIngressPathDTO;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsIngressService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.domain.application.entity.DevopsIngressE;
+import io.choerodon.devops.domain.application.entity.DevopsServiceE;
 import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
@@ -82,18 +85,6 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         beforeIngress.stream().forEach(ingressName -> {
             DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, ingressName);
             if (devopsIngressE != null) {
-                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
-                if (devopsEnvCommandE == null || (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType()))) {
-                    DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
-                    devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
-                    devopsEnvCommandE1.setObject(ObjectType.INGRESS.getType());
-                    devopsEnvCommandE1.setCreatedBy(userId);
-                    devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
-                    devopsEnvCommandE1.setObjectId(devopsIngressE.getId());
-                    DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
-                    devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
-                    devopsIngressRepository.updateIngress(devopsIngressDO);
-                }
                 devopsIngressService.deleteIngressByGitOps(devopsIngressE.getId());
                 devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), INGRESS);
             }
@@ -130,22 +121,12 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                                     .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
-                        //0.9.0-0.10.0,新增commandId,如果gitops库如果只是移动对象到另外一个文件，避免npe
-                        if (devopsEnvCommandE == null) {
-                            devopsEnvCommandE = createDevopsEnvCommandE(CREATE);
-                            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
-                            DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
-                            devopsIngressDO.setCommandId(devopsEnvCommandE.getId());
-                            devopsIngressRepository.updateIngress(devopsIngressDO);
-                        }
+
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-                        devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-                        devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
-                        devopsEnvFileResourceE.setResourceId(devopsIngressE.getId());
-                        devopsEnvFileResourceE.setResourceType(v1beta1Ingress.getKind());
-                        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+
+                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, v1beta1Ingress.hashCode(), devopsIngressE.getId(),
+                                v1beta1Ingress.getKind());
                     } catch (CommonException e) {
                         String errorCode = "";
                         if (e instanceof GitOpsExplainException) {
@@ -187,14 +168,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                                     .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                             devopsEnvCommandE = devopsEnvCommandRepository.query(newdevopsIngressE.getCommandId());
                         }
-                        //0.9.0-0.10.0,新增commandId,如果gitops库如果一个文件里面有多个对象，只操作其中一个对象，其它对象更新commitsha避免npe
-                        if (devopsEnvCommandE == null) {
-                            devopsEnvCommandE = createDevopsEnvCommandE(CREATE);
-                            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
-                            DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
-                            devopsIngressDO.setCommandId(devopsEnvCommandE.getId());
-                            devopsIngressRepository.updateIngress(devopsIngressDO);
-                        }
+
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository

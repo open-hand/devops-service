@@ -78,6 +78,6 @@ public class DevopsServiceInstanceRepositoryImpl implements DevopsServiceInstanc
     @Override
     public List<DevopsServiceAppInstanceE> listByEnvIdAndInstanceCode(Long envId, String instanceCode) {
 
-        return null;
+        return ConvertHelper.convertList(devopsServiceAppInstanceMapper.listByEnvIdAndInstanceCode(instanceCode, envId), DevopsServiceAppInstanceE.class);
     }
 }

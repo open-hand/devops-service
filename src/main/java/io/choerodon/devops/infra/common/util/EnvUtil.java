@@ -8,11 +8,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.GitConfigDTO;
-import io.choerodon.devops.api.dto.GitEnvConfigDTO;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.websocket.helper.EnvListener;
@@ -134,18 +130,18 @@ public class EnvUtil {
     }
 
 
-    public String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE) {
-        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+    public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         //本地路径
         String path = String.format("gitops/%s/%s/%s",
-                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+                organization.getCode(), projectE.getCode(), envCode);
         //生成环境git仓库ssh地址
         String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(),
-                projectE.getCode(), devopsEnvironmentE.getCode());
+                projectE.getCode(), envCode);
 
         File file = new File(path);
-        gitUtil.setSshKey(devopsEnvironmentE.getEnvIdRsa());
+        gitUtil.setSshKey(envRsa);
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
         }

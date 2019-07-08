@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.IntOrString;
@@ -11,8 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
@@ -37,6 +38,7 @@ import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
+
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -465,7 +467,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceRepository.update(devopsServiceE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
+        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
@@ -737,7 +739,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
+        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //处理文件
         ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();

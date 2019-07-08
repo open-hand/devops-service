@@ -1,10 +1,13 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import feign.FeignException;
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabCommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
@@ -32,8 +35,10 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
 
     @Override
     public List<GitlabPipelineE> listPipeline(Integer projectId, Integer userId) {
-        ResponseEntity<List<PipelineDO>> responseEntity = gitlabServiceClient.listPipeline(projectId, userId);
-        if (responseEntity.getStatusCodeValue() == 500) {
+        ResponseEntity<List<PipelineDO>> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.listPipeline(projectId, userId);
+        } catch (FeignException e) {
             return new ArrayList<>();
         }
         return ConvertHelper.convertList(responseEntity.getBody(), GitlabPipelineE.class);
@@ -41,9 +46,11 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
 
     @Override
     public List<GitlabPipelineE> listPipelines(Integer projectId, Integer page, Integer size, Integer userId) {
-        ResponseEntity<List<PipelineDO>> responseEntity =
-                gitlabServiceClient.listPipelines(projectId, page, size, userId);
-        if (responseEntity.getStatusCodeValue() == 500) {
+        ResponseEntity<List<PipelineDO>> responseEntity;
+        try {
+            responseEntity =
+                    gitlabServiceClient.listPipelines(projectId, page, size, userId);
+        } catch (FeignException e) {
             return new ArrayList<>();
         }
         return ConvertHelper.convertList(responseEntity.getBody(), GitlabPipelineE.class);
@@ -51,15 +58,21 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
 
     @Override
     public GitlabPipelineE getPipeline(Integer projectId, Integer pipelineId, Integer userId) {
-        ResponseEntity<PipelineDO> responseEntity = gitlabServiceClient.getPipeline(projectId, pipelineId, userId);
+        ResponseEntity<PipelineDO> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.getPipeline(projectId, pipelineId, userId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabPipelineE.class);
     }
 
     @Override
     public GitlabCommitE getCommit(Integer projectId, String sha, Integer userId) {
-
-        ResponseEntity<CommitDO> responseEntity = gitlabServiceClient.getCommit(projectId, sha, userId);
-        if (responseEntity.getStatusCodeValue() == 500) {
+        ResponseEntity<CommitDO> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.getCommit(projectId, sha, userId);
+        } catch (FeignException e) {
             return null;
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabCommitE.class);
@@ -67,9 +80,10 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
 
     @Override
     public List<GitlabJobE> listJobs(Integer projectId, Integer pipelineId, Integer userId) {
-
-        ResponseEntity<List<JobDO>> responseEntity = gitlabServiceClient.listJobs(projectId, pipelineId, userId);
-        if (responseEntity.getStatusCodeValue() == 500) {
+        ResponseEntity<List<JobDO>> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.listJobs(projectId, pipelineId, userId);
+        } catch (FeignException e) {
             return new ArrayList<>();
         }
         return ConvertHelper.convertList(responseEntity.getBody(), GitlabJobE.class);
@@ -77,50 +91,73 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
 
     @Override
     public Boolean retry(Integer projectId, Integer pipelineId, Integer userId) {
-
-        ResponseEntity responseEntity = gitlabServiceClient.retry(projectId, pipelineId, userId);
-        return responseEntity.getStatusCodeValue() != 500;
+        try {
+            gitlabServiceClient.retry(projectId, pipelineId, userId);
+        } catch (FeignException e) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public Boolean cancel(Integer projectId, Integer pipelineId, Integer userId) {
-
-        ResponseEntity responseEntity = gitlabServiceClient.cancel(projectId, pipelineId, userId);
-        return responseEntity.getStatusCodeValue() != 500;
+        try {
+            gitlabServiceClient.cancel(projectId, pipelineId, userId);
+        } catch (FeignException e) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public List<CommitStatuseDO> getCommitStatus(Integer projectId, String sha, Integer useId) {
-        ResponseEntity<List<CommitStatuseDO>> commitStatus = gitlabServiceClient.getCommitStatus(projectId, sha, useId);
-        if (commitStatus.getStatusCodeValue() == 500) {
-            return new ArrayList<>();
+        ResponseEntity<List<CommitStatuseDO>> commitStatuse;
+        try {
+            commitStatuse = gitlabServiceClient.getCommitStatus(projectId, sha, useId);
+        } catch (FeignException e) {
+            return Collections.emptyList();
         }
-        return commitStatus.getBody();
+        return commitStatuse.getBody();
     }
 
     @Override
     public List<CommitDO> listCommits(Integer projectId, Integer userId, Integer page, Integer size) {
-        List<CommitDO> commitDOS = new LinkedList<>();
-        commitDOS.addAll(gitlabServiceClient.listCommits(projectId, page, size, userId).getBody());
-        return commitDOS;
+        try {
+            List<CommitDO> commitDOS = new LinkedList<>();
+            commitDOS.addAll(gitlabServiceClient.listCommits(projectId, page, size, userId).getBody());
+            return commitDOS;
+        } catch (FeignException e) {
+            throw new CommonException(e.getMessage(), e);
+        }
     }
 
     @Override
     public GitlabMemberE getProjectMember(Integer projectId, Integer userId) {
+        try {
             return ConvertHelper.convert(gitlabServiceClient.getProjectMember(
                     projectId, userId).getBody(), GitlabMemberE.class);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override
     public void deleteBranch(Integer projectId, String branchName, Integer userId) {
-        gitlabServiceClient.deleteBranch(projectId, branchName, userId);
+        try {
+            gitlabServiceClient.deleteBranch(projectId, branchName, userId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override
     public List<GitlabMemberE> getAllMemberByProjectId(Integer projectId) {
+        try {
             return ConvertHelper
                     .convertList(gitlabServiceClient.getAllMemberByProjectId(projectId).getBody(), GitlabMemberE.class);
-
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 
 }

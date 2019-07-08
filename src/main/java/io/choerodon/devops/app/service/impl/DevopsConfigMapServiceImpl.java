@@ -111,7 +111,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapDTO.getType());
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
+        String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
 
         //在gitops库处理ingress文件
@@ -204,7 +204,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
+        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository

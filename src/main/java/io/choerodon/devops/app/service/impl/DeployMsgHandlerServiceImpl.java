@@ -49,6 +49,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public static final String CONFIG_MAP_PREFIX = "configMap-";
     public static final String CONFIGMAP = "ConfigMap";
     public static final String CREATE_TYPE = "create";
+    public static final String UPDATE_TYPE = "update";
     public static final Long ADMIN = 1L;
     private static final String CHOERODON_IO_NETWORK_SERVICE_INSTANCES = "choerodon.io/network-service-instances";
     private static final String SERVICE_LABLE = "choerodon.io/network";
@@ -380,6 +381,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     handleUpdateServiceMsg(key, envId, msg, devopsEnvResourceE);
                     break;
                 case CONFIGMAP:
+
                     newdevopsEnvResourceE =
                             devopsEnvResourceRepository.queryResource(
                                     null,
@@ -1650,15 +1652,23 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         V1ConfigMap v1ConfigMap = json.deserialize(msg, V1ConfigMap.class);
         DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryByEnvIdAndName(envId, v1ConfigMap.getMetadata().getName());
+        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+        devopsConfigMapDTO.setDescription(v1ConfigMap.getMetadata().getName() + " config");
+        devopsConfigMapDTO.setEnvId(envId);
+        devopsConfigMapDTO.setName(v1ConfigMap.getMetadata().getName());
+        devopsConfigMapDTO.setValue(v1ConfigMap.getData());
         if (devopsConfigMapE == null) {
-            DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
-            devopsConfigMapDTO.setDescription(v1ConfigMap.getMetadata().getName() + " config");
-            devopsConfigMapDTO.setEnvId(envId);
-            devopsConfigMapDTO.setName(v1ConfigMap.getMetadata().getName());
-            devopsConfigMapDTO.setType("create");
-            devopsConfigMapDTO.setValue(v1ConfigMap.getData());
+            devopsConfigMapDTO.setType(CREATE_TYPE);
             devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
+        } else {
+            devopsConfigMapDTO.setType(UPDATE_TYPE);
+            if (devopsConfigMapDTO.getValue().equals(gson.fromJson(devopsConfigMapE.getValue(), Map.class))) {
+                return;
+            } else {
+                devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
+            }
         }
+
     }
 
     @Override
