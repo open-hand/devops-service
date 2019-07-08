@@ -135,7 +135,7 @@ public class DevopsConfigMapController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id")
-            @RequestParam(value = "envId", required = false) Long envId,
+            @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "应用id")
             @RequestParam(value = "app_id", required = false) Long appId,
             @ApiParam(value = "分页参数")
