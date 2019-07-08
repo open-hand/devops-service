@@ -4,12 +4,21 @@ import java.util.Date;
 import java.util.List;
 
 public class InstanceEventDTO {
+    private String type;
     private String status;
     private Date createTime;
     private String userImage;
     private String loginName;
     private String realName;
     private List<PodEventDTO> podEventDTO;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public String getStatus() {
         return status;

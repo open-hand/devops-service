@@ -296,8 +296,6 @@ public interface ApplicationInstanceService {
     void operationPodCount(String deploymentName, Long envId, Long count);
 
 
-    PageInfo<AppInstanceCommandLogDTO> listAppInstanceCommand(PageRequest pageRequest, Long appInstanceId, Date startTime, Date endTime);
-
     DevopsEnvResourceDTO listResourcesInHelmRelease(Long instanceId);
 
     /**

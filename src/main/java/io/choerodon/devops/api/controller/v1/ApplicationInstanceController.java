@@ -1,45 +1,23 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.AppInstanceCodeDTO;
-import io.choerodon.devops.api.dto.AppInstanceCommandLogDTO;
-import io.choerodon.devops.api.dto.ApplicationDeployDTO;
-import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
-import io.choerodon.devops.api.dto.ApplicationInstancesDTO;
-import io.choerodon.devops.api.dto.ApplicationRemoteDeployDTO;
-import io.choerodon.devops.api.dto.DeployDetailDTO;
-import io.choerodon.devops.api.dto.DeployFrequencyDTO;
-import io.choerodon.devops.api.dto.DeployTimeDTO;
-import io.choerodon.devops.api.dto.DevopsEnvPreviewDTO;
-import io.choerodon.devops.api.dto.DevopsEnvPreviewInstanceDTO;
-import io.choerodon.devops.api.dto.DevopsEnvResourceDTO;
-import io.choerodon.devops.api.dto.ErrorLineDTO;
-import io.choerodon.devops.api.dto.InstanceControllerDetailDTO;
-import io.choerodon.devops.api.dto.InstanceEventDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
@@ -782,37 +760,6 @@ public class ApplicationInstanceController {
             @ApiParam(value = "pod数量", required = true)
             @RequestParam Long count) {
         applicationInstanceService.operationPodCount(deploymentName, envId, count);
-    }
-
-
-    /**
-     * 获取实例操作日志
-     *
-     * @param projectId     项目id
-     * @param appInstanceId 实例id
-     * @param startTime     开始时间
-     * @param endTime       结束时间
-     * @return List
-     */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取实例操作日志")
-    @CustomPageRequest
-    @PostMapping(value = "/command_log/{appInstanceId}")
-    public ResponseEntity<PageInfo<AppInstanceCommandLogDTO>> listCommandLogs(
-            @ApiParam(value = "项目 ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数") PageRequest pageRequest,
-            @ApiParam(value = "实例 ID", required = true)
-            @PathVariable Long appInstanceId,
-            @ApiParam(value = "startTime")
-            @RequestParam(required = false) Date startTime,
-            @ApiParam(value = "endTime")
-            @RequestParam(required = false) Date endTime) {
-        return Optional.ofNullable(applicationInstanceService.listAppInstanceCommand(pageRequest, appInstanceId, startTime, endTime))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.deploy.log.get"));
     }
 
     /**
