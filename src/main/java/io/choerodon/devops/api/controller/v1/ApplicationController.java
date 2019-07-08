@@ -561,22 +561,4 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.app.sonarqube.content.get"));
     }
 
-    /**
-     * 应用删除
-     * @param projectId
-     * @param appId
-     * @return
-     */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation("应用删除")
-    @DeleteMapping("/{app_id}")
-    public ResponseEntity<SonarTableDTO> delete(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用id", required = true)
-            @PathVariable(value = "app_id") Long appId) {
-        applicationService.deleteById(projectId, appId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
 }

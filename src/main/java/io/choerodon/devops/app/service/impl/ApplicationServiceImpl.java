@@ -49,7 +49,6 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
 import io.choerodon.devops.api.dto.ApplicationCodeDTO;
 import io.choerodon.devops.api.dto.ApplicationImportDTO;
@@ -299,24 +298,30 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    @Saga(code = "devops-delete-application",
-            description = "Devops删除创建失败应用", inputSchema = "{}")
-    public void delete(Long projectId, Long applicationId) {
+    @Saga(code = "devops-app-delete", description = "Devops删除应用", inputSchema = "{}")
+    public void delete(Long projectId, Long appId) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        ApplicationE applicationE = applicationRepository.query(applicationId);
-        UserAttrE userAttrE = userAttrRepository.queryById(DetailsHelper.getUserDetails().getUserId());
-        gitlabRepository.deleteDevOpsApp(organization.getCode() + "-" + projectE.getCode(),
-                applicationE.getCode(), userAttrE.getGitlabUserId().intValue());
-        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
-        iamAppPayLoad.setProjectId(projectId);
-        iamAppPayLoad.setOrganizationId(organization.getId());
-        iamAppPayLoad.setOrganizationId(organization.getId());
-        iamAppPayLoad.setCode(applicationE.getCode());
-        iamAppPayLoad.setName(applicationE.getName());
-        String input = gson.toJson(iamAppPayLoad);
-        sagaClient.startSaga("devops-delete-application", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
-        applicationRepository.delete(applicationId);
+        //删除应用权限
+        appUserPermissionRepository.deleteByAppId(appId);
+        //删除gitlab project
+        ApplicationE applicationE = applicationRepository.query(appId);
+        if (applicationE.getGitlabProjectE() != null) {
+            Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
+            GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectById(gitlabProjectId);
+            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
+                gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
+            }
+        }
+        applicationRepository.delete(appId);
+        //iam
+        DevOpsAppDelPayload appDelPayload = new DevOpsAppDelPayload();
+        appDelPayload.setProjectId(projectId);
+        appDelPayload.setOrganizationId(projectE.getOrganization().getId());
+        appDelPayload.setCode(applicationE.getCode());
+        String input = gson.toJson(appDelPayload);
+        sagaClient.startSaga("devops-app-delete", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
     }
 
     @Saga(code = "devops-update-gitlab-users",
@@ -376,6 +381,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
 
+    @Saga(code = "devops-sync-app-active",
+            description = "同步iam应用状态", inputSchema = "{}")
     @Override
     public Boolean active(Long applicationId, Boolean active) {
         ApplicationE applicationE = applicationRepository.query(applicationId);
@@ -383,6 +390,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (applicationRepository.update(applicationE) != 1) {
             throw new CommonException("error.application.active");
         }
+        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
+        iamAppPayLoad.setActive(active);
+        iamAppPayLoad.setOrganizationId(projectE.getOrganization().getId());
+        iamAppPayLoad.setProjectId(applicationE.getProjectE().getId());
+        String input = gson.toJson(iamAppPayLoad);
+        sagaClient.startSaga("devops-sync-app-active", new StartInstanceDTO(input, "app", applicationId.toString(), ResourceLevel.PROJECT.value(), applicationE.getProjectE().getId()));
         return true;
     }
 
@@ -1165,6 +1179,18 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationE = applicationRepository.create(applicationE);
         Long appId = applicationE.getId();
 
+        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
+        iamAppPayLoad.setApplicationCategory(APPLICATION);
+        iamAppPayLoad.setApplicationType(applicationImportDTO.getType());
+        iamAppPayLoad.setCode(applicationImportDTO.getCode());
+        iamAppPayLoad.setName(applicationImportDTO.getName());
+        iamAppPayLoad.setEnabled(true);
+        iamAppPayLoad.setOrganizationId(organization.getId());
+        iamAppPayLoad.setProjectId(projectId);
+        iamAppPayLoad.setFrom(applicationName);
+        //iam创建应用
+        iamRepository.createIamApp(organization.getId(), iamAppPayLoad);
+
         // 创建saga payload
         DevOpsAppImportPayload devOpsAppImportPayload = new DevOpsAppImportPayload();
         devOpsAppImportPayload.setType(APPLICATION);
@@ -1895,30 +1921,4 @@ public class ApplicationServiceImpl implements ApplicationService {
         return map;
     }
 
-    @Override
-    @Saga(code = "devops-app-delete", description = "Devops删除应用", inputSchema = "{}")
-    public void deleteById(Long projectId, Long appId) {
-        ProjectE projectE=iamRepository.queryIamProject(projectId);
-        //删除应用权限
-        appUserPermissionRepository.deleteByAppId(appId);
-        //删除gitlab project
-        ApplicationE applicationE = applicationRepository.query(appId);
-        if (applicationE.getGitlabProjectE() != null) {
-            Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
-            GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectById(gitlabProjectId);
-            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
-                UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
-                gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
-            }
-        }
-        applicationRepository.delete(appId);
-        //iam
-        DevOpsAppDelPayload appDelPayload=new DevOpsAppDelPayload();
-        appDelPayload.setProjectId(projectId);
-        appDelPayload.setOrganizationId(projectE.getOrganization().getId());
-        appDelPayload.setCode(applicationE.getCode());
-        String input = gson.toJson(appDelPayload);
-        sagaClient.startSaga("devops-app-delete", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
-    }
 }

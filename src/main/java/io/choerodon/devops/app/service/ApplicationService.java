@@ -314,5 +314,4 @@ public interface ApplicationService {
      */
     SonarTableDTO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime);
 
-    void deleteById(Long projectId, Long appId);
 }
