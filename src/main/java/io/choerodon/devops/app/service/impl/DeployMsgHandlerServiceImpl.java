@@ -1661,6 +1661,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsConfigMapDTO.setType(CREATE_TYPE);
             devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
         } else {
+            devopsConfigMapDTO.setId(devopsConfigMapE.getId());
             devopsConfigMapDTO.setType(UPDATE_TYPE);
             if (devopsConfigMapDTO.getValue().equals(gson.fromJson(devopsConfigMapE.getValue(), Map.class))) {
                 return;
