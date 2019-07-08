@@ -733,6 +733,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             }
         }
         applicationDeployDTO.setAppInstanceId(applicationInstanceE.getId());
+        applicationDeployDTO.setInstanceName(code);
         InstanceSagaDTO instanceSagaDTO = new InstanceSagaDTO(applicationE.getProjectE().getId(), userAttrE.getGitlabUserId(), secretCode);
         instanceSagaDTO.setApplicationE(applicationE);
         instanceSagaDTO.setApplicationVersionE(applicationVersionE);
@@ -740,7 +741,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         instanceSagaDTO.setDevopsEnvironmentE(devopsEnvironmentE);
 
         String input = gson.toJson(instanceSagaDTO);
-
 
         sagaClient.startSaga("devops-create-instance", new StartInstanceDTO(input, "env", devopsEnvironmentE.getId().toString(), ResourceLevel.PROJECT.value(), devopsEnvironmentE.getProjectE().getId()));
 
