@@ -7,14 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.app.service.impl.DeployMsgHandlerServiceImpl;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1Secret;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.SecretReqDTO;
@@ -23,19 +15,23 @@ import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.DevopsSecretE;
 import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsSecretRepository;
-import io.choerodon.devops.domain.application.valueobject.C7nSecret;
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
+import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.models.V1Secret;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by n!Ck
@@ -104,18 +100,6 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         beforSecret.forEach(secretName -> {
             DevopsSecretE devopsSecretE = devopsSecretRepository.selectByEnvIdAndName(envId, secretName);
             if (devopsSecretE != null) {
-                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsSecretE.getCommandId());
-                if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
-                    DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
-                    devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
-                    devopsEnvCommandE1.setObject(ObjectType.SECRET.getType());
-                    devopsEnvCommandE1.setCreatedBy(userId);
-                    devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
-                    devopsEnvCommandE1.setObjectId(devopsSecretE.getId());
-                    DevopsSecretE devopsSecretE1 = devopsSecretRepository.queryBySecretId(devopsSecretE.getId());
-                    devopsSecretE1.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
-                    devopsSecretRepository.update(devopsSecretE);
-                }
                 devopsSecretService.deleteSecretByGitOps(devopsSecretE.getId());
                 devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsSecretE.getId(), SECRET);
             }
@@ -146,21 +130,12 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 }
                 DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                         .query(devopsSecretE.getCommandId());
-                if (devopsEnvCommandE == null) {
-                    devopsEnvCommandE = createDevopsEnvCommandE(CREATE);
-                    devopsEnvCommandE.setObjectId(devopsSecretE.getId());
-                    DevopsSecretE devopsSecretE1 = devopsSecretRepository.queryBySecretId(devopsSecretE.getId());
-                    devopsSecretE1.setCommandId(devopsEnvCommandE.getId());
-                    devopsSecretRepository.update(devopsSecretE1);
-                }
+
                 devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                 devopsEnvCommandRepository.update(devopsEnvCommandE);
-                DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-                devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-                devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nSecret.hashCode())));
-                devopsEnvFileResourceE.setResourceId(devopsSecretE.getId());
-                devopsEnvFileResourceE.setResourceType(SECRET);
-                devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+
+                devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, c7nSecret.hashCode(), devopsSecretE.getId(),
+                        c7nSecret.getKind());
             } catch (CommonException e) {
                 String errorCode = "";
                 if (e instanceof GitOpsExplainException) {
@@ -197,13 +172,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                             .selectByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
                     devopsEnvCommandE = devopsEnvCommandRepository.query(newSecretE.getCommandId());
                 }
-                if (devopsEnvCommandE == null) {
-                    devopsEnvCommandE = createDevopsEnvCommandE("update");
-                    devopsEnvCommandE.setObjectId(devopsSecretE.getId());
-                    DevopsSecretE devopsSecretE1 = devopsSecretRepository.queryBySecretId(devopsSecretE.getId());
-                    devopsSecretE1.setCommandId(devopsEnvCommandE.getId());
-                    devopsSecretRepository.update(devopsSecretE1);
-                }
+
                 devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                 devopsEnvCommandRepository.update(devopsEnvCommandE);
                 DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository

@@ -1,15 +1,15 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.sql.Date;
+import java.util.List;
+import java.util.Map;
+
 import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
-
-import java.sql.Date;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -60,5 +60,5 @@ public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDO>
 
     String getInstanceResourceDetailJson(@Param("instanceId") Long instanceId, @Param("resourceName") String resourceName, @Param("resourceType") String resourceType);
 
-    void deleteInstance(@Param("instanceId") Long instanceId);
+    void deleteInstanceRelInfo(@Param("instanceId") Long instanceId);
 }

@@ -331,7 +331,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         }
         devopsEnvCommandE.setCreatedBy(userId);
         devopsEnvCommandE.setObject(ObjectType.CUSTOM.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandE;
     }
 

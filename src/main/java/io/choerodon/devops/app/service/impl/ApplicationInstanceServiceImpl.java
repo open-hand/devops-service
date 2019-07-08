@@ -1040,7 +1040,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, C7NHELM_RELEASE);
         if (devopsEnvFileResourceE == null) {
-            applicationInstanceRepository.deleteById(instanceId);
+            applicationInstanceRepository.deleteInstanceRelInfo(instanceId);
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     RELEASE_PREFIX + instanceE.getCode() + YAML_SUFFIX)) {
                 gitlabRepository.deleteFile(
@@ -1053,7 +1053,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         } else {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
-                applicationInstanceRepository.deleteById(instanceId);
+                applicationInstanceRepository.deleteInstanceRelInfo(instanceId);
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
                 return;
             }
@@ -1110,9 +1110,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        devopsEnvCommandRepository.listByObjectAll(ObjectType.INSTANCE.getType(), instanceId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
-        applicationInstanceRepository.deleteInstance(instanceId);
+        applicationInstanceRepository.deleteInstanceRelInfo(instanceId);
+        applicationInstanceRepository.deleteById(instanceId);
     }
+
 
     @Override
     public void checkName(String instanceName, Long envId) {

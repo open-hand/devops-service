@@ -14,7 +14,6 @@ import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.domain.application.entity.DevopsConfigMapE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsConfigMapRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
@@ -22,9 +21,6 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRe
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.CommandStatus;
-import io.choerodon.devops.infra.common.util.enums.CommandType;
-import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1Endpoints;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,18 +80,6 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
         beforeConfigMaps.forEach(configMapName -> {
             DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryByEnvIdAndName(envId, configMapName);
             if (devopsConfigMapE != null) {
-                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                        .query(devopsConfigMapE.getDevopsEnvCommandE().getId());
-                if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
-                    DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
-                    devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
-                    devopsEnvCommandE1.setObject(ObjectType.CONFIGMAP.getType());
-                    devopsEnvCommandE1.setCreatedBy(userId);
-                    devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
-                    devopsEnvCommandE1.setObjectId(devopsConfigMapE.getId());
-                    devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
-                    devopsConfigMapRepository.update(devopsConfigMapE);
-                }
                 devopsConfigMapService.deleteByGitOps(devopsConfigMapE.getId());
                 devopsEnvFileResourceRepository
                         .deleteByEnvIdAndResource(envId, devopsConfigMapE.getId(), CONFIG_MAP);
@@ -169,12 +153,9 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsConfigMapRepDTO.getCommandId());
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-                        devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-                        devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(configMap.hashCode())));
-                        devopsEnvFileResourceE.setResourceId(devopsConfigMapRepDTO.getId());
-                        devopsEnvFileResourceE.setResourceType(configMap.getKind());
-                        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+
+                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, configMap.hashCode(), devopsConfigMapRepDTO.getId(),
+                                configMap.getKind());
                     } catch (CommonException e) {
                         String errorCode = "";
                         if (e instanceof GitOpsExplainException) {

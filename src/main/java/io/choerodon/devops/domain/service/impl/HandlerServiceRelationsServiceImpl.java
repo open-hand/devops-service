@@ -22,7 +22,6 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1Service;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.text.StrBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -82,17 +81,6 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         beforeService.forEach(serviceName -> {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
             if (devopsServiceE != null) {
-                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
-                if (devopsEnvCommandE == null || (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType()))) {
-                    DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
-                    devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
-                    devopsEnvCommandE1.setCreatedBy(userId);
-                    devopsEnvCommandE1.setObject(ObjectType.SERVICE.getType());
-                    devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
-                    devopsEnvCommandE1.setObjectId(devopsServiceE.getId());
-                    devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
-                    devopsServiceRepository.update(devopsServiceE);
-                }
                 devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceE.getId());
                 devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsServiceE.getId(), SERVICE);
             }
@@ -123,13 +111,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                     .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
                             devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsServiceE.getCommandId());
                         }
-                        //0.9.0-0.10.0,新增commandId,如果gitops库如果一个文件里面有多个对象，只操作其中一个对象，其它对象更新commitsha避免npe
-                        if (devopsEnvCommandE == null) {
-                            devopsEnvCommandE = createDevopsEnvCommandE("update");
-                            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
-                            devopsServiceE.setCommandId(devopsEnvCommandE.getId());
-                            devopsServiceRepository.update(devopsServiceE);
-                        }
+
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
@@ -170,21 +152,12 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                     devopsServiceReqDTO.getName(), envId);
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
-                        //0.9.0-0.10.0,新增commandId,如果gitops库如果只是移动对象到另外一个文件，避免npe
-                        if (devopsEnvCommandE == null) {
-                            devopsEnvCommandE = createDevopsEnvCommandE("create");
-                            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
-                            devopsServiceE.setCommandId(devopsEnvCommandE.getId());
-                            devopsServiceRepository.update(devopsServiceE);
-                        }
+
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-                        devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-                        devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
-                        devopsEnvFileResourceE.setResourceId(devopsServiceE.getId());
-                        devopsEnvFileResourceE.setResourceType(v1Service.getKind());
-                        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+
+                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, v1Service.hashCode(), devopsServiceE.getId(),
+                                v1Service.getKind());
                     } catch (CommonException e) {
                         String errorCode = "";
                         if (e instanceof GitOpsExplainException) {

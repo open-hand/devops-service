@@ -8,7 +8,10 @@ import java.util.stream.Collectors;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.DevopsCustomizeResourceContentE;
+import io.choerodon.devops.domain.application.entity.DevopsCustomizeResourceE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceContentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceRepository;
@@ -149,12 +152,10 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(oldDevopsCustomizeResourceE.getDevopsEnvCommandE().getId());
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-                        devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-                        devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(devopsCustomizeResourceE.hashCode())));
-                        devopsEnvFileResourceE.setResourceId(oldDevopsCustomizeResourceE.getId());
-                        devopsEnvFileResourceE.setResourceType(ResourceType.CUSTOM.getType());
-                        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+
+                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, devopsCustomizeResourceE.hashCode(), oldDevopsCustomizeResourceE.getId(),
+                                ResourceType.CUSTOM.getType());
+
                     } catch (CommonException e) {
                         String errorCode = "";
                         if (e instanceof GitOpsExplainException) {
