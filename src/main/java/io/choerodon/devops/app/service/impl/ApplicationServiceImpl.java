@@ -49,7 +49,6 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
 import io.choerodon.devops.api.dto.ApplicationCodeDTO;
 import io.choerodon.devops.api.dto.ApplicationImportDTO;
@@ -301,7 +300,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Saga(code = "devops-app-delete", description = "Devops删除应用", inputSchema = "{}")
     public void delete(Long projectId, Long appId) {
-        ProjectE projectE=iamRepository.queryIamProject(projectId);
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
         //删除应用权限
         appUserPermissionRepository.deleteByAppId(appId);
         //删除gitlab project
@@ -317,7 +316,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         applicationRepository.delete(appId);
         //iam
-        DevOpsAppDelPayload appDelPayload=new DevOpsAppDelPayload();
+        DevOpsAppDelPayload appDelPayload = new DevOpsAppDelPayload();
         appDelPayload.setProjectId(projectId);
         appDelPayload.setOrganizationId(projectE.getOrganization().getId());
         appDelPayload.setCode(applicationE.getCode());
@@ -382,6 +381,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
 
+    @Saga(code = "devops-sync-app-active",
+            description = "同步iam应用状态", inputSchema = "{}")
     @Override
     public Boolean active(Long applicationId, Boolean active) {
         ApplicationE applicationE = applicationRepository.query(applicationId);
@@ -389,6 +390,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (applicationRepository.update(applicationE) != 1) {
             throw new CommonException("error.application.active");
         }
+        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
+        iamAppPayLoad.setActive(active);
+        iamAppPayLoad.setOrganizationId(projectE.getOrganization().getId());
+        iamAppPayLoad.setProjectId(applicationE.getProjectE().getId());
+        String input = gson.toJson(iamAppPayLoad);
+        sagaClient.startSaga("devops-sync-app-active", new StartInstanceDTO(input, "app", applicationId.toString(), ResourceLevel.PROJECT.value(), applicationE.getProjectE().getId()));
         return true;
     }
 
@@ -1170,6 +1178,18 @@ public class ApplicationServiceImpl implements ApplicationService {
         // 创建应用
         applicationE = applicationRepository.create(applicationE);
         Long appId = applicationE.getId();
+
+        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
+        iamAppPayLoad.setApplicationCategory(APPLICATION);
+        iamAppPayLoad.setApplicationType(applicationImportDTO.getType());
+        iamAppPayLoad.setCode(applicationImportDTO.getCode());
+        iamAppPayLoad.setName(applicationImportDTO.getName());
+        iamAppPayLoad.setEnabled(true);
+        iamAppPayLoad.setOrganizationId(organization.getId());
+        iamAppPayLoad.setProjectId(projectId);
+        iamAppPayLoad.setFrom(applicationName);
+        //iam创建应用
+        iamRepository.createIamApp(organization.getId(), iamAppPayLoad);
 
         // 创建saga payload
         DevOpsAppImportPayload devOpsAppImportPayload = new DevOpsAppImportPayload();

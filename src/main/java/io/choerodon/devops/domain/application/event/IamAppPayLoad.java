@@ -21,8 +21,17 @@ public class IamAppPayLoad {
 
     private String from;
 
+    private Boolean isActive;
+
     private Long objectVersionNumber;
 
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
 
     public Long getOrganizationId() {
         return organizationId;
