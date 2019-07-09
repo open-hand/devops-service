@@ -1,6 +1,7 @@
 package io.choerodon.devops.domain.service.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,6 +35,9 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
 
     private static final String CERTIFICATE = "Certificate";
     private static final String GIT_SUFFIX = "/.git";
+    public static final String LETSENCRYPT_PROD = "letsencrypt-prod";
+    public static final String LOCALHOST = "localhost";
+    public static final String CLUSTER_ISSUER = "ClusterIssuer";
 
     @Autowired
     private CertificationRepository certificationRepository;
@@ -136,13 +140,21 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         String type;
         String keyContent = null;
         String certContent = null;
+        Map<String,String> issuerRef = new HashMap<>();
         if (certificationFileDO != null) {
             type = CertificationType.UPLOAD.getType();
             keyContent = certificationFileDO.getKeyFile();
             certContent = certificationFileDO.getCertFile();
+            issuerRef.put("name", LOCALHOST);
+            issuerRef.put("kind", CLUSTER_ISSUER);
         } else {
             type = CertificationType.REQUEST.getType();
+            issuerRef.put("name", LETSENCRYPT_PROD);
+            issuerRef.put("kind", CLUSTER_ISSUER);
         }
+        c7nCertification.getSpec().setIssuerRef(issuerRef);
+
+
         String filePath = objectPath.get(TypeUtil.objToString(c7nCertification.hashCode()));
         C7nCertification oldC7nCertification = certificationService.getC7nCertification(
                 certName, type, certificationE.getDomains(), keyContent, certContent, environmentE.getCode());
