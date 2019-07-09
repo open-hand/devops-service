@@ -1,4 +1,4 @@
-/* eslint-disable react/sort-comp */
+/* eslint-disable react/sort-comp, react/no-access-state-in-setstate, no-bitwise */
 import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { observable, action } from 'mobx';
@@ -141,13 +141,13 @@ export default class AppOverview extends Component {
    * @param e
    */
   @action
-  onChangeSearch = e => {
+  onChangeSearch = (e) => {
     const { store } = this.props;
     store.setVal(e.target.value);
   };
 
   @action
-  onChange = e => {
+  onChange = (e) => {
     this.activeKey = e;
 
     const {
@@ -163,20 +163,20 @@ export default class AppOverview extends Component {
     } = this.state;
     if (e) {
       if (!resourceData[e]) {
-        this.setState({ resourceLoading: _.assign({}, resourceLoading, { [e]: true}) });
+        this.setState({ resourceLoading: _.assign({}, resourceLoading, { [e]: true }) });
       }
       InstancesStore.loadResource(projectId, e)
-        .then(data => {
+        .then((data) => {
           if (!resourceData[e]) {
-            this.setState({ resourceLoading: _.assign({}, resourceLoading, { [e]: false}) });
+            this.setState({ resourceLoading: _.assign({}, resourceLoading, { [e]: false }) });
           }
           if (data && !data.failed) {
             if (resourceData[e] && _.isEqual(data, resourceData[e])) {
               return;
             }
-            this.setState({ resourceData: _.assign({}, resourceData, { [e]: data}) })
+            this.setState({ resourceData: _.assign({}, resourceData, { [e]: data }) });
           }
-        })
+        });
     }
   };
 
@@ -270,18 +270,18 @@ export default class AppOverview extends Component {
           </span>
           <UploadIcon dataSource={data} />
         </span>
-        <div className='c7n-appow-networking' onClick={this.handlerAction}>
+        <div className="c7n-appow-networking" onClick={this.handlerAction}>
           <span className="c7n-envow-version-text">
             Networking:&nbsp;&nbsp;
           </span>
           <FormattedMessage
-            id='ist.networking.info'
+            id="ist.networking.info"
             values={{ serviceCount, ingressCount }}
           />
           <Tooltip title={formatMessage({ id: 'ist.networking.header' })}>
             <Button
-              icon='open_in_new'
-              shape='circle'
+              icon="open_in_new"
+              shape="circle"
               onClick={this.openConfirm.bind(this, data, 'networking')}
             />
           </Tooltip>
@@ -298,7 +298,7 @@ export default class AppOverview extends Component {
    * 重新部署
    * @param id
    */
-  reStart = id => {
+  reStart = (id) => {
     const {
       AppState: {
         currentMenuType: {
@@ -307,7 +307,7 @@ export default class AppOverview extends Component {
       },
     } = this.props;
     this.confirmLoading = true;
-    InstancesStore.reStarts(projectId, id).then(error => {
+    InstancesStore.reStarts(projectId, id).then((error) => {
       if (error && error.failed) {
         Choerodon.prompt(error.message);
       } else {
@@ -315,7 +315,7 @@ export default class AppOverview extends Component {
         this.closeConfirm();
       }
       this.confirmLoading = false;
-    }).catch(e => {
+    }).catch((e) => {
       this.confirmLoading = false;
       Choerodon.handleResponseError(e);
     });
@@ -352,42 +352,17 @@ export default class AppOverview extends Component {
    * 升级配置实例信息
    */
   @action
-  upgradeIst = async record => {
-    const {
-      intl,
-      AppState: {
-        currentMenuType: {
-          id: projectId,
-        },
-      },
-    } = this.props;
-    const { code, id, envId, commandVersionId, appId } = record;
+  upgradeIst = async (record) => {
+    const { code, id, envId, appId } = record;
 
     InstancesStore.setValue(null);
-    try {
-      const update = await InstancesStore.loadUpVersion(projectId, commandVersionId);
-      const result = handleProptError(update);
-      if (result) {
-        if (result.length === 0) {
-          Choerodon.prompt(intl.formatMessage({ id: 'ist.noUpVer' }));
-        } else {
-          this.id = id;
-          this.name = code;
-          this.idArr = {
-            environmentId: envId,
-            appVersionId: result[0].id,
-            appId,
-          };
-          const res = await InstancesStore.loadValue(projectId, id, result[0].id);
-          if (res) {
-            this.visibleUp = true;
-          }
-        }
-      }
-    } catch (e) {
-      InstancesStore.changeLoading(false);
-      Choerodon.handleResponseError(e);
-    }
+    this.visibleUp = true;
+    this.id = id;
+    this.name = code;
+    this.idArr = {
+      environmentId: envId,
+      appId,
+    };
   };
 
   /**
@@ -427,7 +402,7 @@ export default class AppOverview extends Component {
     } = this.props;
 
     this.confirmLoading = true;
-    InstancesStore.changeIstActive(projectId, id, status).then(error => {
+    InstancesStore.changeIstActive(projectId, id, status).then((error) => {
       if (error && error.failed) {
         Choerodon.prompt(error.message);
       } else {
@@ -435,7 +410,7 @@ export default class AppOverview extends Component {
         this.closeConfirm();
       }
       this.confirmLoading = false;
-    }).catch(e => {
+    }).catch((e) => {
       this.confirmLoading = false;
       Choerodon.handleResponseError(e);
     });
@@ -445,7 +420,7 @@ export default class AppOverview extends Component {
    * 关闭网络侧边栏
    */
   @action
-  closeNetwork = isLoad => {
+  closeNetwork = (isLoad) => {
     const { store } = this.props;
     this.props.form.resetFields();
     this.showNetwork = false;
@@ -471,7 +446,7 @@ export default class AppOverview extends Component {
    * @param res 是否重新部署需要重载数据
    */
   @action
-  handleCancel = res => {
+  handleCancel = (res) => {
     this.visible = false;
     if (res) {
       this.loadIstOverview();
@@ -500,7 +475,7 @@ export default class AppOverview extends Component {
     this.setState({ deleteLoading: true });
 
     const response = await InstancesStore.deleteInstance(projectId, id)
-      .catch(error => {
+      .catch((error) => {
         this.setState({ deleteLoading: false });
         callback && callback();
         Choerodon.handleResponseError(error);
@@ -618,7 +593,7 @@ export default class AppOverview extends Component {
     const ist = store.getIst;
     if (ist) {
       if (ist.devopsEnvPreviewAppDTOS && ist.devopsEnvPreviewAppDTOS.length) {
-        return _.map(ist.devopsEnvPreviewAppDTOS, previewApp => {
+        return _.map(ist.devopsEnvPreviewAppDTOS, (previewApp) => {
           const { appName, applicationInstanceDTOS, projectId } = previewApp;
           return (
             <div className="c7n-envow-app-wrap" key={appName}>
@@ -645,7 +620,7 @@ export default class AppOverview extends Component {
                     key={detail.id}
                   >
                     {resourceLoading[detail.id]
-                      ? <Spin spinning className='c7n-ist-expandrow-loading' />
+                      ? <Spin spinning className="c7n-ist-expandrow-loading" />
                       : <ExpandRow record={Object.assign({}, detail, resourceData[detail.id] || {})} />
                     }
                   </Panel>
@@ -676,7 +651,7 @@ export default class AppOverview extends Component {
    * 阻止Action组件冒泡弹出折叠面板
    * @param e
    */
-  handlerAction = e => {
+  handlerAction = (e) => {
     e.stopPropagation();
   };
 
@@ -717,7 +692,7 @@ export default class AppOverview extends Component {
       },
       update: {
         service: ['devops-service.application-version.getUpgradeAppVersion'],
-        text: formatMessage({ id: 'ist.upgrade' }),
+        text: formatMessage({ id: 'ist.change' }),
         action: this.upgradeIst.bind(this, record),
       },
       stop: {
@@ -847,7 +822,7 @@ export default class AppOverview extends Component {
             <Modal
               title={`${formatMessage({ id: 'ist.reDeploy' })}“${
                 this.istName
-                }”`}
+              }”`}
               visible={this.confirmType === 'reDeploy'}
               onOk={this.reStart.bind(this, this.id)}
               onCancel={this.closeConfirm}
