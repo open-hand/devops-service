@@ -50,13 +50,14 @@ class ValueConfig extends Component {
     const { store, id, idArr, onClose } = this.props;
     const { value, hasChanged } = this.state;
     const { id: projectId } = AppState.currentMenuType;
-    const oldValue = store.getValue ? store.getValue.yaml : '';
+    const { yaml, id: valueId } = store.getValue || {};
     const data = {
       ...idArr,
       isNotChange: !hasChanged,
-      values: value || oldValue,
+      values: value || yaml || '',
       appInstanceId: id,
       type: 'update',
+      valueId,
     };
 
     this.setState({ modalDisplay: false, loading: true });

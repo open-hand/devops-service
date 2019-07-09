@@ -1,3 +1,4 @@
+/* eslint-disable no-return-await */
 /**
  * @author ale0720@163.com
  * @date 2019-06-11 14:38
@@ -108,6 +109,16 @@ class DeployAppStore {
     return this.chartValue;
   }
 
+  @observable chartValueId = null;
+
+  @action setChartValueId(data) {
+    this.chartValueId = data;
+  }
+
+  @computed get getChartValueId() {
+    return this.chartValueId;
+  }
+
   @observable templateValue = '';
 
   @action setTemplateValue(data) {
@@ -179,8 +190,8 @@ class DeployAppStore {
     },
   ) {
     return await axios.get(
-      `/devops/v1/projects/${projectId}/app_versions/list_by_app/${appId}?is_publish=${isPublish ||
-      ''}&page=${page}&app_version_id=${initId}&version=${param}&size=15`,
+      `/devops/v1/projects/${projectId}/app_versions/list_by_app/${appId}?is_publish=${isPublish
+      || ''}&page=${page}&app_version_id=${initId}&version=${param}&size=15`,
     );
   }
 
@@ -188,7 +199,7 @@ class DeployAppStore {
     this.setIstLoading(true);
     const response = await axios
       .get(`/devops/v1/projects/${projectId}/app_instances/listByAppIdAndEnvId?envId=${envId}&appId=${appId}`)
-      .catch(error => {
+      .catch((error) => {
         Choerodon.handleResponseError(error);
       });
 
@@ -208,7 +219,7 @@ class DeployAppStore {
     this.setConfigLoading(true);
 
     const response = await axios.get(`devops/v1/projects/${projectId}/pipeline_value/list?app_id=${appId}&env_id=${envId}`)
-      .catch(error => {
+      .catch((error) => {
         Choerodon.handleResponseError(error);
       });
 
@@ -233,13 +244,14 @@ class DeployAppStore {
 
     const response = await axios
       .get(`/devops/v1/projects/${projectId}/app_instances/value?type=${type}&appVersionId=${versionId}&instanceId=${params}`)
-      .catch(error => {
+      .catch((error) => {
         Choerodon.handleResponseError(error);
       });
 
     if (handlePromptError(response)) {
       const value = response.yaml || '';
       this.setChartValue(value);
+      this.setChartValueId(response.id);
       this.setCurrentValue(value);
     }
 
@@ -257,7 +269,7 @@ class DeployAppStore {
     this.setValueLoading(true);
 
     const response = await axios.get(`/devops/v1/projects/${projectId}/pipeline_value?value_id=${valueId}`)
-      .catch(error => {
+      .catch((error) => {
         Choerodon.handleResponseError(error);
       });
 

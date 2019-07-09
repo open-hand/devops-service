@@ -648,6 +648,7 @@ const zhCN = {
   'ist.values': '修改配置信息',
   'ist.stop': '停止实例',
   'ist.upgrade': '升级实例',
+  'ist.change': '变更实例',
   'ist.noIst': '暂无实例',
   'ist.y': '可用',
   'ist.n': '不可用',

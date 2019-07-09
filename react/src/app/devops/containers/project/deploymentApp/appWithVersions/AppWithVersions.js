@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle, react/no-unused-state */
 /**
  * @author ale0720@163.com
  * @date 2019-06-06 14:09
@@ -22,7 +23,7 @@ const INIT_STATE = {
   versions: [],
   versionId: undefined,
   versionOptions: [],
-  versionPageNum: 1,
+  versionPageNum: 2,
   versionSearchParam: '',
   versionLoading: false,
   displayAppList: false,
@@ -38,7 +39,7 @@ export default class AppWithVersions extends Component {
   state = {
     versions: [],
     versionOptions: [],
-    versionPageNum: 1,
+    versionPageNum: 2,
     versionSearchParam: '',
     versionLoading: false,
     displayAppList: false,
@@ -113,13 +114,13 @@ export default class AppWithVersions extends Component {
   /**
    * 搜索版本
    */
-  handleVersionSearch = _.debounce(value => {
+  handleVersionSearch = _.debounce((value) => {
     const { appId, isLocalProject } = this.state;
 
     if (appId) {
       const isPublic = !isLocalProject;
-      this.setState({ versionSearchParam: value, versionPageNum: 1 });
-      this.handleLoadVersion(appId, isPublic, value, value === '');
+      this.setState({ versionSearchParam: value, versionPageNum: 2 });
+      this.handleLoadVersion(appId, isPublic, value, '');
     }
   }, 500);
 
@@ -143,17 +144,17 @@ export default class AppWithVersions extends Component {
     this.setState({ versionLoading: true });
 
     const initId = init || '';
-    const data = await store.loadVersions({ projectId, appId, isPublic, page: 0, param, initId })
+    const data = await store.loadVersions({ projectId, appId, isPublic, page: 1, param, initId })
       .catch(() => {
         this.setState({ versionLoading: false });
       });
 
     if (handleCheckerProptError(data)) {
-      const { totalPages, list } = data;
+      const { hasNextPage, list } = data;
 
       const versionOptions = renderVersionOptions(list);
 
-      if (totalPages > 1) {
+      if (hasNextPage) {
         // 在选项最后置入一个加载更多按钮
         const loadMoreBtn = renderLoadMoreBtn(this.handleLoadMoreVersion);
 
@@ -172,7 +173,7 @@ export default class AppWithVersions extends Component {
    * 选择版本
    * @param value
    */
-  handleSelectVersion = value => {
+  handleSelectVersion = (value) => {
     const { versions } = this.state;
     const versionDto = _.find(versions, ['id', value]);
 
@@ -225,7 +226,7 @@ export default class AppWithVersions extends Component {
       });
 
     if (handleCheckerProptError(data)) {
-      const { totalPages, list } = data;
+      const { hasNextPage, list } = data;
 
       const moreVersion = _.filter(list, ({ id }) => id !== versionId);
       const options = renderVersionOptions(moreVersion);
@@ -238,7 +239,7 @@ export default class AppWithVersions extends Component {
       const newVersionOpt = _.concat(
         _.initial(versionOptions),
         options,
-        versionPageNum + 1 < totalPages ? _.last(versionOptions) : [],
+        hasNextPage ? _.last(versionOptions) : [],
       );
       const newVersions = _.concat(versions, moreVersion);
 
@@ -255,7 +256,7 @@ export default class AppWithVersions extends Component {
     const { onChange, store } = this.props;
     const { app, versionDto } = this.state;
 
-    let _app = app;
+    const _app = app;
     if (!_app.publishLevel) {
       _app.appId = _app.id;
     }
@@ -386,8 +387,7 @@ export default class AppWithVersions extends Component {
  * @param versions
  */
 function renderVersionOptions(versions) {
-  return _.map(versions, ({ id, version }) =>
-    <Option key={id} value={id}>{version}</Option>);
+  return _.map(versions, ({ id, version }) => <Option key={id} value={id}>{version}</Option>);
 }
 
 function renderLoadMoreBtn(handler) {
