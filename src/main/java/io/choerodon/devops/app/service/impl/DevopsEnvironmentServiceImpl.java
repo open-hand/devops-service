@@ -94,8 +94,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private EnvUtil envUtil;
     @Autowired
-    private GitUtil gitUtil;
-    @Autowired
     private SagaClient sagaClient;
     @Autowired
     private DevopsProjectRepository devopsProjectRepository;
@@ -576,7 +574,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentE.getId(),
                 TypeUtil.objToLong(gitlabProjectDO.getId()), projectE.getId());
         devopsEnvironmentE.initSynchro(true);
-        devopsEnviromentRepository.update(devopsEnvironmentE);
+        devopsEnviromentRepository.updateOptions(devopsEnvironmentE);
     }
 
     private void initUserPermissionWhenCreatingEnv(GitlabProjectPayload gitlabProjectPayload, Long envId,
@@ -762,6 +760,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Transactional
     public void deleteDeactivatedEnvironment(Long envId) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
+        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+
+
         // 删除环境对应的实例
         applicationInstanceRepository.selectByEnvId(envId).forEach(instanceE ->
                 devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.INSTANCE.toValue(), instanceE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t)));
@@ -776,15 +778,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsServiceRepository.deleteServiceAndInstanceByEnvId(envId);
         // 删除环境
         devopsEnviromentRepository.deleteById(envId);
+
         // 删除gitlab库, 删除之前查询是否存在
-        if (devopsEnvironmentE.getGitlabEnvProjectId() != null) {
-            Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentE.getGitlabEnvProjectId());
-            GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectById(gitlabProjectId);
-            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
-                UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
-                gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
-            }
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
+
+        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode()
+                + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabUserId);
+        if (gitlabProjectDO.getId() != null) {
+            gitlabRepository.deleteProject(gitlabProjectDO.getId(), gitlabUserId);
         }
         // 删除环境命名空间
         if (devopsEnvironmentE.getClusterE().getId() != null) {

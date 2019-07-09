@@ -152,4 +152,9 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
         return ConvertHelper.convertList(devopsEnvironmentMapper.select(devopsEnvironmentDO), DevopsEnvironmentE.class);
     }
 
+    @Override
+    public void updateOptions(DevopsEnvironmentE devopsEnvironmentE) {
+        devopsEnvironmentMapper.updateOptions(devopsEnvironmentE.getGitlabEnvProjectId(),devopsEnvironmentE.getHookId(),devopsEnvironmentE.getSynchro(),devopsEnvironmentE.getId());
+    }
+
 }
