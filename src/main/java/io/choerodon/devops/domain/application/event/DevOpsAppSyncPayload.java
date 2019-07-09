@@ -5,10 +5,19 @@ package io.choerodon.devops.domain.application.event;
  * Date:  15:57 2019/7/5
  * Description:
  */
-public class DevOpsAppDelPayload {
+public class DevOpsAppSyncPayload {
     private Long organizationId;
     private Long projectId;
     private String code;
+    private Boolean active;
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
     public Long getOrganizationId() {
         return organizationId;

@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -15,7 +20,11 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.dto.iam.*;
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
+import io.choerodon.devops.api.dto.iam.RoleDTO;
+import io.choerodon.devops.api.dto.iam.RoleSearchDTO;
+import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
@@ -27,10 +36,6 @@ import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 
 /**
  * Created by younger on 2018/3/29.
@@ -268,7 +273,11 @@ public class IamRepositoryImpl implements IamRepository {
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        return iamAppPayLoadResponseEntity.getBody();
+        IamAppPayLoad result = iamAppPayLoadResponseEntity.getBody();
+        if (result == null || result.getProjectId() == null) {
+            throw new CommonException("error.code.exist");
+        }
+        return result;
     }
 
     @Override

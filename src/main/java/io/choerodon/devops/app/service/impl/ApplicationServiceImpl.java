@@ -87,7 +87,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.event.DevOpsAppDelPayload;
+import io.choerodon.devops.domain.application.event.DevOpsAppSyncPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
@@ -316,11 +316,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         applicationRepository.delete(appId);
         //iam
-        DevOpsAppDelPayload appDelPayload = new DevOpsAppDelPayload();
-        appDelPayload.setProjectId(projectId);
-        appDelPayload.setOrganizationId(projectE.getOrganization().getId());
-        appDelPayload.setCode(applicationE.getCode());
-        String input = gson.toJson(appDelPayload);
+        DevOpsAppSyncPayload appSyncPayload = new DevOpsAppSyncPayload();
+        appSyncPayload.setProjectId(projectId);
+        appSyncPayload.setOrganizationId(projectE.getOrganization().getId());
+        appSyncPayload.setCode(applicationE.getCode());
+        String input = gson.toJson(appSyncPayload);
         sagaClient.startSaga("devops-app-delete", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
     }
 
@@ -391,11 +391,12 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new CommonException("error.application.active");
         }
         ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
-        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
-        iamAppPayLoad.setActive(active);
-        iamAppPayLoad.setOrganizationId(projectE.getOrganization().getId());
-        iamAppPayLoad.setProjectId(applicationE.getProjectE().getId());
-        String input = gson.toJson(iamAppPayLoad);
+        DevOpsAppSyncPayload opsAppSyncPayload = new DevOpsAppSyncPayload();
+        opsAppSyncPayload.setActive(active);
+        opsAppSyncPayload.setOrganizationId(projectE.getOrganization().getId());
+        opsAppSyncPayload.setProjectId(applicationE.getProjectE().getId());
+        opsAppSyncPayload.setCode(applicationE.getCode());
+        String input = gson.toJson(opsAppSyncPayload);
         sagaClient.startSaga("devops-sync-app-active", new StartInstanceDTO(input, "app", applicationId.toString(), ResourceLevel.PROJECT.value(), applicationE.getProjectE().getId()));
         return true;
     }
