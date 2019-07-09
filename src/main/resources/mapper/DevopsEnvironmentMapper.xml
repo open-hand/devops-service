@@ -24,7 +24,7 @@
     </select>
 
     <update id="updateOptions">
-        UPDATE devops_env de set de.gitlab_env_project_id = #{gitlabEnvProjectId} and de.hook_id = #{hookId} and de.is_synchro = #{isSynchro}  where de.id = #{envId}
+        UPDATE devops_env de set de.gitlab_env_project_id = #{gitlabEnvProjectId} , de.hook_id = #{hookId} , de.is_synchro = #{isSynchro}  where de.id = #{envId}
     </update>
 
 
