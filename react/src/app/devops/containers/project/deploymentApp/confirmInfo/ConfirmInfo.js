@@ -51,6 +51,7 @@ export default class ConfirmInfo extends Component {
         isValueChanged,
       },
       getEnvironment,
+      getChartValueId,
     } = store;
 
     if (!(app && version && getEnvironment && istName)) return;
@@ -66,17 +67,16 @@ export default class ConfirmInfo extends Component {
       isNotChange,
       appVersionId,
       appInstanceId,
-      templateId,
       type: mode,
       instanceName: istName,
       environmentId: getEnvironment.id,
       values: configValue,
-      valueId: templateId,
+      valueId: templateId || getChartValueId,
     };
 
     this.setState({ loading: true });
     const response = await store.submitDeployment(projectId, deployDTO)
-      .catch(error => {
+      .catch((error) => {
         Choerodon.handleResponseError(error);
       });
 
@@ -105,7 +105,7 @@ export default class ConfirmInfo extends Component {
       },
     } = this.props;
 
-    let url = state && state.prevPage && state.prevPage !== 'market' ? `${state.prevPage}-overview` : 'instance';
+    const url = state && state.prevPage && state.prevPage !== 'market' ? `${state.prevPage}-overview` : 'instance';
 
     history.push(
       `/devops/${url}?type=${type}&id=${id}&name=${name}&organizationId=${organizationId}`,
@@ -167,17 +167,15 @@ export default class ConfirmInfo extends Component {
       },
     ];
 
-    const infoDom = _.map(deployInfo, ({ icon, label, value }) => {
-      return (
-        <div key={label} className="c7ncd-step-info-item">
-          <div className="c7ncd-step-info-item-label">
-            <Icon type={icon} className="c7ncd-step-info-item-icon" />
-            <FormattedMessage id={label} />：
-          </div>
-          {value && <div className="c7ncd-step-info-item-value">{value}</div>}
+    const infoDom = _.map(deployInfo, ({ icon, label, value }) => (
+      <div key={label} className="c7ncd-step-info-item">
+        <div className="c7ncd-step-info-item-label">
+          <Icon type={icon} className="c7ncd-step-info-item-icon" />
+          <FormattedMessage id={label} />：
         </div>
-      );
-    });
+        {value && <div className="c7ncd-step-info-item-value">{value}</div>}
+      </div>
+    ));
 
     return (
       <Fragment>

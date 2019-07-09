@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise, react/no-access-state-in-setstate */
 import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
@@ -17,7 +18,6 @@ import Tips from '../../../components/Tips/Tips';
 import RefreshBtn from '../../../components/refreshBtn';
 import PodStatus from './components/PodStatus/PodStatus';
 import DevopsStore from '../../../stores/DevopsStore';
-import InstancesStore from '../../../stores/project/instances/InstancesStore';
 import EnvOverviewStore from '../../../stores/project/envOverview';
 import DeleteModal from '../../../components/deleteModal';
 import Networking from './components/Networking';
@@ -37,7 +37,6 @@ class Instances extends Component {
     confirmType: '',
     idArr: {},
     deleteArr: [],
-    showNetworking: false,
     appId: null,
     resourceData: {},
     resourceLoading: {},
@@ -112,7 +111,7 @@ class Instances extends Component {
    * 选择应用后获取实例列表
    * @param appId
    */
-  loadDetail = appId => {
+  loadDetail = (appId) => {
     const { InstancesStore } = this.props;
     const currentApp = InstancesStore.getAppId;
     const nextApp = appId !== currentApp && appId;
@@ -159,7 +158,7 @@ class Instances extends Component {
    * 查询应用标签及实例列表
    * @param id 环境id
    */
-  handleEnvSelect = id => {
+  handleEnvSelect = (id) => {
     const { id: projectId } = AppState.currentMenuType;
     const { InstancesStore } = this.props;
     const { loadAppNameByEnv, getAppPage, getAppPageSize } = InstancesStore;
@@ -195,7 +194,7 @@ class Instances extends Component {
     InstancesStore.loadInstanceAll(true, projectId, {
       envId,
       appId,
-    }, time).catch(err => {
+    }, time).catch((err) => {
       InstancesStore.changeLoading(false);
       Choerodon.handleResponseError(err);
     });
@@ -219,7 +218,7 @@ class Instances extends Component {
 
     InstancesStore.setValue(null);
 
-    let res = await InstancesStore.loadValue(projectId, id, commandVersionId);
+    const res = await InstancesStore.loadValue(projectId, id, commandVersionId);
     if (res) {
       this.setState({ changeVisible: true, id });
     }
@@ -232,27 +231,31 @@ class Instances extends Component {
   reStart = async (id) => {
     const { id: projectId } = AppState.currentMenuType;
     const {
-      InstancesStore: { reStarts, loadInstanceAll },
+      InstancesStore: {
+        reStarts,
+        loadInstanceAll,
+        changeLoading,
+        getAppId,
+      },
     } = this.props;
     const { defaultIst } = this.state;
 
-    const appId = InstancesStore.getAppId;
     const envId = EnvOverviewStore.getTpEnvId;
 
     this.setState({ confirmLoading: true });
 
     const response = await reStarts(projectId, id)
-      .catch(err => {
-        InstancesStore.changeLoading(false);
+      .catch((err) => {
+        changeLoading(false);
         this.setState({ confirmLoading: false });
         Choerodon.handleResponseError(err);
       });
     const result = handleProptError(response);
     if (result) {
       const time = Date.now();
-      loadInstanceAll(true, projectId, { envId, appId, instanceId: defaultIst }, time)
-        .catch(err => {
-          InstancesStore.changeLoading(false);
+      loadInstanceAll(true, projectId, { envId, getAppId, instanceId: defaultIst }, time)
+        .catch((err) => {
+          changeLoading(false);
           Choerodon.handleResponseError(err);
         });
     }
@@ -264,43 +267,25 @@ class Instances extends Component {
    * 升级配置实例信息
    */
   upgradeIst = async (record) => {
-    const { InstancesStore, intl } = this.props;
-    const { id: projectId } = AppState.currentMenuType;
-    const { code, id, envId, commandVersionId, appId } = record;
-
+    const { InstancesStore } = this.props;
+    const { code, id, envId, appId } = record;
     InstancesStore.setValue(null);
-    try {
-      // 升级失败仍要传入 commandVersionId，勿修改
-      // 升级失败，但是新版本的逻辑已经存在于后端
-      const update = await InstancesStore.loadUpVersion(projectId, commandVersionId);
-      const result = handleProptError(update);
-      if (result) {
-        if (result.length === 0) {
-          Choerodon.prompt(intl.formatMessage({ id: 'ist.noUpVer' }));
-        } else {
-          const idArr = {
-            appId,
-            environmentId: envId,
-            appVersionId: result[0].id,
-          };
-          this.setState({ idArr, id, name: code });
-          const res = await InstancesStore.loadValue(projectId, id, result[0].id);
-          if (res) {
-            this.setState({ upgradeVisible: true });
-          }
-        }
-      }
-    } catch (e) {
-      InstancesStore.changeLoading(false);
-      Choerodon.handleResponseError(e);
-    }
+    this.setState({
+      upgradeVisible: true,
+      idArr: {
+        environmentId: envId,
+        appId,
+      },
+      id,
+      name: code,
+    });
   };
 
   /**
    * 修改&升级配置信息侧边栏
    * @param res 是否重载数据
    */
-  closeConfigSidebar = res => {
+  closeConfigSidebar = (res) => {
     const {
       InstancesStore: {
         getAppId,
@@ -332,7 +317,7 @@ class Instances extends Component {
     const time = Date.now();
     InstancesStore.loadInstanceAll(spin, projectId, { envId, appId, instanceId: defaultIst }, time)
       .catch(
-        err => {
+        (err) => {
           InstancesStore.changeLoading(false);
           Choerodon.handleResponseError(err);
         },
@@ -377,7 +362,7 @@ class Instances extends Component {
     this.setState({ deleteLoading: true, defaultIst: null });
 
     const response = await deleteInstance(projectId, id)
-      .catch(error => {
+      .catch((error) => {
         this.setState({ deleteLoading: false });
 
         callback && callback();
@@ -392,7 +377,7 @@ class Instances extends Component {
       InstancesStore.setIstTableFilter(null);
       InstancesStore.setIstPage(null);
       loadInstanceAll(true, projectId, { envId, getAppId, instanceId: defaultIst }, Date.now())
-        .catch(err => {
+        .catch((err) => {
           InstancesStore.changeLoading(false);
           Choerodon.handleResponseError(err);
         });
@@ -461,7 +446,14 @@ class Instances extends Component {
   activeIst = (id, status) => {
     const { id: projectId } = AppState.currentMenuType;
     const {
-      InstancesStore: { changeIstActive, loadInstanceAll },
+      InstancesStore: {
+        changeIstActive,
+        loadInstanceAll,
+        setTargetCount,
+        setAppId,
+        setIstTableFilter,
+        changeLoading,
+      },
     } = this.props;
     const envId = EnvOverviewStore.getTpEnvId;
     const { defaultIst } = this.state;
@@ -471,17 +463,17 @@ class Instances extends Component {
     });
 
     if (status === 'stop') {
-      InstancesStore.setTargetCount({});
+      setTargetCount({});
     }
 
-    changeIstActive(projectId, id, status).then(data => {
+    changeIstActive(projectId, id, status).then((data) => {
       const res = handleProptError(data);
       if (res) {
-        InstancesStore.setAppId(null);
-        InstancesStore.setIstTableFilter(null);
+        setAppId(null);
+        setIstTableFilter(null);
         const time = Date.now();
-        loadInstanceAll(true, projectId, { envId, instanceId: defaultIst }, time).catch(err => {
-          InstancesStore.changeLoading(false);
+        loadInstanceAll(true, projectId, { envId, instanceId: defaultIst }, time).catch((err) => {
+          changeLoading(false);
           Choerodon.handleResponseError(err);
         });
         this.closeConfirm();
@@ -489,7 +481,7 @@ class Instances extends Component {
       this.setState({
         confirmLoading: false,
       });
-    }).catch(e => {
+    }).catch((e) => {
       this.setState({
         confirmLoading: false,
       });
@@ -553,7 +545,7 @@ class Instances extends Component {
       },
       update: {
         service: ['devops-service.application-version.getUpgradeAppVersion'],
-        text: formatMessage({ id: 'ist.upgrade' }),
+        text: formatMessage({ id: 'ist.change' }),
         action: this.upgradeIst.bind(this, record),
       },
       stop: {
@@ -635,13 +627,13 @@ class Instances extends Component {
     return (
       <div>
         <FormattedMessage
-          id='ist.networking.info'
+          id="ist.networking.info"
           values={{ serviceCount, ingressCount }}
         />
         <Tooltip title={formatMessage({ id: 'ist.networking.header' })}>
           <Button
-            icon='open_in_new'
-            shape='circle'
+            icon="open_in_new"
+            shape="circle"
             onClick={this.openConfirm.bind(this, record, 'networking')}
           />
         </Tooltip>
@@ -663,7 +655,7 @@ class Instances extends Component {
         this.setState({ resourceLoading: _.assign({}, resourceLoading, { [id]: true }) });
       }
       InstancesStore.loadResource(projectId, id)
-        .then(data => {
+        .then((data) => {
           if (!resourceData[id]) {
             this.setState({ resourceLoading: _.assign({}, resourceLoading, { [id]: false }) });
           }
@@ -724,7 +716,7 @@ class Instances extends Component {
           role="none"
           className={`c7n-deploy-single_card ${
             Number(getAppId) === d.id ? 'c7n-deploy-single_card-active' : ''
-            }`}
+          }`}
           onClick={this.loadDetail.bind(this, d.id)}
           key={`${d.id}-${d.projectId}`}
         >
@@ -823,7 +815,7 @@ class Instances extends Component {
           onExpand={this.ExpandChange}
           expandedRowRender={record => (
             resourceLoading[record.id]
-              ? <Spin spinning className='c7n-ist-expandrow-loading' />
+              ? <Spin spinning className="c7n-ist-expandrow-loading" />
               : <ExpandRow record={Object.assign({}, record, resourceData[record.id] || {})} />
           )}
         />
@@ -836,9 +828,9 @@ class Instances extends Component {
       state: pipelineDetailState,
     };
 
-    const deleteModals = _.map(deleteArr, ({ name, display, deleteId }) => (<DeleteModal
+    const deleteModals = _.map(deleteArr, ({ name: modalName, display, deleteId }) => (<DeleteModal
       key={deleteId}
-      title={`${formatMessage({ id: 'ist.delete' })}“${name}”`}
+      title={`${formatMessage({ id: 'ist.delete' })}“${modalName}”`}
       visible={display}
       objectId={deleteId}
       loading={deleteLoading}
@@ -880,7 +872,7 @@ class Instances extends Component {
                   envId
                     ? 'c7n-header-select'
                     : 'c7n-header-select c7n-select_min100'
-                  }`}
+                }`}
                 dropdownClassName="c7n-header-env_drop"
                 placeholder={formatMessage({ id: 'envoverview.noEnv' })}
                 value={envData && envData.length ? envId : undefined}
