@@ -395,6 +395,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         iamAppPayLoad.setActive(active);
         iamAppPayLoad.setOrganizationId(projectE.getOrganization().getId());
         iamAppPayLoad.setProjectId(applicationE.getProjectE().getId());
+        iamAppPayLoad.setCode(applicationE.getCode());
         String input = gson.toJson(iamAppPayLoad);
         sagaClient.startSaga("devops-sync-app-active", new StartInstanceDTO(input, "app", applicationId.toString(), ResourceLevel.PROJECT.value(), applicationE.getProjectE().getId()));
         return true;
