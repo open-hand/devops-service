@@ -1,11 +1,8 @@
+/* eslint-disable no-return-await */
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import { handleProptError } from '../../../utils';
-
-const HEIGHT =
-  window.innerHeight ||
-  document.documentElement.clientHeight ||
-  document.body.clientHeight;
+import { HEIGHT } from '../../../common/Constants';
 
 @store('AppStore')
 class AppStore {
@@ -200,13 +197,12 @@ class AppStore {
         `/devops/v1/projects/${projectId}/apps/list_by_options?page=${page}&size=${size}${sortParam}`,
         JSON.stringify(postData),
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           const { pageNum, pageSize, total, list } = res;
-          const page = { pageNum, pageSize, total };
           this.setAllData(list);
-          this.setPageInfo(page);
+          this.setPageInfo({ pageNum, pageSize, total });
         }
         spin && this.changeLoading(false);
         this.changeIsRefresh(false);
@@ -214,9 +210,9 @@ class AppStore {
   };
 
   loadSelectData = (projectId, isPredefined) => {
-    const url = isPredefined ? `/devops/v1/projects/${projectId}/apps/template?isPredefined=${isPredefined}` :
-      `/devops/v1/projects/${projectId}/apps/template`;
-    axios.get(url).then(data => {
+    const url = isPredefined ? `/devops/v1/projects/${projectId}/apps/template?isPredefined=${isPredefined}`
+      : `/devops/v1/projects/${projectId}/apps/template`;
+    axios.get(url).then((data) => {
       const res = handleProptError(data);
       if (res) {
         this.setSelectData(res);
@@ -224,49 +220,45 @@ class AppStore {
     });
   };
 
-  loadDataById = (projectId, id) =>
-    axios
-      .get(`/devops/v1/projects/${projectId}/apps/${id}/detail`)
-      .then(data => {
-        const res = handleProptError(data);
-        if (res) {
-          this.setSingleData(data);
-        }
-        return res;
-      });
+  loadDataById = (projectId, id) => axios
+    .get(`/devops/v1/projects/${projectId}/apps/${id}/detail`)
+    .then((data) => {
+      const res = handleProptError(data);
+      if (res) {
+        this.setSingleData(data);
+      }
+      return res;
+    });
 
-  checkCode = (projectId, code) =>
-    axios.get(`/devops/v1/projects/${projectId}/apps/check_code?code=${code}`);
+  checkCode = (projectId, code) => axios.get(`/devops/v1/projects/${projectId}/apps/check_code?code=${code}`);
 
-  checkName = (projectId, name) =>
-    axios.get(`/devops/v1/projects/${projectId}/apps/check_name?name=${name}`);
+  checkName = (projectId, name) => axios.get(`/devops/v1/projects/${projectId}/apps/check_name?name=${name}`);
 
-  checkUrl = (projectId, type, url, token) =>
-    axios.get(`/devops/v1/projects/${projectId}/apps/url_validation?platform_type=${type}&url=${url}&access_token=${token}`);
+  checkUrl = (projectId, type, url, token) => axios.get(`/devops/v1/projects/${projectId}/apps/url_validation?platform_type=${type}&url=${url}&access_token=${token}`);
 
-  updateData = (projectId, data) =>
-    axios
-      .put(`/devops/v1/projects/${projectId}/apps`, JSON.stringify(data))
-      .then(datas => {
-        const res = handleProptError(datas);
-        return res;
-      });
+  updateData = (projectId, data) => axios
+    .put(`/devops/v1/projects/${projectId}/apps`, JSON.stringify(data))
+    .then((datas) => {
+      const res = handleProptError(datas);
+      return res;
+    });
 
-  addData = (projectId, data) =>
-    axios
-      .post(`/devops/v1/projects/${projectId}/apps`, JSON.stringify(data))
-      .then(datas => {
-        const res = handleProptError(datas);
-        return res;
-      });
+  addData = (projectId, data) => axios
+    .post(`/devops/v1/projects/${projectId}/apps`, JSON.stringify(data))
+    .then((datas) => {
+      const res = handleProptError(datas);
+      return res;
+    });
 
-  changeAppStatus = (projectId, id, status) =>
-    axios
-      .put(`/devops/v1/projects/${projectId}/apps/${id}?active=${status}`)
-      .then(datas => {
-        const res = handleProptError(datas);
-        return res;
-      });
+  deleteData = (projectId, id) => axios
+    .delete(`/devops/v1/projects/${projectId}/apps/${id}`);
+
+  changeAppStatus = (projectId, id, status) => axios
+    .put(`/devops/v1/projects/${projectId}/apps/${id}?active=${status}`)
+    .then((datas) => {
+      const res = handleProptError(datas);
+      return res;
+    });
 
   /**
    * 分页查询项目下用户权限
@@ -289,32 +281,29 @@ class AppStore {
         `/devops/v1/projects/${projectId}/envs/list?page=${page}&size=${size}`,
         JSON.stringify(postData),
       )
-      .then(data => {
+      .then((data) => {
         if (data && data.failed) {
           Choerodon.prompt(data.message);
         } else {
           const { pageNum, pageSize, total, list } = data;
           this.setMbr(list);
-          const page = { pageNum, pageSize, total };
-          this.setMbrPageInfo(page);
+          this.setMbrPageInfo({ pageNum, pageSize, total });
         }
         this.setTableLoading(false);
       });
   };
 
-  loadTagKeys = (projectId, id) =>
-    axios
-      .get(`/devops/v1/projects/${projectId}/apps/${id}/list_all`)
-      .then(data => {
-        if (data && data.failed) {
-          Choerodon.prompt(data.message);
-        } else {
-          this.setTagKeys(data);
-        }
-      });
+  loadTagKeys = (projectId, id) => axios
+    .get(`/devops/v1/projects/${projectId}/apps/${id}/list_all`)
+    .then((data) => {
+      if (data && data.failed) {
+        Choerodon.prompt(data.message);
+      } else {
+        this.setTagKeys(data);
+      }
+    });
 
-  importApp = (projectId, data) =>
-    axios.post(`/devops/v1/projects/${projectId}/apps/import`, JSON.stringify(data));
+  importApp = (projectId, data) => axios.post(`/devops/v1/projects/${projectId}/apps/import`, JSON.stringify(data));
 
   /**
    * 查询Harbor 或 Chart 仓库
@@ -335,7 +324,7 @@ class AppStore {
       this.queryConfig(projectId, 'chart'),
     ];
     const data = await Promise.all(requests)
-      .catch(e => {
+      .catch((e) => {
         Choerodon.handleResponseError(e);
       });
     const harbor = handleProptError(data[0]);
