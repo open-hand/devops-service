@@ -1,10 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
@@ -91,7 +87,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
             applicationVersionDOPage.getList().add(0, searchDO);
         }
         if (applicationVersionDOPage.getList().isEmpty()) {
-            return new PageInfo<>();
+            return new PageInfo<>(Collections.emptyList());
         }
         return ConvertPageHelper.convertPageInfo(applicationVersionDOPage, ApplicationVersionE.class);
     }
