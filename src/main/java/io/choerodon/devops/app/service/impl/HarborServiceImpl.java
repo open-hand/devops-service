@@ -59,7 +59,7 @@ public class HarborServiceImpl implements HarborService {
                 result = harborClient.insertProject(params, new Project(harborPayload.getProjectCode(), 1)).execute();
             }
             if (result.raw().code() != 201) {
-                throw new CommonException(result.errorBody().string());
+                throw new CommonException(result.message());
             }
         } catch (IOException e) {
             throw new CommonException(e);
