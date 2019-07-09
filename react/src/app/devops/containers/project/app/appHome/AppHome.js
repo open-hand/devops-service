@@ -1,3 +1,4 @@
+/* eslint-disable react/no-access-state-in-setstate, react/no-unused-state */
 import React, { Component, Fragment } from 'react';
 import {
   Table,
@@ -29,6 +30,7 @@ import RefreshBtn from '../../../../components/refreshBtn';
 import MouserOverWrapper from '../../../../components/MouseOverWrapper';
 import Tips from '../../../../components/Tips/Tips';
 import InterceptMask from '../../../../components/interceptMask/InterceptMask';
+import { handlePromptError } from '../../../../utils';
 
 import '../../envPipeline/EnvPipeLineHome.scss';
 import './AppHome.scss';
@@ -56,7 +58,7 @@ const formItemLayout = {
 class AppHome extends Component {
   postName = _.debounce((projectId, value, callback) => {
     const { AppStore, intl } = this.props;
-    AppStore.checkName(projectId, value).then(data => {
+    AppStore.checkName(projectId, value).then((data) => {
       if (data && data.failed) {
         callback(intl.formatMessage({ id: 'template.checkName' }));
       } else {
@@ -78,7 +80,7 @@ class AppHome extends Component {
     } = this.props;
     const pa = /^[a-z]([-a-z0-9]*[a-z0-9])?$/;
     if (value && pa.test(value)) {
-      AppStore.checkCode(this.state.projectId, value).then(data => {
+      AppStore.checkCode(this.state.projectId, value).then((data) => {
         if (data && data.failed) {
           callback(formatMessage({ id: 'template.checkCode' }));
         } else {
@@ -108,6 +110,7 @@ class AppHome extends Component {
       createSelectedRowKeys: [],
       createSelected: [],
       createSelectedTemp: [],
+      name: null,
     };
   }
 
@@ -155,8 +158,7 @@ class AppHome extends Component {
           },
         ],
         filteredValue: filters.type || [],
-        render: text =>
-          text ? <FormattedMessage id={`app.type.${text}`} /> : '',
+        render: text => (text ? <FormattedMessage id={`app.type.${text}`} /> : ''),
       },
       {
         title: <FormattedMessage id="app.name" />,
@@ -246,7 +248,7 @@ class AppHome extends Component {
                 />
               </Tooltip>
             ) : null}
-            {!record.fail && (
+            {!record.fail ? (
               <Fragment>
                 <Permission
                   type={type}
@@ -333,6 +335,21 @@ class AppHome extends Component {
                   </Tooltip>
                 </Permission>
               </Fragment>
+            ) : (
+              <Permission
+                service={['devops-service.application.deleteByAppId']}
+              >
+                <Tooltip
+                  title={formatMessage({ id: 'delete' })}
+                >
+                  <Button
+                    shape="circle"
+                    size="small"
+                    icon="delete_forever"
+                    onClick={this.openDelete.bind(this, record.id, record.name)}
+                  />
+                </Tooltip>
+              </Permission>
             )}
           </Fragment>
         ),
@@ -390,7 +407,7 @@ class AppHome extends Component {
       },
     } = this.props;
     history.push({
-      pathname: "/devops/code-quality",
+      pathname: '/devops/code-quality',
       search,
       state: {
         backPath: `/devops/app${search}`,
@@ -407,7 +424,7 @@ class AppHome extends Component {
   changeAppStatus = (id, status) => {
     const { AppStore } = this.props;
     const { projectId } = this.state;
-    AppStore.changeAppStatus(projectId, id, !status).then(data => {
+    AppStore.changeAppStatus(projectId, id, !status).then((data) => {
       if (data) {
         this.loadAllData(this.state.page);
       }
@@ -439,7 +456,7 @@ class AppHome extends Component {
    * 提交数据
    * @param e
    */
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     e.preventDefault();
     const { AppStore, form } = this.props;
     const { projectId, id, type, page, checked, createSelectedRowKeys } = this.state;
@@ -455,7 +472,7 @@ class AppHome extends Component {
 
           this.setState({ submitting: true });
           AppStore.addData(projectId, postData)
-            .then(res => {
+            .then((res) => {
               if (res && res.failed) {
                 Choerodon.prompt(res.message);
                 this.setState({ submitting: false });
@@ -474,9 +491,9 @@ class AppHome extends Component {
                 });
               }
             })
-            .catch(err => {
+            .catch((error) => {
               this.setState({ submitting: false });
-              Choerodon.handleResponseError(err);
+              Choerodon.handleResponseError(error);
             });
         }
       });
@@ -491,7 +508,7 @@ class AppHome extends Component {
 
           this.setState({ submitting: true });
           AppStore.updateData(projectId, formData)
-            .then(res => {
+            .then((res) => {
               if (res && res.failed) {
                 Choerodon.prompt(res.message);
                 this.setState({ submitting: false });
@@ -516,13 +533,53 @@ class AppHome extends Component {
                 );
               }
             })
-            .catch(err => {
+            .catch((error) => {
               this.setState({ submitting: false });
-              Choerodon.handleResponseError(err);
+              Choerodon.handleResponseError(error);
             });
         }
       });
     }
+  };
+
+  /**
+   * 打开删除弹窗
+   */
+  openDelete = (id, name) => {
+    this.setState({
+      id,
+      name,
+      showDelete: true,
+    });
+  };
+
+  /**
+   * 关闭删除弹窗
+   */
+  closeDelete = () => this.setState({ id: null, name: null, showDelete: false });
+
+  /**
+   * 删除失败的应用
+   */
+  deleteApp = () => {
+    const {
+      AppStore,
+    } = this.props;
+    const { id, projectId } = this.state;
+    this.setState({ submitting: true });
+    AppStore.deleteData(projectId, id)
+      .then((data) => {
+        if (handlePromptError(data)) {
+          this.loadAllData(1);
+          AppStore.setMbrInfo({ filters: {}, sort: { columnKey: 'id', order: 'descend' }, paras: [] });
+          this.closeDelete();
+        }
+        this.setState({ submitting: false });
+      })
+      .catch((error) => {
+        this.setState({ submitting: false });
+        Choerodon.handleResponseError(error);
+      });
   };
 
   /**
@@ -561,7 +618,7 @@ class AppHome extends Component {
       AppStore.loadSelectData(projectId);
       this.setState({ checked: true, show: true, type });
     } else {
-      AppStore.loadDataById(projectId, id).then(data => {
+      AppStore.loadDataById(projectId, id).then((data) => {
         if (data && data.failed) {
           Choerodon.prompt(data.message);
         } else {
@@ -579,7 +636,7 @@ class AppHome extends Component {
     this.setState({ copyFrom: option.key });
   };
 
-  cbChange = e => {
+  cbChange = (e) => {
     this.setState({ checked: e.target.value });
   };
 
@@ -598,7 +655,7 @@ class AppHome extends Component {
       sort: sorter,
       paras,
     });
-    let sort = {
+    const sort = {
       field: '',
       order: 'desc',
     };
@@ -611,7 +668,7 @@ class AppHome extends Component {
       }
     }
     let searchParam = {};
-    let page = pagination.current;
+    const page = pagination.current;
     if (Object.keys(filters).length) {
       searchParam = filters;
     }
@@ -623,10 +680,10 @@ class AppHome extends Component {
   };
 
   onCreateSelectChange = (keys, selected) => {
-    let s = [];
+    const s = [];
     const a = this.state.createSelectedTemp.concat(selected);
     this.setState({ createSelectedTemp: a });
-    _.map(keys, o => {
+    _.map(keys, (o) => {
       if (_.filter(a, ['iamUserId', o]).length) {
         s.push(_.filter(a, ['iamUserId', o])[0]);
       }
@@ -645,12 +702,12 @@ class AppHome extends Component {
   onSelectChange = (keys, selected) => {
     const { AppStore } = this.props;
     const { getTagKeys: tagKeys } = AppStore;
-    let s = [];
+    const s = [];
     const a = tagKeys.length
       ? tagKeys.concat(selected)
       : this.state.selected.concat(selected);
     this.setState({ selected: a });
-    _.map(keys, o => {
+    _.map(keys, (o) => {
       if (_.filter(a, ['iamUserId', o]).length) {
         s.push(_.filter(a, ['iamUserId', o])[0]);
       }
@@ -702,6 +759,8 @@ class AppHome extends Component {
       checked,
       createSelectedRowKeys,
       createSelected,
+      showDelete,
+      name: appName,
     } = this.state;
 
     // 当前页面的自动刷新是否开启
@@ -723,7 +782,7 @@ class AppHome extends Component {
       </Tag>
     ));
 
-    const tagDom = _.map(tagKeys, t => {
+    const tagDom = _.map(tagKeys, (t) => {
       if (t) {
         return (
           <Tag className="c7n-env-tag" key={t.iamUserId}>
@@ -755,7 +814,7 @@ class AppHome extends Component {
       },
     ];
 
-    let initHarbor = undefined;
+    let initHarbor;
     if (getHarborList.length) {
       const hasProject = _.find(getHarborList, item => item.name.indexOf('project') !== -1);
       initHarbor = hasProject ? hasProject.id : getHarborList[0].id;
@@ -848,7 +907,7 @@ class AppHome extends Component {
                   rules: [
                     {
                       message: formatMessage({ id: 'required' }),
-                      transform: value => {
+                      transform: (value) => {
                         if (value) {
                           return value.toString();
                         }
@@ -863,10 +922,9 @@ class AppHome extends Component {
                     label={<FormattedMessage id="app.chooseTem" />}
                     dropdownClassName="c7n-app-select-dropdown"
                     onSelect={this.selectTemplate}
-                    filterOption={(input, option) =>
-                      option.props.children.props.children
-                        .toLowerCase()
-                        .indexOf(input.toLowerCase()) >= 0
+                    filterOption={(input, option) => option.props.children.props.children
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
                     }
                   >
                     {selectData.map(s => (
@@ -883,7 +941,7 @@ class AppHome extends Component {
             </div>
           )}
         </Form>
-        {(singleData && singleData.gitlabProjectId || modeType === 'create') ? (<Fragment>
+        {(singleData && singleData.gitlabProjectId) || modeType === 'create' ? (<Fragment>
           <div className="c7n-env-tag-title">
             <FormattedMessage id="app.config" />
             <Popover
@@ -914,8 +972,7 @@ class AppHome extends Component {
                   optionFilterProp="children"
                   label={<FormattedMessage id="app.form.selectDocker" />}
                   getPopupContainer={triggerNode => triggerNode.parentNode}
-                  filterOption={(input, option) =>
-                    option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
                   {_.map(getHarborList, item => (<Option value={item.id} key={item.id}>
@@ -943,8 +1000,7 @@ class AppHome extends Component {
                   optionFilterProp="children"
                   label={<FormattedMessage id="app.form.selectHelm" />}
                   getPopupContainer={triggerNode => triggerNode.parentNode}
-                  filterOption={(input, option) =>
-                    option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  filterOption={(input, option) => option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 >
                   {_.map(getChartList, item => (<Option value={item.id} key={item.id}>
@@ -973,7 +1029,7 @@ class AppHome extends Component {
               onChange={this.cbChange}
               value={checked}
             >
-              <Radio value={true}>
+              <Radio value>
                 <FormattedMessage id="app.mbr.all" />
               </Radio>
               <Radio value={false}>
@@ -1023,6 +1079,7 @@ class AppHome extends Component {
           'devops-service.application.listTemplate',
           'devops-service.application.queryByAppIdAndActive',
           'devops-service.application.queryByAppId',
+          'devops-service.application.deleteByAppId',
         ]}
       >
         {isRefresh ? (
@@ -1098,6 +1155,22 @@ class AppHome extends Component {
                 filters={paras.slice()}
               />
             </Content>
+            {showDelete && (
+              <Modal
+                confirmLoading={submitting}
+                visible={showDelete}
+                title={`${formatMessage({ id: 'app.delete' })}“${appName}”`}
+                closable={false}
+                onOk={this.deleteApp}
+                onCancel={this.closeDelete}
+                okText={formatMessage({ id: 'delete' })}
+                okType="danger"
+              >
+                <div className="c7n-padding-top_8">
+                  <FormattedMessage id="app.delete.tooltip" />
+                </div>
+              </Modal>
+            )}
           </Fragment>
         )}
       </Page>
