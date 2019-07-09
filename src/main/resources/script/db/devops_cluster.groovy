@@ -46,4 +46,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
         }
     }
 
+    changeSet(id: '2019-07-09-remove-column', author: 'scp') {
+        dropColumn(columnName: "project_id", tableName: "devops_cluster")
+    }
+
 }
