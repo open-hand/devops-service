@@ -50,6 +50,14 @@ public interface DevopsEnvironmentService {
     List<DevopsEnviromentRepDTO> listDeployed(Long projectId);
 
     /**
+     * 实例视图查询项目下环境及其应用及实例
+     *
+     * @param projectId 项目id
+     * @return 实例视图树形目录层次数据
+     */
+    List<DevopsEnvironmentViewVO> listEnvTree(Long projectId);
+
+    /**
      * 项目下启用停用环境
      *
      * @param environmentId 环境id

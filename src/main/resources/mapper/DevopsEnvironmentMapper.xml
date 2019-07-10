@@ -2,6 +2,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper">
+    <resultMap id="envTree" type="io.choerodon.devops.infra.dataobject.DevopsEnvironmentViewDTO">
+        <id property="id" column="env_id"/>
+        <result property="name" column="env_name"/>
+        <collection property="apps" ofType="io.choerodon.devops.infra.dataobject.DevopsApplicationViewDTO">
+            <id property="id" column="app_id"/>
+            <result property="name" column="app_name"/>
+            <collection property="instances" ofType="io.choerodon.devops.infra.dataobject.DevopsAppInstanceViewDTO">
+                <id property="id" column="ins_id"/>
+                <result property="code" column="ins_code"/>
+                <result property="podRunningCount" column="pod_running_count"/>
+                <result property="podCount" column="pod_count"/>
+            </collection>
+        </collection>
+    </resultMap>
 
     <update id="updateDevopsEnvGroupId" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
         UPDATE devops_env de set de.devops_env_group_id = null where de.id = #{envId}
@@ -28,4 +42,34 @@
     </update>
 
 
+    <select id="listEnvTree" resultMap="envTree">
+        SELECT env.id         as           env_id,
+               env.name       as           env_name,
+               app.id         as           app_id,
+               app.name       as           app_name,
+               ins.id         as           ins_id,
+               ins.code       as           ins_code,
+               env.cluster_id as           cluster_id,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.app_instance_id = ins.id
+                  AND dp.namespace = env.code
+                  AND env.id = ins.env_id) pod_count,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.app_instance_id = ins.id
+                  AND dp.`status` = 'Running'
+                  AND dp.is_ready = TRUE
+                  AND dp.namespace = env.code
+                  AND env.id = ins.env_id) pod_running_count
+        FROM devops_env env
+                 LEFT JOIN devops_env_application env_app ON env.id = env_app.env_id
+                 LEFT JOIN devops_application app ON env_app.app_id = app.id
+                 LEFT JOIN devops_app_instance ins ON app.id = ins.app_id
+                                                          AND env.id = ins.env_id
+        WHERE env.project_id = #{projectId}
+          AND env.is_active = TRUE
+          AND env.is_failed = FALSE
+          AND (app.is_active = TRUE OR app.is_active is NULL);
+    </select>
 </mapper>

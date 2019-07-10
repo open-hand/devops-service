@@ -66,6 +66,22 @@ public class DevopsEnvironmentController {
                 .orElseThrow(() -> new CommonException("error.service.environment.get"));
     }
 
+
+    /**
+     * 实例视图查询环境及其下应用及实例
+     *
+     * @param projectId 项目id
+     * @return 实例视图树形目录所需的数据
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "实例视图查询环境及其下应用及实例")
+    @GetMapping(value = "/ins_tree_menu")
+    public ResponseEntity<List<DevopsEnvironmentViewVO>> listEnvTree(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return new ResponseEntity<>(devopsEnvironmentService.listEnvTree(projectId), HttpStatus.OK);
+    }
+
     /**
      * 项目下查询环境
      *
