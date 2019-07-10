@@ -18,8 +18,6 @@ public class User {
 
     private String realname;
 
-    @SerializedName("has_admin_role")
-    private Long  hasAdminRole;
 
     public User(String username,String email, String password, String realname) {
         this.username = username;
@@ -60,13 +58,6 @@ public class User {
         this.password = password;
     }
 
-    public Long getHasAdminRole() {
-        return hasAdminRole;
-    }
-
-    public void setHasAdminRole(Long hasAdminRole) {
-        this.hasAdminRole = hasAdminRole;
-    }
 
     public String getRealname() {
         return realname;
