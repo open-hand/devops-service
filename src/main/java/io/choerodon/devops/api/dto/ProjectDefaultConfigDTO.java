@@ -7,7 +7,7 @@ public class ProjectDefaultConfigDTO {
 
     private String harborConfigName;
     private String chartConfigName;
-    private boolean harborIsPrivate;
+    private Boolean harborIsPrivate;
 
 
     public String getHarborConfigName() {
@@ -30,7 +30,7 @@ public class ProjectDefaultConfigDTO {
         return harborIsPrivate;
     }
 
-    public void setHarborIsPrivate(boolean harborIsPrivate) {
+    public void setHarborIsPrivate(Boolean harborIsPrivate) {
         this.harborIsPrivate = harborIsPrivate;
     }
 }
