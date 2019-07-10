@@ -5,4 +5,11 @@
     <select id="queryByGitlabGroupId" resultType="io.choerodon.devops.infra.dataobject.DevopsProjectDO">
         select * FROM devops_project where devops_app_group_id = #{gitlabGroupId}
     </select>
+
+
+
+    <update id="updateObJectVersionNumber">
+     update devops_project set object_version_number = 1 where iam_project_id = #{iamProjectId};
+    </update>
+
 </mapper>

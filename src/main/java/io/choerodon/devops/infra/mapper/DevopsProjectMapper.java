@@ -11,4 +11,8 @@ import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 public interface DevopsProjectMapper extends Mapper<DevopsProjectDO> {
 
     DevopsProjectDO queryByGitlabGroupId(@Param("gitlabGroupId") Integer gitlabGroupId);
+
+
+    void updateObJectVersionNumber(@Param("iamProjectId") Long iamProjectId);
+
 }
