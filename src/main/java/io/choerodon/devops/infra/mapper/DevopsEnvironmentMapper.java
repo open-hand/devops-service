@@ -20,4 +20,6 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDO> {
     void updateDevopsSyncEnvCommit(@Param("envId") Long envId, @Param("devopsSyncCommit") Long devopsSyncCommit);
 
     void updateAgentSyncEnvCommit(@Param("envId") Long envId, @Param("agentSyncCommit") Long agentSyncCommit);
+
+    void updateOptions(@Param("gitlabEnvProjectId") Long gitlabEnvProjectId, @Param("hookId") Long hookId, @Param("isSynchro") Boolean isSynchro, @Param("envId") Long envId);
 }
