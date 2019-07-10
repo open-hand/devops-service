@@ -87,9 +87,9 @@ import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.event.DevOpsAppSyncPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
+import io.choerodon.devops.domain.application.event.DevOpsAppSyncPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
@@ -347,11 +347,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
-            ProjectE projectE = iamRepository.queryIamProject(oldApplicationE.getProjectE().getId());
-            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-            IamAppPayLoad iamAppPayLoad = iamRepository.queryIamAppByCode(organization.getId(), applicationE.getCode());
-            iamAppPayLoad.setName(applicationUpdateDTO.getName());
-            iamRepository.updateIamApp(organization.getId(), iamAppPayLoad.getId(), iamAppPayLoad);
+            updateIamApp(projectId, applicationE);
         }
 
         // 创建gitlabUserPayload
@@ -378,6 +374,20 @@ public class ApplicationServiceImpl implements ApplicationService {
         sagaClient.startSaga("devops-update-gitlab-users", new StartInstanceDTO(input, "app", appId.toString(), ResourceLevel.PROJECT.value(), projectId));
 
         return true;
+    }
+
+    @Saga(code = "devops-update-iam-app",
+            description = "Devops同步更新iam应用", inputSchema = "{}")
+    private void updateIamApp(Long projectId, ApplicationE applicationE) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        DevOpsAppSyncPayload devOpsAppSyncPayload = new DevOpsAppSyncPayload();
+        devOpsAppSyncPayload.setName(applicationE.getName());
+        devOpsAppSyncPayload.setCode(applicationE.getCode());
+        devOpsAppSyncPayload.setProjectId(projectId);
+        devOpsAppSyncPayload.setOrganizationId(organization.getId());
+        String input = gson.toJson(devOpsAppSyncPayload);
+        sagaClient.startSaga("devops-update-iam-app", new StartInstanceDTO(input, "app", applicationE.getId().toString(), ResourceLevel.PROJECT.value(), projectId));
     }
 
 
