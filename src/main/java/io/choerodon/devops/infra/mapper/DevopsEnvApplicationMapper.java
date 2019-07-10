@@ -10,6 +10,13 @@ import java.util.List;
 public interface DevopsEnvApplicationMapper extends Mapper<DevopsEnvApplicationDO> {
 
     /**
+     * 当记录不存在时，插入记录
+     * @param devopsEnvApplicationDO 环境应用关联关系
+     * @return 影响的记录数目
+     */
+    int insertIgnore(DevopsEnvApplicationDO devopsEnvApplicationDO);
+
+    /**
      * 通过环境Id查询所有应用Id
      * @param envId 环境Id
      * @return List 应用Id
