@@ -1,9 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
@@ -24,6 +22,7 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
+import io.choerodon.devops.infra.mapper.DevopsAppResourceMapper;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +79,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DevopsAppResourceRepository appResourceRepository;
+    @Autowired
+    private DevopsAppResourceMapper devopsAppResourceMapper;
 
     @Override
     @Transactional(rollbackFor=Exception.class)
@@ -102,6 +103,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             }
         });
 
+        // 校验创建应用下域名时，所选的网络是否都是同一个应用下的
+        if (devopsIngressDTO.getAppId() != null) {
+            List<Long> serviceIds = devopsIngressDTO.getPathList().stream().map(DevopsIngressPathDTO::getServiceId).collect(Collectors.toList());
+            if (!isAllServiceInApp(devopsIngressDTO.getAppId(), serviceIds)) {
+                throw new CommonException("error.ingress.service.application");
+            }
+        }
+
         //初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressDTO.getCertId());
         V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(), certName);
@@ -114,6 +123,19 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         operateEnvGitLabFile(
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), false, v1beta1Ingress, true, null, devopsIngressDO, userAttrE, devopsEnvCommandE,devopsIngressDTO.getAppId());
     }
+
+
+    /**
+     * 查询传入的网络是否全是同一个应用下
+     *
+     * @param appId      应用id
+     * @param serviceIds 网络id
+     * @return false 如果某个网络不存在和应用的关系或所有网络不在同一个应用下
+     */
+    private boolean isAllServiceInApp(Long appId, List<Long> serviceIds) {
+        return devopsAppResourceMapper.queryResourceIdsInApp(appId, ResourceType.SERVICE.getType(), serviceIds).size() == serviceIds.size();
+    }
+
 
     private String getCertName(Long certId) {
         String certName = null;
@@ -182,6 +204,15 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
             }
         });
+
+
+        // 校验创建应用下域名时，所选的网络是否都是同一个应用下的
+        if (devopsIngressDTO.getAppId() != null) {
+            List<Long> serviceIds = devopsIngressDTO.getPathList().stream().map(DevopsIngressPathDTO::getServiceId).collect(Collectors.toList());
+            if (!isAllServiceInApp(devopsIngressDTO.getAppId(), serviceIds)) {
+                throw new CommonException("error.ingress.service.application");
+            }
+        }
 
         //判断ingress有没有修改，没有修改直接返回
         DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
