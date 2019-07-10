@@ -3,6 +3,11 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper">
 
+    <select id="insertIgnore">
+        INSERT IGNORE INTO devops_env_application (app_id, env_id)
+        VALUES (#{appId}, #{envId});
+    </select>
+
     <select id="queryAppByEnvId" resultType="java.lang.Long">
         SELECT
         d.app_id

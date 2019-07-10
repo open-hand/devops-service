@@ -15,6 +15,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.infra.dataobject.*;
+import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,14 +50,9 @@ import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
-import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
-import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
-import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
-
 
 
 /**
@@ -137,6 +134,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private SagaClient sagaClient;
+    @Autowired
+    private DevopsEnvApplicationMapper envApplicationMapper;
 
 
     @Override
@@ -717,6 +716,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         } else {
             //存储数据
             if (applicationDeployDTO.getType().equals(CREATE)) {
+                // 默认为部署应用的环境和应用之间创建关联关系，如果不存在
+                createEnvAppRelationShipIfNon(applicationDeployDTO.getAppId(), applicationDeployDTO.getEnvironmentId());
+
                 applicationInstanceE.setCode(code);
                 applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
                 devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
@@ -745,6 +747,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         sagaClient.startSaga("devops-create-instance", new StartInstanceDTO(input, "env", devopsEnvironmentE.getId().toString(), ResourceLevel.PROJECT.value(), devopsEnvironmentE.getProjectE().getId()));
 
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
+    }
+
+    /**
+     * 为环境和应用创建关联关系如果不存在
+     *
+     * @param appId 应用id
+     * @param envId 环境id
+     */
+    private void createEnvAppRelationShipIfNon(Long appId, Long envId) {
+        DevopsEnvApplicationDO devopsEnvApplicationDO = new DevopsEnvApplicationDO();
+        devopsEnvApplicationDO.setAppId(appId);
+        devopsEnvApplicationDO.setEnvId(envId);
+        envApplicationMapper.insertIgnore(devopsEnvApplicationDO);
     }
 
     @Override
