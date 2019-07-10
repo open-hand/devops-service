@@ -9,7 +9,16 @@ public class DevOpsAppSyncPayload {
     private Long organizationId;
     private Long projectId;
     private String code;
+    private String name;
     private Boolean active;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Boolean getActive() {
         return active;
