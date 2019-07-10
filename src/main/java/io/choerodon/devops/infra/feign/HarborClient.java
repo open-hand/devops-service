@@ -48,4 +48,7 @@ public interface HarborClient {
 
     @DELETE("api/projects/{project_id}/members/{user_id}")
     Call<Void> deleteLowVersionMember(@Path("project_id") Integer projectId, @Path("user_id") Integer userId);
+
+    @GET("api/projects/{project_id}/members")
+    Call<List<ProjectMember>> getProjectMembers(@Path("project_id")Integer projectId, @Query("entityname") String entityname);
 }

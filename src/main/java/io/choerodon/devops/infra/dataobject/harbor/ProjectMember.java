@@ -7,6 +7,7 @@ import com.google.gson.annotations.SerializedName;
  */
 public class ProjectMember {
 
+    private Integer id;
 
     @SerializedName("role_id")
     private Integer roleId;
@@ -32,5 +33,13 @@ public class ProjectMember {
 
     public void setMemberUser(MemberUser memberUser) {
         this.memberUser = memberUser;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 }
