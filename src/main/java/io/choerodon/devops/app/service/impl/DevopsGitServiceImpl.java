@@ -747,15 +747,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchE.setUserId(userId);
                 devopsBranchE.initApplicationE(appId);
 
-                devopsBranchE.setCheckoutDate(commitE.getCommittedDate());
+                devopsBranchE.setCheckoutDate(commitE == null ? null : commitE.getCommittedDate());
                 devopsBranchE.setCheckoutCommit(lastCommit);
                 devopsBranchE.setBranchName(branchName);
 
                 devopsBranchE.setLastCommitUser(userId);
                 devopsBranchE.setLastCommit(lastCommit);
-                devopsBranchE.setLastCommitMsg(commitE.getMessage());
+                devopsBranchE.setLastCommitMsg(commitE == null ? null : commitE.getMessage());
 
-                devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
+                devopsBranchE.setLastCommitDate(commitE == null ? null : commitE.getCommittedDate());
                 devopsGitRepository.createDevopsBranch(devopsBranchE);
 
 
