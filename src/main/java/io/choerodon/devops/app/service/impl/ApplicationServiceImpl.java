@@ -347,7 +347,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
-            updateIamApp(projectId, applicationE);
+            updateIamApp(projectId, applicationE, oldApplicationE.getCode());
         }
 
         // 创建gitlabUserPayload
@@ -378,12 +378,12 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Saga(code = "devops-update-iam-app",
             description = "Devops同步更新iam应用", inputSchema = "{}")
-    private void updateIamApp(Long projectId, ApplicationE applicationE) {
+    private void updateIamApp(Long projectId, ApplicationE applicationE, String code) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         DevOpsAppSyncPayload devOpsAppSyncPayload = new DevOpsAppSyncPayload();
         devOpsAppSyncPayload.setName(applicationE.getName());
-        devOpsAppSyncPayload.setCode(applicationE.getCode());
+        devOpsAppSyncPayload.setCode(code);
         devOpsAppSyncPayload.setProjectId(projectId);
         devOpsAppSyncPayload.setOrganizationId(organization.getId());
         String input = gson.toJson(devOpsAppSyncPayload);
