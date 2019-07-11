@@ -9,13 +9,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_resource.groovy') {
         createTable(tableName: "devops_app_resource", remarks: '实例') {
 
             column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用 ID') {
-                constraints(nullable: false)
+                constraints(primaryKey: true)
             }
             column(name: 'resource_type', type: 'VARCHAR(20)', remarks: '资源类型') {
                 constraints(nullable: false)
             }
             column(name: 'resource_id', type: 'BIGINT UNSIGNED', remarks: '资源 ID') {
-                constraints(nullable: false)
+                constraints(primaryKey: true)
             }
 
         }
