@@ -814,9 +814,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
 
             String lastCommit = pushWebHookDTO.getAfter();
-            Optional<CommitDTO> lastCommitOptional
+            Optional<CommitVO> lastCommitOptional
                     = pushWebHookDTO.getCommits().stream().filter(t -> lastCommit.equals(t.getId())).findFirst();
-            CommitDTO lastCommitDTO = new CommitDTO();
+            CommitVO lastCommitDTO = new CommitVO();
             if (lastCommitOptional.isPresent()) {
                 lastCommitDTO = lastCommitOptional.get();
             }

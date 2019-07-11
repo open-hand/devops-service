@@ -24,7 +24,11 @@ import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.*
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO
+=======
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO
+>>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -779,7 +783,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         and: 'mock 删除gitlab仓库'
         ResponseEntity responseEntity = new ResponseEntity(HttpStatus.OK)
         Mockito.when(gitlabServiceClient.deleteProject(anyInt(), anyInt())).thenReturn(responseEntity)
-        GitlabProjectDO gitlabProjectDO = new GitlabProjectDO()
+        GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO()
         gitlabProjectDO.setId(1)
         Mockito.when(gitlabServiceClient.getProjectById(anyInt())).thenReturn(new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK))
 

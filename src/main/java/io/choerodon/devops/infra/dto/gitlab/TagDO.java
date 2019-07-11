@@ -5,16 +5,16 @@ package io.choerodon.devops.infra.dto.gitlab;
  */
 public class TagDO {
 
-    private CommitDO commit;
+    private CommitDTO commit;
     private String message;
     private String name;
     private ReleaseDO release;
 
-    public CommitDO getCommit() {
+    public CommitDTO getCommit() {
         return commit;
     }
 
-    public void setCommit(CommitDO commit) {
+    public void setCommit(CommitDTO commit) {
         this.commit = commit;
     }
 

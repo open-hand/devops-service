@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.persistence.impl;
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsProjectE;
@@ -26,6 +27,17 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
 
 
 >>>>>>> [IMP]修复后端结构
+=======
+import org.springframework.stereotype.Component;
+
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import io.choerodon.devops.infra.util.TypeUtil;
+>>>>>>> [IMP] 修改AppControler重构
 
 /**
  * Created by younger on 2018/3/29.
@@ -39,7 +51,7 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
     }
 
     @Override
-    public DevopsProjectE queryDevopsProject(Long projectId) {
+    public DevopsProjectVO queryDevopsProject(Long projectId) {
         DevopsProjectDTO devopsProjectDO = devopsProjectMapper.selectByPrimaryKey(projectId);
         if (devopsProjectDO == null) {
             throw new CommonException("error.group.not.sync");
@@ -47,19 +59,19 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
         if (devopsProjectDO.getDevopsAppGroupId() == null || devopsProjectDO.getDevopsEnvGroupId() == null) {
             throw new CommonException("error.gitlab.groupId.select");
         }
-        return ConvertHelper.convert(devopsProjectDO, DevopsProjectE.class);
+        return ConvertHelper.convert(devopsProjectDO, DevopsProjectVO.class);
     }
 
     @Override
-    public DevopsProjectE queryByGitlabGroupId(Integer gitlabGroupId) {
-        return ConvertHelper.convert(devopsProjectMapper.queryByGitlabGroupId(gitlabGroupId), DevopsProjectE.class);
+    public DevopsProjectVO queryByGitlabGroupId(Integer gitlabGroupId) {
+        return ConvertHelper.convert(devopsProjectMapper.queryByGitlabGroupId(gitlabGroupId), DevopsProjectVO.class);
     }
 
     @Override
-    public DevopsProjectE queryByEnvGroupId(Integer envGroupId) {
+    public DevopsProjectVO queryByEnvGroupId(Integer envGroupId) {
         DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO();
         devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(envGroupId));
-        return ConvertHelper.convert(devopsProjectMapper.selectOne(devopsProjectDO), DevopsProjectE.class);
+        return ConvertHelper.convert(devopsProjectMapper.selectOne(devopsProjectDO), DevopsProjectVO.class);
     }
 
     @Override

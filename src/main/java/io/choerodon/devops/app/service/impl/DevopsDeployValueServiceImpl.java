@@ -67,14 +67,9 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public PageInfo<DevopsDeployValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
-
-
-
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
-
-
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
-        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         Long userId = null;
         if (!iamRepository.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectE)) {
             userId = DetailsHelper.getUserDetails().getUserId();

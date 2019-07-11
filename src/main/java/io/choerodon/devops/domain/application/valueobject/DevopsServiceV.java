@@ -6,9 +6,13 @@ import java.util.Map;
 import io.choerodon.devops.api.vo.DevopsIngressDTO;
 import io.choerodon.devops.api.vo.EndPointPortDTO;
 import io.choerodon.devops.api.vo.iam.entity.PortMapE;
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dto.ServiceInstanceDO;
 
 
+=======
+import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
+>>>>>>> [IMP] 修改AppControler重构
 
 /**
  * Created by Zenger on 2018/4/19.

@@ -1,10 +1,9 @@
 package io.choerodon.devops.api.vo;
 
-import org.springframework.beans.BeanUtils;
-
-import io.choerodon.devops.infra.dto.gitlab.CommitDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.ReleaseDO;
 import io.choerodon.devops.infra.dto.gitlab.TagDO;
+import org.springframework.beans.BeanUtils;
 
 /**
  * Creator: Runge
@@ -14,7 +13,7 @@ import io.choerodon.devops.infra.dto.gitlab.TagDO;
  */
 public class TagDTO {
 
-    private CommitDO commit;
+    private CommitDTO commit;
     private String commitUserImage;
     private String message;
     private String tagName;
@@ -36,11 +35,11 @@ public class TagDTO {
         this.commitUserImage = commitUserImage;
     }
 
-    public CommitDO getCommit() {
+    public CommitDTO getCommit() {
         return commit;
     }
 
-    public void setCommit(CommitDO commit) {
+    public void setCommit(CommitDTO commit) {
         this.commit = commit;
     }
 

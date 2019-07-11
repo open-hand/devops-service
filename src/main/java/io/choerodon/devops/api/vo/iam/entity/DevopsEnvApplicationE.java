@@ -1,21 +1,18 @@
 package io.choerodon.devops.api.vo.iam.entity;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 /**
  * @author lizongwei
  * @date 2019/7/1
  */
+@Component
+@Scope("prototype")
 public class DevopsEnvApplicationE {
 
     private Long appId;
     private Long envId;
-
-    public DevopsEnvApplicationE() {
-    }
-
-    public DevopsEnvApplicationE(Long appId, Long envId) {
-        this.appId = appId;
-        this.envId = envId;
-    }
 
     public Long getAppId() {
         return appId;

@@ -7,7 +7,7 @@ public class TagHookDTO {
     private String ref;
     private Long projectId;
     private Long userId;
-    private List<CommitDTO> commits;
+    private List<CommitVO> commits;
 
     public String getCheckoutSha() {
         return checkoutSha;
@@ -41,11 +41,11 @@ public class TagHookDTO {
         this.userId = userId;
     }
 
-    public List<CommitDTO> getCommits() {
+    public List<CommitVO> getCommits() {
         return commits;
     }
 
-    public void setCommits(List<CommitDTO> commits) {
+    public void setCommits(List<CommitVO> commits) {
         this.commits = commits;
     }
 }

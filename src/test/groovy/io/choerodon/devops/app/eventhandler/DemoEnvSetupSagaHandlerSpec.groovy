@@ -142,12 +142,12 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             when(iamServiceClient.queryRoleIdByCode(any(RoleSearchDTO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
             when(gitlabServiceClient.getDeploykeys(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
             when(gitlabServiceClient.getFile(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK))
-            when(gitlabServiceClient.getProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDO(), HttpStatus.OK))
+            when(gitlabServiceClient.getProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDTO(), HttpStatus.OK))
             when(gitlabServiceClient.getProjectHook(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(null, HttpStatus.OK))
 
-            GitlabProjectDO gitlabProjectDO = new GitlabProjectDO()
+            GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO()
             gitlabProjectDO.setId(1)
-            ResponseEntity<GitlabProjectDO> gitlabProjectDOResponseEntity = new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK)
+            ResponseEntity<GitlabProjectDTO> gitlabProjectDOResponseEntity = new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK)
             Mockito.doReturn(gitlabProjectDOResponseEntity).when(gitlabServiceClient).getProjectByName(any(), any(), any())
 
             BranchDO branchDO = new BranchDO()
@@ -173,9 +173,9 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
 
             Mockito.when(gitlabServiceClient.getBranch(any(), any())).thenReturn(responseEntity6)
 
-            MergeRequestDO mergeRequestDO = new MergeRequestDO()
+            MergeRequestDTO mergeRequestDO = new MergeRequestDTO()
             mergeRequestDO.setId(1)
-            ResponseEntity<MergeRequestDO> mergeRequestDOResponseEntity = new ResponseEntity<>(MergeRequestDO, HttpStatus.OK)
+            ResponseEntity<MergeRequestDTO> mergeRequestDOResponseEntity = new ResponseEntity<>(MergeRequestDTO, HttpStatus.OK)
             Mockito.doReturn(mergeRequestDOResponseEntity).when(gitlabServiceClient).createMergeRequest(any(), any(), any(), any(), any(), any())
             Mockito.doReturn(null).when(gitlabServiceClient).acceptMergeRequest(any(), any(), any(), any(), any(), any())
 

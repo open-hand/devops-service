@@ -11,6 +11,13 @@ import io.choerodon.devops.infra.dto.DevopsNotificationDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+<<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsNotificationConvertor.java
+=======
+import io.choerodon.core.convertor.ConvertorI;
+import io.choerodon.devops.api.vo.DevopsNotificationDTO;
+import io.choerodon.devops.api.vo.iam.entity.DevopsNotificationE;
+import io.choerodon.devops.infra.dataobject.DevopsNotificationDO;
+>>>>>>> [IMP] 修改AppControler重构:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsNotificationConvertor.java
 
 /**
  * Creator: ChangpingShi0213@gmail.com

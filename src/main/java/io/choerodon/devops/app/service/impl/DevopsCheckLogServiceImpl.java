@@ -26,7 +26,6 @@ import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
-import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
@@ -35,20 +34,25 @@ import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.util.*;
-import io.choerodon.devops.infra.enums.ResourceType;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
+import io.choerodon.devops.infra.dto.ApplicationVersionDO;
+import io.choerodon.devops.infra.dto.DevopsEnvPodDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDO;
-import io.choerodon.devops.infra.dto.gitlab.CommitDO;
 import io.choerodon.devops.infra.dto.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDO;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.models.V1Pod;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.api.Git;
@@ -242,7 +246,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             CheckLog checkLog = new CheckLog();
                             checkLog.setContent(APP + applicationDO.getName() + "sync gitlab commit");
                             try {
-                                List<CommitDO> commitDOS = gitlabProjectRepository.listCommits(applicationDO.getGitlabProjectId(), ADMIN, 1, 100);
+                                List<CommitDTO> commitDOS = gitlabProjectRepository.listCommits(applicationDO.getGitlabProjectId(), ADMIN, 1, 100);
                                 commitDOS.forEach(commitDO -> {
                                     DevopsGitlabCommitE devopsGitlabCommitE = new DevopsGitlabCommitE();
                                     devopsGitlabCommitE.setAppId(applicationDO.getId());
@@ -434,7 +438,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             UserAttrE userAttrE = userAttrRepository.queryById(userWithRoleDTO.getId());
                             if (userAttrE != null) {
                                 Integer gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
-                                DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
+                                DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
                                 GitlabMemberE envgroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                         TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()), gitlabUserId);
                                 GitlabMemberE appgroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
@@ -809,7 +813,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
                             devopsEnvironmentRepository.update(devopsEnvironmentE);
                             GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
-                            DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectE.getId());
+                            DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectE.getId());
                             gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()));
                             gitlabProjectPayload.setUserId(ADMIN);
                             gitlabProjectPayload.setPath(devopsEnvironmentE.getCode());

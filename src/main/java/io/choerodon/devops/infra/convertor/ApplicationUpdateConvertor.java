@@ -13,7 +13,10 @@ import io.choerodon.devops.domain.application.entity.ApplicationE;
 =======
 >>>>>>> 99504a39d606d3005354e0b1bdcb50530cde6afd
 import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
+<<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/ApplicationUpdateConvertor.java
 >>>>>>> [IMP] 修改AppControler重构
+=======
+>>>>>>> [IMP] 修改AppControler重构:src/main/java/io/choerodon/devops/domain/application/convertor/ApplicationUpdateConvertor.java
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
 
 @Component

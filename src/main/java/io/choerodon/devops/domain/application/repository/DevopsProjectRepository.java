@@ -1,6 +1,10 @@
 package io.choerodon.devops.domain.application.repository;
 
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
+=======
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
+>>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 
 
@@ -13,10 +17,10 @@ public interface DevopsProjectRepository {
 
     void updateProjectAttr(DevopsProjectDTO devopsProjectDO);
 
-    DevopsProjectE queryDevopsProject(Long projectId);
+    DevopsProjectVO queryDevopsProject(Long projectId);
 
-    DevopsProjectE queryByGitlabGroupId(Integer gitlabGroupId);
+    DevopsProjectVO queryByGitlabGroupId(Integer gitlabGroupId);
 
-    DevopsProjectE queryByEnvGroupId(Integer envGroupId);
+    DevopsProjectVO queryByEnvGroupId(Integer envGroupId);
 
 }

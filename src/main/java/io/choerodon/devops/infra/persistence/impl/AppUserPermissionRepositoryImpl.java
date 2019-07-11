@@ -10,7 +10,12 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.vo.iam.entity.AppUserPermissionE;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.AppUserPermissionRepository;
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dto.AppUserPermissionDO;
+=======
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.infra.dataobject.AppUserPermissionDTO;
+>>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.infra.mapper.AppUserPermissionMapper;
 
 /**
@@ -29,12 +34,12 @@ public class AppUserPermissionRepositoryImpl implements AppUserPermissionReposit
 
     @Override
     public void create(Long userId, Long appId) {
-        appUserPermissionMapper.insert(new AppUserPermissionDO(userId, appId));
+        appUserPermissionMapper.insert(new AppUserPermissionDTO(userId, appId));
     }
 
     @Override
     public void deleteByAppId(Long appId) {
-        AppUserPermissionDO appUserPermissionDO = new AppUserPermissionDO();
+        AppUserPermissionDTO appUserPermissionDO = new AppUserPermissionDTO();
         appUserPermissionDO.setAppId(appId);
         appUserPermissionMapper.delete(appUserPermissionDO);
     }
@@ -52,7 +57,7 @@ public class AppUserPermissionRepositoryImpl implements AppUserPermissionReposit
 
     @Override
     public List<AppUserPermissionE> listByUserId(Long userId) {
-        AppUserPermissionDO appUserPermissionDO = new AppUserPermissionDO();
+        AppUserPermissionDTO appUserPermissionDO = new AppUserPermissionDTO();
         appUserPermissionDO.setIamUserId(userId);
         return ConvertHelper.convertList(appUserPermissionMapper.select(appUserPermissionDO), AppUserPermissionE.class);
     }
@@ -62,10 +67,10 @@ public class AppUserPermissionRepositoryImpl implements AppUserPermissionReposit
     public void updateAppUserPermission(Long appId, List<Long> addUserIds, List<Long> deleteUserIds) {
         // 待添加的用户列表
         List<UserE> addIamUsers = iamRepository.listUsersByIds(addUserIds);
-        addIamUsers.forEach(e -> appUserPermissionMapper.insert(new AppUserPermissionDO(e.getId(), appId)));
+        addIamUsers.forEach(e -> appUserPermissionMapper.insert(new AppUserPermissionDTO(e.getId(), appId)));
         // 待删除的用户列表
         deleteUserIds.forEach(e -> {
-            AppUserPermissionDO appUserPermissionDO = new AppUserPermissionDO();
+            AppUserPermissionDTO appUserPermissionDO = new AppUserPermissionDTO();
             appUserPermissionDO.setIamUserId(e);
             appUserPermissionMapper.delete(appUserPermissionDO);
         });

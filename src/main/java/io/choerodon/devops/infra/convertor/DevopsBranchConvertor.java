@@ -6,8 +6,12 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.DevopsBranchDTO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsBranchE;
+<<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsBranchConvertor.java
 
 import io.choerodon.devops.infra.dto.DevopsBranchDO;
+=======
+import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
+>>>>>>> [IMP] 修改AppControler重构:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsBranchConvertor.java
 
 @Component
 public class DevopsBranchConvertor implements ConvertorI<DevopsBranchE, DevopsBranchDO, DevopsBranchDTO> {

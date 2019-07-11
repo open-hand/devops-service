@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
@@ -57,7 +57,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(id);
 
         Integer gitlabProjectId = devopsEnvironmentE.getGitlabEnvProjectId().intValue();
-        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
         Integer gitlabGroupId = devopsProjectE.getDevopsEnvGroupId().intValue();
 
         super.updateGitlabUserPermission("env", gitlabGroupId, gitlabProjectId, addgitlabUserIds, deleteGitlabUserIds);

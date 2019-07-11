@@ -14,7 +14,11 @@ import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
+=======
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
+>>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -96,11 +100,11 @@ class IssueControllerSpec extends Specification {
     @Shared
     DevopsMergeRequestDO devopsMergeRequestDO1 = new DevopsMergeRequestDO()
     @Shared
-    List<CommitDO> commitDOS = new ArrayList<>()
+    List<CommitDTO> commitDOS = new ArrayList<>()
     @Shared
-    CommitDO commitDO = new CommitDO()
+    CommitDTO commitDO = new CommitDTO()
     @Shared
-    CommitDO commitDO1 = new CommitDO()
+    CommitDTO commitDO1 = new CommitDTO()
 
     def setupSpec() {
         applicationDO.setId(1L)
@@ -179,11 +183,11 @@ class IssueControllerSpec extends Specification {
         ResponseEntity<List<UserDO>> responseEntity2 = new ResponseEntity<>(addIamUserList, HttpStatus.OK)
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity2)
 
-        List<CommitDO> commitDOS1 = new ArrayList<>();
-        CommitDO commitDO = new CommitDO();
+        List<CommitDTO> commitDOS1 = new ArrayList<>();
+        CommitDTO commitDO = new CommitDTO();
         commitDO.setId("test")
         commitDOS1.add(commitDO)
-        ResponseEntity<List<CommitDO>> responseEntity3 = new ResponseEntity<>(commitDOS1, HttpStatus.OK)
+        ResponseEntity<List<CommitDTO>> responseEntity3 = new ResponseEntity<>(commitDOS1, HttpStatus.OK)
         Mockito.doReturn(responseEntity3).when(gitlabServiceClient).getCommits(anyInt(), anyString(), anyString())
 
 
@@ -205,7 +209,7 @@ class IssueControllerSpec extends Specification {
         ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
-        ResponseEntity<List<CommitDO>> responseEntity5 = new ResponseEntity<>(commitDOS, HttpStatus.OK)
+        ResponseEntity<List<CommitDTO>> responseEntity5 = new ResponseEntity<>(commitDOS, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getCommits(anyInt(), anyString(), anyString())).thenReturn(responseEntity5)
     }
 

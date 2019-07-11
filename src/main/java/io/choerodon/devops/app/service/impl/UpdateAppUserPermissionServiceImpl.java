@@ -7,10 +7,13 @@ import java.util.stream.Collectors;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
@@ -47,7 +50,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
 
         ApplicationE applicationE = applicationRepository.query(appId);
         Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
-        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
         Integer gitlabGroupId = devopsProjectE.getDevopsAppGroupId().intValue();
 
         // 如果之前对应的gitlab project同步失败时，不进行后续操作

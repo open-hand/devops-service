@@ -19,7 +19,11 @@ import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
+=======
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
+>>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
@@ -127,7 +131,7 @@ class DevopsGitControllerSpec extends Specification {
 
         TagDO tagDO = new TagDO()
         tagDO.setName("testTag")
-        CommitDO commitDO = new CommitDO()
+        CommitDTO commitDO = new CommitDTO()
         commitDO.setId("DOcommitId")
         commitDO.setMessage("message")
         commitDO.setCommittedDate(new Date(2018, 11, 9, 0, 0, 0))
@@ -200,7 +204,7 @@ class DevopsGitControllerSpec extends Specification {
 
         List<TagDO> tagDOS = new ArrayList<>()
         TagDO tagDO = new TagDO()
-        CommitDO commitDO = new CommitDO()
+        CommitDTO commitDO = new CommitDTO()
         commitDO.setId("test")
         commitDO.setAuthorName("test")
         tagDO.setCommit(commitDO)
@@ -228,7 +232,7 @@ class DevopsGitControllerSpec extends Specification {
         userAttrE.setGitlabUserId(1L)
         List<TagDO> tagDOS = new ArrayList<>()
         TagDO tagDO = new TagDO()
-        CommitDO commitDO = new CommitDO()
+        CommitDTO commitDO = new CommitDTO()
         commitDO.setId("test")
         commitDO.setAuthorName("test")
         tagDO.setCommit(commitDO)
@@ -251,7 +255,7 @@ class DevopsGitControllerSpec extends Specification {
         userAttrE.setGitlabUserId(1L)
         List<TagDO> tagDOS = new ArrayList<>()
         TagDO tagDO = new TagDO()
-        CommitDO commitDO = new CommitDO()
+        CommitDTO commitDO = new CommitDTO()
         commitDO.setId("test")
         commitDO.setAuthorName("test")
         tagDO.setCommit(commitDO)
@@ -424,10 +428,10 @@ class DevopsGitControllerSpec extends Specification {
         devopsMergeRequestDO2.setAuthorId(1L)
         devopsMergeRequestDO2.setAssigneeId(1L)
         devopsMergeRequestMapper.insert(devopsMergeRequestDO2)
-        List<CommitDO> commitDOList = new ArrayList<>()
-        CommitDO commitDO = new CommitDO()
+        List<CommitDTO> commitDOList = new ArrayList<>()
+        CommitDTO commitDO = new CommitDTO()
         commitDOList.add(commitDO)
-        ResponseEntity<List<CommitDO>> responseEntity = new ResponseEntity<>(commitDOList, HttpStatus.OK)
+        ResponseEntity<List<CommitDTO>> responseEntity = new ResponseEntity<>(commitDOList, HttpStatus.OK)
         DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", gitlabServiceClient)
         Mockito.when(gitlabServiceClient.listCommits(anyInt(),anyInt(),anyInt())).thenReturn(responseEntity).thenReturn(responseEntity).thenReturn(responseEntity)
         userAttrRepository.queryById(_ as Long) >> userAttrE

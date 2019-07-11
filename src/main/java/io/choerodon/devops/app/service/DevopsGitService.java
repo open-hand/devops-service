@@ -24,7 +24,6 @@ public interface DevopsGitService {
     String getUrl(Long projectId, Long appId);
 
     /**
-     *
      * @param projectId
      * @param appId
      * @param tag
@@ -35,7 +34,6 @@ public interface DevopsGitService {
     void createTag(Long projectId, Long appId, String tag, String ref, String msg, String releaseNotes);
 
     /**
-     *
      * @param projectId
      * @param appId
      * @param tag
@@ -45,7 +43,6 @@ public interface DevopsGitService {
     TagDO updateTagRelease(Long projectId, Long appId, String tag, String releaseNotes);
 
     /**
-     *
      * @param projectId
      * @param appId
      * @param tag
@@ -109,7 +106,6 @@ public interface DevopsGitService {
     void checkName(Long projectId, Long applicationId, String branchName);
 
     /**
-     *
      * @param projectId
      * @param aplicationId
      * @param state
@@ -119,7 +115,6 @@ public interface DevopsGitService {
     Map<String, Object> getMergeRequestList(Long projectId, Long aplicationId, String state, PageRequest pageRequest);
 
     /**
-     *
      * @param projectId
      * @param applicationId
      * @param params
@@ -130,7 +125,6 @@ public interface DevopsGitService {
     PageInfo<TagDTO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size);
 
     /**
-     *
      * @param projectId
      * @param applicationId
      * @return
@@ -138,7 +132,6 @@ public interface DevopsGitService {
     List<TagDO> getTags(Long projectId, Long applicationId);
 
     /**
-     *
      * @param projectId
      * @param applicationId
      * @param tagName
@@ -147,28 +140,34 @@ public interface DevopsGitService {
     Boolean checkTag(Long projectId, Long applicationId, String tagName);
 
     /**
-     *
      * @param pushWebHookDTO
      * @param token
      */
     void branchSync(PushWebHookDTO pushWebHookDTO, String token);
 
     /**
-     *
      * @param pushWebHookDTO
      */
     void fileResourceSync(PushWebHookDTO pushWebHookDTO);
 
     /**
-     *
      * @param pushWebHookDTO
      * @param token
      */
     void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token);
 
     /**
-     *
      * @param branchSagaDTO
      */
     void createBranchBySaga(BranchSagaDTO branchSagaDTO);
+
+    /**
+     * 获取Commit
+     *
+     * @param gitLabProjectId
+     * @param commit
+     * @param userId
+     * @return
+     */
+    CommitVO getCommit(Integer gitLabProjectId, String commit, Integer userId);
 }

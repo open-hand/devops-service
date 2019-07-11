@@ -66,12 +66,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<GitlabProjectDO> updateProject(Integer projectId, Integer userId) {
+    public ResponseEntity<GitlabProjectDTO> updateProject(Integer projectId, Integer userId) {
         throw new CommonException("error.project.update");
     }
 
     @Override
-    public ResponseEntity<GitlabProjectDO> createProject(Integer groupId, String projectName, Integer userId, boolean visibility) {
+    public ResponseEntity<GitlabProjectDTO> createProject(Integer groupId, String projectName, Integer userId, boolean visibility) {
         throw new CommonException("error.project.create");
     }
 
@@ -106,12 +106,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<GitlabProjectDO> getProjectById(Integer projectId) {
+    public ResponseEntity<GitlabProjectDTO> getProjectById(Integer projectId) {
         throw new CommonException("error.project.get");
     }
 
     @Override
-    public ResponseEntity<GitlabProjectDO> getProjectByName(Integer userId, String groupName, String projectName) {
+    public ResponseEntity<GitlabProjectDTO> getProjectByName(Integer userId, String groupName, String projectName) {
         throw new CommonException("error.project.get");
     }
 
@@ -146,17 +146,17 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<MergeRequestDO> getMergeRequest(Integer projectId, Integer mergeRequestId, Integer userId) {
+    public ResponseEntity<MergeRequestDTO> getMergeRequest(Integer projectId, Integer mergeRequestId, Integer userId) {
         throw new CommonException("error.mr.get");
     }
 
     @Override
-    public ResponseEntity<List<CommitDO>> listCommits(Integer projectId, Integer mergeRequestId, Integer userId) {
+    public ResponseEntity<List<CommitDTO>> listCommits(Integer projectId, Integer mergeRequestId, Integer userId) {
         return new ResponseEntity("error.mr.commits.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<List<MergeRequestDO>> getMergeRequestList(Integer projectId) {
+    public ResponseEntity<List<MergeRequestDTO>> getMergeRequestList(Integer projectId) {
         throw new CommonException("error.mergerequest.get");
     }
 
@@ -166,12 +166,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<io.choerodon.devops.infra.dto.gitlab.CommitDO> getCommit(Integer projectId, String sha, Integer userId) {
+    public ResponseEntity<CommitDTO> getCommit(Integer projectId, String sha, Integer userId) {
         return new ResponseEntity("error.commit.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<List<CommitDO>> listCommits(Integer projectId, Integer page, Integer size, Integer userId) {
+    public ResponseEntity<List<CommitDTO>> listCommits(Integer projectId, Integer page, Integer size, Integer userId) {
         throw new CommonException("error.commit.select");
     }
 
@@ -180,7 +180,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
         return new ResponseEntity("error.commitStatus.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity<List<CommitDO>> getCommits(Integer projectId, String branchName, String since) {
+    public ResponseEntity<List<CommitDTO>> getCommits(Integer projectId, String branchName, String since) {
         throw new CommonException("error.commits.get");
     }
 
@@ -190,7 +190,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<GitlabProjectDO>> listProjects(Integer groupId, Integer userId) {
+    public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId) {
         throw new CommonException("error.group.listProjects");
     }
 
@@ -260,12 +260,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<MergeRequestDO> createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, String title, String description, Integer userId) {
+    public ResponseEntity<MergeRequestDTO> createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, String title, String description, Integer userId) {
         throw new CommonException("error.mergeRequest.create");
     }
 
     @Override
-    public ResponseEntity<MergeRequestDO> acceptMergeRequest(Integer projectId, Integer mergeRequestId, String mergeCommitMessage, Boolean shouldRemoveSourceBranch, Boolean mergeWhenPipelineSucceeds, Integer userId) {
+    public ResponseEntity<MergeRequestDTO> acceptMergeRequest(Integer projectId, Integer mergeRequestId, String mergeCommitMessage, Boolean shouldRemoveSourceBranch, Boolean mergeWhenPipelineSucceeds, Integer userId) {
         throw new CommonException("error.mergeRequext.accept");
     }
 
@@ -371,7 +371,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<GitlabProjectDO>> getProjectsByUserId(Integer userId) {
+    public ResponseEntity<List<GitlabProjectDTO>> getProjectsByUserId(Integer userId) {
         throw new CommonException("error.project.get.by.userId");
     }
 

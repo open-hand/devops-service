@@ -19,9 +19,6 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
 import io.choerodon.devops.app.service.DevopsProjectConfigService;
 import io.choerodon.devops.app.service.ProjectConfigHarborService;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
@@ -35,7 +32,6 @@ import org.springframework.util.ObjectUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-
 
 
 /**
@@ -163,7 +159,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         HarborClient harborClient = retrofit.create(HarborClient.class);
         if (harborPrivate) {
             //设置为私有后将harbor项目设置为私有,新增项目默认harbor配置,以及更新项目下所有应用的默认harbor配置
-            DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
+            DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
             String username = devopsProjectE.getHarborProjectUserName() == null ? String.format("user%s%s", organization.getId(), projectId) : devopsProjectE.getHarborProjectUserName();
             String email = devopsProjectE.getHarborProjectUserEmail() == null ? String.format("%s@harbor.com", username) : devopsProjectE.getHarborProjectUserEmail();
             String password = devopsProjectE.getHarborProjectUserPassword() == null ? String.format("%sA", username) : devopsProjectE.getHarborProjectUserPassword();
@@ -279,7 +275,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                     DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByName(projectId, "project_harbor_default");
                     DevopsProjectConfigE newDevopsProjectConfigE = devopsProjectConfigRepository.queryByName(null, "harbor_default");
 
-                    DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
+                    DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
                     devopsProjectE.setHarborProjectIsPrivate(false);
                     devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDTO.class));
                     applicationRepository.updateAppHarborConfig(projectId, newDevopsProjectConfigE.getId(), devopsProjectConfigE.getId(), false);
@@ -296,10 +292,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     @Override
     public ProjectDefaultConfigDTO getProjectDefaultConfig(Long projectId) {
         ProjectDefaultConfigDTO projectDefaultConfigDTO = new ProjectDefaultConfigDTO();
-        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
-        if (devopsProjectE.getHarborProjectIsPrivate() == null) {
-            devopsProjectE.setHarborProjectIsPrivate(false);
-        }
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
         projectDefaultConfigDTO.setHarborIsPrivate(devopsProjectE.getHarborProjectIsPrivate());
         List<DevopsProjectConfigE> harborConfigs = devopsProjectConfigRepository.queryByIdAndType(projectId, HARBOR);
         Optional<DevopsProjectConfigE> devopsConfigE = harborConfigs.stream().filter(devopsProjectConfigE -> devopsProjectConfigE.getName().equals("project_harbor_default")).findFirst();

@@ -5,7 +5,11 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCommandEventE;
+<<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsCommandEventConvertor.java
 import io.choerodon.devops.infra.dto.DevopsCommandEventDO;
+=======
+import io.choerodon.devops.infra.dataobject.DevopsCommandEventDO;
+>>>>>>> [IMP] 修改AppControler重构:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsCommandEventConvertor.java
 
 
 @Component

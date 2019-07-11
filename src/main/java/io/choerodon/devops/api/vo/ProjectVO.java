@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 
 /**
@@ -16,7 +16,7 @@ public class ProjectVO {
     private OrganizationVO organization;
     private String name;
     private String code;
-    private DevopsProjectE devopsProjectE;
+    private DevopsProjectVO devopsProjectE;
 
     public ProjectVO() {
     }
@@ -57,11 +57,11 @@ public class ProjectVO {
         this.code = code;
     }
 
-    public DevopsProjectE getDevopsProjectE() {
+    public DevopsProjectVO getDevopsProjectE() {
         return devopsProjectE;
     }
 
-    public void setDevopsProjectE(DevopsProjectE devopsProjectE) {
+    public void setDevopsProjectE(DevopsProjectVO devopsProjectE) {
         this.devopsProjectE = devopsProjectE;
     }
 

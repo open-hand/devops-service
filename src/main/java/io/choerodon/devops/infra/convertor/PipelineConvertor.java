@@ -3,7 +3,11 @@ package io.choerodon.devops.infra.convertor;
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.PipelineDTO;
 import io.choerodon.devops.api.vo.iam.entity.PipelineE;
+<<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/PipelineConvertor.java
 import io.choerodon.devops.infra.dto.PipelineDO;
+=======
+import io.choerodon.devops.infra.dataobject.PipelineDO;
+>>>>>>> [IMP] 修改AppControler重构:src/main/java/io/choerodon/devops/domain/application/convertor/PipelineConvertor.java
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 

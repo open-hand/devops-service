@@ -9,25 +9,22 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.C7nCertificationDTO;
 import io.choerodon.devops.api.vo.CertificationDTO;
 import io.choerodon.devops.api.vo.OrgCertificationDTO;
-import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-
-import io.choerodon.devops.api.vo.iam.entity.*;
-
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
-import io.choerodon.devops.infra.util.*;
-import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.dto.CertificationFileDO;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,7 +92,7 @@ public class CertificationServiceImpl implements CertificationService {
         String keyFileName;
 
         //如果是选择上传文件方式
-        if(certificationDTO.getType().equals(UPLOAD)) {
+        if (certificationDTO.getType().equals(UPLOAD)) {
             if (key != null && cert != null) {
                 certFileName = cert.getOriginalFilename();
                 keyFileName = key.getOriginalFilename();

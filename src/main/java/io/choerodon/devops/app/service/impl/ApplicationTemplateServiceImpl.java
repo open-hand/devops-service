@@ -22,11 +22,16 @@ import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationTemplateE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.GitUtil;
@@ -100,10 +105,10 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         applicationTemplateE.initOrganization(organization.getId());
         applicationTemplateE.setSynchro(false);
         applicationTemplateE.setFailed(false);
-        DevopsProjectE devopsProjectE = gitlabRepository.queryGroupByName(
+        DevopsProjectVO devopsProjectE = gitlabRepository.queryGroupByName(
                 organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (devopsProjectE == null) {
-            DevopsProjectE devopsProjectENew = new DevopsProjectE();
+            DevopsProjectVO devopsProjectENew = new DevopsProjectVO();
             devopsProjectENew.initName(organization.getCode() + "_" + TEMPLATE);
             devopsProjectENew.initPath(organization.getCode() + "_" + TEMPLATE);
             devopsProjectENew.initVisibility(Visibility.PUBLIC);
@@ -194,7 +199,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
 
         OrganizationVO organization = iamRepository.queryOrganizationById(gitlabProjectPayload.getOrganizationId());
 
-        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "_template", applicationTemplateE.getCode(), gitlabProjectPayload.getUserId());
+        GitlabProjectDTO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "_template", applicationTemplateE.getCode(), gitlabProjectPayload.getUserId());
 
         if (gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(),

@@ -27,12 +27,14 @@ import io.choerodon.devops.app.service.DeployService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.enums.EnvironmentGitopsStatus;
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
-import io.choerodon.devops.infra.dto.gitlab.CommitDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.HelmObjectKind;
@@ -155,7 +157,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         // 查询创建应用所在的gitlab应用组
-        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
         GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
@@ -546,12 +548,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (userAttrE == null) {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
-        CommitDO commitDO = gitlabProjectRepository.listCommits(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), userAttrE.getGitlabUserId().intValue(), 1, 1).get(0);
+        CommitDTO commitDO = gitlabProjectRepository.listCommits(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), userAttrE.getGitlabUserId().intValue(), 1, 1).get(0);
         PushWebHookDTO pushWebHookDTO = new PushWebHookDTO();
         pushWebHookDTO.setCheckoutSha(commitDO.getId());
         pushWebHookDTO.setUserId(userAttrE.getGitlabUserId().intValue());
         pushWebHookDTO.setProjectId(devopsEnvironmentE.getGitlabEnvProjectId().intValue());
-        CommitDTO commitDTO = new CommitDTO();
+        CommitVO commitDTO = new CommitVO();
         commitDTO.setId(commitDO.getId());
         commitDTO.setTimestamp(commitDO.getTimestamp());
         pushWebHookDTO.setCommits(Arrays.asList(commitDTO));
@@ -606,14 +608,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload) {
-        DevopsProjectE gitlabGroupE = devopsProjectRepository.queryByEnvGroupId(
+        DevopsProjectVO gitlabGroupE = devopsProjectRepository.queryByEnvGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                 .queryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
         ProjectVO projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
         OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
-        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode()
+        GitlabProjectDTO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode()
                 + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabProjectPayload.getUserId());
         if (gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabRepository.createProject(
@@ -878,43 +880,43 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabUserId);
         if (gitlabProjectDO.getId() != null) {
             gitlabRepository.deleteProject(gitlabProjectDO.getId(), gitlabUserId);
-        }
-        // 删除环境命名空间
-        if (devopsEnvironmentE.getClusterE().getId() != null) {
-            deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
-        }
-    }
-
-    @Override
-    public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        List<DevopsClusterRepDTO> devopsClusterRepDTOS = ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
-        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
-        devopsClusterRepDTOS.forEach(t -> {
-            if (connectedClusterList.contains(t.getId()) && upgradeClusterList.contains(t.getId())) {
-                t.setConnect(true);
-            } else {
-                t.setConnect(false);
             }
-        });
-        return devopsClusterRepDTOS;
-    }
+            // 删除环境命名空间
+            if (devopsEnvironmentE.getClusterE().getId() != null) {
+                deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
+            }
+        }
 
-    @Override
-    @Saga(code = "devops-set-env-err",
-            description = "devops创建环境失败(devops set env status create err)", inputSchema = "{}")
-    public void setEnvErrStatus(String data, Long projectId) {
-        sagaClient.startSaga("devops-set-env-err", new StartInstanceDTO(data, "", "", ResourceLevel.PROJECT.value(), projectId));
-    }
+        @Override
+        public List<DevopsClusterRepDTO> listDevopsCluster (Long projectId){
+            ProjectVO projectE = iamRepository.queryIamProject(projectId);
+            List<DevopsClusterRepDTO> devopsClusterRepDTOS = ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
+            List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
+            List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+            devopsClusterRepDTOS.forEach(t -> {
+                if (connectedClusterList.contains(t.getId()) && upgradeClusterList.contains(t.getId())) {
+                    t.setConnect(true);
+                } else {
+                    t.setConnect(false);
+                }
+            });
+            return devopsClusterRepDTOS;
+        }
 
-    @Override
-    public DevopsEnviromentRepDTO queryByCode(Long clusterId, String code) {
-        return ConvertHelper.convert(devopsEnviromentRepository.queryByProjectIdAndCode(clusterId, code), DevopsEnviromentRepDTO.class);
-    }
+        @Override
+        @Saga(code = "devops-set-env-err",
+                description = "devops创建环境失败(devops set env status create err)", inputSchema = "{}")
+        public void setEnvErrStatus (String data, Long projectId){
+            sagaClient.startSaga("devops-set-env-err", new StartInstanceDTO(data, "", "", ResourceLevel.PROJECT.value(), projectId));
+        }
 
-    @Override
-    public void initMockService(SagaClient sagaClient) {
-        this.sagaClient = sagaClient;
+        @Override
+        public DevopsEnviromentRepDTO queryByCode (Long clusterId, String code){
+            return ConvertHelper.convert(devopsEnviromentRepository.queryByProjectIdAndCode(clusterId, code), DevopsEnviromentRepDTO.class);
+        }
+
+        @Override
+        public void initMockService (SagaClient sagaClient){
+            this.sagaClient = sagaClient;
+        }
     }
-}

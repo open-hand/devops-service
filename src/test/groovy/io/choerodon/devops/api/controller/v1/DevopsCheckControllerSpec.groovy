@@ -213,12 +213,12 @@ class DevopsCheckControllerSpec extends Specification {
         groupDO.setId(1242)
         when(mockGitlabServiceClient.createGroup(any(GroupDO), anyInt())).thenReturn(new ResponseEntity<>(groupDO, HttpStatus.OK))
 
-        GitlabProjectDO gitlabProjectDO = new GitlabProjectDO()
+        GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO()
         gitlabProjectDO.setId(12523)
         when(mockGitlabServiceClient.createProject(anyInt(), anyString(), anyInt(), anyBoolean())).thenReturn(new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK))
         when(mockGitlabServiceClient.getDeploykeys(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
         when(mockGitlabServiceClient.getFile(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK))
-        when(mockGitlabServiceClient.getProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDO(), HttpStatus.OK))
+        when(mockGitlabServiceClient.getProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDTO(), HttpStatus.OK))
         when(mockGitlabServiceClient.getProjectHook(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(null, HttpStatus.OK))
 
         RoleDTO roleDTO = new RoleDTO()
@@ -512,16 +512,16 @@ class DevopsCheckControllerSpec extends Specification {
         return pipelineDOList
     }
 
-    private List<CommitDO> createVersion10MockCommits() {
-        List<CommitDO> commitDOList = new ArrayList<>()
-        CommitDO commitDO1 = new CommitDO()
+    private List<CommitDTO> createVersion10MockCommits() {
+        List<CommitDTO> commitDOList = new ArrayList<>()
+        CommitDTO commitDO1 = new CommitDTO()
         commitDO1.setId("e68aa4bff794e35b3e8800237e2ecb6484dd1cb9")
         commitDO1.setMessage("mock version10 Mock commits")
         commitDO1.setAuthorName("root")
         commitDO1.setTimestamp(new Date())
         commitDO1.setCommitterEmail("root@gmail.com")
 
-        CommitDO commitDO2 = new CommitDO()
+        CommitDTO commitDO2 = new CommitDTO()
         commitDO2.setId("a413150a63c7c51eebf71ca155a93ffe4f38d26a")
         commitDO2.setMessage("mock version10 Mock commits")
         commitDO2.setAuthorName("rsad")

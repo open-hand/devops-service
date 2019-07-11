@@ -65,14 +65,14 @@ public interface GitlabServiceClient {
 
 
     @PutMapping("/v1/projects/{projectId}")
-    ResponseEntity<GitlabProjectDO> updateProject(@PathVariable("projectId") Integer projectId,
-                                                  @RequestParam("userId") Integer userId);
+    ResponseEntity<GitlabProjectDTO> updateProject(@PathVariable("projectId") Integer projectId,
+                                                   @RequestParam("userId") Integer userId);
 
     @PostMapping("/v1/projects")
-    ResponseEntity<GitlabProjectDO> createProject(@RequestParam("groupId") Integer groupId,
-                                                  @RequestParam("projectName") String projectName,
-                                                  @RequestParam("userId") Integer userId,
-                                                  @RequestParam("visibility") boolean visibility);
+    ResponseEntity<GitlabProjectDTO> createProject(@RequestParam("groupId") Integer groupId,
+                                                   @RequestParam("projectName") String projectName,
+                                                   @RequestParam("userId") Integer userId,
+                                                   @RequestParam("visibility") boolean visibility);
 
     @PostMapping("/v1/projects/deploy_key")
     ResponseEntity createDeploykey(@RequestParam("projectId") Integer projectId,
@@ -108,12 +108,12 @@ public interface GitlabServiceClient {
                                               @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{project_id}")
-    ResponseEntity<GitlabProjectDO> getProjectById(@PathVariable("project_id") Integer projectId);
+    ResponseEntity<GitlabProjectDTO> getProjectById(@PathVariable("project_id") Integer projectId);
 
     @GetMapping(value = "/v1/projects/queryByName")
-    ResponseEntity<GitlabProjectDO> getProjectByName(@RequestParam("userId") Integer userId,
-                                                     @RequestParam("groupName") String groupName,
-                                                     @RequestParam("projectName") String projectName);
+    ResponseEntity<GitlabProjectDTO> getProjectByName(@RequestParam("userId") Integer userId,
+                                                      @RequestParam("groupName") String groupName,
+                                                      @RequestParam("projectName") String projectName);
 
 
     @GetMapping(value = "/v1/projects/{projectId}/variable")
@@ -131,8 +131,8 @@ public interface GitlabServiceClient {
     );
 
     @GetMapping(value = "/v1/groups/{groupId}/projects/event")
-    ResponseEntity<List<GitlabProjectDO>> listProjects(@PathVariable("groupId") Integer groupId,
-                                                       @RequestParam(value = "userId", required = false) Integer userId);
+    ResponseEntity<List<GitlabProjectDTO>> listProjects(@PathVariable("groupId") Integer groupId,
+                                                        @RequestParam(value = "userId", required = false) Integer userId);
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<ImpersonationTokenDO> createToken(@PathVariable("userId") Integer userId);
@@ -205,15 +205,15 @@ public interface GitlabServiceClient {
                                            @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits")
-    ResponseEntity<CommitDO> getCommit(@PathVariable("projectId") Integer projectId,
-                                       @RequestParam("sha") String sha,
-                                       @RequestParam("userId") Integer userId);
+    ResponseEntity<CommitDTO> getCommit(@PathVariable("projectId") Integer projectId,
+                                        @RequestParam("sha") String sha,
+                                        @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/project")
-    ResponseEntity<List<CommitDO>> listCommits(@PathVariable("projectId") Integer projectId,
-                                               @RequestParam("page") Integer page,
-                                               @RequestParam("size") Integer size,
-                                               @RequestParam("userId") Integer userId);
+    ResponseEntity<List<CommitDTO>> listCommits(@PathVariable("projectId") Integer projectId,
+                                                @RequestParam("page") Integer page,
+                                                @RequestParam("size") Integer size,
+                                                @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/statuse")
     ResponseEntity<List<CommitStatuseDO>> getCommitStatus(@PathVariable("projectId") Integer projectId,
@@ -221,9 +221,9 @@ public interface GitlabServiceClient {
                                                           @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/branch")
-    ResponseEntity<List<CommitDO>> getCommits(@PathVariable("projectId") Integer projectId,
-                                              @RequestParam("branchName") String branchName,
-                                              @RequestParam("since") String since);
+    ResponseEntity<List<CommitDTO>> getCommits(@PathVariable("projectId") Integer projectId,
+                                               @RequestParam("branchName") String branchName,
+                                               @RequestParam("since") String since);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/jobs")
     ResponseEntity<List<JobDO>> listJobs(@PathVariable("projectId") Integer projectId,
@@ -237,19 +237,19 @@ public interface GitlabServiceClient {
             @RequestParam(value = "userId", required = false) Integer userId);
 
     @GetMapping("/v1/projects/{projectId}/merge_requests/{mergeRequestId}")
-    ResponseEntity<MergeRequestDO> getMergeRequest(
+    ResponseEntity<MergeRequestDTO> getMergeRequest(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("mergeRequestId") Integer mergeRequestId,
             @RequestParam(value = "userId", required = false) Integer userId);
 
     @GetMapping("/v1/projects/{projectId}/merge_requests/{mergeRequestId}/commit")
-    ResponseEntity<List<CommitDO>> listCommits(
+    ResponseEntity<List<CommitDTO>> listCommits(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("mergeRequestId") Integer mergeRequestId,
             @RequestParam(value = "userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/merge_requests")
-    ResponseEntity<List<MergeRequestDO>> getMergeRequestList(@PathVariable("projectId") Integer projectId);
+    ResponseEntity<List<MergeRequestDTO>> getMergeRequestList(@PathVariable("projectId") Integer projectId);
 
     @GetMapping("/v1/projects/{projectId}/repository/branches")
     ResponseEntity<List<BranchDO>> listBranches(@PathVariable("projectId") Integer projectId,
@@ -279,7 +279,7 @@ public interface GitlabServiceClient {
      * @return 创建的merge请求
      */
     @PostMapping("/v1/projects/{projectId}/merge_requests")
-    ResponseEntity<MergeRequestDO> createMergeRequest(
+    ResponseEntity<MergeRequestDTO> createMergeRequest(
             @PathVariable("projectId") Integer projectId,
             @RequestParam("sourceBranch") String sourceBranch,
             @RequestParam("targetBranch") String targetBranch,
@@ -297,7 +297,7 @@ public interface GitlabServiceClient {
      * @return merge请求
      */
     @PutMapping("/v1/projects/{projectId}/merge_requests/{mergeRequestId}/merge")
-    ResponseEntity<MergeRequestDO> acceptMergeRequest(
+    ResponseEntity<MergeRequestDTO> acceptMergeRequest(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("mergeRequestId") Integer mergeRequestId,
             @RequestParam("mergeCommitMessage") String mergeCommitMessage,
@@ -468,7 +468,7 @@ public interface GitlabServiceClient {
     ResponseEntity<List<MemberDTO>> getAllMemberByProjectId(@PathVariable(value = "project_id") Integer projectId);
 
     @GetMapping("/v1/projects/{user_id}/projects")
-    ResponseEntity<List<GitlabProjectDO>> getProjectsByUserId(@PathVariable(value = "user_id") Integer id);
+    ResponseEntity<List<GitlabProjectDTO>> getProjectsByUserId(@PathVariable(value = "user_id") Integer id);
 
     @GetMapping("/v1/users/email/check")
     ResponseEntity<Boolean> checkEmailIsExist(@RequestParam(value = "email") String email);

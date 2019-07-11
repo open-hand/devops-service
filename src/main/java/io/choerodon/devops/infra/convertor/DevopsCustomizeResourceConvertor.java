@@ -5,7 +5,11 @@ import io.choerodon.devops.api.vo.DevopsCustomizeResourceDTO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
+<<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsCustomizeResourceConvertor.java
 import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDO;
+=======
+import io.choerodon.devops.infra.dataobject.DevopsCustomizeResourceDO;
+>>>>>>> [IMP] 修改AppControler重构:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsCustomizeResourceConvertor.java
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 

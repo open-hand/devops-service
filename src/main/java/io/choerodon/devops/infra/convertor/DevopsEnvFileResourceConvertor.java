@@ -9,6 +9,13 @@ import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+<<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsEnvFileResourceConvertor.java
+=======
+import io.choerodon.core.convertor.ConvertorI;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.infra.dataobject.DevopsEnvFileResourceDO;
+>>>>>>> [IMP] 修改AppControler重构:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsEnvFileResourceConvertor.java
 
 /**
  * Creator: Runge

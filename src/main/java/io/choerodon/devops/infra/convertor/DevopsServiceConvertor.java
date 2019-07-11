@@ -8,7 +8,11 @@ import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.DevopsServiceDTO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE;
 import io.choerodon.devops.api.vo.iam.entity.PortMapE;
+<<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsServiceConvertor.java
 import io.choerodon.devops.infra.dto.DevopsServiceDO;
+=======
+import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
+>>>>>>> [IMP] 修改AppControler重构:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsServiceConvertor.java
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 

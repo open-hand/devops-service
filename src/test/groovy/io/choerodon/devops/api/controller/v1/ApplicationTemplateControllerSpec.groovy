@@ -14,12 +14,19 @@ import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO
 import io.choerodon.devops.app.service.ApplicationTemplateService
 import io.choerodon.devops.app.service.DevopsGitService
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 import io.choerodon.devops.domain.application.entity.DevopsProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
 
 >>>>>>> [IMP]修复后端结构
 
+=======
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE
+import io.choerodon.devops.domain.application.repository.GitlabRepository
+import io.choerodon.devops.domain.application.repository.IamRepository
+>>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.domain.application.valueobject.ProjectHook
 import io.choerodon.devops.infra.dataobject.ApplicationTemplateDO
@@ -83,7 +90,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
-    DevopsProjectE devopsProjectE = new DevopsProjectE()
+    DevopsProjectVO devopsProjectE = new DevopsProjectVO()
     @Shared
     Map<String, Object> searchParam = new HashMap<>();
     @Shared

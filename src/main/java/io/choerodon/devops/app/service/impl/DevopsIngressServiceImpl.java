@@ -1,26 +1,29 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.api.vo.DevopsIngressDTO;
 import io.choerodon.devops.api.vo.DevopsIngressPathDTO;
-import io.choerodon.devops.api.validator.DevopsIngressValidator;
+import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.mapper.DevopsAppResourceMapper;
 import io.choerodon.devops.infra.dto.DevopsIngressDO;
 import io.choerodon.devops.infra.dto.DevopsIngressPathDO;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsAppResourceMapper;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;

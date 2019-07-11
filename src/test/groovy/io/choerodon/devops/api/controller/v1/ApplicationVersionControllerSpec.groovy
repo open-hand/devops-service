@@ -81,7 +81,7 @@ class ApplicationVersionControllerSpec extends Specification {
     @Shared
     ApplicationVersionValueDO applicationVersionValueDO = new ApplicationVersionValueDO()
     @Shared
-    AppUserPermissionDO appUserPermissionDO = new AppUserPermissionDO()
+    AppUserPermissionDTO appUserPermissionDO = new AppUserPermissionDTO()
     @Shared
     DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared
@@ -358,9 +358,9 @@ class ApplicationVersionControllerSpec extends Specification {
             }
         }
         // 删除appUserPermission
-        List<AppUserPermissionDO> list4 = appUserPermissionMapper.selectAll()
+        List<AppUserPermissionDTO> list4 = appUserPermissionMapper.selectAll()
         if (list4 != null && !list4.isEmpty()) {
-            for (AppUserPermissionDO e : list4) {
+            for (AppUserPermissionDTO e : list4) {
                 appUserPermissionMapper.delete(e)
             }
         }

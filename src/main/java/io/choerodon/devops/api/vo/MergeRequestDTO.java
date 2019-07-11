@@ -25,7 +25,7 @@ public class MergeRequestDTO {
     private Date updatedAt;
     private String webUrl;
 
-    private List<CommitDTO> commits;
+    private List<CommitVO> commits;
 
     public static Boolean isValid(MergeRequestDTO mergeRequestDTO) {
         return (mergeRequestDTO != null && mergeRequestDTO.getId() != null);
@@ -47,11 +47,11 @@ public class MergeRequestDTO {
         this.author = author;
     }
 
-    public List<CommitDTO> getCommits() {
+    public List<CommitVO> getCommits() {
         return commits;
     }
 
-    public void setCommits(List<CommitDTO> commits) {
+    public void setCommits(List<CommitVO> commits) {
         this.commits = commits;
     }
 

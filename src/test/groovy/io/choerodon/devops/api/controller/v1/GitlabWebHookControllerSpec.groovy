@@ -14,7 +14,7 @@ import io.choerodon.devops.app.service.DevopsGitlabPipelineService
 import io.choerodon.devops.app.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
@@ -124,14 +124,14 @@ class GitlabWebHookControllerSpec extends Specification {
             Mockito.when(iamServiceClient.listUsersByEmail(Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString())).thenReturn(responseEntity)
 
             // mock get commit
-            CommitDO commit = new CommitDO()
+            CommitDTO commit = new CommitDTO()
             commit.setMessage("message")
             commit.setAuthorName("zzz")
             commit.setId("asdfsdfasdfsdfsdfadf")
             commit.setAuthorEmail("1332efas@163.mail.com")
             commit.setUrl("http://www.baidu.com")
             commit.setCommittedDate(new Date())
-            ResponseEntity<CommitDO> res = new ResponseEntity<>(commit, HttpStatus.OK)
+            ResponseEntity<CommitDTO> res = new ResponseEntity<>(commit, HttpStatus.OK)
             Mockito.when(mockGitlabServiceClient.getCommit(Mockito.anyInt(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
 
             // mock env util

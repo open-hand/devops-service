@@ -18,7 +18,7 @@ public class PushWebHookDTO {
     private String checkoutSha;
     private Integer userId;
     private Integer projectId;
-    private List<CommitDTO> commits;
+    private List<CommitVO> commits;
     private Integer totalCommitsCount;
     private String token;
 
@@ -86,11 +86,11 @@ public class PushWebHookDTO {
         this.projectId = projectId;
     }
 
-    public List<CommitDTO> getCommits() {
+    public List<CommitVO> getCommits() {
         return commits;
     }
 
-    public void setCommits(List<CommitDTO> commits) {
+    public void setCommits(List<CommitVO> commits) {
         this.commits = commits;
     }
 

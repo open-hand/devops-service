@@ -296,7 +296,11 @@ class ApplicationControllerSpec extends Specification {
         when: '以前和现在都跳过权限检查，直接返回true，且该应用下无权限表记录'
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
+<<<<<<< HEAD
         List<AppUserPermissionDO> permissionResult = appUserPermissionMapper.selectAll()
+=======
+        List<AppUserPermissionDTO> permissionResult = appUserPermissionMapper.selectAll()
+>>>>>>> [IMP] 修改AppControler重构
         ApplicationDTO appResult = applicationMapper.selectByPrimaryKey(1L)
         permissionResult.size() == 0
         appResult.getIsSkipCheckPermission()
@@ -308,7 +312,11 @@ class ApplicationControllerSpec extends Specification {
         applicationUpdateDTO.setUserIds(userIds)
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
+<<<<<<< HEAD
         List<AppUserPermissionDO> permissionResult1 = appUserPermissionMapper.selectAll()
+=======
+        List<AppUserPermissionDTO> permissionResult1 = appUserPermissionMapper.selectAll()
+>>>>>>> [IMP] 修改AppControler重构
         ApplicationDTO appResult1 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult1.size() == 1
         permissionResult1.get(0).getAppId() == 1L
@@ -318,7 +326,11 @@ class ApplicationControllerSpec extends Specification {
         applicationUpdateDTO.setIsSkipCheckPermission(false)
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
+<<<<<<< HEAD
         List<AppUserPermissionDO> permissionResult2 = appUserPermissionMapper.selectAll()
+=======
+        List<AppUserPermissionDTO> permissionResult2 = appUserPermissionMapper.selectAll()
+>>>>>>> [IMP] 修改AppControler重构
         ApplicationDTO appResult2 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult2.size() == 1
         permissionResult2.get(0).getAppId() == 1L
@@ -328,7 +340,11 @@ class ApplicationControllerSpec extends Specification {
         applicationUpdateDTO.setIsSkipCheckPermission(true)
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
+<<<<<<< HEAD
         List<AppUserPermissionDO> permissionResult3 = appUserPermissionMapper.selectAll()
+=======
+        List<AppUserPermissionDTO> permissionResult3 = appUserPermissionMapper.selectAll()
+>>>>>>> [IMP] 修改AppControler重构
         ApplicationDTO appResult3 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult3.size() == 0
         appResult3.getIsSkipCheckPermission()

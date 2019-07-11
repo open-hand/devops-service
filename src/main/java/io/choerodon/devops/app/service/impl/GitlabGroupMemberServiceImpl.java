@@ -6,18 +6,15 @@ import java.util.stream.Collectors;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
 import io.choerodon.devops.api.vo.gitlab.MemberVO;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
+import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.MemberHelper;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dto.gitlab.RequestMemberDO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -26,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 
 
 /**
@@ -102,7 +98,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         LOGGER.error("error.gitlab.username.select");
                         return;
                     }
-                    DevopsProjectE devopsProjectE;
+                    DevopsProjectVO devopsProjectE;
                     GitlabMemberE gitlabMemberE;
                     if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
                         devopsProjectE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
@@ -155,7 +151,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     @Override
     public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
-        DevopsProjectE devopsProjectE = devopsProjectRepository
+        DevopsProjectVO devopsProjectE = devopsProjectRepository
                 .queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
         if (devopsEnvironmentE.getGitlabEnvProjectId() == null) {
             throw new CommonException("error.env.project.not.exist");
@@ -236,7 +232,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             throw new CommonException("The user you want to assign a role to is not created successfully!");
         }
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
-        DevopsProjectE devopsProjectE;
+        DevopsProjectVO devopsProjectE;
         GitlabMemberE groupMemberE;
         Integer[] roles = {
                 memberHelper.getProjectDevelopAccessLevel().toValue(),
@@ -264,7 +260,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     .filter(e -> e.getGitlabProjectE() != null)
                     .map(e -> e.getGitlabProjectE().getId()).collect(Collectors.toList());
             gitlabProjectIds.forEach(e -> {
-                GitlabProjectDO gitlabProjectDO = new GitlabProjectDO();
+                GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO();
                 try {
                     gitlabProjectDO = gitlabRepository.getProjectById(e);
                 } catch (CommonException exception) {
@@ -359,7 +355,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         }
     }
 
-    private void deleteGilabRole(GitlabMemberE groupMemberE, DevopsProjectE devopsProjectE,
+    private void deleteGilabRole(GitlabMemberE groupMemberE, DevopsProjectVO devopsProjectE,
                                  Integer userId, Boolean isEnvDelete) {
         if (groupMemberE != null) {
             gitlabGroupMemberRepository.deleteMember(

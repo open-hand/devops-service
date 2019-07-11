@@ -17,6 +17,13 @@ import io.choerodon.devops.domain.application.valueobject.ReplaceResult
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
+<<<<<<< HEAD
+=======
+import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
+import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
+import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.dataobject.iam.UserDO
+>>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*

@@ -12,7 +12,7 @@ import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
 import io.choerodon.devops.infra.dataobject.UserAttrDTO
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.gitlab.UserDO
@@ -140,9 +140,9 @@ class SagaHandlerNewSpec extends Specification {
 
             Mockito.doReturn(memberDOResponseEntity).when(gitlabServiceClient).getProjectMember(any(), any())
 
-            GitlabProjectDO gitlabProjectDO = new GitlabProjectDO()
+            GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO()
             gitlabProjectDO.setId(1)
-            ResponseEntity<GitlabProjectDO> gitlabProjectDOResponseEntity = new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK)
+            ResponseEntity<GitlabProjectDTO> gitlabProjectDOResponseEntity = new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK)
             Mockito.doReturn(gitlabProjectDOResponseEntity).when(gitlabServiceClient).getProjectById(any())
 
             Mockito.doReturn(null).when(gitlabServiceClient).removeMemberFromProject(any(), any())
