@@ -386,6 +386,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsAppSyncPayload.setCode(code);
         devOpsAppSyncPayload.setProjectId(projectId);
         devOpsAppSyncPayload.setOrganizationId(organization.getId());
+        devOpsAppSyncPayload.setAppId(applicationE.getId());
         String input = gson.toJson(devOpsAppSyncPayload);
         sagaClient.startSaga("devops-update-iam-app", new StartInstanceDTO(input, "app", applicationE.getId().toString(), ResourceLevel.PROJECT.value(), projectId));
     }

@@ -203,7 +203,7 @@ public class AppShareServiceImpl implements AppShareService {
     @Override
     public PageInfo<ApplicationReleasingDTO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds) {
         try {
-            params = URLDecoder.decode(params, "UTF-8");
+            params = params == null || params.isEmpty() ? params : URLDecoder.decode(params, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new CommonException("error.decode.params");
         }
