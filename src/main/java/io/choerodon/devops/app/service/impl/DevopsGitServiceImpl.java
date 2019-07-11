@@ -807,6 +807,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         try {
             String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
             DevopsBranchE branchE = devopsGitRepository.queryByAppAndBranchName(appId, branchName);
+            if (branchE == null) {
+                createBranchSync(pushWebHookDTO, appId);
+            }
+
             String lastCommit = pushWebHookDTO.getAfter();
             Optional<CommitDTO> lastCommitOptional
                     = pushWebHookDTO.getCommits().stream().filter(t -> lastCommit.equals(t.getId())).findFirst();
