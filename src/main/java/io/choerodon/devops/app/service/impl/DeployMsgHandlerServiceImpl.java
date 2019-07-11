@@ -18,7 +18,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.domain.application.factory.DevopsInstanceResourceFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
@@ -1399,7 +1399,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             upgradeCluster.getEnvs().forEach(clusterEnv -> {
                 DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(clusterEnv.getEnvId());
                 if (devopsEnvironmentE != null && devopsEnvironmentE.getCode().equals(clusterEnv.getNamespace())) {
-                    ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+                    ProjectVO projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
                     if (projectE.getOrganization().getId().equals(devopsClusterE.getOrganizationId())) {
                         DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
                         devopsClusterProPermissionE.setProjectId(projectE.getId());

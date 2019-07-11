@@ -22,16 +22,17 @@ import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.ProjectDTO;
-import io.choerodon.devops.api.vo.gitlab.MemberDTO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabJobE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabPipelineE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
 import io.choerodon.devops.domain.application.repository.*;
@@ -216,7 +217,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
 
     private void updateWebHook(List<CheckLog> logs) {
-        List<ApplicationDO> applications = applicationMapper.selectAll();
+        List<ApplicationDTO> applications = applicationMapper.selectAll();
         applications.stream()
                 .filter(applicationDO ->
                         applicationDO.getHookId() != null)
@@ -234,7 +235,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
     private void syncCommit(List<CheckLog> logs) {
-        List<ApplicationDO> applications = applicationMapper.selectAll();
+        List<ApplicationDTO> applications = applicationMapper.selectAll();
         applications.stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                 .forEach(applicationDO -> {
                             CheckLog checkLog = new CheckLog();
@@ -271,7 +272,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
 
     private void syncPipelines(List<CheckLog> logs) {
-        List<ApplicationDO> applications = applicationMapper.selectAll();
+        List<ApplicationDTO> applications = applicationMapper.selectAll();
         applications.stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                 .forEach(applicationDO -> {
                     CheckLog checkLog = new CheckLog();
@@ -346,7 +347,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             CheckLog checkLog = new CheckLog();
             checkLog.setContent(APP + devopsGitlabPipelineDO.getPipelineId() + "fix pipeline");
             try {
-                ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(devopsGitlabPipelineDO.getAppId());
+                ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(devopsGitlabPipelineDO.getAppId());
                 if (applicationDO.getGitlabProjectId() != null) {
                     DevopsGitlabCommitDO devopsGitlabCommitDO = devopsGitlabCommitMapper
                             .selectByPrimaryKey(devopsGitlabPipelineDO.getCommitId());
@@ -513,7 +514,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsCheckLogE.setBeginCheckDate(new Date());
             if ("0.8".equals(version)) {
                 LOGGER.info("Start to execute upgrade task 0.8");
-                List<ApplicationDO> applications = applicationMapper.selectAll();
+                List<ApplicationDTO> applications = applicationMapper.selectAll();
                 applications.stream()
                         .filter(applicationDO ->
                                 applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null)
@@ -591,10 +592,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         @Saga(code = "devops-sync-application",
                 description = "Devops同步应用到iam", inputSchema = "{}")
         private void syncAppToIam() {
-            List<ApplicationDO> applicationDOS = applicationMapper.selectAll().stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null).collect(Collectors.toList());
+            List<ApplicationDTO> applicationDOS = applicationMapper.selectAll().stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null).collect(Collectors.toList());
             List<IamAppPayLoad> iamAppPayLoads = applicationDOS.stream().map(applicationDO -> {
-                ProjectE projectE = iamRepository.queryIamProject(applicationDO.getProjectId());
-                Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+                ProjectVO projectE = iamRepository.queryIamProject(applicationDO.getProjectId());
+                OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
                 IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
                 iamAppPayLoad.setOrganizationId(organization.getId());
                 iamAppPayLoad.setApplicationCategory(APPLICATION);
@@ -613,14 +614,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         private void syncCiVariableAndRole(List<CheckLog> logs) {
             List<Integer> gitlabProjectIds = applicationMapper.selectAll().stream()
                     .filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
-                    .map(ApplicationDO::getGitlabProjectId).collect(Collectors.toList());
+                    .map(ApplicationDTO::getGitlabProjectId).collect(Collectors.toList());
             //changRole
             gitlabProjectIds.forEach(t -> {
                 CheckLog checkLog = new CheckLog();
                 try {
                     checkLog.setContent("gitlabProjectId: " + t + " sync gitlab variable and role");
-                    List<MemberDTO> memberDTOS = gitlabProjectRepository.getAllMemberByProjectId(t).stream().filter(m -> m.getAccessLevel() == 40).map(memberE ->
-                            new MemberDTO(memberE.getId(), 30)).collect(Collectors.toList());
+                    List<MemberVO> memberDTOS = gitlabProjectRepository.getAllMemberByProjectId(t).stream().filter(m -> m.getAccessLevel() == 40).map(memberE ->
+                            new MemberVO(memberE.getId(), 30)).collect(Collectors.toList());
                     if (!memberDTOS.isEmpty()) {
                         gitlabRepository.updateMemberIntoProject(t, memberDTOS);
                     }
@@ -664,7 +665,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 LOGGER.info("Sync organization cluster to project,organizationId: {}", org.getId());
                 try {
                     Long categoryId = 1L;
-                    ProjectDTO projectDTO = createOpsProject(org.getId(), categoryId);
+                    ProjectReqVO projectDTO = createOpsProject(org.getId(), categoryId);
                     clusterRepository.updateProjectId(org.getId(), projectDTO.getId());
                     checkLog.setResult("success");
                 } catch (Exception e) {
@@ -715,7 +716,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             return orgRepository.createProjectCategory(orgId, categoryEDTO);
         }
 
-        private ProjectDTO createOpsProject(Long orgId, Long categoryId) {
+        private ProjectReqVO createOpsProject(Long orgId, Long categoryId) {
             ProjectCreateDTO createDTO = new ProjectCreateDTO();
             List<Long> categoruIds = new ArrayList<>();
             categoruIds.add(categoryId);
@@ -734,8 +735,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 applicationMapper.selectAll().forEach(applicationDO -> {
                     if (applicationDO.getGitlabProjectId() != null) {
                         LOGGER.info("sonar.project.privatet,applicationId:" + applicationDO.getId());
-                        ProjectE projectE = iamRepository.queryIamProject(applicationDO.getProjectId());
-                        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+                        ProjectVO projectE = iamRepository.queryIamProject(applicationDO.getProjectId());
+                        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
                         String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationDO.getCode());
                         Map<String, String> maps = new HashMap<>();
                         maps.put("project", key);
@@ -797,8 +798,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         try {
                             //generate git project code
                             checkLog.setContent("env: " + devopsEnvironmentE.getName() + " create gitops project");
-                            ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-                            Organization organization = iamRepository
+                            ProjectVO projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+                            OrganizationVO organization = iamRepository
                                     .queryOrganizationById(projectE.getOrganization().getId());
                             //generate rsa key
                             List<String> sshKeys = FileUtil.getSshKey(String.format("%s/%s/%s",
@@ -825,7 +826,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
 
-        private void syncWebHook(ApplicationDO applicationDO, List<CheckLog> logs) {
+        private void syncWebHook(ApplicationDTO applicationDO, List<CheckLog> logs) {
             CheckLog checkLog = new CheckLog();
             checkLog.setContent(APP + applicationDO.getName() + " create gitlab webhook");
             try {
@@ -846,7 +847,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             logs.add(checkLog);
         }
 
-        private void syncBranches(ApplicationDO applicationDO, List<CheckLog> logs) {
+        private void syncBranches(ApplicationDTO applicationDO, List<CheckLog> logs) {
             CheckLog checkLog = new CheckLog();
             checkLog.setContent(APP + applicationDO.getName() + " sync branches");
             try {
@@ -898,9 +899,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 CheckLog checkLog = new CheckLog();
                 try {
                     Long projectId = t.getIamProjectId();
-                    ProjectE projectE = iamRepository.queryIamProject(projectId);
+                    ProjectVO projectE = iamRepository.queryIamProject(projectId);
                     checkLog.setContent("project: " + projectE.getName() + " create gitops group");
-                    Organization organization = iamRepository
+                    OrganizationVO organization = iamRepository
                             .queryOrganizationById(projectE.getOrganization().getId());
                     //创建gitlab group
                     GroupDO group = new GroupDO();

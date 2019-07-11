@@ -2,7 +2,7 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.domain.application.entity.DevopsNotificationUserRelE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsNotificationUserRelE;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

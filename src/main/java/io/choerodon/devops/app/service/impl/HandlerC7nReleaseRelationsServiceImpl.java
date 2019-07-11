@@ -8,14 +8,15 @@ import java.util.stream.Collectors;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ApplicationDeployDTO;
 import io.choerodon.devops.api.vo.ApplicationInstanceDTO;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.infra.util.GitUtil;
@@ -190,8 +191,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
     private ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
                                                          Long projectId, Long envId, String filePath, String type) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         List<ApplicationE> applications = deployMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
         if (applications.isEmpty()) {
             throw new GitOpsExplainException("app.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartName());

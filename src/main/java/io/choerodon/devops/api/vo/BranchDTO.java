@@ -2,8 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
-import io.choerodon.devops.domain.application.entity.DevopsBranchE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsBranchE;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.valueobject.Issue;
 
 public class BranchDTO {

@@ -7,9 +7,9 @@ import feign.FeignException;
 import feign.RetryableException;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.gitlab.MemberDTO;
+import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.gitlab.VariableDTO;
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
@@ -292,7 +292,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public void addMemberIntoProject(Integer projectId, MemberDTO memberDTO) {
+    public void addMemberIntoProject(Integer projectId, MemberVO memberDTO) {
         try {
             gitlabServiceClient.addMemberIntoProject(projectId, memberDTO);
         } catch (Exception e) {
@@ -301,7 +301,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public void updateMemberIntoProject(Integer projectId, List<MemberDTO> list) {
+    public void updateMemberIntoProject(Integer projectId, List<MemberVO> list) {
         try {
             gitlabServiceClient.updateMemberIntoProject(projectId, list);
         } catch (Exception e) {

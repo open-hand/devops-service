@@ -1,14 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.app.service.ProjectService;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.app.service.ProjectService;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,23 +23,39 @@ public class ProjectServiceImpl implements ProjectService {
     @Value("${spring.application.name}")
     private String applicationName;
 
-    private DevopsProjectRepository devopsProjectRepository;
-
     @Autowired
-    public ProjectServiceImpl(DevopsProjectRepository devopsProjectRepository) {
-        this.devopsProjectRepository = devopsProjectRepository;
-    }
+    private DevopsProjectMapper devopsProjectMapper;
 
     @Override
     public void createProject(ProjectPayload projectPayload) {
         // create project in db
-        DevopsProjectDTO devopsProject = new DevopsProjectDTO(projectEvent.getProjectId());
-        devopsProjectRepository.createProject(devopsProject);
+        DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO(projectPayload.getProjectId());
+        if (devopsProjectMapper.insert(devopsProjectDTO) != 1) {
+            throw new CommonException("insert project attr error");
+        }
     }
 
     @Override
     public boolean queryProjectGitlabGroupReady(Long projectId) {
-        DevopsProjectE devopsProjectE =  devopsProjectRepository.queryDevopsProject(projectId);
-        return devopsProjectE.getDevopsAppGroupId() != null ;
+        DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(projectId);
+        if (devopsProjectDTO == null) {
+            throw new CommonException("error.group.not.sync");
+        }
+        if (devopsProjectDTO.getDevopsAppGroupId() == null || devopsProjectDTO.getDevopsEnvGroupId() == null) {
+            throw new CommonException("error.gitlab.groupId.select");
+        }
+        return devopsProjectDTO.getDevopsAppGroupId() != null;
+    }
+
+    @Override
+    public DevopsProjectDTO queryById(Long projectId) {
+        DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(projectId);
+        if (devopsProjectDTO == null) {
+            throw new CommonException("error.group.not.sync");
+        }
+        if (devopsProjectDTO.getDevopsAppGroupId() == null || devopsProjectDTO.getDevopsEnvGroupId() == null) {
+            throw new CommonException("error.gitlab.groupId.select");
+        }
+        return devopsProjectDTO;
     }
 }

@@ -23,7 +23,7 @@ import io.choerodon.devops.infra.common.util.JsonYamlConversionUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus
 import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -114,7 +114,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
     DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
     @Shared
@@ -490,10 +490,10 @@ class ApplicationInstanceControllerSpec extends Specification {
         ResponseEntity<PageInfo<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
         Mockito.doReturn(projectDOPageResponseEntity).when(iamServiceClient).queryProjectByOrgId(anyLong(), anyInt(), anyInt(), isNull(), isNull())
 
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setId(1)
         memberDO.setAccessLevel(AccessLevel.OWNER)
-        ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
 
         UserDO userDO = new UserDO()
@@ -1132,9 +1132,9 @@ class ApplicationInstanceControllerSpec extends Specification {
             }
         }
         // 删除app
-        List<ApplicationDO> list6 = applicationMapper.selectAll()
+        List<ApplicationDTO> list6 = applicationMapper.selectAll()
         if (list6 != null && !list6.isEmpty()) {
-            for (ApplicationDO e : list6) {
+            for (ApplicationDTO e : list6) {
                 applicationMapper.delete(e)
             }
         }

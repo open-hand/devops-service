@@ -19,20 +19,12 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-<<<<<<< HEAD
-import io.choerodon.core.iam.ResourceLevel;
-=======
-
-import io.choerodon.devops.api.vo.*;
->>>>>>> [IMP] applicationController重构
 import io.choerodon.devops.api.validator.AppInstanceValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DeployService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.dataobject.*;
@@ -173,7 +165,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .filter(DevopsEnvUserPermissionE::getPermitted).map(DevopsEnvUserPermissionE::getEnvId)
                 .collect(Collectors.toList());
 
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         if (iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
             permissionEnvIds = devopsEnvironmentRepository.queryByProject(projectId).stream()
                     .map(DevopsEnvironmentE::getId).collect(Collectors.toList());

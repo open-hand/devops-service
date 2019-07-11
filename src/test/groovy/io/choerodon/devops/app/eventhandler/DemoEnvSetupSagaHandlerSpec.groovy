@@ -11,7 +11,7 @@ import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.RoleSearchDTO
 import io.choerodon.devops.api.vo.iam.UserDTO
 import io.choerodon.devops.app.service.ApplicationService
-import io.choerodon.devops.domain.application.entity.gitlab.CommitE
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.ProjectHook
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
@@ -120,9 +120,9 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(anyLong())
 
 
-            MemberDO memberDO = new MemberDO()
+            MemberDTO memberDO = new MemberDTO()
             memberDO.setAccessLevel(AccessLevel.OWNER)
-            ResponseEntity<MemberDO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
+            ResponseEntity<MemberDTO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
             Mockito.doReturn(memberDOResponseEntity).when(gitlabServiceClient).getUserMemberByUserId(any(), any())
 
             GroupDO groupDO = new GroupDO()
@@ -280,8 +280,8 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
                 userAttrMapper.delete(userAttrDO)
             }
         }
-        List<ApplicationDO> applicationDOList = applicationMapper.selectAll()
-        for (ApplicationDO application : applicationDOList) {
+        List<ApplicationDTO> applicationDOList = applicationMapper.selectAll()
+        for (ApplicationDTO application : applicationDOList) {
             applicationMapper.delete(application)
         }
         List<DevopsProjectDTO> devopsProjectDOList = devopsProjectMapper.selectAll()

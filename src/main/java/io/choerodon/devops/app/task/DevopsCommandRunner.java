@@ -2,7 +2,7 @@ package io.choerodon.devops.app.task;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectConfigDTO;
-import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import org.springframework.beans.factory.annotation.Autowired;

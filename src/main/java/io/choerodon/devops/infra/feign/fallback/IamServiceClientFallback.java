@@ -5,7 +5,7 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ProjectDTO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
@@ -132,7 +132,7 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<ProjectDTO> createProject(Long organizationId, @Valid ProjectCreateDTO projectCreateDTO) {
+    public ResponseEntity<ProjectReqVO> createProject(Long organizationId, @Valid ProjectCreateDTO projectCreateDTO) {
         throw new CommonException("error.iam.project.create");
     }
 

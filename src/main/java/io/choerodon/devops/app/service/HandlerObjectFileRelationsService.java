@@ -5,7 +5,7 @@ import java.util.Map;
 
 import io.kubernetes.client.models.V1Endpoints;
 
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
 
 public interface HandlerObjectFileRelationsService<T> {
 

@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.config;
 import java.util.List;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.DevopsClusterE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;

@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.domain.application.entity.PipelineStageRecordE;
+import io.choerodon.devops.api.vo.iam.entity.PipelineStageRecordE;
 
 import java.util.List;
 

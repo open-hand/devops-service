@@ -9,7 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.ApplicationVersionAndCommitDTO;
 import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.vo.DeployVersionDTO;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
 
 /**
  * Created by Zenger on 2018/4/3.

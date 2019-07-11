@@ -12,28 +12,24 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.ApplicationTemplateDTO;
-<<<<<<< HEAD
-=======
-import io.choerodon.devops.api.vo.ApplicationTemplateRepVO;
->>>>>>> [IMP] applicationController重构
-import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
 import io.choerodon.devops.api.validator.ApplicationTemplateValidator;
-import io.choerodon.devops.app.service.ApplicationTemplateService;
-import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
+import io.choerodon.devops.api.vo.ApplicationTemplateDTO;
+import io.choerodon.devops.api.vo.ApplicationTemplateRepVO;
+import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationTemplateE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
-import io.choerodon.devops.domain.application.factory.ApplicationTemplateFactory;
+import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
+import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.Visibility;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,7 +94,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         applicationTemplateRepository.checkName(applicationTemplateE);
         Integer gitlabGroupId;
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        Organization organization = iamRepository.queryOrganizationById(organizationId);
+        OrganizationVO organization = iamRepository.queryOrganizationById(organizationId);
         applicationTemplateE.initOrganization(organization.getId());
         applicationTemplateE.setSynchro(false);
         applicationTemplateE.setFailed(false);
@@ -194,7 +190,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.queryByCode(
                 gitlabProjectPayload.getOrganizationId(), gitlabProjectPayload.getPath());
 
-        Organization organization = iamRepository.queryOrganizationById(gitlabProjectPayload.getOrganizationId());
+        OrganizationVO organization = iamRepository.queryOrganizationById(gitlabProjectPayload.getOrganizationId());
 
         GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "_template", applicationTemplateE.getCode(), gitlabProjectPayload.getUserId());
 

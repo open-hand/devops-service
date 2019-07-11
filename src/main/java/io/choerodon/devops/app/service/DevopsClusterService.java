@@ -14,7 +14,7 @@ public interface DevopsClusterService {
 
     void checkName(Long organizationId, String name);
 
-    PageInfo<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest, String[] params);
+    PageInfo<ProjectReqVO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest, String[] params);
 
     String queryShell(Long clusterId);
 
@@ -22,7 +22,7 @@ public interface DevopsClusterService {
 
     PageInfo<ClusterWithNodesDTO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
 
-    List<ProjectDTO> listClusterProjects(Long organizationId, Long clusterId);
+    List<ProjectReqVO> listClusterProjects(Long organizationId, Long clusterId);
 
     void deleteCluster(Long clusterId);
 

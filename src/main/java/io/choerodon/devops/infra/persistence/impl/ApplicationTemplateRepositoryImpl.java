@@ -10,7 +10,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationTemplateE;
 import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;

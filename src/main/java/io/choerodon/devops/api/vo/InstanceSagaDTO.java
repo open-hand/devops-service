@@ -1,8 +1,8 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 
 /**
  * Created by Sheep on 2019/7/4.

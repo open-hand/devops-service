@@ -7,10 +7,10 @@ import java.util.regex.Pattern;
 import com.alibaba.fastjson.JSONArray;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.Payload;
 import io.choerodon.devops.app.service.DeployService;
 import io.choerodon.devops.infra.util.EnvUtil;
@@ -213,8 +213,8 @@ public class DeployServiceImpl implements DeployService {
     public void initEnv(DevopsEnvironmentE devopsEnvironmentE, Long clusterId) {
         GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(clusterId);
         List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
-        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
 
         GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();

@@ -9,23 +9,23 @@ import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.*
-import io.choerodon.devops.api.vo.gitlab.MemberDTO
+import io.choerodon.devops.api.vo.gitlab.MemberVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.RoleSearchDTO
 import io.choerodon.devops.api.vo.iam.UserDTO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
-import io.choerodon.devops.domain.application.entity.DevopsServiceE
-import io.choerodon.devops.domain.application.entity.ProjectE
-import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE
+import io.choerodon.devops.api.vo.ProjectVO
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
@@ -124,9 +124,9 @@ class DevopsEnvironmentControllerSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    Organization organization = new Organization()
+    OrganizationVO organization = new OrganizationVO()
     @Shared
-    ProjectE projectE = new ProjectE()
+    ProjectVO projectE = new ProjectVO()
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
@@ -246,9 +246,9 @@ class DevopsEnvironmentControllerSpec extends Specification {
         ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER)
-        ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
 
         List<RoleDTO> ownerRoleDTOList = new ArrayList<>()
@@ -613,10 +613,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
         Mockito.when(gitlabServiceClient.addMemberIntoProject(anyInt(), any(MemberDTO.class))).thenReturn(responseEntity)
 
         and: '查询gitlab项目下是否有1和3用户'
-        MemberDO memberDO1 = new MemberDO()
+        MemberDTO memberDO1 = new MemberDTO()
         memberDO1.setId(1)
         memberDO1.setAccessLevel(AccessLevel.NONE)
-        ResponseEntity<MemberDO> memberDOResponseEntity1 = new ResponseEntity<>(memberDO1, HttpStatus.OK)
+        ResponseEntity<MemberDTO> memberDOResponseEntity1 = new ResponseEntity<>(memberDO1, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getProjectMember(anyInt(), anyInt())).thenReturn(memberDOResponseEntity1)
 
         and: '删除1和3的gitlab用户'

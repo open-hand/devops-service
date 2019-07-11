@@ -13,7 +13,7 @@ import io.choerodon.devops.api.vo.iam.RoleSearchDTO
 import io.choerodon.devops.api.vo.iam.UserDTO
 import io.choerodon.devops.api.vo.iam.UserWithRoleDTO
 import io.choerodon.devops.app.service.DevopsCheckLogService
-import io.choerodon.devops.domain.application.entity.gitlab.CommitE
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.ProjectHook
 import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
@@ -111,7 +111,7 @@ class DevopsCheckControllerSpec extends Specification {
     @Shared
     private DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
     @Shared
-    private ApplicationDO applicationDO = new ApplicationDO()
+    private ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
     private DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO()
     @Shared
@@ -289,7 +289,7 @@ class DevopsCheckControllerSpec extends Specification {
 //        PageInfo<UserWithRoleDTO> userWithRoleDTOPage = new PageInfo<>(userWithRoleDTOList, userWithRolePageInfo, 1)
         when(mockIamServiceClient.queryUserByProjectId(eq(devopsProjectDO.getIamProjectId()), anyInt(), anyInt(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(userWithRolePageInfo, HttpStatus.OK))
 
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setId(TypeUtil.objToInteger(userAttrDO.getGitlabUserId()))
         memberDO.setAccessLevel(AccessLevel.MASTER)
         when(mockGitlabServiceClient.getUserMemberByUserId(eq(TypeUtil.objToInteger(devopsProjectDO.getDevopsEnvGroupId())), eq(TypeUtil.objToInteger(userAttrDO.getGitlabUserId())))).thenReturn(new ResponseEntity<>(memberDO, HttpStatus.OK))
@@ -347,9 +347,9 @@ class DevopsCheckControllerSpec extends Specification {
         applicationVersionDO.setImage("test")
 
 
-        List<MemberDO> memberDOList = new ArrayList<>()
+        List<MemberDTO> memberDOList = new ArrayList<>()
         memberDOList.add(memberDO)
-        ResponseEntity<List<MemberDO>> listResponseEntity = new ResponseEntity<>(memberDOList, HttpStatus.OK)
+        ResponseEntity<List<MemberDTO>> listResponseEntity = new ResponseEntity<>(memberDOList, HttpStatus.OK)
         Mockito.doReturn(listResponseEntity).when(mockGitlabServiceClient).getAllMemberByProjectId(any())
         Mockito.doReturn(null).when(mockGitlabServiceClient).updateMemberIntoProject(any(), any())
     }

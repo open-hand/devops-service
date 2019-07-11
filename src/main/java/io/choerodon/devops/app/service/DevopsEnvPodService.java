@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsEnvPodDTO;
-import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
 
 /**
  * Created by Zenger on 2018/4/17.

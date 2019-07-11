@@ -14,7 +14,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.devops.api.vo.CertificationDTO;
-import io.choerodon.devops.domain.application.entity.CertificationE;
+import io.choerodon.devops.api.vo.iam.entity.CertificationE;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 <<<<<<< HEAD

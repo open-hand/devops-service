@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.DevopsRegistrySecretE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsRegistrySecretE;
 import io.choerodon.devops.domain.application.repository.DevopsRegistrySecretRepository;
 import io.choerodon.devops.infra.dataobject.DevopsRegistrySecretDO;
 import io.choerodon.devops.infra.mapper.DevopsRegistrySecretMapper;

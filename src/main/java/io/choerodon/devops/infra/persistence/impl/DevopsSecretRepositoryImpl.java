@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.DevopsSecretE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsSecretE;
 import io.choerodon.devops.domain.application.repository.DevopsSecretRepository;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsSecretDO;

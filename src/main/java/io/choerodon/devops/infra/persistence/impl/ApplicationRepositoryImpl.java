@@ -15,12 +15,12 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.ApplicationDO;
+import io.choerodon.devops.infra.dataobject.ApplicationDTO;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 
 /**
@@ -42,7 +42,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public void checkApp(Long projectId, Long appId) {
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(appId);
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(appId);
         if (applicationDO == null || !applicationDO.getProjectId().equals(projectId)) {
             throw new CommonException("error.app.project.notMatch");
         }
@@ -50,7 +50,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public void checkName(Long projectId, String appName) {
-        ApplicationDO applicationDO = new ApplicationDO();
+        ApplicationDTO applicationDO = new ApplicationDTO();
         applicationDO.setProjectId(projectId);
         applicationDO.setName(appName);
         if (applicationMapper.selectOne(applicationDO) != null) {
@@ -60,7 +60,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public void checkCode(ApplicationE applicationE) {
-        ApplicationDO applicationDO = new ApplicationDO();
+        ApplicationDTO applicationDO = new ApplicationDTO();
         applicationDO.setProjectId(applicationE.getProjectE().getId());
         applicationDO.setCode(applicationE.getCode());
         if (!applicationMapper.select(applicationDO).isEmpty()) {
@@ -70,7 +70,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public void checkCode(Long projectId, String code) {
-        ApplicationDO applicationDO = new ApplicationDO();
+        ApplicationDTO applicationDO = new ApplicationDTO();
         applicationDO.setProjectId(projectId);
         applicationDO.setCode(code);
         if (applicationMapper.selectOne(applicationDO) != null) {
@@ -80,7 +80,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public ApplicationE create(ApplicationE applicationE) {
-        ApplicationDO applicationDO = ConvertHelper.convert(applicationE, ApplicationDO.class);
+        ApplicationDTO applicationDO = ConvertHelper.convert(applicationE, ApplicationDTO.class);
         if (applicationMapper.insert(applicationDO) != 1) {
             throw new CommonException("error.application.create.insert");
         }
@@ -90,8 +90,8 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public int update(ApplicationE applicationE) {
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(applicationE.getId());
-        ApplicationDO newApplicationDO = ConvertHelper.convert(applicationE, ApplicationDO.class);
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(applicationE.getId());
+        ApplicationDTO newApplicationDO = ConvertHelper.convert(applicationE, ApplicationDTO.class);
         if (applicationE.getFailed() != null && !applicationE.getFailed()) {
             applicationMapper.updateAppToSuccess(applicationDO.getId());
         }
@@ -101,21 +101,21 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public void updateSql(ApplicationE applicationE) {
-        ApplicationDO applicationDO = ConvertHelper.convert(applicationE, ApplicationDO.class);
+        ApplicationDTO applicationDO = ConvertHelper.convert(applicationE, ApplicationDTO.class);
         applicationMapper.updateSql(applicationDO.getId(), applicationDO.getToken(),
                 applicationDO.getGitlabProjectId(), applicationDO.getHookId(), applicationDO.getSynchro());
     }
 
     @Override
     public ApplicationE query(Long applicationId) {
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(applicationId);
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(applicationId);
         return ConvertHelper.convert(applicationDO, ApplicationE.class);
     }
 
     @Override
     public PageInfo<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket,
                                                 String type, Boolean doPage, PageRequest pageRequest, String params) {
-        PageInfo<ApplicationDO> applicationES = new PageInfo<>();
+        PageInfo<ApplicationDTO> applicationES = new PageInfo<>();
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         //是否需要分页
@@ -135,7 +135,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public PageInfo<ApplicationE> listCodeRepository(Long projectId, PageRequest pageRequest, String params,
                                                      Boolean isProjectOwner, Long userId) {
-        PageInfo<ApplicationDO> applicationES;
+        PageInfo<ApplicationDTO> applicationES;
         Map maps = gson.fromJson(params, Map.class);
         applicationES = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
@@ -145,14 +145,14 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public Boolean applicationExist(String uuid) {
-        ApplicationDO applicationDO = new ApplicationDO();
+        ApplicationDTO applicationDO = new ApplicationDTO();
         applicationDO.setUuid(uuid);
         return !applicationMapper.select(applicationDO).isEmpty();
     }
 
     @Override
     public ApplicationE queryByCode(String code, Long projectId) {
-        ApplicationDO applicationDO = new ApplicationDO();
+        ApplicationDTO applicationDO = new ApplicationDTO();
         applicationDO.setProjectId(projectId);
         applicationDO.setCode(code);
         return ConvertHelper.convert(applicationMapper.selectOne(applicationDO), ApplicationE.class);
@@ -204,7 +204,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public ApplicationE queryByToken(String token) {
-        ApplicationDO applicationDO = applicationMapper.queryByToken(token);
+        ApplicationDTO applicationDO = applicationMapper.queryByToken(token);
         return ConvertHelper.convert(applicationDO, ApplicationE.class);
     }
 
@@ -233,7 +233,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public List<ApplicationE> listByProjectIdAndSkipCheck(Long projectId) {
-        ApplicationDO applicationDO = new ApplicationDO();
+        ApplicationDTO applicationDO = new ApplicationDTO();
         applicationDO.setProjectId(projectId);
         applicationDO.setIsSkipCheckPermission(true);
         return ConvertHelper.convertList(applicationMapper.select(applicationDO), ApplicationE.class);
@@ -241,7 +241,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public List<ApplicationE> listByProjectId(Long projectId) {
-        ApplicationDO applicationDO = new ApplicationDO();
+        ApplicationDTO applicationDO = new ApplicationDTO();
         applicationDO.setProjectId(projectId);
         return ConvertHelper.convertList(applicationMapper.select(applicationDO), ApplicationE.class);
     }

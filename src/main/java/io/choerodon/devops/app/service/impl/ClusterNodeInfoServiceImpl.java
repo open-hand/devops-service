@@ -12,7 +12,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AgentNodeInfoDTO;
 import io.choerodon.devops.api.vo.ClusterNodeInfoDTO;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
-import io.choerodon.devops.domain.application.entity.DevopsClusterE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;

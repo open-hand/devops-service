@@ -2,7 +2,7 @@ package io.choerodon.devops.domain.application.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.PipelineDTO;
-import io.choerodon.devops.domain.application.entity.PipelineE;
+import io.choerodon.devops.api.vo.iam.entity.PipelineE;
 import io.choerodon.devops.infra.dataobject.PipelineDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;

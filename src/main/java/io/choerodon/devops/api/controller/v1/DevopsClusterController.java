@@ -152,7 +152,7 @@ public class DevopsClusterController {
     @ApiOperation(value = "分页查询项目列表")
     @CustomPageRequest
     @PostMapping("/page_projects")
-    public ResponseEntity<PageInfo<ProjectDTO>> pageProjects(
+    public ResponseEntity<PageInfo<ProjectReqVO>> pageProjects(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "分页参数")
@@ -176,7 +176,7 @@ public class DevopsClusterController {
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询已有权限的项目列表")
     @GetMapping("/list_cluster_projects/{clusterId}")
-    public ResponseEntity<List<ProjectDTO>> listClusterProjects(
+    public ResponseEntity<List<ProjectReqVO>> listClusterProjects(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")

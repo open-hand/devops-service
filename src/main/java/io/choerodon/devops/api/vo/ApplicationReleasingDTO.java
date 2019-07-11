@@ -23,7 +23,7 @@ public class ApplicationReleasingDTO {
     private Date lastUpdatedDate;
     private Boolean isDeployed;
     private Boolean isFree;
-    private List<ProjectDTO> projectDTOS;
+    private List<ProjectReqVO> projectDTOS;
     private Boolean isSite;
 
     public Boolean getSite() {
@@ -42,11 +42,11 @@ public class ApplicationReleasingDTO {
         isFree = free;
     }
 
-    public List<ProjectDTO> getProjectDTOS() {
+    public List<ProjectReqVO> getProjectDTOS() {
         return projectDTOS;
     }
 
-    public void setProjectDTOS(List<ProjectDTO> projectDTOS) {
+    public void setProjectDTOS(List<ProjectReqVO> projectDTOS) {
         this.projectDTOS = projectDTOS;
     }
 

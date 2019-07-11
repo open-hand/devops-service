@@ -13,11 +13,11 @@ import io.choerodon.devops.api.vo.ApplicationTemplateRepVO
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO
 import io.choerodon.devops.app.service.ApplicationTemplateService
 import io.choerodon.devops.app.service.DevopsGitService
-import io.choerodon.devops.domain.application.entity.DevopsProjectE
-import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.domain.application.valueobject.ProjectHook
 import io.choerodon.devops.infra.common.util.enums.Visibility
 import io.choerodon.devops.infra.dataobject.ApplicationTemplateDO
@@ -75,7 +75,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    Organization organization = new Organization()
+    OrganizationVO organization = new OrganizationVO()
     @Shared
     OrganizationDO organizationDO = new OrganizationDO()
     @Shared

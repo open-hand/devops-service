@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-import io.choerodon.devops.domain.application.entity.PortMapE;
+import io.choerodon.devops.api.vo.iam.entity.PortMapE;
 
 /**
  * Creator: Runge

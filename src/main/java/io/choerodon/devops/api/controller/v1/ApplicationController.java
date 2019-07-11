@@ -216,7 +216,7 @@ public class ApplicationController {
     }
 
     /**
-     * 根据环境id获取已部署正在运行实例的应用
+     * 根据环境id分页获取已部署正在运行实例的应用
      *
      * @param projectId 项目id
      * @return Page

@@ -4,9 +4,9 @@ import java.util.Date;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.CommitDTO;
-import io.choerodon.devops.domain.application.entity.gitlab.DiffE;
-import io.choerodon.devops.domain.application.entity.gitlab.MilestoneE;
-import io.choerodon.devops.domain.application.entity.gitlab.UserE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.DiffE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.MilestoneE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.UserE;
 
 /**
  * GitLab 合并请求

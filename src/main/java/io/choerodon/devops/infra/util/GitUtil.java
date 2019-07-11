@@ -14,11 +14,11 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitConfigDTO;
 import io.choerodon.devops.api.vo.GitEnvConfigDTO;
 import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -494,8 +494,8 @@ public class GitUtil {
         GitConfigDTO gitConfigDTO = new GitConfigDTO();
         List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
         devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
-            ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            ProjectVO projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+            OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
             String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
 
             GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();

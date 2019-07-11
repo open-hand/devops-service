@@ -10,9 +10,10 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceDTO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqDTO;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.util.*;
@@ -88,7 +89,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);

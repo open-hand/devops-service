@@ -5,15 +5,15 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.ProjectDTO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
 import io.choerodon.devops.api.vo.iam.UserDTO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
 
@@ -22,17 +22,17 @@ import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
  */
 public interface IamRepository {
 
-    ProjectE queryIamProject(Long projectId);
+    ProjectVO queryIamProject(Long projectId);
 
-    Organization queryOrganization();
+    OrganizationVO queryOrganization();
 
-    Organization queryOrganizationById(Long organizationId);
+    OrganizationVO queryOrganizationById(Long organizationId);
 
     UserE queryByLoginName(String userName);
 
-    List<ProjectE> listIamProjectByOrgId(Long organizationId, String name, String[] params);
+    List<ProjectVO> listIamProjectByOrgId(Long organizationId, String name, String[] params);
 
-    PageInfo<ProjectE> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
+    PageInfo<ProjectVO> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
 
     List<UserE> listUsersByIds(List<Long> ids);
 
@@ -54,7 +54,7 @@ public interface IamRepository {
 
     List<UserDTO> getAllMember(Long projectId);
 
-    Boolean isProjectOwner(Long userId, ProjectE projectE);
+    Boolean isProjectOwner(Long userId, ProjectVO projectE);
 
     IamAppPayLoad createIamApp(Long organizationId, IamAppPayLoad iamAppPayLoad);
 
@@ -62,7 +62,7 @@ public interface IamRepository {
 
     IamAppPayLoad queryIamAppByCode(Long organizationId, String code);
 
-    ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO);
+    ProjectReqVO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO);
 
     PageInfo<OrganizationSimplifyDTO> getAllOrgs(Integer page, Integer size);
 }

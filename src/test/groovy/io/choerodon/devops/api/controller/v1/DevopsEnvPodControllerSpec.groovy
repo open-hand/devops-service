@@ -64,9 +64,9 @@ class DevopsEnvPodControllerSpec extends Specification {
     @Shared
     ApplicationVersionDO applicationVersionDO1 = new ApplicationVersionDO()
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
-    ApplicationDO applicationDO1 = new ApplicationDO()
+    ApplicationDTO applicationDO1 = new ApplicationDTO()
     @Shared
     DevopsAppShareDO devopsAppMarketDO = new DevopsAppShareDO()
     @Shared
@@ -196,9 +196,9 @@ class DevopsEnvPodControllerSpec extends Specification {
             }
         }
         // 删除app
-        List<ApplicationDO> list2 = applicationMapper.selectAll()
+        List<ApplicationDTO> list2 = applicationMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (ApplicationDO e : list2) {
+            for (ApplicationDTO e : list2) {
                 applicationMapper.delete(e)
             }
         }

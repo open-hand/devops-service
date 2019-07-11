@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.GitlabCommitDTO;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabCommitE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabCommitE;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 
 /**

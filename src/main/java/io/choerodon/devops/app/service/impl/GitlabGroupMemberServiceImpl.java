@@ -1,29 +1,44 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
-import io.choerodon.devops.api.vo.gitlab.MemberDTO;
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.MemberHelper;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.AccessLevel;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
+import io.choerodon.devops.api.vo.gitlab.MemberVO;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.domain.application.repository.AppUserPermissionRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
+import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
+import io.choerodon.devops.domain.application.repository.GitlabRepository;
+import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.valueobject.MemberHelper;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
+import io.choerodon.devops.infra.enums.AccessLevel;
+import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * Created Zenger qs on 2018/3/28.
@@ -55,6 +70,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private ApplicationRepository applicationRepository;
     @Autowired
     private AppUserPermissionRepository appUserPermissionRepository;
+    @Autowired
+    private GitlabServiceClient gitlabServiceClient;
+
 
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
@@ -130,7 +148,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                                         .map(ApplicationE::getId).collect(Collectors.toList()),
                                 userAttrE.getIamUserId());
                     } else {
-                        Organization organization =
+                        OrganizationVO organization =
                                 iamRepository.queryOrganizationById(gitlabGroupMemberDTO.getResourceId());
                         devopsProjectE = gitlabRepository.queryGroupByName(
                                 organization.getCode() + "_" + TEMPLATE,
@@ -144,6 +162,47 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         deleteGilabRole(gitlabMemberE, devopsProjectE, gitlabUserId, false);
                     }
                 });
+    }
+
+    @Override
+    public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
+        DevopsProjectE devopsProjectE = devopsProjectRepository
+                .queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
+        if (devopsEnvironmentE.getGitlabEnvProjectId() == null) {
+            throw new CommonException("error.env.project.not.exist");
+        }
+        GitlabMemberE groupMemberE = gitlabGroupMemberRepository
+                .getUserMemberByUserId(TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()),
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (groupMemberE != null && groupMemberE.getAccessLevel() == AccessLevel.OWNER.toValue()) {
+            return;
+        }
+        GitlabMemberE newGroupMemberE = gitlabProjectRepository.getProjectMember(
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (newGroupMemberE == null || (newGroupMemberE.getAccessLevel() != AccessLevel.MASTER.toValue())) {
+            throw new CommonException("error.user.not.env.pro.owner");
+        }
+    }
+
+    @Override
+    public MemberDTO queryByUserId(Integer groupId, Integer userId) {
+        return gitlabServiceClient.getUserMemberByUserId(groupId, userId).getBody();
+    }
+
+    @Override
+    public void delete(Integer groupId, Integer userId) {
+        gitlabServiceClient.deleteMember(groupId, userId);
+    }
+
+    @Override
+    public int create(Integer groupId, RequestMemberDO member) {
+        return gitlabServiceClient.insertMember(groupId, member).getStatusCodeValue();
+    }
+
+    @Override
+    public void update(Integer groupId, RequestMemberDO member) {
+        gitlabServiceClient.updateMember(groupId, member);
     }
 
     /**
@@ -225,7 +284,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 if (gitlabProjectDO.getId() != null) {
                     GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(e, gitlabUserId);
                     if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
-                        gitlabRepository.addMemberIntoProject(e, new MemberDTO(gitlabUserId, 30, ""));
+                        gitlabRepository.addMemberIntoProject(e, new MemberVO(gitlabUserId, 30, ""));
                     }
                 }
             });
@@ -263,7 +322,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 }
             } else {
                 //给组织对应的模板库分配owner角色
-                Organization organization = iamRepository.queryOrganizationById(resourceId);
+                OrganizationVO organization = iamRepository.queryOrganizationById(resourceId);
                 devopsProjectE = gitlabRepository.queryGroupByName(
                         organization.getCode() + "_" + TEMPLATE,
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
@@ -317,27 +376,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             gitlabGroupMemberRepository.deleteMember(
                     isEnvDelete ? TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId())
                             : TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()), userId);
-        }
-    }
-
-    @Override
-    public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
-        DevopsProjectE devopsProjectE = devopsProjectRepository
-                .queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
-        if (devopsEnvironmentE.getGitlabEnvProjectId() == null) {
-            throw new CommonException("error.env.project.not.exist");
-        }
-        GitlabMemberE groupMemberE = gitlabGroupMemberRepository
-                .getUserMemberByUserId(TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()),
-                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (groupMemberE != null && groupMemberE.getAccessLevel() == AccessLevel.OWNER.toValue()) {
-            return;
-        }
-        GitlabMemberE newGroupMemberE = gitlabProjectRepository.getProjectMember(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (newGroupMemberE == null || (newGroupMemberE.getAccessLevel() != AccessLevel.MASTER.toValue())) {
-            throw new CommonException("error.user.not.env.pro.owner");
         }
     }
 }

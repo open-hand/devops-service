@@ -25,10 +25,10 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserDTO;
+import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.DemoEnvSetupSagaHandler;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineStageDTO;
@@ -110,7 +110,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public PageInfo<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         Map<String, Object> classifyParam = new HashMap<>();
         classifyParam.put("creator", creator);
         classifyParam.put("executor", executor);
@@ -132,7 +132,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public PageInfo<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         Map<String, Object> classifyParam = new HashMap<>();
         classifyParam.put("executed", executed);
         classifyParam.put("reviewed", reviewed);
@@ -493,7 +493,7 @@ public class PipelineServiceImpl implements PipelineService {
         if (allAppDeploys.isEmpty()) {
             return checkDeployDTO;
         }
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         if (!iamRepository.isProjectOwner(userId, projectE)) {
             List<Long> envIds = devopsEnvUserPermissionRepository
                     .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
@@ -635,7 +635,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public PipelineRecordReqDTO getRecordById(Long projectId, Long pipelineRecordId) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         PipelineRecordReqDTO recordReqDTO = new PipelineRecordReqDTO();
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
         BeanUtils.copyProperties(pipelineRecordE, recordReqDTO);
@@ -831,7 +831,7 @@ public class PipelineServiceImpl implements PipelineService {
         params.put("pipelineName", recordE.getPipelineName());
         params.put("pipelineRecordId", pipelineRecordId.toString());
         params.put("projectId", recordE.getProjectId().toString());
-        ProjectE projectE = iamRepository.queryIamProject(recordE.getProjectId());
+        ProjectVO projectE = iamRepository.queryIamProject(recordE.getProjectId());
         params.put("projectName", projectE.getName());
         params.put("organizationId", projectE.getOrganization().getId().toString());
         notifyDTO.setParams(params);
@@ -988,7 +988,7 @@ public class PipelineServiceImpl implements PipelineService {
         }
     }
 
-    private Boolean getTaskEnvPermission(ProjectE projectE) {
+    private Boolean getTaskEnvPermission(ProjectVO projectE) {
         Boolean envPermission = true;
         if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
             List<Long> envIds = devopsEnvUserPermissionRepository
@@ -1401,7 +1401,7 @@ public class PipelineServiceImpl implements PipelineService {
                 });
     }
 
-    private Boolean checkPipelineEnvPermission(ProjectE projectE, List<Long> pipelineEnvIds) {
+    private Boolean checkPipelineEnvPermission(ProjectVO projectE, List<Long> pipelineEnvIds) {
         Boolean index = true;
         if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
             List<Long> envIds = devopsEnvUserPermissionRepository

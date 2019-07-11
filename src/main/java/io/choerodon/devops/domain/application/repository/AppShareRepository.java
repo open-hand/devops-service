@@ -5,7 +5,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.domain.application.entity.DevopsAppShareE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsAppShareE;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
 

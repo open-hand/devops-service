@@ -15,10 +15,10 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvUserPermissionDTO;
-import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvUserPermissionE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -111,7 +111,7 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
     @Override
     public void checkEnvDeployPermission(Long userId, Long envId) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         //判断当前用户是否是项目所有者，如果是，直接跳过校验，如果不是，校验环境权限
         if (!iamRepository.isProjectOwner(userId, projectE)) {
             DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO();

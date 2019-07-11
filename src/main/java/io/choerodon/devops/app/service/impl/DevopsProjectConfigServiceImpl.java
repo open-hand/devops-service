@@ -16,14 +16,14 @@ import io.choerodon.devops.api.vo.ProjectDefaultConfigDTO;
 import io.choerodon.devops.api.validator.DevopsProjectConfigValidator;
 import io.choerodon.devops.app.service.DevopsProjectConfigService;
 import io.choerodon.devops.app.service.ProjectConfigHarborService;
-import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
@@ -154,8 +154,8 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
 
     @Override
     public void setHarborProjectIsPrivate(Long projectId, boolean harborPrivate) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
         configurationProperties.setType("harbor");
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);

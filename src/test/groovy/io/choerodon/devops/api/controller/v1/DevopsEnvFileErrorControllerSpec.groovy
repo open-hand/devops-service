@@ -3,10 +3,10 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.domain.application.entity.ProjectE
-import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.api.vo.ProjectVO
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
@@ -57,11 +57,11 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
     @Shared
     Long project_id = 1L
     @Shared
-    ProjectE projectE = new ProjectE()
+    ProjectVO projectE = new ProjectVO()
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
-    Organization organization = new Organization()
+    OrganizationVO organization = new OrganizationVO()
 
     def setup() {
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)

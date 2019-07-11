@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
-import io.choerodon.devops.domain.application.entity.DevopsConfigMapE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsConfigMapE;
 
 @Component
 public class DevopConfigMapRepConvertor implements ConvertorI<DevopsConfigMapE, Object, DevopsConfigMapRepDTO> {

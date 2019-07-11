@@ -4,7 +4,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.domain.application.entity.DevopsServiceAppInstanceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsServiceAppInstanceE;
 import io.choerodon.devops.infra.dataobject.DevopsServiceAppInstanceDO;
 
 /**

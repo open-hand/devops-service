@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+<<<<<<< HEAD
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsProjectE;
@@ -13,6 +14,17 @@ import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 >>>>>>> [IMP] applicationController重构
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import org.springframework.stereotype.Component;
+=======
+import org.springframework.stereotype.Component;
+
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
+import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import io.choerodon.devops.infra.util.TypeUtil;
+>>>>>>> [IMP] 修改AppControler重构
 
 /**
  * Created by younger on 2018/3/29.

@@ -15,8 +15,8 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
@@ -144,12 +144,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public PageInfo<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
-                                             String[] params) {
-        PageInfo<ProjectE> projects = iamRepository
+    public PageInfo<ProjectReqVO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
+                                               String[] params) {
+        PageInfo<ProjectVO> projects = iamRepository
                 .queryProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params);
-        PageInfo<ProjectDTO> pageProjectDTOS = new PageInfo<>();
-        List<ProjectDTO> projectDTOS = new ArrayList<>();
+        PageInfo<ProjectReqVO> pageProjectDTOS = new PageInfo<>();
+        List<ProjectReqVO> projectDTOS = new ArrayList<>();
         if (!projects.getList().isEmpty()) {
             BeanUtils.copyProperties(projects, pageProjectDTOS);
             List<Long> projectIds;
@@ -160,7 +160,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 projectIds = new ArrayList<>();
             }
             projects.getList().forEach(projectDO -> {
-                ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
+                ProjectReqVO projectDTO = new ProjectReqVO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
                 projectDTOS.add(projectDTO);
             });
         }
@@ -245,11 +245,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
 
     @Override
-    public List<ProjectDTO> listClusterProjects(Long organizationId, Long clusterId) {
+    public List<ProjectReqVO> listClusterProjects(Long organizationId, Long clusterId) {
         return devopsClusterProPermissionRepository.listByClusterId(clusterId).stream()
                 .map(devopsClusterProPermissionE -> {
-                    ProjectE projectE = iamRepository.queryIamProject(devopsClusterProPermissionE.getProjectId());
-                    return new ProjectDTO(devopsClusterProPermissionE.getProjectId(), projectE.getName(), projectE.getCode(), null);
+                    ProjectVO projectE = iamRepository.queryIamProject(devopsClusterProPermissionE.getProjectId());
+                    return new ProjectReqVO(devopsClusterProPermissionE.getProjectId(), projectE.getName(), projectE.getCode(), null);
                 }).collect(Collectors.toList());
     }
 

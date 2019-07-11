@@ -21,18 +21,18 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
-import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CompareResultsE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.message.ResourceBundleHandler;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.Issue;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.app.service.DeployService;
 import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.infra.util.FileUtil;
@@ -249,7 +249,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public PageInfo<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         // 查询用户是否在该gitlab project下
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -259,7 +259,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 throw new CommonException("error.user.not.in.project");
             }
         }
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
@@ -345,9 +345,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public PageInfo<TagDTO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
@@ -429,8 +429,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         boolean tagNotExist;
         Map<String, String> objectPath;
         //从iam服务中查出项目和组织code
-        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
         //本地路径
         final String path = String.format("gitops/%s/%s/%s",

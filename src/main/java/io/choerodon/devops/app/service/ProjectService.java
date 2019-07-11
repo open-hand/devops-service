@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,5 +25,13 @@ public interface ProjectService {
      * @return  gitlab group Ready
      */
     boolean queryProjectGitlabGroupReady(Long projectId);
+
+
+    /**
+     * 根据Id查询project
+     * @param projectId
+     * @return
+     */
+    DevopsProjectDTO queryById(Long projectId);
 
 }

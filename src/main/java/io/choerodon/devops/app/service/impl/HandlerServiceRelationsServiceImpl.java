@@ -10,7 +10,7 @@ import io.choerodon.devops.api.vo.EndPointPortDTO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsServiceService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;

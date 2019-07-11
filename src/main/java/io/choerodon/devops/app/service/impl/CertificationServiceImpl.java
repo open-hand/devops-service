@@ -13,10 +13,11 @@ import io.choerodon.devops.api.vo.C7nCertificationDTO;
 import io.choerodon.devops.api.vo.CertificationDTO;
 import io.choerodon.devops.api.vo.OrgCertificationDTO;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
@@ -84,7 +85,7 @@ public class CertificationServiceImpl implements CertificationService {
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
 
 
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectE.getCode(), FILE_SEPARATOR, devopsEnvironmentE.getCode());
 
         String certFileName;
@@ -293,7 +294,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public List<OrgCertificationDTO> listByProject(Long projectId) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         List<OrgCertificationDTO> orgCertificationDTOS = new ArrayList<>();
         certificationRepository.listByProject(projectId, projectE.getOrganization().getId()).forEach(certificationDTO -> {
             OrgCertificationDTO orgCertificationDTO = new OrgCertificationDTO();

@@ -17,11 +17,11 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabJobE;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.Stage;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
@@ -295,8 +295,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         });
 
         ApplicationE applicationE = applicationRepository.query(appId);
-        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
         //获取pipeline记录
         Set<Long> userIds = new HashSet<>();

@@ -4,7 +4,7 @@ import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvApplicationE;
 import io.choerodon.devops.infra.dataobject.AppInstanceInfoDTO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
@@ -44,8 +44,8 @@ public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDO>
                                                              @Param("appId") Long appId);
 
     List<ApplicationInstanceDO> getRunningAndFailedInstance(@Param("projectId") Long projectId,
-                                                             @Param("envId") Long envId,
-                                                             @Param("appId") Long appId);
+                                                            @Param("envId") Long envId,
+                                                            @Param("appId") Long appId);
 
     int checkOptions(@Param("envId") Long envId,
                      @Param("appId") Long appId,

@@ -94,7 +94,7 @@ class ApplicationVersionControllerSpec extends Specification {
     @Shared
     DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO()
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
 
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
@@ -345,9 +345,9 @@ class ApplicationVersionControllerSpec extends Specification {
             }
         }
         // 删除app
-        List<ApplicationDO> list2 = applicationMapper.selectAll()
+        List<ApplicationDTO> list2 = applicationMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (ApplicationDO e : list2) {
+            for (ApplicationDTO e : list2) {
                 applicationMapper.delete(e)
             }
         }

@@ -12,8 +12,8 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.vo.DevopsEnvGroupDTO;
 import io.choerodon.devops.api.validator.DevopsEnvGroupValidator;
 import io.choerodon.devops.app.service.DevopsEnvGroupService;
-import io.choerodon.devops.domain.application.entity.DevopsEnvGroupE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvGroupE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvGroupRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 

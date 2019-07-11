@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.convertor;
 
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 

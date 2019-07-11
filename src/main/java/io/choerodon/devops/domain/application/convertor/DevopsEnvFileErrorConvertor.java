@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.DevopsEnvFileErrorDTO;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileErrorE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileErrorE;
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO;
 
 @Component

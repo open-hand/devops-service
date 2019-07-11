@@ -7,7 +7,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvPodContainerLogDTO;
 import io.choerodon.devops.app.service.DevopsEnvPodContainerService;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
-import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

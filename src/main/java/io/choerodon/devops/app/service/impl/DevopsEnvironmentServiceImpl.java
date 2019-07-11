@@ -17,18 +17,18 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.gitlab.MemberDTO;
+import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.iam.UserDTO;
+import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.DeployService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.enums.EnvironmentGitopsStatus;
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
@@ -142,8 +142,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentE.initDevopsClusterEById(devopsEnviromentDTO.getClusterId());
         devopsEnvironmentE.initToken(GenerateUUID.generateUUID());
         devopsEnvironmentE.initProjectE(projectId);
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrE == null) {
@@ -263,7 +263,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                 .filter(DevopsEnvUserPermissionE::getPermitted)
                 .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         // 查询当前用户是否为项目所有者
         Boolean isProjectOwner = iamRepository
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
@@ -606,8 +606,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                 .queryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
-        ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
         GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode()
                 + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabProjectPayload.getUserId());
@@ -679,7 +679,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
                 GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectId.intValue(), TypeUtil.objToInteger(gitlabUserId));
                 if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
-                    MemberDTO memberDTO = new MemberDTO(TypeUtil.objToInteger(gitlabUserId), 40, "");
+                    MemberVO memberDTO = new MemberVO(TypeUtil.objToInteger(gitlabUserId), 40, "");
                     gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
                 }
                 // 添加devops数据库记录
@@ -691,8 +691,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public EnvSyncStatusDTO queryEnvSyncStatus(Long projectId, Long envId) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
         EnvSyncStatusDTO envSyncStatusDTO = new EnvSyncStatusDTO();
         if (devopsEnvironmentE.getAgentSyncCommit() != null) {
@@ -883,7 +883,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         List<DevopsClusterRepDTO> devopsClusterRepDTOS = ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
         List<Long> connectedClusterList = envUtil.getConnectedEnvList();
         List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();

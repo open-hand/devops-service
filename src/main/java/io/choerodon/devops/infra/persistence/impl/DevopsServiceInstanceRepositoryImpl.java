@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.DevopsServiceAppInstanceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsServiceAppInstanceE;
 import io.choerodon.devops.domain.application.repository.DevopsServiceInstanceRepository;
 import io.choerodon.devops.infra.dataobject.DevopsServiceAppInstanceDO;
 import io.choerodon.devops.infra.mapper.DevopsServiceAppInstanceMapper;

@@ -10,10 +10,10 @@ import io.choerodon.devops.api.vo.AppMarketDownloadDTO
 import io.choerodon.devops.api.vo.AppMarketTgzDTO
 import io.choerodon.devops.api.vo.AppMarketVersionDTO
 import io.choerodon.devops.api.vo.ApplicationReleasingDTO
-import io.choerodon.devops.domain.application.entity.ProjectE
-import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.api.vo.ProjectVO
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
@@ -73,7 +73,7 @@ class ApplicationMarketControllerSpec extends Specification {
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
     DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared
@@ -82,9 +82,9 @@ class ApplicationMarketControllerSpec extends Specification {
     ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
 
     @Shared
-    Organization organization = new Organization()
+    OrganizationVO organization = new OrganizationVO()
     @Shared
-    ProjectE projectE = new ProjectE()
+    ProjectVO projectE = new ProjectVO()
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
@@ -361,9 +361,9 @@ class ApplicationMarketControllerSpec extends Specification {
         responseEntity.getHeaders().get("Content-Length").get(0).toString().toInteger() != 0
 
         // 删除app
-        List<ApplicationDO> list = applicationMapper.selectAll()
+        List<ApplicationDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDO e : list) {
+            for (ApplicationDTO e : list) {
                 applicationMapper.delete(e)
             }
         }

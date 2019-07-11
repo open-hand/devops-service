@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.domain.application.entity.DevopsCustomizeResourceE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;

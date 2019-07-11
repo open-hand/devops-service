@@ -7,9 +7,9 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.PushWebHookDTO
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.app.service.GitlabWebHookService
-import io.choerodon.devops.domain.application.entity.*
-import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE
-import io.choerodon.devops.domain.application.entity.gitlab.DiffE
+import io.choerodon.devops.api.vo.iam.entity.*
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CompareResultsE
+import io.choerodon.devops.api.vo.iam.entity.gitlab.DiffE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.app.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
@@ -168,7 +168,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
     DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
 
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
 
     @Shared
     ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
@@ -981,9 +981,9 @@ class GitlabWebHookServiceimplSpec extends Specification {
             }
         }
         // 删除app
-        List<ApplicationDO> list6 = applicationMapper.selectAll()
+        List<ApplicationDTO> list6 = applicationMapper.selectAll()
         if (list6 != null && !list6.isEmpty()) {
-            for (ApplicationDO e : list6) {
+            for (ApplicationDTO e : list6) {
                 applicationMapper.delete(e)
             }
         }

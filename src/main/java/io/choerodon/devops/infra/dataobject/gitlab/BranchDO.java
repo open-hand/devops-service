@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.dataobject.gitlab;
 
-import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
 
 
 public class BranchDO {

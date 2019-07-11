@@ -4,15 +4,15 @@ public class DevopsMergeRequestDTO {
 
     private String objectKind;
 
-    private ProjectDTO project;
+    private ProjectReqVO project;
 
     private ObjectAttributesDTO objectAttributes;
 
-    public ProjectDTO getProject() {
+    public ProjectReqVO getProject() {
         return project;
     }
 
-    public void setProject(ProjectDTO project) {
+    public void setProject(ProjectReqVO project) {
         this.project = project;
     }
 

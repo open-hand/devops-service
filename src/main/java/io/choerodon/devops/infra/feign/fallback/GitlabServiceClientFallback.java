@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.gitlab.MemberDTO;
+import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.gitlab.VariableDTO;
-import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
@@ -36,7 +36,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<MemberDO> getUserMemberByUserId(Integer groupId, Integer userId) {
+    public ResponseEntity<MemberDTO> getUserMemberByUserId(Integer groupId, Integer userId) {
         throw new CommonException("error.group.member.get");
     }
 
@@ -46,12 +46,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<MemberDO> insertMember(Integer groupId, RequestMemberDO requestMember) {
+    public ResponseEntity<MemberDTO> insertMember(Integer groupId, RequestMemberDO requestMember) {
         throw new CommonException("error.add.member");
     }
 
     @Override
-    public ResponseEntity<MemberDO> updateMember(Integer groupId, RequestMemberDO requestMember) {
+    public ResponseEntity<MemberDTO> updateMember(Integer groupId, RequestMemberDO requestMember) {
         throw new CommonException("error.update.member");
     }
 
@@ -346,7 +346,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity addMemberIntoProject(Integer projectId, MemberDTO memberDTO) {
+    public ResponseEntity addMemberIntoProject(Integer projectId, MemberVO memberDTO) {
         throw new CommonException("error.member.add");
     }
 
@@ -356,12 +356,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity updateMemberIntoProject(Integer projectId, List<MemberDTO> list) {
+    public ResponseEntity updateMemberIntoProject(Integer projectId, List<MemberVO> list) {
         throw new CommonException("error.member.update");
     }
 
     @Override
-    public ResponseEntity<MemberDO> getProjectMember(Integer projectId, Integer userId) {
+    public ResponseEntity<MemberDTO> getProjectMember(Integer projectId, Integer userId) {
         throw new CommonException("error.project.member.get");
     }
 

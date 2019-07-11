@@ -10,7 +10,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.OrgCertificationDTO;
-import io.choerodon.devops.api.vo.ProjectDTO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsOrgCertificationService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -118,7 +118,7 @@ public class OrgCertificationController {
     @ApiOperation(value = "分页查询项目列表")
     @CustomPageRequest
     @PostMapping("/page_projects")
-    public ResponseEntity<PageInfo<ProjectDTO>> pageProjects(
+    public ResponseEntity<PageInfo<ProjectReqVO>> pageProjects(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "分页参数")
@@ -142,7 +142,7 @@ public class OrgCertificationController {
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询已有权限的项目列表")
     @GetMapping("/list_cert_projects/{certId}")
-    public ResponseEntity<List<ProjectDTO>> listCertProjects(
+    public ResponseEntity<List<ProjectReqVO>> listCertProjects(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")

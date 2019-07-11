@@ -1,7 +1,7 @@
 package io.choerodon.devops.domain.application.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.domain.application.entity.DevopsCustomizeResourceContentE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentE;
 import io.choerodon.devops.infra.dataobject.DevopsCustomizeResourceContentDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;

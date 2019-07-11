@@ -1,7 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvMessageE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvApplicationE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageE;
 
 import java.util.List;
 

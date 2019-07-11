@@ -3,9 +3,14 @@ package io.choerodon.devops.domain.application.convertor;
 import io.choerodon.core.convertor.ConvertorI;
 <<<<<<< HEAD
 =======
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.UserAttrVO;
 >>>>>>> [IMP] applicationController重构
 import io.choerodon.devops.domain.application.entity.UserAttrE;
+=======
+>>>>>>> 99504a39d606d3005354e0b1bdcb50530cde6afd
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
+>>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.infra.dataobject.UserAttrDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;

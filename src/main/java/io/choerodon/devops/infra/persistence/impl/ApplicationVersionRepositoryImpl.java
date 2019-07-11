@@ -11,8 +11,8 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
@@ -46,10 +46,10 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
 
     @Override
     public List<ApplicationLatestVersionDO> listAppLatestVersion(Long projectId) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         Long organizationId = projectE.getOrganization().getId();
-        List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId, null, null);
-        List<Long> projectIds = projectEList.stream().map(ProjectE::getId)
+        List<ProjectVO> projectEList = iamRepository.listIamProjectByOrgId(organizationId, null, null);
+        List<Long> projectIds = projectEList.stream().map(ProjectVO::getId)
                 .collect(Collectors.toCollection(ArrayList::new));
         return applicationVersionMapper.listAppLatestVersion(projectId, projectIds);
     }

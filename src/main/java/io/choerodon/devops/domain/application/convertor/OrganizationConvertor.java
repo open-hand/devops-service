@@ -4,18 +4,18 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 
 /**
  * Created by younger on 2018/4/3.
  */
 @Component
-public class OrganizationConvertor implements ConvertorI<Organization, OrganizationDO, Object> {
+public class OrganizationConvertor implements ConvertorI<OrganizationVO, OrganizationDO, Object> {
 
     @Override
-    public Organization doToEntity(OrganizationDO organizationDO) {
-        Organization organization = new Organization();
+    public OrganizationVO doToEntity(OrganizationDO organizationDO) {
+        OrganizationVO organization = new OrganizationVO();
         BeanUtils.copyProperties(organizationDO, organization);
         return organization;
     }

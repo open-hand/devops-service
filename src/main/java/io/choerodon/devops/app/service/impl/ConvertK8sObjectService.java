@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.infra.gitops.YamlConvertToResourceHandler;
 
 public abstract class ConvertK8sObjectService<T> {

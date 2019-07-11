@@ -3,8 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.api.vo.gitlab.MemberDTO;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.api.vo.gitlab.MemberVO;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
 import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
@@ -45,11 +45,11 @@ public abstract class UpdateUserPermissionService {
     private void addGitlabMember(String type, Integer gitlabProjectId, Integer userId) {
         GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectId, userId);
         if (gitlabMemberE != null && gitlabMemberE.getId() == null) {
-            MemberDTO memberDTO = null;
+            MemberVO memberDTO = null;
             if (type.equals("env")) {
-                memberDTO = new MemberDTO(userId, 40, "");
+                memberDTO = new MemberVO(userId, 40, "");
             } else {
-                memberDTO = new MemberDTO(userId, 30, "");
+                memberDTO = new MemberVO(userId, 30, "");
             }
             gitlabRepository.addMemberIntoProject(gitlabProjectId, memberDTO);
         }

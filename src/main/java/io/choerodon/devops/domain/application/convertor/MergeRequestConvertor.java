@@ -7,7 +7,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.AuthorDTO;
 import io.choerodon.devops.api.vo.MergeRequestDTO;
-import io.choerodon.devops.domain.application.entity.gitlab.MergeRequestE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.MergeRequestE;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
 
 @Component

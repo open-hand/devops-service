@@ -104,7 +104,7 @@
         </choose>
     </select>
 
-    <select id="listAllEnvApp" resultType="io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE">
+    <select id="listAllEnvApp" resultType="io.choerodon.devops.api.vo.iam.entity.DevopsEnvApplicationE">
         SELECT
         dai.app_id,
         dai.env_id

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.domain.application.entity.DevopsCheckLogE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsCheckLogE;
 import io.choerodon.devops.domain.application.repository.DevopsCheckLogRepository;
 import io.choerodon.devops.infra.dataobject.DevopsCheckLogDO;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;

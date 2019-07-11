@@ -34,20 +34,20 @@ import io.choerodon.devops.api.vo.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
-import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
-import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-import io.choerodon.devops.domain.application.entity.PipelineE;
-import io.choerodon.devops.domain.application.entity.PipelineTaskE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationInstanceE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionValueE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabCommitE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
+import io.choerodon.devops.api.vo.iam.entity.PipelineAppDeployE;
+import io.choerodon.devops.api.vo.iam.entity.PipelineE;
+import io.choerodon.devops.api.vo.iam.entity.PipelineTaskE;
+import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
@@ -64,7 +64,7 @@ import io.choerodon.devops.domain.application.repository.PipelineRepository;
 import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
 import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.util.ChartUtil;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -145,8 +145,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
         ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
         ApplicationVersionE applicationVersionE = new ApplicationVersionE();
-        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ApplicationVersionE newApplicationVersionE = applicationVersionRepository
                 .queryByAppAndVersion(applicationE.getId(), version);
         applicationVersionE.initApplicationEById(applicationE.getId());
@@ -280,7 +280,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Override
     public PageInfo<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String searchParams) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         Boolean isProjectOwner = iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE);
         PageInfo<ApplicationVersionE> applicationVersionEPage = applicationVersionRepository.listApplicationVersionInApp(
                 projectId, appId, pageRequest, searchParams, isProjectOwner, userAttrE.getIamUserId());
@@ -357,8 +357,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     public List<ApplicationVersionAndCommitDTO> listByAppIdAndBranch(Long appId, String branch) {
         List<ApplicationVersionE> applicationVersionES = applicationVersionRepository.listByAppIdAndBranch(appId, branch);
         ApplicationE applicationE = applicationRepository.query(appId);
-        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         List<ApplicationVersionAndCommitDTO> applicationVersionAndCommitDTOS = new ArrayList<>();
         applicationVersionES.forEach(applicationVersionE -> {
             ApplicationVersionAndCommitDTO applicationVersionAndCommitDTO = new ApplicationVersionAndCommitDTO();

@@ -17,14 +17,14 @@ import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.app.service.DevopsGitService
-import io.choerodon.devops.domain.application.entity.ProjectE
-import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.api.vo.ProjectVO
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad
 import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
@@ -102,9 +102,9 @@ class ApplicationControllerSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    Organization organization = new Organization()
+    OrganizationVO organization = new OrganizationVO()
     @Shared
-    ProjectE projectE = new ProjectE()
+    ProjectVO projectE = new ProjectVO()
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
@@ -240,10 +240,10 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setUserIds(userList)
 
         and: 'mock查询gitlab用户'
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setId(1)
         memberDO.setAccessLevel(AccessLevel.OWNER)
-        ResponseEntity<MemberDO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        ResponseEntity<MemberDTO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(memberDOResponseEntity)
 
         and: 'mock iam创建用户'
@@ -262,7 +262,7 @@ class ApplicationControllerSpec extends Specification {
         then: '校验结果'
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getId() == 1L
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
 
         expect: '校验查询结果'
         applicationDO["code"] == "appCode"
@@ -286,7 +286,7 @@ class ApplicationControllerSpec extends Specification {
         applicationUpdateDTO.setIsSkipCheckPermission(true)
 
         and: "初始化gitlab数据"
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
         applicationDO.setGitlabProjectId(1)
         applicationMapper.updateByPrimaryKeySelective(applicationDO)
 
@@ -297,7 +297,7 @@ class ApplicationControllerSpec extends Specification {
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
         List<AppUserPermissionDO> permissionResult = appUserPermissionMapper.selectAll()
-        ApplicationDO appResult = applicationMapper.selectByPrimaryKey(1L)
+        ApplicationDTO appResult = applicationMapper.selectByPrimaryKey(1L)
         permissionResult.size() == 0
         appResult.getIsSkipCheckPermission()
 
@@ -309,7 +309,7 @@ class ApplicationControllerSpec extends Specification {
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
         List<AppUserPermissionDO> permissionResult1 = appUserPermissionMapper.selectAll()
-        ApplicationDO appResult1 = applicationMapper.selectByPrimaryKey(1L)
+        ApplicationDTO appResult1 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult1.size() == 1
         permissionResult1.get(0).getAppId() == 1L
         !appResult1.getIsSkipCheckPermission()
@@ -319,7 +319,7 @@ class ApplicationControllerSpec extends Specification {
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
         List<AppUserPermissionDO> permissionResult2 = appUserPermissionMapper.selectAll()
-        ApplicationDO appResult2 = applicationMapper.selectByPrimaryKey(1L)
+        ApplicationDTO appResult2 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult2.size() == 1
         permissionResult2.get(0).getAppId() == 1L
         !appResult2.getIsSkipCheckPermission()
@@ -329,7 +329,7 @@ class ApplicationControllerSpec extends Specification {
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
         List<AppUserPermissionDO> permissionResult3 = appUserPermissionMapper.selectAll()
-        ApplicationDO appResult3 = applicationMapper.selectByPrimaryKey(1L)
+        ApplicationDTO appResult3 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult3.size() == 0
         appResult3.getIsSkipCheckPermission()
     }
@@ -350,7 +350,7 @@ class ApplicationControllerSpec extends Specification {
         restTemplate.put(MAPPING + "/1?active=true", Boolean.class, 1L)
 
         then: '返回值'
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
 
         expect: '校验是否激活'
         applicationDO["isActive"] == true
@@ -369,7 +369,7 @@ class ApplicationControllerSpec extends Specification {
         applicationMapper.selectAll().isEmpty()
 
         and: '添加上删除的应用'
-        ApplicationDO applicationDO = new ApplicationDO()
+        ApplicationDTO applicationDO = new ApplicationDTO()
         applicationDO.setId(1L)
         applicationDO.setProjectId(1L)
         applicationDO.setName("appName")
@@ -603,7 +603,7 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setHarborConfigId(harborConfigId)
         applicationDTO.setChartConfigId(chartConfigId)
 
-        def searchCondition = new ApplicationDO()
+        def searchCondition = new ApplicationDTO()
         searchCondition.setCode(applicationDTO.getCode())
 
         when: '导入一个github应用'

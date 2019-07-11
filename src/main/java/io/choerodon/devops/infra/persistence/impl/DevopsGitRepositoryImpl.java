@@ -15,17 +15,17 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
-import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CompareResultsE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.ApplicationDO;
+import io.choerodon.devops.infra.dataobject.ApplicationDTO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
@@ -118,7 +118,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public Integer getGitLabId(Long applicationId) {
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(applicationId);
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(applicationId);
         if (applicationDO != null) {
             return applicationDO.getGitlabProjectId();
         } else {
@@ -145,8 +145,8 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     public String getGitlabUrl(Long projectId, Long appId) {
         ApplicationE applicationE = applicationRepository.query(appId);
         if (applicationE.getGitlabProjectE() != null && applicationE.getGitlabProjectE().getId() != null) {
-            ProjectE projectE = iamRepository.queryIamProject(projectId);
-            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            ProjectVO projectE = iamRepository.queryIamProject(projectId);
+            OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
             String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
             return gitlabUrl + urlSlash
                     + organization.getCode() + "-" + projectE.getCode() + "/"

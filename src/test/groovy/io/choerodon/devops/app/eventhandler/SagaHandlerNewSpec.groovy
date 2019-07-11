@@ -9,12 +9,12 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.ApplicationDO
+import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
 import io.choerodon.devops.infra.dataobject.UserAttrDTO
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.gitlab.UserDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -130,9 +130,9 @@ class SagaHandlerNewSpec extends Specification {
 
             Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any())
 
-            MemberDO memberDO = new MemberDO()
+            MemberDTO memberDO = new MemberDTO()
             memberDO.setAccessLevel(AccessLevel.OWNER)
-            ResponseEntity<MemberDO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
+            ResponseEntity<MemberDTO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
             Mockito.doReturn(memberDOResponseEntity).when(gitlabServiceClient).getUserMemberByUserId(any(), any())
 
             Mockito.doReturn(null).when(gitlabServiceClient).deleteMember(any(), any())
@@ -271,7 +271,7 @@ class SagaHandlerNewSpec extends Specification {
     }
 
     def "HandleGitlabGroupMemberEvent"() {
-        List<ApplicationDO> applicationDOS = applicationMapper.selectAll()
+        List<ApplicationDTO> applicationDOS = applicationMapper.selectAll()
         applicationDOS.get(0).setGitlabProjectId(1)
         applicationMapper.updateByPrimaryKey(applicationDOS.get(0))
 
@@ -354,8 +354,8 @@ class SagaHandlerNewSpec extends Specification {
                 userAttrMapper.delete(userAttrDO)
             }
         }
-        List<ApplicationDO> applicationDOList = applicationMapper.selectAll()
-        for (ApplicationDO application : applicationDOList) {
+        List<ApplicationDTO> applicationDOList = applicationMapper.selectAll()
+        for (ApplicationDTO application : applicationDOList) {
             applicationMapper.delete(application)
         }
         List<DevopsProjectDTO> devopsProjectDOList = devopsProjectMapper.selectAll()

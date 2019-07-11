@@ -5,7 +5,7 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.constant.PageConstant;
-import io.choerodon.devops.api.vo.ProjectDTO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
@@ -110,8 +110,8 @@ public interface IamServiceClient {
     ResponseEntity<PageInfo<IamAppPayLoad>> getIamApplication(@PathVariable("organization_id") Long organizationId, @RequestParam("code") String code);
 
     @PostMapping("/v1/organizations/{organization_id}/projects")
-    ResponseEntity<ProjectDTO> createProject(@PathVariable(name = "organization_id") Long organizationId,
-                                             @RequestBody @Valid ProjectCreateDTO projectCreateDTO);
+    ResponseEntity<ProjectReqVO> createProject(@PathVariable(name = "organization_id") Long organizationId,
+                                               @RequestBody @Valid ProjectCreateDTO projectCreateDTO);
 
     @PostMapping("/v1/organizations/all")
     ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(@RequestParam(defaultValue = PageConstant.PAGE, required = false, value = "page") final int page,

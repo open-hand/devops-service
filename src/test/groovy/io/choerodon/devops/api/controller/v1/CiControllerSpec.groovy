@@ -2,13 +2,13 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.domain.application.entity.ProjectE
-import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.api.vo.ProjectVO
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.common.util.FileUtil
-import io.choerodon.devops.infra.dataobject.ApplicationDO
+import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO
 import io.choerodon.devops.infra.dataobject.ApplicationVersionReadmeDO
 import io.choerodon.devops.infra.dataobject.ApplicationVersionValueDO
@@ -69,9 +69,9 @@ class CiControllerSpec extends Specification {
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
     @Shared
-    Organization organization = new Organization()
+    OrganizationVO organization = new OrganizationVO()
     @Shared
-    ProjectE projectE = new ProjectE()
+    ProjectVO projectE = new ProjectVO()
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
@@ -79,7 +79,7 @@ class CiControllerSpec extends Specification {
     @Shared
     Long init_id = 1L
     @Shared
-    ApplicationDO applicationDO
+    ApplicationDTO applicationDO
 
     def setupSpec() {
         given:
@@ -93,7 +93,7 @@ class CiControllerSpec extends Specification {
         userAttrE.setIamUserId(init_id)
         userAttrE.setGitlabUserId(init_id)
 
-        applicationDO = new ApplicationDO()
+        applicationDO = new ApplicationDTO()
         applicationDO.setId(1L)
         applicationDO.setProjectId(project_id)
         applicationDO.setToken("token")
@@ -152,9 +152,9 @@ class CiControllerSpec extends Specification {
         yamlFile.getName() == "values.yaml"
 
         // 删除app
-        List<ApplicationDO> list = applicationMapper.selectAll()
+        List<ApplicationDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDO e : list) {
+            for (ApplicationDTO e : list) {
                 applicationMapper.delete(e)
             }
         }

@@ -5,7 +5,7 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsGitlabCommitDTO
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.infra.dataobject.ApplicationDO
+import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -43,7 +43,7 @@ class DevopsGitlabCommitControllerSpec extends Specification {
     private ApplicationMapper applicationMapper
 
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
     DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO()
 
@@ -115,9 +115,9 @@ class DevopsGitlabCommitControllerSpec extends Specification {
 
         and: '清理数据'
         // 删除app
-        List<ApplicationDO> list = applicationMapper.selectAll()
+        List<ApplicationDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDO e : list) {
+            for (ApplicationDTO e : list) {
                 applicationMapper.delete(e)
             }
         }

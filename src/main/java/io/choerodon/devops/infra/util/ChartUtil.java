@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
+import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.feign.ChartClient;
@@ -55,7 +55,7 @@ public class ChartUtil {
         }
     }
 
-    public void downloadChart(ApplicationVersionE applicationVersionE, Organization organization, ProjectE projectE, ApplicationE applicationE, String destpath) {
+    public void downloadChart(ApplicationVersionE applicationVersionE, OrganizationVO organization, ProjectVO projectE, ApplicationE applicationE, String destpath) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setType(CHART);
         configurationProperties.setBaseUrl(applicationVersionE.getRepository().split(organization.getCode() + "/" + projectE.getCode())[0]);

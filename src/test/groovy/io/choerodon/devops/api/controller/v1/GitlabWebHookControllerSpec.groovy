@@ -87,7 +87,7 @@ class GitlabWebHookControllerSpec extends Specification {
     private CommandSender mockCommandSender = Mockito.mock(CommandSender)
 
     @Shared
-    private ApplicationDO applicationDO = new ApplicationDO()
+    private ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
     private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared

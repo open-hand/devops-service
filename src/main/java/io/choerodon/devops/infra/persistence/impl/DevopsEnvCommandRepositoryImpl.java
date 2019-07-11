@@ -9,7 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
 import io.choerodon.devops.domain.application.repository.DevopsCommandEventRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandLogRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;

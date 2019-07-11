@@ -41,14 +41,14 @@ import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
 import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
 import io.choerodon.devops.api.vo.ApplicationVersionRemoteDTO;
 import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
-import io.choerodon.devops.api.vo.ProjectDTO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.AppShareService;
-import io.choerodon.devops.domain.application.entity.AppShareResourceE;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
-import io.choerodon.devops.domain.application.entity.DevopsAppShareE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.api.vo.iam.entity.AppShareResourceE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionValueE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsAppShareE;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
 import io.choerodon.devops.domain.application.repository.AppShareRecouceRepository;
 import io.choerodon.devops.domain.application.repository.AppShareRepository;
@@ -58,7 +58,7 @@ import io.choerodon.devops.domain.application.repository.ApplicationVersionValue
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.MarketConnectInfoRepositpry;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.util.ChartUtil;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
@@ -167,10 +167,10 @@ public class AppShareServiceImpl implements AppShareService {
         List<ApplicationReleasingDTO> appShareEList = applicationMarketEPage.getList();
         appShareEList.forEach(t -> {
             if (PROJECTS.equals(t.getPublishLevel())) {
-                List<ProjectDTO> projectDTOS = appShareRecouceRepository.queryByShareId(t.getId()).stream()
+                List<ProjectReqVO> projectDTOS = appShareRecouceRepository.queryByShareId(t.getId()).stream()
                         .map(appShareResourceE -> {
-                            ProjectE projectE = iamRepository.queryIamProject(appShareResourceE.getProjectId());
-                            ProjectDTO projectDTO = new ProjectDTO();
+                            ProjectVO projectE = iamRepository.queryIamProject(appShareResourceE.getProjectId());
+                            ProjectReqVO projectDTO = new ProjectReqVO();
                             BeanUtils.copyProperties(projectE, projectDTO);
                             return projectDTO;
                         })
@@ -255,13 +255,13 @@ public class AppShareServiceImpl implements AppShareService {
 
     @Override
     public PageInfo<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         if (projectE != null && projectE.getOrganization() != null) {
             Long organizationId = projectE.getOrganization().getId();
-            List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId, null, null);
+            List<ProjectVO> projectEList = iamRepository.listIamProjectByOrgId(organizationId, null, null);
             List<Long> projectIds = new ArrayList<>();
             if (projectEList != null) {
-                projectIds = projectEList.stream().map(ProjectE::getId).collect(Collectors.toList());
+                projectIds = projectEList.stream().map(ProjectVO::getId).collect(Collectors.toList());
             }
             PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.listMarketApps(
                     projectIds, pageRequest, searchParam);
@@ -405,7 +405,7 @@ public class AppShareServiceImpl implements AppShareService {
                 && !applicationReleasingDTO.getAppId().equals(applicationRelease.getAppId())) {
             throw new CommonException("error.app.cannot.change");
         }
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
         if (projectE == null || projectE.getOrganization() == null) {
             throw new CommonException("error.project.query");
         }
@@ -448,8 +448,8 @@ public class AppShareServiceImpl implements AppShareService {
 
     @Override
     public AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String dirName = UUIDTool.genUuid();
         String classPath = String.format(
                 "tmp%s%s%s%s",
@@ -492,8 +492,8 @@ public class AppShareServiceImpl implements AppShareService {
 
     @Override
     public Boolean importApps(Long projectId, String fileName, Boolean isPublic) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String destPath = String.format(
                 "tmp%s%s%s%s%s%s",
                 FILE_SEPARATOR,
@@ -524,8 +524,8 @@ public class AppShareServiceImpl implements AppShareService {
 
     @Override
     public void deleteZip(Long projectId, String fileName) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String destPath = String.format(
                 "tmp%s%s%s%s%s%s",
                 FILE_SEPARATOR,
@@ -634,8 +634,8 @@ public class AppShareServiceImpl implements AppShareService {
     }
 
     private void importAppFile(Long projectId, List<File> appFileList, Boolean isPublic) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String orgCode = organization.getCode();
         String projectCode = projectE.getCode();
         appFileList.stream().forEach(t -> {
@@ -682,8 +682,8 @@ public class AppShareServiceImpl implements AppShareService {
                     FILE_SEPARATOR,
                     applicationReleasingDTO.getCode());
             ApplicationE applicationE = applicationRepository.query(applicationReleasingDTO.getAppId());
-            ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
-            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            ProjectVO projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+            OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
             applicationReleasingDTO.setAppVersions(
                     applicationReleasingDTO.getAppVersions().stream()
                             .filter(t -> appMarketDownloadDTO.getAppVersionIds().contains(t.getId()))
@@ -712,7 +712,7 @@ public class AppShareServiceImpl implements AppShareService {
         }
     }
 
-    private void getChart(List<String> images, AppMarketDownloadDTO appMarketDownloadDTO, String destpath, ApplicationE applicationE, ProjectE projectE, Organization organization) {
+    private void getChart(List<String> images, AppMarketDownloadDTO appMarketDownloadDTO, String destpath, ApplicationE applicationE, ProjectVO projectE, OrganizationVO organization) {
         appMarketDownloadDTO.getAppVersionIds().forEach(appVersionId -> {
 
             ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);

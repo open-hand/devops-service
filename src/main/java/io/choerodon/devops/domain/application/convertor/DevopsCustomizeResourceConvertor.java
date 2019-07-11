@@ -2,9 +2,9 @@ package io.choerodon.devops.domain.application.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceDTO;
-import io.choerodon.devops.domain.application.entity.DevopsCustomizeResourceContentE;
-import io.choerodon.devops.domain.application.entity.DevopsCustomizeResourceE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
 import io.choerodon.devops.infra.dataobject.DevopsCustomizeResourceDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;

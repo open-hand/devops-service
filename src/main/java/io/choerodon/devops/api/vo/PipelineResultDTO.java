@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabJobE;
 
 
 public class PipelineResultDTO {

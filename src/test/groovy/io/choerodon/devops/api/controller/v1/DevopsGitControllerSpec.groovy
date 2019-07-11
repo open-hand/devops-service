@@ -9,18 +9,18 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsBranchDTO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
-import io.choerodon.devops.domain.application.entity.UserAttrE
-import io.choerodon.devops.domain.application.entity.gitlab.CommitE
-import io.choerodon.devops.domain.application.entity.iam.UserE
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Issue
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.ApplicationDO
+import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -82,7 +82,7 @@ class DevopsGitControllerSpec extends Specification {
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
 
     def setupSpec() {
         applicationDO.setId(1L)
@@ -209,9 +209,9 @@ class DevopsGitControllerSpec extends Specification {
         Mockito.doReturn(tagResponseEntity).when(gitlabServiceClient).getTags(1, 1)
 
         and: '数据准备'
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER)
-        ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getProjectMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
         when: '获取标签分页列表'
@@ -456,9 +456,9 @@ class DevopsGitControllerSpec extends Specification {
         notThrown(CommonException)
 
         // 删除app
-        List<ApplicationDO> list = applicationMapper.selectAll()
+        List<ApplicationDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDO e : list) {
+            for (ApplicationDTO e : list) {
                 applicationMapper.delete(e)
             }
         }

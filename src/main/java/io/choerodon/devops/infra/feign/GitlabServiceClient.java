@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
-import io.choerodon.devops.api.vo.gitlab.MemberDTO;
+import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.gitlab.VariableDTO;
-import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
@@ -34,7 +34,7 @@ public interface GitlabServiceClient {
             @PathVariable("username") String username);
 
     @GetMapping(value = "/v1/groups/{groupId}/members/{userId}")
-    ResponseEntity<MemberDO> getUserMemberByUserId(
+    ResponseEntity<MemberDTO> getUserMemberByUserId(
             @PathVariable("groupId") Integer groupId,
             @PathVariable("userId") Integer userId);
 
@@ -44,12 +44,12 @@ public interface GitlabServiceClient {
             @PathVariable("userId") Integer userId);
 
     @PostMapping(value = "/v1/groups/{groupId}/members")
-    ResponseEntity<MemberDO> insertMember(
+    ResponseEntity<MemberDTO> insertMember(
             @PathVariable("groupId") Integer groupId,
             @RequestBody @Valid RequestMemberDO member);
 
     @PutMapping(value = "/v1/groups/{groupId}/members")
-    ResponseEntity<MemberDO> updateMember(
+    ResponseEntity<MemberDTO> updateMember(
             @PathVariable("groupId") Integer groupId,
             @RequestBody @Valid RequestMemberDO member);
 
@@ -450,22 +450,22 @@ public interface GitlabServiceClient {
 
     @PostMapping("/v1/projects/{projectId}/members")
     ResponseEntity addMemberIntoProject(@PathVariable("projectId") Integer projectId,
-                                        @RequestBody MemberDTO memberDTO);
+                                        @RequestBody MemberVO memberDTO);
 
     @PutMapping("/v1/projects/{projectId}/members")
     ResponseEntity updateMemberIntoProject(@PathVariable("projectId") Integer projectId,
-                                           @RequestBody List<MemberDTO> list);
+                                           @RequestBody List<MemberVO> list);
 
     @GetMapping("/v1/projects/{projectId}/members/{userId}")
-    ResponseEntity<MemberDO> getProjectMember(@PathVariable("projectId") Integer projectId,
-                                              @PathVariable("userId") Integer userId);
+    ResponseEntity<MemberDTO> getProjectMember(@PathVariable("projectId") Integer projectId,
+                                               @PathVariable("userId") Integer userId);
 
     @DeleteMapping("/v1/projects/{projectId}/members/{userId}")
     ResponseEntity removeMemberFromProject(@PathVariable("projectId") Integer projectId,
                                            @PathVariable("userId") Integer userId);
 
     @GetMapping("/v1/projects/{project_id}/members/list")
-    ResponseEntity<List<MemberDO>> getAllMemberByProjectId(@PathVariable(value = "project_id") Integer projectId);
+    ResponseEntity<List<MemberDTO>> getAllMemberByProjectId(@PathVariable(value = "project_id") Integer projectId);
 
     @GetMapping("/v1/projects/{user_id}/projects")
     ResponseEntity<List<GitlabProjectDO>> getProjectsByUserId(@PathVariable(value = "user_id") Integer id);

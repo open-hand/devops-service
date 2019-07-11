@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.dataobject.UserAttrDTO;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;

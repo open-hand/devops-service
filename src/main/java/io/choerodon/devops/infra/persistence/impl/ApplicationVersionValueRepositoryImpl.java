@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionValueE;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
 import io.choerodon.devops.infra.dataobject.ApplicationVersionValueDO;
 import io.choerodon.devops.infra.mapper.ApplicationVersionValueMapper;

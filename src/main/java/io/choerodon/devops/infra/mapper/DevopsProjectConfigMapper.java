@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.ApplicationDO;
+import io.choerodon.devops.infra.dataobject.ApplicationDTO;
 import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -13,10 +13,10 @@ import java.util.Map;
  * @since 2019/03/11
  */
 public interface DevopsProjectConfigMapper extends Mapper<DevopsProjectConfigDO> {
-    List<ApplicationDO> list(@Param("projectId") Long projectId,
-                             @Param("searchParam") Map<String, Object> searchParam,
-                             @Param("param") String param,
-                             @Param("index") String index);
+    List<ApplicationDTO> list(@Param("projectId") Long projectId,
+                              @Param("searchParam") Map<String, Object> searchParam,
+                              @Param("param") String param,
+                              @Param("index") String index);
 
     List<DevopsProjectConfigDO> queryByIdAndType(@Param("projectId") Long projectId, @Param("type") String type);
 

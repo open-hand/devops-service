@@ -12,15 +12,15 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CertificationDTO;
 import io.choerodon.devops.api.vo.OrgCertificationDTO;
-import io.choerodon.devops.api.vo.ProjectDTO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsOrgCertificationService;
-import io.choerodon.devops.domain.application.entity.CertificationE;
-import io.choerodon.devops.domain.application.entity.DevopsCertificationProRelE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.api.vo.iam.entity.CertificationE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsCertificationProRelE;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsCertificationProRelRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.SslUtil;
@@ -49,7 +49,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
 
 
         //如果是选择上传文件方式
-        Organization organization = iamRepository.queryOrganizationById(organizationId);
+        OrganizationVO organization = iamRepository.queryOrganizationById(organizationId);
         String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organization.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
         String certFileName;
         String keyFileName;
@@ -144,12 +144,12 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
         }
     }
 
-    public List<ProjectDTO> listCertProjects(Long certId) {
+    public List<ProjectReqVO> listCertProjects(Long certId) {
         return devopsCertificationProRelRepository.listByCertId(certId).stream()
                 .map(devopsCertificationProRelE -> {
-                    ProjectE projectE = iamRepository.queryIamProject(devopsCertificationProRelE.getProjectId());
+                    ProjectVO projectE = iamRepository.queryIamProject(devopsCertificationProRelE.getProjectId());
 
-                    return new ProjectDTO(devopsCertificationProRelE.getProjectId(), projectE.getName(), projectE.getCode(), null);
+                    return new ProjectReqVO(devopsCertificationProRelE.getProjectId(), projectE.getName(), projectE.getCode(), null);
                 }).collect(Collectors.toList());
     }
 
@@ -163,12 +163,12 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
         }
     }
 
-    public PageInfo<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
-                                             String[] params) {
-        PageInfo<ProjectE> projects = iamRepository
+    public PageInfo<ProjectReqVO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
+                                               String[] params) {
+        PageInfo<ProjectVO> projects = iamRepository
                 .queryProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params);
-        PageInfo<ProjectDTO> pageProjectDTOS = new PageInfo<>();
-        List<ProjectDTO> projectDTOS = new ArrayList<>();
+        PageInfo<ProjectReqVO> pageProjectDTOS = new PageInfo<>();
+        List<ProjectReqVO> projectDTOS = new ArrayList<>();
         if (!projects.getList().isEmpty()) {
             BeanUtils.copyProperties(projects, pageProjectDTOS);
             List<Long> projectIds;
@@ -179,7 +179,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
                 projectIds = new ArrayList<>();
             }
             projects.getList().forEach(projectDO -> {
-                ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
+                ProjectReqVO projectDTO = new ProjectReqVO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
                 projectDTOS.add(projectDTO);
             });
         }

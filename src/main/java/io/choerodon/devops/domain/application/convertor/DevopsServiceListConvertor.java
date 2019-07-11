@@ -15,7 +15,7 @@ import io.choerodon.devops.api.vo.DevopsServiceConfigDTO;
 import io.choerodon.devops.api.vo.DevopsServiceDTO;
 import io.choerodon.devops.api.vo.DevopsServiceTargetDTO;
 import io.choerodon.devops.api.vo.EndPointPortDTO;
-import io.choerodon.devops.domain.application.entity.PortMapE;
+import io.choerodon.devops.api.vo.iam.entity.PortMapE;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
 

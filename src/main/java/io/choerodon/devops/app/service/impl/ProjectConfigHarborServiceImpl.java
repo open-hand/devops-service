@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectConfigDTO;
 import io.choerodon.devops.app.service.ProjectConfigHarborService;
-import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
@@ -40,7 +40,7 @@ public class ProjectConfigHarborServiceImpl implements ProjectConfigHarborServic
             HarborClient harborClient = retrofit.create(HarborClient.class);
             Response<Void> result = null;
 
-            ProjectE projectE = iamRepository.queryIamProject(projectId);
+            ProjectVO projectE = iamRepository.queryIamProject(projectId);
             result = harborClient.insertProject(new Project(
                     projectE.getOrganization().getCode() + "-" + projectE.getCode(), 1)).execute();
 

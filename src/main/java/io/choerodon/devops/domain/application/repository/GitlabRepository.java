@@ -2,9 +2,9 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.gitlab.MemberDTO;
+import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.gitlab.VariableDTO;
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
@@ -70,9 +70,9 @@ public interface GitlabRepository {
     /**
      * 将成员添加到gitlab项目，应该先检查成员是否存在，否则会报成员已存在的异常
      */
-    void addMemberIntoProject(Integer projectId, MemberDTO memberDTO);
+    void addMemberIntoProject(Integer projectId, MemberVO memberDTO);
 
-    void updateMemberIntoProject(Integer projectId, List<MemberDTO> list);
+    void updateMemberIntoProject(Integer projectId, List<MemberVO> list);
 
     void removeMemberFromProject(Integer projectId, Integer userId);
 

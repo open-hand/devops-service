@@ -8,9 +8,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.helper.EnvSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,8 +131,8 @@ public class EnvUtil {
 
 
     public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
+        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         //本地路径
         String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), envCode);

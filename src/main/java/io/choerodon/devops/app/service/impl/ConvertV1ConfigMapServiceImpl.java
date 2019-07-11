@@ -6,8 +6,8 @@ import java.util.Map;
 import io.kubernetes.client.models.V1ConfigMap;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.domain.application.entity.DevopsConfigMapE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsConfigMapE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsConfigMapRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;

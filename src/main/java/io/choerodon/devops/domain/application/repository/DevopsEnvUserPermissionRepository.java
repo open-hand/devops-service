@@ -6,7 +6,7 @@ import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsEnvUserPermissionDTO;
-import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvUserPermissionE;
 
 /**
  * Created by n!Ck

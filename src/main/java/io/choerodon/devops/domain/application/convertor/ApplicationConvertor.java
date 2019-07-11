@@ -6,21 +6,26 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertorI;
 <<<<<<< HEAD
 =======
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.ApplicationReqVO;
 >>>>>>> [IMP] applicationController重构
 import io.choerodon.devops.domain.application.entity.ApplicationE;
+=======
+>>>>>>> 99504a39d606d3005354e0b1bdcb50530cde6afd
+import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
+>>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
-import io.choerodon.devops.infra.dataobject.ApplicationDO;
+import io.choerodon.devops.infra.dataobject.ApplicationDTO;
 
 /**
  * Created by Zenger on 2018/4/2.
  */
 @Component
-public class ApplicationConvertor implements ConvertorI<ApplicationE, ApplicationDO, ApplicationReqVO> {
+public class ApplicationConvertor implements ConvertorI<ApplicationE, ApplicationDTO, ApplicationReqVO> {
 
 
     @Override
-    public ApplicationE doToEntity(ApplicationDO applicationDO) {
+    public ApplicationE doToEntity(ApplicationDTO applicationDO) {
         ApplicationE applicationE = ApplicationFactory.createApplicationE();
         BeanUtils.copyProperties(applicationDO, applicationE);
         applicationE.initProjectE(applicationDO.getProjectId());
@@ -40,8 +45,8 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
     }
 
     @Override
-    public ApplicationDO entityToDo(ApplicationE applicationE) {
-        ApplicationDO applicationDO = new ApplicationDO();
+    public ApplicationDTO entityToDo(ApplicationE applicationE) {
+        ApplicationDTO applicationDO = new ApplicationDTO();
         BeanUtils.copyProperties(applicationE, applicationDO);
         if (applicationE.getProjectE() != null) {
             applicationDO.setProjectId(applicationE.getProjectE().getId());
