@@ -210,6 +210,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //创建应用资源关系
         if (devopsServiceReqDTO.getAppId() != null) {
+            // 应用下不能创建endpoints类型网络
+            if (devopsServiceReqDTO.getEndPoints().size() != 0) {
+                throw new CommonException("error.app.create.endpoints.service");
+            }
+
             DevopsAppResourceE resourceE = new DevopsAppResourceE();
             resourceE.setAppId(devopsServiceReqDTO.getAppId());
             resourceE.setResourceType(ObjectType.SERVICE.getType());
