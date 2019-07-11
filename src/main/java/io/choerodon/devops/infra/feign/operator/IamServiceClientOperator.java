@@ -14,6 +14,7 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.ProjectDTO;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
@@ -26,6 +27,7 @@ import io.choerodon.devops.infra.dto.iam.OrganizationDO;
 import io.choerodon.devops.infra.dto.iam.ProjectDO;
 import io.choerodon.devops.infra.dto.iam.UserDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -41,13 +43,14 @@ public class IamServiceClientOperator {
     private IamServiceClient iamServiceClient;
 
 
-
-    public ProjectE queryIamProject(Long projectId) {
+    public ProjectVO queryIamProject(Long projectId) {
         ResponseEntity<ProjectDO> projectDO = iamServiceClient.queryIamProject(projectId);
         if (!projectDO.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.project.get");
         }
-        return ConvertHelper.convert(projectDO.getBody(), ProjectE.class);
+        ProjectVO projectVO = new ProjectVO();
+        BeanUtils.copyProperties(projectDO.getBody(), projectVO);
+        return projectVO;
     }
 
     public Organization queryOrganization() {
@@ -229,11 +232,11 @@ public class IamServiceClientOperator {
         return list;
     }
 
-    public Boolean isProjectOwner(Long userId, ProjectE projectE) {
+    public Boolean isProjectOwner(Long userId, ProjectVO projectVO) {
         List<ProjectWithRoleDTO> projectWithRoleDTOList = listProjectWithRoleDTO(userId);
         List<RoleDTO> roleDTOS = new ArrayList<>();
         projectWithRoleDTOList.stream().filter(projectWithRoleDTO ->
-                projectWithRoleDTO.getName().equals(projectE.getName())).forEach(projectWithRoleDTO ->
+                projectWithRoleDTO.getName().equals(projectVO.getName())).forEach(projectWithRoleDTO ->
                 roleDTOS.addAll(projectWithRoleDTO.getRoles()
                         .stream().filter(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))
                         .collect(Collectors.toList())));

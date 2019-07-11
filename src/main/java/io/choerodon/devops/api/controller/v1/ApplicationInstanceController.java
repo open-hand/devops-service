@@ -70,7 +70,7 @@ public class ApplicationInstanceController {
      * @param versionId   版本id
      * @param appId       应用id
      * @param params      搜索参数
-     * @return page of applicationInstanceDTO
+     * @return page of DevopsEnvPreviewInstanceVO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,

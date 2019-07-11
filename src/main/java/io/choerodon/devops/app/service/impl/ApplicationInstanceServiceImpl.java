@@ -19,31 +19,24 @@ import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.core.iam.ResourceLevel;
-
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DeployService;
-import io.choerodon.devops.app.service.DevopsEnvResourceService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.*;
-import io.choerodon.devops.infra.dataobject.*;
-import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
-
 import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.service.*;
-
-
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.*;
+import io.choerodon.devops.infra.dataobject.AppInstanceInfoDTO;
 import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.infra.dto.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dto.ApplicationLatestVersionDO;
 import io.choerodon.devops.infra.dto.DeployDO;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
@@ -97,8 +90,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private DeployService deployService;
     @Autowired
-    private IamRepository iamRepository;
-    @Autowired
     private CommandSender commandSender;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
@@ -116,10 +107,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvPodRepository devopsEnvPodRepository;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
-    @Autowired
-    private GitlabRepository gitlabRepository;
-    @Autowired
-    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
     private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
@@ -140,6 +127,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private ApplicationInstanceRepository applicationInstanceRepository;
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    @Autowired
+    private IamServiceClientOperator iamServiceClientOperator;
 
 
     @Override
@@ -175,13 +164,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public List<ApplicationInstanceOverViewVO> listApplicationInstanceOverView(Long projectId, Long appId) {
 
+
+        //查询出当前用户有权限的环境列表，如果是项目所有者，则有全部环境权限
         List<Long> permissionEnvIds = devopsEnvUserPermissionService
                 .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                 .filter(DevopsEnvUserPermissionE::getPermitted).map(DevopsEnvUserPermissionE::getEnvId)
                 .collect(Collectors.toList());
 
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        if (iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+        ProjectVO projectVO = iamServiceClientOperator.queryIamProject(projectId);
+
+        if (iamServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectVO)) {
             permissionEnvIds = devopsEnvironmentRepository.queryByProject(projectId).stream()
                     .map(DevopsEnvironmentE::getId).collect(Collectors.toList());
         }
@@ -193,7 +185,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Map<Long, ApplicationLatestVersionDO> latestVersionList = appLatestVersionList.stream()
                 .collect(Collectors.toMap(ApplicationLatestVersionDO::getAppId, t -> t, (a, b) -> b));
         Map<Long, Integer> appInstancesListMap = new HashMap<>();
-        List<ApplicationInstancesVO> appInstancesList = new ArrayList<>();
+        List<ApplicationInstanceOverViewVO> appInstancesList = new ArrayList<>();
         instancesDOS.forEach(t -> {
             ApplicationInstancesVO instancesDTO = new ApplicationInstancesVO();
             if (appInstancesListMap.get(t.getAppId()) == null) {

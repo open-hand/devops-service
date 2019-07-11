@@ -200,4 +200,12 @@ public interface DevopsEnvironmentService {
      */
     void checkEnv(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE);
 
+
+    /**
+     *
+     * @param projectId
+     * @return
+     */
+    List<DevopsEnvironmentVO> queryByProjectFromBase(Long projectId);
+
 }
