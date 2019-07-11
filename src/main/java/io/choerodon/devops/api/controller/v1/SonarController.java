@@ -2,7 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.SonarInfoDTO;
+import io.choerodon.devops.api.vo.SonarInfoDTO;
 import io.choerodon.devops.app.service.SonarService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

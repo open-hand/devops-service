@@ -15,8 +15,8 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.SecretRepDTO;
-import io.choerodon.devops.api.dto.SecretReqDTO;
+import io.choerodon.devops.api.vo.SecretRepDTO;
+import io.choerodon.devops.api.vo.SecretReqDTO;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 

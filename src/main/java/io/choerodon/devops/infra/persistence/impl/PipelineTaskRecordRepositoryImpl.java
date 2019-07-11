@@ -9,7 +9,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
 import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
-import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.dataobject.PipelineTaskRecordDO;
 import io.choerodon.devops.infra.mapper.PipelineTaskRecordMapper;
 

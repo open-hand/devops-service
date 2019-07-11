@@ -19,7 +19,7 @@ import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
-import io.choerodon.devops.domain.application.event.IamAppPayLoad
+import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.enums.AccessLevel

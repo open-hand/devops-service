@@ -5,14 +5,13 @@ import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.asgard.saga.feign.SagaClientCallback
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService
 import io.choerodon.devops.domain.application.repository.DevopsGitRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.service.DeployService
+import io.choerodon.devops.app.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
@@ -21,7 +20,6 @@ import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.websocket.helper.CommandSender
-import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -36,7 +34,6 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.ArgumentMatchers.any
 import static org.mockito.Matchers.anyString
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 

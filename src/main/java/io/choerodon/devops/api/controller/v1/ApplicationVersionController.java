@@ -23,9 +23,9 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
-import io.choerodon.devops.api.dto.DeployVersionDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionAndCommitDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 

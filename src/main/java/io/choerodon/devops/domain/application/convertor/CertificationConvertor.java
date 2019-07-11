@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.CertificationDTO;
+import io.choerodon.devops.api.vo.CertificationDTO;
 import io.choerodon.devops.domain.application.entity.CertificationE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;

@@ -4,7 +4,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.choerodon.devops.infra.common.util.enums.PipelineStatus;
+import io.choerodon.devops.infra.enums.PipelineStatus;
 
 /**
  * Created by Zenger on 2018/1/10.

@@ -15,8 +15,8 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsConfigMapE;
 import io.choerodon.devops.domain.application.repository.DevopsConfigMapRepository;
-import io.choerodon.devops.infra.common.util.PageRequestUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.util.PageRequestUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsConfigMapDO;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapMapper;
 

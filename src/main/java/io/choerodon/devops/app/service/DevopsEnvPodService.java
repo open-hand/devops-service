@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.api.vo.DevopsEnvPodDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
 
 /**

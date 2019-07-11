@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
+import io.choerodon.devops.api.vo.GitlabUserRequestDTO;
 
 /**
  * Created by Zenger on 2018/3/28.

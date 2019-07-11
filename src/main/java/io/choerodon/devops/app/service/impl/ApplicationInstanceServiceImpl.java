@@ -8,15 +8,35 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.validator.AppInstanceValidator;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.DeployService;
+import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.dataobject.*;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.websocket.Msg;
+import io.choerodon.websocket.helper.CommandSender;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,34 +45,6 @@ import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.exception.CommonException;
-
-import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.api.validator.AppInstanceValidator;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DevopsEnvResourceService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
-import io.choerodon.devops.domain.application.handler.ObjectOperation;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.*;
-import io.choerodon.devops.domain.service.DeployService;
-import io.choerodon.devops.infra.common.util.*;
-import io.choerodon.devops.infra.common.util.enums.*;
-import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
-import io.choerodon.websocket.Msg;
-import io.choerodon.websocket.helper.CommandSender;
 
 
 /**
@@ -121,7 +113,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
-    private CheckOptionsHandler checkOptionsHandler;
+    private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
     @Autowired
@@ -150,8 +142,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public PageInfo<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                                         Long envId, Long versionId, Long appId, Long instanceId, String params) {
+    public PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, PageRequest pageRequest,
+                                                              Long envId, Long versionId, Long appId, Long instanceId, String params) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         PageInfo<ApplicationInstanceE> applicationInstanceEPage = applicationInstanceRepository.listApplicationInstance(
@@ -162,7 +154,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         PageInfo<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
                 .convertPageInfo(applicationInstanceEPage, ApplicationInstanceDTO.class);
-        PageInfo<DevopsEnvPreviewInstanceDTO> devopsEnvPreviewInstanceDTOPageInfo = new PageInfo<>();
+        PageInfo<DevopsEnvPreviewInstanceVO> devopsEnvPreviewInstanceDTOPageInfo = new PageInfo<>();
         BeanUtils.copyProperties(applicationInstanceDTOS, devopsEnvPreviewInstanceDTOPageInfo);
         return devopsEnvPreviewInstanceDTOPageInfo;
     }
@@ -710,7 +702,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         } else {
             code = applicationInstanceE.getCode();
             //更新实例的时候校验gitops库文件是否存在,处理部署实例时，由于没有创gitops文件导致的部署失败
-            checkOptionsHandler.check(devopsEnvironmentE, applicationDeployDTO.getAppInstanceId(), code, C7NHELM_RELEASE);
+            resourceFileCheckHandler.check(devopsEnvironmentE, applicationDeployDTO.getAppInstanceId(), code, C7NHELM_RELEASE);
 
             //从未关联部署配置到关联部署配置，或者从一个部署配置关联另外一个部署配置，如果values是一样的，虽然getIsNotChange为false,但是此时也应该直接设置为isNotChange为true
             DevopsEnvCommandE oldDevopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceRepository.selectById(applicationInstanceE.getId()).getCommandId());
@@ -781,11 +773,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             String filePath = envUtil.handDevopsEnvGitRepository(instanceSagaDTO.getProjectId(), instanceSagaDTO.getDevopsEnvironmentE().getCode(), instanceSagaDTO.getDevopsEnvironmentE().getEnvIdRsa());
 
             //在gitops库处理instance文件
-            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
-            objectOperation.setType(getC7NHelmRelease(
+            ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(getC7NHelmRelease(
                     instanceSagaDTO.getApplicationDeployDTO().getInstanceName(), instanceSagaDTO.getApplicationVersionE().getRepository(), instanceSagaDTO.getApplicationE().getCode(), instanceSagaDTO.getApplicationVersionE().getVersion(), instanceSagaDTO.getApplicationDeployDTO().getValues(), instanceSagaDTO.getApplicationDeployDTO().getAppVersionId(), instanceSagaDTO.getSecretCode()));
 
-            objectOperation.operationEnvGitlabFile(
+            resourceConvertToYamlHandler.operationEnvGitlabFile(
                     RELEASE_PREFIX + instanceSagaDTO.getApplicationDeployDTO().getInstanceName(),
                     instanceSagaDTO.getDevopsEnvironmentE().getGitlabEnvProjectId().intValue(),
                     instanceSagaDTO.getApplicationDeployDTO().getType(),
@@ -1096,14 +1088,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
         } else {
-            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
+            ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
             Metadata metadata = new Metadata();
             metadata.setName(instanceE.getCode());
             c7nHelmRelease.setMetadata(metadata);
-            objectOperation.setType(c7nHelmRelease);
+            resourceConvertToYamlHandler.setType(c7nHelmRelease);
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.operationEnvGitlabFile(
+            resourceConvertToYamlHandler.operationEnvGitlabFile(
                     RELEASE_PREFIX + instanceE.getCode(),
                     projectId,
                     "delete",

@@ -3,8 +3,8 @@ package io.choerodon.devops.app.service;
 import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.SecretRepDTO;
-import io.choerodon.devops.api.dto.SecretReqDTO;
+import io.choerodon.devops.api.vo.SecretRepDTO;
+import io.choerodon.devops.api.vo.SecretReqDTO;
 
 /**
  * Created by n!Ck

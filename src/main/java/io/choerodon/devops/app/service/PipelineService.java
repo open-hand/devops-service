@@ -7,16 +7,16 @@ import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.devops.api.dto.CheckAuditDTO;
-import io.choerodon.devops.api.dto.IamUserDTO;
-import io.choerodon.devops.api.dto.PipelineCheckDeployDTO;
-import io.choerodon.devops.api.dto.PipelineDTO;
-import io.choerodon.devops.api.dto.PipelineRecordDTO;
-import io.choerodon.devops.api.dto.PipelineRecordListDTO;
-import io.choerodon.devops.api.dto.PipelineRecordReqDTO;
-import io.choerodon.devops.api.dto.PipelineReqDTO;
-import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
-import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.api.vo.CheckAuditDTO;
+import io.choerodon.devops.api.vo.IamUserDTO;
+import io.choerodon.devops.api.vo.PipelineCheckDeployDTO;
+import io.choerodon.devops.api.vo.PipelineDTO;
+import io.choerodon.devops.api.vo.PipelineRecordDTO;
+import io.choerodon.devops.api.vo.PipelineRecordListDTO;
+import io.choerodon.devops.api.vo.PipelineRecordReqDTO;
+import io.choerodon.devops.api.vo.PipelineReqDTO;
+import io.choerodon.devops.api.vo.PipelineUserRecordRelDTO;
+import io.choerodon.devops.api.vo.iam.UserDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 
 /**

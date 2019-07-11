@@ -1,22 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.HarborService;
-import io.choerodon.devops.domain.application.event.HarborPayload;
+import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.harbor.Project;
-import io.choerodon.devops.infra.dataobject.harbor.ProjectDetail;
-import io.choerodon.devops.infra.dataobject.harbor.Role;
-import io.choerodon.devops.infra.dataobject.harbor.User;
 import io.choerodon.devops.infra.feign.HarborClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

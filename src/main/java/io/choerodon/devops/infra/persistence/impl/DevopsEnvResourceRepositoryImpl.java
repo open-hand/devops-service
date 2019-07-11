@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.choerodon.devops.infra.enums.ResourceType;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;

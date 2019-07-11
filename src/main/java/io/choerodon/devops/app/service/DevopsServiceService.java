@@ -3,16 +3,9 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.DevopsServiceDTO;
-import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
+import io.choerodon.devops.api.vo.DevopsServiceDTO;
+import io.choerodon.devops.api.vo.DevopsServiceReqDTO;
 
 /**
  * Created by Zenger on 2018/4/13.

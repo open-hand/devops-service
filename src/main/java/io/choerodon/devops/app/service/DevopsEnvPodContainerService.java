@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.dto.DevopsEnvPodContainerLogDTO;
+import io.choerodon.devops.api.vo.DevopsEnvPodContainerLogDTO;
 
 /**
  * Creator: Runge

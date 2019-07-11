@@ -1,14 +1,11 @@
 package io.choerodon.devops.domain.application.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.PipelineAppDeployDTO;
-import io.choerodon.devops.api.dto.PipelineTaskDTO;
+import io.choerodon.devops.api.vo.PipelineTaskDTO;
 import io.choerodon.devops.domain.application.entity.PipelineTaskE;
 import io.choerodon.devops.infra.dataobject.PipelineTaskDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
-
-import java.util.stream.Collectors;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

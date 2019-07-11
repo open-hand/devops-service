@@ -2,7 +2,7 @@ package io.choerodon.devops.domain.application.valueobject;
 
 import java.util.List;
 
-import io.choerodon.devops.api.dto.ErrorLineDTO;
+import io.choerodon.devops.api.vo.ErrorLineDTO;
 
 /**
  * yaml 转换结果

@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.entity;
 
-import io.choerodon.devops.api.dto.ContainerDTO;
+import io.choerodon.devops.api.vo.ContainerDTO;
 
 import java.util.Date;
 import java.util.List;

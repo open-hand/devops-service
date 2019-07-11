@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.config;
 
-import io.choerodon.devops.api.dto.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectConfigDTO;
 
 public class ConfigurationProperties extends HarborConfigurationProperties {
 

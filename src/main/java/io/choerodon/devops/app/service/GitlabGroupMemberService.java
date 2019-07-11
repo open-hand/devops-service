@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
+import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 

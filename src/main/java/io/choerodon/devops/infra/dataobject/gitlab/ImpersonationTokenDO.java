@@ -6,7 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import io.choerodon.devops.infra.common.util.enums.JacksonJsonEnumHelper;
+import io.choerodon.devops.infra.enums.JacksonJsonEnumHelper;
 
 public class ImpersonationTokenDO {
 

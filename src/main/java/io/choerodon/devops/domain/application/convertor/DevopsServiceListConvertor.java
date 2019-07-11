@@ -11,10 +11,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.DevopsServiceConfigDTO;
-import io.choerodon.devops.api.dto.DevopsServiceDTO;
-import io.choerodon.devops.api.dto.DevopsServiceTargetDTO;
-import io.choerodon.devops.api.dto.EndPointPortDTO;
+import io.choerodon.devops.api.vo.DevopsServiceConfigDTO;
+import io.choerodon.devops.api.vo.DevopsServiceDTO;
+import io.choerodon.devops.api.vo.DevopsServiceTargetDTO;
+import io.choerodon.devops.api.vo.EndPointPortDTO;
 import io.choerodon.devops.domain.application.entity.PortMapE;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;

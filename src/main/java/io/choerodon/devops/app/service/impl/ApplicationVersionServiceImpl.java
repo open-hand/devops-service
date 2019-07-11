@@ -26,11 +26,11 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
-import io.choerodon.devops.api.dto.DeployEnvVersionDTO;
-import io.choerodon.devops.api.dto.DeployInstanceVersionDTO;
-import io.choerodon.devops.api.dto.DeployVersionDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionAndCommitDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.DeployEnvVersionDTO;
+import io.choerodon.devops.api.vo.DeployInstanceVersionDTO;
+import io.choerodon.devops.api.vo.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
@@ -48,7 +48,7 @@ import io.choerodon.devops.domain.application.entity.PipelineTaskE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
@@ -65,10 +65,10 @@ import io.choerodon.devops.domain.application.repository.PipelineStageRepository
 import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.infra.common.util.ChartUtil;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.util.ChartUtil;
+import io.choerodon.devops.infra.util.FileUtil;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * Created by Zenger on 2018/4/3.

@@ -3,13 +3,13 @@ package io.choerodon.devops.app.service.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.choerodon.devops.infra.common.util.FastjsonParserConfigProvider;
+import io.choerodon.devops.infra.util.FastjsonParserConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;

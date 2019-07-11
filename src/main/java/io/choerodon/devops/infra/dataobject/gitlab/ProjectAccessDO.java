@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.dataobject.gitlab;
 
-import io.choerodon.devops.infra.common.util.enums.AccessLevel;
+import io.choerodon.devops.infra.enums.AccessLevel;
 
 public class ProjectAccessDO {
     private AccessLevel accessLevel;

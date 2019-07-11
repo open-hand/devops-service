@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.gitlab.MemberDTO;
-import io.choerodon.devops.api.dto.gitlab.VariableDTO;
+import io.choerodon.devops.api.vo.gitlab.MemberDTO;
+import io.choerodon.devops.api.vo.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
-import io.choerodon.devops.domain.application.event.GitlabUserEvent;
+import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
@@ -56,12 +56,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<UserDO> createGitLabUser(String password, Integer projectsLimit, GitlabUserEvent gitlabUserEvent) {
+    public ResponseEntity<UserDO> createGitLabUser(String password, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
         throw new CommonException("error.GitlabUser.creat");
     }
 
     @Override
-    public ResponseEntity<UserDO> updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserEvent gitlabUserEvent) {
+    public ResponseEntity<UserDO> updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
         throw new CommonException("error.GitlabUser.update");
     }
 

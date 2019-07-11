@@ -10,7 +10,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.DevopsEnvFileErrorDTO;
+import io.choerodon.devops.api.vo.DevopsEnvFileErrorDTO;
 import io.choerodon.devops.app.service.DevopsEnvFileService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;

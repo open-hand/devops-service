@@ -7,9 +7,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.dto.CustomMergeRequestDTO;
-import io.choerodon.devops.api.dto.DevopsBranchDTO;
-import io.choerodon.devops.api.dto.IssueDTO;
+import io.choerodon.devops.api.vo.CustomMergeRequestDTO;
+import io.choerodon.devops.api.vo.DevopsBranchDTO;
+import io.choerodon.devops.api.vo.IssueDTO;
 import io.choerodon.devops.app.service.IssueService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;

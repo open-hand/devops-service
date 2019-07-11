@@ -1,7 +1,7 @@
 package io.choerodon.devops.domain.application.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.PipelineUserRelDTO;
+import io.choerodon.devops.api.vo.PipelineUserRelDTO;
 import io.choerodon.devops.domain.application.entity.PipelineUserRelE;
 import io.choerodon.devops.infra.dataobject.PipelineUserRelDO;
 import org.springframework.beans.BeanUtils;

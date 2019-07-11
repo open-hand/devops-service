@@ -2,9 +2,9 @@ package io.choerodon.devops.domain.application.convertor;
 
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.ApplicationRepDTO;
+import io.choerodon.devops.api.vo.ApplicationRepDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 

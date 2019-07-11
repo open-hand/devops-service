@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.entity.gitlab;
 
-import io.choerodon.devops.infra.common.util.enums.AccessLevel;
+import io.choerodon.devops.infra.enums.AccessLevel;
 
 /**
  * Created by Zenger on 2018/3/28.

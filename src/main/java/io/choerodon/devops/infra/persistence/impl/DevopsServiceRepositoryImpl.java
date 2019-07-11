@@ -18,7 +18,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsServiceE;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
 import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;

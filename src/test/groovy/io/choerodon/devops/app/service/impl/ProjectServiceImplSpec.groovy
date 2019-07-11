@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.service.impl
 
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.domain.application.event.ProjectEvent
+import io.choerodon.devops.app.eventhandler.payload.ProjectPayload
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,7 +34,7 @@ class ProjectServiceImplSpec extends Specification {
 
     def "CreateProject"() {
         given: '初始化ProjectEvent'
-        ProjectEvent projectEvent = new ProjectEvent()
+        ProjectPayload projectEvent = new ProjectPayload()
         projectEvent.setProjectId(2L)
 
         when: '调用方法'

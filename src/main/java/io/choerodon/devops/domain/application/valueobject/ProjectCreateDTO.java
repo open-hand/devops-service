@@ -13,7 +13,7 @@ import javax.validation.constraints.Size;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 
-import io.choerodon.devops.api.dto.iam.RoleDTO;
+import io.choerodon.devops.api.vo.iam.RoleDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

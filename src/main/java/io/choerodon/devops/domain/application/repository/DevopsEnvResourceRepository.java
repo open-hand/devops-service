@@ -3,7 +3,7 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import io.choerodon.devops.domain.application.entity.DevopsEnvResourceE;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.choerodon.devops.infra.enums.ResourceType;
 
 /**
  * Created by younger on 2018/4/24.

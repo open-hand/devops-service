@@ -1,11 +1,10 @@
 package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
-import org.nutz.dao.pager.Pager;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.DevopsConfigMapDTO;
-import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO;
+import io.choerodon.devops.api.vo.DevopsConfigMapDTO;
+import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
 
 public interface DevopsConfigMapService {
 

@@ -1,7 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.event.GitlabUserEvent;
+import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 
 /**
@@ -9,11 +9,11 @@ import io.choerodon.devops.infra.feign.GitlabServiceClient;
  */
 public interface GitlabUserRepository {
 
-    GitlabUserE createGitLabUser(String password, Integer projectsLimit, GitlabUserEvent gitlabUserEvent);
+    GitlabUserE createGitLabUser(String password, Integer projectsLimit, GitlabUserPayload gitlabUserPayload);
 
     GitlabUserE getUserByUserName(String userName);
 
-    GitlabUserE updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserEvent gitlabUserEvent);
+    GitlabUserE updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserPayload gitlabUserPayload);
 
     void isEnabledGitlabUser(Integer userId);
 

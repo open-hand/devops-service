@@ -14,9 +14,6 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRe
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.kubernetes.client.models.*;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;

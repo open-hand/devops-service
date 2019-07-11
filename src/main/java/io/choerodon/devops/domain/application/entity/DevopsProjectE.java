@@ -1,7 +1,6 @@
 package io.choerodon.devops.domain.application.entity;
 
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.infra.common.util.enums.Visibility;
+import io.choerodon.devops.infra.enums.Visibility;
 
 /**
  * Created by younger on 2018/3/29.

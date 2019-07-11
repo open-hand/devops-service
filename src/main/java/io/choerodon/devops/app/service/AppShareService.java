@@ -6,14 +6,14 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
-import io.choerodon.devops.api.dto.AccessTokenDTO;
-import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
-import io.choerodon.devops.api.dto.AppMarketTgzDTO;
-import io.choerodon.devops.api.dto.AppMarketVersionDTO;
-import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
-import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.AccessTokenCheckResultDTO;
+import io.choerodon.devops.api.vo.AccessTokenDTO;
+import io.choerodon.devops.api.vo.AppMarketDownloadDTO;
+import io.choerodon.devops.api.vo.AppMarketTgzDTO;
+import io.choerodon.devops.api.vo.AppMarketVersionDTO;
+import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
+import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
 
 /**
  * Created by ernst on 2018/5/12.

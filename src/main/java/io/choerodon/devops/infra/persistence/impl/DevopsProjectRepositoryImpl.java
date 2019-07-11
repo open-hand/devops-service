@@ -4,7 +4,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import org.springframework.stereotype.Component;

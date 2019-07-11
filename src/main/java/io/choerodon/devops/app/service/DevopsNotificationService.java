@@ -4,8 +4,8 @@ import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.DevopsNotificationDTO;
-import io.choerodon.devops.api.dto.ResourceCheckDTO;
+import io.choerodon.devops.api.vo.DevopsNotificationDTO;
+import io.choerodon.devops.api.vo.ResourceCheckDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

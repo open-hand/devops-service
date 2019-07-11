@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.dto.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectConfigDTO;
 
 /**
  * @author zongw.lee@gmail.com

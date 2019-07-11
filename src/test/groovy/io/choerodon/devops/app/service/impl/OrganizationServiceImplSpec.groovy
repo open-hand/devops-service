@@ -2,8 +2,8 @@ package io.choerodon.devops.app.service.impl
 
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.domain.application.event.GitlabUserEvent
-import io.choerodon.devops.domain.application.event.OrganizationEventPayload
+import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload
+import io.choerodon.devops.app.eventhandler.payload.OrganizationEventPayload
 import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository
 import io.choerodon.devops.infra.dataobject.UserAttrDO
@@ -60,7 +60,7 @@ class OrganizationServiceImplSpec extends Specification {
         UserDO userDO = new UserDO()
         userDO.setId(2)
         ResponseEntity<UserDO> responseEntity1 = new ResponseEntity<>(userDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.createGitLabUser(anyString(), anyInt(), any(GitlabUserEvent.class))).thenReturn(responseEntity1)
+        Mockito.when(gitlabServiceClient.createGitLabUser(anyString(), anyInt(), any(GitlabUserPayload.class))).thenReturn(responseEntity1)
         Mockito.when(gitlabServiceClient.queryUserByUserName(anyString())).thenReturn(responseEntity1)
 
     }

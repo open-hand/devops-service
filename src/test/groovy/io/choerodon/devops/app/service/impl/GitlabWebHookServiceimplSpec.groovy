@@ -11,7 +11,7 @@ import io.choerodon.devops.domain.application.entity.*
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE
 import io.choerodon.devops.domain.application.entity.gitlab.DiffE
 import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.service.DeployService
+import io.choerodon.devops.app.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.enums.CommandStatus

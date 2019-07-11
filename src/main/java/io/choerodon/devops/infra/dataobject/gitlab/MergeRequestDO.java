@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.dataobject.gitlab;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.api.dto.CommitDTO;
+import io.choerodon.devops.api.vo.CommitDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.DiffE;
 import io.choerodon.devops.domain.application.entity.gitlab.MilestoneE;
 import io.choerodon.devops.domain.application.entity.gitlab.UserE;

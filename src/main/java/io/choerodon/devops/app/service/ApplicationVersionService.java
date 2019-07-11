@@ -6,9 +6,9 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
-import io.choerodon.devops.api.dto.DeployVersionDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionAndCommitDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.DeployVersionDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 
 /**

@@ -5,12 +5,11 @@ import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.devops.app.service.OrganizationService;
 import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.event.OrganizationEventPayload;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.app.eventhandler.payload.OrganizationEventPayload;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.Visibility;
+import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.enums.Visibility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

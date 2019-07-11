@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.dto.DevopsEnvGroupDTO;
+import io.choerodon.devops.api.vo.DevopsEnvGroupDTO;
 import io.choerodon.devops.api.validator.DevopsEnvGroupValidator;
 import io.choerodon.devops.app.service.DevopsEnvGroupService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvGroupE;

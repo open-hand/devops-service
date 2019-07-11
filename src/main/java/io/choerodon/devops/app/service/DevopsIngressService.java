@@ -5,7 +5,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.kubernetes.client.models.V1beta1HTTPIngressPath;
 import io.kubernetes.client.models.V1beta1Ingress;
 
-import io.choerodon.devops.api.dto.DevopsIngressDTO;
+import io.choerodon.devops.api.vo.DevopsIngressDTO;
 
 /**
  * Creator: Runge

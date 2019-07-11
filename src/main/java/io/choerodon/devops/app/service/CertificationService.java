@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.C7nCertificationDTO;
-import io.choerodon.devops.api.dto.CertificationDTO;
-import io.choerodon.devops.api.dto.OrgCertificationDTO;
+import io.choerodon.devops.api.vo.C7nCertificationDTO;
+import io.choerodon.devops.api.vo.CertificationDTO;
+import io.choerodon.devops.api.vo.OrgCertificationDTO;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import org.springframework.web.multipart.MultipartFile;
 

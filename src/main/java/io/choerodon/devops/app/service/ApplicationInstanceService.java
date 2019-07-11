@@ -7,9 +7,9 @@ import java.util.Map;
 import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.choerodon.devops.infra.enums.ResourceType;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -34,8 +34,8 @@ public interface ApplicationInstanceService {
      * @return page of devopsEnvPreviewInstanceDTO
      */
 
-    PageInfo<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                                  Long envId, Long versionId, Long appId, Long instanceId, String params);
+    PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, PageRequest pageRequest,
+                                                       Long envId, Long versionId, Long appId, Long instanceId, String params);
 
     /**
      * 查询应用部署

@@ -14,7 +14,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.DevopsEnvUserPermissionDTO;
+import io.choerodon.devops.api.vo.DevopsEnvUserPermissionDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
@@ -22,7 +22,7 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
 

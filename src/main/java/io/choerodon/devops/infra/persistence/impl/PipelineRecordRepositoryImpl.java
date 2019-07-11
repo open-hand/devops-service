@@ -7,17 +7,16 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.infra.common.util.PageRequestUtil;
+import io.choerodon.devops.infra.util.PageRequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.PipelineRecordE;
 import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.PipelineRecordDO;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
 

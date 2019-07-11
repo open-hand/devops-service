@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 
 /**

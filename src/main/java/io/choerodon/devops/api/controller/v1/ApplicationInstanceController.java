@@ -9,11 +9,11 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -78,7 +78,7 @@ public class ApplicationInstanceController {
     @ApiOperation(value = "分页查询应用部署")
     @CustomPageRequest
     @PostMapping(value = "/list_by_options")
-    public ResponseEntity<PageInfo<DevopsEnvPreviewInstanceDTO>> pageByOptions(
+    public ResponseEntity<PageInfo<DevopsEnvPreviewInstanceVO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
@@ -93,7 +93,7 @@ public class ApplicationInstanceController {
             @RequestParam(required = false) Long instanceId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(applicationInstanceService.listApplicationInstance(
+        return Optional.ofNullable(applicationInstanceService.pageByOptions(
                 projectId, pageRequest, envId, versionId, appId, instanceId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.version.query"));

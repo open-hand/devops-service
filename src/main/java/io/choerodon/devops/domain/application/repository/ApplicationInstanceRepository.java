@@ -8,7 +8,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
 

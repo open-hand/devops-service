@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.dataobject.gitlab;
 
-import io.choerodon.devops.infra.common.util.enums.Visibility;
+import io.choerodon.devops.infra.enums.Visibility;
 
 /**
  * Created by younger on 2018/4/2.

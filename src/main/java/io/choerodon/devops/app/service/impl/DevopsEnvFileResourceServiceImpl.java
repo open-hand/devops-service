@@ -9,7 +9,7 @@ import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class DevopsEnvFileResourceServiceImpl implements DevopsEnvFileResourceService {

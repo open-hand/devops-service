@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
+import io.choerodon.devops.api.vo.DevopsServiceReqDTO;
 import io.choerodon.devops.domain.application.entity.PortMapE;
 
 /**

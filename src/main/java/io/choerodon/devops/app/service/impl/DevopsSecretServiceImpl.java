@@ -11,32 +11,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.SecretRepDTO;
-import io.choerodon.devops.api.dto.SecretReqDTO;
+import io.choerodon.devops.api.vo.SecretRepDTO;
+import io.choerodon.devops.api.vo.SecretReqDTO;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
-import io.choerodon.devops.domain.application.handler.ObjectOperation;
+import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
+import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.common.util.Base64Util;
-import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.CommandStatus;
-import io.choerodon.devops.infra.common.util.enums.HelmObjectKind;
-import io.choerodon.devops.infra.common.util.enums.ObjectType;
-import io.choerodon.devops.infra.common.util.enums.SecretStatus;
+import io.choerodon.devops.infra.util.Base64Util;
+import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.HelmObjectKind;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.enums.SecretStatus;
 
 
 /**
@@ -72,7 +67,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Autowired
     private GitlabRepository gitlabRepository;
     @Autowired
-    private CheckOptionsHandler checkOptionsHandler;
+    private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
@@ -102,7 +97,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         if (UPDATE.equals(secretReqDTO.getType())) {
 
             //更新secret的时候校验gitops库文件是否存在,处理部署secret时，由于没有创gitops文件导致的部署失败
-            checkOptionsHandler.check(devopsEnvironmentE, secretReqDTO.getId(), secretReqDTO.getName(), SECRET);
+            resourceFileCheckHandler.check(devopsEnvironmentE, secretReqDTO.getId(), secretReqDTO.getName(), SECRET);
 
             DevopsSecretE oldSecretE = devopsSecretRepository
                     .selectByEnvIdAndName(secretReqDTO.getEnvId(), secretReqDTO.getName());
@@ -182,9 +177,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
-        ObjectOperation<V1Secret> objectOperation = new ObjectOperation<>();
-        objectOperation.setType(v1Secret);
-        objectOperation.operationEnvGitlabFile("sct-" + devopsSecretE.getName(), gitlabEnvGroupProjectId,
+        ResourceConvertToYamlHandler<V1Secret> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+        resourceConvertToYamlHandler.setType(v1Secret);
+        resourceConvertToYamlHandler.operationEnvGitlabFile("sct-" + devopsSecretE.getName(), gitlabEnvGroupProjectId,
                 isCreate ? CREATE : UPDATE, userAttrE.getGitlabUserId(), devopsSecretE.getId(), SECRET, null, false,
                 devopsSecretE.getEnvId(), path);
     }
@@ -248,14 +243,14 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
         } else {
-            ObjectOperation<V1Secret> objectOperation = new ObjectOperation<>();
+            ResourceConvertToYamlHandler<V1Secret> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             V1Secret v1Secret = new V1Secret();
             V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
             v1ObjectMeta.setName(devopsSecretE.getName());
             v1Secret.setMetadata(v1ObjectMeta);
-            objectOperation.setType(v1Secret);
+            resourceConvertToYamlHandler.setType(v1Secret);
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.operationEnvGitlabFile(null, projectId, DELETE, userAttrE.getGitlabUserId(), secretId,
+            resourceConvertToYamlHandler.operationEnvGitlabFile(null, projectId, DELETE, userAttrE.getGitlabUserId(), secretId,
                     SECRET, null, false, devopsEnvironmentE.getId(), path);
         }
         return true;

@@ -6,20 +6,20 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.DevopsIngressDTO;
-import io.choerodon.devops.api.dto.DevopsIngressPathDTO;
+import io.choerodon.devops.api.vo.DevopsIngressDTO;
+import io.choerodon.devops.api.vo.DevopsIngressPathDTO;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
-import io.choerodon.devops.domain.application.handler.ObjectOperation;
+import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
+import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.*;
+import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
 import io.choerodon.devops.infra.mapper.DevopsAppResourceMapper;
@@ -74,7 +74,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
     @Autowired
-    private CheckOptionsHandler checkOptionsHandler;
+    private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
@@ -193,7 +193,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         }
 
         //更新域名的时候校验gitops库文件是否存在,处理部署域名时，由于没有创gitops文件导致的部署失败
-        checkOptionsHandler.check(devopsEnvironmentE, id, devopsIngressDTO.getName(), INGRESS);
+        resourceFileCheckHandler.check(devopsEnvironmentE, id, devopsIngressDTO.getName(), INGRESS);
 
 
         //校验port是否属于该网络
@@ -360,14 +360,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
         } else {
-            ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
+            ResourceConvertToYamlHandler<V1beta1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             V1beta1Ingress v1beta1Ingress = new V1beta1Ingress();
             V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
             v1ObjectMeta.setName(ingressDO.getName());
             v1beta1Ingress.setMetadata(v1ObjectMeta);
-            objectOperation.setType(v1beta1Ingress);
+            resourceConvertToYamlHandler.setType(v1beta1Ingress);
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.operationEnvGitlabFile(
+            resourceConvertToYamlHandler.operationEnvGitlabFile(
                     null,
                     projectId,
                     DELETE,
@@ -484,9 +484,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsIngressRepository.updateIngressAndIngressPath(devopsIngressDO);
         }
 
-        ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
-        objectOperation.setType(ingress);
-        objectOperation.operationEnvGitlabFile("ing-" + devopsIngressDO.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
+        ResourceConvertToYamlHandler<V1beta1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+        resourceConvertToYamlHandler.setType(ingress);
+        resourceConvertToYamlHandler.operationEnvGitlabFile("ing-" + devopsIngressDO.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
                 userAttrE.getGitlabUserId(), devopsIngressDO.getId(), INGRESS, null, deleteCert, devopsIngressDO.getEnvId(), path);
 
     }

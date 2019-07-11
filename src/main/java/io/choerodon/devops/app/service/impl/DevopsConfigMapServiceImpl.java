@@ -11,27 +11,26 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.DevopsConfigMapDTO;
-import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO;
+import io.choerodon.devops.api.vo.DevopsConfigMapDTO;
+import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
-import io.choerodon.devops.domain.application.handler.ObjectOperation;
+import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
+import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.CommandStatus;
-import io.choerodon.devops.infra.common.util.enums.CommandType;
-import io.choerodon.devops.infra.common.util.enums.ObjectType;
+import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.ObjectType;
 
 @Service
 public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
@@ -63,7 +62,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Autowired
     private GitlabRepository gitlabRepository;
     @Autowired
-    private CheckOptionsHandler checkOptionsHandler;
+    private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
@@ -101,7 +100,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         if (devopsConfigMapDTO.getType().equals(UPDATE_TYPE)) {
 
             //更新configMap的时候校验gitops库文件是否存在,处理部署configMap时，由于没有创gitops文件导致的部署失败
-            checkOptionsHandler.check(devopsEnvironmentE, devopsConfigMapDTO.getId(), devopsConfigMapDTO.getName(), CONFIGMAP);
+            resourceFileCheckHandler.check(devopsEnvironmentE, devopsConfigMapDTO.getId(), devopsConfigMapDTO.getName(), CONFIGMAP);
 
             if (devopsConfigMapDTO.getValue().equals(gson.fromJson(devopsConfigMapRepository.queryById(devopsConfigMapE.getId()).getValue(), Map.class))) {
                 devopsConfigMapRepository.update(devopsConfigMapE);
@@ -243,14 +242,14 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
         } else {
-            ObjectOperation<V1ConfigMap> objectOperation = new ObjectOperation<>();
+            ResourceConvertToYamlHandler<V1ConfigMap> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             V1ConfigMap v1ConfigMap = new V1ConfigMap();
             V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
             v1ObjectMeta.setName(devopsConfigMapE.getName());
             v1ConfigMap.setMetadata(v1ObjectMeta);
-            objectOperation.setType(v1ConfigMap);
+            resourceConvertToYamlHandler.setType(v1ConfigMap);
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.operationEnvGitlabFile(
+            resourceConvertToYamlHandler.operationEnvGitlabFile(
                     null,
                     projectId,
                     DELETE_TYPE,
@@ -308,9 +307,9 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             devopsConfigMapRepository.update(devopsConfigMapE);
         }
 
-        ObjectOperation<V1ConfigMap> objectOperation = new ObjectOperation<>();
-        objectOperation.setType(v1ConfigMap);
-        objectOperation.operationEnvGitlabFile(CONFIG_MAP_PREFIX + devopsConfigMapE.getName(), envGitLabProjectId, isCreate ? CREATE_TYPE : UPDATE_TYPE,
+        ResourceConvertToYamlHandler<V1ConfigMap> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+        resourceConvertToYamlHandler.setType(v1ConfigMap);
+        resourceConvertToYamlHandler.operationEnvGitlabFile(CONFIG_MAP_PREFIX + devopsConfigMapE.getName(), envGitLabProjectId, isCreate ? CREATE_TYPE : UPDATE_TYPE,
                 userAttrE.getGitlabUserId(), devopsConfigMapE.getId(), CONFIGMAP, null, false, devopsConfigMapE.getDevopsEnvironmentE().getId(), path);
 
 

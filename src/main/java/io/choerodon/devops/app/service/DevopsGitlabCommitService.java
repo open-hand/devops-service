@@ -4,9 +4,9 @@ import java.util.Date;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.CommitFormRecordDTO;
-import io.choerodon.devops.api.dto.DevopsGitlabCommitDTO;
-import io.choerodon.devops.api.dto.PushWebHookDTO;
+import io.choerodon.devops.api.vo.CommitFormRecordDTO;
+import io.choerodon.devops.api.vo.DevopsGitlabCommitDTO;
+import io.choerodon.devops.api.vo.PushWebHookDTO;
 
 public interface DevopsGitlabCommitService {
 

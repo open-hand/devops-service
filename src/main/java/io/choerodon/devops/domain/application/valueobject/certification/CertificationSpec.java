@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import io.choerodon.devops.infra.common.util.enums.CertificationType;
+import io.choerodon.devops.infra.enums.CertificationType;
 
 /**
  * Created by n!Ck

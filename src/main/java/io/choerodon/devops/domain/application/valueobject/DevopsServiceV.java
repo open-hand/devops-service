@@ -3,8 +3,8 @@ package io.choerodon.devops.domain.application.valueobject;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.api.dto.DevopsIngressDTO;
-import io.choerodon.devops.api.dto.EndPointPortDTO;
+import io.choerodon.devops.api.vo.DevopsIngressDTO;
+import io.choerodon.devops.api.vo.EndPointPortDTO;
 import io.choerodon.devops.domain.application.entity.PortMapE;
 import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
 

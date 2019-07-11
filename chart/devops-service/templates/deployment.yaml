@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       annotations:
-{{ include "service.monitoring.pod.annotations" . | indent 8 }}
+{{ include "service.monitoring.pod.annotation" . | indent 8 }}
       labels:
 {{ include "service.microservice.labels" . | indent 8 }}
 {{ include "service.labels.standard" . | indent 8 }}

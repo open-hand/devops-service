@@ -4,17 +4,16 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
-import io.choerodon.devops.api.dto.gitlab.MemberDTO;
-import io.choerodon.devops.api.dto.gitlab.VariableDTO;
+import io.choerodon.devops.api.vo.gitlab.MemberDTO;
+import io.choerodon.devops.api.vo.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
-import io.choerodon.devops.domain.application.event.GitlabUserEvent;
+import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
-import org.eclipse.jgit.api.Git;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,12 +56,12 @@ public interface GitlabServiceClient {
     @PostMapping(value = "/v1/users")
     ResponseEntity<UserDO> createGitLabUser(@RequestParam("password") String password,
                                             @RequestParam(value = "projectsLimit", required = false) Integer projectsLimit,
-                                            @RequestBody GitlabUserEvent gitlabUserEvent);
+                                            @RequestBody GitlabUserPayload gitlabUserPayload);
 
     @PutMapping("/v1/users/{userId}")
     ResponseEntity<UserDO> updateGitLabUser(@PathVariable("userId") Integer userId,
                                             @RequestParam(value = "projectsLimit", required = false) Integer projectsLimit,
-                                            @RequestBody GitlabUserEvent gitlabUserEvent);
+                                            @RequestBody GitlabUserPayload gitlabUserPayload);
 
 
     @PutMapping("/v1/projects/{projectId}")

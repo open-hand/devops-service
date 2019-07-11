@@ -6,10 +6,10 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
 
-import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
-import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
-import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.AccessTokenCheckResultDTO;
+import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
+import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
 import io.choerodon.devops.infra.feign.AppShareClient;
 
 /**

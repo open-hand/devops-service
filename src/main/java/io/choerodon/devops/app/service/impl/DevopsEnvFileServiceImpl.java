@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.devops.api.dto.DevopsEnvFileErrorDTO;
+import io.choerodon.devops.api.vo.DevopsEnvFileErrorDTO;
 import io.choerodon.devops.app.service.DevopsEnvFileService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileErrorE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;

@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.api.vo.DevopsEnvPodDTO;
 import io.choerodon.devops.app.service.DeployDetailService;
 import io.choerodon.devops.domain.application.repository.DeployDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;

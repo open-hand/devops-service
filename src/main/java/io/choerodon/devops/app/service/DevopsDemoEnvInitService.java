@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.domain.application.event.OrganizationRegisterEventPayload;
+import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
 
 /**
  * @author zmf

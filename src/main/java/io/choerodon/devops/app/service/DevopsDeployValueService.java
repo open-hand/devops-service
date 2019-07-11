@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
+import io.choerodon.devops.api.vo.DevopsDeployValueDTO;
 
 import java.util.List;
 

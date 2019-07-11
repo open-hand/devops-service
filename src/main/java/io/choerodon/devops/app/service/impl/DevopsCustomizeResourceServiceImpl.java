@@ -8,18 +8,18 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.DevopsCustomizeResourceDTO;
-import io.choerodon.devops.api.dto.DevopsCustomizeResourceReqDTO;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceDTO;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqDTO;
 import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.handler.ObjectOperation;
+import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.common.util.*;
-import io.choerodon.devops.infra.common.util.enums.CommandStatus;
-import io.choerodon.devops.infra.common.util.enums.CommandType;
-import io.choerodon.devops.infra.common.util.enums.ObjectType;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.enums.ResourceType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -146,8 +146,8 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                 throw new CommonException("error.fileResource.not.exist");
             }
             //获取更新内容
-            ObjectOperation objectOperation = new ObjectOperation();
-            String updateContent = objectOperation.getUpdateContent(objects.get(0), false, null, devopsCustomizeResourceE.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.UPDATE.getType());
+            ResourceConvertToYamlHandler resourceConvertToYamlHandler = new ResourceConvertToYamlHandler();
+            String updateContent = resourceConvertToYamlHandler.getUpdateContent(objects.get(0), false, null, devopsCustomizeResourceE.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.UPDATE.getType());
             gitlabRepository.updateFile(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceE.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
 
@@ -210,8 +210,8 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         } else {
             //获取更新内容
             DevopsCustomizeResourceContentE devopsCustomizeResourceContentE = devopsCustomizeResourceContentRepository.query(devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getId());
-            ObjectOperation objectOperation = new ObjectOperation();
-            String updateContent = objectOperation.getUpdateContent(FileUtil.getYaml().load(devopsCustomizeResourceContentE.getContent()), false, null, devopsCustomizeResourceE.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.DELETE.getType());
+            ResourceConvertToYamlHandler resourceConvertToYamlHandler = new ResourceConvertToYamlHandler();
+            String updateContent = resourceConvertToYamlHandler.getUpdateContent(FileUtil.getYaml().load(devopsCustomizeResourceContentE.getContent()), false, null, devopsCustomizeResourceE.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.DELETE.getType());
             gitlabRepository.updateFile(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceE.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
     }

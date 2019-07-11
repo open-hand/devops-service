@@ -1,7 +1,7 @@
 package io.choerodon.devops.domain.application.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.UserAttrDTO;
+import io.choerodon.devops.api.vo.UserAttrDTO;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.infra.dataobject.UserAttrDO;
 import org.springframework.beans.BeanUtils;

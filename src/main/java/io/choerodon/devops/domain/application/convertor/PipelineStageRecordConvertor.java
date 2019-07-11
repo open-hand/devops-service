@@ -1,7 +1,7 @@
 package io.choerodon.devops.domain.application.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.PipelineStageRecordDTO;
+import io.choerodon.devops.api.vo.PipelineStageRecordDTO;
 import io.choerodon.devops.domain.application.entity.PipelineStageRecordE;
 import io.choerodon.devops.infra.dataobject.PipelineStageRecordDO;
 import org.springframework.beans.BeanUtils;

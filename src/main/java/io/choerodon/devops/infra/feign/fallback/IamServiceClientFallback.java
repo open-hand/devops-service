@@ -5,10 +5,10 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.ProjectDTO;
-import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.dto.iam.*;
-import io.choerodon.devops.domain.application.event.IamAppPayLoad;
+import io.choerodon.devops.api.vo.ProjectDTO;
+import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
+import io.choerodon.devops.api.vo.iam.*;
+import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;

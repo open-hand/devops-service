@@ -6,20 +6,20 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
-import io.choerodon.devops.api.dto.ApplicationCodeDTO;
-import io.choerodon.devops.api.dto.ApplicationImportDTO;
-import io.choerodon.devops.api.dto.ApplicationRepDTO;
-import io.choerodon.devops.api.dto.ApplicationReqDTO;
-import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
-import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
-import io.choerodon.devops.api.dto.SonarContentsDTO;
-import io.choerodon.devops.api.dto.SonarTableDTO;
-import io.choerodon.devops.api.dto.gitlab.VariableDTO;
-import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
-import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
-import io.choerodon.devops.domain.application.event.IamAppPayLoad;
-import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
+import io.choerodon.devops.api.vo.AppUserPermissionRepDTO;
+import io.choerodon.devops.api.vo.ApplicationCodeDTO;
+import io.choerodon.devops.api.vo.ApplicationImportDTO;
+import io.choerodon.devops.api.vo.ApplicationRepDTO;
+import io.choerodon.devops.api.vo.ApplicationReqDTO;
+import io.choerodon.devops.api.vo.ApplicationTemplateRepDTO;
+import io.choerodon.devops.api.vo.ApplicationUpdateDTO;
+import io.choerodon.devops.api.vo.SonarContentsDTO;
+import io.choerodon.devops.api.vo.SonarTableDTO;
+import io.choerodon.devops.api.vo.gitlab.VariableDTO;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
+import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
+import io.choerodon.devops.infra.enums.GitPlatformType;
 
 /**
  * Created by younger on 2018/3/28.

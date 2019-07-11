@@ -19,25 +19,25 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.DevopsIngressDTO;
-import io.choerodon.devops.api.dto.DevopsServiceDTO;
-import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
+import io.choerodon.devops.api.vo.DevopsIngressDTO;
+import io.choerodon.devops.api.vo.DevopsServiceDTO;
+import io.choerodon.devops.api.vo.DevopsServiceReqDTO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
-import io.choerodon.devops.domain.application.handler.ObjectOperation;
+import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
+import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
-import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.CommandStatus;
-import io.choerodon.devops.infra.common.util.enums.CommandType;
-import io.choerodon.devops.infra.common.util.enums.ObjectType;
-import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
+import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.enums.ServiceStatus;
 
 
 /**
@@ -85,7 +85,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
-    private CheckOptionsHandler checkOptionsHandler;
+    private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
     private DevopsIngressRepository devopsIngressRepository;
     @Autowired
@@ -383,7 +383,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
         //更新网络的时候校验gitops库文件是否存在,处理部署网络时，由于没有创gitops文件导致的部署失败
-        checkOptionsHandler.check(devopsEnvironmentE, id, devopsServiceReqDTO.getName(), SERVICE);
+        resourceFileCheckHandler.check(devopsEnvironmentE, id, devopsServiceReqDTO.getName(), SERVICE);
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
 
@@ -513,14 +513,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
         } else {
-            ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
+            ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             V1Service v1Service = new V1Service();
             V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
             v1ObjectMeta.setName(devopsServiceE.getName());
             v1Service.setMetadata(v1ObjectMeta);
-            objectOperation.setType(v1Service);
+            resourceConvertToYamlHandler.setType(v1Service);
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.operationEnvGitlabFile(
+            resourceConvertToYamlHandler.operationEnvGitlabFile(
                     "release-" + devopsServiceE.getName(),
                     projectId,
                     DELETE,
@@ -747,9 +747,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //处理文件
-        ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
-        objectOperation.setType(service);
-        objectOperation.operationEnvGitlabFile("svc-" + devopsServiceE.getName(), TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
+        ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+        resourceConvertToYamlHandler.setType(service);
+        resourceConvertToYamlHandler.operationEnvGitlabFile("svc-" + devopsServiceE.getName(), TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
                 userAttrE.getGitlabUserId(), devopsServiceE.getId(), SERVICE, v1Endpoints, false, devopsServiceE.getEnvId(), path);
 
 

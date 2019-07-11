@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.util.FileUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
+import io.choerodon.devops.api.vo.DevopsDeployValueDTO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
@@ -27,7 +27,7 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermission
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.infra.common.util.EnvUtil;
+import io.choerodon.devops.infra.util.EnvUtil;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

@@ -4,7 +4,7 @@ import feign.FeignException;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.event.GitlabUserEvent;
+import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
 import io.choerodon.devops.infra.dataobject.gitlab.UserDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -28,11 +28,11 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
     }
 
     @Override
-    public GitlabUserE createGitLabUser(String password, Integer projectsLimit, GitlabUserEvent gitlabUserEvent) {
+    public GitlabUserE createGitLabUser(String password, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
         ResponseEntity<UserDO> responseEntity;
         try {
             responseEntity = gitlabServiceClient.createGitLabUser(
-                    password, projectsLimit, gitlabUserEvent);
+                    password, projectsLimit, gitlabUserPayload);
         } catch (FeignException e) {
             LOGGER.info("error.gitlab.user.create");
             throw new CommonException(e);
@@ -52,11 +52,11 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
     }
 
     @Override
-    public GitlabUserE updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserEvent gitlabUserEvent) {
+    public GitlabUserE updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
         ResponseEntity<UserDO> responseEntity;
         try {
             responseEntity = gitlabServiceClient.updateGitLabUser(
-                    userId, projectsLimit, gitlabUserEvent);
+                    userId, projectsLimit, gitlabUserPayload);
         } catch (FeignException e) {
             throw new CommonException(e);
         }

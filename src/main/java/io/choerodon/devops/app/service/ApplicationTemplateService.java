@@ -4,10 +4,10 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.ApplicationTemplateDTO;
-import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
-import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO;
-import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
+import io.choerodon.devops.api.vo.ApplicationTemplateDTO;
+import io.choerodon.devops.api.vo.ApplicationTemplateRepDTO;
+import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
+import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 
 /**
  * Created by younger on 2018/3/27.

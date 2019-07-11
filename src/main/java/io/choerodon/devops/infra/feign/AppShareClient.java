@@ -10,11 +10,10 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
 
-import io.choerodon.base.domain.Sort;
-import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
-import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
-import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.AccessTokenCheckResultDTO;
+import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
+import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

@@ -2,8 +2,8 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.api.dto.gitlab.MemberDTO;
-import io.choerodon.devops.api.dto.gitlab.VariableDTO;
+import io.choerodon.devops.api.vo.gitlab.MemberDTO;
+import io.choerodon.devops.api.vo.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;

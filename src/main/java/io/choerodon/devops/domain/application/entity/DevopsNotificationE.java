@@ -1,9 +1,5 @@
 package io.choerodon.devops.domain.application.entity;
 
-import java.util.List;
-
-import io.choerodon.devops.api.dto.DevopsNotificationUserRelDTO;
-
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  17:32 2019/5/13

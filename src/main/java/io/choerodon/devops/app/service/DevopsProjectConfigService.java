@@ -2,8 +2,8 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
-import io.choerodon.devops.api.dto.ProjectDefaultConfigDTO;
+import io.choerodon.devops.api.vo.DevopsProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectDefaultConfigDTO;
 
 import java.util.List;
 

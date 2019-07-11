@@ -1,14 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectConfigDTO;
 import io.choerodon.devops.app.service.ProjectConfigHarborService;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.harbor.Project;
-import io.choerodon.devops.infra.dataobject.harbor.ProjectDetail;
 import io.choerodon.devops.infra.feign.HarborClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

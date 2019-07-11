@@ -1,10 +1,10 @@
 package io.choerodon.devops.api.validator;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
-import io.choerodon.devops.api.dto.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.DevopsProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectConfigDTO;
 import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
+import io.choerodon.devops.infra.enums.ProjectConfigType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

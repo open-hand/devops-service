@@ -3,7 +3,7 @@ package io.choerodon.devops.domain.application.convertor;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.AppInstanceCodeDTO;
+import io.choerodon.devops.api.vo.AppInstanceCodeDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 
 /**

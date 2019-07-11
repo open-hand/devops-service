@@ -5,7 +5,7 @@ import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepo
 import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
+import io.choerodon.devops.infra.enums.InstanceStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

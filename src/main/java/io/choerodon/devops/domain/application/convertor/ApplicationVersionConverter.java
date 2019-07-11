@@ -4,7 +4,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.factory.ApplicationVersionEFactory;
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;

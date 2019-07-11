@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.dataobject.gitlab;
 
 import java.util.Date;
 
-import io.choerodon.devops.infra.common.util.enums.JobStatus;
+import io.choerodon.devops.infra.enums.JobStatus;
 
 public class JobDO {
 

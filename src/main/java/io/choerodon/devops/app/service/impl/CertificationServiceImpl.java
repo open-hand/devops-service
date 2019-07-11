@@ -9,20 +9,20 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.C7nCertificationDTO;
-import io.choerodon.devops.api.dto.CertificationDTO;
-import io.choerodon.devops.api.dto.OrgCertificationDTO;
+import io.choerodon.devops.api.vo.C7nCertificationDTO;
+import io.choerodon.devops.api.vo.CertificationDTO;
+import io.choerodon.devops.api.vo.OrgCertificationDTO;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.handler.ObjectOperation;
+import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
-import io.choerodon.devops.infra.common.util.*;
-import io.choerodon.devops.infra.common.util.enums.*;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -147,7 +147,7 @@ public class CertificationServiceImpl implements CertificationService {
             createAndStore(certificationE, c7nCertification);
 
             // sent certification to agent
-            ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
+            ResourceConvertToYamlHandler<C7nCertification> certificationOperation = new ResourceConvertToYamlHandler<>();
             certificationOperation.setType(c7nCertification);
             operateEnvGitLabFile(certName, devopsEnvironmentE, c7nCertification);
 
@@ -217,9 +217,9 @@ public class CertificationServiceImpl implements CertificationService {
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
         envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
-        ObjectOperation<C7nCertification> objectOperation = new ObjectOperation<>();
-        objectOperation.setType(c7nCertification);
-        objectOperation.operationEnvGitlabFile(CERT_PREFIX + certName,
+        ResourceConvertToYamlHandler<C7nCertification> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+        resourceConvertToYamlHandler.setType(c7nCertification);
+        resourceConvertToYamlHandler.operationEnvGitlabFile(CERT_PREFIX + certName,
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "create",
                 userAttrE.getGitlabUserId(), null, null, null, false, null, null);
     }
@@ -278,7 +278,7 @@ public class CertificationServiceImpl implements CertificationService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
         } else {
-            ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
+            ResourceConvertToYamlHandler<C7nCertification> certificationOperation = new ResourceConvertToYamlHandler<>();
             C7nCertification c7nCertification = new C7nCertification();
             CertificationMetadata certificationMetadata = new CertificationMetadata();
             certificationMetadata.setName(certName);

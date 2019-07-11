@@ -7,7 +7,7 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.DevopsEnvGroupDTO;
+import io.choerodon.devops.api.vo.DevopsEnvGroupDTO;
 import io.choerodon.devops.app.service.DevopsEnvGroupService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import io.choerodon.devops.app.service.ProjectPipelineService;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * Created by Zenger on 2018/4/10.

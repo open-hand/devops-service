@@ -3,7 +3,7 @@ package io.choerodon.devops.api.validator;
 import java.util.regex.Pattern;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.ApplicationReqDTO;
+import io.choerodon.devops.api.vo.ApplicationReqDTO;
 
 /**
  * Created by younger on 2018/3/28.

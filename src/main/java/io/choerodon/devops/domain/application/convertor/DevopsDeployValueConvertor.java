@@ -1,7 +1,7 @@
 package io.choerodon.devops.domain.application.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
+import io.choerodon.devops.api.vo.DevopsDeployValueDTO;
 import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
 import io.choerodon.devops.infra.dataobject.DevopsDeployValueDO;
 import org.springframework.beans.BeanUtils;

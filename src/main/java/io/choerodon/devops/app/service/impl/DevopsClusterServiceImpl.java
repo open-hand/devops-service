@@ -11,7 +11,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
@@ -21,10 +21,10 @@ import io.choerodon.devops.domain.application.repository.DevopsClusterProPermiss
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.util.FileUtil;
+import io.choerodon.devops.infra.util.GenerateUUID;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -306,10 +306,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     /**
-     * pod entity to cluster pod dto
+     * pod entity to cluster pod vo
      *
      * @param pod pod entity
-     * @return the cluster pod dto
+     * @return the cluster pod vo
      */
     private DevopsClusterPodDTO podE2ClusterPodDTO(DevopsEnvPodE pod) {
         DevopsClusterPodDTO devopsEnvPodDTO = new DevopsClusterPodDTO();

@@ -3,14 +3,14 @@ package io.choerodon.devops.app.service.impl;
 import java.util.regex.Pattern;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
+import io.choerodon.devops.api.vo.GitlabUserRequestDTO;
 import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.event.GitlabUserEvent;
+import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,7 +39,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
             gitlabUserE = gitlabUserRepository.createGitLabUser(
                     gitlabConfigurationProperties.getPassword(),
                     gitlabConfigurationProperties.getProjectLimit(),
-                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
+                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserPayload.class));
         }
         UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(gitlabUserE.getId().longValue());
         if (userAttrE == null) {
@@ -60,7 +60,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
             gitlabUserRepository.updateGitLabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
                     gitlabConfigurationProperties.getProjectLimit(),
-                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
+                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserPayload.class));
         }
     }
 

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.DevopsServiceDTO;
+import io.choerodon.devops.api.vo.DevopsServiceDTO;
 import io.choerodon.devops.domain.application.entity.DevopsServiceE;
 import io.choerodon.devops.domain.application.entity.PortMapE;
 import io.choerodon.devops.infra.dataobject.DevopsServiceDO;

@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.OrgCertificationDTO;
-import io.choerodon.devops.api.dto.ProjectDTO;
+import io.choerodon.devops.api.vo.OrgCertificationDTO;
+import io.choerodon.devops.api.vo.ProjectDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface DevopsOrgCertificationService {

@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.dto.UserAttrDTO;
+import io.choerodon.devops.api.vo.UserAttrDTO;
 
 public interface UserAttrService {
 

@@ -2,8 +2,8 @@ package io.choerodon.devops.domain.application.convertor;
 
 import com.google.gson.Gson;
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
-import io.choerodon.devops.api.dto.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.DevopsProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectConfigDTO;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
 import org.springframework.beans.BeanUtils;

@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.api.dto.SonarInfoDTO;
+import io.choerodon.devops.api.vo.SonarInfoDTO;
 import io.choerodon.devops.app.service.SonarService;
 
 /**

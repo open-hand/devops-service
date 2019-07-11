@@ -9,7 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
+import io.choerodon.devops.api.vo.DevopsDeployValueDTO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
