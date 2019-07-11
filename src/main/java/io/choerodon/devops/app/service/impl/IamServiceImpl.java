@@ -36,7 +36,6 @@ import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
-import io.choerodon.devops.infra.persistence.impl.IamRepositoryImpl;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

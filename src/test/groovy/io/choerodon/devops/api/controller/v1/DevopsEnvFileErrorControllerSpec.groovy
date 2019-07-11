@@ -5,7 +5,7 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.ProjectVO
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE
-import io.choerodon.devops.domain.application.repository.IamRepository
+
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO

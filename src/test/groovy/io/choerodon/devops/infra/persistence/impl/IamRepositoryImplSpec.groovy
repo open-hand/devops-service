@@ -1,12 +1,11 @@
 package io.choerodon.devops.infra.persistence.impl
 
-import io.choerodon.asgard.saga.feign.SagaClient
+
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.domain.application.repository.IamRepository
+
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.feign.IamServiceClient
 import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus

@@ -14,7 +14,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dto.ApplicationLatestVersionDO;

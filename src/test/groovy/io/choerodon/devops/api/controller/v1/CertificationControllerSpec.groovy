@@ -8,7 +8,6 @@ import io.choerodon.devops.app.service.GitlabGroupMemberService
 import io.choerodon.devops.app.service.impl.CertificationServiceImpl
 
 
-import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.CertificationDO

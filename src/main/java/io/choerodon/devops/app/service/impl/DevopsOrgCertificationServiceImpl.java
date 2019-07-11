@@ -19,7 +19,6 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsCertificationProRelE;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsCertificationProRelRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;

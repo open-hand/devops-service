@@ -11,15 +11,12 @@ import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.app.service.impl.DevopsConfigMapServiceImpl
 <<<<<<< HEAD
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
-import io.choerodon.devops.domain.application.repository.GitlabRepository
 =======
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE
 
 
 >>>>>>> [IMP]修复后端结构
-import io.choerodon.devops.domain.application.repository.IamRepository
+
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil

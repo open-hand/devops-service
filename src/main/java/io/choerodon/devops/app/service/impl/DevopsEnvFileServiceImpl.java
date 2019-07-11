@@ -17,7 +17,6 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileErrorRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 
 /**

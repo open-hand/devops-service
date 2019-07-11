@@ -34,14 +34,6 @@ import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
-import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
-import io.choerodon.devops.domain.application.event.IamAppPayLoad;
-import io.choerodon.devops.domain.application.factory.ApplicationFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
@@ -162,7 +154,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
     @Autowired
     private ApplicationMapper applicationMapper;
-<<<<<<<HEAD
     @Autowired
     private TransactionalProducer producer;
     @Autowired
@@ -173,8 +164,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private ProjectService projectService;
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
-=======
-        >>>>>>>[IMP]修复后端结构
 
     @Override
     @Saga(code = "devops-create-application",
@@ -300,21 +289,12 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new CommonException(ERROR_UPDATE_APP);
         }
 
-<<<<<<<HEAD
-        if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
-            updateIamApp(projectId, applicationE, oldApplicationE.getCode());
-=======
             if (!oldApplicationE.getName().equals(applicationUpdateVO.getName())) {
                 ProjectVO projectE = iamService.queryIamProject(oldApplicationE.getProjectE().getId());
                 OrganizationVO organization = iamService.queryOrganizationById(projectE.getOrganization().getId());
                 IamAppPayLoad iamAppPayLoad = iamService.queryIamAppByCode(organization.getId(), applicationE.getCode());
                 iamAppPayLoad.setName(applicationUpdateVO.getName());
-<<<<<<<HEAD
-                iamRepository.updateIamApp(organization.getId(), iamAppPayLoad.getId(), iamAppPayLoad);
->>>>>>> [IMP]applicationController重构
-                        =======
                 iamService.updateIamApp(organization.getId(), iamAppPayLoad.getId(), iamAppPayLoad);
->>>>>>> [IMP]修改AppControler重构
             }
 
             // 创建gitlabUserPayload
@@ -413,50 +393,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             return resultDTOPage;
         }
 
-<<<<<<<HEAD
-        @Override
-        public PageInfo<ApplicationRepDTO> listByOptions (Long projectId, Boolean isActive, Boolean hasVersion, Boolean
-        doPage, PageRequest pageRequest, String params){
-            PageInfo<ApplicationE> applicationES = applicationRepository.listByOptions(projectId, isActive, hasVersion, null, null, doPage, pageRequest, params);
-            ProjectE projectE = iamRepository.queryIamProject(projectId);
-            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-            String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-            initApplicationParams(projectE, organization, applicationES.getList(), urlSlash);
-            return ConvertPageHelper.convertPageInfo(applicationES, ApplicationRepDTO.class);
-        }
 
-        private void getSonarUrl (ProjectE projectE, Organization organization, ApplicationE t){
-            if (!sonarqubeUrl.equals("")) {
-                SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, "sonar", userName, password);
-                String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), t.getCode());
-
-                Map<String, String> queryContentMap = new HashMap<>();
-                queryContentMap.put("additionalFields", "metrics,periods");
-                queryContentMap.put("componentKey", key);
-                queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,new_bugs,new_vulnerabilities,sqale_index,code_smells,new_technical_debt,new_code_smells,coverage,tests,new_coverage,duplicated_lines_density,duplicated_blocks,new_duplicated_lines_density,ncloc,ncloc_language_distribution");
-                Response<SonarComponent> sonarComponentResponse = null;
-                try {
-                    sonarComponentResponse = sonarClient.getSonarComponet(queryContentMap).execute();
-                } catch (IOException e) {
-                    t.initSonarUrl(null);
-                    return;
-                }
-                if (sonarComponentResponse.raw().code() != 200) {
-                    t.initSonarUrl(null);
-                    return;
-                } else {
-                    t.initSonarUrl(sonarqubeUrl);
-                    return;
-                }
-            } else {
-                t.initSonarUrl(null);
-                return;
-            }
-        }
-
-
-=======
->>>>>>> [IMP]applicationController重构
         @Override
         public PageInfo<ApplicationRepVO> pageCodeRepository (Long projectId, PageRequest pageRequest, String params){
 

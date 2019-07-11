@@ -11,7 +11,7 @@ import io.choerodon.devops.api.vo.ClusterNodeInfoDTO
 import io.choerodon.devops.api.vo.DevopsClusterRepDTO
 import io.choerodon.devops.api.vo.DevopsClusterReqDTO
 import io.choerodon.devops.app.service.impl.ClusterNodeInfoServiceImpl
-import io.choerodon.devops.domain.application.repository.IamRepository
+
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
 import io.choerodon.devops.infra.dataobject.DevopsClusterDO
@@ -21,7 +21,6 @@ import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
-import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier

@@ -5,12 +5,9 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload
 import io.choerodon.devops.app.eventhandler.payload.OrganizationEventPayload
 <<<<<<< HEAD
-import io.choerodon.devops.domain.application.repository.GitlabRepository
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository
+
 import io.choerodon.devops.infra.dataobject.UserAttrDTO
 =======
-
-import io.choerodon.devops.infra.dataobject.UserAttrDO
 >>>>>>> [IMP]修复后端结构
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO
 import io.choerodon.devops.infra.dataobject.gitlab.UserDO

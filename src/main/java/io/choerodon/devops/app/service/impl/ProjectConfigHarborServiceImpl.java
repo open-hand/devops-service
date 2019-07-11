@@ -4,7 +4,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectConfigDTO;
 import io.choerodon.devops.app.service.ProjectConfigHarborService;
 import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.dto.harbor.Project;
