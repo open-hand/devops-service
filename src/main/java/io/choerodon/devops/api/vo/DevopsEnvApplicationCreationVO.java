@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.dto;
+package io.choerodon.devops.api.vo;
 
 
 import io.swagger.annotations.ApiModelProperty;
@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * 创建环境应用关联关系的DTO, 可以一个环境关联多个应用
  */
-public class DevopsEnvApplicationCreationDTO {
+public class DevopsEnvApplicationCreationVO {
     @ApiModelProperty(value = "环境id")
     private Long envId;
 

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-import io.choerodon.devops.infra.dataobject.UserAttrDO;
+import io.choerodon.devops.infra.dataobject.UserAttrDTO;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 
 /**
@@ -25,7 +25,7 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
 
     @Override
     public int insert(UserAttrE userAttrE) {
-        return userAttrMapper.insert(ConvertHelper.convert(userAttrE, UserAttrDO.class));
+        return userAttrMapper.insert(ConvertHelper.convert(userAttrE, UserAttrDTO.class));
     }
 
     @Override
@@ -35,7 +35,7 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
 
     @Override
     public Long queryUserIdByGitlabUserId(Long gitLabUserId) {
-        UserAttrDO userAttrDO = new UserAttrDO();
+        UserAttrDTO userAttrDO = new UserAttrDTO();
         userAttrDO.setGitlabUserId(gitLabUserId);
         if (gitLabUserId == null) {
             return null;
@@ -57,14 +57,14 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
     }
 
     public UserAttrE queryByGitlabUserId(Long gitlabUserId) {
-        UserAttrDO userAttrDO = new UserAttrDO();
+        UserAttrDTO userAttrDO = new UserAttrDTO();
         userAttrDO.setGitlabUserId(gitlabUserId);
         return ConvertHelper.convert(userAttrMapper.selectOne(userAttrDO), UserAttrE.class);
     }
 
     @Override
     public void update(UserAttrE userAttrE) {
-        UserAttrDO userAttrDO = userAttrMapper.selectByPrimaryKey(userAttrE.getIamUserId());
+        UserAttrDTO userAttrDO = userAttrMapper.selectByPrimaryKey(userAttrE.getIamUserId());
         userAttrDO.setGitlabToken(userAttrE.getGitlabToken());
         userAttrDO.setGitlabUserName(userAttrE.getGitlabUserName());
         userAttrMapper.updateByPrimaryKey(userAttrDO);
@@ -77,7 +77,7 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
 
     @Override
     public UserAttrE queryByGitlabUserName(String gitlabUserName) {
-        UserAttrDO userAttrDO  = new UserAttrDO();
+        UserAttrDTO userAttrDO  = new UserAttrDTO();
         userAttrDO.setGitlabUserName(gitlabUserName);
         return ConvertHelper.convert(userAttrMapper.selectOne(userAttrDO), UserAttrE.class);
     }

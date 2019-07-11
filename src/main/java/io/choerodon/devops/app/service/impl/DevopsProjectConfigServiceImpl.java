@@ -27,7 +27,7 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 import io.choerodon.devops.infra.dataobject.harbor.*;
 import io.choerodon.devops.infra.feign.HarborClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -224,7 +224,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                 devopsProjectE.setHarborProjectUserEmail(user.getEmail());
             }
             devopsProjectE.setHarborProjectIsPrivate(true);
-            devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDO.class));
+            devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDTO.class));
 
 
             //新增项目harbor配置
@@ -280,7 +280,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
 
                     DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
                     devopsProjectE.setHarborProjectIsPrivate(false);
-                    devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDO.class));
+                    devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDTO.class));
                     applicationRepository.updateAppHarborConfig(projectId, newDevopsProjectConfigE.getId(), devopsProjectConfigE.getId(), false);
                     devopsProjectConfigRepository.delete(devopsProjectConfigE.getId());
 

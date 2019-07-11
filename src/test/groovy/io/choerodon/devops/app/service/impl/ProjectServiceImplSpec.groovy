@@ -1,8 +1,6 @@
 package io.choerodon.devops.app.service.impl
 
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.app.eventhandler.payload.ProjectPayload
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -47,9 +45,9 @@ class ProjectServiceImplSpec extends Specification {
     def "CleanupData"() {
         given:
         // 删除project
-        List<DevopsProjectDO> list = devopsProjectMapper.selectAll()
+        List<DevopsProjectDTO> list = devopsProjectMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (DevopsProjectDO e : list) {
+            for (DevopsProjectDTO e : list) {
                 if (e.getIamProjectId() > 1L) {
                     devopsProjectMapper.delete(e)
                 }

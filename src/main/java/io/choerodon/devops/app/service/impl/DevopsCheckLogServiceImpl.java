@@ -415,7 +415,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private void syncGitOpsUserAccess(List<CheckLog> logs, String version) {
         List<Long> projectIds = devopsProjectMapper.selectAll().stream().
                 filter(devopsProjectDO -> devopsProjectDO.getDevopsEnvGroupId() != null && devopsProjectDO
-                        .getDevopsAppGroupId() != null).map(DevopsProjectDO::getIamProjectId)
+                        .getDevopsAppGroupId() != null).map(DevopsProjectDTO::getIamProjectId)
                 .collect(Collectors.toList());
         projectIds.forEach(projectId -> {
             PageInfo<UserWithRoleDTO> allProjectUser = iamRepository
@@ -891,7 +891,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private void syncNonEnvGroupProject(List<CheckLog> logs) {
-            List<DevopsProjectDO> projectDOList = devopsCheckLogRepository.queryNonEnvGroupProject();
+            List<DevopsProjectDTO> projectDOList = devopsCheckLogRepository.queryNonEnvGroupProject();
             LOGGER.info("{} projects need to upgrade", projectDOList.size());
             final String groupCodeSuffix = "gitops";
             projectDOList.forEach(t -> {
@@ -914,7 +914,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     try {
                         responseEntity = gitlabServiceClient.createGroup(group, ADMIN);
                         group = responseEntity.getBody();
-                        DevopsProjectDO devopsProjectDO = new DevopsProjectDO(projectId);
+                        DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(projectId);
                         devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(group.getId()));
                         devopsProjectRepository.updateProjectAttr(devopsProjectDO);
                         checkLog.setResult(SUCCESS);

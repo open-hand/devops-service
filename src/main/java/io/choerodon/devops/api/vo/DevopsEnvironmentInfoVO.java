@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.dto;
+package io.choerodon.devops.api.vo;
 
 /**
  * 展示环境信息及一些相关的信息

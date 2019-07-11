@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.devops.app.service.ProjectService;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 
 /**
  * Created with IntelliJ IDEA.
@@ -33,7 +33,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public void createProject(ProjectPayload projectPayload) {
         // create project in db
-        DevopsProjectDO devopsProject = new DevopsProjectDO(projectPayload.getProjectId());
+        DevopsProjectDTO devopsProject = new DevopsProjectDTO(projectEvent.getProjectId());
         devopsProjectRepository.createProject(devopsProject);
     }
 

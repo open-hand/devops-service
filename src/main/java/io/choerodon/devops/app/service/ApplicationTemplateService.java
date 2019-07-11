@@ -5,9 +5,9 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.ApplicationTemplateDTO;
-import io.choerodon.devops.api.vo.ApplicationTemplateRepDTO;
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
+import io.choerodon.devops.api.vo.ApplicationTemplateRepVO;
 
 /**
  * Created by younger on 2018/3/27.
@@ -21,7 +21,7 @@ public interface ApplicationTemplateService {
      * @param organizationId         组织Id
      * @return ApplicationTemplateDTO
      */
-    ApplicationTemplateRepDTO create(ApplicationTemplateDTO applicationTemplateDTO, Long organizationId);
+    ApplicationTemplateRepVO create(ApplicationTemplateDTO applicationTemplateDTO, Long organizationId);
 
     /**
      * 组织下更新应用模板
@@ -30,7 +30,7 @@ public interface ApplicationTemplateService {
      * @param organizationId               组织Id
      * @return ApplicationTemplateDTO
      */
-    ApplicationTemplateRepDTO update(ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO, Long organizationId);
+    ApplicationTemplateRepVO update(ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO, Long organizationId);
 
     /**
      * 组织下删除应用模板
@@ -45,7 +45,7 @@ public interface ApplicationTemplateService {
      * @param appTemplateId 模板id
      * @return ApplicationTemplateDTO
      */
-    ApplicationTemplateRepDTO query(Long appTemplateId);
+    ApplicationTemplateRepVO query(Long appTemplateId);
 
     /**
      * 组织下分页查询应用模板
@@ -55,7 +55,7 @@ public interface ApplicationTemplateService {
      * @param searchParam    模糊查询参数
      * @return Page
      */
-    PageInfo<ApplicationTemplateRepDTO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam);
+    PageInfo<ApplicationTemplateRepVO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam);
 
     /**
      * 处理模板创建逻辑
@@ -70,7 +70,7 @@ public interface ApplicationTemplateService {
      * @param organizationId 组织Id
      * @return List
      */
-    List<ApplicationTemplateRepDTO> list(Long organizationId);
+    List<ApplicationTemplateRepVO> list(Long organizationId);
 
     /**
      * 创建模板校验名称是否存在
@@ -112,5 +112,5 @@ public interface ApplicationTemplateService {
      * @param organizationId 组织id
      * @param code           模板code
      */
-    ApplicationTemplateRepDTO queryByCode(Long organizationId, String code);
+    ApplicationTemplateRepVO queryByCode(Long organizationId, String code);
 }

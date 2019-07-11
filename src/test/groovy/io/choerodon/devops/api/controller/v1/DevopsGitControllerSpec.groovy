@@ -6,9 +6,9 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.DevopsBranchDTO
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
+import io.choerodon.devops.api.vo.DevopsBranchDTO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
+import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE
 import io.choerodon.devops.domain.application.entity.iam.UserE

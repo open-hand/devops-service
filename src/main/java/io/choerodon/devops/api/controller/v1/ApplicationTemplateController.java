@@ -11,7 +11,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ApplicationTemplateDTO;
-import io.choerodon.devops.api.vo.ApplicationTemplateRepDTO;
+import io.choerodon.devops.api.vo.ApplicationTemplateRepVO;
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.mybatis.annotation.SortDefault;
@@ -44,10 +44,10 @@ public class ApplicationTemplateController {
      * @param applicationTemplateDTO 模板信息
      * @return ApplicationTemplateDTO
      */
-    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下创建应用模板")
     @PostMapping
-    public ResponseEntity<ApplicationTemplateRepDTO> create(
+    public ResponseEntity<ApplicationTemplateRepVO> create(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
@@ -64,10 +64,10 @@ public class ApplicationTemplateController {
      * @param applicationTemplateUpdateDTO 模板信息
      * @return ApplicationTemplateDTO
      */
-    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下更新应用模板")
     @PutMapping
-    public ResponseEntity<ApplicationTemplateRepDTO> update(
+    public ResponseEntity<ApplicationTemplateRepVO> update(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "模板信息", required = true)
@@ -84,7 +84,7 @@ public class ApplicationTemplateController {
      * @param appTemplateId  模板id
      * @return ApplicationTemplateDTO
      */
-    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下删除应用模板")
     @DeleteMapping(value = "/{appTemplateId}")
     public ResponseEntity delete(
@@ -103,10 +103,10 @@ public class ApplicationTemplateController {
      * @param appTemplateId  模板id
      * @return ApplicationTemplateDTO
      */
-    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR,InitRoleCode.ORGANIZATION_MEMBER})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "组织下查询单个应用模板")
     @GetMapping(value = "/{appTemplateId}")
-    public ResponseEntity<ApplicationTemplateRepDTO> queryByAppTemplateId(
+    public ResponseEntity<ApplicationTemplateRepVO> queryByAppTemplateId(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
@@ -124,11 +124,11 @@ public class ApplicationTemplateController {
      * @param params         查询参数
      * @return Page
      */
-    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR,InitRoleCode.ORGANIZATION_MEMBER})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "组织下分页查询应用模板")
     @CustomPageRequest
     @PostMapping("/list_by_options")
-    public ResponseEntity<PageInfo<ApplicationTemplateRepDTO>> listByOptions(
+    public ResponseEntity<PageInfo<ApplicationTemplateRepVO>> listByOptions(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "分页参数")
@@ -147,10 +147,10 @@ public class ApplicationTemplateController {
      * @param organizationId 组织id
      * @return Page
      */
-    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR,InitRoleCode.ORGANIZATION_MEMBER})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "组织下查询所有应用模板")
     @GetMapping
-    public ResponseEntity<List<ApplicationTemplateRepDTO>> listByOrgId(
+    public ResponseEntity<List<ApplicationTemplateRepVO>> listByOrgId(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId) {
         return Optional.ofNullable(applicationTemplateService.list(organizationId))
@@ -164,7 +164,7 @@ public class ApplicationTemplateController {
      * @param organizationId 组织id
      * @param name           模板name
      */
-    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "创建模板校验名称是否存在")
     @GetMapping(value = "/check_name")
     public void checkName(
@@ -181,7 +181,7 @@ public class ApplicationTemplateController {
      * @param organizationId 组织id
      * @param code           模板code
      */
-    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "创建模板校验编码是否存在")
     @GetMapping(value = "/check_code")
     public void checkCode(
@@ -198,17 +198,17 @@ public class ApplicationTemplateController {
      * @param organizationId 组织id
      * @param code           模板code
      */
-    @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR,InitRoleCode.ORGANIZATION_MEMBER})
+    @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "根据模板code查询模板")
     @GetMapping(value = "/query_by_code")
-    public ResponseEntity<ApplicationTemplateRepDTO> queryByCode(
+    public ResponseEntity<ApplicationTemplateRepVO> queryByCode(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String code) {
         return Optional.ofNullable(applicationTemplateService.queryByCode(organizationId, code))
-                .map(t->new ResponseEntity<>(t,HttpStatus.OK))
-                .orElseThrow(()->new CommonException(ERROR_GET));
+                .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_GET));
     }
 
 }

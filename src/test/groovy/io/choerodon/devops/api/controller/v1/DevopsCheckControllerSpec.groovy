@@ -7,11 +7,11 @@ import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
-import io.choerodon.devops.api.dto.iam.RoleSearchDTO
-import io.choerodon.devops.api.dto.iam.UserDTO
-import io.choerodon.devops.api.dto.iam.UserWithRoleDTO
+import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO
+import io.choerodon.devops.api.vo.iam.RoleDTO
+import io.choerodon.devops.api.vo.iam.RoleSearchDTO
+import io.choerodon.devops.api.vo.iam.UserDTO
+import io.choerodon.devops.api.vo.iam.UserWithRoleDTO
 import io.choerodon.devops.app.service.DevopsCheckLogService
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE
 import io.choerodon.devops.domain.application.repository.*
@@ -115,21 +115,21 @@ class DevopsCheckControllerSpec extends Specification {
     @Shared
     private DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO()
     @Shared
-    private UserAttrDO userAttrDO = new UserAttrDO()
+    private UserAttrDTO userAttrDO = new UserAttrDTO()
     @Shared
-    private UserAttrDO userAttrDO2 = new UserAttrDO()
+    private UserAttrDTO userAttrDO2 = new UserAttrDTO()
     @Shared
     private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared
-    private DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
+    private DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO()
     @Shared
-    private DevopsProjectDO newDevopsProjectDO = new DevopsProjectDO()
+    private DevopsProjectDTO newDevopsProjectDO = new DevopsProjectDTO()
     @Shared
     private DevopsBranchDO branchDO = new DevopsBranchDO()
     @Shared
     private DevopsGitlabPipelineDO devopsGitlabPipelineDO = new DevopsGitlabPipelineDO()
     @Shared
-    private List<DevopsProjectDO> previousDevopsProjectDOList = new ArrayList<>()
+    private List<DevopsProjectDTO> previousDevopsProjectDOList = new ArrayList<>()
     @Shared
     private ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
     @Shared

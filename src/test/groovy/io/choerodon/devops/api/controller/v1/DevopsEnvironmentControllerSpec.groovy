@@ -8,12 +8,12 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.*
-import io.choerodon.devops.api.dto.gitlab.MemberDTO
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
-import io.choerodon.devops.api.dto.iam.RoleSearchDTO
-import io.choerodon.devops.api.dto.iam.UserDTO
+import io.choerodon.devops.api.vo.*
+import io.choerodon.devops.api.vo.gitlab.MemberDTO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
+import io.choerodon.devops.api.vo.iam.RoleDTO
+import io.choerodon.devops.api.vo.iam.RoleSearchDTO
+import io.choerodon.devops.api.vo.iam.UserDTO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.domain.application.entity.DevopsServiceE
 import io.choerodon.devops.domain.application.entity.ProjectE
@@ -599,11 +599,11 @@ class DevopsEnvironmentControllerSpec extends Specification {
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(addIamUserResponseEntity)
 
         and: '初始化用户3，4的gitlab对象'
-        UserAttrDO userAttrDO1 = new UserAttrDO()
+        io.choerodon.devops.infra.dataobject.UserAttrDTO userAttrDO1 = new io.choerodon.devops.infra.dataobject.UserAttrDTO()
         userAttrDO1.setIamUserId(3L)
         userAttrDO1.setGitlabUserId(3L)
         userAttrMapper.insert(userAttrDO1)
-        UserAttrDO userAttrDO2 = new UserAttrDO()
+        io.choerodon.devops.infra.dataobject.UserAttrDTO userAttrDO2 = new io.choerodon.devops.infra.dataobject.UserAttrDTO()
         userAttrDO2.setIamUserId(4L)
         userAttrDO2.setGitlabUserId(4L)
         userAttrMapper.insert(userAttrDO2)
@@ -657,9 +657,9 @@ class DevopsEnvironmentControllerSpec extends Specification {
         list.get(0)["name"] == "testCluster"
 
         // 删除user，保留默认初始化的1号用户
-        List<UserAttrDO> list0 = userAttrMapper.selectAll()
+        List<io.choerodon.devops.infra.dataobject.UserAttrDTO> list0 = userAttrMapper.selectAll()
         if (list0 != null && !list0.isEmpty()) {
-            for (UserAttrDO e : list0) {
+            for (io.choerodon.devops.infra.dataobject.UserAttrDTO e : list0) {
                 if (e.getIamUserId() != 1L) {
                     userAttrMapper.delete(e)
                 }

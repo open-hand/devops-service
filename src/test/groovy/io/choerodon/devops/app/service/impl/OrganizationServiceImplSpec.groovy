@@ -6,7 +6,7 @@ import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload
 import io.choerodon.devops.app.eventhandler.payload.OrganizationEventPayload
 import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository
-import io.choerodon.devops.infra.dataobject.UserAttrDO
+import io.choerodon.devops.infra.dataobject.UserAttrDTO
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO
 import io.choerodon.devops.infra.dataobject.gitlab.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
@@ -82,9 +82,9 @@ class OrganizationServiceImplSpec extends Specification {
     def "CleanupData"() {
         given:
         // 删除user
-        List<UserAttrDO> list = userAttrMapper.selectAll()
+        List<UserAttrDTO> list = userAttrMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (UserAttrDO e : list) {
+            for (UserAttrDTO e : list) {
                 if (e.getIamUserId() > 1L) {
                     userAttrMapper.delete(e)
                 }

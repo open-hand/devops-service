@@ -1,9 +1,9 @@
 package io.choerodon.devops.app.eventhandler
 
 import com.google.gson.Gson
-import io.choerodon.devops.api.dto.CommitDTO
-import io.choerodon.devops.api.dto.PipelineWebHookDTO
-import io.choerodon.devops.api.dto.PushWebHookDTO
+import io.choerodon.devops.api.vo.CommitDTO
+import io.choerodon.devops.api.vo.PipelineWebHookDTO
+import io.choerodon.devops.api.vo.PushWebHookDTO
 import io.choerodon.devops.app.service.*
 import io.choerodon.devops.domain.application.entity.ApplicationE
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE

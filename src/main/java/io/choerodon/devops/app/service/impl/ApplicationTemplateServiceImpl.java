@@ -13,7 +13,10 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ApplicationTemplateDTO;
-import io.choerodon.devops.api.vo.ApplicationTemplateRepDTO;
+<<<<<<< HEAD
+=======
+import io.choerodon.devops.api.vo.ApplicationTemplateRepVO;
+>>>>>>> [IMP] applicationController重构
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
 import io.choerodon.devops.api.validator.ApplicationTemplateValidator;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
@@ -87,7 +90,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     @Override
     @Saga(code = "devops-create-gitlab-template-project",
             description = "devops创建gitlab模板项目", inputSchema = "{}")
-    public ApplicationTemplateRepDTO create(ApplicationTemplateDTO applicationTemplateDTO, Long organizationId) {
+    public ApplicationTemplateRepVO create(ApplicationTemplateDTO applicationTemplateDTO, Long organizationId) {
         ApplicationTemplateValidator.checkApplicationTemplate(applicationTemplateDTO);
         ApplicationTemplateE applicationTemplateE = ConvertHelper.convert(
                 applicationTemplateDTO, ApplicationTemplateE.class);
@@ -125,16 +128,16 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         sagaClient.startSaga("devops-create-gitlab-template-project", new StartInstanceDTO(input, "", "", ResourceLevel.ORGANIZATION.value(), organizationId));
 
         return ConvertHelper.convert(applicationTemplateRepository.queryByCode(organization.getId(),
-                applicationTemplateDTO.getCode()), ApplicationTemplateRepDTO.class);
+                applicationTemplateDTO.getCode()), ApplicationTemplateRepVO.class);
     }
 
     @Override
-    public ApplicationTemplateRepDTO update(ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO, Long organizationId) {
+    public ApplicationTemplateRepVO update(ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO, Long organizationId) {
         ApplicationTemplateE applicationTemplateE = ConvertHelper.convert(
                 applicationTemplateUpdateDTO, ApplicationTemplateE.class);
         applicationTemplateE.initOrganization(organizationId);
         return ConvertHelper.convert(applicationTemplateRepository.update(applicationTemplateE),
-                ApplicationTemplateRepDTO.class);
+                ApplicationTemplateRepVO.class);
     }
 
     @Override
@@ -150,9 +153,9 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     }
 
     @Override
-    public ApplicationTemplateRepDTO query(Long appTemplateId) {
-        ApplicationTemplateRepDTO applicationTemplateRepDTO = ConvertHelper.convert(applicationTemplateRepository
-                .query(appTemplateId), ApplicationTemplateRepDTO.class);
+    public ApplicationTemplateRepVO query(Long appTemplateId) {
+        ApplicationTemplateRepVO applicationTemplateRepDTO = ConvertHelper.convert(applicationTemplateRepository
+                .query(appTemplateId), ApplicationTemplateRepVO.class);
         String repoUrl = applicationTemplateRepDTO.getRepoUrl();
         if (applicationTemplateRepDTO.getOrganizationId() != null) {
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
@@ -163,19 +166,19 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     }
 
     @Override
-    public PageInfo<ApplicationTemplateRepDTO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam) {
-        PageInfo<ApplicationTemplateRepDTO> applicationTemplateRepDTOPage = ConvertPageHelper
+    public PageInfo<ApplicationTemplateRepVO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam) {
+        PageInfo<ApplicationTemplateRepVO> applicationTemplateRepDTOPage = ConvertPageHelper
                 .convertPageInfo(applicationTemplateRepository.listByOptions(
                         pageRequest, organizationId, searchParam),
-                        ApplicationTemplateRepDTO.class);
-        List<ApplicationTemplateRepDTO> applicationTemplateRepDTOList = applicationTemplateRepDTOPage.getList();
+                        ApplicationTemplateRepVO.class);
+        List<ApplicationTemplateRepVO> applicationTemplateRepDTOList = applicationTemplateRepDTOPage.getList();
         setAppTemplateRepoUrl(applicationTemplateRepDTOList);
         applicationTemplateRepDTOPage.setList(applicationTemplateRepDTOList);
         return applicationTemplateRepDTOPage;
     }
 
-    private void setAppTemplateRepoUrl(List<ApplicationTemplateRepDTO> applicationTemplateRepDTOList) {
-        for (ApplicationTemplateRepDTO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
+    private void setAppTemplateRepoUrl(List<ApplicationTemplateRepVO> applicationTemplateRepDTOList) {
+        for (ApplicationTemplateRepVO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
             String repoUrl = applicationTemplateRepDTO.getRepoUrl();
             if (applicationTemplateRepDTO.getOrganizationId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
@@ -206,8 +209,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                 TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
         String applicationDir = gitlabProjectPayload.getType() + System.currentTimeMillis();
         if (applicationTemplateE.getCopyFrom() != null) {
-            ApplicationTemplateRepDTO templateRepDTO = ConvertHelper.convert(applicationTemplateRepository
-                    .query(applicationTemplateE.getCopyFrom()), ApplicationTemplateRepDTO.class);
+            ApplicationTemplateRepVO templateRepDTO = ConvertHelper.convert(applicationTemplateRepository
+                    .query(applicationTemplateE.getCopyFrom()), ApplicationTemplateRepVO.class);
             //拉取模板
             String repoUrl = templateRepDTO.getRepoUrl();
             String type = templateRepDTO.getCode();
@@ -257,10 +260,10 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     }
 
     @Override
-    public List<ApplicationTemplateRepDTO> list(Long organizationId) {
-        List<ApplicationTemplateRepDTO> applicationTemplateRepDTOList = ConvertHelper.convertList(
+    public List<ApplicationTemplateRepVO> list(Long organizationId) {
+        List<ApplicationTemplateRepVO> applicationTemplateRepDTOList = ConvertHelper.convertList(
                 applicationTemplateRepository.list(organizationId),
-                ApplicationTemplateRepDTO.class);
+                ApplicationTemplateRepVO.class);
         setAppTemplateRepoUrl(applicationTemplateRepDTOList);
         return applicationTemplateRepDTOList;
     }
@@ -282,8 +285,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     }
 
     @Override
-    public ApplicationTemplateRepDTO queryByCode(Long organizationId, String code) {
-        return ConvertHelper.convert(applicationTemplateRepository.queryByCode(organizationId, code), ApplicationTemplateRepDTO.class);
+    public ApplicationTemplateRepVO queryByCode(Long organizationId, String code) {
+        return ConvertHelper.convert(applicationTemplateRepository.queryByCode(organizationId, code), ApplicationTemplateRepVO.class);
     }
 
 

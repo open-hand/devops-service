@@ -2,18 +2,21 @@ package io.choerodon.devops.domain.application.convertor;
 
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.ApplicationRepDTO;
+<<<<<<< HEAD
+=======
+import io.choerodon.devops.api.vo.ApplicationRepVO;
+>>>>>>> [IMP] applicationController重构
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ApplicationRepConvertor implements ConvertorI<ApplicationE, Object, ApplicationRepDTO> {
+public class ApplicationRepConvertor implements ConvertorI<ApplicationE, Object, ApplicationRepVO> {
 
     @Override
-    public ApplicationRepDTO entityToDto(ApplicationE applicationE) {
-        ApplicationRepDTO applicationRepDTO = new ApplicationRepDTO();
+    public ApplicationRepVO entityToDto(ApplicationE applicationE) {
+        ApplicationRepVO applicationRepDTO = new ApplicationRepVO();
         BeanUtils.copyProperties(applicationE, applicationRepDTO);
         if (applicationE.getApplicationTemplateE() != null) {
             applicationRepDTO.setApplicationTemplateId(applicationE.getApplicationTemplateE().getId());

@@ -4,7 +4,7 @@ package io.choerodon.devops.api.vo;
  * @author younger
  * @date 2018/3/30
  */
-public class ApplicationRepDTO {
+public class ApplicationRepVO {
 
     private Long id;
     private String name;

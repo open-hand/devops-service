@@ -6,7 +6,7 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.UserAttrDTO;
+import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -30,10 +30,10 @@ public class DevopsUserController {
      *
      * @return UserAttrDTO
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据用户Id查询gitlab用户Id")
     @GetMapping("/{user_id}")
-    public ResponseEntity<UserAttrDTO> createOrUpdate(
+    public ResponseEntity<UserAttrVO> createOrUpdate(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "用户id", required = true)

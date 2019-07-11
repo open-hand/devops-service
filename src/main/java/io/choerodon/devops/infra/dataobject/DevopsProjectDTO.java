@@ -9,7 +9,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Created by younger on 2018/3/29.
  */
 @Table(name = "devops_project")
-public class DevopsProjectDO extends BaseDTO {
+public class DevopsProjectDTO extends BaseDTO {
 
     @Id
     private Long iamProjectId;
@@ -21,10 +21,10 @@ public class DevopsProjectDO extends BaseDTO {
     private String harborProjectUserEmail;
 
 
-    public DevopsProjectDO() {
+    public DevopsProjectDTO() {
     }
 
-    public DevopsProjectDO(Long iamProjectId) {
+    public DevopsProjectDTO(Long iamProjectId) {
         this.iamProjectId = iamProjectId;
     }
 

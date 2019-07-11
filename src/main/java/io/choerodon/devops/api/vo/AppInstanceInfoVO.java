@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.dto;
+package io.choerodon.devops.api.vo;
 
 /**
  * 展示实例详情页面的单个实例的信息

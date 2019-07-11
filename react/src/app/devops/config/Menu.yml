@@ -72,7 +72,7 @@
         Routes: /devops/dev-console
         sort: 1
         permission:
-          - "devops-service.application.listCodeRepository"
+          - "devops-service.application.pageCodeRepository"
           - "devops-service.devops-git.queryByAppId"
           - "devops-service.devops-git.listByAppId"
           - "devops-service.devops-git.getTagByPage"
@@ -83,7 +83,7 @@
         Routes: /devops/repository
         sort: 2
         permission:
-          - "devops-service.application.listCodeRepository"
+          - "devops-service.application.pageCodeRepository"
     - "branch":
         icon: branch
         Routes: /devops/branch
@@ -235,7 +235,7 @@
         sort: 10
         permission:
           - "devops-service.devops-environment.listByProjectIdAndActive"
-          - "devops-service.certification.listByOptions"
+          - "devops-service.certification.pageByOptions"
           - "devops-service.certification.create"
           - "devops-service.certification.delete"
     - "config-map":
@@ -263,7 +263,7 @@
         permission:
           - "devops-service.pipeline.create"
           - "devops-service.pipeline.update"
-          - "devops-service.pipeline.listByOptions"
+          - "devops-service.pipeline.pageByOptions"
           - "devops-service.pipeline.updateIsEnabled"
           - "devops-service.pipeline.delete"
           - "devops-service.pipeline.execute"
@@ -284,7 +284,7 @@
         Routes: /devops/deployment-config
         sort: 17
         permission:
-          - "devops-service.pipeline-value.listByOptions"
+          - "devops-service.pipeline-value.pageByOptions"
           - "devops-service.pipeline-value.queryById"
           - "devops-service.pipeline-value.createOrUpdate"
           - "devops-service.pipeline-value.delete"
@@ -317,7 +317,7 @@
           - "devops-service.devops-notification.create"
           - "devops-service.devops-notification.update"
           - "devops-service.devops-notification.check"
-          - "devops-service.devops-notification.listByOptions"
+          - "devops-service.devops-notification.pageByOptions"
           - "devops-service.devops-notification.queryById"
           - "devops-service.devops-notification.delete"
 

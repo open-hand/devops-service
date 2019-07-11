@@ -9,7 +9,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.domain.application.entity.DevopsCheckLogE;
 import io.choerodon.devops.domain.application.repository.DevopsCheckLogRepository;
 import io.choerodon.devops.infra.dataobject.DevopsCheckLogDO;
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
 
 @Service
@@ -24,7 +24,7 @@ public class DevopsCheckLogRepositoryImpl implements DevopsCheckLogRepository {
     }
 
     @Override
-    public List<DevopsProjectDO> queryNonEnvGroupProject() {
+    public List<DevopsProjectDTO> queryNonEnvGroupProject() {
         return devopsCheckLogMapper.queryNonEnvGroupProject();
     }
 

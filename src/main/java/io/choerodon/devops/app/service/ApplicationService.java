@@ -4,18 +4,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.AppUserPermissionRepDTO;
-import io.choerodon.devops.api.vo.ApplicationCodeDTO;
-import io.choerodon.devops.api.vo.ApplicationImportDTO;
-import io.choerodon.devops.api.vo.ApplicationRepDTO;
-import io.choerodon.devops.api.vo.ApplicationReqDTO;
-import io.choerodon.devops.api.vo.ApplicationTemplateRepDTO;
-import io.choerodon.devops.api.vo.ApplicationUpdateDTO;
-import io.choerodon.devops.api.vo.SonarContentsDTO;
-import io.choerodon.devops.api.vo.SonarTableDTO;
-import io.choerodon.devops.api.vo.gitlab.VariableDTO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
@@ -33,7 +23,7 @@ public interface ApplicationService {
      * @param applicationReqDTO 应用信息
      * @return ApplicationTemplateDTO
      */
-    ApplicationRepDTO create(Long projectId, ApplicationReqDTO applicationReqDTO);
+    ApplicationRepVO create(Long projectId, ApplicationReqVO applicationReqDTO);
 
 
     /**
@@ -43,7 +33,7 @@ public interface ApplicationService {
      * @param applicationId 应用Id
      * @return ApplicationRepDTO
      */
-    ApplicationRepDTO query(Long projectId, Long applicationId);
+    ApplicationRepVO query(Long projectId, Long applicationId);
 
     /**
      * 项目下删除创建失败应用
@@ -60,7 +50,7 @@ public interface ApplicationService {
      * @param applicationUpdateDTO 应用信息
      * @return Boolean
      */
-    Boolean update(Long projectId, ApplicationUpdateDTO applicationUpdateDTO);
+    Boolean update(Long projectId, ApplicationUpdateVO applicationUpdateDTO);
 
 
     /**
@@ -70,7 +60,7 @@ public interface ApplicationService {
      * @param active        启用停用
      * @return Boolean
      */
-    Boolean active(Long applicationId, Boolean active);
+    Boolean updateActive(Long applicationId, Boolean active);
 
     /**
      * 组织下分页查询应用
@@ -83,17 +73,18 @@ public interface ApplicationService {
      * @param params      参数
      * @return Page
      */
-    PageInfo<ApplicationRepDTO> listByOptions(Long projectId,
-                                              Boolean isActive,
-                                              Boolean hasVersion,
-                                              Boolean appMarket,
-                                              String type,
-                                              Boolean doPage,
-                                              PageRequest pageRequest,
-                                              String params);
+    PageInfo<ApplicationRepVO> pageByOptions(Long projectId,
+                                             Boolean isActive,
+                                             Boolean hasVersion,
+                                             Boolean appMarket,
+                                             String type,
+                                             Boolean doPage,
+                                             PageRequest pageRequest,
+                                             String params);
 
     /**
      * 组织下分页查询应用 远程应用分享专用
+     *
      * @param projectId
      * @param isActive
      * @param hasVersion
@@ -133,8 +124,6 @@ public interface ApplicationService {
      */
     void setAppErrStatus(String gitlabProjectEventDTO, Long projectId);
 
-    Boolean applicationExist(String uuid);
-
     /**
      * 项目下应用查询ci脚本文件
      *
@@ -161,7 +150,7 @@ public interface ApplicationService {
      * @param pageRequest 分页参数
      * @return list of ApplicationRepDTO
      */
-    PageInfo<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest);
+    PageInfo<ApplicationCodeDTO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest);
 
     /**
      * 项目下查询所有已经启用的应用
@@ -169,7 +158,7 @@ public interface ApplicationService {
      * @param projectId 项目id
      * @return list of ApplicationRepDTO
      */
-    List<ApplicationRepDTO> listByActive(Long projectId);
+    List<ApplicationRepVO> listByActive(Long projectId);
 
     /**
      * 项目下查询所有可选已经启用的应用
@@ -177,7 +166,7 @@ public interface ApplicationService {
      * @param projectId 项目id
      * @return list of ApplicationRepDTO
      */
-    List<ApplicationRepDTO> listAll(Long projectId);
+    List<ApplicationRepVO> listAll(Long projectId);
 
     /**
      * 创建应用校验名称是否存在
@@ -202,7 +191,7 @@ public interface ApplicationService {
      * @param isPredefined 是否只查询预定义模板
      * @return Page
      */
-    List<ApplicationTemplateRepDTO> listTemplate(Long projectId, Boolean isPredefined);
+    List<ApplicationTemplateRepVO> listTemplate(Long projectId, Boolean isPredefined);
 
     /**
      * 项目下查询已经启用有版本未发布的应用
@@ -212,7 +201,7 @@ public interface ApplicationService {
      * @param params      查询参数
      * @return list of ApplicationRepDTO
      */
-    PageInfo<ApplicationReqDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<ApplicationReqVO> pageByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
 
     /**
      * 项目下分页查询代码仓库
@@ -222,7 +211,7 @@ public interface ApplicationService {
      * @param params      查询参数
      * @return page of ApplicationRepDTO
      */
-    PageInfo<ApplicationRepDTO> listCodeRepository(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<ApplicationRepVO> pageCodeRepository(Long projectId, PageRequest pageRequest, String params);
 
     /**
      * 获取应用下所有用户权限
@@ -249,7 +238,7 @@ public interface ApplicationService {
      * @param applicationImportDTO 导入操作的相关信息
      * @return response
      */
-    ApplicationRepDTO importApplicationFromGitPlatform(Long projectId, ApplicationImportDTO applicationImportDTO);
+    ApplicationRepVO importApp(Long projectId, ApplicationImportDTO applicationImportDTO);
 
 
     /**
@@ -259,7 +248,7 @@ public interface ApplicationService {
      * @param code      应用code
      * @return ApplicationRepDTO
      */
-    ApplicationRepDTO queryByCode(Long projectId, String code);
+    ApplicationRepVO queryByCode(Long projectId, String code);
 
 
     /**
@@ -294,7 +283,7 @@ public interface ApplicationService {
      * @param email    harbor邮箱
      * @return Boolean
      */
-    Boolean checkHarborIsUsable(String url, String userName, String password, String project, String email);
+    Boolean checkHarbor(String url, String userName, String password, String project, String email);
 
     /**
      * 校验chart配置信息是否正确
@@ -302,17 +291,7 @@ public interface ApplicationService {
      * @param url chartmusume地址
      * @return Boolean
      */
-    Boolean checkChartIsUsable(String url);
-
-    /**
-     * 根据配置Id查询配置并转换成VariableDTO
-     *
-     * @param harborConfigId harbor配置Id
-     * @param chartConfigId  chart配置Id
-     * @return
-     */
-    List<VariableDTO> setVariableDTO(Long harborConfigId, Long chartConfigId);
-
+    Boolean checkChart(String url);
 
     /**
      * 查看sonarqube相关信息

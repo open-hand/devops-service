@@ -25,10 +25,10 @@ public class DevopsProjectConfigValidator {
         ProjectConfigDTO configDTO = devopsProjectConfigDTO.getConfig();
         switch (type) {
             case HARBOR:
-                applicationService.checkHarborIsUsable(configDTO.getUrl(),configDTO.getUserName(),configDTO.getPassword(),configDTO.getProject(),configDTO.getEmail());
+                applicationService.checkHarbor(configDTO.getUrl(),configDTO.getUserName(),configDTO.getPassword(),configDTO.getProject(),configDTO.getEmail());
                 break;
             case CHART:
-                applicationService.checkChartIsUsable(configDTO.getUrl());
+                applicationService.checkChart(configDTO.getUrl());
                 break;
             default:
                 throw new CommonException("error.project.config.type");

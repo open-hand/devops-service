@@ -4,8 +4,13 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+<<<<<<< HEAD
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
+=======
+import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
+>>>>>>> [IMP] applicationController重构
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +27,7 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
 
     @Override
     public DevopsProjectE queryDevopsProject(Long projectId) {
-        DevopsProjectDO devopsProjectDO = devopsProjectMapper.selectByPrimaryKey(projectId);
+        DevopsProjectDTO devopsProjectDO = devopsProjectMapper.selectByPrimaryKey(projectId);
         if (devopsProjectDO == null) {
             throw new CommonException("error.group.not.sync");
         }
@@ -39,21 +44,21 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
 
     @Override
     public DevopsProjectE queryByEnvGroupId(Integer envGroupId) {
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
+        DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO();
         devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(envGroupId));
         return ConvertHelper.convert(devopsProjectMapper.selectOne(devopsProjectDO), DevopsProjectE.class);
     }
 
     @Override
-    public void createProject(DevopsProjectDO devopsProjectDO) {
+    public void createProject(DevopsProjectDTO devopsProjectDO) {
         if (devopsProjectMapper.insert(devopsProjectDO) != 1) {
             throw new CommonException("insert project attr error");
         }
     }
 
     @Override
-    public void updateProjectAttr(DevopsProjectDO devopsProjectDO) {
-        DevopsProjectDO oldDevopsProjectDO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDO.getIamProjectId());
+    public void updateProjectAttr(DevopsProjectDTO devopsProjectDO) {
+        DevopsProjectDTO oldDevopsProjectDO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDO.getIamProjectId());
         if (oldDevopsProjectDO == null) {
             devopsProjectMapper.insert(devopsProjectDO);
         } else {

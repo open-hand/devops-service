@@ -17,7 +17,7 @@ import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +70,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
                 devopsProjectE =
                         ConvertHelper.convert(gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getBody(), DevopsProjectE.class);
         }
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
+        DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(gitlabGroupPayload.getProjectId());
         if (groupCodeSuffix.isEmpty()) {
             devopsProjectDO.setDevopsAppGroupId(TypeUtil.objToLong(devopsProjectE.getId()));
         } else if ("-gitops".equals(groupCodeSuffix)) {

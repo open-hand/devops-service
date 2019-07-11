@@ -29,10 +29,10 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.AppUserPermissionRepDTO;
 import io.choerodon.devops.api.vo.ApplicationCodeDTO;
 import io.choerodon.devops.api.vo.ApplicationImportDTO;
-import io.choerodon.devops.api.vo.ApplicationRepDTO;
-import io.choerodon.devops.api.vo.ApplicationReqDTO;
-import io.choerodon.devops.api.vo.ApplicationTemplateRepDTO;
-import io.choerodon.devops.api.vo.ApplicationUpdateDTO;
+import io.choerodon.devops.api.vo.ApplicationRepVO;
+import io.choerodon.devops.api.vo.ApplicationReqVO;
+import io.choerodon.devops.api.vo.ApplicationTemplateRepVO;
+import io.choerodon.devops.api.vo.ApplicationUpdateVO;
 import io.choerodon.devops.api.vo.SonarContentsDTO;
 import io.choerodon.devops.api.vo.SonarTableDTO;
 import io.choerodon.devops.app.service.ApplicationService;
@@ -64,11 +64,11 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建应用")
     @PostMapping
-    public ResponseEntity<ApplicationRepDTO> create(
+    public ResponseEntity<ApplicationRepVO> create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
-            @RequestBody ApplicationReqDTO applicationReqDTO) {
+            @RequestBody ApplicationReqVO applicationReqDTO) {
         return Optional.ofNullable(applicationService.create(projectId, applicationReqDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.create"));
@@ -84,12 +84,12 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下从外部代码库导入应用")
     @PostMapping("/import")
-    public ResponseEntity<ApplicationRepDTO> importApp(
+    public ResponseEntity<ApplicationRepVO> importApp(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
             @RequestBody ApplicationImportDTO applicationImportDTO) {
-        return Optional.ofNullable(applicationService.importApplicationFromGitPlatform(projectId, applicationImportDTO))
+        return Optional.ofNullable(applicationService.importApp(projectId, applicationImportDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.create"));
     }
@@ -104,8 +104,8 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询单个应用信息")
-    @GetMapping("/{applicationId}/detail")
-    public ResponseEntity<ApplicationRepDTO> queryByAppId(
+    @GetMapping("/{applicationId}")
+    public ResponseEntity<ApplicationRepVO> query(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
@@ -129,10 +129,10 @@ public class ApplicationController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
-            @RequestBody ApplicationUpdateDTO applicationUpdateDTO) {
+            @RequestBody ApplicationUpdateVO applicationUpdateDTO) {
         return Optional.ofNullable(applicationService.update(projectId, applicationUpdateDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.query"));
+                .orElseThrow(() -> new CommonException("error.application.update"));
     }
 
     /**
@@ -146,14 +146,14 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下启用停用应用信息")
     @PutMapping("/{applicationId}")
-    public ResponseEntity<Boolean> queryByAppIdAndActive(
+    public ResponseEntity<Boolean> updateActive(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @ApiParam(value = "启用停用", required = true)
             @RequestParam Boolean active) {
-        return Optional.ofNullable(applicationService.active(applicationId, active))
+        return Optional.ofNullable(applicationService.updateActive(applicationId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.active"));
     }
@@ -168,7 +168,7 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除创建失败应用")
     @DeleteMapping("/{applicationId}")
-    public ResponseEntity deleteByAppId(
+    public ResponseEntity delete(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
@@ -191,8 +191,8 @@ public class ApplicationController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询应用")
     @CustomPageRequest
-    @PostMapping("/list_by_options")
-    public ResponseEntity<PageInfo<ApplicationRepDTO>> pageByOptions(
+    @PostMapping("/page_by_options")
+    public ResponseEntity<PageInfo<ApplicationRepVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用是否启用")
@@ -210,9 +210,9 @@ public class ApplicationController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationService.listByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params))
+                applicationService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.appTemplate.get"));
+                .orElseThrow(() -> new CommonException("error.application.list"));
     }
 
     /**
@@ -225,8 +225,8 @@ public class ApplicationController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境id分页获取已部署正在运行实例的应用")
     @CustomPageRequest
-    @GetMapping("/pages")
-    public ResponseEntity<PageInfo<ApplicationCodeDTO>> pageByEnvIdAndStatus(
+    @GetMapping("/page_by_ids")
+    public ResponseEntity<PageInfo<ApplicationCodeDTO>> pageByEnvIdAndAppId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
@@ -235,9 +235,9 @@ public class ApplicationController {
             @RequestParam(value = "app_id", required = false) Long appId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(applicationService.pageByEnvId(projectId, envId, appId, pageRequest))
+        return Optional.ofNullable(applicationService.pageByIds(projectId, envId, appId, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.appName.query"));
+                .orElseThrow(() -> new CommonException("error.app.query.ids"));
     }
 
 
@@ -286,7 +286,7 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境id获取已部署正在运行实例的应用")
-    @GetMapping("/options")
+    @GetMapping("/list_by_env")
     public ResponseEntity<List<ApplicationCodeDTO>> listByEnvIdAndStatus(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -298,7 +298,7 @@ public class ApplicationController {
             @RequestParam(required = false) Long appId) {
         return Optional.ofNullable(applicationService.listByEnvId(projectId, envId, status, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.appName.query"));
+                .orElseThrow(() -> new CommonException("error.app.query.env"));
     }
 
     /**
@@ -310,8 +310,8 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询所有已经启用的应用")
-    @GetMapping
-    public ResponseEntity<List<ApplicationRepDTO>> listByActive(
+    @GetMapping("/list_by_active")
+    public ResponseEntity<List<ApplicationRepVO>> listByActive(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationService.listByActive(projectId))
@@ -329,12 +329,12 @@ public class ApplicationController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "本项目下或者应用市场在该项目下部署过的应用")
     @GetMapping(value = "/list_all")
-    public ResponseEntity<List<ApplicationRepDTO>> listAll(
+    public ResponseEntity<List<ApplicationRepVO>> listAll(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationService.listAll(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.applications.get"));
+                .orElseThrow(() -> new CommonException("error.applications.list.all"));
     }
 
     /**
@@ -380,7 +380,7 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据应用编码查询应用")
     @GetMapping(value = "/query_by_code")
-    public ResponseEntity<ApplicationRepDTO> queryByCode(
+    public ResponseEntity<ApplicationRepVO> queryByCode(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用编码", required = true)
@@ -399,7 +399,7 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询所有应用模板")
     @GetMapping("/template")
-    public ResponseEntity<List<ApplicationTemplateRepDTO>> listTemplate(
+    public ResponseEntity<List<ApplicationTemplateRepVO>> listTemplate(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否只查询预定义")
@@ -420,15 +420,15 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的应用")
     @CustomPageRequest
-    @PostMapping(value = "/list_unpublish")
-    public ResponseEntity<PageInfo<ApplicationReqDTO>> listByActiveAndPubAndVersion(
+    @PostMapping(value = "/page_unpublish")
+    public ResponseEntity<PageInfo<ApplicationReqVO>> pageByActiveAndPubAndVersion(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(applicationService.listByActiveAndPubAndVersion(projectId, pageRequest, params))
+        return Optional.ofNullable(applicationService.pageByActiveAndPubAndVersion(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
@@ -446,8 +446,8 @@ public class ApplicationController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询代码仓库")
     @CustomPageRequest
-    @PostMapping("/list_code_repository")
-    public ResponseEntity<PageInfo<ApplicationRepDTO>> listCodeRepository(
+    @PostMapping("/page_code_repository")
+    public ResponseEntity<PageInfo<ApplicationRepVO>> pageCodeRepository(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -456,9 +456,9 @@ public class ApplicationController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationService.listCodeRepository(projectId, pageRequest, params))
+                applicationService.pageCodeRepository(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.appTemplate.get"));
+                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
 
     /**
@@ -506,7 +506,7 @@ public class ApplicationController {
             @RequestParam String project,
             @ApiParam(value = "harbor邮箱", required = true)
             @RequestParam String email) {
-        applicationService.checkHarborIsUsable(url, userName, passWord, project, email);
+        applicationService.checkHarbor(url, userName, passWord, project, email);
     }
 
 
@@ -523,7 +523,7 @@ public class ApplicationController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "chartmusume地址", required = true)
             @RequestParam String url) {
-        applicationService.checkChartIsUsable(url);
+        applicationService.checkChart(url);
     }
 
     /**
@@ -579,7 +579,7 @@ public class ApplicationController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation("查看sonarqube相关信息")
-    @GetMapping("/{app_id}/sonarQubeTable")
+    @GetMapping("/{app_id}/sonarqube_table")
     public ResponseEntity<SonarTableDTO> getSonarQubeTable(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,

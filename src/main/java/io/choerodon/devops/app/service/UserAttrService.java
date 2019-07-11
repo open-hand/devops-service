@@ -1,6 +1,9 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.UserAttrDTO;
+<<<<<<< HEAD
+=======
+import io.choerodon.devops.api.vo.UserAttrVO;
+>>>>>>> [IMP] applicationController重构
 
 public interface UserAttrService {
 
@@ -9,6 +12,6 @@ public interface UserAttrService {
      *
      * @return UserAttrDTO
      */
-    UserAttrDTO  queryByUserId(Long userId);
+    UserAttrVO queryByUserId(Long userId);
 
 }

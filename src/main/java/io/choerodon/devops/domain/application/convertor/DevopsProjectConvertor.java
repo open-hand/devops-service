@@ -5,16 +5,16 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 
 /**
  * Created by younger on 2018/4/2.
  */
 @Component
-public class DevopsProjectConvertor implements ConvertorI<DevopsProjectE, DevopsProjectDO, Object> {
+public class DevopsProjectConvertor implements ConvertorI<DevopsProjectE, DevopsProjectDTO, Object> {
 
     @Override
-    public DevopsProjectE doToEntity(DevopsProjectDO devopsProjectDO) {
+    public DevopsProjectE doToEntity(DevopsProjectDTO devopsProjectDO) {
         DevopsProjectE devopsProjectE = new DevopsProjectE();
         BeanUtils.copyProperties(devopsProjectDO,devopsProjectE);
         devopsProjectE.initProjectE(devopsProjectDO.getIamProjectId());
@@ -22,8 +22,8 @@ public class DevopsProjectConvertor implements ConvertorI<DevopsProjectE, Devops
     }
 
     @Override
-    public DevopsProjectDO entityToDo(DevopsProjectE devopsProjectE) {
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
+    public DevopsProjectDTO entityToDo(DevopsProjectE devopsProjectE) {
+        DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO();
         BeanUtils.copyProperties(devopsProjectE,devopsProjectDO);
         devopsProjectDO.setIamProjectId(devopsProjectE.getProjectE().getId());
         return devopsProjectDO;

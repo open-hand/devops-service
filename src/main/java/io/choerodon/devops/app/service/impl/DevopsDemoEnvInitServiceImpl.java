@@ -104,11 +104,11 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     public void initialDemoEnv(OrganizationRegisterEventPayload organizationRegisterEventPayload) {
         Long projectId = organizationRegisterEventPayload.getProject().getId();
 //        1. 创建应用
-        ApplicationReqDTO app = demoDataDTO.getApplicationInfo();
+        ApplicationReqVO app = demoDataDTO.getApplicationInfo();
         app.setApplicationTemplateId(getMicroServiceTemplateId());
         app.setIsSkipCheckPermission(Boolean.TRUE);
 
-        ApplicationRepDTO applicationRepDTO = createDemoApp(projectId, app);
+        ApplicationRepVO applicationRepDTO = createDemoApp(projectId, app);
 
         gitlabUserId = TypeUtil.objToInteger(userAttrRepository.queryById(organizationRegisterEventPayload.getUser().getId()).getGitlabUserId());
 
@@ -158,7 +158,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param applicationReqDTO 应用创建的数据
      * @return 应用创建的纪录
      */
-    private ApplicationRepDTO createDemoApp(Long projectId, ApplicationReqDTO applicationReqDTO) {
+    private ApplicationRepVO createDemoApp(Long projectId, ApplicationReqVO applicationReqDTO) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationReqDTO);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
@@ -213,7 +213,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devopsSagaHandler.createApp(input);
 
         return ConvertHelper.convert(applicationRepository.queryByCode(applicationE.getCode(),
-                applicationE.getProjectE().getId()), ApplicationRepDTO.class);
+                applicationE.getProjectE().getId()), ApplicationRepVO.class);
     }
 
 
@@ -224,7 +224,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @throws CommonException if there isn't a template named 'MicroService'
      */
     private Long getMicroServiceTemplateId() throws CommonException {
-        List<ApplicationTemplateRepDTO> template = applicationTemplateService.listByOptions(new PageRequest(0, 1), null, demoDataDTO.getTemplateSearchParam()).getList();
+        List<ApplicationTemplateRepVO> template = applicationTemplateService.listByOptions(new PageRequest(0, 1), null, demoDataDTO.getTemplateSearchParam()).getList();
 
         if (template != null && !template.isEmpty()) {
             return template.get(0).getId();

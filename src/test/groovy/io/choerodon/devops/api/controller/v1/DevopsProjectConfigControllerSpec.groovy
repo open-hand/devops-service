@@ -4,8 +4,8 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.DevopsProjectConfigDTO
-import io.choerodon.devops.api.dto.ProjectConfigDTO
+import io.choerodon.devops.api.vo.DevopsProjectConfigDTO
+import io.choerodon.devops.api.vo.ProjectConfigDTO
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository
 import io.choerodon.devops.infra.feign.HarborClient

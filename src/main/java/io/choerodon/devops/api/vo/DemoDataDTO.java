@@ -6,7 +6,7 @@ import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
  * @author zmf
  */
 public class DemoDataDTO {
-    private ApplicationReqDTO applicationInfo;
+    private ApplicationReqVO applicationInfo;
     private ApplicationReleasingDTO applicationRelease;
     private String templateSearchParam;
     private String appVersionSearchParam;
@@ -14,11 +14,11 @@ public class DemoDataDTO {
     private DevopsBranchDTO branchInfo;
     private ApplicationVersionDO appVersion;
 
-    public ApplicationReqDTO getApplicationInfo() {
+    public ApplicationReqVO getApplicationInfo() {
         return applicationInfo;
     }
 
-    public void setApplicationInfo(ApplicationReqDTO applicationInfo) {
+    public void setApplicationInfo(ApplicationReqVO applicationInfo) {
         this.applicationInfo = applicationInfo;
     }
 

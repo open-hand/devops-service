@@ -10,8 +10,8 @@ import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.ApplicationDO
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO
-import io.choerodon.devops.infra.dataobject.UserAttrDO
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
+import io.choerodon.devops.infra.dataobject.UserAttrDTO
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
@@ -348,8 +348,8 @@ class SagaHandlerNewSpec extends Specification {
 
         then:
         result != null
-        List<UserAttrDO> userAttrDOList = userAttrMapper.selectAll()
-        for (UserAttrDO userAttrDO : userAttrDOList) {
+        List<UserAttrDTO> userAttrDOList = userAttrMapper.selectAll()
+        for (UserAttrDTO userAttrDO : userAttrDOList) {
             if (userAttrDO.getIamUserId() != 1) {
                 userAttrMapper.delete(userAttrDO)
             }
@@ -358,8 +358,8 @@ class SagaHandlerNewSpec extends Specification {
         for (ApplicationDO application : applicationDOList) {
             applicationMapper.delete(application)
         }
-        List<DevopsProjectDO> devopsProjectDOList = devopsProjectMapper.selectAll()
-        for (DevopsProjectDO devopsProjectDO : devopsProjectDOList) {
+        List<DevopsProjectDTO> devopsProjectDOList = devopsProjectMapper.selectAll()
+        for (DevopsProjectDTO devopsProjectDO : devopsProjectDOList) {
             if (devopsProjectDO.getIamProjectId() != 1) {
                 devopsProjectMapper.delete(devopsProjectDO)
             }

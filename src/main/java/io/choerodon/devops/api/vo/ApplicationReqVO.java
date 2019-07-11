@@ -3,16 +3,20 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 
 /**
- * Created by younger on 2018/4/10.
+ * Created by younger on 2018/3/28.
  */
-public class ApplicationUpdateDTO {
+public class ApplicationReqVO {
 
     private Long id;
     private String name;
-    private List<Long> userIds;
-    private Boolean isSkipCheckPermission;
+    private String code;
+    private Long projectId;
+    private String type;
+    private Long applicationTemplateId;
     private Long harborConfigId;
     private Long chartConfigId;
+    private List<Long> userIds;
+    private Boolean isSkipCheckPermission;
 
     public Long getId() {
         return id;
@@ -30,6 +34,30 @@ public class ApplicationUpdateDTO {
         this.name = name;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public Long getApplicationTemplateId() {
+        return applicationTemplateId;
+    }
+
+    public void setApplicationTemplateId(Long applicationTemplateId) {
+        this.applicationTemplateId = applicationTemplateId;
+    }
+
     public List<Long> getUserIds() {
         return userIds;
     }
@@ -44,6 +72,14 @@ public class ApplicationUpdateDTO {
 
     public void setIsSkipCheckPermission(Boolean skipCheckPermission) {
         isSkipCheckPermission = skipCheckPermission;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public Long getHarborConfigId() {

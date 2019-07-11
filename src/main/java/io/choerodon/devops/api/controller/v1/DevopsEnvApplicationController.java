@@ -1,15 +1,15 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+import java.util.Optional;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.vo.DevopsEnvApplicationCreationVO;
 import io.choerodon.devops.api.validator.EnvironmentApplicationValidator;
-import io.choerodon.devops.api.vo.ApplicationRepDTO;
-import io.choerodon.devops.api.vo.DevopsEnvApplicationDTO;
-import io.choerodon.devops.api.vo.DevopsEnvLabelDTO;
-import io.choerodon.devops.api.vo.DevopsEnvPortDTO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -17,9 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * @author lizongwei
@@ -38,7 +35,7 @@ public class DevopsEnvApplicationController {
     /**
      * 创建环境下的应用关联
      *
-     * @param devopsEnvApplicationCreationDTO 环境和应用的关联关系
+     * @param devopsEnvApplicationCreationVO 环境和应用的关联关系
      * @return ApplicationRepDTO
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -46,10 +43,10 @@ public class DevopsEnvApplicationController {
     @PostMapping("/batch_create")
     public ResponseEntity<List<DevopsEnvApplicationDTO>> batch_create(
             @ApiParam(value = "关联信息", required = true)
-            @RequestBody DevopsEnvApplicationCreationDTO devopsEnvApplicationCreationDTO) {
-        validator.checkEnvIdExist(devopsEnvApplicationCreationDTO.getEnvId());
-        validator.checkAppIdsExist(devopsEnvApplicationCreationDTO.getAppIds());
-        return Optional.ofNullable(devopsEnvApplicationService.batchCreate(devopsEnvApplicationCreationDTO))
+            @RequestBody DevopsEnvApplicationCreationVO devopsEnvApplicationCreationVO) {
+        validator.checkEnvIdExist(devopsEnvApplicationCreationVO.getEnvId());
+        validator.checkAppIdsExist(devopsEnvApplicationCreationVO.getAppIds());
+        return Optional.ofNullable(devopsEnvApplicationService.batchCreate(devopsEnvApplicationCreationVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.app.create"));
     }
@@ -60,10 +57,10 @@ public class DevopsEnvApplicationController {
      * @param envId 环境id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询环境下关联的所有应用")
-    @GetMapping
-    public ResponseEntity<List<ApplicationRepDTO>> queryAppByEnvId(
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询环境下的所有应用")
+    @GetMapping("/all")
+    public ResponseEntity<List<ApplicationRepVO>> queryAppByEnvId(
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvApplicationService.queryAppByEnvId(envId))

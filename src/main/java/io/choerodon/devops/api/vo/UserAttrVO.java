@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-public class UserAttrDTO {
+public class UserAttrVO {
 
     private Long iamUserId;
     private Long gitlabUserId;

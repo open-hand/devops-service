@@ -9,12 +9,12 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.ApplicationImportDTO
-import io.choerodon.devops.api.dto.ApplicationRepDTO
-import io.choerodon.devops.api.dto.ApplicationReqDTO
-import io.choerodon.devops.api.dto.ApplicationUpdateDTO
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
+import io.choerodon.devops.api.vo.ApplicationImportDTO
+import io.choerodon.devops.api.vo.ApplicationRepVO
+import io.choerodon.devops.api.vo.ApplicationReqVO
+import io.choerodon.devops.api.vo.ApplicationUpdateVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
+import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.domain.application.entity.ProjectE
@@ -223,7 +223,7 @@ class ApplicationControllerSpec extends Specification {
     def "create"() {
         given: '创建issueDTO'
         isToInit = false
-        ApplicationReqDTO applicationDTO = new ApplicationReqDTO()
+        ApplicationReqVO applicationDTO = new ApplicationReqVO()
 
         and: '赋值'
         applicationDTO.setId(init_id)
@@ -257,7 +257,7 @@ class ApplicationControllerSpec extends Specification {
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any(StartInstanceDTO))
 
         when: '创建一个应用'
-        def entity = restTemplate.postForEntity(MAPPING, applicationDTO, ApplicationRepDTO.class, project_id)
+        def entity = restTemplate.postForEntity(MAPPING, applicationDTO, ApplicationRepVO.class, project_id)
 
         then: '校验结果'
         entity.statusCode.is2xxSuccessful()
@@ -271,7 +271,7 @@ class ApplicationControllerSpec extends Specification {
     // 项目下查询单个应用信息
     def "queryByAppId"() {
         when:
-        def entity = restTemplate.getForEntity(MAPPING + "/{app_id}/detail", ApplicationRepDTO.class, project_id, 1L)
+        def entity = restTemplate.getForEntity(MAPPING + "/{app_id}/detail", ApplicationRepVO.class, project_id, 1L)
 
         then: '校验结果'
         entity.getBody()["code"] == "appCode"
@@ -280,7 +280,7 @@ class ApplicationControllerSpec extends Specification {
     // 项目下更新应用信息
     def "update"() {
         given: '设置applicationUpdateDTO类'
-        ApplicationUpdateDTO applicationUpdateDTO = new ApplicationUpdateDTO()
+        ApplicationUpdateVO applicationUpdateDTO = new ApplicationUpdateVO()
         applicationUpdateDTO.setId(init_id)
         applicationUpdateDTO.setName("updatename")
         applicationUpdateDTO.setIsSkipCheckPermission(true)
@@ -607,7 +607,7 @@ class ApplicationControllerSpec extends Specification {
         searchCondition.setCode(applicationDTO.getCode())
 
         when: '导入一个github应用'
-        def entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepDTO.class, project_id)
+        def entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepVO.class, project_id)
 
         then: '校验结果'
         entity.statusCode.is2xxSuccessful()
@@ -630,7 +630,7 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setRepositoryUrl("http://git.staging.saas.test.com/code-x-code-x/test-empty.git")
         applicationDTO.setPlatformType("gitlab")
         applicationDTO.setAccessToken("munijNHhNBEh7BRNhwrV")
-        entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepDTO.class, project_id)
+        entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepVO.class, project_id)
 
         then: '校验结果'
         entity.getStatusCode().is2xxSuccessful()
@@ -643,7 +643,7 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setPlatformType("gitlab")
         applicationDTO.setAccessToken("munijNHhNBEh7BRNhwrV")
         searchCondition.setCode(applicationDTO.getCode())
-        entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepDTO.class, project_id)
+        entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepVO.class, project_id)
 
         then: '校验结果'
         entity.getStatusCode().is2xxSuccessful()

@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.dto.DevopsEnvApplicationCreationDTO;
-import io.choerodon.devops.api.vo.ApplicationRepDTO;
+import io.choerodon.devops.api.vo.DevopsEnvApplicationCreationVO;
+import io.choerodon.devops.api.vo.ApplicationRepVO;
 import io.choerodon.devops.api.vo.DevopsEnvApplicationDTO;
 import io.choerodon.devops.api.vo.DevopsEnvLabelDTO;
 import io.choerodon.devops.api.vo.DevopsEnvPortDTO;
@@ -45,20 +45,20 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     private DevopsEnvApplicationMapper devopsEnvApplicationMapper;
 
     @Override
-    public List<DevopsEnvApplicationDTO> batchCreate(DevopsEnvApplicationCreationDTO devopsEnvApplicationCreationDTO) {
-        return Stream.of(devopsEnvApplicationCreationDTO.getAppIds())
-                .map(appId -> new DevopsEnvApplicationE(devopsEnvApplicationCreationDTO.getEnvId(), appId))
+    public List<DevopsEnvApplicationDTO> batchCreate(DevopsEnvApplicationCreationVO devopsEnvApplicationCreationVO) {
+        return Stream.of(devopsEnvApplicationCreationVO.getAppIds())
+                .map(appId -> new DevopsEnvApplicationE(devopsEnvApplicationCreationVO.getEnvId(), appId))
                 .peek(e -> devopsEnvApplicationMapper.insertIgnore(ConvertHelper.convert(e, DevopsEnvApplicationDO.class)))
                 .map(e -> ConvertHelper.convert(e, DevopsEnvApplicationDTO.class))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ApplicationRepDTO> queryAppByEnvId(Long envId) {
+    public List<ApplicationRepVO> queryAppByEnvId(Long envId) {
         List<Long> appIds = devopsEnvApplicationRepostitory.queryAppByEnvId(envId);
-        List<ApplicationRepDTO> repDTOS = new ArrayList<>();
+        List<ApplicationRepVO> repDTOS = new ArrayList<>();
         appIds.forEach(v ->
-                repDTOS.add(ConvertHelper.convert(applicationRepository.query(v), ApplicationRepDTO.class))
+                repDTOS.add(ConvertHelper.convert(applicationRepository.query(v), ApplicationRepVO.class))
         );
         return repDTOS;
     }

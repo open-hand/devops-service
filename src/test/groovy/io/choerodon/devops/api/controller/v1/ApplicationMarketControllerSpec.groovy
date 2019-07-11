@@ -6,10 +6,10 @@ import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.ExportOctetStream2HttpMessageConverter
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.AppMarketDownloadDTO
-import io.choerodon.devops.api.dto.AppMarketTgzDTO
-import io.choerodon.devops.api.dto.AppMarketVersionDTO
-import io.choerodon.devops.api.dto.ApplicationReleasingDTO
+import io.choerodon.devops.api.vo.AppMarketDownloadDTO
+import io.choerodon.devops.api.vo.AppMarketTgzDTO
+import io.choerodon.devops.api.vo.AppMarketVersionDTO
+import io.choerodon.devops.api.vo.ApplicationReleasingDTO
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.IamRepository
