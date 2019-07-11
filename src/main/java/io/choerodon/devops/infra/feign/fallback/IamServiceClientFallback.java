@@ -83,10 +83,10 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, Long roleId,
-                                                                                Long sourceId,
-                                                                                Boolean doPage,
-                                                                                RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+    public ResponseEntity<PageInfo<UserVO>> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, Long roleId,
+                                                                                   Long sourceId,
+                                                                                   Boolean doPage,
+                                                                                   RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         throw new CommonException("error.user.get.byRoleId");
     }
 

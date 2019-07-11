@@ -9,11 +9,10 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.RoleSearchDTO
-import io.choerodon.devops.api.vo.iam.UserDTO
+import io.choerodon.devops.api.vo.iam.UserVO
 import io.choerodon.devops.api.vo.iam.UserWithRoleDTO
 import io.choerodon.devops.app.service.DevopsCheckLogService
 import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE
-import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.ProjectHook
 import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
 import io.choerodon.devops.infra.common.util.TypeUtil
@@ -227,7 +226,7 @@ class DevopsCheckControllerSpec extends Specification {
         List<RoleDTO> roleDTOS = Arrays.asList(roleDTO)
         PageInfo<RoleDTO> page = new PageInfo(roleDTOS)
         when(mockIamServiceClient.queryRoleIdByCode(any(RoleSearchDTO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
-        List<UserDTO> userDTOS = new ArrayList<>()
+        List<UserVO> userDTOS = new ArrayList<>()
         PageInfo<RoleDTO> page1 = new PageInfo(userDTOS)
         when(mockIamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(page1, HttpStatus.OK))
 

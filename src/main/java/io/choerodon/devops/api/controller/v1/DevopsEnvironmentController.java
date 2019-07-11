@@ -436,7 +436,7 @@ public class DevopsEnvironmentController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试gitOps")
     @GetMapping(value = "/{env_id}/retry")
-    public void retryGitOps(
+    public void retryByGitOps(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境编码", required = true)

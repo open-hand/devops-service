@@ -6,7 +6,7 @@ import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsEnvUserPermissionDTO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvUserPermissionE;
+import io.choerodon.devops.api.vo.DevopsEnvUserPermissionVO;
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -14,20 +14,28 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvUserPermissionE;
 public interface DevopsEnvUserPermissionService {
 
 
-    void create(DevopsEnvUserPermissionE devopsEnvUserPermissionE);
+    void create(DevopsEnvUserPermissionVO devopsEnvUserPermissionE);
 
-    void delete(Long envId, Long userId);
+    PageInfo<DevopsEnvUserPermissionVO> pageByOptions(Long envId, PageRequest pageRequest, String params);
 
-    PageInfo<DevopsEnvUserPermissionDTO> pageUserPermissionByOption(Long envId, PageRequest pageRequest, String params);
+    List<DevopsEnvUserPermissionVO> listByEnvId(Long envId);
 
-    List<DevopsEnvUserPermissionDTO> listALlUserPermission(Long envId);
-
-    List<DevopsEnvUserPermissionE> listAll(Long envId);
-
-    void updateEnvUserPermission(Long envId, List<Long> addUsersList, List<Long> deleteUsersList);
-
-    List<DevopsEnvUserPermissionE> listByUserId(Long userId);
+    List<DevopsEnvUserPermissionDTO> listByUserId(Long userId);
 
     void checkEnvDeployPermission(Long userId, Long envId);
+
+    void baseCreate(DevopsEnvUserPermissionDTO devopsEnvUserPermissionE);
+
+    PageInfo<DevopsEnvUserPermissionDTO> basePageByOptions(Long envId, PageRequest pageRequest, String params);
+
+    List<DevopsEnvUserPermissionDTO> baseListByEnvId(Long envId);
+
+    List<DevopsEnvUserPermissionDTO> baseListAll(Long envId);
+
+    void baseUpdate(Long envId, List<Long> addUsersList, List<Long> deleteUsersList);
+
+    List<DevopsEnvUserPermissionDTO> baseListByUserId(Long userId);
+
+    void baseCheckEnvDeployPermission(Long userId, Long envId);
 
 }

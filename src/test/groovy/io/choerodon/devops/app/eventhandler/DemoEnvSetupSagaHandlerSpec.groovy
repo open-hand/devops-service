@@ -9,10 +9,9 @@ import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.RoleSearchDTO
-import io.choerodon.devops.api.vo.iam.UserDTO
+import io.choerodon.devops.api.vo.iam.UserVO
 import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE
-import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.ProjectHook
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.domain.application.valueobject.Variable
@@ -179,23 +178,23 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             Mockito.doReturn(mergeRequestDOResponseEntity).when(gitlabServiceClient).createMergeRequest(any(), any(), any(), any(), any(), any())
             Mockito.doReturn(null).when(gitlabServiceClient).acceptMergeRequest(any(), any(), any(), any(), any(), any())
 
-            Page<UserDTO> ownerUserDTOPage = new Page<>()
-            List<UserDTO> ownerUserDTOList = new ArrayList<>()
-            Page<UserDTO> memberUserDTOPage = new Page<>()
-            List<UserDTO> memberUserDTOList = new ArrayList<>()
-            UserDTO ownerUserDTO = new UserDTO()
+            Page<UserVO> ownerUserDTOPage = new Page<>()
+            List<UserVO> ownerUserDTOList = new ArrayList<>()
+            Page<UserVO> memberUserDTOPage = new Page<>()
+            List<UserVO> memberUserDTOList = new ArrayList<>()
+            UserVO ownerUserDTO = new UserVO()
             ownerUserDTO.setId(1L)
             ownerUserDTO.setLoginName("test")
             ownerUserDTO.setRealName("realTest")
             ownerUserDTOList.add(ownerUserDTO)
             ownerUserDTOPage.setContent(ownerUserDTOList)
-            UserDTO memberUserDTO = new UserDTO()
+            UserVO memberUserDTO = new UserVO()
             memberUserDTO.setId(4L)
             memberUserDTO.setLoginName("test4")
             memberUserDTO.setRealName("realTest4")
             memberUserDTOList.add(memberUserDTO)
             memberUserDTOPage.setContent(memberUserDTOList)
-            ResponseEntity<Page<UserDTO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
+            ResponseEntity<Page<UserVO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
             RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
             roleAssignmentSearchDTO.setLoginName("")
             roleAssignmentSearchDTO.setRealName("")

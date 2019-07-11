@@ -55,7 +55,7 @@ public class RoleDTO {
     @ApiModelProperty(value = "角色标签列表/非必填")
     private List<LabelDTO> labels;
     @ApiModelProperty(value = "分配用户列表/非必填")
-    private List<UserDTO> users;
+    private List<UserVO> users;
     @ApiModelProperty(value = "组织名/非必填")
     private String organizationName;
     @ApiModelProperty(value = "项目名/非必填")
@@ -66,11 +66,11 @@ public class RoleDTO {
 
     private List<Long> roleIds;
 
-    public List<UserDTO> getUsers() {
+    public List<UserVO> getUsers() {
         return users;
     }
 
-    public void setUsers(List<UserDTO> users) {
+    public void setUsers(List<UserVO> users) {
         this.users = users;
     }
 

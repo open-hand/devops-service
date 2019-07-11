@@ -10,7 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Time: 13:20
  * Description:
  */
-public class UserWithRoleDTO extends UserDTO {
+public class UserWithRoleDTO extends UserVO {
     @ApiModelProperty(value = "角色列表")
     private List<RoleDTO> roles;
 

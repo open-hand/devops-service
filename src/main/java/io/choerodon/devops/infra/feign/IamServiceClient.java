@@ -62,7 +62,7 @@ public interface IamServiceClient {
                                                                        @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users")
-    ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
+    ResponseEntity<PageInfo<UserVO>> pagingQueryUsersByRoleIdOnProjectLevel(
             @RequestParam("page") int page,
             @RequestParam("size") int size,
             @RequestParam(name = "role_id") Long roleId,

@@ -296,7 +296,7 @@ class ApplicationControllerSpec extends Specification {
         when: '以前和现在都跳过权限检查，直接返回true，且该应用下无权限表记录'
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
-<<<<<<< HEAD
+        DevopsEnvironmentControllerDevopsEnvironmentController<<<< HEAD
         List<AppUserPermissionDO> permissionResult = appUserPermissionMapper.selectAll()
 =======
         List<AppUserPermissionDTO> permissionResult = appUserPermissionMapper.selectAll()

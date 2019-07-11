@@ -18,16 +18,13 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.gitlab.MemberVO;
-import io.choerodon.devops.api.vo.iam.UserDTO;
-import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
+import io.choerodon.devops.api.vo.iam.UserVO;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.DeployService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
@@ -665,7 +662,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<Long> userIds = gitlabProjectPayload.getUserIds();
         // 获取项目下所有项目成员
 
-        PageInfo<UserDTO> allProjectMemberPage = getMembersFromProject(new PageRequest(0, 0), projectId, "");
+        PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(new PageRequest(0, 0), projectId, "");
 
         // 所有项目成员中有权限的
         if (userIds != null && !userIds.isEmpty()) {
@@ -727,7 +724,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                                                                           String searchParams, Long envId) {
         if (envId == null) {
             // 根据项目成员id查询项目下所有的项目成员
-            PageInfo<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
+            PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
 
             List<DevopsEnvUserPermissionDTO> allProjectMemberList = new ArrayList<>();
             PageInfo<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
@@ -744,7 +741,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         } else {
             List<DevopsEnvUserPermissionDTO> retureUsersDTOList = new ArrayList<>();
             // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
-            PageInfo<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
+            PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
             allProjectMemberPage.getList().forEach(e -> {
                 DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
@@ -781,7 +778,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return updateEnvUserPermissionService.updateUserPermission(null, envId, userIds, null);
     }
 
-    private PageInfo<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
+    private PageInfo<UserVO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
         RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
         if (searchParams != null && !"".equals(searchParams)) {
             Map maps = gson.fromJson(searchParams, Map.class);
@@ -804,7 +801,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 获取项目成员id
         Long memberId = iamRepository.queryRoleIdByCode(PROJECT_MEMBER);
         // 所有项目成员，可能还带有项目所有者的角色，需要过滤
-        PageInfo<UserDTO> allMemberWithOtherUsersPage = iamRepository
+        PageInfo<UserVO> allMemberWithOtherUsersPage = iamRepository
 
                 .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchDTO,
                         memberId, projectId, false);
@@ -813,7 +810,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return allMemberWithOtherUsersPage;
         }
         // 所有项目所有者
-        PageInfo<UserDTO> allOwnerUsersPage = iamRepository
+        PageInfo<UserVO> allOwnerUsersPage = iamRepository
 
                 .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchDTO,
                         ownerId, projectId, false);
@@ -822,7 +819,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return allMemberWithOtherUsersPage;
         } else {
             // 否则过滤项目成员中含有项目所有者的人
-            List<UserDTO> returnUserDTOList = allMemberWithOtherUsersPage.getList().stream()
+            List<UserVO> returnUserDTOList = allMemberWithOtherUsersPage.getList().stream()
                     .filter(e -> !allOwnerUsersPage.getList().contains(e)).collect(Collectors.toList());
             // 设置过滤后的分页显示参数
             allMemberWithOtherUsersPage.setList(returnUserDTOList);
@@ -880,43 +877,43 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabUserId);
         if (gitlabProjectDO.getId() != null) {
             gitlabRepository.deleteProject(gitlabProjectDO.getId(), gitlabUserId);
-            }
-            // 删除环境命名空间
-            if (devopsEnvironmentE.getClusterE().getId() != null) {
-                deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
-            }
         }
-
-        @Override
-        public List<DevopsClusterRepDTO> listDevopsCluster (Long projectId){
-            ProjectVO projectE = iamRepository.queryIamProject(projectId);
-            List<DevopsClusterRepDTO> devopsClusterRepDTOS = ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
-            List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
-            List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
-            devopsClusterRepDTOS.forEach(t -> {
-                if (connectedClusterList.contains(t.getId()) && upgradeClusterList.contains(t.getId())) {
-                    t.setConnect(true);
-                } else {
-                    t.setConnect(false);
-                }
-            });
-            return devopsClusterRepDTOS;
-        }
-
-        @Override
-        @Saga(code = "devops-set-env-err",
-                description = "devops创建环境失败(devops set env status create err)", inputSchema = "{}")
-        public void setEnvErrStatus (String data, Long projectId){
-            sagaClient.startSaga("devops-set-env-err", new StartInstanceDTO(data, "", "", ResourceLevel.PROJECT.value(), projectId));
-        }
-
-        @Override
-        public DevopsEnviromentRepDTO queryByCode (Long clusterId, String code){
-            return ConvertHelper.convert(devopsEnviromentRepository.queryByProjectIdAndCode(clusterId, code), DevopsEnviromentRepDTO.class);
-        }
-
-        @Override
-        public void initMockService (SagaClient sagaClient){
-            this.sagaClient = sagaClient;
+        // 删除环境命名空间
+        if (devopsEnvironmentE.getClusterE().getId() != null) {
+            deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
         }
     }
+
+    @Override
+    public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
+        ProjectVO projectE = iamRepository.queryIamProject(projectId);
+        List<DevopsClusterRepDTO> devopsClusterRepDTOS = ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
+        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        devopsClusterRepDTOS.forEach(t -> {
+            if (connectedClusterList.contains(t.getId()) && upgradeClusterList.contains(t.getId())) {
+                t.setConnect(true);
+            } else {
+                t.setConnect(false);
+            }
+        });
+        return devopsClusterRepDTOS;
+    }
+
+    @Override
+    @Saga(code = "devops-set-env-err",
+            description = "devops创建环境失败(devops set env status create err)", inputSchema = "{}")
+    public void setEnvErrStatus(String data, Long projectId) {
+        sagaClient.startSaga("devops-set-env-err", new StartInstanceDTO(data, "", "", ResourceLevel.PROJECT.value(), projectId));
+    }
+
+    @Override
+    public DevopsEnviromentRepDTO queryByCode(Long clusterId, String code) {
+        return ConvertHelper.convert(devopsEnviromentRepository.queryByProjectIdAndCode(clusterId, code), DevopsEnviromentRepDTO.class);
+    }
+
+    @Override
+    public void initMockService(SagaClient sagaClient) {
+        this.sagaClient = sagaClient;
+    }
+}

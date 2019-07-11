@@ -9,22 +9,23 @@ import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.*
-import io.choerodon.devops.api.vo.gitlab.MemberVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.RoleSearchDTO
-import io.choerodon.devops.api.vo.iam.UserDTO
+import io.choerodon.devops.api.vo.iam.UserVO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE
-import io.choerodon.devops.api.vo.ProjectVO
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.*
 <<<<<<< HEAD
+=======
+>>>>>>> [IMP]重构后端结构
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO
 =======
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO
@@ -36,7 +37,6 @@ import io.choerodon.devops.infra.dataobject.iam.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
-import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -276,22 +276,22 @@ class DevopsEnvironmentControllerSpec extends Specification {
         Mockito.when(iamServiceClient.queryRoleIdByCode(any(RoleSearchDTO.class))).thenReturn(responseEntity3).thenReturn(responseEntity4)
 
         and: 'mock查询项目成员和所有者的角色列表'
-        List<UserDTO> ownerUserDTOList = new ArrayList<>()
-        List<UserDTO> memberUserDTOList = new ArrayList<>()
-        UserDTO ownerUserDTO = new UserDTO()
+        List<UserVO> ownerUserDTOList = new ArrayList<>()
+        List<UserVO> memberUserDTOList = new ArrayList<>()
+        UserVO ownerUserDTO = new UserVO()
         ownerUserDTO.setId(1L)
         ownerUserDTO.setLoginName("test")
         ownerUserDTO.setRealName("realTest")
         ownerUserDTOList.add(ownerUserDTO)
-        PageInfo<UserDTO> ownerUserDTOPage = new PageInfo<>(ownerUserDTOList)
-        UserDTO memberUserDTO = new UserDTO()
+        PageInfo<UserVO> ownerUserDTOPage = new PageInfo<>(ownerUserDTOList)
+        UserVO memberUserDTO = new UserVO()
         memberUserDTO.setId(4L)
         memberUserDTO.setLoginName("test4")
         memberUserDTO.setRealName("realTest4")
         memberUserDTOList.add(memberUserDTO)
-        PageInfo<UserDTO> memberUserDTOPage = new PageInfo<>(memberUserDTOList)
-        ResponseEntity<PageInfo<UserDTO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
-        ResponseEntity<PageInfo<UserDTO>> memberPageResponseEntity = new ResponseEntity<>(memberUserDTOPage, HttpStatus.OK)
+        PageInfo<UserVO> memberUserDTOPage = new PageInfo<>(memberUserDTOList)
+        ResponseEntity<PageInfo<UserVO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
+        ResponseEntity<PageInfo<UserVO>> memberPageResponseEntity = new ResponseEntity<>(memberUserDTOPage, HttpStatus.OK)
         RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
         roleAssignmentSearchDTO.setLoginName("")
         roleAssignmentSearchDTO.setRealName("")

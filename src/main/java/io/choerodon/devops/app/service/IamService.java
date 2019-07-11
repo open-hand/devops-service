@@ -8,7 +8,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.vo.iam.UserDTO;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
 import io.choerodon.devops.api.vo.ProjectVO;
@@ -42,9 +42,9 @@ public interface IamService {
 
     UserE queryByEmail(Long projectId, String email);
 
-    PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
-                                                             RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId,
-                                                             Long projectId, Boolean doPage);
+    PageInfo<UserVO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+                                                            RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId,
+                                                            Long projectId, Boolean doPage);
 
     PageInfo<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, Boolean doPage);
 
@@ -54,7 +54,7 @@ public interface IamService {
 
     List<Long> getAllMemberIdsWithoutOwner(Long projectId);
 
-    List<UserDTO> getAllMember(Long projectId);
+    List<UserVO> getAllMember(Long projectId);
 
     Boolean isProjectOwner(Long userId, ProjectVO projectE);
 

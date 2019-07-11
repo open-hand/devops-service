@@ -12,7 +12,7 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.UserDTO;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.DevopsNotificationService;
 import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
@@ -247,7 +247,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             notifyDTO.setTargetUsers(Arrays.asList(user));
         } else if (devopsNotificationE.getNotifyObject().equals(TriggerObject.OWNER.getObject())) {
             Long ownerId = iamRepository.queryRoleIdByCode(PROJECT_OWNER);
-            PageInfo<UserDTO> allOwnerUsersPage = iamRepository
+            PageInfo<UserVO> allOwnerUsersPage = iamRepository
 
                     .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(),
 

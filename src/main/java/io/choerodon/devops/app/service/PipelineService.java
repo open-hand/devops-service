@@ -16,7 +16,7 @@ import io.choerodon.devops.api.vo.PipelineRecordListDTO;
 import io.choerodon.devops.api.vo.PipelineRecordReqDTO;
 import io.choerodon.devops.api.vo.PipelineReqDTO;
 import io.choerodon.devops.api.vo.PipelineUserRecordRelDTO;
-import io.choerodon.devops.api.vo.iam.UserDTO;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 
 /**
@@ -63,7 +63,7 @@ public interface PipelineService {
 
     List<PipelineDTO> listPipelineDTO(Long projectId);
 
-    List<UserDTO> getAllUsers(Long projectId);
+    List<UserVO> getAllUsers(Long projectId);
 
     void updateStatus(Long pipelineRecordId, Long stageRecordId, String status, String errorInfo);
 

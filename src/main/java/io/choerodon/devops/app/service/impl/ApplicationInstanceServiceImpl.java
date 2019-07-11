@@ -165,7 +165,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //查询出当前用户有权限的环境列表，如果是项目所有者，则有全部环境权限
         List<Long> permissionEnvIds = devopsEnvUserPermissionService
                 .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
-                .filter(DevopsEnvUserPermissionE::getPermitted).map(DevopsEnvUserPermissionE::getEnvId)
+                .filter(DevopsEnvUserPermissionVO::getPermitted).map(DevopsEnvUserPermissionVO::getEnvId)
                 .collect(Collectors.toList());
 
         ProjectVO projectVO = iamServiceClientOperator.queryIamProject(projectId);

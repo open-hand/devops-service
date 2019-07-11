@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -8,18 +9,16 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvUserPermissionDTO;
+import io.choerodon.devops.api.vo.DevopsEnvUserPermissionVO;
 import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvUserPermissionE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDO;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,53 +35,46 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     @Autowired
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
     @Autowired
-    private IamRepository iamRepository;
-    @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    private IamServiceClientOperator iamServiceClientOperator;
 
     @Override
-    public void create(DevopsEnvUserPermissionE devopsEnvUserPermissionE) {
-        DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = ConvertHelper
-                .convert(devopsEnvUserPermissionE, DevopsEnvUserPermissionDO.class);
-        devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO);
-    }
-
-    @Override
-    public void delete(Long envId, Long userId) {
+    public void create(DevopsEnvUserPermissionVO devopsEnvUserPermissionVO) {
         DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO();
-        devopsEnvUserPermissionDO.setEnvId(envId);
-        devopsEnvUserPermissionDO.setIamUserId(userId);
-        devopsEnvUserPermissionMapper.delete(devopsEnvUserPermissionDO);
+        BeanUtils.copyProperties(devopsEnvUserPermissionVO, devopsEnvUserPermissionDO);
+        if (devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO) != 1) {
+            throw new CommonException("error.devops.env.user.permission.create");
+        }
     }
 
     @Override
-    public PageInfo<DevopsEnvUserPermissionDTO> pageUserPermissionByOption(Long envId, PageRequest pageRequest,
-                                                                           String params) {
+    public PageInfo<DevopsEnvUserPermissionVO> pageByOptions(Long envId, PageRequest pageRequest,
+                                                                          String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-        PageInfo<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = PageHelper.startPage(pageRequest.getPage(),
+        PageInfo<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(),
                 pageRequest.getSize()).doSelectPageInfo(() -> devopsEnvUserPermissionMapper
                 .pageUserEnvPermissionByOption(envId, searchParamMap, paramMap));
-        return ConvertPageHelper.convertPageInfo(devopsEnvUserPermissionDTOPage, DevopsEnvUserPermissionDTO.class);
+
+        PageInfo<DevopsEnvUserPermissionVO> devopsEnvUserPermissionVOPageInfo = new PageInfo<>();
+        BeanUtils.copyProperties(devopsEnvUserPermissionDTOPageInfo,devopsEnvUserPermissionVOPageInfo);
+        return devopsEnvUserPermissionVOPageInfo;
     }
 
     @Override
-    public List<DevopsEnvUserPermissionDTO> listALlUserPermission(Long envId) {
-        return ConvertHelper.convertList(devopsEnvUserPermissionMapper.listAllUserPermission(envId),
-                DevopsEnvUserPermissionDTO.class);
+    public List<DevopsEnvUserPermissionVO> listByEnvId(Long envId) {
+
+        List<DevopsEnvUserPermissionVO> devopsEnvUserPermissionVOS = new ArrayList<>();
+        BeanUtils.copyProperties(devopsEnvUserPermissionMapper.listByEnvId(envId),devopsEnvUserPermissionVOS);
+        return devopsEnvUserPermissionVOS;
     }
 
-    @Override
-    public List<DevopsEnvUserPermissionE> listAll(Long envId) {
-        return ConvertHelper.convertList(devopsEnvUserPermissionMapper.listAll(envId), DevopsEnvUserPermissionE.class);
-    }
 
     @Override
     @Transactional
     public void updateEnvUserPermission(Long envId, List<Long> addUsersList, List<Long> deleteUsersList) {
         // 待添加的用户列表
-        List<UserE> addIamUsers = iamRepository.listUsersByIds(addUsersList);
+        List<User> addIamUsers = iamRepository.listUsersByIds(addUsersList);
         addIamUsers.forEach(e -> devopsEnvUserPermissionMapper
                 .insert(new DevopsEnvUserPermissionDO(e.getLoginName(), e.getId(), e.getRealName(), envId, true)));
         // 待删除的用户列表

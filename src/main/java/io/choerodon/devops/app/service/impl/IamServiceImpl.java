@@ -151,9 +151,9 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
-                                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                                    Long roleId, Long projectId, Boolean doPage) {
+    public PageInfo<UserVO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+                                                                   RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                                   Long roleId, Long projectId, Boolean doPage) {
         try {
             return iamServiceClient
                     .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
@@ -216,26 +216,26 @@ public class IamServiceImpl implements IamService {
         List<Long> memberIds =
 
                 this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), memberId,
-                        projectId, false).getList().stream().map(UserDTO::getId).collect(Collectors.toList());
+                        projectId, false).getList().stream().map(UserVO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         List<Long> ownerIds =
                 this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), ownerId,
 
-                        projectId, false).getList().stream().map(UserDTO::getId).collect(Collectors.toList());
+                        projectId, false).getList().stream().map(UserVO::getId).collect(Collectors.toList());
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
     }
 
     @Override
-    public List<UserDTO> getAllMember(Long projectId) {
+    public List<UserVO> getAllMember(Long projectId) {
         // 获取项目成员id
         Long memberId = this.queryRoleIdByCode(PROJECT_MEMBER);
         // 获取项目所有者id
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
 
-        List<UserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), memberId,
+        List<UserVO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), memberId,
                 projectId, false).getList();
-        List<Long> memberIds = list.stream().filter(userDTO -> userDTO.getEnabled()).map(UserDTO::getId).collect(Collectors.toList());
+        List<Long> memberIds = list.stream().filter(userDTO -> userDTO.getEnabled()).map(UserVO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), ownerId,
 

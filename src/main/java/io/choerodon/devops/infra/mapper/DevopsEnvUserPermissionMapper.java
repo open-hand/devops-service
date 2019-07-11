@@ -20,7 +20,7 @@ public interface DevopsEnvUserPermissionMapper extends Mapper<DevopsEnvUserPermi
                                                                   @Param("searchParam") Map<String, Object> searchParam,
                                                                   @Param("param") String param);
 
-    List<DevopsEnvUserPermissionDO> listAllUserPermission(@Param("envId") Long envId);
+    List<DevopsEnvUserPermissionDO> listByEnvId(@Param("envId") Long envId);
 
     List<DevopsEnvUserPermissionDO> listAll(@Param("envId") Long envId);
 }

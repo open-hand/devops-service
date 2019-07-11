@@ -24,8 +24,7 @@ import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.UserDTO;
-import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.DemoEnvSetupSagaHandler;
 import io.choerodon.devops.app.service.PipelineService;
@@ -741,7 +740,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public List<UserDTO> getAllUsers(Long projectId) {
+    public List<UserVO> getAllUsers(Long projectId) {
         return iamRepository.getAllMember(projectId);
     }
 

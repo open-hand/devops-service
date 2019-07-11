@@ -11,7 +11,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Time: 13:23
  * Description:
  */
-public class UserDTO {
+public class UserVO {
     public static final String EMAIL_REGULAR_EXPRESSION = "[\\w!#$%&'*+/=?^_`{|}~-]+(?:\\.[\\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\\w](?:[\\w-]*[\\w])?\\.)+[\\w](?:[\\w-]*[\\w])?";
 
     public static final String PHONE_REGULAR_EXPRESSION = "^((13[0-9]|14[579]|15[0-3,5-9]|17[0135678]|18[0-9])\\d{8})?$";
@@ -203,7 +203,7 @@ public class UserDTO {
         if (this.getClass() != obj.getClass()) {
             return false;
         }
-        UserDTO anotherObj = (UserDTO) obj;
+        UserVO anotherObj = (UserVO) obj;
         if (anotherObj.getId() == null) {
             return false;
         }

@@ -34,7 +34,7 @@ import io.choerodon.devops.api.vo.PipelineRecordListDTO;
 import io.choerodon.devops.api.vo.PipelineRecordReqDTO;
 import io.choerodon.devops.api.vo.PipelineReqDTO;
 import io.choerodon.devops.api.vo.PipelineUserRecordRelDTO;
-import io.choerodon.devops.api.vo.iam.UserDTO;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
@@ -394,7 +394,7 @@ public class PipelineController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取所有项目成员和项目所有者")
     @GetMapping(value = "/all_users")
-    public ResponseEntity<List<UserDTO>> getAllUsers(
+    public ResponseEntity<List<UserVO>> getAllUsers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(pipelineService.getAllUsers(projectId))

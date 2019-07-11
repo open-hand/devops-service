@@ -1,23 +1,21 @@
-package io.choerodon.devops.api.vo.iam.entity;
+package io.choerodon.devops.api.vo;
 
 /**
- * Created by n!Ck
- * Date: 2018/10/26
- * Time: 11:11
- * Description:
+ * Created by Sheep on 2019/7/11.
  */
+public class DevopsEnvUserPermissionVO {
 
-public class DevopsEnvUserPermissionE {
+
     private String loginName;
     private Long iamUserId;
     private String realName;
     private Long envId;
     private Boolean isPermitted;
 
-    public DevopsEnvUserPermissionE() {
+    public DevopsEnvUserPermissionVO() {
     }
 
-    public DevopsEnvUserPermissionE(String loginName, Long iamUserId, String realName, Long envId,
+    public DevopsEnvUserPermissionVO(String loginName, Long iamUserId, String realName, Long envId,
                                     Boolean isPermitted) {
         this.loginName = loginName;
         this.iamUserId = iamUserId;
@@ -65,4 +63,5 @@ public class DevopsEnvUserPermissionE {
     public void setPermitted(Boolean permitted) {
         isPermitted = permitted;
     }
+
 }
