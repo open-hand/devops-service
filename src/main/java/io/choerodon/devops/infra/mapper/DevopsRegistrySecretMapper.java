@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.DevopsRegistrySecretDO;
+import io.choerodon.devops.infra.dto.DevopsRegistrySecretDO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**

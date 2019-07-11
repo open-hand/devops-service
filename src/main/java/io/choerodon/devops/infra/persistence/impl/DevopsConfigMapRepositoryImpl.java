@@ -17,7 +17,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsConfigMapE;
 import io.choerodon.devops.domain.application.repository.DevopsConfigMapRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsConfigMapDO;
+import io.choerodon.devops.infra.dto.DevopsConfigMapDO;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapMapper;
 
 @Service

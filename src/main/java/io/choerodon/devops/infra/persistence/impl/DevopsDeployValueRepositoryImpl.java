@@ -18,7 +18,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsDeployValueE;
 import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsDeployValueDO;
+import io.choerodon.devops.infra.dto.DevopsDeployValueDO;
 import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
 
 

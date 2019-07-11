@@ -6,7 +6,9 @@ import java.util.Map;
 import io.choerodon.devops.api.vo.DevopsIngressDTO;
 import io.choerodon.devops.api.vo.EndPointPortDTO;
 import io.choerodon.devops.api.vo.iam.entity.PortMapE;
-import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
+import io.choerodon.devops.infra.dto.ServiceInstanceDO;
+
+
 
 /**
  * Created by Zenger on 2018/4/19.

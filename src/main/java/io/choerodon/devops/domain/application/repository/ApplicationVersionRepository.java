@@ -2,8 +2,10 @@ package io.choerodon.devops.domain.application.repository;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
+
 import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
-import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
+
+import io.choerodon.devops.infra.dto.ApplicationLatestVersionDO;
 
 import java.util.List;
 

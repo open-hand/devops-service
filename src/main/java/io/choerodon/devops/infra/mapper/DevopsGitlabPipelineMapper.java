@@ -6,7 +6,7 @@ import java.util.List;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO;
 
 public interface DevopsGitlabPipelineMapper extends Mapper<DevopsGitlabPipelineDO> {
 

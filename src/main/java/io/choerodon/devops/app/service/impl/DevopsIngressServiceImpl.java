@@ -13,16 +13,14 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
-import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
-import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
 import io.choerodon.devops.infra.mapper.DevopsAppResourceMapper;
+import io.choerodon.devops.infra.dto.DevopsIngressDO;
+import io.choerodon.devops.infra.dto.DevopsIngressPathDO;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +56,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private UserAttrRepository userAttrRepository;
     @Autowired
@@ -154,7 +152,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         //校验环境是否连接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
 
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressDTO.getCertId());
@@ -232,7 +230,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
@@ -244,7 +242,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         //校验环境是否连接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
 
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //判断ingress有没有修改，没有修改直接返回
         DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
@@ -281,8 +279,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         PageInfo<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository
                 .getIngress(projectId, envId, null,  pageRequest, params);
 
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         devopsIngressDTOS.getList().forEach(devopsIngressDTO -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
@@ -318,7 +316,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
@@ -384,7 +382,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDO.getEnvId());
 
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         devopsEnvCommandRepository.listByObjectAll(ObjectType.INGRESS.getType(), ingressId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         devopsIngressRepository.deleteIngress(ingressId);

@@ -17,9 +17,9 @@ import io.choerodon.devops.domain.application.repository.ApplicationVersionRepos
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
-import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
-import io.choerodon.devops.infra.dataobject.ApplicationVersionReadmeDO;
+import io.choerodon.devops.infra.dto.ApplicationLatestVersionDO;
+import io.choerodon.devops.infra.dto.ApplicationVersionDO;
+import io.choerodon.devops.infra.dto.ApplicationVersionReadmeDO;
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
 import io.kubernetes.client.JSON;

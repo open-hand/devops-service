@@ -31,7 +31,7 @@ import springfox.documentation.annotations.ApiIgnore;
 @RequestMapping(value = "/v1/projects/{project_id}/app_instances")
 public class ApplicationInstanceController {
 
-    private static final String ERROR_APPINSTANCE_QUERY = "error.appInstance.query";
+    private static final String ERROR_APP_INSTANCE_QUERY = "error.appInstance.query";
 
     @Autowired
     private ApplicationInstanceService applicationInstanceService;
@@ -77,7 +77,7 @@ public class ApplicationInstanceController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询应用部署")
     @CustomPageRequest
-    @PostMapping(value = "/list_by_options")
+    @PostMapping(value = "/page_by_options")
     public ResponseEntity<PageInfo<DevopsEnvPreviewInstanceVO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -100,23 +100,23 @@ public class ApplicationInstanceController {
     }
 
     /**
-     * 查询应用部署
+     * 查询部署总览
      *
      * @param projectId 项目id
      * @param appId     应用id
-     * @return page of ApplicationInstancesDTO
+     * @return page of ApplicationInstancesVO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询多应用部署")
-    @GetMapping(value = "/all")
-    public ResponseEntity<List<ApplicationInstancesDTO>> listByAppId(
+    @ApiOperation(value = "查询部署总览")
+    @GetMapping(value = "/list_application_instance_overView")
+    public ResponseEntity<List<ApplicationInstanceOverViewVO>> listApplicationInstanceOverView(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID")
             @RequestParam(required = false) Long appId) {
-        return Optional.ofNullable(applicationInstanceService.listApplicationInstances(projectId, appId))
+        return Optional.ofNullable(applicationInstanceService.listApplicationInstanceOverView(projectId, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.version.query"));
     }
@@ -372,14 +372,14 @@ public class ApplicationInstanceController {
      *
      * @param projectId            项目id
      * @param applicationDeployDTO 部署信息
-     * @return ApplicationInstanceDTO
+     * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "部署应用")
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @PostMapping
-    public ResponseEntity<ApplicationInstanceDTO> deploy(
+    public ResponseEntity<ApplicationInstanceVO> deploy(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
@@ -413,7 +413,7 @@ public class ApplicationInstanceController {
             @RequestParam(required = false) Long appVersionId) {
         return Optional.ofNullable(applicationInstanceService.listByOptions(projectId, appId, appVersionId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APPINSTANCE_QUERY));
+                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_QUERY));
     }
 
     /**
@@ -437,7 +437,7 @@ public class ApplicationInstanceController {
             @RequestParam Long appId) {
         return Optional.ofNullable(applicationInstanceService.listByAppIdAndEnvId(projectId, appId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APPINSTANCE_QUERY));
+                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_QUERY));
     }
 
 
@@ -605,7 +605,7 @@ public class ApplicationInstanceController {
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(applicationInstanceService.listByEnv(projectId, envId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APPINSTANCE_QUERY));
+                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_QUERY));
     }
 
     /**
@@ -744,7 +744,7 @@ public class ApplicationInstanceController {
      *
      * @param projectId            项目id
      * @param applicationDeployDTO 部署信息
-     * @return ApplicationInstanceDTO
+     * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "部署自动化测试应用")
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
@@ -766,7 +766,7 @@ public class ApplicationInstanceController {
      * @param envId          环境id
      * @param deploymentName deploymentName
      * @param count          pod数量
-     * @return ApplicationInstanceDTO
+     * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "操作pod的数量")
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
@@ -806,7 +806,7 @@ public class ApplicationInstanceController {
             @RequestParam Long appId) {
         return Optional.ofNullable(applicationInstanceService.getByAppIdAndEnvId(projectId, appId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APPINSTANCE_QUERY));
+                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_QUERY));
     }
 
     @ApiOperation(value = "部署远程应用")
@@ -814,7 +814,7 @@ public class ApplicationInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @PostMapping(value = "/remote")
-    public ResponseEntity<ApplicationInstanceDTO> deployRemote(
+    public ResponseEntity<ApplicationInstanceVO> deployRemote(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)

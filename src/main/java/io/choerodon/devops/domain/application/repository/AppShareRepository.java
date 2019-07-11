@@ -6,8 +6,8 @@ import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.iam.entity.DevopsAppShareE;
-import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
-import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
+import io.choerodon.devops.infra.dto.DevopsAppMarketVersionDO;
+import io.choerodon.devops.infra.dto.DevopsAppShareDO;
 
 /**
  * Created by ernst on 2018/5/12.

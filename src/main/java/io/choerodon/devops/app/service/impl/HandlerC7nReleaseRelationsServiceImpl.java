@@ -7,24 +7,25 @@ import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ApplicationDeployDTO;
-import io.choerodon.devops.api.vo.ApplicationInstanceDTO;
+import io.choerodon.devops.api.vo.ApplicationInstanceVO;
 import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
-import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.ObjectType;
 import io.kubernetes.client.models.V1Endpoints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileRelationsService<C7nHelmRelease> {
@@ -111,9 +112,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                 }
                                 DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationDeployDTO.getCommandId());
                                 if (!applicationDeployDTO.getIsNotChange()) {
-                                    ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService
+                                    ApplicationInstanceVO applicationInstanceVO = applicationInstanceService
                                             .createOrUpdateByGitOps(applicationDeployDTO, userId);
-                                    devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceDTO.getCommandId());
+                                    devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceVO.getCommandId());
                                 }
 
                                 devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
@@ -145,7 +146,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                 .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
                         ApplicationDeployDTO applicationDeployDTO;
 
-                        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+                        ApplicationInstanceVO applicationInstanceVO = new ApplicationInstanceVO();
                         //初始化实例参数,创建时判断实例是否存在，存在则直接创建文件对象关联关系
                         if (applicationInstanceE == null) {
                             applicationDeployDTO = getApplicationDeployDTO(
@@ -154,19 +155,19 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                     envId,
                                     filePath,
                                     "create");
-                            applicationInstanceDTO = applicationInstanceService.createOrUpdateByGitOps(applicationDeployDTO, userId);
+                            applicationInstanceVO = applicationInstanceService.createOrUpdateByGitOps(applicationDeployDTO, userId);
                         } else {
-                            applicationInstanceDTO.setId(applicationInstanceE.getId());
-                            applicationInstanceDTO.setCommandId(applicationInstanceE.getCommandId());
+                            applicationInstanceVO.setId(applicationInstanceE.getId());
+                            applicationInstanceVO.setCommandId(applicationInstanceE.getCommandId());
                         }
-                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceDTO.getCommandId());
+                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceVO.getCommandId());
 
 
                         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = devopsServiceInstanceRepository.listByEnvIdAndInstanceCode(envId, c7nHelmRelease.getMetadata().getName());
 
                         //删除实例之后，重新创建同名的实例，如果之前的实例关联的网络，此时需要把网络关联上新的实例
-                        Long instanceId = applicationInstanceDTO.getId();
-                        if(devopsServiceAppInstanceES!=null&&!devopsServiceAppInstanceES.isEmpty()) {
+                        Long instanceId = applicationInstanceVO.getId();
+                        if (devopsServiceAppInstanceES != null && !devopsServiceAppInstanceES.isEmpty()) {
                             devopsServiceAppInstanceES.stream().filter(devopsServiceAppInstanceE -> !devopsServiceAppInstanceE.getAppInstanceId().equals(instanceId)).forEach(devopsServiceAppInstanceE -> {
                                 devopsServiceInstanceRepository.updateInstanceId(devopsServiceAppInstanceE.getId(), instanceId);
                             });

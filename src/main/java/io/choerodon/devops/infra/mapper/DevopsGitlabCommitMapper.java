@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import java.sql.Date;
 import java.util.List;
 
-import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDO;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.mybatis.common.Mapper;

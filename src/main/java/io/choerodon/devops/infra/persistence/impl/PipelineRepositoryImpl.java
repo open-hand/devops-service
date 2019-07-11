@@ -17,7 +17,7 @@ import io.choerodon.devops.api.vo.iam.entity.PipelineE;
 import io.choerodon.devops.domain.application.repository.PipelineRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.PipelineDO;
+import io.choerodon.devops.infra.dto.PipelineDO;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
 
 /**

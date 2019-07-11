@@ -5,10 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvApplicationE;
-import io.choerodon.devops.infra.dataobject.AppInstanceInfoDTO;
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
-import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
-import io.choerodon.devops.infra.dataobject.DeployDO;
+import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.infra.dto.ApplicationInstancesDO;
+import io.choerodon.devops.infra.dto.DeployDO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -16,17 +15,15 @@ import org.apache.ibatis.annotations.Param;
 /**
  * Created by Zenger on 2018/4/15.
  */
-public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDO> {
+public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDTO> {
 
-    AppInstanceInfoDTO queryInfoById(@Param("instanceId") Long instanceId);
-
-    List<ApplicationInstanceDO> listApplicationInstance(@Param("projectId") Long projectId,
-                                                        @Param("envId") Long envId,
-                                                        @Param("versionId") Long versionId,
-                                                        @Param("appId") Long appId,
-                                                        @Param("instanceId") Long instanceId,
-                                                        @Param("searchParam") Map<String, Object> searchParam,
-                                                        @Param("param") String param);
+    List<ApplicationInstanceDTO> listApplicationInstance(@Param("projectId") Long projectId,
+                                                         @Param("envId") Long envId,
+                                                         @Param("versionId") Long versionId,
+                                                         @Param("appId") Long appId,
+                                                         @Param("instanceId") Long instanceId,
+                                                         @Param("searchParam") Map<String, Object> searchParam,
+                                                         @Param("param") String param);
 
     /**
      * 查询所有应用部署的appId和envId
@@ -34,18 +31,14 @@ public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDO>
      */
     List<DevopsEnvApplicationE> listAllEnvApp();
 
-    List<ApplicationInstanceDO> listApplicationInstanceCode(@Param("projectId") Long projectId,
-                                                            @Param("envId") Long envId,
-                                                            @Param("versionId") Long versionId,
-                                                            @Param("appId") Long appId);
-
-    List<ApplicationInstanceDO> listRunningAndFailedInstance(@Param("projectId") Long projectId,
+    List<ApplicationInstanceDTO> listApplicationInstanceCode(@Param("projectId") Long projectId,
                                                              @Param("envId") Long envId,
+                                                             @Param("versionId") Long versionId,
                                                              @Param("appId") Long appId);
 
-    List<ApplicationInstanceDO> getRunningAndFailedInstance(@Param("projectId") Long projectId,
-                                                            @Param("envId") Long envId,
-                                                            @Param("appId") Long appId);
+    List<ApplicationInstanceDTO> listRunningAndFailedInstance(@Param("projectId") Long projectId,
+                                                              @Param("envId") Long envId,
+                                                              @Param("appId") Long appId);
 
     int checkOptions(@Param("envId") Long envId,
                      @Param("appId") Long appId,

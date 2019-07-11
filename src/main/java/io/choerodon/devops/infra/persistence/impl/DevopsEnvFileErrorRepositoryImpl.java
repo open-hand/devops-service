@@ -11,7 +11,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileErrorE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileErrorRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO;
+import io.choerodon.devops.infra.dto.DevopsEnvFileErrorDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

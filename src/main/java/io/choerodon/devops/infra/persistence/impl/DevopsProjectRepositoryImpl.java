@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsProjectE;
@@ -15,16 +16,16 @@ import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import org.springframework.stereotype.Component;
 =======
-import org.springframework.stereotype.Component;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.exception.CommonException;
+=======
+>>>>>>> [IMP]修复后端结构
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
-import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
-import io.choerodon.devops.infra.util.TypeUtil;
+<<<<<<< HEAD
 >>>>>>> [IMP] 修改AppControler重构
+=======
+
+
+>>>>>>> [IMP]修复后端结构
 
 /**
  * Created by younger on 2018/3/29.
@@ -76,7 +77,7 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
         } else {
             devopsProjectDO.setObjectVersionNumber(oldDevopsProjectDO.getObjectVersionNumber());
             if (oldDevopsProjectDO.getObjectVersionNumber() == null) {
-                devopsProjectMapper.updateObJectVersionNumber(devopsProjectDO.getIamProjectId());
+                devopsProjectMapper.updateObjectVersionNumber(devopsProjectDO.getIamProjectId());
                 devopsProjectDO.setObjectVersionNumber(1L);
             }
             devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDO);

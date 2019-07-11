@@ -6,7 +6,7 @@ import java.util.Map;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO;
+import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDO;
 
 /**
  * Created by n!Ck

@@ -25,7 +25,7 @@ import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
+import io.choerodon.devops.infra.dto.DevopsIngressDO;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1beta1HTTPIngressPath;

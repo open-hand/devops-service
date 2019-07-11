@@ -14,7 +14,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabPipelineE;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabPipelineRepository;
-import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
 
 @Service

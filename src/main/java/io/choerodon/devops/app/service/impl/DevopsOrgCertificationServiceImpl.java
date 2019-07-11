@@ -24,7 +24,7 @@ import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.SslUtil;
-import io.choerodon.devops.infra.dataobject.CertificationFileDO;
+import io.choerodon.devops.infra.dto.CertificationFileDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

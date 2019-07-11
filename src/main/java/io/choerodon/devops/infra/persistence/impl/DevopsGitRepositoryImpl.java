@@ -26,11 +26,7 @@ import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDTO;
-import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagNodeDO;
+
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;

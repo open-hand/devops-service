@@ -17,14 +17,17 @@ import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
+
 import io.choerodon.devops.api.vo.iam.entity.*;
+
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.dataobject.CertificationFileDO;
+import io.choerodon.devops.infra.dto.CertificationFileDO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +60,7 @@ public class CertificationServiceImpl implements CertificationService {
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
@@ -216,7 +219,7 @@ public class CertificationServiceImpl implements CertificationService {
                                       C7nCertification c7nCertification) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-        envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+        clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         ResourceConvertToYamlHandler<C7nCertification> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(c7nCertification);
@@ -288,7 +291,7 @@ public class CertificationServiceImpl implements CertificationService {
             certificationOperation.operationEnvGitlabFile(
                     null, gitLabEnvProjectId,
                     "delete", userAttrE.getGitlabUserId(), certId, certificateType, null, false, certEnvId,
-                    envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa()));
+                    clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa()));
         }
     }
 
@@ -314,7 +317,7 @@ public class CertificationServiceImpl implements CertificationService {
         //校验环境是否连接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certificationE.getEnvironmentE().getId());
 
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //实例相关对象数据库操作
         devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.CERTIFICATE.toValue(), certificationE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t));
@@ -328,8 +331,8 @@ public class CertificationServiceImpl implements CertificationService {
         }
 
         PageInfo<CertificationDTO> certificationDTOPage = certificationRepository.page(projectId, null, envId, pageRequest, params);
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         certificationDTOPage.getList().stream()
                 .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
                 .forEach(certificationDTO -> {

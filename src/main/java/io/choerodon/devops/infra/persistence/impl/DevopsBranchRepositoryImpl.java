@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import io.choerodon.devops.domain.application.repository.DevopsBranchRepository;
-import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
+import io.choerodon.devops.infra.dto.DevopsBranchDO;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
 
 /**

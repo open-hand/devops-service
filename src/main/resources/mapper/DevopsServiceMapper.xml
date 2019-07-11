@@ -57,7 +57,7 @@
         ) t
     </select>
 
-    <select id="listDevopsService" resultType="io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO">
+    <select id="listDevopsService" resultType="io.choerodon.devops.infra.dto.DevopsServiceQueryDO">
         SELECT
         ds.id,
         ds.`name`,
@@ -167,7 +167,7 @@
         `status` = 'running';
     </select>
 
-    <resultMap id="devopsServiceResult" type="io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO">
+    <resultMap id="devopsServiceResult" type="io.choerodon.devops.infra.dto.DevopsServiceQueryDO">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="externalIp" column="external_ip"/>
@@ -186,7 +186,7 @@
         <result property="namespace" column="namespace"/>
         <result property="labels" column="labels"/>
         <result property="endPoints" column="end_points"/>
-        <collection property="appInstance" ofType="io.choerodon.devops.infra.dataobject.ServiceInstanceDO">
+        <collection property="appInstance" ofType="io.choerodon.devops.infra.dto.ServiceInstanceDO">
             <result column="app_instance_id" property="id" jdbcType="VARCHAR"/>
             <result column="code" property="code" jdbcType="VARCHAR"/>
             <result column="instance_status" property="instanceStatus" jdbcType="VARCHAR"/>

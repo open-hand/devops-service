@@ -18,7 +18,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsNotificationE;
 import io.choerodon.devops.domain.application.repository.DevopsNotificationRepository;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsNotificationDO;
+import io.choerodon.devops.infra.dto.DevopsNotificationDO;
 import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
 
 

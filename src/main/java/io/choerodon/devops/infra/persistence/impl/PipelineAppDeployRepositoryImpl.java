@@ -6,7 +6,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.PipelineAppDeployE;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.infra.dataobject.PipelineAppDeployDO;
+import io.choerodon.devops.infra.dto.PipelineAppDeployDO;
 import io.choerodon.devops.infra.mapper.PipelineAppDeployMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

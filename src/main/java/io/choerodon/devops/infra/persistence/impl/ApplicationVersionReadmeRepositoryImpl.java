@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionReadmeRepository;
 import io.choerodon.devops.domain.application.valueobject.ApplicationVersionReadmeV;
-import io.choerodon.devops.infra.dataobject.ApplicationVersionReadmeDO;
+import io.choerodon.devops.infra.dto.ApplicationVersionReadmeDO;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
 
 /**

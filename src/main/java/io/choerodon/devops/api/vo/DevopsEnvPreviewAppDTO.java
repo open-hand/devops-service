@@ -7,7 +7,7 @@ public class DevopsEnvPreviewAppDTO {
     private String appName;
     private String appCode;
     private Long projectId;
-    private List<ApplicationInstanceDTO> applicationInstanceDTOS;
+    private List<ApplicationInstanceVO> applicationInstanceVOS;
 
     public String getAppName() {
         return appName;
@@ -25,12 +25,12 @@ public class DevopsEnvPreviewAppDTO {
         this.appCode = appCode;
     }
 
-    public List<ApplicationInstanceDTO> getApplicationInstanceDTOS() {
-        return applicationInstanceDTOS;
+    public List<ApplicationInstanceVO> getApplicationInstanceVOS() {
+        return applicationInstanceVOS;
     }
 
-    public void setApplicationInstanceDTOS(List<ApplicationInstanceDTO> applicationInstanceDTOS) {
-        this.applicationInstanceDTOS = applicationInstanceDTOS;
+    public void setApplicationInstanceVOS(List<ApplicationInstanceVO> applicationInstanceVOS) {
+        this.applicationInstanceVOS = applicationInstanceVOS;
     }
 
     public Long getProjectId() {

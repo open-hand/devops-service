@@ -31,7 +31,7 @@ import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
-import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.CommandStatus;
@@ -69,7 +69,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private UserAttrRepository userAttrRepository;
     @Autowired
@@ -104,8 +104,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public PageInfo<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
         PageInfo<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
                 projectId, envId, null, pageRequest, searchParam,null);
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         devopsServiceByPage.getList().forEach(devopsServiceV -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceV.getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
@@ -121,8 +121,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest,Long appId) {
         PageInfo<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
                 projectId, null, instanceId, pageRequest, null,appId);
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         if (!devopsServiceByPage.getList().isEmpty()) {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceByPage.getList().get(0).getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
@@ -229,7 +229,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //校验环境是否链接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
 
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
         List<String> beforeDevopsServiceAppInstanceES = new ArrayList<>();
 
@@ -417,7 +417,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //校验环境是否链接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
 
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
@@ -472,7 +472,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceRepository.update(devopsServiceE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
@@ -536,7 +536,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
         //校验环境是否链接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //更新数据
         devopsEnvCommandRepository.listByObjectAll(ObjectType.SERVICE.getType(), devopsServiceE.getId()).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
@@ -744,7 +744,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //处理文件
         ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();

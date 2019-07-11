@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
-import io.choerodon.devops.infra.dataobject.DevopsEnvFileResourceDO;
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper;
 
 /**

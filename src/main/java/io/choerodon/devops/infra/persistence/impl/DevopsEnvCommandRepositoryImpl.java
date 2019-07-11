@@ -15,8 +15,8 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvCommandLogRepo
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
-import io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO;
+import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvCommandDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -84,7 +84,7 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
 
     @Override
     public PageInfo<DevopsEnvCommandE> listByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
-        PageInfo<ApplicationInstanceDO> applicationInstanceDOPage = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        PageInfo<ApplicationInstanceDTO> applicationInstanceDOPage = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
         return ConvertPageHelper.convertPageInfo(applicationInstanceDOPage, DevopsEnvCommandE.class);
     }

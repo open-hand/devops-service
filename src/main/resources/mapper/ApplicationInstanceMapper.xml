@@ -2,27 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.ApplicationInstanceMapper">
-    <select id="queryInfoById" resultType="io.choerodon.devops.infra.dataobject.AppInstanceInfoDTO">
-        SELECT ins.id,
-               ins.code,
-               ins.status,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.app_instance_id = ins.id) pod_count,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.app_instance_id = ins.id
-                  AND dp.`status` = 'Running'
-                  AND dp.is_ready = TRUE) pod_running_count,
-               ins.app_id,
-               ins.app_version_id,
-               version.version as          version_name
-        FROM devops_app_instance ins
-                 LEFT JOIN devops_app_version version ON ins.app_version_id = version.id
-        WHERE ins.id = #{instanceId};
-    </select>
-
-    <select id="listApplicationInstance" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
+    <select id="listApplicationInstance" resultType="io.choerodon.devops.infra.dto.ApplicationInstanceDTO">
         SELECT
         dai.id id,
         dai.`code` code,
@@ -112,7 +92,7 @@
         devops_app_instance dai
     </select>
 
-    <select id="listApplicationInstanceCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
+    <select id="listApplicationInstanceCode" resultType="io.choerodon.devops.infra.dto.ApplicationInstanceDTO">
         SELECT
         dai.id id,
         dai.`code` CODE,
@@ -141,7 +121,7 @@
         dai.id DESC
     </select>
 
-    <select id="listRunningAndFailedInstance" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
+    <select id="listRunningAndFailedInstance" resultType="io.choerodon.devops.infra.dto.ApplicationInstanceDTO">
         SELECT
         dai.id id,
         dai.`code` CODE,
@@ -170,7 +150,7 @@
         dai.id DESC
     </select>
 
-    <select id="getRunningAndFailedInstance" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
+    <select id="getRunningAndFailedInstance" resultType="io.choerodon.devops.infra.dto.ApplicationInstanceDTO">
         SELECT
         dai.id id,
         dai.`code` CODE,
@@ -349,7 +329,7 @@
         </if>
     </sql>
 
-    <select id="listApplicationInstances" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstancesDO">
+    <select id="listApplicationInstances" resultType="io.choerodon.devops.infra.dto.ApplicationInstancesDO">
         SELECT
         da.id appId,
         dam.publish_level publishLevel,
@@ -392,7 +372,7 @@
         dai.last_update_date DESC;
     </select>
 
-    <select id="listDeployTime" resultType="io.choerodon.devops.infra.dataobject.DeployDO">
+    <select id="listDeployTime" resultType="io.choerodon.devops.infra.dto.DeployDO">
         select
         dai.code appInstanceCode,
         da.code appCode,
@@ -430,7 +410,7 @@
         order by cmd.last_update_date DESC
     </select>
 
-    <select id="listDeployFrequency" resultType="io.choerodon.devops.infra.dataobject.DeployDO">
+    <select id="listDeployFrequency" resultType="io.choerodon.devops.infra.dto.DeployDO">
         select
         dai.code appInstanceCode,
         da.code appCode,

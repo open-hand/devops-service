@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.domain.application.repository.DeployDetailRepository;
-import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO;
+import io.choerodon.devops.infra.dto.DevopsEnvPodDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
 
 /**

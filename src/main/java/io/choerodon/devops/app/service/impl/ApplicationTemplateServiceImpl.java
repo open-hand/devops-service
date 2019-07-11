@@ -24,8 +24,7 @@ import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+
 import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.GitUtil;
@@ -34,6 +33,15 @@ import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import io.choerodon.devops.infra.enums.Visibility;
+import io.choerodon.devops.infra.dto.gitlab.BranchDO;
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDO;
+import org.eclipse.jgit.api.Git;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 
 /**
  * Created by younger on 2018/3/27.

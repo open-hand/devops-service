@@ -24,7 +24,7 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
+import io.choerodon.devops.infra.dto.DevopsIngressDO;
 import io.choerodon.devops.infra.mapper.ApplicationMarketMapper;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.process.SocketMsgDispatcher;

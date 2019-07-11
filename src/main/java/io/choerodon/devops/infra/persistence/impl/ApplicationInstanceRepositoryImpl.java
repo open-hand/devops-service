@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -11,17 +10,15 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationInstanceE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvApplicationE;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.ResourceType;
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
-import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
-import io.choerodon.devops.infra.dataobject.DeployDO;
+import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.infra.dto.ApplicationInstancesDO;
+import io.choerodon.devops.infra.dto.DeployDO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 
 /**
@@ -39,40 +36,28 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public PageInfo<ApplicationInstanceE> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                                  Long envId, Long versionId, Long appId, Long instanceId, String params) {
-        Map maps = gson.fromJson(params, Map.class);
-        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-        PageInfo<ApplicationInstanceDO> applicationInstanceDOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
-                applicationInstanceMapper
-                        .listApplicationInstance(projectId, envId, versionId, appId, instanceId, searchParamMap, paramMap));
-        return ConvertPageHelper.convertPageInfo(applicationInstanceDOPage, ApplicationInstanceE.class);
-    }
-
-    @Override
     public List<DevopsEnvApplicationE> listAllEnvApp() {
         return applicationInstanceMapper.listAllEnvApp();
     }
 
     @Override
     public ApplicationInstanceE selectByCode(String code, Long envId) {
-        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
-        applicationInstanceDO.setCode(code);
-        applicationInstanceDO.setEnvId(envId);
+        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+        applicationInstanceDTO.setCode(code);
+        applicationInstanceDTO.setEnvId(envId);
         return ConvertHelper.convert(
-                applicationInstanceMapper.selectOne(applicationInstanceDO),
+                applicationInstanceMapper.selectOne(applicationInstanceDTO),
                 ApplicationInstanceE.class);
     }
 
     @Override
     public ApplicationInstanceE create(ApplicationInstanceE applicationInstanceE) {
-        ApplicationInstanceDO applicationInstanceDO =
-                ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDO.class);
-        if (applicationInstanceMapper.insert(applicationInstanceDO) != 1) {
+        ApplicationInstanceDTO applicationInstanceDTO =
+                ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
+        if (applicationInstanceMapper.insert(applicationInstanceDTO) != 1) {
             throw new CommonException("error.application.instance.create");
         }
-        return ConvertHelper.convert(applicationInstanceDO, ApplicationInstanceE.class);
+        return ConvertHelper.convert(applicationInstanceDTO, ApplicationInstanceE.class);
     }
 
     @Override
@@ -113,21 +98,21 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
 
     @Override
     public void update(ApplicationInstanceE applicationInstanceE) {
-        ApplicationInstanceDO applicationInstanceDO = ConvertHelper.convert(
-                applicationInstanceE, ApplicationInstanceDO.class);
-        applicationInstanceDO.setObjectVersionNumber(
-                applicationInstanceMapper.selectByPrimaryKey(applicationInstanceDO.getId()).getObjectVersionNumber());
-        if (applicationInstanceMapper.updateByPrimaryKeySelective(applicationInstanceDO) != 1) {
+        ApplicationInstanceDTO applicationInstanceDTO = ConvertHelper.convert(
+                applicationInstanceE, ApplicationInstanceDTO.class);
+        applicationInstanceDTO.setObjectVersionNumber(
+                applicationInstanceMapper.selectByPrimaryKey(applicationInstanceDTO.getId()).getObjectVersionNumber());
+        if (applicationInstanceMapper.updateByPrimaryKeySelective(applicationInstanceDTO) != 1) {
             throw new CommonException("error.instance.update");
         }
     }
 
     @Override
     public List<ApplicationInstanceE> selectByEnvId(Long envId) {
-        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
-        applicationInstanceDO.setEnvId(envId);
+        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+        applicationInstanceDTO.setEnvId(envId);
         return ConvertHelper.convertList(applicationInstanceMapper
-                .select(applicationInstanceDO), ApplicationInstanceE.class);
+                .select(applicationInstanceDTO), ApplicationInstanceE.class);
     }
 
     @Override
@@ -187,33 +172,33 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
 
     @Override
     public List<ApplicationInstanceE> listByAppId(Long appId) {
-        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
-        applicationInstanceDO.setAppId(appId);
+        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+        applicationInstanceDTO.setAppId(appId);
         return ConvertHelper
-                .convertList(applicationInstanceMapper.select(applicationInstanceDO), ApplicationInstanceE.class);
+                .convertList(applicationInstanceMapper.select(applicationInstanceDTO), ApplicationInstanceE.class);
     }
 
     @Override
     public void deleteAppInstanceByEnvId(Long envId) {
-        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
-        applicationInstanceDO.setEnvId(envId);
-        applicationInstanceMapper.delete(applicationInstanceDO);
+        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+        applicationInstanceDTO.setEnvId(envId);
+        applicationInstanceMapper.delete(applicationInstanceDTO);
     }
 
     @Override
     public List<ApplicationInstanceE> listByValueId(Long valueId) {
-        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
-        applicationInstanceDO.setValueId(valueId);
+        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+        applicationInstanceDTO.setValueId(valueId);
         return ConvertHelper
-                .convertList(applicationInstanceMapper.select(applicationInstanceDO), ApplicationInstanceE.class);
+                .convertList(applicationInstanceMapper.select(applicationInstanceDTO), ApplicationInstanceE.class);
     }
 
     @Override
     public void checkName(String instanceName, Long envId) {
-        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
-        applicationInstanceDO.setCode(instanceName);
-        applicationInstanceDO.setEnvId(envId);
-        if (applicationInstanceMapper.selectOne(applicationInstanceDO) != null) {
+        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+        applicationInstanceDTO.setCode(instanceName);
+        applicationInstanceDTO.setEnvId(envId);
+        if (applicationInstanceMapper.selectOne(applicationInstanceDTO) != null) {
             throw new CommonException("error.app.instance.name.already.exist");
         }
     }

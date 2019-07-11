@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageE;
-import io.choerodon.devops.infra.dataobject.DevopsEnvApplicationDO;
+import io.choerodon.devops.infra.dto.DevopsEnvApplicationDO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 

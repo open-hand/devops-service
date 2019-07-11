@@ -9,7 +9,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsNotificationUserRelE;
 import io.choerodon.devops.domain.application.repository.DevopsNotificationUserRelRepository;
-import io.choerodon.devops.infra.dataobject.DevopsNotificationUserRelDO;
+import io.choerodon.devops.infra.dto.DevopsNotificationUserRelDO;
 import io.choerodon.devops.infra.mapper.DevopsNotificationUserRelMapper;
 
 /**

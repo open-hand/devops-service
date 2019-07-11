@@ -4,7 +4,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentE;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceContentRepository;
-import io.choerodon.devops.infra.dataobject.DevopsCustomizeResourceContentDO;
+import io.choerodon.devops.infra.dto.DevopsCustomizeResourceContentDO;
 import io.choerodon.devops.infra.mapper.DevopsCustomizeResourceContentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

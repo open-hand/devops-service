@@ -21,7 +21,7 @@ import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.TriggerObject;
 import io.choerodon.devops.infra.enums.TriggerType;
-import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
+import io.choerodon.devops.infra.dto.DevopsIngressDO;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;

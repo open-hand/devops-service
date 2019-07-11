@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
+import io.choerodon.devops.infra.dto.ServiceInstanceDO;
 
 /**
  * Creator: Runge

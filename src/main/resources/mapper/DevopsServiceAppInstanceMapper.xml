@@ -4,7 +4,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsServiceAppInstanceMapper">
 
     <select id="listByEnvIdAndInstanceCode"
-            resultType="io.choerodon.devops.infra.dataobject.DevopsServiceAppInstanceDO">
+            resultType="io.choerodon.devops.infra.dto.DevopsServiceAppInstanceDO">
     SELECT
 	  dsi.id,
 	  dsi.app_instance_id

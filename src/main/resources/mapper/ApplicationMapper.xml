@@ -2,7 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.ApplicationMapper">
-    <select id="list" resultType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+
+    <select id="list" resultType="io.choerodon.devops.infra.dto.ApplicationDO">
+
         SELECT
         da.id,
         da.project_id,
@@ -54,7 +56,11 @@
         </if>
     </select>
 
+<<<<<<< HEAD
     <select id="listByEnvId" resultType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+=======
+    <select id="listByEnvId" resultType="io.choerodon.devops.infra.dto.ApplicationDO">
+>>>>>>> [IMP]修复后端结构
         SELECT DISTINCT
         da.id,
         da.`code`,
@@ -76,7 +82,11 @@
         </if>
     </select>
 
+<<<<<<< HEAD
     <select id="listActive" resultType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+=======
+    <select id="listActive" resultType="io.choerodon.devops.infra.dto.ApplicationDO">
+>>>>>>> [IMP]修复后端结构
         SELECT
             da.*
         FROM
@@ -88,7 +98,11 @@
           AND da.project_id = #{projectId}
     </select>
 
+<<<<<<< HEAD
     <select id="listAll" resultType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+=======
+    <select id="listAll" resultType="io.choerodon.devops.infra.dto.ApplicationDO">
+>>>>>>> [IMP]修复后端结构
         SELECT DISTINCT
         dam.publish_level publishLevel,
         dam.contributor,
@@ -161,7 +175,11 @@
         </if>
     </sql>
 
+<<<<<<< HEAD
     <select id="listByActiveAndPubAndVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+=======
+    <select id="listByActiveAndPubAndVersion" resultType="io.choerodon.devops.infra.dto.ApplicationDO">
+>>>>>>> [IMP]修复后端结构
         SELECT
         da.`id`,
         da.`code`,
@@ -177,7 +195,11 @@
         <include refid="sqlparam"/>
     </select>
 
+<<<<<<< HEAD
     <select id="queryByToken" resultType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+=======
+    <select id="queryByToken" resultType="io.choerodon.devops.infra.dto.ApplicationDO">
+>>>>>>> [IMP]修复后端结构
         SELECT
         da.id,
         da.project_id,
@@ -210,7 +232,11 @@
         AND da.id = #{applicationId}
     </select>
 
+<<<<<<< HEAD
     <select id="listByCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+=======
+    <select id="listByCode" resultType="io.choerodon.devops.infra.dto.ApplicationDO">
+>>>>>>> [IMP]修复后端结构
         SELECT
         da.`id`,
         da.project_id
@@ -221,7 +247,11 @@
         da.code = #{code}
     </select>
 
+<<<<<<< HEAD
     <select id="listCodeRepository" resultType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+=======
+    <select id="listCodeRepository" resultType="io.choerodon.devops.infra.dto.ApplicationDO">
+>>>>>>> [IMP]修复后端结构
         SELECT
         da.id,
         da.project_id,
@@ -249,7 +279,11 @@
         <include refid="sqlparam"/>
     </select>
 
+<<<<<<< HEAD
     <select id="listByGitLabProjectIds" resultType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+=======
+    <select id="listByGitLabProjectIds" resultType="io.choerodon.devops.infra.dto.ApplicationDO">
+>>>>>>> [IMP]修复后端结构
         SELECT da.gitlab_project_id
         FROM devops_application da
         WHERE da.gitlab_project_id IN
@@ -259,11 +293,19 @@
     </select>
 
 
+<<<<<<< HEAD
     <update id="updateAppToSuccess" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
         UPDATE devops_application da set da.is_failed = null  where da.id = #{appId}
     </update>
 
     <update id="updateSql" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+=======
+    <update id="updateAppToSuccess" parameterType="io.choerodon.devops.infra.dto.ApplicationDO">
+        UPDATE devops_application da set da.is_failed = null  where da.id = #{appId}
+    </update>
+
+    <update id="updateSql" parameterType="io.choerodon.devops.infra.dto.ApplicationDO">
+>>>>>>> [IMP]修复后端结构
         UPDATE devops_application da
         set da.is_failed = null,
         da.token=#{token},
@@ -273,7 +315,11 @@
         where da.id = #{appId}
     </update>
 
+<<<<<<< HEAD
     <update id="updateAppHarborConfig" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+=======
+    <update id="updateAppHarborConfig" parameterType="io.choerodon.devops.infra.dto.ApplicationDO">
+>>>>>>> [IMP]修复后端结构
         UPDATE devops_application da
         <if test='harborPrivate != null'>
             <if test='harborPrivate == true'>
@@ -288,7 +334,11 @@
         AND da.project_id = #{projectId}
     </update>
 
+<<<<<<< HEAD
     <select id="queryByCodeWithNoProject" resultType="io.choerodon.devops.infra.dataobject.ApplicationDTO">
+=======
+    <select id="queryByCodeWithNoProject" resultType="io.choerodon.devops.infra.dto.ApplicationDO">
+>>>>>>> [IMP]修复后端结构
         SELECT
             da.*
         FROM

@@ -20,7 +20,7 @@ import io.choerodon.devops.domain.application.repository.DevopsClusterRepository
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsClusterDO;
+import io.choerodon.devops.infra.dto.DevopsClusterDO;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 
 @Service

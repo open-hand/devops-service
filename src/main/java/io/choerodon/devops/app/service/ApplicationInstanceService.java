@@ -42,9 +42,9 @@ public interface ApplicationInstanceService {
      *
      * @param projectId 项目id
      * @param appId     应用id
-     * @return page of ApplicationInstancesDTO
+     * @return page of ApplicationInstanceOverViewVO
      */
-    List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId);
+    List<ApplicationInstanceOverViewVO> listApplicationInstanceOverView(Long projectId, Long appId);
 
     /**
      * 查询value列表
@@ -61,17 +61,17 @@ public interface ApplicationInstanceService {
      * 部署应用
      *
      * @param applicationDeployDTO 部署信息
-     * @return ApplicationInstanceDTO
+     * @return ApplicationInstanceVO
      */
-    ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO);
+    ApplicationInstanceVO createOrUpdate(ApplicationDeployDTO applicationDeployDTO);
 
     /**
      * 部署应用,GitOps
      *
      * @param applicationDeployDTO 部署信息
-     * @return ApplicationInstanceDTO
+     * @return ApplicationInstanceVO
      */
-    ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId);
+    ApplicationInstanceVO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId);
 
     /**
      * 查询运行中的实例
@@ -246,7 +246,7 @@ public interface ApplicationInstanceService {
      * 部署自动化测试应用
      *
      * @param applicationDeployDTO 部署信息
-     * @return ApplicationInstanceDTO
+     * @return ApplicationInstanceVO
      */
     void deployTestApp(ApplicationDeployDTO applicationDeployDTO);
 
@@ -284,7 +284,7 @@ public interface ApplicationInstanceService {
      * @param envId          环境id
      * @param deploymentName deploymentName
      * @param count          pod数量
-     * @return ApplicationInstanceDTO
+     * @return ApplicationInstanceVO
      */
     void operationPodCount(String deploymentName, Long envId, Long count);
 
@@ -306,7 +306,7 @@ public interface ApplicationInstanceService {
      * @param appRemoteDeployDTO
      * @return
      */
-    ApplicationInstanceDTO deployRemote(ApplicationRemoteDeployDTO appRemoteDeployDTO);
+    ApplicationInstanceVO deployRemote(ApplicationRemoteDeployDTO appRemoteDeployDTO);
 
 
     /**

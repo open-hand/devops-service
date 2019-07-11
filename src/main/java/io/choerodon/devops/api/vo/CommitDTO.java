@@ -3,8 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.infra.dataobject.gitlab.AuthorDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitStatsDO;
+import io.choerodon.devops.infra.dto.gitlab.AuthorDO;
+import io.choerodon.devops.infra.dto.gitlab.CommitStatsDO;
 
 public class CommitDTO {
     private AuthorDO author;

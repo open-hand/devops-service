@@ -8,11 +8,11 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
-import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.util.TypeUtil;
+
 
 /**
  * Created by n!Ck

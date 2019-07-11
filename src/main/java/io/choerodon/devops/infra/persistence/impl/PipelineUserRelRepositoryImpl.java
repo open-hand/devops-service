@@ -4,7 +4,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.PipelineUserRelE;
 import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
-import io.choerodon.devops.infra.dataobject.PipelineUserRelDO;
+import io.choerodon.devops.infra.dto.PipelineUserRelDO;
 import io.choerodon.devops.infra.mapper.PipelineUserRelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

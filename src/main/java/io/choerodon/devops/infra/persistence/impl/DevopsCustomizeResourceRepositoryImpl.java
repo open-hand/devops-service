@@ -14,7 +14,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsCustomizeResourceDO;
+import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDO;
 import io.choerodon.devops.infra.mapper.DevopsCustomizeResourceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

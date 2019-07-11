@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
+import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

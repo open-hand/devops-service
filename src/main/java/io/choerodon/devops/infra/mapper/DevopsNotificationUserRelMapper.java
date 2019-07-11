@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.DevopsNotificationUserRelDO;
+import io.choerodon.devops.infra.dto.DevopsNotificationUserRelDO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**

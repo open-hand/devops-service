@@ -25,7 +25,7 @@ import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.CommandStatus;
@@ -48,7 +48,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
@@ -110,7 +110,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapDTO.getType());
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+        String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
 
         //在gitops库处理ingress文件
@@ -123,7 +123,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     public DevopsConfigMapRepDTO createOrUpdateByGitOps(DevopsConfigMapDTO devopsConfigMapDTO, Long userId) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapDTO.getEnvId());
         //校验环境是否连接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //处理创建数据
         DevopsConfigMapE devopsConfigMapE = ConvertHelper.convert(devopsConfigMapDTO, DevopsConfigMapE.class);
@@ -172,7 +172,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryById(configMapId);
         //校验环境是否链接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId());
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         devopsEnvCommandRepository.listByObjectAll(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
         devopsConfigMapRepository.delete(configMapId);
@@ -203,7 +203,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository

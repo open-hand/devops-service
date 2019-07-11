@@ -15,7 +15,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabCommitE;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDO;
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
+import io.choerodon.devops.infra.dto.ApplicationVersionDO;
 
 /**
  * @author zmf

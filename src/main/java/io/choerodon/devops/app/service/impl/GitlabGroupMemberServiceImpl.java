@@ -1,16 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
@@ -22,23 +13,21 @@ import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.repository.AppUserPermissionRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.MemberHelper;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.dto.gitlab.RequestMemberDO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+
 
 /**
  * Created Zenger qs on 2018/3/28.

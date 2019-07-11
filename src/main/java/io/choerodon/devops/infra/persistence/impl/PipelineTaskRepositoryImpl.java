@@ -4,7 +4,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.PipelineTaskE;
 import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
-import io.choerodon.devops.infra.dataobject.PipelineTaskDO;
+import io.choerodon.devops.infra.dto.PipelineTaskDO;
 import io.choerodon.devops.infra.mapper.PipelineTaskMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

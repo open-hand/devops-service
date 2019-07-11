@@ -12,14 +12,16 @@ import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 
 /**
  * Created with IntelliJ IDEA.

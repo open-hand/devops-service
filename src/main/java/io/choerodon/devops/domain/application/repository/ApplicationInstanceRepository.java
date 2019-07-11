@@ -9,16 +9,13 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationInstanceE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvApplicationE;
 import io.choerodon.devops.infra.enums.ResourceType;
-import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
-import io.choerodon.devops.infra.dataobject.DeployDO;
+import io.choerodon.devops.infra.dto.ApplicationInstancesDO;
+import io.choerodon.devops.infra.dto.DeployDO;
 
 /**
  * Created by Zenger on 2018/4/12.
  */
 public interface ApplicationInstanceRepository {
-
-    PageInfo<ApplicationInstanceE> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                           Long envId, Long versionId, Long appId, Long instanceId, String params);
 
     /**
      * 查询所有应用部署的appId和envId

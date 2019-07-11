@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import java.sql.Date;
 import java.util.List;
 
-import io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO;
+import io.choerodon.devops.infra.dto.DevopsEnvCommandDO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 

@@ -21,7 +21,7 @@ import io.choerodon.devops.domain.application.repository.DevopsClusterProPermiss
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -51,7 +51,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Autowired
     private IamRepository iamRepository;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
     @Autowired
@@ -194,8 +194,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     private DevopsClusterE getDevopsClusterEStatus(Long clusterId) {
         DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterE);
         return devopsClusterE;
     }
@@ -214,8 +214,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 .pageClusters(organizationId, doPage, pageRequest, params);
         PageInfo<ClusterWithNodesDTO> devopsClusterRepDTOPage = new PageInfo<>();
         BeanUtils.copyProperties(devopsClusterEPage, devopsClusterRepDTOPage);
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         devopsClusterEPage.getList().forEach(devopsClusterE ->
                 setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterE));
         devopsClusterRepDTOPage.setList(fromClusterE2ClusterWithNodesDTO(devopsClusterEPage.getList(), organizationId));
@@ -276,7 +276,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public Boolean IsClusterRelatedEnvs(Long clusterId) {
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.listByClusterId(clusterId);
         if (connectedEnvList.contains(clusterId) || !devopsEnvironmentES.isEmpty()) {
             throw new CommonException("error.cluster.delete");

@@ -5,7 +5,7 @@ import java.util.List;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO;
+import io.choerodon.devops.infra.dto.DevopsEnvResourceDO;
 
 /**
  * Created by younger on 2018/4/24.

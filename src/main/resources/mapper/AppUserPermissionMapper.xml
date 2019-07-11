@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.AppUserPermissionMapper">
-    <select id="listAllUserPermissionByAppId" resultType="io.choerodon.devops.infra.dataobject.AppUserPermissionDO">
+    <select id="listAllUserPermissionByAppId" resultType="io.choerodon.devops.infra.dto.AppUserPermissionDO">
         SELECT
         daur.iam_user_id
         FROM devops_app_user_rel daur

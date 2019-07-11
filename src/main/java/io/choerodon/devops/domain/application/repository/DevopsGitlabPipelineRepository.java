@@ -6,7 +6,9 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabPipelineE;
-import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO;
+
+
 
 public interface DevopsGitlabPipelineRepository {
 

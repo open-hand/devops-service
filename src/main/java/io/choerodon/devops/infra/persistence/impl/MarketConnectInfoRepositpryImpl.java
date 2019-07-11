@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.repository.MarketConnectInfoRepositpry;
-import io.choerodon.devops.infra.dataobject.DevopsMarketConnectInfoDO;
+import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDO;
 import io.choerodon.devops.infra.mapper.MarketConnectInfoMapper;
 
 /**

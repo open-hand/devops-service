@@ -3,8 +3,8 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
-import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
+import io.choerodon.devops.infra.dto.DevopsServiceDO;
+import io.choerodon.devops.infra.dto.DevopsServiceQueryDO;
 import org.apache.ibatis.annotations.Param;
 import io.choerodon.mybatis.common.Mapper;
 

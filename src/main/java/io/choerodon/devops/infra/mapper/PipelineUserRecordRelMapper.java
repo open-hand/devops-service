@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.PipelineUserRecordRelDO;
+import io.choerodon.devops.infra.dto.PipelineUserRecordRelDO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**

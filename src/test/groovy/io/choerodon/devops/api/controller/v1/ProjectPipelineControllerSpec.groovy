@@ -2,7 +2,7 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository
+
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired

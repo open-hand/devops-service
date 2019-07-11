@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.DevopsCustomizeResourceContentDO;
+import io.choerodon.devops.infra.dto.DevopsCustomizeResourceContentDO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**

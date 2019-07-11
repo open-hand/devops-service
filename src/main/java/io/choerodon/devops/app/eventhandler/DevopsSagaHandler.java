@@ -305,10 +305,10 @@ public class DevopsSagaHandler {
         PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(taskRecordId);
         Long pipelineRecordId = stageRecordE.getPipelineRecordId();
         try {
-            ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
+            ApplicationInstanceVO applicationInstanceVO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
             if (!pipelineRecordRepository.queryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordE.getIsParallel() == 1) {
                 if(!taskRecordE.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
-                    PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
+                    PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceVO.getId(), WorkFlowStatus.SUCCESS.toString());
                     pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
                     taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
                     LOGGER.info("create pipeline auto deploy instance success");

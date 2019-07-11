@@ -6,7 +6,7 @@ import java.util.Map;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.ApplicationTemplateDO;
+import io.choerodon.devops.infra.dto.ApplicationTemplateDO;
 
 /**
  * Created by younger on 2018/3/27.

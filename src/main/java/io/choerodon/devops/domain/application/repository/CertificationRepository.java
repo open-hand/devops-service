@@ -6,7 +6,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.CertificationDTO;
 import io.choerodon.devops.api.vo.iam.entity.CertificationE;
-import io.choerodon.devops.infra.dataobject.CertificationFileDO;
+import io.choerodon.devops.infra.dto.CertificationFileDO;
 
 /**
  * Created by n!Ck

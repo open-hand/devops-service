@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
-import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
+import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.feign.WorkFlowServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -9,7 +9,7 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService
-import io.choerodon.devops.domain.application.repository.DevopsGitRepository
+
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.app.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil

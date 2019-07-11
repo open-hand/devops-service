@@ -18,6 +18,7 @@ import io.choerodon.devops.api.vo.iam.entity.CertificationE;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.CertificationStatus;
 =======
@@ -26,6 +27,15 @@ import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
 >>>>>>> [IMP] applicationController重构
 import io.choerodon.devops.infra.dataobject.CertificationDO;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
+=======
+
+import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.enums.CertificationStatus;
+
+import io.choerodon.devops.infra.dto.CertificationDO;
+import io.choerodon.devops.infra.dto.CertificationFileDO;
+
+>>>>>>> [IMP]修复后端结构
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import org.springframework.beans.factory.annotation.Autowired;

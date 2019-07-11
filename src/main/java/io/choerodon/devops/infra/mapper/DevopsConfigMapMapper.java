@@ -1,12 +1,11 @@
 package io.choerodon.devops.infra.mapper;
 
 import org.apache.ibatis.annotations.Param;
-import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.infra.dataobject.DevopsConfigMapDO;
+import io.choerodon.devops.infra.dto.DevopsConfigMapDO;
 import io.choerodon.mybatis.common.Mapper;
 
 public interface DevopsConfigMapMapper extends Mapper<DevopsConfigMapDO> {

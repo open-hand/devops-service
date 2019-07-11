@@ -10,9 +10,13 @@ import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.app.service.impl.DevopsSecretServiceImpl
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE
 import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
 import io.choerodon.devops.domain.application.repository.GitlabRepository
+=======
+
+>>>>>>> [IMP]修复后端结构
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
@@ -28,7 +32,6 @@ import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
 import io.choerodon.devops.infra.mapper.DevopsSecretMapper
-import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier

@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.PipelineStageDO;
+import io.choerodon.devops.infra.dto.PipelineStageDO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**

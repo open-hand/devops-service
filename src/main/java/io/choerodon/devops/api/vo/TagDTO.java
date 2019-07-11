@@ -2,9 +2,9 @@ package io.choerodon.devops.api.vo;
 
 import org.springframework.beans.BeanUtils;
 
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.ReleaseDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
+import io.choerodon.devops.infra.dto.gitlab.CommitDO;
+import io.choerodon.devops.infra.dto.gitlab.ReleaseDO;
+import io.choerodon.devops.infra.dto.gitlab.TagDO;
 
 /**
  * Creator: Runge

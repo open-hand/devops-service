@@ -6,7 +6,7 @@ import java.util.Map;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsNotificationDO;
+import io.choerodon.devops.infra.dto.DevopsNotificationDO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

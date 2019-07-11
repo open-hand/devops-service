@@ -4,7 +4,6 @@ import com.github.pagehelper.PageInfo
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO
@@ -236,12 +235,12 @@ class DevopsCheckControllerSpec extends Specification {
         when(mockGitlabServiceClient.updateProjectHook(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ProjectHook(), HttpStatus.OK))
         when(mockGitlabServiceClient.listCommits(anyInt(), eq(1), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(createVersion10MockCommits(), HttpStatus.OK))
         when(mockGitlabServiceClient.listCommits(anyInt(), eq(2), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
-        io.choerodon.devops.infra.dataobject.iam.UserDO userDO = new io.choerodon.devops.infra.dataobject.iam.UserDO()
+        io.choerodon.devops.infra.dto.iam.UserDO userDO = new io.choerodon.devops.infra.dto.iam.UserDO()
         userDO.setId(234L)
-        List<io.choerodon.devops.infra.dataobject.iam.UserDO> users = new ArrayList<>()
+        List<io.choerodon.devops.infra.dto.iam.UserDO> users = new ArrayList<>()
         users.add(userDO)
 //        PageInfo userPageInfo = new PageInfo(1, 10, true)
-        PageInfo<io.choerodon.devops.infra.dataobject.iam.UserDO> userPage = new PageInfo(users)
+        PageInfo<io.choerodon.devops.infra.dto.iam.UserDO> userPage = new PageInfo(users)
         when(mockIamServiceClient.listUsersByEmail(anyLong(), anyInt(), anyInt(), anyString())).thenReturn(new ResponseEntity<>(userPage, HttpStatus.OK))
 
 
@@ -301,11 +300,11 @@ class DevopsCheckControllerSpec extends Specification {
         userAttrDO2.setGitlabUserId(101L)
         userAttrMapper.insert(userAttrDO2)
 
-        io.choerodon.devops.infra.dataobject.iam.UserDO userRet1 = new io.choerodon.devops.infra.dataobject.iam.UserDO()
+        io.choerodon.devops.infra.dto.iam.UserDO userRet1 = new io.choerodon.devops.infra.dto.iam.UserDO()
         userRet1.setId(userAttrDO.getIamUserId())
         userRet1.setLoginName("admin")
 
-        io.choerodon.devops.infra.dataobject.iam.UserDO userRet2 = new io.choerodon.devops.infra.dataobject.iam.UserDO()
+        io.choerodon.devops.infra.dto.iam.UserDO userRet2 = new io.choerodon.devops.infra.dto.iam.UserDO()
         userRet2.setId(userAttrDO2.getIamUserId())
         userRet2.setLoginName("12241&*(@^1`")
 

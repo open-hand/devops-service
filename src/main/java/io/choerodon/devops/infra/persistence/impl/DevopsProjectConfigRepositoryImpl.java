@@ -11,7 +11,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
+import io.choerodon.devops.infra.dto.DevopsProjectConfigDO;
 import io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

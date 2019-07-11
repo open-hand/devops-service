@@ -23,11 +23,10 @@ import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -41,7 +40,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Autowired
     private IamRepository iamRepository;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private DevopsEnvironmentRepository devopsEnviromentRepository;
     @Autowired
@@ -69,9 +68,14 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public PageInfo<DevopsDeployValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
+
+
+
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+
+
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         Long userId = null;
         if (!iamRepository.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectE)) {
             userId = DetailsHelper.getUserDetails().getUserId();

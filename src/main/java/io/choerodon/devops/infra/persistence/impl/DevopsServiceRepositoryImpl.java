@@ -19,8 +19,8 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
-import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
+import io.choerodon.devops.infra.dto.DevopsServiceDO;
+import io.choerodon.devops.infra.dto.DevopsServiceQueryDO;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
 
 /**

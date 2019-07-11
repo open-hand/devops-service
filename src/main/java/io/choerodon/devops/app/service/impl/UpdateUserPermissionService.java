@@ -10,6 +10,7 @@ import io.choerodon.devops.domain.application.repository.GitlabProjectRepository
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.infra.util.TypeUtil;
 
+
 /**
  * Created by n!Ck
  * Date: 2018/11/21

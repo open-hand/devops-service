@@ -30,8 +30,8 @@ import io.choerodon.devops.domain.application.repository.DevopsServiceRepository
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.IngressStatus;
 import io.choerodon.devops.infra.enums.ServiceStatus;
-import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
-import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
+import io.choerodon.devops.infra.dto.DevopsIngressDO;
+import io.choerodon.devops.infra.dto.DevopsIngressPathDO;
 import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
 

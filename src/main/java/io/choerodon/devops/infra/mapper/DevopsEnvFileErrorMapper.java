@@ -5,7 +5,7 @@ import java.util.List;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO;
+import io.choerodon.devops.infra.dto.DevopsEnvFileErrorDO;
 
 public interface DevopsEnvFileErrorMapper extends Mapper<DevopsEnvFileErrorDO> {
 

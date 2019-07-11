@@ -11,7 +11,7 @@
         project_id = #{projectId}
         AND gitlab_merge_request_id = #{gitlabMergeRequestId}
     </select>
-    <select id="getByProjectIdAndState" resultType="io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO">
+    <select id="getByProjectIdAndState" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDO">
         SELECT
         *
         FROM
@@ -22,7 +22,7 @@
     </select>
 
 
-    <select id="listByProjectIdAndBranch" resultType="io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO">
+    <select id="listByProjectIdAndBranch" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDO">
         SELECT
         *
         FROM

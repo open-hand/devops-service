@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.ApplicationTemplateMapper">
-    <select id="list" resultType="io.choerodon.devops.infra.dataobject.ApplicationTemplateDO">
+    <select id="list" resultType="io.choerodon.devops.infra.dto.ApplicationTemplateDO">
         SELECT
         dat.id,
         dat.name,
@@ -58,7 +58,7 @@
     </select>
 
 
-    <select id="queryByCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationTemplateDO">
+    <select id="queryByCode" resultType="io.choerodon.devops.infra.dto.ApplicationTemplateDO">
     select
         dat.id,
         dat.name,

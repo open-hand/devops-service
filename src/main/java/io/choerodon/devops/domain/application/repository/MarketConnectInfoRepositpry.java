@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.infra.dataobject.DevopsMarketConnectInfoDO;
+import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

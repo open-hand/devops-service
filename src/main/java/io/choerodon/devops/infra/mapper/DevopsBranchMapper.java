@@ -6,7 +6,7 @@ import java.util.Map;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
+import io.choerodon.devops.infra.dto.DevopsBranchDO;
 
 public interface DevopsBranchMapper extends Mapper<DevopsBranchDO> {
 

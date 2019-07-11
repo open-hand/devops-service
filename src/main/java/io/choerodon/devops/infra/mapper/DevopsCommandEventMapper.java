@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsCommandEventDO;
+import io.choerodon.devops.infra.dto.DevopsCommandEventDO;
 
 /**
  * @author crcokitwood

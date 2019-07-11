@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -17,10 +18,11 @@ import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.core.iam.ResourceLevel;
+
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DeployService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
@@ -31,6 +33,17 @@ import io.choerodon.devops.infra.dataobject.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
+
+import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
+import io.choerodon.devops.app.service.*;
+
+
+import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.infra.dto.ApplicationInstancesDO;
+import io.choerodon.devops.infra.dto.ApplicationLatestVersionDO;
+import io.choerodon.devops.infra.dto.DeployDO;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
@@ -74,8 +87,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
-    private ApplicationInstanceRepository applicationInstanceRepository;
-    @Autowired
     private ApplicationVersionRepository applicationVersionRepository;
     @Autowired
     private ApplicationRepository applicationRepository;
@@ -94,7 +105,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private UserAttrRepository userAttrRepository;
     @Autowired
@@ -125,6 +136,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private SagaClient sagaClient;
     @Autowired
     private DevopsEnvApplicationMapper envApplicationMapper;
+    @Autowired
+    private ApplicationInstanceRepository applicationInstanceRepository;
+    @Autowired
+    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
 
 
     @Override
@@ -141,26 +156,26 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, PageRequest pageRequest,
                                                               Long envId, Long versionId, Long appId, Long instanceId, String params) {
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
-        PageInfo<ApplicationInstanceE> applicationInstanceEPage = applicationInstanceRepository.listApplicationInstance(
-                projectId, pageRequest, envId, versionId, appId, instanceId, params);
-
-        List<ApplicationInstanceE> applicationInstanceES = applicationInstanceEPage.getList();
-        setInstanceConnect(applicationInstanceES, connectedEnvList, updatedEnvList);
-
-        PageInfo<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
-                .convertPageInfo(applicationInstanceEPage, ApplicationInstanceDTO.class);
         PageInfo<DevopsEnvPreviewInstanceVO> devopsEnvPreviewInstanceDTOPageInfo = new PageInfo<>();
-        BeanUtils.copyProperties(applicationInstanceDTOS, devopsEnvPreviewInstanceDTOPageInfo);
+
+        Map maps = gson.fromJson(params, Map.class);
+        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        PageInfo<ApplicationInstanceDTO> applicationInstanceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+                applicationInstanceMapper
+                        .listApplicationInstance(projectId, envId, versionId, appId, instanceId, searchParamMap, paramMap));
+
+        BeanUtils.copyProperties(applicationInstanceDTOPageInfo, devopsEnvPreviewInstanceDTOPageInfo);
+
         return devopsEnvPreviewInstanceDTOPageInfo;
+
     }
 
 
     @Override
-    public List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId) {
+    public List<ApplicationInstanceOverViewVO> listApplicationInstanceOverView(Long projectId, Long appId) {
 
-        List<Long> permissionEnvIds = devopsEnvUserPermissionRepository
+        List<Long> permissionEnvIds = devopsEnvUserPermissionService
                 .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                 .filter(DevopsEnvUserPermissionE::getPermitted).map(DevopsEnvUserPermissionE::getEnvId)
                 .collect(Collectors.toList());
@@ -178,13 +193,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Map<Long, ApplicationLatestVersionDO> latestVersionList = appLatestVersionList.stream()
                 .collect(Collectors.toMap(ApplicationLatestVersionDO::getAppId, t -> t, (a, b) -> b));
         Map<Long, Integer> appInstancesListMap = new HashMap<>();
-        List<ApplicationInstancesDTO> appInstancesList = new ArrayList<>();
+        List<ApplicationInstancesVO> appInstancesList = new ArrayList<>();
         instancesDOS.forEach(t -> {
-            ApplicationInstancesDTO instancesDTO = new ApplicationInstancesDTO();
+            ApplicationInstancesVO instancesDTO = new ApplicationInstancesVO();
             if (appInstancesListMap.get(t.getAppId()) == null) {
                 if (t.getInstanceId() != null
                         || t.getVersionId().equals(latestVersionList.get(t.getAppId()).getVersionId())) {
-                    instancesDTO = new ApplicationInstancesDTO(
+                    instancesDTO = new ApplicationInstancesVO(
                             t.getAppId(),
                             t.getPublishLevel(),
                             t.getAppName(),
@@ -210,7 +225,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return appInstancesList;
     }
 
-    private void addAppInstance(ApplicationInstancesDTO instancesDTO, ApplicationInstancesDO instancesDO,
+    private void addAppInstance(ApplicationInstancesVO instancesDTO, ApplicationInstancesDO instancesDO,
                                 Long latestVersionId) {
         EnvVersionDTO envVersionDTO = new EnvVersionDTO(
                 instancesDO.getVersionId(),
@@ -230,7 +245,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }
     }
 
-    private void addInstanceIfNotExist(ApplicationInstancesDTO instancesDTO,
+    private void addInstanceIfNotExist(ApplicationInstancesVO instancesDTO,
                                        ApplicationInstancesDO instancesDO) {
         EnvInstanceDTO envInstanceDTO = instancesDTO.queryLastEnvInstanceDTO();
         if (instancesDTO.getLatestVersionId().equals(instancesDO.getVersionId())) {
@@ -538,13 +553,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
         }.getType());
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
 
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
 
-        List<ApplicationInstanceDO> applicationInstancesDOS = applicationInstanceMapper
+        List<ApplicationInstanceDTO> applicationInstancesDOS = applicationInstanceMapper
                 .listApplicationInstance(projectId, envId, null, null, null, searchParamMap, paramMap);
         List<ApplicationInstanceE> applicationInstanceES = ConvertHelper
                 .convertList(applicationInstancesDOS, ApplicationInstanceE.class);
@@ -559,11 +574,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvPreviewAppDTO.setAppName(value.get(0).getApplicationE().getName());
             devopsEnvPreviewAppDTO.setAppCode(value.get(0).getAppCode());
             devopsEnvPreviewAppDTO.setProjectId(value.get(0).getProjectId());
-            List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper
-                    .convertList(value, ApplicationInstanceDTO.class);
+            List<ApplicationInstanceVO> applicationInstanceVOS = ConvertHelper
+                    .convertList(value, ApplicationInstanceVO.class);
 
             // set instances
-            devopsEnvPreviewAppDTO.setApplicationInstanceDTOS(applicationInstanceDTOS);
+            devopsEnvPreviewAppDTO.setApplicationInstanceVOS(applicationInstanceVOS);
 
             devopsEnvPreviewAppDTOS.add(devopsEnvPreviewAppDTO);
         });
@@ -663,7 +678,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Saga(code = "devops-create-instance",
             description = "Devops创建实例", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
-    public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
+    public ApplicationInstanceVO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
 
@@ -746,7 +761,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         sagaClient.startSaga("devops-create-instance", new StartInstanceDTO(input, "env", devopsEnvironmentE.getId().toString(), ResourceLevel.PROJECT.value(), devopsEnvironmentE.getProjectE().getId()));
 
-        return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
+        return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceVO.class);
     }
 
     /**
@@ -767,7 +782,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         try {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String filePath = envUtil.handDevopsEnvGitRepository(instanceSagaDTO.getProjectId(), instanceSagaDTO.getDevopsEnvironmentE().getCode(), instanceSagaDTO.getDevopsEnvironmentE().getEnvIdRsa());
+            String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(instanceSagaDTO.getProjectId(), instanceSagaDTO.getDevopsEnvironmentE().getCode(), instanceSagaDTO.getDevopsEnvironmentE().getEnvIdRsa());
 
             //在gitops库处理instance文件
             ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
@@ -842,11 +857,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId) {
+    public ApplicationInstanceVO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(applicationDeployDTO.getEnvironmentId());
         //校验环境是否连接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //校验values
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
@@ -869,7 +884,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
         applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         applicationInstanceRepository.update(applicationInstanceE);
-        return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
+        return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceVO.class);
     }
 
     private ApplicationInstanceE initApplicationInstanceE(ApplicationDeployDTO applicationDeployDTO) {
@@ -1049,7 +1064,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceRepository.update(instanceE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
@@ -1123,7 +1138,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .queryById(instanceE.getDevopsEnvironmentE().getId());
 
         //校验环境是否连接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         applicationInstanceRepository.deleteInstanceRelInfo(instanceId);
         applicationInstanceRepository.deleteById(instanceId);
@@ -1181,15 +1196,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return errorLines;
     }
 
-    private void setInstanceConnect(List<ApplicationInstanceE> applicationInstanceES,
+    private void setInstanceConnect(List<ApplicationInstanceVO> applicationInstanceVOS,
                                     List<Long> connectedEnvList, List<Long> updatedEnvList) {
-        applicationInstanceES.forEach(applicationInstanceE ->
+        applicationInstanceVOS.forEach(applicationInstanceVO ->
                 {
                     DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                            .queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
+                            .queryById(applicationInstanceVO.getEnvId());
                     if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                             && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
-                        applicationInstanceE.setConnect(true);
+                        applicationInstanceVO.setConnect(true);
                     }
                 }
         );
@@ -1247,7 +1262,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public ApplicationInstanceDTO deployRemote(ApplicationRemoteDeployDTO appRemoteDeployDTO) {
+    public ApplicationInstanceVO deployRemote(ApplicationRemoteDeployDTO appRemoteDeployDTO) {
         ApplicationE applicationE = createApplication(appRemoteDeployDTO);
         ApplicationVersionE versionE = createVersion(applicationE, appRemoteDeployDTO.getVersionRemoteDTO());
         ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO();

@@ -13,7 +13,7 @@ import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.Payload;
 import io.choerodon.devops.app.service.DeployService;
-import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.enums.HelmType;
@@ -49,7 +49,7 @@ public class DeployServiceImpl implements DeployService {
     @Autowired
     private IamRepository iamRepository;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private GitUtil gitUtil;
 
@@ -260,7 +260,7 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public void getTestAppStatus(Map<Long, List<String>> testReleases) {
-        List<Long> connected = envUtil.getConnectedEnvList();
+        List<Long> connected = clusterConnectionHandler.getConnectedEnvList();
         testReleases.forEach((key, value) -> {
             if (connected.contains(key)) {
                 Msg msg = new Msg();

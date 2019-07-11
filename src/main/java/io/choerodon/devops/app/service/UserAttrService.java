@@ -10,4 +10,17 @@ public interface UserAttrService {
      * @return UserAttrDTO
      */
     UserAttrVO queryByUserId(Long userId);
+
+    /**
+     *
+     * @return
+     */
+    Integer getGitlabUserId();
+
+    /**
+     *
+     * @param gitLabUserId
+     * @return
+     */
+    Long getUserIdByGitlabUserId(Long gitLabUserId);
 }

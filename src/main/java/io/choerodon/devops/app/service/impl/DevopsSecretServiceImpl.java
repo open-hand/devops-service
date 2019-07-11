@@ -25,7 +25,7 @@ import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.util.Base64Util;
-import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.CommandStatus;
@@ -55,7 +55,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
@@ -175,7 +175,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         }
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         ResourceConvertToYamlHandler<V1Secret> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(v1Secret);
@@ -205,7 +205,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         devopsSecretRepository.update(devopsSecretE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+        String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         // 查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
@@ -261,7 +261,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     public void deleteSecretByGitOps(Long secretId) {
         DevopsSecretE devopsSecretE = devopsSecretRepository.queryBySecretId(secretId);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.SECRET.toValue(), devopsSecretE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t));
         devopsSecretRepository.deleteSecret(secretId);
@@ -272,7 +272,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     public void addSecretByGitOps(SecretReqDTO secretReqDTO, Long userId) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId());
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         // 处理secret对象
         DevopsSecretE devopsSecretE = handleSecret(secretReqDTO);
@@ -296,7 +296,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId());
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         DevopsSecretE oldSecretE = devopsSecretRepository
                 .selectByEnvIdAndName(secretReqDTO.getEnvId(), secretReqDTO.getName());

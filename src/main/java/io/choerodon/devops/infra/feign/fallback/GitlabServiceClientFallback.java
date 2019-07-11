@@ -12,7 +12,7 @@ import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.dataobject.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -166,7 +166,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<io.choerodon.devops.infra.dataobject.gitlab.CommitDO> getCommit(Integer projectId, String sha, Integer userId) {
+    public ResponseEntity<io.choerodon.devops.infra.dto.gitlab.CommitDO> getCommit(Integer projectId, String sha, Integer userId) {
         return new ResponseEntity("error.commit.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

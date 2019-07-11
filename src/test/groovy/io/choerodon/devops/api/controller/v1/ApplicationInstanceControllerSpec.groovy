@@ -7,27 +7,20 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
+
 import io.choerodon.devops.api.vo.*
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
 import io.choerodon.devops.domain.application.repository.GitlabProjectRepository
 import io.choerodon.devops.domain.application.repository.GitlabRepository
+
+
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.common.util.FileUtil
-import io.choerodon.devops.infra.common.util.GitUtil
-import io.choerodon.devops.infra.common.util.JsonYamlConversionUtil
-import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.common.util.enums.InstanceStatus
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.dataobject.iam.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
@@ -506,7 +499,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         List<PipelineDO> pipelineDOList = new ArrayList<>()
         PipelineDO pipelineDO = new PipelineDO()
         pipelineDO.setId(1)
-        io.choerodon.devops.infra.dataobject.gitlab.UserDO gitlabUser = new io.choerodon.devops.infra.dataobject.gitlab.UserDO()
+        io.choerodon.devops.infra.dto.gitlab.UserDO gitlabUser = new io.choerodon.devops.infra.dto.gitlab.UserDO()
         pipelineDO.setRef("")
         pipelineDO.setUser(gitlabUser)
         gitlabUser.setId(1)

@@ -8,34 +8,29 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.ProjectReqVO;
-import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.vo.iam.RoleDTO;
-import io.choerodon.devops.api.vo.iam.RoleSearchDTO;
-import io.choerodon.devops.api.vo.iam.UserDTO;
-import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
 import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
+import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
-import io.choerodon.devops.infra.dataobject.iam.UserDO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDO;
+import io.choerodon.devops.infra.dto.iam.ProjectDO;
+import io.choerodon.devops.infra.dto.iam.UserDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by younger on 2018/3/29.
@@ -50,6 +45,8 @@ public class IamRepositoryImpl implements IamRepository {
     public IamRepositoryImpl(IamServiceClient iamServiceClient) {
         this.iamServiceClient = iamServiceClient;
     }
+
+
 
     @Override
     public ProjectVO queryIamProject(Long projectId) {
@@ -325,4 +322,5 @@ public class IamRepositoryImpl implements IamRepository {
             return null;
         }
     }
+
 }

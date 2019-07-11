@@ -37,14 +37,15 @@ import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.devops.infra.enums.ResourceType;
-import io.choerodon.devops.infra.config.RetrofitHandler;
-import io.choerodon.devops.infra.dataobject.*;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.BranchDO;
+import io.choerodon.devops.infra.dto.gitlab.CommitDO;
+import io.choerodon.devops.infra.dto.gitlab.CommitStatuseDO;
+import io.choerodon.devops.infra.dto.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.mapper.*;
@@ -169,7 +170,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private GitUtil gitUtil;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private ApplicationVersionMapper applicationVersionMapper;
     @Autowired

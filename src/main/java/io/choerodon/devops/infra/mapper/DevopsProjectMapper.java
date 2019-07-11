@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface DevopsProjectMapper extends Mapper<DevopsProjectDTO> {
 
-    void updateObJectVersionNumber(@Param("iamProjectId") Long iamProjectId);
+    void updateObjectVersionNumber(@Param("iamProjectId") Long iamProjectId);
 
     DevopsProjectDTO queryByGitlabGroupId(@Param("gitlabGroupId") Integer gitlabGroupId);
 }

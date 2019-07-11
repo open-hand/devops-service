@@ -15,7 +15,7 @@ import io.choerodon.devops.domain.application.repository.ApplicationRepository
 import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository
 
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository
-import io.choerodon.devops.domain.application.repository.GitlabRepository
+
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.modules.junit4.PowerMockRunner

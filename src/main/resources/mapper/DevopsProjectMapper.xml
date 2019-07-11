@@ -3,6 +3,7 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsProjectMapper">
     <select id="queryByGitlabGroupId" resultType="io.choerodon.devops.infra.dataobject.DevopsProjectDTO">
+
         select * FROM devops_project where devops_app_group_id = #{gitlabGroupId}
     </select>
 

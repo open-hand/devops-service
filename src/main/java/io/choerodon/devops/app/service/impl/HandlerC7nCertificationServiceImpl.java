@@ -24,7 +24,7 @@ import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.dataobject.CertificationFileDO;
+import io.choerodon.devops.infra.dto.CertificationFileDO;
 import io.kubernetes.client.models.V1Endpoints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

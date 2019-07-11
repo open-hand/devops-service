@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
-import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDO;
 
 /**
  * Created by n!Ck

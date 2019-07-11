@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dataobject.gitlab.AbstractUserDO;
+import io.choerodon.devops.infra.dto.gitlab.AbstractUserDO;
 
 public class AssigneeDTO extends AbstractUserDO {
 

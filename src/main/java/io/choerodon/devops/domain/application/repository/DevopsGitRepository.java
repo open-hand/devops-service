@@ -9,9 +9,6 @@ import io.choerodon.devops.api.vo.TagDTO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsBranchE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.CompareResultsE;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 
 /**
  * Creator: Runge

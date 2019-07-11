@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.infra.dataobject.CertificationDO;
+import io.choerodon.devops.infra.dto.CertificationDO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 

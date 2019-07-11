@@ -15,12 +15,8 @@ import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
-import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
-import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import io.choerodon.devops.infra.util.GitUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -117,18 +113,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
                     .createFile(projectId, path, content, commitMessage, userId);
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
-            }
-        } catch (RetryableException e) {
-            LOGGER.info(e.getMessage(), e);
-        }
-    }
-
-
-    @Override
-    public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branch) {
-        try {
-            ResponseEntity<RepositoryFile> result = gitlabServiceClient
-                    .createFile(projectId, path, content, commitMessage, userId, branch);
+            }tMessage, userId, branch);
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
@@ -151,6 +136,17 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
+    } catch (RetryableException e) {
+        LOGGER.info(e.getMessage(), e);
+        }
+        }
+
+
+@Override
+public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branch) {
+        try {
+        ResponseEntity<RepositoryFile> result = gitlabServiceClient
+        .createFile(projectId, path, content, commi
     public void deleteFile(Integer projectId, String path, String commitMessage, Integer userId) {
         try {
             gitlabServiceClient.deleteFile(projectId, path, commitMessage, userId);

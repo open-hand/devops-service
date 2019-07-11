@@ -5,8 +5,8 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
-import io.choerodon.devops.infra.dataobject.DevopsAppShareDO;
+import io.choerodon.devops.infra.dto.DevopsAppMarketVersionDO;
+import io.choerodon.devops.infra.dto.DevopsAppShareDO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**

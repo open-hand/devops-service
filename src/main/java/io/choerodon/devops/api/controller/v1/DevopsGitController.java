@@ -15,7 +15,7 @@ import io.choerodon.devops.api.vo.BranchDTO;
 import io.choerodon.devops.api.vo.DevopsBranchDTO;
 import io.choerodon.devops.api.vo.TagDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
+import io.choerodon.devops.infra.dto.gitlab.TagDO;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;

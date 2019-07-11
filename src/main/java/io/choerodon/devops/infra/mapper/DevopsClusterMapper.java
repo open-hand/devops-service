@@ -8,7 +8,7 @@ import io.choerodon.devops.api.vo.DevopsEnvPodDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsClusterDO;
+import io.choerodon.devops.infra.dto.DevopsClusterDO;
 
 public interface DevopsClusterMapper extends Mapper<DevopsClusterDO> {
 

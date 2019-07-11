@@ -9,7 +9,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.PipelineStageRecordE;
 import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
-import io.choerodon.devops.infra.dataobject.PipelineStageRecordDO;
+import io.choerodon.devops.infra.dto.PipelineStageRecordDO;
 import io.choerodon.devops.infra.mapper.PipelineStageRecordMapper;
 
 /**

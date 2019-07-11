@@ -32,14 +32,18 @@ import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.enums.EnvironmentGitopsStatus;
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.dto.gitlab.CommitDO;
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.HelmObjectKind;
 import io.choerodon.devops.infra.enums.InstanceStatus;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.util.FileUtil;
+import io.choerodon.devops.infra.util.GenerateUUID;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -94,7 +98,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsEnvironmentValidator devopsEnvironmentValidator;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private SagaClient sagaClient;
     @Autowired
@@ -205,8 +209,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
         List<DevopsEnvGroupEnvsDTO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
-        List<Long> connectedClusterList = envUtil.getConnectedEnvList();
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
+        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).stream().peek(t ->
                         setEnvStatus(connectedClusterList, upgradeClusterList, t)
@@ -268,8 +272,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Boolean isProjectOwner = iamRepository
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
 
-        List<Long> connectedClusterList = envUtil.getConnectedEnvList();
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
+        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).stream()
                 .filter(devopsEnvironmentE -> !devopsEnvironmentE.getFailed()).peek(t -> {
@@ -337,8 +341,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
 
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
-        List<Long> connectedClusterList = envUtil.getConnectedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
         setEnvStatus(connectedClusterList, upgradeClusterList, devopsEnvironmentE);
         if (!active && devopsEnvironmentE.getConnect()) {
             devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
@@ -425,7 +429,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentE.getId());
 
         //校验环境是否连接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
@@ -507,8 +511,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnviromentRepository.update(devopsEnvironmentE);
             sequence = sequence + 1;
         }
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
 
         devopsEnvironmentES.forEach(t ->
                 setEnvStatus(connectedEnvList, upgradeClusterList, t)
@@ -885,8 +889,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         List<DevopsClusterRepDTO> devopsClusterRepDTOS = ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
-        List<Long> connectedClusterList = envUtil.getConnectedEnvList();
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
+        List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
         devopsClusterRepDTOS.forEach(t -> {
             if (connectedClusterList.contains(t.getId()) && upgradeClusterList.contains(t.getId())) {
                 t.setConnect(true);

@@ -17,7 +17,7 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvResourceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.infra.util.ArrayUtil;
-import io.choerodon.devops.infra.util.EnvUtil;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.kubernetes.client.models.V1Pod;
@@ -34,14 +34,14 @@ import org.springframework.util.StringUtils;
 public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private final Logger logger = LoggerFactory.getLogger(DevopsEnvPodServiceImpl.class);
 
-    private final EnvUtil envUtil;
+    private final ClusterConnectionHandler clusterConnectionHandler;
     private final DevopsEnvPodRepository devopsEnvPodRepository;
     private final DevopsEnvironmentRepository devopsEnvironmentRepository;
     private final DevopsEnvResourceRepository devopsEnvResourceRepository;
 
     @Autowired
-    public DevopsEnvPodServiceImpl(EnvUtil envUtil, DevopsEnvPodRepository devopsEnvPodRepository, DevopsEnvironmentRepository devopsEnvironmentRepository, DevopsEnvResourceRepository devopsEnvResourceRepository) {
-        this.envUtil = envUtil;
+    public DevopsEnvPodServiceImpl(ClusterConnectionHandler clusterConnectionHandler, DevopsEnvPodRepository devopsEnvPodRepository, DevopsEnvironmentRepository devopsEnvironmentRepository, DevopsEnvResourceRepository devopsEnvResourceRepository) {
+        this.clusterConnectionHandler = clusterConnectionHandler;
         this.devopsEnvPodRepository = devopsEnvPodRepository;
         this.devopsEnvironmentRepository = devopsEnvironmentRepository;
         this.devopsEnvResourceRepository = devopsEnvResourceRepository;
@@ -50,8 +50,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     @Override
     public PageInfo<DevopsEnvPodDTO> listAppPod(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam) {
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         PageInfo<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.listAppPod(projectId, envId, appId, instanceId, pageRequest, searchParam);
         devopsEnvPodEPage.getList().forEach(devopsEnvPodE -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsEnvPodE.getEnvId());

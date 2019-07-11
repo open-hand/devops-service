@@ -12,7 +12,7 @@ import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.dataobject.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;

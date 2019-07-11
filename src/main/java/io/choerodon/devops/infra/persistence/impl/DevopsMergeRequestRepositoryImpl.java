@@ -9,7 +9,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsMergeRequestE;
 import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO;
+import io.choerodon.devops.infra.dto.DevopsMergeRequestDO;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

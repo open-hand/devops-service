@@ -11,7 +11,7 @@ import io.choerodon.devops.api.vo.iam.entity.AppUserPermissionE;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.AppUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.infra.dataobject.AppUserPermissionDO;
+import io.choerodon.devops.infra.dto.AppUserPermissionDO;
 import io.choerodon.devops.infra.mapper.AppUserPermissionMapper;
 
 /**

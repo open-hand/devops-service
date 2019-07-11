@@ -489,6 +489,25 @@ public class GitUtil {
     }
 
 
+    public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        //本地路径
+        String path = String.format("gitops/%s/%s/%s",
+                organization.getCode(), projectE.getCode(), envCode);
+        //生成环境git仓库ssh地址
+        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(),
+                projectE.getCode(), envCode);
+
+        File file = new File(path);
+        this.setSshKey(envRsa);
+        if (!file.exists()) {
+            this.cloneBySsh(path, url);
+        }
+        return path;
+    }
+
+
     public GitConfigDTO getGitConfig(Long clusterId) {
         List<DevopsEnvironmentE> devopsEnvironments = devopsEnvironmentRepository.listByClusterId(clusterId);
         GitConfigDTO gitConfigDTO = new GitConfigDTO();

@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.ApplicationVersionReadmeDO;
+import io.choerodon.devops.infra.dto.ApplicationVersionReadmeDO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**
