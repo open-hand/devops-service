@@ -11,6 +11,15 @@ public class DevOpsAppSyncPayload {
     private String code;
     private String name;
     private Boolean active;
+    private Long appId;
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public String getName() {
         return name;
