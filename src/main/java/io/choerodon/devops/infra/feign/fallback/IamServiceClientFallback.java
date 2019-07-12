@@ -12,9 +12,9 @@ import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDO;
-import io.choerodon.devops.infra.dto.iam.ProjectDO;
-import io.choerodon.devops.infra.dto.iam.UserDO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.UserDTO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,17 +27,17 @@ import org.springframework.stereotype.Component;
 public class IamServiceClientFallback implements IamServiceClient {
 
     @Override
-    public ResponseEntity<ProjectDO> queryIamProject(Long projectId) {
+    public ResponseEntity<ProjectDTO> queryIamProject(Long projectId) {
         throw new CommonException("error.project.get");
     }
 
     @Override
-    public ResponseEntity<OrganizationDO> queryOrganization() {
+    public ResponseEntity<OrganizationDTO> queryOrganization() {
         throw new CommonException("error.organization.get");
     }
 
     @Override
-    public ResponseEntity<OrganizationDO> queryOrganizationById(Long organizationId) {
+    public ResponseEntity<OrganizationDTO> queryOrganizationById(Long organizationId) {
         throw new CommonException("error.organization.get");
     }
 
@@ -47,32 +47,32 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<UserDO> queryByLoginName(String loginName) {
+    public ResponseEntity<UserDTO> queryByLoginName(String loginName) {
         throw new CommonException("error.user.get.byLoginName");
     }
 
     @Override
-    public ResponseEntity<UserDO> queryById(Long id) {
+    public ResponseEntity<UserDTO> queryById(Long id) {
         throw new CommonException("error.user.get.byId");
     }
 
     @Override
-    public ResponseEntity<PageInfo<UserDO>> queryInProjectById(Long projectId, Long id) {
+    public ResponseEntity<PageInfo<UserDTO>> queryInProjectById(Long projectId, Long id) {
         throw new CommonException("error.userInProject.get");
     }
 
     @Override
-    public ResponseEntity<PageInfo<ProjectDO>> queryProjectByOrgId(Long id, int page, int size, String name, String[] params) {
+    public ResponseEntity<PageInfo<ProjectDTO>> queryProjectByOrgId(Long id, int page, int size, String name, String[] params) {
         throw new CommonException("error.project.get");
     }
 
     @Override
-    public ResponseEntity<List<UserDO>> listUsersByIds(Long[] ids) {
+    public ResponseEntity<List<UserDTO>> listUsersByIds(Long[] ids) {
         throw new CommonException("error.user.get.byIds");
     }
 
     @Override
-    public ResponseEntity<PageInfo<UserDO>> listUsersByEmail(Long projectId, int page, int size, String email) {
+    public ResponseEntity<PageInfo<UserDTO>> listUsersByEmail(Long projectId, int page, int size, String email) {
         return new ResponseEntity("error.user.get.byEmail", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

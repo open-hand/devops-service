@@ -4,7 +4,7 @@ package io.choerodon.devops.infra.dto.iam;
 /**
  * Created by younger on 2018/4/3.
  */
-public class OrganizationDO {
+public class OrganizationDTO {
     private Long id;
     private String name;
     private String code;

@@ -2,7 +2,6 @@ package io.choerodon.devops.app.eventhandler.payload;
 
 public class IamAppPayLoad {
 
-
     private Long id;
 
     private Long organizationId;

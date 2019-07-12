@@ -17,7 +17,6 @@ import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.vo.iam.*;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
 import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;

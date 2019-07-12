@@ -7,14 +7,17 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.vo.iam.*;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
+import io.choerodon.devops.api.vo.iam.RoleDTO;
+import io.choerodon.devops.api.vo.iam.RoleSearchDTO;
+import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDO;
-import io.choerodon.devops.infra.dto.iam.ProjectDO;
-import io.choerodon.devops.infra.dto.iam.UserDO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.UserDTO;
 import io.choerodon.devops.infra.feign.fallback.IamServiceClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -28,41 +31,41 @@ import org.springframework.web.bind.annotation.*;
 public interface IamServiceClient {
 
     @GetMapping(value = "/v1/projects/{projectId}")
-    ResponseEntity<ProjectDO> queryIamProject(@PathVariable("projectId") Long projectId);
+    ResponseEntity<ProjectDTO> queryIamProject(@PathVariable("projectId") Long projectId);
 
     @GetMapping("/v1/organizations/self")
-    ResponseEntity<OrganizationDO> queryOrganization();
+    ResponseEntity<OrganizationDTO> queryOrganization();
 
     @GetMapping("/v1/organizations/{organizationId}")
-    ResponseEntity<OrganizationDO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
+    ResponseEntity<OrganizationDTO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
     @PostMapping(value = "/v1/project/{projectId}/memberRoles/single")
     ResponseEntity<MemberRoleV> addMemberRole(@PathVariable("projectId") Long projectId, @RequestBody @Valid MemberRoleV memberRoleVo);
 
     @GetMapping(value = "/v1/users")
-    ResponseEntity<UserDO> queryByLoginName(@RequestParam("login_name") String loginName);
+    ResponseEntity<UserDTO> queryByLoginName(@RequestParam("login_name") String loginName);
 
     @GetMapping(value = "/v1/users/{id}/info")
-    ResponseEntity<UserDO> queryById(@PathVariable("id") Long id);
+    ResponseEntity<UserDTO> queryById(@PathVariable("id") Long id);
 
     @GetMapping(value = "v1/projects/{project_id}/users?id={id}")
-    ResponseEntity<PageInfo<UserDO>> queryInProjectById(@PathVariable("project_id") Long projectId, @PathVariable("id") Long id);
+    ResponseEntity<PageInfo<UserDTO>> queryInProjectById(@PathVariable("project_id") Long projectId, @PathVariable("id") Long id);
 
     @GetMapping(value = "/v1/organizations/{id}/projects")
-    ResponseEntity<PageInfo<ProjectDO>> queryProjectByOrgId(@PathVariable("id") Long id, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("name") String name, @RequestParam("params") String[] params);
+    ResponseEntity<PageInfo<ProjectDTO>> queryProjectByOrgId(@PathVariable("id") Long id, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("name") String name, @RequestParam("params") String[] params);
 
     @PostMapping(value = "/v1/users/ids")
-    ResponseEntity<List<UserDO>> listUsersByIds(@RequestBody Long[] ids);
+    ResponseEntity<List<UserDTO>> listUsersByIds(@RequestBody Long[] ids);
 
     @GetMapping(value = "/v1/projects/{project_id}/users")
-    ResponseEntity<PageInfo<UserDO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
+    ResponseEntity<PageInfo<UserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users/count")
     ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
                                                                        @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users")
-    ResponseEntity<PageInfo<UserVO>> pagingQueryUsersByRoleIdOnProjectLevel(
+    ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
             @RequestParam("page") int page,
             @RequestParam("size") int size,
             @RequestParam(name = "role_id") Long roleId,

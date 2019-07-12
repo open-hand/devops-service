@@ -21,7 +21,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.ApplicationLatestVersionDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionReadmeDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
@@ -404,9 +404,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
 
     public List<ApplicationLatestVersionDTO> baseListAppNewestVersion(Long projectId) {
-        ProjectDO projectDO = iamServiceClientOperator.queryIamProject(projectId);
-        List<ProjectDO> projectEList = iamServiceClientOperator.listIamProjectByOrgId(projectDO.getOrganizationId(), null, null);
-        List<Long> projectIds = projectEList.stream().map(ProjectDO::getId)
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        List<ProjectDTO> projectEList = iamServiceClientOperator.listIamProjectByOrgId(projectDTO.getOrganizationId(), null, null);
+        List<Long> projectIds = projectEList.stream().map(ProjectDTO::getId)
                 .collect(Collectors.toCollection(ArrayList::new));
         return applicationVersionMapper.listAppNewestVersion(projectId, projectIds);
     }

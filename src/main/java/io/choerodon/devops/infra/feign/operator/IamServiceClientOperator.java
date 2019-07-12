@@ -10,27 +10,22 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
-import io.choerodon.devops.api.vo.ProjectDTO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDO;
-import io.choerodon.devops.infra.dto.iam.ProjectDO;
-import io.choerodon.devops.infra.dto.iam.UserDO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.UserDTO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
-import org.springframework.beans.BeanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -41,59 +36,50 @@ import org.springframework.stereotype.Component;
 @Component
 public class IamServiceClientOperator {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(IamServiceClientOperator.class);
+
     @Autowired
     private IamServiceClient iamServiceClient;
 
-
-    public ProjectDO queryIamProject(Long projectId) {
-        ResponseEntity<ProjectDO> projectDO = iamServiceClient.queryIamProject(projectId);
-        if (!projectDO.getStatusCode().is2xxSuccessful()) {
+    public ProjectDTO queryIamProjectById(Long projectId) {
+        ResponseEntity<ProjectDTO> projectDTOResponseEntity = iamServiceClient.queryIamProject(projectId);
+        if (!projectDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.project.get");
         }
-        return projectDO.getBody();
+        return projectDTOResponseEntity.getBody();
     }
 
-    public Organization queryOrganization() {
-        ResponseEntity<OrganizationDO> organization = iamServiceClient.queryOrganization();
-        if (organization.getStatusCode().is2xxSuccessful()) {
-            return ConvertHelper.convert(organization.getBody(), Organization.class);
+    public OrganizationDTO queryOrganizationById(Long organizationId) {
+        ResponseEntity<OrganizationDTO> organizationDTOResponseEntity = iamServiceClient.queryOrganizationById(organizationId);
+        if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
+            return organizationDTOResponseEntity.getBody();
         } else {
             throw new CommonException("error.organization.get");
         }
     }
 
-    public OrganizationDO queryOrganizationById(Long organizationId) {
-        ResponseEntity<OrganizationDO> organization = iamServiceClient.queryOrganizationById(organizationId);
-        if (organization.getStatusCode().is2xxSuccessful()) {
-            return organization.getBody();
-        } else {
-            throw new CommonException("error.organization.get");
-        }
-    }
-
-    public UserE queryByLoginName(String userName) {
+    public UserDTO queryUserByLoginName(String userName) {
         try {
-            ResponseEntity<UserDO> responseEntity = iamServiceClient.queryByLoginName(userName);
-            return ConvertHelper.convert(responseEntity.getBody(), UserE.class);
+            ResponseEntity<UserDTO> responseEntity = iamServiceClient.queryByLoginName(userName);
+            return responseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("get user by longin name {} error", userName);
             return null;
         }
     }
 
-    public List<ProjectDO> listIamProjectByOrgId(Long organizationId, String name, String[] params) {
-        List<ProjectE> returnList = new ArrayList<>();
+    public List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String[] params) {
         int page = 0;
         int size = 0;
-        ResponseEntity<PageInfo<ProjectDO>> pageResponseEntity =
+        ResponseEntity<PageInfo<ProjectDTO>> pageResponseEntity =
                 iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, null);
         return pageResponseEntity.getBody().getList();
     }
 
-    public PageInfo<ProjectE> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params) {
+    public PageInfo<ProjectDTO> pageProjectByOrgId(Long organizationId, int page, int size, String name, String[] params) {
         try {
-            ResponseEntity<PageInfo<ProjectDO>> pageInfoResponseEntity = iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, params);
-            return ConvertPageHelper.convertPageInfo(pageInfoResponseEntity.getBody(), ProjectE.class);
+            ResponseEntity<PageInfo<ProjectDTO>> pageInfoResponseEntity = iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, params);
+            return pageInfoResponseEntity.getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -112,13 +98,13 @@ public class IamServiceClientOperator {
         return returnList;
     }
 
-    public List<UserE> listUsersByIds(List<Long> ids) {
-        List<UserE> userES = new ArrayList<>();
+    public List<UserDTO> listUsersByIds(List<Long> ids) {
+        List<UserDTO> userES = new ArrayList<>();
         if (ids != null && !ids.isEmpty()) {
             Long[] newIds = new Long[ids.size()];
             try {
                 userES = ConvertHelper.convertList(iamServiceClient
-                        .listUsersByIds(ids.toArray(newIds)).getBody(), UserE.class);
+                        .listUsersByIds(ids.toArray(newIds)).getBody(), UserDTO.class);
             } catch (Exception e) {
                 throw new CommonException("error.users.get", e);
             }
@@ -126,17 +112,17 @@ public class IamServiceClientOperator {
         return userES;
     }
 
-    public UserE queryUserByUserId(Long id) {
+    public UserDTO queryUserByUserId(Long id) {
         List<Long> ids = new ArrayList<>();
         ids.add(id);
-        List<UserE> userES = this.listUsersByIds(ids);
+        List<UserDTO> userES = this.listUsersByIds(ids);
         if (userES != null && !userES.isEmpty()) {
             return userES.get(0);
         }
         return null;
     }
 
-    public PageInfo<UserVO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
                                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO,
                                                                    Long roleId, Long projectId, Boolean doPage) {
         try {
@@ -163,14 +149,14 @@ public class IamServiceClientOperator {
         }
     }
 
-    public UserE queryByEmail(Long projectId, String email) {
+    public UserDTO queryByEmail(Long projectId, String email) {
         try {
-            ResponseEntity<PageInfo<UserDO>> userDOResponseEntity = iamServiceClient
+            ResponseEntity<PageInfo<UserDTO>> userDOResponseEntity = iamServiceClient
                     .listUsersByEmail(projectId, 0, 0, email);
             if (userDOResponseEntity.getBody().getList().isEmpty()) {
                 return null;
             }
-            return ConvertHelper.convert(userDOResponseEntity.getBody().getList().get(0), UserE.class);
+            return userDOResponseEntity.getBody().getList().get(0);
         } catch (FeignException e) {
             LOGGER.error("get user by email {} error", email);
             return null;
@@ -206,16 +192,16 @@ public class IamServiceClientOperator {
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
     }
 
-    public List<UserVO> getAllMember(Long projectId) {
+    public List<UserDTO> getAllMember(Long projectId) {
         // 获取项目成员id
         Long memberId = this.queryRoleIdByCode(PROJECT_MEMBER);
         // 获取项目所有者id
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
 
-        List<UserVO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), memberId,
+        List<UserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), memberId,
                 projectId, false).getList();
-        List<Long> memberIds = list.stream().filter(userDTO -> userDTO.getEnabled()).map(UserVO::getId).collect(Collectors.toList());
+        List<Long> memberIds = list.stream().filter(userDTO -> userDTO.getEnabled()).map(UserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), ownerId,
 
@@ -272,9 +258,9 @@ public class IamServiceClientOperator {
         return iamAppPayLoadResponseEntity.getBody().getList().isEmpty() ? null : iamAppPayLoadResponseEntity.getBody().getList().get(0);
     }
 
-    public ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO) {
+    public ProjectReqVO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO) {
         try {
-            ResponseEntity<ProjectDTO> projectDTO = iamServiceClient
+            ResponseEntity<ProjectReqVO> projectDTO = iamServiceClient
                     .createProject(organizationId, projectCreateDTO);
             return projectDTO.getBody();
         } catch (FeignException e) {

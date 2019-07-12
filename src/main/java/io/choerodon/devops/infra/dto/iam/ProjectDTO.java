@@ -7,20 +7,18 @@ import javax.persistence.Id;
 /**
  * Created by Zenger on 2018/3/28.
  */
-public class ProjectDO {
+public class ProjectDTO {
 
-    @Id
-    @GeneratedValue
     private Long id;
     private String name;
     private Long organizationId;
     private String code;
 
-    public ProjectDO() {
+    public ProjectDTO() {
 
     }
 
-    public ProjectDO(Long id) {
+    public ProjectDTO(Long id) {
         this.id = id;
     }
 

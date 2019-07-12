@@ -116,6 +116,7 @@ import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 import io.choerodon.devops.infra.dto.harbor.User;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -132,6 +133,10 @@ import io.choerodon.devops.infra.enums.SonarQubeType;
 =======
 import io.choerodon.devops.infra.dto.iam.OrganizationDO;
 import io.choerodon.devops.infra.dto.iam.ProjectDO;
+=======
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+>>>>>>> [IMP]重构后端结构
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
@@ -3476,11 +3481,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         public String getGitlabUrl (Long projectId, Long appId){
             ApplicationDTO applicationDTO = baseQuery(appId);
             if (applicationDTO.getGitlabProjectId() != null) {
-                ProjectDO projectDO = iamServiceClientOperator.queryIamProject(projectId);
-                OrganizationDO organizationDO = iamServiceClientOperator.queryOrganizationById(projectDO.getOrganizationId());
+                ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+                OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                 String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
                 return gitlabUrl + urlSlash
-                        + organizationDO.getCode() + "-" + projectDO.getCode() + "/"
+                        + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
                         + applicationDTO.getCode();
             }
             return "";

@@ -30,7 +30,7 @@ import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.mapper.ApplicationTemplateMapper;
@@ -318,9 +318,9 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
 
     public ApplicationTemplateDTO baseCreate(ApplicationTemplateDTO applicationTemplateDTO) {
 
-        OrganizationDO organizationDO = iamServiceClientOperator.queryOrganizationById(applicationTemplateDTO.getOrganizationId())
+        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(applicationTemplateDTO.getOrganizationId())
         applicationTemplateDTO.setRepoUrl(
-                organizationDO.getCode() + "_template" + "/"
+                organizationDTO.getCode() + "_template" + "/"
                         + applicationTemplateDTO.getCode() + ".git");
 
         if (applicationTemplateMapper.insert(applicationTemplateDTO) != 1) {

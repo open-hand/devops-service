@@ -22,7 +22,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.Sort;
-import io.choerodon.devops.infra.dto.iam.ProjectDO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.mapper.ApplicationShareMapper;
 import io.choerodon.devops.infra.util.*;
@@ -1040,9 +1040,9 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     private List<Long> getProjectIds(Long projectId) {
         List<Long> projectIds;
         if (projectId != null) {
-            ProjectDO projectDO = iamServiceClientOperator.queryIamProject(projectId);
-            List<ProjectDO> projectEList = iamServiceClientOperator.listIamProjectByOrgId(projectDO.getOrganizationId(), null, null);
-            projectIds = projectEList.stream().map(ProjectDO::getId)
+            ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+            List<ProjectDTO> projectEList = iamServiceClientOperator.listIamProjectByOrgId(projectDTO.getOrganizationId(), null, null);
+            projectIds = projectEList.stream().map(ProjectDTO::getId)
                     .collect(Collectors.toCollection(ArrayList::new));
         } else {
             projectIds = null;
