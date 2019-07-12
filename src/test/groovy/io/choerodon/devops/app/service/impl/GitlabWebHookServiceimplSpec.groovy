@@ -15,7 +15,6 @@ import io.choerodon.devops.app.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.enums.CommandStatus
-import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -401,7 +400,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         List<String> domain = new ArrayList<>()
         domain.add("test.saas.test.com")
         certificationE.setDomains(domain)
-        certificationE = certificationRepository.create(certificationE);
+        certificationE = certificationRepository.baseCreate(certificationE);
 
         DevopsEnvCommandVO devopsEnvCommandE3 = new DevopsEnvCommandVO()
         devopsEnvCommandE3.setObject("certificate")
@@ -411,7 +410,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsEnvCommandRepository.create(devopsEnvCommandE3)
 
         certificationE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE3).getId())
-        certificationRepository.updateCommandId(certificationE)
+        certificationRepository.baseUpdateCommandId(certificationE)
 
         //初始化证书文件关系
         DevopsEnvFileResourceE devopsEnvFileResourceE3 = new DevopsEnvFileResourceE()
@@ -673,7 +672,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object: instest2";
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //    }
@@ -712,7 +711,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object: svctest2"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //
@@ -752,7 +751,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object: ingtest2"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //
@@ -791,7 +790,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        2 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the App: testappasdasdasdnot exist in the devops-service"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //
@@ -831,7 +830,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "The related instance of the service not found: instest212"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //
@@ -871,7 +870,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the related service of the ingress not exist:svctest2asd"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //    }
@@ -910,7 +909,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the ingress domain and path is already exist!"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //    }
@@ -949,7 +948,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "The C7nHelmRelease does not define name properties"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //    }

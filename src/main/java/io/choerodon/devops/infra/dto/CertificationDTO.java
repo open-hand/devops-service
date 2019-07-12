@@ -12,7 +12,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Description:
  */
 @Table(name = "devops_certification")
-public class CertificationDO extends BaseDTO {
+public class CertificationDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,7 +35,7 @@ public class CertificationDO extends BaseDTO {
     @Transient
     private String error;
 
-    public CertificationDO() {
+    public CertificationDTO() {
     }
 
     /**
@@ -46,11 +46,20 @@ public class CertificationDO extends BaseDTO {
      * @param domains Certification's domains json format
      * @param status  Certification's status
      */
-    public CertificationDO(String name, Long envId, String domains, String status) {
+    public CertificationDTO(String name, Long envId, String domains, String status) {
         this.name = name;
         this.envId = envId;
         this.domains = domains;
         this.status = status;
+    }
+
+    public CertificationDTO(Long id, String name, Long envId, String domains, String status, Long orgCertId) {
+        this.id = id;
+        this.name = name;
+        this.envId = envId;
+        this.domains = domains;
+        this.status = status;
+        this.orgCertId = orgCertId;
     }
 
     /**
@@ -59,7 +68,7 @@ public class CertificationDO extends BaseDTO {
      * @param name  Certification's name
      * @param envId Certification's enviroment ID
      */
-    public CertificationDO(String name, Long envId) {
+    public CertificationDTO(String name, Long envId) {
         this.name = name;
         this.envId = envId;
     }

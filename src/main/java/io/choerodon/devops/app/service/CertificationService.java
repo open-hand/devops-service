@@ -5,9 +5,11 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.C7nCertificationDTO;
-import io.choerodon.devops.api.vo.CertificationDTO;
+import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.OrgCertificationDTO;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
+import io.choerodon.devops.infra.dto.CertificationDTO;
+import io.choerodon.devops.infra.dto.CertificationFileDO;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -34,9 +36,9 @@ public interface CertificationService {
 
     void certDeleteByGitOps(Long certId);
 
-    PageInfo<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<CertificationVO> page(Long projectId, Long envId, PageRequest pageRequest, String params);
 
-    List<CertificationDTO> getActiveByDomain(Long projectId, Long envId, String domain);
+    List<CertificationVO> getActiveByDomain(Long projectId, Long envId, String domain);
 
     Boolean checkCertNameUniqueInEnv(Long envId, String certName);
 
@@ -44,13 +46,51 @@ public interface CertificationService {
     /**
      * 根据证书名称查询证书
      *
-     * @param envId     环境ID
-     * @param certName  证书名称
-     * @return CertificationDTO
+     * @param envId    环境ID
+     * @param certName 证书名称
+     * @return CertificationVO
      */
-    CertificationDTO  queryByName(Long envId , String certName);
+    CertificationVO queryByName(Long envId, String certName);
 
     Long createCertCommandE(String type, Long certId, Long userId);
 
     List<OrgCertificationDTO> listByProject(Long projectId);
+
+    CertificationDTO create(CertificationDTO certificationVO);
+
+    CertificationDTO baseQueryById(Long certId);
+
+    CertificationVO baseQueryByEnvAndName(Long envId, String name);
+
+    PageInfo<CertificationVO> page(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params);
+
+    List<CertificationVO> baseGetActiveByDomain(Long projectId, Long clusterId, String domain);
+
+    void baseUpdateStatus(CertificationDTO certificationDTO);
+
+    void baseUpdateCommandId(CertificationDTO certificationDTO);
+
+    void baseUpdateValidField(CertificationDTO inputCertificationDTO);
+
+    void baseUpdateCertFileId(CertificationDTO inputCertificationDTO);
+
+    void baseClearValidField(Long certId);
+
+    void baseDeleteById(Long certId);
+
+    Boolean baseCheckCertNameUniqueInEnv(Long envId, String certName);
+
+    Long baseStoreCertFile(CertificationFileDO certificationFileDO);
+
+    CertificationFileDO baseGetCertFile(Long certId);
+
+    List<CertificationDTO> baseListByEnvId(Long envId);
+
+    void baseUpdateSkipProjectPermission(CertificationDTO certificationDTO);
+
+    CertificationVO baseQueryByOrgAndName(Long orgId, String name);
+
+    List<CertificationDTO> baseListByOrgCertId(Long orgCertId);
+
+    List<CertificationVO> listByProject(Long projectId, Long organizationId);
 }

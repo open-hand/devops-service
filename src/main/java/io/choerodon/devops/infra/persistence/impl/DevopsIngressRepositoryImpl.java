@@ -187,7 +187,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     private void setIngressDTOCert(Long certId, DevopsIngressDTO devopsIngressDTO) {
         if (certId != null) {
             devopsIngressDTO.setCertId(certId);
-            CertificationE certificationE = certificationRepository.queryById(certId);
+            CertificationE certificationE = certificationRepository.baseQueryById(certId);
             if (certificationE != null) {
                 devopsIngressDTO.setCertName(certificationE.getName());
                 devopsIngressDTO.setCertStatus(certificationE.getStatus());

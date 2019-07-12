@@ -41,7 +41,7 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
                              List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, C7nCertification c7nCertification) {
         String filePath = objectPath.get(TypeUtil.objToString(c7nCertification.hashCode()));
         String certName = c7nCertification.getMetadata().getName();
-        CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
+        CertificationE certificationE = certificationRepository.baseQueryByEnvAndName(envId, certName);
         if (certificationE != null) {
             Long certId = certificationE.getId();
             if (beforeSyncDelete.stream()

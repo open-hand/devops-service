@@ -141,7 +141,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private String getCertName(Long certId) {
         String certName = null;
         if (certId != null && certId != 0) {
-            CertificationE certificationE = certificationRepository.queryById(certId);
+            CertificationE certificationE = certificationRepository.baseQueryById(certId);
             if (!CertificationStatus.ACTIVE.getStatus().equals(certificationE.getStatus())) {
                 throw new CommonException(CERT_NOT_ACTIVE);
             }

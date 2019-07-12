@@ -9,7 +9,7 @@ import java.util.List;
  * Time: 17:27
  * Description:
  */
-public class CertificationDTO {
+public class CertificationVO {
     private Long id;
     private Long organizationId;
     private String certName;

@@ -11,7 +11,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.C7nCertificationDTO;
-import io.choerodon.devops.api.vo.CertificationDTO;
+import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.OrgCertificationDTO;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.mybatis.annotation.SortDefault;
@@ -98,7 +98,7 @@ public class CertificationController {
     @ApiOperation(value = "分页查询")
     @CustomPageRequest
     @PostMapping("/list_by_options")
-    public ResponseEntity<PageInfo<CertificationDTO>> listByOptions(
+    public ResponseEntity<PageInfo<CertificationVO>> listByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID")
@@ -118,13 +118,13 @@ public class CertificationController {
      *
      * @param projectId 项目id
      * @param domain    域名
-     * @return CertificationDTO list
+     * @return CertificationVO list
      */
     @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "通过域名查询已生效的证书")
     @PostMapping("/active")
-    public ResponseEntity<List<CertificationDTO>> getActiveByDomain(
+    public ResponseEntity<List<CertificationVO>> getActiveByDomain(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID", required = true)
@@ -167,13 +167,13 @@ public class CertificationController {
      * @param projectId 项目id
      * @param envId     环境ID
      * @param certName  证书名称
-     * @return CertificationDTO
+     * @return CertificationVO
      */
     @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据证书名称查询证书")
     @GetMapping("/query_by_name")
-    public ResponseEntity<CertificationDTO> queryByName(
+    public ResponseEntity<CertificationVO> queryByName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID", required = true)

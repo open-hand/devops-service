@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.CertificationDTO;
+import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.iam.entity.CertificationE;
 <<<<<<< HEAD
 import io.choerodon.devops.infra.dto.CertificationFileDO;
@@ -20,41 +20,45 @@ import io.choerodon.devops.infra.dataobject.CertificationFileDO;
  */
 public interface CertificationRepository {
 
-    CertificationE create(CertificationE certificationE);
+    CertificationE baseCreate(CertificationE certificationE);
 
-    CertificationE queryById(Long certId);
+    CertificationE baseQueryById(Long certId);
 
-    CertificationE queryByEnvAndName(Long envId, String name);
+    CertificationE baseQueryByEnvAndName(Long envId, String name);
 
-    PageInfo<CertificationDTO> page(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<CertificationVO> basePage(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params);
 
+<<<<<<< HEAD
     List<CertificationDTO> getActiveByDomain(Long projectId,Long clusterId, String domain);
+=======
+    List<CertificationVO> baseGetActiveByDomain(Long projectId, Long clusterId, String domain);
+>>>>>>> [REF] refactor CertificationRepository
 
-    void updateStatus(CertificationE certificationE);
+    void baseUpdateStatus(CertificationE certificationE);
 
-    void updateCommandId(CertificationE certificationE);
+    void baseUpdateCommandId(CertificationE certificationE);
 
-    void updateValid(CertificationE certificationE);
+    void baseUpdateValidField(CertificationE certificationE);
 
-    void updateCertFileId(CertificationE certificationE);
+    void baseUpdateCertFileId(CertificationE certificationE);
 
-    void clearValid(Long certId);
+    void baseClearValidField(Long certId);
 
-    void deleteById(Long certId);
+    void baseDeleteById(Long certId);
 
-    Boolean checkCertNameUniqueInEnv(Long envId, String certName);
+    Boolean baseCheckCertNameUniqueInEnv(Long envId, String certName);
 
-    Long storeCertFile(CertificationFileDO certificationFileDO);
+    Long baseStoreCertFile(CertificationFileDO certificationFileDO);
 
-    CertificationFileDO getCertFile(Long certId);
+    CertificationFileDO baseGetCertFile(Long certId);
 
-    List<CertificationE> listByEnvId(Long envId);
+    List<CertificationE> baseListByEnvId(Long envId);
 
-    void updateSkipProjectPermission(CertificationE certificationE);
+    void baseUpdateSkipProjectPermission(CertificationE certificationE);
 
-    CertificationE queryByOrgAndName(Long orgId, String name);
+    CertificationE baseQueryByOrgAndName(Long orgId, String name);
 
-    List<CertificationE> listByOrgCertId(Long orgCertId);
+    List<CertificationE> baseListByOrgCertId(Long orgCertId);
 
-    List<CertificationDTO> listByProject(Long projectId, Long organizationId);
+    List<CertificationVO> baseListByProject(Long projectId, Long organizationId);
 }

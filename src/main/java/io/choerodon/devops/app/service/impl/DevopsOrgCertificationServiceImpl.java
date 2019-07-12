@@ -10,7 +10,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.CertificationDTO;
+import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.OrgCertificationDTO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsOrgCertificationService;
@@ -83,8 +83,8 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
         certificationE.setOrganizationId(organizationId);
         certificationE.setSkipCheckProjectPermission(orgCertificationDTO.getSkipCheckProjectPermission());
         certificationE.setDomains(Arrays.asList(orgCertificationDTO.getDomain()));
-        certificationE.setCertificationFileId(certificationRepository.storeCertFile(new CertificationFileDO(orgCertificationDTO.getCertValue(), orgCertificationDTO.getKeyValue())));
-        certificationE = certificationRepository.create(certificationE);
+        certificationE.setCertificationFileId(certificationRepository.baseStoreCertFile(new CertificationFileDO(orgCertificationDTO.getCertValue(), orgCertificationDTO.getKeyValue())));
+        certificationE = certificationRepository.baseCreate(certificationE);
         if (!orgCertificationDTO.getSkipCheckProjectPermission() && orgCertificationDTO.getProjects() != null) {
             for (Long projectId : orgCertificationDTO.getProjects()) {
                 DevopsCertificationProRelE devopsCertificationProRelE = new DevopsCertificationProRelE();
@@ -100,7 +100,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
         List<Long> projects = orgCertificationDTO.getProjects();
         Boolean skipCheckPro = orgCertificationDTO.getSkipCheckProjectPermission();
         List<Long> addProjects = new ArrayList<>();
-        CertificationE certificationE = certificationRepository.queryById(certId);
+        CertificationE certificationE = certificationRepository.baseQueryById(certId);
         //以前不跳过项目权限校验,但是现在跳过，情况集群对应的项目集群校验表
         if (skipCheckPro && !certificationE.getSkipCheckProjectPermission()) {
             devopsCertificationProRelRepository.deleteByCertId(certId);
@@ -130,7 +130,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
             });
         }
         certificationE.setSkipCheckProjectPermission(orgCertificationDTO.getSkipCheckProjectPermission());
-        certificationRepository.updateSkipProjectPermission(certificationE);
+        certificationRepository.baseUpdateSkipProjectPermission(certificationE);
     }
 
 
@@ -138,7 +138,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
         CertificationE certificationE = new CertificationE();
         certificationE.setOrganizationId(organizationId);
         certificationE.setName(name);
-        if (certificationRepository.queryByOrgAndName(organizationId, name) != null) {
+        if (certificationRepository.baseQueryByOrgAndName(organizationId, name) != null) {
             throw new CommonException("error.cert.name.exist");
         }
     }
@@ -153,10 +153,10 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
     }
 
     public void deleteCert(Long certId) {
-        List<CertificationE> certificationES = certificationRepository.listByOrgCertId(certId);
+        List<CertificationE> certificationES = certificationRepository.baseListByOrgCertId(certId);
         if (certificationES.isEmpty()) {
             devopsCertificationProRelRepository.deleteByCertId(certId);
-            certificationRepository.deleteById(certId);
+            certificationRepository.baseDeleteById(certId);
         } else {
             throw new CommonException("error.cert.related");
         }
@@ -190,8 +190,8 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
 
     public PageInfo<OrgCertificationDTO> pageCerts(Long organizationId, PageRequest pageRequest,
                                                String params) {
-        PageInfo<CertificationDTO> certificationDTOS = certificationRepository
-                .page(null, organizationId, null, pageRequest, params);
+        PageInfo<CertificationVO> certificationDTOS = certificationRepository
+                .basePage(null, organizationId, null, pageRequest, params);
         PageInfo<OrgCertificationDTO> orgCertificationDTOS = new PageInfo<>();
         BeanUtils.copyProperties(certificationDTOS, orgCertificationDTOS);
         List<OrgCertificationDTO> orgCertifications = new ArrayList<>();
@@ -206,7 +206,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
     }
 
     public OrgCertificationDTO getCert(Long certId) {
-        CertificationE certificationE = certificationRepository.queryById(certId);
+        CertificationE certificationE = certificationRepository.baseQueryById(certId);
         return new OrgCertificationDTO(certificationE.getId(), certificationE.getName(), certificationE.getDomains().get(0), certificationE.getSkipCheckProjectPermission());
     }
 }

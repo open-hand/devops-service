@@ -42,7 +42,7 @@ public class DevopsCertificationValidator {
     }
 
     private void checkCertificationExists(Long envId, String name) {
-        if (!certificationRepository.checkCertNameUniqueInEnv(envId, name)) {
+        if (!certificationRepository.baseCheckCertNameUniqueInEnv(envId, name)) {
             throw new CommonException("error.certNameInEnv.notUnique");
         }
     }

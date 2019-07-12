@@ -331,7 +331,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 code = devopsIngressDO.getName();
                 break;
             case CERTIFICATE:
-                CertificationE certificationE = certificationRepository.queryById(objectId);
+                CertificationE certificationE = certificationRepository.baseQueryById(objectId);
                 code = certificationE.getName();
                 break;
             case CONFIGMAP:

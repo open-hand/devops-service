@@ -869,7 +869,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private void syncCetificate(Long envId, List<DevopsEnvFileErrorE> errorDevopsFiles, ResourceCommit resourceCommit, String[] objects) {
         DevopsEnvFileResourceE devopsEnvFileResourceE;
         CertificationE certificationE = certificationRepository
-                .queryByEnvAndName(envId, objects[1]);
+                .baseQueryByEnvAndName(envId, objects[1]);
         devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(
                         envId, certificationE.getId(), "Certificate");
@@ -880,7 +880,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         } else {
             certificationE.setStatus(CertificationStatus.APPLYING.getStatus());
         }
-        certificationRepository.updateStatus(certificationE);
+        certificationRepository.baseUpdateStatus(certificationE);
     }
 
     private void syncService(Long envId, List<DevopsEnvFileErrorE> errorDevopsFiles, ResourceCommit resourceCommit, String[] objects) {
@@ -1250,7 +1250,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 commands.add(command);
             }
         });
-        certificationRepository.listByEnvId(envId).stream().forEach(certificationE -> {
+        certificationRepository.baseListByEnvId(envId).stream().forEach(certificationE -> {
             Long commandId = certificationE.getCommandId();
             if (commandId != null) {
                 Command command = new Command();
@@ -1528,9 +1528,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsIngressRepository.setStatus(envId, devopsIngressDO.getName(), running3.getStatus());
         }
         if (devopsEnvCommandE.getObject().equals(CERTIFICATE_KIND)) {
-            CertificationE certificationE = certificationRepository.queryById(devopsEnvCommandE.getObjectId());
+            CertificationE certificationE = certificationRepository.baseQueryById(devopsEnvCommandE.getObjectId());
             certificationE.setStatus(active.getStatus());
-            certificationRepository.updateStatus(certificationE);
+            certificationRepository.baseUpdateStatus(certificationE);
         }
     }
 
@@ -1544,7 +1544,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
         try {
             String certName = KeyParseTool.getValue(key, "Cert");
-            CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
+            CertificationE certificationE = certificationRepository.baseQueryByEnvAndName(envId, certName);
             if (certificationE != null) {
                 DevopsEnvCommandVO commandE = devopsEnvCommandRepository.query(certificationE.getCommandId());
                 Object obj = objectMapper.readValue(msg, Object.class);
@@ -1555,7 +1555,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 if (!(validFrom.equals(certificationE.getValidFrom())
                         && validUntil.equals(certificationE.getValidUntil()))) {
                     certificationE.setValid(validFrom, validUntil);
-                    certificationRepository.updateValid(certificationE);
+                    certificationRepository.baseUpdateValidField(certificationE);
                 }
                 boolean commandNotExist = commandE == null;
                 if (commandNotExist) {
@@ -1572,7 +1572,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsEnvCommandRepository.update(commandE);
                 }
                 certificationE.setCommandId(commandE.getId());
-                certificationRepository.updateCommandId(certificationE);
+                certificationRepository.baseUpdateCommandId(certificationE);
             }
         } catch (IOException e) {
             logger.info(e.toString(), e);
@@ -1591,7 +1591,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
         String commitSha = KeyParseTool.getValue(key, "commit");
         String certName = KeyParseTool.getValue(key, "Cert");
-        CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
+        CertificationE certificationE = certificationRepository.baseQueryByEnvAndName(envId, certName);
         if (certificationE != null) {
             DevopsEnvCommandVO commandE = devopsEnvCommandRepository.query(certificationE.getCommandId());
             String createType = CommandType.CREATE.getType();
@@ -1615,13 +1615,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsEnvCommandRepository.update(commandE);
                 }
                 certificationE.setCommandId(commandE.getId());
-                certificationRepository.updateCommandId(certificationE);
+                certificationRepository.baseUpdateCommandId(certificationE);
             }
-            certificationRepository.clearValid(certificationE.getId());
+            certificationRepository.baseClearValidField(certificationE.getId());
             String failedStatus = CertificationStatus.FAILED.getStatus();
             if (failedStatus.equals(certificationE.getStatus())) {
                 certificationE.setStatus(failedStatus);
-                certificationRepository.updateStatus(certificationE);
+                certificationRepository.baseUpdateStatus(certificationE);
             }
         }
 

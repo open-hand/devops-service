@@ -61,7 +61,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(CERTIFICATE))
                 .map(devopsEnvFileResourceE -> {
                     CertificationE certificationE = certificationRepository
-                            .queryById(devopsEnvFileResourceE.getResourceId());
+                            .baseQueryById(devopsEnvFileResourceE.getResourceId());
                     if (certificationE == null) {
                         devopsEnvFileResourceRepository
                                 .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), ObjectType.CERTIFICATE.getType());
@@ -86,7 +86,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                 updateC7nCertificationPath(c7nCertification1, envId, objectPath, path));
         beforeC7nCertification
                 .forEach(certName -> {
-                    CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
+                    CertificationE certificationE = certificationRepository.baseQueryByEnvAndName(envId, certName);
                     if (certificationE != null) {
                         certificationService.certDeleteByGitOps(certificationE.getId());
                         devopsEnvFileResourceRepository
@@ -130,8 +130,8 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                                               Map<String, String> objectPath, String path) {
         DevopsEnvironmentE environmentE = devopsEnvironmentRepository.queryById(envId);
         String certName = c7nCertification.getMetadata().getName();
-        CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
-        CertificationFileDO certificationFileDO = certificationRepository.getCertFile(certificationE.getId());
+        CertificationE certificationE = certificationRepository.baseQueryByEnvAndName(envId, certName);
+        CertificationFileDO certificationFileDO = certificationRepository.baseGetCertFile(certificationE.getId());
         String type;
         String keyContent = null;
         String certContent = null;
@@ -163,7 +163,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     private Long createCertificationAndGetId(Long envId, C7nCertification c7nCertification, String certName,
                                              String filePath, String path, Long userId) {
         CertificationE certificationE = certificationRepository
-                .queryByEnvAndName(envId, certName);
+                .baseQueryByEnvAndName(envId, certName);
         if (certificationE == null) {
             certificationE = new CertificationE();
 
@@ -179,16 +179,16 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
             certificationE.setEnvironmentE(new DevopsEnvironmentE(envId));
             certificationE.setName(certName);
             certificationE.setStatus(CertificationStatus.OPERATING.getStatus());
-            certificationE = certificationRepository.create(certificationE);
+            certificationE = certificationRepository.baseCreate(certificationE);
             CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
             if (existCert != null) {
-                certificationE.setCertificationFileId(certificationRepository.storeCertFile(
+                certificationE.setCertificationFileId(certificationRepository.baseStoreCertFile(
                         new CertificationFileDO(existCert.getCert(), existCert.getKey())));
             }
             Long commandId = certificationService
                     .createCertCommandE(CommandType.CREATE.getType(), certificationE.getId(), userId);
             certificationE.setCommandId(commandId);
-            certificationRepository.updateCommandId(certificationE);
+            certificationRepository.baseUpdateCommandId(certificationE);
         }
         updateCommandSha(filePath, path, certificationE.getCommandId());
         return certificationE.getId();

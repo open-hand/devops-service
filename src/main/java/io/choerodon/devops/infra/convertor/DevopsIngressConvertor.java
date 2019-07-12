@@ -26,7 +26,7 @@ public class DevopsIngressConvertor implements ConvertorI<DevopsIngressE, Devops
         BeanUtils.copyProperties(dataObject, devopsIngressE);
         Long certId = dataObject.getCertId();
         if (certId != null) {
-            CertificationE certificationE = certificationRepository.queryById(certId);
+            CertificationE certificationE = certificationRepository.baseQueryById(certId);
             if (certificationE != null) {
                 devopsIngressE.setCertName(certificationE.getName());
                 devopsIngressE.setCertStatus(certificationE.getStatus());
