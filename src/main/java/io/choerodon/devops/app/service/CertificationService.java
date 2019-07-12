@@ -26,8 +26,8 @@ public interface CertificationService {
      * @param projectId        项目id
      * @param certificationDTO 证书
      */
-    void create(Long projectId, C7nCertificationDTO certificationDTO,
-                MultipartFile key, MultipartFile cert, Boolean isGitOps);
+    void baseCreate(Long projectId, C7nCertificationDTO certificationDTO,
+                    MultipartFile key, MultipartFile cert, Boolean isGitOps);
 
     C7nCertification getC7nCertification(String name, String type, List<String> domains,
                                          String keyContent, String certContent, String envCode);
@@ -36,7 +36,7 @@ public interface CertificationService {
 
     void certDeleteByGitOps(Long certId);
 
-    PageInfo<CertificationVO> page(Long projectId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<CertificationVO> basePage(Long projectId, Long envId, PageRequest pageRequest, String params);
 
     List<CertificationVO> getActiveByDomain(Long projectId, Long envId, String domain);
 
@@ -54,17 +54,17 @@ public interface CertificationService {
 
     Long createCertCommandE(String type, Long certId, Long userId);
 
-    List<OrgCertificationDTO> listByProject(Long projectId);
+    List<OrgCertificationDTO> baseListByProject(Long projectId);
 
-    CertificationDTO create(CertificationDTO certificationVO);
+    CertificationDTO baseCreate(CertificationDTO certificationVO);
 
     CertificationDTO baseQueryById(Long certId);
 
     CertificationVO baseQueryByEnvAndName(Long envId, String name);
 
-    PageInfo<CertificationVO> page(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<CertificationVO> basePage(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params);
 
-    List<CertificationVO> baseGetActiveByDomain(Long projectId, Long clusterId, String domain);
+    List<CertificationVO> baseQueryActiveByDomain(Long projectId, Long clusterId, String domain);
 
     void baseUpdateStatus(CertificationDTO certificationDTO);
 
@@ -82,7 +82,7 @@ public interface CertificationService {
 
     Long baseStoreCertFile(CertificationFileDO certificationFileDO);
 
-    CertificationFileDO baseGetCertFile(Long certId);
+    CertificationFileDO baseQueryCertFile(Long certId);
 
     List<CertificationDTO> baseListByEnvId(Long envId);
 
@@ -92,5 +92,5 @@ public interface CertificationService {
 
     List<CertificationDTO> baseListByOrgCertId(Long orgCertId);
 
-    List<CertificationVO> listByProject(Long projectId, Long organizationId);
+    List<CertificationVO> baseListByProject(Long projectId, Long organizationId);
 }

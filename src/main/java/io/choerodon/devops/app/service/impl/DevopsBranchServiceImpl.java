@@ -23,7 +23,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     private DevopsBranchMapper devopsBranchMapper;
 
     @Override
-    public List<DevopsBranchDTO> baseGetDevopsBranchesByIssueId(Long issueId) {
+    public List<DevopsBranchDTO> baseQueryDevopsBranchesByIssueId(Long issueId) {
         DevopsBranchDTO queryDevopsBranchDTO = new DevopsBranchDTO();
         queryDevopsBranchDTO.setIssueId(issueId);
         queryDevopsBranchDTO.setDeleted(false);

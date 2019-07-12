@@ -14,5 +14,5 @@ import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 
 public interface DevopsBranchRepository {
 
-    List<DevopsBranchDTO> baseGetDevopsBranchesByIssueId(Long issueId);
+    List<DevopsBranchDTO> baseQueryDevopsBranchesByIssueId(Long issueId);
 }

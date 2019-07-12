@@ -89,8 +89,8 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void create(Long projectId, C7nCertificationDTO certificationDTO,
-                       MultipartFile key, MultipartFile cert, Boolean isGitOps) {
+    public void baseCreate(Long projectId, C7nCertificationDTO certificationDTO,
+                           MultipartFile key, MultipartFile cert, Boolean isGitOps) {
 
         Long envId = certificationDTO.getEnvId();
 
@@ -143,7 +143,7 @@ public class CertificationServiceImpl implements CertificationService {
         //如果创建的时候选择证书
         if (certificationDTO.getCertId() != null) {
             certificationDTO.setType(UPLOAD);
-            certificationFileDO = baseGetCertFile(baseQueryById(certificationDTO.getCertId()).getId());
+            certificationFileDO = baseQueryCertFile(baseQueryById(certificationDTO.getCertId()).getId());
         }
 
         devopsCertificationValidator.checkCertification(envId, certName);
@@ -182,7 +182,7 @@ public class CertificationServiceImpl implements CertificationService {
      */
     private void createAndStore(CertificationDTO certificationDTO, C7nCertification c7nCertification) {
         // create
-        certificationDTO = create(certificationDTO);
+        certificationDTO = baseCreate(certificationDTO);
         Long certId = certificationDTO.getId();
 
         CertificationDTO updateCertificationDTO = new CertificationDTO();
@@ -312,10 +312,10 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public List<OrgCertificationDTO> listByProject(Long projectId) {
+    public List<OrgCertificationDTO> baseListByProject(Long projectId) {
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         List<OrgCertificationDTO> orgCertificationDTOS = new ArrayList<>();
-        listByProject(projectId, projectE.getOrganization().getId()).forEach(certificationDTO -> {
+        baseListByProject(projectId, projectE.getOrganization().getId()).forEach(certificationDTO -> {
             OrgCertificationDTO orgCertificationDTO = new OrgCertificationDTO();
             orgCertificationDTO.setName(certificationDTO.getCertName());
             orgCertificationDTO.setId(certificationDTO.getId());
@@ -341,12 +341,12 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public PageInfo<CertificationVO> page(Long projectId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<CertificationVO> basePage(Long projectId, Long envId, PageRequest pageRequest, String params) {
         if (params == null) {
             params = "{}";
         }
 
-        PageInfo<CertificationVO> certificationDTOPage = page(projectId, null, envId, pageRequest, params);
+        PageInfo<CertificationVO> certificationDTOPage = basePage(projectId, null, envId, pageRequest, params);
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         certificationDTOPage.getList().stream()
@@ -363,7 +363,7 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public List<CertificationVO> getActiveByDomain(Long projectId, Long envId, String domain) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        return baseGetActiveByDomain(projectId, devopsEnvironmentE.getClusterE().getId(), domain);
+        return baseQueryActiveByDomain(projectId, devopsEnvironmentE.getClusterE().getId(), domain);
     }
 
     @Override
@@ -420,7 +420,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public CertificationDTO create(CertificationDTO certificationDTO) {
+    public CertificationDTO baseCreate(CertificationDTO certificationDTO) {
         devopsCertificationMapper.insert(certificationDTO);
         return certificationDTO;
     }
@@ -431,7 +431,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public PageInfo<CertificationVO> page(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<CertificationVO> basePage(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params) {
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
         }.getType());
 
@@ -480,7 +480,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public List<CertificationVO> baseGetActiveByDomain(Long projectId, Long clusterId, String domain) {
+    public List<CertificationVO> baseQueryActiveByDomain(Long projectId, Long clusterId, String domain) {
         return ConvertHelper.convertList(devopsCertificationMapper.getActiveByDomain(projectId, clusterId, domain),
                 CertificationVO.class);
     }
@@ -562,7 +562,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public CertificationFileDO baseGetCertFile(Long certId) {
+    public CertificationFileDO baseQueryCertFile(Long certId) {
         CertificationDTO certificationDTO = devopsCertificationMapper.selectByPrimaryKey(certId);
         return devopsCertificationFileMapper.selectByPrimaryKey(certificationDTO.getCertificationFileId());
     }
@@ -595,7 +595,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public List<CertificationVO> listByProject(Long projectId, Long organizationId) {
+    public List<CertificationVO> baseListByProject(Long projectId, Long organizationId) {
         return devopsCertificationMapper.listByProjectId(projectId, organizationId).stream().map(this::dtoToVo).collect(Collectors.toList());
     }
 

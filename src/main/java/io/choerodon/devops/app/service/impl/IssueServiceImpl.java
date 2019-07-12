@@ -84,7 +84,7 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     public List<DevopsBranchVO> getBranchsByIssueId(Long issueId) {
-        List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchRepository.baseGetDevopsBranchesByIssueId(issueId);
+        List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchRepository.baseQueryDevopsBranchesByIssueId(issueId);
         List<DevopsBranchVO> devopsBranchVOS = new ArrayList<>();
         devopsBranchDTOS.forEach(devopsBranchDO -> {
             Integer gitLabProjectId = devopsGitRepository.getGitLabId(devopsBranchDO.getAppId());
@@ -148,7 +148,7 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     public List<CustomMergeRequestDTO> getMergeRequestsByIssueId(Long issueId) {
-        List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchRepository.baseGetDevopsBranchesByIssueId(issueId);
+        List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchRepository.baseQueryDevopsBranchesByIssueId(issueId);
         List<CustomMergeRequestDTO> mergeRequests = new ArrayList<>();
         devopsBranchDTOS.forEach(devopsBranchDO -> {
             Integer gitLabProjectId = devopsGitRepository.getGitLabId(devopsBranchDO.getAppId());
