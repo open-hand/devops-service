@@ -91,7 +91,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsAppResourceRepository appResourceRepository;
+    private DevopsApplicationResourceRepository appResourceRepository;
 
 
     @Override
@@ -219,7 +219,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             resourceE.setAppId(devopsServiceReqDTO.getAppId());
             resourceE.setResourceType(ObjectType.SERVICE.getType());
             resourceE.setResourceId(devopsServiceE.getId());
-            appResourceRepository.insert(resourceE);
+            appResourceRepository.baseCreate(resourceE);
         }
         return true;
     }
@@ -488,7 +488,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
             //删除网络的关联关系
-            appResourceRepository.deleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
+            appResourceRepository.baseDeleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
             return;
         } else {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
@@ -496,7 +496,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsServiceRepository.delete(id);
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
                 //删除网络的关联关系
-                appResourceRepository.deleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
+                appResourceRepository.baseDeleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
                 return;
             }
         }
@@ -543,7 +543,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceRepository.delete(id);
 
         //删除网络的关联关系
-        appResourceRepository.deleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
+        appResourceRepository.baseDeleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
     }
 
     /**

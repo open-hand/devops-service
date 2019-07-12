@@ -12,7 +12,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.api.vo.DevopsIngressDTO;
 import io.choerodon.devops.api.vo.DevopsIngressPathDTO;
-import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
@@ -21,7 +20,6 @@ import io.choerodon.devops.infra.dto.DevopsIngressDO;
 import io.choerodon.devops.infra.dto.DevopsIngressPathDO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.DevopsAppResourceMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.custom.IntOrString;
@@ -79,9 +77,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsAppResourceRepository appResourceRepository;
-    @Autowired
     private DevopsAppResourceMapper devopsAppResourceMapper;
+    @Autowired
+    private DevopsApplicationResourceRepository appResourceRepository;
 
     @Override
     @Transactional(rollbackFor=Exception.class)
@@ -326,7 +324,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, INGRESS);
         if (devopsEnvFileResourceE == null) {
             devopsIngressRepository.deleteIngress(ingressId);
-            appResourceRepository.deleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
+            appResourceRepository.baseDeleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
             devopsIngressRepository.deleteIngressPath(ingressId);
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     "ing-" + ingressDO.getName() + ".yaml")) {
@@ -342,7 +340,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsIngressRepository.deleteIngress(ingressId);
-                appResourceRepository.deleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
+                appResourceRepository.baseDeleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
                 devopsIngressRepository.deleteIngressPath(ingressId);
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
                 return;
@@ -389,7 +387,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         devopsEnvCommandRepository.baseListByObjectAll(ObjectType.INGRESS.getType(), ingressId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteCommandById(devopsEnvCommandE));
         devopsIngressRepository.deleteIngress(ingressId);
-        appResourceRepository.deleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
+        appResourceRepository.baseDeleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
     }
 
 
@@ -473,7 +471,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 resourceE.setAppId(appId);
                 resourceE.setResourceType(ObjectType.INSTANCE.getType());
                 resourceE.setResourceId(ingressId);
-                appResourceRepository.insert(resourceE);
+                appResourceRepository.baseCreate(resourceE);
             }
             devopsEnvCommandE.setObjectId(ingressId);
             devopsIngressDO.setId(ingressId);

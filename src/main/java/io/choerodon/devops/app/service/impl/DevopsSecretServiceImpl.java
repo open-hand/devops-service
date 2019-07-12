@@ -71,7 +71,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsAppResourceRepository appResourceRepository;
+    private DevopsApplicationResourceRepository appResourceRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -162,7 +162,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 resourceE.setAppId(appId);
                 resourceE.setResourceType(ObjectType.SERVICE.getType());
                 resourceE.setResourceId(secretId);
-                appResourceRepository.insert(resourceE);
+                appResourceRepository.baseCreate(resourceE);
             }
             devopsEnvCommandE.setObjectId(secretId);
             devopsSecretE.setId(secretId);
@@ -212,7 +212,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), secretId, SECRET);
         if (devopsEnvFileResourceE == null) {
             devopsSecretRepository.deleteSecret(secretId);
-            appResourceRepository.deleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
+            appResourceRepository.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     "sct-" + devopsSecretE.getName() + ".yaml")) {
                 gitlabRepository.deleteFile(
@@ -226,7 +226,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsSecretRepository.deleteSecret(secretId);
-                appResourceRepository.deleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
+                appResourceRepository.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
                 return true;
             }
@@ -265,7 +265,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         devopsEnvCommandRepository.baseListByObjectAll(HelmObjectKind.SECRET.toValue(), devopsSecretE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteCommandById(t));
         devopsSecretRepository.deleteSecret(secretId);
-        appResourceRepository.deleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
+        appResourceRepository.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
     }
 
     @Override

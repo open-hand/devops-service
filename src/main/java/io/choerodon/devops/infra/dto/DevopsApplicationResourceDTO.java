@@ -7,7 +7,7 @@ import javax.persistence.Table;
  * @date 2019/7/3
  */
 @Table(name = "devops_app_resource")
-public class DevopsAppResourceDO {
+public class DevopsApplicationResourceDTO {
 
     private Long appId;
     private String resourceType;

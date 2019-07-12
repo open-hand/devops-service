@@ -66,7 +66,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsAppResourceRepository appResourceRepository;
+    private DevopsApplicationResourceRepository appResourceRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -176,7 +176,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         devopsEnvCommandRepository.baseListByObjectAll(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteCommandById(devopsEnvCommandE));
         devopsConfigMapRepository.delete(configMapId);
-        appResourceRepository.deleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
+        appResourceRepository.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
     }
 
     @Override
@@ -210,7 +210,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), configMapId, CONFIGMAP);
         if (devopsEnvFileResourceE == null) {
             devopsConfigMapRepository.delete(configMapId);
-            appResourceRepository.deleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
+            appResourceRepository.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     CONFIG_MAP_PREFIX + devopsConfigMapE.getName() + ".yaml")) {
                 gitlabRepository.deleteFile(
@@ -224,7 +224,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsConfigMapRepository.delete(configMapId);
-                appResourceRepository.deleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
+                appResourceRepository.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
                 return;
             }
@@ -295,7 +295,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                 resourceE.setAppId(appId);
                 resourceE.setResourceType(ObjectType.CONFIGMAP.getType());
                 resourceE.setResourceId(configMapId);
-                appResourceRepository.insert(resourceE);
+                appResourceRepository.baseCreate(resourceE);
             }
             devopsEnvCommandE.setObjectId(configMapId);
             devopsConfigMapE.setId(configMapId);
