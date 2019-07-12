@@ -22,7 +22,7 @@ public class PipelineUserRelRepositoryImpl implements PipelineUserRelRepository 
     private PipelineUserRelMapper userRelMapper;
 
     @Override
-    public void create(PipelineUserRelE pipelineUserRelE) {
+    public void baseCreate(PipelineUserRelE pipelineUserRelE) {
         PipelineUserRelDO pipelineUserRelDO = ConvertHelper.convert(pipelineUserRelE, PipelineUserRelDO.class);
         if (userRelMapper.insert(pipelineUserRelDO) != 1) {
             throw new CommonException("error.insert.pipeline.user");
@@ -30,13 +30,13 @@ public class PipelineUserRelRepositoryImpl implements PipelineUserRelRepository 
     }
 
     @Override
-    public List<PipelineUserRelE> listByOptions(Long pipelineId, Long stageId, Long taskId) {
+    public List<PipelineUserRelE> baseListByOptions(Long pipelineId, Long stageId, Long taskId) {
         PipelineUserRelDO pipelineUserRelDO = new PipelineUserRelDO(pipelineId, stageId, taskId);
         return ConvertHelper.convertList(userRelMapper.select(pipelineUserRelDO), PipelineUserRelE.class);
     }
 
     @Override
-    public void delete(PipelineUserRelE pipelineUserRelE) {
+    public void baseDelete(PipelineUserRelE pipelineUserRelE) {
         PipelineUserRelDO pipelineUserRelDO = ConvertHelper.convert(pipelineUserRelE, PipelineUserRelDO.class);
         userRelMapper.delete(pipelineUserRelDO);
     }

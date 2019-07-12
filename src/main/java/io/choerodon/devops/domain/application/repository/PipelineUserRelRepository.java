@@ -10,9 +10,9 @@ import java.util.List;
  * Description:
  */
 public interface PipelineUserRelRepository {
-    void create(PipelineUserRelE pipelineUserRelE);
+    void baseCreate(PipelineUserRelE pipelineUserRelE);
 
-    List<PipelineUserRelE> listByOptions(Long pipelineId, Long stageId, Long taskId);
+    List<PipelineUserRelE> baseListByOptions(Long pipelineId, Long stageId, Long taskId);
 
-    void delete(PipelineUserRelE pipelineUserRelE);
+    void baseDelete(PipelineUserRelE pipelineUserRelE);
 }
