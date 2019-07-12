@@ -127,7 +127,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                             }
                         });
                         // devops
-                        appUserPermissionRepository.deleteByUserIdWithAppIds(
+                        appUserPermissionRepository.baseDeleteByUserIdAndAppIds(
                                 applicationRepository.listByProjectId(gitlabGroupMemberDTO.getResourceId()).stream()
                                         .filter(applicationE -> applicationE.getGitlabProjectE() != null)
                                         .map(ApplicationE::getId).collect(Collectors.toList()),

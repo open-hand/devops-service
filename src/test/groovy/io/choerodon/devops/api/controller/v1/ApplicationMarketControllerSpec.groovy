@@ -61,7 +61,7 @@ class ApplicationMarketControllerSpec extends Specification {
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
-    private ApplicationMarketMapper applicationMarketMapper
+    private ApplicationShareMapper applicationMarketMapper
     @Autowired
     private ApplicationVersionMapper applicationVersionMapper
     @Autowired

@@ -6,15 +6,15 @@ package io.choerodon.devops.infra.dto;
  * Time: 20:28
  * Description:
  */
-public class ApplicationLatestVersionDO {
+public class ApplicationLatestVersionDTO {
     private String version;
     private Long appId;
     private Long versionId;
 
-    public ApplicationLatestVersionDO() {
+    public ApplicationLatestVersionDTO() {
     }
 
-    public ApplicationLatestVersionDO(String version, Long appId) {
+    public ApplicationLatestVersionDTO(String version, Long appId) {
         this.version = version;
         this.appId = appId;
     }

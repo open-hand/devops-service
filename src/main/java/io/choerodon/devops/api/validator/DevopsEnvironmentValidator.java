@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.validator;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;

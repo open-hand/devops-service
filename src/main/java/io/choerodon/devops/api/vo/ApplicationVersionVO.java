@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * Created by younger on 2018/4/14.
  */
-public class ApplicationVersionDTO {
+public class ApplicationVersionVO {
 
     private String image;
     private String token;

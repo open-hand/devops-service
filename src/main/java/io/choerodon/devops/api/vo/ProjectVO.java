@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -13,8 +14,8 @@ import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 @Scope("prototype")
 public class ProjectVO {
     private Long id;
-    private OrganizationVO organization;
     private String name;
+    private Long organizationId;
     private String code;
     private DevopsProjectVO devopsProjectE;
 
@@ -33,12 +34,12 @@ public class ProjectVO {
         this.id = id;
     }
 
-    public OrganizationVO getOrganization() {
-        return organization;
+    public Long getOrganizationId() {
+        return organizationId;
     }
 
-    public void setOrganization(OrganizationVO organization) {
-        this.organization = organization;
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
     }
 
     public String getName() {
@@ -65,7 +66,4 @@ public class ProjectVO {
         this.devopsProjectE = devopsProjectE;
     }
 
-    public void initOrganization(Long id) {
-        this.organization = new OrganizationVO(id);
-    }
 }

@@ -8,7 +8,7 @@ import java.util.Date;
  * Time: 21:37
  * Description:
  */
-public class ApplicationInstancesDO {
+public class ApplicationInstanceOverViewDTO {
     private Long appId;
     private String publishLevel;
     private String appCode;

@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.ApplicationVersionReadmeDO;
+import io.choerodon.devops.infra.dto.ApplicationVersionReadmeDTO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**
@@ -9,5 +9,5 @@ import io.choerodon.mybatis.common.Mapper;
  * Time: 11:17
  * Description:
  */
-public interface ApplicationVersionReadmeMapper extends Mapper<ApplicationVersionReadmeDO> {
+public interface ApplicationVersionReadmeMapper extends Mapper<ApplicationVersionReadmeDTO> {
 }

@@ -13,7 +13,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Description:
  */
 @Table(name = "devops_app_share_resource")
-public class AppShareResourceDO extends BaseDTO {
+public class ApplicationShareResourceDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

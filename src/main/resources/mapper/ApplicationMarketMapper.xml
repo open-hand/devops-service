@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
-<mapper namespace="io.choerodon.devops.infra.mapper.ApplicationMarketMapper">
+<mapper namespace="io.choerodon.devops.infra.mapper.ApplicationShareMapper">
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
@@ -117,7 +117,7 @@
         </if>
     </sql>
 
-    <select id="listMarketApplicationInProject" resultType="io.choerodon.devops.infra.dto.DevopsAppShareDO">
+    <select id="listMarketApplicationInProject" resultType="io.choerodon.devops.infra.dto.ApplicationShareDTO">
         SELECT
         dam.id,
         dam.app_id,
@@ -137,7 +137,7 @@
         <include refid="sqlparam"/>
     </select>
 
-    <select id="listMarketApplication" resultType="io.choerodon.devops.infra.dto.DevopsAppShareDO">
+    <select id="listMarketApplication" resultType="io.choerodon.devops.infra.dto.ApplicationShareDTO">
         select dam.id,
         dam.app_id,
         da.name,
@@ -158,7 +158,7 @@
         <include refid="nameOrCateParamSql"/>
     </select>
 
-    <select id="queryByShareIds" resultType="io.choerodon.devops.infra.dto.DevopsAppShareDO">
+    <select id="queryByShareIds" resultType="io.choerodon.devops.infra.dto.ApplicationShareDTO">
         select dam.id,
         dam.app_id,
         da.name,
@@ -178,7 +178,7 @@
         <include refid="nameOrCateParamSql"/>
     </select>
 
-    <select id="getMarketApplication" resultType="io.choerodon.devops.infra.dto.DevopsAppShareDO">
+    <select id="getMarketApplication" resultType="io.choerodon.devops.infra.dto.ApplicationShareDTO">
         SELECT
         dam.id,
         dam.app_id,
@@ -270,7 +270,7 @@
         AND da.project_id = #{projectId}
     </select>
 
-    <update id="changeApplicationVersions" parameterType="io.choerodon.devops.infra.dto.DevopsAppShareDO">
+    <update id="changeApplicationVersions" parameterType="io.choerodon.devops.infra.dto.ApplicationShareDTO">
         UPDATE devops_app_version dav
         SET dav.is_publish = #{isPublish}
         WHERE
@@ -280,7 +280,7 @@
         </if>
     </update>
 
-    <select id="listAppVersions" resultType="io.choerodon.devops.infra.dto.DevopsAppMarketVersionDO">
+    <select id="listAppVersions" resultType="io.choerodon.devops.infra.dto.ApplicationShareVersionDTO">
         SELECT
         dav.id,
         dav.version,
@@ -343,7 +343,7 @@
         AND dav.is_publish = TRUE
     </select>
 
-    <select id="listMarketAppsBySite" resultType="io.choerodon.devops.infra.dto.DevopsAppShareDO">
+    <select id="listMarketAppsBySite" resultType="io.choerodon.devops.infra.dto.ApplicationShareDTO">
         SELECT
         dam.*, da.`name`,da.code
         FROM

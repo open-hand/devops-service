@@ -21,7 +21,6 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.api.vo.iam.entity.PipelineAppDeployE;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;

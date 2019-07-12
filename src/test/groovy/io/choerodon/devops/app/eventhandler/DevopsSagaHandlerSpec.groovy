@@ -11,8 +11,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload
 import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload
-import io.choerodon.devops.domain.application.repository.ApplicationRepository
-import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository
+
 
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository
 
@@ -178,7 +177,7 @@ class DevopsSagaHandlerSpec extends Specification {
 
         and: 'mock方法调用'
         ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE(1L)
-        PowerMockito.when(applicationTemplateRepository.queryByCode(any(), any())).thenReturn(applicationTemplateE)
+        PowerMockito.when(applicationTemplateRepository.baseQueryByCode(any(), any())).thenReturn(applicationTemplateE)
 
         when: '方法调用'
         def str = devopsSagaHandler.setAppTemplateErr(data)
@@ -199,7 +198,7 @@ class DevopsSagaHandlerSpec extends Specification {
         and: 'mock方法调用'
         ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE(1L)
         applicationTemplateE.setFailed(true)
-        PowerMockito.when(applicationTemplateRepository.queryByCode(any(), any())).thenReturn(applicationTemplateE)
+        PowerMockito.when(applicationTemplateRepository.baseQueryByCode(any(), any())).thenReturn(applicationTemplateE)
 
         when: '方法调用'
         def str = devopsSagaHandler.createTemplate(data)

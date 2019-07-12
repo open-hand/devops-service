@@ -35,7 +35,7 @@ import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.ApplicationTemplateMapper
-import io.choerodon.devops.infra.persistence.impl.ApplicationTemplateRepositoryImpl
+
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

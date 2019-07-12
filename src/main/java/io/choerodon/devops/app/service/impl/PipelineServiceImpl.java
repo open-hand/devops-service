@@ -25,7 +25,6 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserVO;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.DemoEnvSetupSagaHandler;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.repository.*;
@@ -507,13 +506,13 @@ public class PipelineServiceImpl implements PipelineService {
             }
         }
         for (PipelineAppDeployE appDeployE : allAppDeploys) {
-            if (appDeployE.getCreationDate().getTime() > versionRepository.getLatestVersion(appDeployE.getApplicationId()).getCreationDate().getTime()) {
+            if (appDeployE.getCreationDate().getTime() > versionRepository.baseQueryNewestVersion(appDeployE.getApplicationId()).getCreationDate().getTime()) {
                 checkDeployDTO.setVersions(false);
                 break;
             } else {
                 if ((appDeployE.getTriggerVersion() != null) && !appDeployE.getTriggerVersion().isEmpty()) {
                     List<String> list = Arrays.asList(appDeployE.getTriggerVersion().split(","));
-                    List<ApplicationVersionE> versionES = versionRepository.listByAppId(appDeployE.getApplicationId(), null)
+                    List<ApplicationVersionE> versionES = versionRepository.baseListByAppId(appDeployE.getApplicationId(), null)
                             .stream()
                             .filter(versionE -> versionE.getCreationDate().getTime() > appDeployE.getCreationDate().getTime())
                             .collect(Collectors.toList());
@@ -903,7 +902,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private ApplicationVersionE getDeployVersion(Long pipelineRecordId, Long stageRecordId, PipelineTaskRecordE taskRecordE) {
-        List<ApplicationVersionE> versionES = versionRepository.listByAppId(taskRecordE.getApplicationId(), null);
+        List<ApplicationVersionE> versionES = versionRepository.baseListByAppId(taskRecordE.getApplicationId(), null);
         Integer index = -1;
         for (int i = 0; i < versionES.size(); i++) {
             ApplicationVersionE versionE = versionES.get(i);

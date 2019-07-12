@@ -88,7 +88,7 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
     @Autowired
     private DevopsBranchMapper devopsBranchMapper
     @Autowired
-    private ApplicationMarketMapper applicationMarketMapper
+    private ApplicationShareMapper applicationMarketMapper
 
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)

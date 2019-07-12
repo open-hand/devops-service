@@ -22,6 +22,7 @@ import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDO;
 import io.choerodon.devops.infra.dto.iam.ProjectDO;
@@ -29,6 +30,7 @@ import io.choerodon.devops.infra.dto.iam.UserDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -43,14 +45,12 @@ public class IamServiceClientOperator {
     private IamServiceClient iamServiceClient;
 
 
-    public ProjectVO queryIamProject(Long projectId) {
+    public ProjectDO queryIamProject(Long projectId) {
         ResponseEntity<ProjectDO> projectDO = iamServiceClient.queryIamProject(projectId);
         if (!projectDO.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.project.get");
         }
-        ProjectVO projectVO = new ProjectVO();
-        BeanUtils.copyProperties(projectDO.getBody(), projectVO);
-        return projectVO;
+        return projectDO.getBody();
     }
 
     public Organization queryOrganization() {
@@ -62,10 +62,10 @@ public class IamServiceClientOperator {
         }
     }
 
-    public Organization queryOrganizationById(Long organizationId) {
+    public OrganizationDO queryOrganizationById(Long organizationId) {
         ResponseEntity<OrganizationDO> organization = iamServiceClient.queryOrganizationById(organizationId);
         if (organization.getStatusCode().is2xxSuccessful()) {
-            return ConvertHelper.convert(organization.getBody(), Organization.class);
+            return organization.getBody();
         } else {
             throw new CommonException("error.organization.get");
         }
@@ -81,18 +81,13 @@ public class IamServiceClientOperator {
         }
     }
 
-    public List<ProjectE> listIamProjectByOrgId(Long organizationId, String name, String[] params) {
+    public List<ProjectDO> listIamProjectByOrgId(Long organizationId, String name, String[] params) {
         List<ProjectE> returnList = new ArrayList<>();
         int page = 0;
         int size = 0;
         ResponseEntity<PageInfo<ProjectDO>> pageResponseEntity =
                 iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, null);
-        PageInfo<ProjectDO> projectDOPage = pageResponseEntity.getBody();
-        List<ProjectE> projectEList = ConvertHelper.convertList(projectDOPage.getList(), ProjectE.class);
-        if (!projectEList.isEmpty()) {
-            returnList.addAll(projectEList);
-        }
-        return returnList;
+        return pageResponseEntity.getBody().getList();
     }
 
     public PageInfo<ProjectE> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params) {

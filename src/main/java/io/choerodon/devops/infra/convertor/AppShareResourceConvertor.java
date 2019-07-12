@@ -7,7 +7,7 @@ import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.iam.entity.AppShareResourceE;
 import io.choerodon.devops.infra.dataobject.AppShareResourceDO;
 import io.choerodon.devops.domain.application.entity.AppShareResourceE;
-import io.choerodon.devops.infra.dto.AppShareResourceDO;
+import io.choerodon.devops.infra.dto.ApplicationShareResourceDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -15,10 +15,10 @@ import io.choerodon.devops.infra.dto.AppShareResourceDO;
  * Description:
  */
 @Component
-public class AppShareResourceConvertor implements ConvertorI<AppShareResourceE, AppShareResourceDO, Object> {
+public class AppShareResourceConvertor implements ConvertorI<AppShareResourceE, ApplicationShareResourceDTO, Object> {
     @Override
-    public AppShareResourceDO entityToDo(AppShareResourceE applicationMarketE) {
-        AppShareResourceDO devopsAppMarketDO = new AppShareResourceDO();
+    public ApplicationShareResourceDTO entityToDo(AppShareResourceE applicationMarketE) {
+        ApplicationShareResourceDTO devopsAppMarketDO = new ApplicationShareResourceDTO();
         BeanUtils.copyProperties(applicationMarketE, devopsAppMarketDO);
         return devopsAppMarketDO;
     }

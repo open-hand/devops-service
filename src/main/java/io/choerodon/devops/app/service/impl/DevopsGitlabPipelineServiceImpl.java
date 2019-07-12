@@ -193,7 +193,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         devopsGitlabPipelineDOS.forEach(devopsGitlabPipelineDO -> {
             refs.add(devopsGitlabPipelineDO.getRef() + "-" + devopsGitlabPipelineDO.getSha());
             createDates.add(devopsGitlabPipelineDO.getPipelineCreationDate());
-            ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByCommitSha(appId, devopsGitlabPipelineDO.getRef(), devopsGitlabPipelineDO.getSha());
+            ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQueryByCommitSha(appId, devopsGitlabPipelineDO.getRef(), devopsGitlabPipelineDO.getSha());
             if (applicationVersionE != null) {
                 versions.add(applicationVersionE.getVersion());
             } else {
@@ -330,7 +330,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 devopsGitlabPipelineDTO.setStatus(devopsGitlabPipelineDO.getStatus());
             }
             devopsGitlabPipelineDTO.setRef(devopsGitlabPipelineDO.getRef());
-            String version = applicationVersionRepository.queryByPipelineId(devopsGitlabPipelineDO.getPipelineId(), devopsGitlabPipelineDO.getRef(), appId);
+            String version = applicationVersionRepository.baseQueryByPipelineId(devopsGitlabPipelineDO.getPipelineId(), devopsGitlabPipelineDO.getRef(), appId);
             if (version != null) {
                 devopsGitlabPipelineDTO.setVersion(version);
             }

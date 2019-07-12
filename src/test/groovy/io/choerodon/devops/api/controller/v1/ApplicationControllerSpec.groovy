@@ -74,9 +74,9 @@ class ApplicationControllerSpec extends Specification {
     @Autowired
     private DevopsProjectMapper devopsProjectMapper
     @Autowired
-    private AppUserPermissionMapper appUserPermissionMapper
+    private ApplicationUserPermissionMapper appUserPermissionMapper
     @Autowired
-    private ApplicationMarketMapper applicationMarketMapper
+    private ApplicationShareMapper applicationMarketMapper
     @Autowired
     private DevopsProjectRepository devopsProjectRepository
     @Autowired

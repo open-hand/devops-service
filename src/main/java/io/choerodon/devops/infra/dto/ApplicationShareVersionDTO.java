@@ -8,7 +8,7 @@ import java.util.Date;
  * Time: 15:22
  * Description:
  */
-public class DevopsAppMarketVersionDO {
+public class ApplicationShareVersionDTO {
     private Long id;
     private String version;
     private Boolean isDeployed;

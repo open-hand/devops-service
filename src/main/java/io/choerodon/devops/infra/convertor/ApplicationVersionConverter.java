@@ -7,31 +7,31 @@ import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.factory.ApplicationVersionEFactory;
-import io.choerodon.devops.infra.dto.ApplicationVersionDO;
+import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 
 @Component
-public class ApplicationVersionConverter implements ConvertorI<ApplicationVersionE, ApplicationVersionDO, ApplicationVersionRepDTO> {
+public class ApplicationVersionConverter implements ConvertorI<ApplicationVersionE, ApplicationVersionDTO, ApplicationVersionRepDTO> {
 
     @Override
-    public ApplicationVersionE doToEntity(ApplicationVersionDO applicationVersionDO) {
+    public ApplicationVersionE doToEntity(ApplicationVersionDTO applicationVersionDTO) {
         ApplicationVersionE applicationVersionE = ApplicationVersionEFactory.create();
-        BeanUtils.copyProperties(applicationVersionDO, applicationVersionE);
-        applicationVersionE.initApplicationE(applicationVersionDO.getAppId(), applicationVersionDO.getAppCode(),
-                applicationVersionDO.getAppName(), applicationVersionDO.getAppStatus());
-        applicationVersionE.initApplicationVersionValueE(applicationVersionDO.getValueId());
-        applicationVersionE.initApplicationVersionReadmeVById(applicationVersionDO.getReadmeValueId());
+        BeanUtils.copyProperties(applicationVersionDTO, applicationVersionE);
+        applicationVersionE.initApplicationE(applicationVersionDTO.getAppId(), applicationVersionDTO.getAppCode(),
+                applicationVersionDTO.getAppName(), applicationVersionDTO.getAppStatus());
+        applicationVersionE.initApplicationVersionValueE(applicationVersionDTO.getValueId());
+        applicationVersionE.initApplicationVersionReadmeVById(applicationVersionDTO.getReadmeValueId());
         return applicationVersionE;
     }
 
     @Override
-    public ApplicationVersionDO entityToDo(ApplicationVersionE applicationVersionE) {
-        ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO();
-        BeanUtils.copyProperties(applicationVersionE, applicationVersionDO);
-        applicationVersionDO.setAppId(applicationVersionE.getApplicationE().getId());
+    public ApplicationVersionDTO entityToDo(ApplicationVersionE applicationVersionE) {
+        ApplicationVersionDTO applicationVersionDTO = new ApplicationVersionDTO();
+        BeanUtils.copyProperties(applicationVersionE, applicationVersionDTO);
+        applicationVersionDTO.setAppId(applicationVersionE.getApplicationE().getId());
         if (applicationVersionE.getApplicationVersionValueE() != null) {
-            applicationVersionDO.setValueId(applicationVersionE.getApplicationVersionValueE().getId());
+            applicationVersionDTO.setValueId(applicationVersionE.getApplicationVersionValueE().getId());
         }
-        return applicationVersionDO;
+        return applicationVersionDTO;
     }
 
     @Override

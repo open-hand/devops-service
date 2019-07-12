@@ -81,7 +81,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper
     @Autowired
-    private ApplicationMarketMapper applicationMarketMapper
+    private ApplicationShareMapper applicationMarketMapper
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired

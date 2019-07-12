@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "devops_app_version_value")
-public class ApplicationVersionValueDO {
+public class ApplicationVersionValueDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

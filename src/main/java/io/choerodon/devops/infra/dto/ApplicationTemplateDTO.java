@@ -11,7 +11,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Created by younger on 2018/3/27.
  */
 @Table(name = "devops_app_template")
-public class ApplicationTemplateDO extends BaseDTO {
+public class ApplicationTemplateDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

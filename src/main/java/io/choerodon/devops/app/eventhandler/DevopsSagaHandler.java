@@ -237,10 +237,10 @@ public class DevopsSagaHandler {
             seq = 1)
     public String setAppTemplateErr(String data) {
         DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
-        ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.queryByCode(
+        ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.baseQueryByCode(
                 devOpsAppPayload.getOrganizationId(), devOpsAppPayload.getPath());
         applicationTemplateE.setFailed(true);
-        applicationTemplateRepository.update(applicationTemplateE);
+        applicationTemplateRepository.baseUpdate(applicationTemplateE);
         return data;
     }
 
@@ -261,11 +261,11 @@ public class DevopsSagaHandler {
                 applicationTemplateService.setAppTemplateErrStatus(data, gitlabProjectEventDTO.getOrganizationId());
                 throw e;
             }
-            ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.queryByCode(
+            ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.baseQueryByCode(
                     gitlabProjectEventDTO.getOrganizationId(), gitlabProjectEventDTO.getPath());
             if (applicationTemplateE.getFailed() != null && applicationTemplateE.getFailed()) {
                 applicationTemplateE.setFailed(false);
-                applicationTemplateRepository.update(applicationTemplateE);
+                applicationTemplateRepository.baseUpdate(applicationTemplateE);
             }
         }
         return data;

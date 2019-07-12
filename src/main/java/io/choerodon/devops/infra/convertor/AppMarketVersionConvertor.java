@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.AppMarketVersionDTO;
-import io.choerodon.devops.infra.dto.DevopsAppMarketVersionDO;
+import io.choerodon.devops.infra.dto.ApplicationShareVersionDTO;
 
 /**
  * Creator: Runge
@@ -14,10 +14,10 @@ import io.choerodon.devops.infra.dto.DevopsAppMarketVersionDO;
  * Description:
  */
 @Component
-public class AppMarketVersionConvertor implements ConvertorI<Object, DevopsAppMarketVersionDO, AppMarketVersionDTO> {
+public class AppMarketVersionConvertor implements ConvertorI<Object, ApplicationShareVersionDTO, AppMarketVersionDTO> {
 
     @Override
-    public AppMarketVersionDTO doToDto(DevopsAppMarketVersionDO versionDO) {
+    public AppMarketVersionDTO doToDto(ApplicationShareVersionDTO versionDO) {
         AppMarketVersionDTO versionDTO = new AppMarketVersionDTO();
         BeanUtils.copyProperties(versionDO, versionDTO);
         return versionDTO;

@@ -61,7 +61,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
-    private AppShareService applicationMarketService;
+    private ApplicationShareService applicationMarketService;
     @Autowired
     private ApplicationVersionService applicationVersionService;
     @Autowired
@@ -203,7 +203,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         // 如果不跳过权限检查
         List<Long> userIds = applicationReqDTO.getUserIds();
         if (!applicationReqDTO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
-            userIds.forEach(e -> appUserPermissionRepository.create(e, appId));
+            userIds.forEach(e -> appUserPermissionRepository.baseCreate(e, appId));
         }
 
         String input = gson.toJson(devOpsAppPayload);

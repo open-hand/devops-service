@@ -25,7 +25,7 @@ import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.dto.DevopsIngressDO;
-import io.choerodon.devops.infra.mapper.ApplicationMarketMapper;
+import io.choerodon.devops.infra.mapper.ApplicationShareMapper;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.process.SocketMsgDispatcher;
 import io.choerodon.websocket.tool.KeyParseTool;
@@ -110,7 +110,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Lazy
     private SocketMsgDispatcher socketMsgDispatcher;
     @Autowired
-    private ApplicationMarketMapper applicationMarketMapper;
+    private ApplicationShareMapper applicationShareMapper;
     @Autowired
     private AppShareRepository applicationMarketRepository;
     @Autowired
@@ -268,7 +268,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             if (devopsEnvCommandE != null) {
                 devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandRepository.update(devopsEnvCommandE);
-                ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByAppAndVersion(applicationInstanceE.getApplicationE().getId(), releasePayload.getChartVersion());
+                ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQueryByAppIdAndVersion(applicationInstanceE.getApplicationE().getId(), releasePayload.getChartVersion());
                 applicationInstanceE.initApplicationVersionEById(applicationVersionE.getId());
                 applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
                 applicationInstanceRepository.update(applicationInstanceE);
@@ -1172,7 +1172,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         List<ApplicationE> applications = new ArrayList<>();
         if (!applicationList.isEmpty()) {
             applicationList.forEach(applicationE -> {
-                if (applicationMarketMapper.selectCountByAppId(applicationE.getId()) != 0) {
+                if (applicationShareMapper.countByAppId(applicationE.getId()) != 0) {
                     applications.add(applicationE);
                 }
             });
@@ -1180,7 +1180,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (!applicationES.isEmpty()) {
             applicationES.forEach(applicationE -> {
                 DevopsAppShareE applicationMarketE =
-                        applicationMarketRepository.queryByAppId(applicationE.getId());
+                        applicationMarketRepository.baseQueryByAppId(applicationE.getId());
                 if (applicationMarketE != null
                         || !applicationMarketE.getPublishLevel().equals(PUBLIC)) {
                     applications.add(applicationE);

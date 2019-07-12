@@ -10,14 +10,14 @@ import javax.persistence.Table;
  */
 
 @Table(name = "devops_app_user_rel")
-public class AppUserPermissionDO {
+public class ApplicationUserPermissionDTO {
     private Long iamUserId;
     private Long appId;
 
-    public AppUserPermissionDO() {
+    public ApplicationUserPermissionDTO() {
     }
 
-    public AppUserPermissionDO(Long iamUserId,Long appId) {
+    public ApplicationUserPermissionDTO(Long iamUserId, Long appId) {
         this.iamUserId = iamUserId;
         this.appId = appId;
     }

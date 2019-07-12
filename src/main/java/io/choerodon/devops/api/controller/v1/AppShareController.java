@@ -35,7 +35,7 @@ import io.choerodon.devops.api.vo.AppMarketVersionDTO;
 import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
 import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
 import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
-import io.choerodon.devops.app.service.AppShareService;
+import io.choerodon.devops.app.service.ApplicationShareService;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -46,10 +46,10 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/apps_market")
 public class AppShareController {
-    private AppShareService appShareService;
+    private ApplicationShareService applicationShareService;
 
-    public AppShareController(AppShareService appShareService) {
-        this.appShareService = appShareService;
+    public AppShareController(ApplicationShareService applicationShareService) {
+        this.applicationShareService = applicationShareService;
     }
 
     /**
@@ -68,7 +68,7 @@ public class AppShareController {
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody ApplicationReleasingDTO applicationReleaseDTO) {
         return Optional.ofNullable(
-                appShareService.release(projectId, applicationReleaseDTO))
+                applicationShareService.release(projectId, applicationReleaseDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.release"));
     }
@@ -93,7 +93,7 @@ public class AppShareController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                appShareService.listMarketAppsByProjectId(projectId, pageRequest, searchParam))
+                applicationShareService.listMarketAppsByProjectId(projectId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.applications.get"));
     }
@@ -118,7 +118,7 @@ public class AppShareController {
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(appShareService.listMarketApps(projectId, pageRequest, searchParam))
+        return Optional.ofNullable(applicationShareService.listMarketApps(projectId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.applications.query"));
     }
@@ -139,7 +139,7 @@ public class AppShareController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
             @PathVariable(value = "app_market_id") Long appMarketId) {
-        return Optional.ofNullable(appShareService.getMarketAppInProject(projectId, appMarketId))
+        return Optional.ofNullable(applicationShareService.getMarketAppInProject(projectId, appMarketId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.get"));
     }
@@ -160,7 +160,7 @@ public class AppShareController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
             @PathVariable(value = "app_market_id") Long appMarketId) {
-        return Optional.ofNullable(appShareService.getMarketApp(appMarketId, null))
+        return Optional.ofNullable(applicationShareService.getMarketApp(appMarketId, null))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.get"));
     }
@@ -184,7 +184,7 @@ public class AppShareController {
             @PathVariable(value = "app_market_id") Long appMarketId,
             @ApiParam(value = "是否发布", required = false)
             @RequestParam(value = "is_publish", required = false) Boolean isPublish) {
-        return Optional.ofNullable(appShareService.getAppVersions(projectId, appMarketId, isPublish))
+        return Optional.ofNullable(applicationShareService.getAppVersions(projectId, appMarketId, isPublish))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
     }
@@ -214,7 +214,7 @@ public class AppShareController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                appShareService.getAppVersions(projectId, appMarketId, isPublish, pageRequest, searchParam))
+                applicationShareService.getAppVersions(projectId, appMarketId, isPublish, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.versions.query"));
     }
@@ -239,7 +239,7 @@ public class AppShareController {
             @ApiParam(value = "版本ID", required = true)
             @PathVariable(value = "version_id") Long versionId) {
         return Optional.ofNullable(
-                appShareService.getMarketAppVersionReadme(appMarketId, versionId))
+                applicationShareService.getMarketAppVersionReadme(appMarketId, versionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.readme.get"));
     }
@@ -260,7 +260,7 @@ public class AppShareController {
             @PathVariable("app_market_id") Long appMarketId,
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody(required = true) ApplicationReleasingDTO applicationRelease) {
-        appShareService.update(projectId, appMarketId, applicationRelease);
+        applicationShareService.update(projectId, appMarketId, applicationRelease);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -280,7 +280,7 @@ public class AppShareController {
             @PathVariable("app_market_id") Long appMarketId,
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody List<AppMarketVersionDTO> versionList) {
-        appShareService.update(projectId, appMarketId, versionList);
+        applicationShareService.update(projectId, appMarketId, versionList);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -300,7 +300,7 @@ public class AppShareController {
             @ApiParam(value = "文件", required = true)
             @RequestParam(value = "file") MultipartFile file) {
         return Optional.ofNullable(
-                appShareService.getMarketAppListInFile(projectId, file))
+                applicationShareService.getMarketAppListInFile(projectId, file))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.tgz.get"));
     }
@@ -324,7 +324,7 @@ public class AppShareController {
             @ApiParam(value = "是否公开")
             @RequestParam(value = "public", required = false) Boolean isPublic) {
         return Optional.ofNullable(
-                appShareService.importApps(projectId, fileName, isPublic))
+                applicationShareService.importApps(projectId, fileName, isPublic))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.import"));
     }
@@ -344,7 +344,7 @@ public class AppShareController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "文件名", required = true)
             @RequestParam(value = "file_name") String fileName) {
-        appShareService.deleteZip(projectId, fileName);
+        applicationShareService.deleteZip(projectId, fileName);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -366,7 +366,7 @@ public class AppShareController {
             @ApiParam(value = "导出包名字")
             @RequestParam(value = "fileName", required = false) String fileName,
             HttpServletResponse res) {
-        appShareService.export(appMarkets, fileName);
+        applicationShareService.export(appMarkets, fileName);
         FileUtil.downloadFile(res, fileName + ".zip");
         try {
             Files.delete(new File(fileName + ".zip").toPath());
@@ -388,7 +388,7 @@ public class AppShareController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                appShareService.pageListRemoteApps(projectId, pageRequest, searchParam))
+                applicationShareService.pageListRemoteApps(projectId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.remote.applications.get"));
     }
@@ -409,7 +409,7 @@ public class AppShareController {
             @ApiParam(value = "查询参数")
             @RequestParam(value = "version",required = false) String version) {
         return Optional.ofNullable(
-                appShareService.listVersionByAppId(appId, accessToken, pageRequest, version))
+                applicationShareService.listVersionByAppId(appId, accessToken, pageRequest, version))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
     }
@@ -428,7 +428,7 @@ public class AppShareController {
             @ApiParam(value = "access_token", required = true)
             @RequestParam(name = "access_token") String accessToken) {
         return Optional.ofNullable(
-                appShareService.getConfigInfoByVerionId(appId, versionId, accessToken))
+                applicationShareService.getConfigInfoByVerionId(appId, versionId, accessToken))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.remote.version.config.get"));
     }

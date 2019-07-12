@@ -9,7 +9,6 @@ import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
 import io.choerodon.devops.api.vo.GitlabUserDTO;
 import io.choerodon.devops.api.vo.GitlabUserRequestDTO;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;

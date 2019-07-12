@@ -18,7 +18,7 @@ import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
 /**
  * Created by ernst on 2018/5/12.
  */
-public interface AppShareService {
+public interface ApplicationShareService {
 
     /**
      * 项目下发布应用

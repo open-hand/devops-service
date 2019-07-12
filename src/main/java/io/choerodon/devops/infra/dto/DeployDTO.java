@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.dto;
 
 import java.util.Date;
 
-public class DeployDO {
+public class DeployDTO {
 
     private String appInstanceCode;
     private String appCode;

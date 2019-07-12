@@ -12,13 +12,13 @@ import javax.persistence.Table;
  * Description:
  */
 @Table(name = "devops_app_version_readme")
-public class ApplicationVersionReadmeDO {
+public class ApplicationVersionReadmeDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String readme;
 
-    public ApplicationVersionReadmeDO() {
+    public ApplicationVersionReadmeDTO() {
     }
 
 
@@ -27,7 +27,7 @@ public class ApplicationVersionReadmeDO {
      *
      * @param readme README.md 内容
      */
-    public ApplicationVersionReadmeDO(String readme) {
+    public ApplicationVersionReadmeDTO(String readme) {
 
         this.readme = readme;
     }

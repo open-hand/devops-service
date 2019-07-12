@@ -17,8 +17,17 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import io.choerodon.base.domain.Sort;
+import io.choerodon.devops.infra.dto.iam.ProjectDO;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.mapper.ApplicationShareMapper;
+import io.choerodon.devops.infra.util.*;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -42,7 +51,7 @@ import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
 import io.choerodon.devops.api.vo.ApplicationVersionRemoteDTO;
 import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
-import io.choerodon.devops.app.service.AppShareService;
+import io.choerodon.devops.app.service.ApplicationShareService;
 import io.choerodon.devops.api.vo.iam.entity.AppShareResourceE;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
@@ -50,22 +59,13 @@ import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionValueE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsAppShareE;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
-import io.choerodon.devops.domain.application.repository.AppShareRecouceRepository;
-import io.choerodon.devops.domain.application.repository.AppShareRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import io.choerodon.devops.domain.application.repository.MarketConnectInfoRepositpry;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
-import io.choerodon.devops.infra.util.ChartUtil;
-import io.choerodon.devops.infra.util.FileUtil;
-import io.choerodon.devops.infra.util.GenerateUUID;
-import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.dto.DevopsAppMarketVersionDO;
-import io.choerodon.devops.infra.dto.DevopsAppShareDO;
+import io.choerodon.devops.infra.dto.ApplicationShareVersionDTO;
+import io.choerodon.devops.infra.dto.ApplicationShareDTO;
 import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDO;
 import io.choerodon.devops.infra.feign.AppShareClient;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
@@ -75,7 +75,7 @@ import io.choerodon.websocket.tool.UUIDTool;
  * Created by ernst on 2018/5/12.
  */
 @Service
-public class AppShareServiceImpl implements AppShareService {
+public class ApplicationShareServiceImpl implements ApplicationShareService {
     private static final String CHARTS = "charts";
     private static final String CHART = "chart";
     private static final String ORGANIZATION = "organization";
@@ -85,9 +85,10 @@ public class AppShareServiceImpl implements AppShareService {
     private static final String JSON_FILE = ".json";
 
     private static final String FILE_SEPARATOR = "/";
-    private static final Logger logger = LoggerFactory.getLogger(AppShareServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationShareServiceImpl.class);
 
     private static Gson gson = new Gson();
+    private JSON json = new JSON();
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -116,6 +117,10 @@ public class AppShareServiceImpl implements AppShareService {
     private MarketConnectInfoRepositpry marketConnectInfoRepositpry;
     @Autowired
     private ChartUtil chartUtil;
+    @Autowired
+    private ApplicationShareMapper applicationShareMapper;
+    @Autowired
+    private IamServiceClientOperator iamServiceClientOperator;
 
     @Override
     public Long release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
@@ -130,12 +135,12 @@ public class AppShareServiceImpl implements AppShareService {
         DevopsAppShareE devopsAppShareE = ApplicationMarketFactory.create();
         //校验应用和版本
         if (projectId != null) {
-            appShareRepository.checkCanPub(applicationReleasingDTO.getAppId());
+            appShareRepository.baseCheckPub(applicationReleasingDTO.getAppId());
             List<AppMarketVersionDTO> appVersions = applicationReleasingDTO.getAppVersions();
             ids = appVersions.stream().map(AppMarketVersionDTO::getId)
                     .collect(Collectors.toCollection(ArrayList::new));
-            applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
-            applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
+            applicationVersionRepository.baseCheckByAppIdAndVersionIds(applicationReleasingDTO.getAppId(), ids);
+            applicationVersionRepository.baseUpdatePublishLevelByIds(ids, 1L);
             devopsAppShareE.initApplicationEById(applicationReleasingDTO.getAppId());
             devopsAppShareE.setPublishLevel(applicationReleasingDTO.getPublishLevel());
             devopsAppShareE.setActive(true);
@@ -148,25 +153,25 @@ public class AppShareServiceImpl implements AppShareService {
             devopsAppShareE.setId(applicationReleasingDTO.getId());
             devopsAppShareE.setSite(true);
         }
-        devopsAppShareE = appShareRepository.createOrUpdate(devopsAppShareE);
+        devopsAppShareE = appShareRepository.baseCreateOrUpdate(devopsAppShareE);
         Long shareId = devopsAppShareE.getId();
         if (PROJECTS.equals(applicationReleasingDTO.getPublishLevel())) {
-            applicationReleasingDTO.getProjectDTOS().forEach(t -> appShareRecouceRepository.create(new AppShareResourceE(shareId, t.getId())));
+            applicationReleasingDTO.getProjectDTOS().forEach(t -> appShareRecouceRepository.baseCreate(new AppShareResourceE(shareId, t.getId())));
         }
-        return appShareRepository.getMarketIdByAppId(applicationReleasingDTO.getAppId());
+        return appShareRepository.baseQueryByAppId(applicationReleasingDTO.getAppId());
     }
 
     @Override
     public PageInfo<ApplicationReleasingDTO> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest,
                                                                        String searchParam) {
         PageInfo<ApplicationReleasingDTO> applicationMarketEPage = ConvertPageHelper.convertPageInfo(
-                appShareRepository.listMarketAppsByProjectId(
+                appShareRepository.basePageByProjectId(
                         projectId, pageRequest, searchParam),
                 ApplicationReleasingDTO.class);
         List<ApplicationReleasingDTO> appShareEList = applicationMarketEPage.getList();
         appShareEList.forEach(t -> {
             if (PROJECTS.equals(t.getPublishLevel())) {
-                List<ProjectReqVO> projectDTOS = appShareRecouceRepository.queryByShareId(t.getId()).stream()
+                List<ProjectReqVO> projectDTOS = appShareRecouceRepository.baseListByShareId(t.getId()).stream()
                         .map(appShareResourceE -> {
                             ProjectVO projectE = iamRepository.queryIamProject(appShareResourceE.getProjectId());
                             ProjectReqVO projectDTO = new ProjectReqVO();
@@ -183,7 +188,7 @@ public class AppShareServiceImpl implements AppShareService {
 
     @Override
     public PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(Boolean isSite, Boolean isFree, PageRequest pageRequest, String searchParam) {
-        PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.listMarketAppsBySite(isSite, isFree, pageRequest, searchParam);
+        PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.basePageBySite(isSite, isFree, pageRequest, searchParam);
         return ConvertPageHelper.convertPageInfo(
                 applicationMarketEPage,
                 ApplicationReleasingDTO.class);
@@ -206,7 +211,7 @@ public class AppShareServiceImpl implements AppShareService {
         } catch (UnsupportedEncodingException e) {
             throw new CommonException("error.decode.params");
         }
-        PageInfo<DevopsAppShareE> devopsAppShareEPageInfo = appShareRepository.queryByShareIds(pageRequest, params, shareIds);
+        PageInfo<DevopsAppShareE> devopsAppShareEPageInfo = appShareRepository.basePageByShareIds(pageRequest, params, shareIds);
         return ConvertPageHelper.convertPageInfo(devopsAppShareEPageInfo, ApplicationReleasingDTO.class);
     }
 
@@ -222,10 +227,10 @@ public class AppShareServiceImpl implements AppShareService {
     @Override
     public AppVersionAndValueDTO getValuesAndChart(Long versionId) {
         AppVersionAndValueDTO appVersionAndValueDTO = new AppVersionAndValueDTO();
-        String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.queryValue(versionId));
+        String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.baseQueryValue(versionId));
         ApplicationVersionRemoteDTO versionRemoteDTO = new ApplicationVersionRemoteDTO();
         versionRemoteDTO.setValues(versionValue);
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(versionId);
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQuery(versionId);
         if (applicationVersionE != null) {
             versionRemoteDTO.setRepository(applicationVersionE.getRepository());
             versionRemoteDTO.setVersion(applicationVersionE.getVersion());
@@ -246,10 +251,10 @@ public class AppShareServiceImpl implements AppShareService {
 
     @Override
     public void updateByShareId(Long shareId, Boolean isFree) {
-        DevopsAppShareDO devopsAppShareDO = new DevopsAppShareDO();
-        devopsAppShareDO.setId(shareId);
-        devopsAppShareDO.setFree(isFree);
-        appShareRepository.update(devopsAppShareDO);
+        ApplicationShareDTO applicationShareDTO = new ApplicationShareDTO();
+        applicationShareDTO.setId(shareId);
+        applicationShareDTO.setFree(isFree);
+        appShareRepository.baseUpdate(applicationShareDTO);
     }
 
     @Override
@@ -262,7 +267,7 @@ public class AppShareServiceImpl implements AppShareService {
             if (projectEList != null) {
                 projectIds = projectEList.stream().map(ProjectVO::getId).collect(Collectors.toList());
             }
-            PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.listMarketApps(
+            PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.basePageByProjectIds(
                     projectIds, pageRequest, searchParam);
 
             return ConvertPageHelper.convertPageInfo(
@@ -275,9 +280,9 @@ public class AppShareServiceImpl implements AppShareService {
     @Override
     public ApplicationReleasingDTO getMarketAppInProject(Long projectId, Long appMarketId) {
         DevopsAppShareE applicationMarketE =
-                appShareRepository.getMarket(projectId, appMarketId);
-        List<DevopsAppMarketVersionDO> versionDOList = appShareRepository
-                .getVersions(projectId, appMarketId, true);
+                appShareRepository.baseQuery(projectId, appMarketId);
+        List<ApplicationShareVersionDTO> versionDOList = appShareRepository
+                .pageByOptions(projectId, appMarketId, true);
         List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
                 .convertList(versionDOList, AppMarketVersionDTO.class);
         ApplicationReleasingDTO applicationReleasingDTO =
@@ -290,10 +295,10 @@ public class AppShareServiceImpl implements AppShareService {
     @Override
     public ApplicationReleasingDTO getMarketApp(Long appMarketId, Long versionId) {
         DevopsAppShareE applicationMarketE =
-                appShareRepository.getMarket(null, appMarketId);
+                appShareRepository.baseQuery(null, appMarketId);
         ApplicationE applicationE = applicationMarketE.getApplicationE();
-        List<DevopsAppMarketVersionDO> versionDOList = appShareRepository
-                .getVersions(null, appMarketId, true);
+        List<ApplicationShareVersionDTO> versionDOList = appShareRepository
+                .pageByOptions(null, appMarketId, true);
         List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
                 .convertList(versionDOList, AppMarketVersionDTO.class)
                 .stream()
@@ -323,9 +328,9 @@ public class AppShareServiceImpl implements AppShareService {
                     ? optional.get().getId()
                     : versionId;
         }
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(latestVersionId);
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQuery(latestVersionId);
         String readme = applicationVersionRepository
-                .getReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
+                .baseQueryReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
 
         applicationReleasingDTO.setReadme(readme);
 
@@ -362,23 +367,23 @@ public class AppShareServiceImpl implements AppShareService {
 
     @Override
     public String getMarketAppVersionReadme(Long appMarketId, Long versionId) {
-        appShareRepository.checkMarketVersion(appMarketId, versionId);
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(versionId);
-        return applicationVersionRepository.getReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
+        appShareRepository.baseCheckByMarketIdAndVersion(appMarketId, versionId);
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQuery(versionId);
+        return applicationVersionRepository.baseQueryReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
     }
 
     @Override
     public void unpublish(Long projectId, Long appMarketId) {
-        appShareRepository.checkProject(projectId, appMarketId);
-        appShareRepository.checkDeployed(projectId, appMarketId, null, null);
-        appShareRepository.unpublishApplication(appMarketId);
+        appShareRepository.baseCheckByProjectId(projectId, appMarketId);
+        appShareRepository.baseCheckByDeployed(projectId, appMarketId, null, null);
+        appShareRepository.baseUnsharedApplication(appMarketId);
     }
 
     @Override
     public void unpublish(Long projectId, Long appMarketId, Long versionId) {
-        appShareRepository.checkProject(projectId, appMarketId);
-        appShareRepository.checkDeployed(projectId, appMarketId, versionId, null);
-        appShareRepository.unpublishVersion(appMarketId, versionId);
+        appShareRepository.baseCheckByProjectId(projectId, appMarketId);
+        appShareRepository.baseCheckByDeployed(projectId, appMarketId, versionId, null);
+        appShareRepository.baseUnsharedApplicationVersion(appMarketId, versionId);
 
     }
 
@@ -398,7 +403,7 @@ public class AppShareServiceImpl implements AppShareService {
                 && !appMarketId.equals(applicationRelease.getId())) {
             throw new CommonException("error.id.notMatch");
         }
-        appShareRepository.checkProject(projectId, appMarketId);
+        appShareRepository.baseCheckByProjectId(projectId, appMarketId);
         ApplicationReleasingDTO applicationReleasingDTO = getMarketAppInProject(projectId, appMarketId);
         if (applicationRelease.getAppId() != null
                 && !applicationReleasingDTO.getAppId().equals(applicationRelease.getAppId())) {
@@ -412,28 +417,28 @@ public class AppShareServiceImpl implements AppShareService {
                 && !applicationRelease.getPublishLevel().equals(applicationReleasingDTO.getPublishLevel())) {
             throw new CommonException("error.publishLevel.cannot.change");
         }
-        DevopsAppShareDO devopsAppMarketDO = ConvertHelper.convert(applicationRelease, DevopsAppShareDO.class);
-        if (!ConvertHelper.convert(applicationReleasingDTO, DevopsAppShareDO.class).equals(devopsAppMarketDO)) {
-            appShareRepository.update(devopsAppMarketDO);
+        ApplicationShareDTO devopsAppMarketDO = ConvertHelper.convert(applicationRelease, ApplicationShareDTO.class);
+        if (!ConvertHelper.convert(applicationReleasingDTO, ApplicationShareDTO.class).equals(devopsAppMarketDO)) {
+            appShareRepository.baseUpdate(devopsAppMarketDO);
         }
     }
 
     @Override
     public void update(Long projectId, Long appMarketId, List<AppMarketVersionDTO> versionDTOList) {
-        appShareRepository.checkProject(projectId, appMarketId);
+        appShareRepository.baseCheckByProjectId(projectId, appMarketId);
 
         ApplicationReleasingDTO applicationReleasingDTO = getMarketAppInProject(projectId, appMarketId);
 
         List<Long> ids = versionDTOList.stream()
                 .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
 
-        applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
-        applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
+        applicationVersionRepository.baseCheckByAppIdAndVersionIds(applicationReleasingDTO.getAppId(), ids);
+        applicationVersionRepository.baseUpdatePublishLevelByIds(ids, 1L);
     }
 
     @Override
     public List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish) {
-        return ConvertHelper.convertList(appShareRepository.getVersions(projectId, appMarketId, isPublish),
+        return ConvertHelper.convertList(appShareRepository.pageByOptions(projectId, appMarketId, isPublish),
                 AppMarketVersionDTO.class);
     }
 
@@ -441,7 +446,7 @@ public class AppShareServiceImpl implements AppShareService {
     public PageInfo<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish,
                                                         PageRequest pageRequest, String searchParam) {
         return ConvertPageHelper.convertPageInfo(
-                appShareRepository.getVersions(projectId, appMarketId, isPublish, pageRequest, searchParam),
+                appShareRepository.pageByOptions(projectId, appMarketId, isPublish, pageRequest, searchParam),
                 AppMarketVersionDTO.class);
     }
 
@@ -714,7 +719,7 @@ public class AppShareServiceImpl implements AppShareService {
     private void getChart(List<String> images, AppMarketDownloadDTO appMarketDownloadDTO, String destpath, ApplicationE applicationE, ProjectVO projectE, OrganizationVO organization) {
         appMarketDownloadDTO.getAppVersionIds().forEach(appVersionId -> {
 
-            ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);
+            ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQuery(appVersionId);
             images.add(applicationVersionE.getImage());
             chartUtil.downloadChart(applicationVersionE, organization, projectE, applicationE, destpath);
         });
@@ -768,13 +773,13 @@ public class AppShareServiceImpl implements AppShareService {
                 applicationVersionValueE.setValue(FileUtil.replaceReturnString(new FileInputStream(valueYaml), null));
 
                 applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
-                        .create(applicationVersionValueE).getId());
+                        .baseCreate(applicationVersionValueE).getId());
             } catch (Exception e) {
                 throw new CommonException("error.version.insert");
             }
             applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(appCode));
             ApplicationVersionE version = applicationVersionRepository
-                    .queryByAppAndVersion(appId, appVersion.getVersion());
+                    .baseQueryByAppIdAndVersion(appId, appVersion.getVersion());
 
             if (isVersionPublish) {
                 applicationVersionE.setIsPublish(1L);
@@ -782,10 +787,10 @@ public class AppShareServiceImpl implements AppShareService {
                 applicationVersionE.setIsPublish(version == null ? null : version.getIsPublish());
             }
             if (version == null) {
-                applicationVersionRepository.create(applicationVersionE);
+                applicationVersionRepository.baseCreate(applicationVersionE);
             } else {
                 applicationVersionE.setId(version.getId());
-                applicationVersionRepository.updateVersion(applicationVersionE);
+                applicationVersionRepository.baseUpdate(applicationVersionE);
             }
             String classPath = String.format("Charts%s%s%s%s",
                     FILE_SEPARATOR,
@@ -827,7 +832,7 @@ public class AppShareServiceImpl implements AppShareService {
 
     private Boolean checkAppCanPub(Long appId) {
         try {
-            return appShareRepository.checkCanPub(appId);
+            return appShareRepository.baseCheckPub(appId);
         } catch (Exception e) {
             return false;
         }
@@ -845,7 +850,7 @@ public class AppShareServiceImpl implements AppShareService {
                 applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
                 applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
                 applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
-                appShareRepository.createOrUpdate(applicationMarketE);
+                appShareRepository.baseCreateOrUpdate(applicationMarketE);
             }
         }
     }
@@ -871,5 +876,189 @@ public class AppShareServiceImpl implements AppShareService {
         DevopsMarketConnectInfoDO connectInfoDO = new DevopsMarketConnectInfoDO();
         BeanUtils.copyProperties(tokenDTO, connectInfoDO);
         marketConnectInfoRepositpry.createOrUpdate(connectInfoDO);
+    }
+
+    public ApplicationShareDTO baseCreateOrUpdate(ApplicationShareDTO applicationShareDTO) {
+        if (applicationShareDTO.getId() == null) {
+            applicationShareMapper.insert(applicationShareDTO);
+        } else {
+            applicationShareDTO.setObjectVersionNumber(applicationShareMapper.selectByPrimaryKey(applicationShareDTO).getObjectVersionNumber());
+            applicationShareMapper.updateByPrimaryKeySelective(applicationShareDTO);
+        }
+        return applicationShareDTO;
+    }
+
+    public PageInfo<ApplicationShareDTO> basePageByProjectId(Long projectId, PageRequest pageRequest, String searchParam) {
+        PageInfo<ApplicationShareDTO> applicationShareDTOPageInfo;
+        if (!StringUtils.isEmpty(searchParam)) {
+            Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
+            applicationShareDTOPageInfo = PageHelper.startPage(
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationShareMapper.listMarketApplicationInProject(
+                    projectId,
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
+        } else {
+            applicationShareDTOPageInfo = PageHelper.startPage(
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationShareMapper.listMarketApplicationInProject(projectId, null, null));
+        }
+        return applicationShareDTOPageInfo;
+    }
+
+    public PageInfo<ApplicationShareDTO> basePageBySite(Boolean isSite, Boolean isFree, PageRequest pageRequest, String searchParam) {
+
+        Map<String, Object> mapParams = TypeUtil.castMapParams(searchParam);
+
+        PageInfo<ApplicationShareDTO> applicationShareDTOPageInfo = PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+                        applicationShareMapper.listMarketAppsBySite(isSite, isFree, (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM)));
+        return applicationShareDTOPageInfo;
+    }
+
+
+    public PageInfo<ApplicationShareDTO> basePageByProjectIds(List<Long> projectIds, PageRequest pageRequest, String searchParam) {
+        PageInfo<ApplicationShareDTO> applicationShareDTOPageInfo;
+        if (!StringUtils.isEmpty(searchParam)) {
+            Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
+            applicationShareDTOPageInfo = PageHelper.startPage(
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationShareMapper.listMarketApplication(
+                    projectIds,
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
+        } else {
+            applicationShareDTOPageInfo = PageHelper.startPage(
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationShareMapper.listMarketApplication(projectIds, null, null));
+        }
+        return applicationShareDTOPageInfo;
+    }
+
+    public ApplicationShareDTO baseQuery(Long projectId, Long shareId) {
+        List<Long> projectIds = getProjectIds(projectId);
+        return applicationShareMapper.queryByShareId(projectId, shareId, projectIds);
+    }
+
+    public Boolean baseCheckPub(Long appId) {
+
+        int selectCount = applicationShareMapper.countByAppId(appId);
+        if (selectCount > 0) {
+            throw new CommonException("error.app.market.check");
+        }
+        return true;
+    }
+
+    public Long baseQueryShareIdByAppId(Long appId) {
+        return applicationShareMapper.baseQueryShareIdByAppId(appId);
+    }
+
+    public void baseCheckByProjectId(Long projectId, Long shareId) {
+        if (applicationShareMapper.checkByProjectId(projectId, shareId) != 1) {
+            throw new CommonException("error.appMarket.project.unmatch");
+        }
+    }
+
+    public void baseCheckByDeployed(Long projectId, Long shareId, Long versionId, List<Long> projectIds) {
+        if (applicationShareMapper.checkByDeployed(projectId, shareId, versionId, projectIds) > 0) {
+            throw new CommonException("error.appMarket.instance.deployed");
+        }
+    }
+
+    public void baseUnsharedApplication(Long shareId) {
+        applicationShareMapper.changeApplicationVersions(shareId, null, null);
+        applicationShareMapper.deleteByPrimaryKey(shareId);
+    }
+
+    public void baseUnsharedApplicationVersion(Long shareId, Long versionId) {
+        applicationShareMapper.changeApplicationVersions(shareId, versionId, null);
+    }
+
+    public void updateVersion(Long appMarketId, Long versionId, Boolean isPublish) {
+        applicationShareMapper.changeApplicationVersions(appMarketId, versionId, isPublish);
+    }
+
+    public void baseUpdate(ApplicationShareDTO applicationShareDTO) {
+        applicationShareDTO.setObjectVersionNumber(
+                applicationShareMapper.selectByPrimaryKey(applicationShareDTO.getId()).getObjectVersionNumber());
+        if (applicationShareMapper.updateByPrimaryKeySelective(applicationShareDTO) != 1) {
+            throw new CommonException("error.update.share.application");
+        }
+    }
+
+    public List<ApplicationShareVersionDTO> ListByOptions(Long projectId, Long shareId, Boolean isPublish) {
+        List<Long> projectIds = getProjectIds(projectId);
+        return applicationShareMapper.listAppVersions(projectIds, shareId, isPublish, null, null);
+    }
+
+
+    public PageInfo<ApplicationShareVersionDTO> pageByOptions(Long projectId, Long shareId, Boolean isPublish,
+                                                              PageRequest pageRequest, String params) {
+        Sort sort = pageRequest.getSort();
+        String sortResult = "";
+        if (sort != null) {
+            sortResult = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                    .map(t -> {
+                        String property = t.getProperty();
+                        if (property.equals("version")) {
+                            property = "dav.version";
+                        } else if (property.equals("updatedDate")) {
+                            property = "dav.last_update_date";
+                        } else if (property.equals("creationDate")) {
+                            property = "dav.creation_date";
+                        }
+
+                        return property + " " + t.getDirection();
+                    })
+                    .collect(Collectors.joining(","));
+        }
+
+        Map<String, Object> searchParam = null;
+        String param = null;
+        if (!StringUtils.isEmpty(params)) {
+            Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
+            searchParam = TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM));
+            param = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM));
+        }
+        Map<String, Object> finalSearchParam = searchParam;
+        String finalParam = param;
+        List<Long> projectIds = getProjectIds(projectId);
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(
+                () -> applicationShareMapper.listAppVersions(
+                        projectIds, shareId, isPublish,
+                        finalSearchParam, finalParam));
+    }
+
+    public ApplicationShareDTO baseQueryByAppId(Long appId) {
+        ApplicationShareDTO applicationShareDTO = new ApplicationShareDTO();
+        applicationShareDTO.setAppId(appId);
+        return applicationShareMapper.selectOne(applicationShareDTO);
+    }
+
+    public void baseCheckByShareIdAndVersion(Long shareId, Long versionId) {
+        if (!applicationShareMapper.checkByShareIdAndVersion(shareId, versionId)) {
+            throw new CommonException("error.version.notMatch");
+        }
+    }
+
+    private List<Long> getProjectIds(Long projectId) {
+        List<Long> projectIds;
+        if (projectId != null) {
+            ProjectDO projectDO = iamServiceClientOperator.queryIamProject(projectId);
+            List<ProjectDO> projectEList = iamServiceClientOperator.listIamProjectByOrgId(projectDO.getOrganizationId(), null, null);
+            projectIds = projectEList.stream().map(ProjectDO::getId)
+                    .collect(Collectors.toCollection(ArrayList::new));
+        } else {
+            projectIds = null;
+        }
+        return projectIds;
+    }
+
+    public PageInfo<ApplicationShareDTO> basePageByShareIds(PageRequest pageRequest, String param, List<Long> shareIds) {
+        Map<String, Object> mapParams = TypeUtil.castMapParams(param);
+        PageInfo<ApplicationShareDTO> applicationShareDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
+                () -> applicationShareMapper.queryByShareIds((Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (String) mapParams.get(TypeUtil.PARAM), shareIds));
+        return applicationShareDTOPageInfo;
+    }
+
+
+    public void baseUpdatePublishLevel() {
+        applicationShareMapper.updatePublishLevel();
     }
 }

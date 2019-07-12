@@ -10,7 +10,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.AppShareService;
+import io.choerodon.devops.app.service.ApplicationShareService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -30,7 +30,7 @@ import springfox.documentation.annotations.ApiIgnore;
 @RequestMapping(value = "/v1/organizations/apps_share")
 public class OrgAppShareController {
     @Autowired
-    private AppShareService appShareService;
+    private ApplicationShareService applicationShareService;
 
     /**
      * 查询所有已发布的应用
@@ -54,7 +54,7 @@ public class OrgAppShareController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                appShareService.listMarketAppsBySite(isSite, isFree, pageRequest, searchParam))
+                applicationShareService.listMarketAppsBySite(isSite, isFree, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.share.applications.by.site"));
     }
@@ -71,7 +71,7 @@ public class OrgAppShareController {
             @ApiParam(value = "shareId")
             @RequestParam(value = "share_id") Long shareId) {
         return Optional.ofNullable(
-                appShareService.getAppDetailByShareId(shareId))
+                applicationShareService.getAppDetailByShareId(shareId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.detail.by.share.id"));
     }
@@ -89,7 +89,7 @@ public class OrgAppShareController {
             @RequestParam(value = "share_id") Long shareId,
             @ApiParam(value = "是否收费")
             @RequestParam(value = "is_free") Boolean isFree) {
-        appShareService.updateByShareId(shareId, isFree);
+        applicationShareService.updateByShareId(shareId, isFree);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -106,7 +106,7 @@ public class OrgAppShareController {
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody List<ApplicationReleasingDTO> releasingDTOList) {
         return Optional.ofNullable(
-                appShareService.batchRelease(releasingDTOList))
+                applicationShareService.batchRelease(releasingDTOList))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.batch.release"));
     }
@@ -129,7 +129,7 @@ public class OrgAppShareController {
             @ApiParam(value = "查询参数")
             @RequestParam(required = false) String params) {
         return Optional.ofNullable(
-                appShareService.getAppsDetail(pageRequest, params, shareIds))
+                applicationShareService.getAppsDetail(pageRequest, params, shareIds))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.app.detail.by.shareId"));
     }
@@ -152,7 +152,7 @@ public class OrgAppShareController {
             @ApiParam(value = "查询参数")
             @RequestParam(required = false) String version) {
         return Optional.ofNullable(
-                appShareService.getVersionsByAppId(appId, pageRequest, version))
+                applicationShareService.getVersionsByAppId(appId, pageRequest, version))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.versions.by.appId"));
     }
@@ -170,7 +170,7 @@ public class OrgAppShareController {
             @ApiParam(value = "应用Id")
             @RequestParam(value = "version_id") Long versionId) {
         return Optional.ofNullable(
-                appShareService.getValuesAndChart(versionId))
+                applicationShareService.getValuesAndChart(versionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.values.chart"));
     }
@@ -182,7 +182,7 @@ public class OrgAppShareController {
             @ApiParam(value = "token")
             @RequestBody AccessTokenDTO tokenDTO) {
         return Optional.ofNullable(
-                appShareService.checkToken(tokenDTO))
+                applicationShareService.checkToken(tokenDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.check.access.token"));
     }
@@ -193,7 +193,7 @@ public class OrgAppShareController {
     public ResponseEntity saveToken(
             @ApiParam(value = "token")
             @RequestBody AccessTokenDTO tokenDTO) {
-        appShareService.saveToken(tokenDTO);
+        applicationShareService.saveToken(tokenDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

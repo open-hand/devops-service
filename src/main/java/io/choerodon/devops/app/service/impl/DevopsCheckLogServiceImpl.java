@@ -649,7 +649,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         LOGGER.info("Sync instance deploy value of {}", applicationInstanceE.getCode());
                         try {
                             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
-                            String versionValue = applicationVersionRepository.queryValue(devopsEnvCommandE.getObjectVersionId());
+                            String versionValue = applicationVersionRepository.baseQueryValue(devopsEnvCommandE.getObjectVersionId());
                             String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
                             devopsEnvCommandValueRepository.updateValueById(devopsEnvCommandE.getDevopsEnvCommandValueE().getId(), applicationInstanceService.getReplaceResult(versionValue, deployValue).getYaml());
                             checkLog.setResult("success");
@@ -701,10 +701,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         private void syncAppShare() {
             LOGGER.info("update publish level to organization.");
-            appShareRepository.updatePublishLevel();
+            appShareRepository.baseUpdatePublishLevel();
             LOGGER.info("update publish level success.");
             LOGGER.info("update publish Time.");
-            applicationVersionRepository.updatePublishTime();
+            applicationVersionRepository.baseUpdatePublishTime();
             LOGGER.info("update publish time success.");
         }
 
@@ -782,8 +782,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private void syncAppVersion() {
-            List<ApplicationVersionDO> applicationVersionDOS = applicationVersionMapper.selectAll();
-            if (!applicationVersionDOS.isEmpty() && !applicationVersionDOS.get(0).getRepository().contains(helmUrl)) {
+            List<ApplicationVersionDTO> applicationVersionDTOS = applicationVersionMapper.selectAll();
+            if (!applicationVersionDTOS.isEmpty() && !applicationVersionDTOS.get(0).getRepository().contains(helmUrl)) {
                 if (helmUrl.endsWith("/")) {
                     helmUrl = helmUrl.substring(0, helmUrl.length() - 1);
                 }

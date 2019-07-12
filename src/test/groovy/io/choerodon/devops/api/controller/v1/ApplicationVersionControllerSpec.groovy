@@ -55,7 +55,7 @@ class ApplicationVersionControllerSpec extends Specification {
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
-    private AppUserPermissionMapper appUserPermissionMapper
+    private ApplicationUserPermissionMapper appUserPermissionMapper
     @Autowired
     private ApplicationVersionMapper applicationVersionMapper
     @Autowired

@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -30,16 +31,16 @@ public interface ApplicationMapper extends Mapper<ApplicationDTO> {
                                      @Param("appId") Long appId,
                                      @Param("status") String status);
 
-    List<ApplicationDTO> listByActiveAndPubAndVersion(@Param("projectId") Long projectId,
-                                                      @Param("active") Boolean active,
-                                                      @Param("searchParam") Map<String, Object> searchParam,
-                                                      @Param("param") String param);
+    List<ApplicationDTO> basePageByActiveAndPubAndHasVersion(@Param("projectId") Long projectId,
+                                                             @Param("active") Boolean active,
+                                                             @Param("searchParam") Map<String, Object> searchParam,
+                                                             @Param("param") String param);
 
     ApplicationDTO queryByToken(@Param("token") String token);
 
-    List<ApplicationDTO> listActive(@Param("projectId") Long projectId);
+    List<ApplicationDTO> listByActive(@Param("projectId") Long projectId);
 
-    List<ApplicationDTO> listAll(@Param("projectId") Long projectId);
+    List<ApplicationDTO> listDeployedApp(@Param("projectId") Long projectId);
 
     Integer checkAppCanDisable(@Param("applicationId") Long applicationId);
 
@@ -51,11 +52,11 @@ public interface ApplicationMapper extends Mapper<ApplicationDTO> {
 
     void updateAppToSuccess(@Param("appId") Long appId);
 
-    void updateSql(@Param("appId") Long appId,
-                   @Param("token") String token,
-                   @Param("gitlabProjectId") Integer gitlabProjectId,
-                   @Param("hookId") Long hookId,
-                   @Param("isSynchro") Boolean isSynchro);
+    void updateApplicationStatus(@Param("appId") Long appId,
+                                 @Param("token") String token,
+                                 @Param("gitlabProjectId") Integer gitlabProjectId,
+                                 @Param("hookId") Long hookId,
+                                 @Param("isSynchro") Boolean isSynchro);
 
-    void updateAppHarborConfig(@Param("projectId") Long projectId, @Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId, @Param("harborPrivate") boolean harborPrivate);
+    void updateHarborConfig(@Param("projectId") Long projectId, @Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId, @Param("harborPrivate") boolean harborPrivate);
 }

@@ -6,22 +6,22 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionValueE;
 import io.choerodon.devops.domain.application.factory.ApplicationVersionValueFactory;
-import io.choerodon.devops.infra.dto.ApplicationVersionValueDO;
+import io.choerodon.devops.infra.dto.ApplicationVersionValueDTO;
 
 @Component
-public class ApplicationVersionValueConvertor implements ConvertorI<ApplicationVersionValueE, ApplicationVersionValueDO, Object> {
+public class ApplicationVersionValueConvertor implements ConvertorI<ApplicationVersionValueE, ApplicationVersionValueDTO, Object> {
 
     @Override
-    public ApplicationVersionValueE doToEntity(ApplicationVersionValueDO applicationVersionValueDO) {
+    public ApplicationVersionValueE doToEntity(ApplicationVersionValueDTO applicationVersionValueDTO) {
         ApplicationVersionValueE applicationVersionValueE = ApplicationVersionValueFactory.create();
-        BeanUtils.copyProperties(applicationVersionValueDO, applicationVersionValueE);
+        BeanUtils.copyProperties(applicationVersionValueDTO, applicationVersionValueE);
         return applicationVersionValueE;
     }
 
     @Override
-    public ApplicationVersionValueDO entityToDo(ApplicationVersionValueE applicationVersionValueE) {
-        ApplicationVersionValueDO applicationVersionValueDO = new ApplicationVersionValueDO();
-        BeanUtils.copyProperties(applicationVersionValueE, applicationVersionValueDO);
-        return applicationVersionValueDO;
+    public ApplicationVersionValueDTO entityToDo(ApplicationVersionValueE applicationVersionValueE) {
+        ApplicationVersionValueDTO applicationVersionValueDTO = new ApplicationVersionValueDTO();
+        BeanUtils.copyProperties(applicationVersionValueE, applicationVersionValueDTO);
+        return applicationVersionValueDTO;
     }
 }

@@ -11,7 +11,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Created by ernst on 2018/5/12.
  */
 @Table(name = "devops_app_share")
-public class DevopsAppShareDO extends BaseDTO {
+public class ApplicationShareDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +33,7 @@ public class DevopsAppShareDO extends BaseDTO {
     @Transient
     private Long organizationId;
     @Transient
-    private List<ApplicationVersionDO> applicationVersionDOList;
+    private List<ApplicationVersionDTO> applicationVersionDTOList;
     @Transient
     private Boolean isDeployed;
     @Transient
@@ -137,12 +137,12 @@ public class DevopsAppShareDO extends BaseDTO {
         isActive = active;
     }
 
-    public List<ApplicationVersionDO> getApplicationVersionDOList() {
-        return applicationVersionDOList;
+    public List<ApplicationVersionDTO> getApplicationVersionDTOList() {
+        return applicationVersionDTOList;
     }
 
-    public void setApplicationVersionDOList(List<ApplicationVersionDO> applicationVersionDOList) {
-        this.applicationVersionDOList = applicationVersionDOList;
+    public void setApplicationVersionDTOList(List<ApplicationVersionDTO> applicationVersionDTOList) {
+        this.applicationVersionDTOList = applicationVersionDTOList;
     }
 
     public Boolean getDeployed() {
@@ -185,7 +185,7 @@ public class DevopsAppShareDO extends BaseDTO {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DevopsAppShareDO that = (DevopsAppShareDO) o;
+        ApplicationShareDTO that = (ApplicationShareDTO) o;
         return Objects.equals(id, that.id)
                 && Objects.equals(appId, that.appId)
                 && Objects.equals(contributor, that.contributor)

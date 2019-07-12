@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.ApplicationVersionDO;
+import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 
 /**
  * @author zmf
@@ -12,7 +12,7 @@ public class DemoDataDTO {
     private String appVersionSearchParam;
     private DemoTagDTO tagInfo;
     private DevopsBranchDTO branchInfo;
-    private ApplicationVersionDO appVersion;
+    private ApplicationVersionDTO appVersion;
 
     public ApplicationReqVO getApplicationInfo() {
         return applicationInfo;
@@ -62,11 +62,11 @@ public class DemoDataDTO {
         this.branchInfo = branchInfo;
     }
 
-    public ApplicationVersionDO getAppVersion() {
+    public ApplicationVersionDTO getAppVersion() {
         return appVersion;
     }
 
-    public void setAppVersion(ApplicationVersionDO appVersion) {
+    public void setAppVersion(ApplicationVersionDTO appVersion) {
         this.appVersion = appVersion;
     }
 }

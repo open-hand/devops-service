@@ -4,10 +4,9 @@ import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvApplicationE;
 import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
-import io.choerodon.devops.infra.dto.ApplicationInstancesDO;
-import io.choerodon.devops.infra.dto.DeployDO;
+import io.choerodon.devops.infra.dto.ApplicationInstanceOverViewDTO;
+import io.choerodon.devops.infra.dto.DeployDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -25,11 +24,6 @@ public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDTO
                                                          @Param("searchParam") Map<String, Object> searchParam,
                                                          @Param("param") String param);
 
-    /**
-     * 查询所有应用部署的appId和envId
-     * 用于应用环境关联数据修复
-     */
-    List<DevopsEnvApplicationE> listAllEnvApp();
 
     List<ApplicationInstanceDTO> listApplicationInstanceCode(@Param("projectId") Long projectId,
                                                              @Param("envId") Long envId,
@@ -40,19 +34,28 @@ public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDTO
                                                               @Param("envId") Long envId,
                                                               @Param("appId") Long appId);
 
+<<<<<<
+
+    <HEAD
     int checkOptions(@Param("envId") Long envId,
                      @Param("appId") Long appId,
                      @Param("appInstanceCode") String appInstanceCode);
+=======
+
+    int countByOptions(@Param("envId") Long envId,
+                       @Param("appId") Long appId,
+                       @Param("appInstanceCode") String appInstanceCode);
+>>>>>>>[IMP]重构后端代码
 
     String queryValueByEnvIdAndAppId(@Param("envId") Long envId, @Param("appId") Long appId);
 
-    List<ApplicationInstancesDO> listApplicationInstances(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("envIds") List<Long> envIds);
+    List<ApplicationInstanceOverViewDTO> listApplicationInstanceOverView(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("envIds") List<Long> envIds);
 
     String queryByInstanceId(@Param("instanceId") Long instanceId);
 
-    List<DeployDO> listDeployTime(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("appIds") Long[] appIds, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+    List<DeployDTO> listDeployTime(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("appIds") Long[] appIds, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
-    List<DeployDO> listDeployFrequency(@Param("projectId") Long projectId, @Param("envIds") Long[] envIds, @Param("appId") Long appId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+    List<DeployDTO> listDeployFrequency(@Param("projectId") Long projectId, @Param("envIds") Long[] envIds, @Param("appId") Long appId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
     String getInstanceResourceDetailJson(@Param("instanceId") Long instanceId, @Param("resourceName") String resourceName, @Param("resourceType") String resourceType);
 

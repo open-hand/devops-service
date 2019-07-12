@@ -15,7 +15,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  */
 
 @Table(name = "devops_app_version")
-public class ApplicationVersionDO extends BaseDTO {
+public class ApplicationVersionDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
