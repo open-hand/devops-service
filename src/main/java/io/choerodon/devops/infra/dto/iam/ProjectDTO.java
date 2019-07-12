@@ -13,6 +13,7 @@ public class ProjectDTO {
     private String name;
     private Long organizationId;
     private String code;
+    private Boolean permission;
 
     public ProjectDTO() {
 
@@ -52,5 +53,13 @@ public class ProjectDTO {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public Boolean getPermission() {
+        return permission;
+    }
+
+    public void setPermission(Boolean permission) {
+        this.permission = permission;
     }
 }

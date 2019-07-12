@@ -4,14 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.gitlab.MemberVO;
-import io.choerodon.devops.api.vo.gitlab.VariableDTO;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
-import io.choerodon.devops.domain.application.valueobject.DeployKey;
-import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
-import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
@@ -28,17 +22,17 @@ import org.springframework.stereotype.Component;
 public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
-    public ResponseEntity<UserDO> queryUserByUserId(Integer userId) {
+    public ResponseEntity<UserDTO> queryUserById(Integer userId) {
         throw new CommonException("error.user.get");
     }
 
     @Override
-    public ResponseEntity<UserDO> queryUserByUserName(String username) {
+    public ResponseEntity<UserDTO> queryUserByUserName(String username) {
         return new ResponseEntity("error.user.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<MemberDTO> getUserMemberByUserId(Integer groupId, Integer userId) {
+    public ResponseEntity<MemberDTO> queryGroupMember(Integer groupId, Integer userId) {
         throw new CommonException("error.group.member.get");
     }
 
@@ -48,22 +42,22 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<MemberDTO> insertMember(Integer groupId, RequestMemberDO requestMember) {
+    public ResponseEntity<MemberDTO> createGroupMember(Integer groupId, RequestMemberDO requestMember) {
         throw new CommonException("error.add.member");
     }
 
     @Override
-    public ResponseEntity<MemberDTO> updateMember(Integer groupId, RequestMemberDO requestMember) {
+    public ResponseEntity<MemberDTO> updateGroupMember(Integer groupId, RequestMemberDO requestMember) {
         throw new CommonException("error.update.member");
     }
 
     @Override
-    public ResponseEntity<UserDO> createGitLabUser(String password, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
+    public ResponseEntity<UserDTO> createUser(String password, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
         throw new CommonException("error.GitlabUser.creat");
     }
 
     @Override
-    public ResponseEntity<UserDO> updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
+    public ResponseEntity<UserDTO> updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
         throw new CommonException("error.GitlabUser.update");
     }
 
@@ -83,62 +77,62 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<DeployKey>> getDeploykeys(Integer projectId, Integer userId) {
+    public ResponseEntity<List<DeployKeyDTO>> listDeploykey(Integer projectId, Integer userId) {
         throw new CommonException("error.deploykey.get");
     }
 
     @Override
-    public ResponseEntity<Map<String, Object>> addVariable(Integer projectId, String key, String value, Boolean protecteds, Integer userId) {
+    public ResponseEntity<Map<String, Object>> addProjectVariable(Integer projectId, String key, String value, Boolean protecteds, Integer userId) {
         throw new CommonException("error.variable.get");
     }
 
     @Override
-    public ResponseEntity<List<Map<String, Object>>> batchAddVariable(Integer projectId, Integer userId, List<VariableDTO> variableDTOS) {
+    public ResponseEntity<List<Map<String, Object>>> batchAddProjectVariable(Integer projectId, Integer userId, List<io.choerodon.devops.api.vo.gitlab.VariableDTO> variableDTODTOS) {
         throw new CommonException("error.variable.batch.create");
     }
 
     @Override
-    public ResponseEntity deleteProject(Integer gitlabProjectId, Integer userId) {
+    public ResponseEntity deleteProjectById(Integer gitlabProjectId, Integer userId) {
         throw new CommonException("error.service.delete");
     }
 
     @Override
-    public ResponseEntity deleteProjectByProjectName(String groupName, String projectName, Integer userId) {
+    public ResponseEntity deleteProjectByName(String groupName, String projectName, Integer userId) {
         throw new CommonException("error.service.delete");
     }
 
     @Override
-    public ResponseEntity<GitlabProjectDTO> getProjectById(Integer projectId) {
+    public ResponseEntity<GitlabProjectDTO> queryProjectById(Integer projectId) {
         throw new CommonException("error.project.get");
     }
 
     @Override
-    public ResponseEntity<GitlabProjectDTO> getProjectByName(Integer userId, String groupName, String projectName) {
+    public ResponseEntity<GitlabProjectDTO> queryProjectByName(Integer userId, String groupName, String projectName) {
         throw new CommonException("error.project.get");
     }
 
     @Override
-    public ResponseEntity<List<Variable>> getVariable(Integer projectId, Integer userId) {
+    public ResponseEntity<List<VariableDTO>> listVariable(Integer projectId, Integer userId) {
         throw new CommonException("error.variable.get");
     }
 
     @Override
-    public ResponseEntity<List<PipelineDO>> listPipeline(Integer projectId, Integer userId) {
+    public ResponseEntity<List<PipelineDTO>> listPipeline(Integer projectId, Integer userId) {
         return new ResponseEntity("error.pipeline.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<List<PipelineDO>> listPipelines(Integer projectId, Integer page, Integer size, Integer userId) {
+    public ResponseEntity<List<PipelineDTO>> pagePipeline(Integer projectId, Integer page, Integer size, Integer userId) {
         return new ResponseEntity("error.pipelines.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<PipelineDO> getPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<PipelineDTO> queryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
         throw new CommonException("error.pipelines.select");
     }
 
     @Override
-    public ResponseEntity<List<JobDO>> listJobs(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<List<JobDTO>> listJobs(Integer projectId, Integer pipelineId, Integer userId) {
         return new ResponseEntity("error.job.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -163,22 +157,24 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<BranchDO>> listBranches(Integer projectId, Integer userId) {
+    public ResponseEntity<List<BranchDTO>> listBranch(Integer projectId, Integer userId) {
         throw new CommonException("error.select.branch");
     }
 
     @Override
-    public ResponseEntity<CommitDTO> getCommit(Integer projectId, String sha, Integer userId) {
+    public ResponseEntity<CommitDTO> queryCommit(Integer projectId, String sha, Integer userId) {
+
         return new ResponseEntity("error.commit.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<List<CommitDTO>> listCommits(Integer projectId, Integer page, Integer size, Integer userId) {
+    public ResponseEntity<List<CommitDTO>> listCommits(Integer projectId, Integer page, Integer size, Integer
+            userId) {
         throw new CommonException("error.commit.select");
     }
 
     @Override
-    public ResponseEntity<List<CommitStatuseDO>> getCommitStatus(Integer projectId, String sha, Integer userId) {
+    public ResponseEntity<List<CommitStatuseDTO>> getCommitStatus(Integer projectId, String sha, Integer userId) {
         return new ResponseEntity("error.commitStatus.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -187,7 +183,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<GroupDO> createGroup(GroupDO groupDO, Integer userId) {
+    public ResponseEntity<GroupDTO> createGroup(GroupDTO groupDO, Integer userId) {
         throw new CommonException("error.group.create");
     }
 
@@ -207,22 +203,25 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<GroupDO> queryGroupByName(String groupName, Integer userId) {
+    public ResponseEntity<GroupDTO> queryGroupByName(String groupName, Integer userId) {
         throw new CommonException("error.group.get");
     }
 
     @Override
-    public ResponseEntity<RepositoryFile> createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
+    public ResponseEntity<RepositoryFile> createFile(Integer projectId, String path, String content, String
+            commitMessage, Integer userId) {
         throw new CommonException("error.file.create");
     }
 
     @Override
-    public ResponseEntity<RepositoryFile> createFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branchName) {
+    public ResponseEntity<RepositoryFile> createFile(Integer projectId, String path, String content, String
+            commitMessage, Integer userId, String branchName) {
         throw new CommonException("error.file.create");
     }
 
     @Override
-    public ResponseEntity<RepositoryFile> updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
+    public ResponseEntity<RepositoryFile> updateFile(Integer projectId, String path, String content, String
+            commitMessage, Integer userId) {
         throw new CommonException("error.file.update");
     }
 
@@ -237,7 +236,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<CompareResultsE> getCompareResults(Integer projectId, String from, String to) {
+    public ResponseEntity<CompareResultDTO> getCompareResults(Integer projectId, String from, String to) {
         throw new CommonException("error.diffs.get");
     }
 
@@ -247,43 +246,47 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<Map<String, Object>> createProtectedBranches(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel, Integer userId) {
+    public ResponseEntity<Map<String, Object>> createProtectedBranches(Integer projectId, String name, String
+            mergeAccessLevel, String pushAccessLevel, Integer userId) {
         throw new CommonException("error.branch.create");
     }
 
     @Override
-    public ResponseEntity<PipelineDO> retry(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<PipelineDTO> retry(Integer projectId, Integer pipelineId, Integer userId) {
         return new ResponseEntity("error.pipeline.retry", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<PipelineDO> cancel(Integer projectId, Integer pipelineId, Integer userId) {
-        return new ResponseEntity("error.pipeline.cancel", HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<PipelineDTO> cancel(Integer projectId, Integer pipelineId, Integer userId) {
+        return new ResponseEntity("error.pipeline.cancelPipeline", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<MergeRequestDTO> createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, String title, String description, Integer userId) {
+    public ResponseEntity<MergeRequestDTO> createMergeRequest(Integer projectId, String sourceBranch, String
+            targetBranch, String title, String description, Integer userId) {
         throw new CommonException("error.mergeRequest.create");
     }
 
     @Override
-    public ResponseEntity<MergeRequestDTO> acceptMergeRequest(Integer projectId, Integer mergeRequestId, String mergeCommitMessage, Boolean shouldRemoveSourceBranch, Boolean mergeWhenPipelineSucceeds, Integer userId) {
+    public ResponseEntity<MergeRequestDTO> acceptMergeRequest(Integer projectId, Integer mergeRequestId, String
+            mergeCommitMessage, Boolean shouldRemoveSourceBranch, Boolean mergeWhenPipelineSucceeds, Integer userId) {
         throw new CommonException("error.mergeRequext.accept");
     }
 
     @Override
-    public ResponseEntity<List<TagDO>> getTags(Integer projectId, Integer userId) {
+    public ResponseEntity<List<TagDTO>> getTags(Integer projectId, Integer userId) {
         throw new CommonException("error.tags.get");
     }
 
     @Override
-    public ResponseEntity<TagDO> createTag(Integer projectId, String name, String ref,
-                                           String msg, String releaseNotes, Integer userId) {
+    public ResponseEntity<TagDTO> createTag(Integer projectId, String name, String ref,
+                                            String msg, String releaseNotes, Integer userId) {
         throw new CommonException("error.tags.create");
     }
 
     @Override
-    public ResponseEntity<TagDO> updateTagRelease(Integer projectId, String name, String releaseNotes, Integer userId) {
+    public ResponseEntity<TagDTO> updateTagRelease(Integer projectId, String name, String releaseNotes, Integer
+            userId) {
         throw new CommonException("error.tags.update");
     }
 
@@ -303,18 +306,18 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<BranchDO> getBranch(Integer projectId, String branchName) {
+    public ResponseEntity<BranchDTO> getBranch(Integer projectId, String branchName) {
         throw new CommonException("error.branch.get");
     }
 
     @Override
-    public ResponseEntity<BranchDO> createBranch(Integer projectId, String name, String source, Integer userId) {
+    public ResponseEntity<BranchDTO> createBranch(Integer projectId, String name, String source, Integer userId) {
         throw new CommonException("error.branch.create");
     }
 
     @Override
-    public ResponseEntity<List<TagDO>> getPageTags(Integer projectId, int page, int perPage, Integer userId) {
-        throw new CommonException("error.pageTags.get");
+    public ResponseEntity<List<TagDTO>> getPageTags(Integer projectId, int page, int perPage, Integer userId) {
+        throw new CommonException("error.pageTag.get");
     }
 
     @Override
@@ -328,22 +331,23 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<ProjectHook> createProjectHook(Integer projectId, Integer userId, ProjectHook projectHook) {
+    public ResponseEntity<ProjectHookDTO> createProjectHook(Integer projectId, Integer userId, ProjectHookDTO
+            projectHook) {
         throw new CommonException("error.projecthook.create");
     }
 
     @Override
-    public ResponseEntity<ProjectHook> updateProjectHook(Integer projectId, Integer hookId, Integer userId) {
+    public ResponseEntity<ProjectHookDTO> updateProjectHook(Integer projectId, Integer hookId, Integer userId) {
         throw new CommonException("error.projecthook.update");
     }
 
     @Override
-    public ResponseEntity<List<ProjectHook>> getProjectHook(Integer projectId, Integer userId) {
+    public ResponseEntity<List<ProjectHookDTO>> getProjectHook(Integer projectId, Integer userId) {
         throw new CommonException("error.projecthook.get");
     }
 
     @Override
-    public ResponseEntity updateGroup(Integer groupId, Integer userId, GroupDO group) {
+    public ResponseEntity updateGroup(Integer groupId, Integer userId, GroupDTO group) {
         throw new CommonException("error.group.update");
     }
 

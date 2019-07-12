@@ -4,7 +4,7 @@ import java.util.Date;
 
 import io.choerodon.devops.infra.enums.JobStatus;
 
-public class JobDO {
+public class JobDTO {
 
     private Integer id;
     private Date createdAt;

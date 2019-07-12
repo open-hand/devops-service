@@ -18,6 +18,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.gitlab.MemberVO;
+import io.choerodon.devops.api.vo.iam.UserDTO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.DeployService;
@@ -32,6 +33,7 @@ import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.HelmObjectKind;
 import io.choerodon.devops.infra.enums.InstanceStatus;
@@ -621,28 +623,28 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     false);
         }
         devopsEnvironmentE.initGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));
-
-        gitlabRepository.createDeployKey(
-                gitlabProjectDO.getId(),
-                gitlabProjectPayload.getPath() + "-" + devopsEnvironmentE.getClusterE().getId(),
-                devopsEnvironmentE.getEnvIdRsaPub(),
-                true,
-                gitlabProjectPayload.getUserId());
-
-        ProjectHook projectHook = ProjectHook.allHook();
-        projectHook.setEnableSslVerification(true);
-        projectHook.setProjectId(gitlabProjectDO.getId());
-        projectHook.setToken(devopsEnvironmentE.getToken());
+        if (gitlabRepository.getDeployKeys(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId()).isEmpty()) {
+            gitlabRepository.createDeployKey(
+                    gitlabProjectDO.getId(),
+                    gitlabProjectPayload.getPath(),
+                    devopsEnvironmentE.getEnvIdRsaPub(),
+                    true,
+                    gitlabProjectPayload.getUserId());
+        }
+        ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
+        projectHookDTO.setEnableSslVerification(true);
+        projectHookDTO.setProjectId(gitlabProjectDO.getId());
+        projectHookDTO.setToken(devopsEnvironmentE.getToken());
         String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
         uri += "devops/webhook/git_ops";
-        projectHook.setUrl(uri);
-        List<ProjectHook> projectHooks = gitlabRepository.getHooks(gitlabProjectDO.getId(),
+        projectHookDTO.setUrl(uri);
+        List<ProjectHookDTO> projectHookDTOS = gitlabRepository.getHooks(gitlabProjectDO.getId(),
                 gitlabProjectPayload.getUserId());
-        if (projectHooks == null || projectHooks.isEmpty()) {
+        if (projectHookDTOS == null || projectHookDTOS.isEmpty()) {
             devopsEnvironmentE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
-                    gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHook).getId()));
+                    gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHookDTO).getId()));
         } else {
-            devopsEnvironmentE.initHookId(TypeUtil.objToLong(projectHooks.get(0).getId()));
+            devopsEnvironmentE.initHookId(TypeUtil.objToLong(projectHookDTOS.get(0).getId()));
         }
         if (!gitlabRepository.getFile(gitlabProjectDO.getId(), MASTER, README)) {
             gitlabRepository.createFile(gitlabProjectDO.getId(),

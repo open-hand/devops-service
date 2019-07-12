@@ -1,25 +1,23 @@
 package io.choerodon.devops.infra.dto.gitlab;
 
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
 
-
-public class BranchDO {
-    private CommitE commit;
+public class BranchDTO {
+    private CommitDTO commit;
     private Boolean developersCanMerge;
     private Boolean developersCanPush;
     private Boolean merged;
     private String name;
     private Boolean isProtected;
 
-    public static Boolean isValid(BranchDO branch) {
+    public static Boolean isValid(BranchDTO branch) {
         return (branch != null && branch.getName() != null);
     }
 
-    public CommitE getCommit() {
+    public CommitDTO getCommit() {
         return commit;
     }
 
-    public void setCommit(CommitE commit) {
+    public void setCommit(CommitDTO commit) {
         this.commit = commit;
     }
 

@@ -8,8 +8,7 @@ import io.choerodon.devops.api.vo.PushWebHookDTO
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.app.service.GitlabWebHookService
 import io.choerodon.devops.api.vo.iam.entity.*
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CompareResultsE
-import io.choerodon.devops.api.vo.iam.entity.gitlab.DiffE
+
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.app.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
@@ -519,23 +518,23 @@ class GitlabWebHookServiceimplSpec extends Specification {
         hand("gitopsb", devopsEnvironmentE)
 
         //初始化gitops tag 比较结果
-        CompareResultsE compareResultsE = new CompareResultsE()
-        List<DiffE> diffES = new ArrayList<>()
-        DiffE diffE = new DiffE()
+        CompareResultDTO compareResultsE = new CompareResultDTO()
+        List<DiffDTO> diffES = new ArrayList<>()
+        DiffDTO diffE = new DiffDTO()
         diffE.setDeletedFile(true)
         diffE.setRenamedFile(false)
         diffE.setNewFile(false)
         diffE.setNewPath("gitopsa.yaml")
         diffE.setOldPath("gitopsa.yaml")
         diffES.add(diffE)
-        DiffE diffE1 = new DiffE()
+        DiffDTO diffE1 = new DiffDTO()
         diffE1.setDeletedFile(false)
         diffE1.setRenamedFile(false)
         diffE1.setNewFile(false)
         diffE1.setOldPath("gitopsb.yaml")
         diffE1.setNewPath("gitopsb.yaml")
         diffES.add(diffE1)
-        DiffE diffE2 = new DiffE()
+        DiffDTO diffE2 = new DiffDTO()
         diffE2.setDeletedFile(false)
         diffE2.setRenamedFile(false)
         diffE2.setNewFile(true)
@@ -570,8 +569,8 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsIngressPathDO.setIngressId(2L)
         devopsIngressPathMapper.insert(devopsIngressPathDO)
 
-        ResponseEntity<CompareResultsE> responseEntity2 = new ResponseEntity<>(compareResultsE, HttpStatus.OK)
-        Mockito.doReturn(responseEntity2).when(gitlabServiceClient).getCompareResults(1, "devops-sync", "123456")
+        ResponseEntity<CompareResultDTO> responseEntity2 = new ResponseEntity<>(compareResultsE, HttpStatus.OK)
+        Mockito.doReturn(responseEntity2).when(gitlabServiceClient).queryCompareResult(1, "devops-sync", "123456")
 
 
         when:

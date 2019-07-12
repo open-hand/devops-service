@@ -10,27 +10,27 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dto.gitlab.GroupDO;
+import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 
 /**
  * Created by younger on 2018/3/29.
  */
 @Component
-public class GitlabGroupConvertor implements ConvertorI<DevopsProjectVO, GroupDO, Object> {
+public class GitlabGroupConvertor implements ConvertorI<DevopsProjectVO, GroupDTO, Object> {
 
     @Override
-    public DevopsProjectVO doToEntity(GroupDO groupDO) {
+    public DevopsProjectVO doToEntity(GroupDTO groupDTO) {
         DevopsProjectVO devopsProjectE = new DevopsProjectVO();
-        BeanUtils.copyProperties(groupDO, devopsProjectE);
-        devopsProjectE.setDevopsAppGroupId(TypeUtil.objToLong(groupDO.getId()));
+        BeanUtils.copyProperties(groupDTO, devopsProjectE);
+        devopsProjectE.setDevopsAppGroupId(TypeUtil.objToLong(groupDTO.getId()));
         return devopsProjectE;
     }
 
     @Override
-    public GroupDO entityToDo(DevopsProjectVO devopsProjectE) {
-        GroupDO groupDO = new GroupDO();
-        BeanUtils.copyProperties(devopsProjectE, groupDO);
-        return groupDO;
+    public GroupDTO entityToDo(DevopsProjectVO devopsProjectE) {
+        GroupDTO groupDTO = new GroupDTO();
+        BeanUtils.copyProperties(devopsProjectE, groupDTO);
+        return groupDTO;
     }
 
 }

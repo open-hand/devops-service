@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.dto.gitlab;
 import java.util.Date;
 import java.util.List;
 
-public class CommitDO {
+public class CommitDTO {
 
     private AuthorDO author;
     private Date authoredDate;

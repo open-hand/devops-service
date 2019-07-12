@@ -13,7 +13,6 @@ import io.choerodon.devops.app.service.DevopsGitlabPipelineService
 
 import io.choerodon.devops.app.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
@@ -132,7 +131,7 @@ class GitlabWebHookControllerSpec extends Specification {
             commit.setUrl("http://www.baidu.com")
             commit.setCommittedDate(new Date())
             ResponseEntity<CommitDTO> res = new ResponseEntity<>(commit, HttpStatus.OK)
-            Mockito.when(mockGitlabServiceClient.getCommit(Mockito.anyInt(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
+            Mockito.when(mockGitlabServiceClient.queryCommit(Mockito.anyInt(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
 
             // mock env util
             Mockito.when(mockEnvUtil.getConnectedEnvList()).thenReturn(Arrays.asList(1L))

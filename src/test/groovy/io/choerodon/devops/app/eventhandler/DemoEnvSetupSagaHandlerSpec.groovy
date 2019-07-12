@@ -10,11 +10,18 @@ import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.RoleSearchDTO
 import io.choerodon.devops.api.vo.iam.UserVO
+<<<<<<< HEAD
 import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE
 import io.choerodon.devops.domain.application.valueobject.ProjectHook
+=======
+
+import io.choerodon.devops.app.service.ApplicationService
+import io.choerodon.devops.domain.application.repository.*
+import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO
+>>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
-import io.choerodon.devops.domain.application.valueobject.Variable
+import io.choerodon.devops.infra.dto.gitlab.VariableDTO
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
@@ -122,7 +129,7 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             MemberDTO memberDO = new MemberDTO()
             memberDO.setAccessLevel(AccessLevel.OWNER)
             ResponseEntity<MemberDTO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
-            Mockito.doReturn(memberDOResponseEntity).when(gitlabServiceClient).getUserMemberByUserId(any(), any())
+            Mockito.doReturn(memberDOResponseEntity).when(gitlabServiceClient).queryGroupMember(any(), any())
 
             GroupDO groupDO = new GroupDO()
             groupDO.setName("test")
@@ -139,18 +146,18 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             List<RoleDTO> roleDTOS = Arrays.asList(roleDTO)
             Page<RoleDTO> page = new Page(roleDTOS, pageInfo, 1)
             when(iamServiceClient.queryRoleIdByCode(any(RoleSearchDTO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
-            when(gitlabServiceClient.getDeploykeys(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
+            when(gitlabServiceClient.listDeploykey(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
             when(gitlabServiceClient.getFile(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK))
-            when(gitlabServiceClient.getProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDTO(), HttpStatus.OK))
-            when(gitlabServiceClient.getProjectHook(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(null, HttpStatus.OK))
+            when(gitlabServiceClient.queryProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDTO(), HttpStatus.OK))
+            when(gitlabServiceClient.listProjectHook(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(null, HttpStatus.OK))
 
             GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO()
             gitlabProjectDO.setId(1)
             ResponseEntity<GitlabProjectDTO> gitlabProjectDOResponseEntity = new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK)
-            Mockito.doReturn(gitlabProjectDOResponseEntity).when(gitlabServiceClient).getProjectByName(any(), any(), any())
+            Mockito.doReturn(gitlabProjectDOResponseEntity).when(gitlabServiceClient).queryProjectByName(any(), any(), any())
 
             BranchDO branchDO = new BranchDO()
-            CommitE commitE = new CommitE()
+            CommitDTO commitE = new CommitDTO()
             commitE.setMessage("message")
             commitE.setId("EcommitId")
             commitE.setCommittedDate(new Date(2018, 11, 9, 0, 0, 0))
@@ -170,7 +177,7 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(repositoryFileResponseEntity)
             Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt(), any())).thenReturn(repositoryFileResponseEntity)
 
-            Mockito.when(gitlabServiceClient.getBranch(any(), any())).thenReturn(responseEntity6)
+            Mockito.when(gitlabServiceClient.queryBranch(any(), any())).thenReturn(responseEntity6)
 
             MergeRequestDTO mergeRequestDO = new MergeRequestDTO()
             mergeRequestDO.setId(1)
@@ -208,7 +215,7 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             impersonationTokenDO.setId(1)
             impersonationTokenDO.setName("test")
             ResponseEntity<ImpersonationTokenDO> impersonationToken = new ResponseEntity<>(impersonationTokenDO, HttpStatus.OK)
-            Mockito.when(gitlabServiceClient.createToken(any())).thenReturn(impersonationToken)
+            Mockito.when(gitlabServiceClient.createProjectToken(any())).thenReturn(impersonationToken)
 
 
             UserDO userDO = new UserDO()
@@ -216,19 +223,19 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             userDO.setId(1)
 
             ResponseEntity<UserDO> userDOResponseEntity = new ResponseEntity<>(userDO, HttpStatus.OK)
-            Mockito.doReturn(userDOResponseEntity).when(gitlabServiceClient).queryUserByUserId(any())
+            Mockito.doReturn(userDOResponseEntity).when(gitlabServiceClient).queryUserById(any())
 
-            List<Variable> variableList = new ArrayList<>()
-            Variable variable = new Variable()
+            List<VariableDTO> variableList = new ArrayList<>()
+            VariableDTO variable = new VariableDTO()
             variable.setKey("test")
             variable.setValue("test")
-            ResponseEntity<List<Variable>> listResponseEntity = new ResponseEntity<>(variableList, HttpStatus.OK)
-            Mockito.doReturn(listResponseEntity).when(gitlabServiceClient).getVariable(any(), any())
+            ResponseEntity<List<VariableDTO>> listResponseEntity = new ResponseEntity<>(variableList, HttpStatus.OK)
+            Mockito.doReturn(listResponseEntity).when(gitlabServiceClient).listVariable(any(), any())
 
-            ProjectHook projectHook = new ProjectHook()
+            ProjectHookDTO projectHook = new ProjectHookDTO()
             projectHook.setId(100)
 
-            ResponseEntity<ProjectHook> projectHookResponseEntity = new ResponseEntity<>(projectHook, HttpStatus.OK)
+            ResponseEntity<ProjectHookDTO> projectHookResponseEntity = new ResponseEntity<>(projectHook, HttpStatus.OK)
             Mockito.doReturn(projectHookResponseEntity).when(gitlabServiceClient).createProjectHook(any(), any(), any())
 
             List<RoleDTO> roleDTOList = new ArrayList<>()

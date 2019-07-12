@@ -15,34 +15,26 @@ import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.DeployService;
 import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CompareResultsE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.infra.message.ResourceBundleHandler;
+import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.domain.application.valueobject.Issue;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
-import io.choerodon.devops.app.service.DeployService;
-import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.message.ResourceBundleHandler;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.GitOpsObjectError;
-import io.choerodon.devops.infra.dto.gitlab.BranchDO;
-import io.choerodon.devops.infra.dto.gitlab.TagDO;
 import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -164,7 +156,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public TagDO updateTagRelease(Long projectId, Long appId, String tag, String releaseNotes) {
+    public io.choerodon.devops.infra.dto.gitlab.TagDTO updateTagRelease(Long projectId, Long appId, String tag, String releaseNotes) {
         applicationRepository.checkApp(projectId, appId);
         Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);
         Integer gitLabUserId = devopsGitRepository.getGitlabUserId();
@@ -204,22 +196,22 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void createBranchBySaga(BranchSagaDTO branchSagaDTO) {
-        BranchDO branchDO = null;
+        BranchDTO branchDTO = null;
         try {
-            branchDO = devopsGitRepository.getBranch(TypeUtil.objToInteger(branchSagaDTO.getGitlabProjectId()), branchSagaDTO.getBranchName());
-            if (branchDO.getName() == null) {
-                branchDO = devopsGitRepository.createBranch(
+            branchDTO = devopsGitRepository.getBranch(TypeUtil.objToInteger(branchSagaDTO.getGitlabProjectId()), branchSagaDTO.getBranchName());
+            if (branchDTO.getName() == null) {
+                branchDTO = devopsGitRepository.createBranch(
                         TypeUtil.objToInteger(branchSagaDTO.getGitlabProjectId()),
                         branchSagaDTO.getBranchName(),
                         branchSagaDTO.getOriginBranch(),
                         getGitlabUserId());
             }
-            if (branchDO.getCommit() == null) {
+            if (branchDTO.getCommit() == null) {
                 throw new CommonException("error.branch.exist");
             }
-            CommitE commitE = branchDO.getCommit();
-            Date checkoutDate = commitE.getCommittedDate();
-            String checkoutSha = commitE.getId();
+            CommitDTO commitDTO = branchDTO.getCommit();
+            Date checkoutDate = commitDTO.getCommittedDate();
+            String checkoutSha = commitDTO.getId();
             DevopsBranchE devopsBranchECreate = devopsGitRepository.qureyBranchById(branchSagaDTO.getDevopsBranchId());
             devopsBranchECreate.setStatus(CommandStatus.SUCCESS.getStatus());
             devopsBranchECreate.setCheckoutDate(checkoutDate);
@@ -227,9 +219,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             devopsBranchECreate.setLastCommitDate(checkoutDate);
             devopsBranchECreate.setLastCommit(checkoutSha);
-            devopsBranchECreate.setLastCommitMsg(commitE.getMessage());
+            devopsBranchECreate.setLastCommitMsg(commitDTO.getMessage());
             Long commitUserId = null;
-            if (commitE.getCommitterName().equals("root")) {
+            if (commitDTO.getCommitterName().equals("root")) {
                 UserAttrE userAttrE = userAttrRepository.queryByGitlabUserName("admin");
                 if (userAttrE == null) {
                     userAttrE = userAttrRepository.queryByGitlabUserName("admin1");
@@ -248,7 +240,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
     @Override
-    public PageInfo<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
+    public PageInfo<io.choerodon.devops.api.vo.BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         // 查询用户是否在该gitlab project下
@@ -265,7 +257,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
         PageInfo<DevopsBranchE> branches =
                 devopsGitRepository.listBranches(applicationId, pageRequest, params);
-        PageInfo<BranchDTO> page = new PageInfo<>();
+        PageInfo<io.choerodon.devops.api.vo.BranchDTO> page = new PageInfo<>();
         BeanUtils.copyProperties(branches, page);
         page.setList(branches.getList().stream().map(t -> {
             Issue issue = null;
@@ -298,9 +290,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void deleteBranch(Long applicationId, String branchName) {
         ApplicationE applicationE = applicationRepository.query(applicationId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<BranchDO> branchEList = devopsGitRepository.listBranches(applicationE.getGitlabProjectE().getId(),
+        List<BranchDTO> branchEList = devopsGitRepository.listBranches(applicationE.getGitlabProjectE().getId(),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        Optional<BranchDO> branchEOptional = branchEList
+        Optional<BranchDTO> branchEOptional = branchEList
                 .stream().filter(e -> branchName.equals(e.getName())).findFirst();
         branchEOptional.ifPresent(
                 e -> gitlabProjectRepository.deleteBranch(applicationE.getGitlabProjectE().getId(), branchName,
@@ -308,8 +300,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsGitRepository.deleteDevopsBranch(applicationId, branchName);
     }
 
-    private BranchDTO getBranchDTO(DevopsBranchE devopsBranchE, String lastCommitUrl, UserE commitUserE, UserE userE,
-                                   Issue issue) {
+    private io.choerodon.devops.api.vo.BranchDTO getBranchDTO(DevopsBranchE devopsBranchE, String lastCommitUrl, UserE commitUserE, UserE userE,
+                                                              Issue issue) {
         String createUserUrl = null;
         String createUserName = null;
         String createUserRealName = null;
@@ -321,7 +313,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (commitUserE == null) {
             commitUserE = new UserE();
         }
-        return new BranchDTO(
+        return new io.choerodon.devops.api.vo.BranchDTO(
                 devopsBranchE,
                 lastCommitUrl,
                 createUserUrl,
@@ -344,7 +336,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public PageInfo<TagDTO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size) {
+    public PageInfo<TagVO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size) {
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
@@ -355,7 +347,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public List<TagDO> getTags(Long projectId, Long applicationId) {
+    public List<io.choerodon.devops.infra.dto.gitlab.TagDTO> getTags(Long projectId, Long applicationId) {
         return devopsGitRepository.getTagList(applicationId, getGitlabUserId());
     }
 
@@ -554,9 +546,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void checkName(Long projectId, Long applicationId, String branchName) {
         ApplicationE applicationE = applicationRepository.query(applicationId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<BranchDO> branchEList = devopsGitRepository.listBranches(applicationE.getGitlabProjectE().getId(),
+        List<BranchDTO> branchEList = devopsGitRepository.listBranches(applicationE.getGitlabProjectE().getId(),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        Optional<BranchDO> branchEOptional = branchEList
+        Optional<BranchDTO> branchEOptional = branchEList
                 .stream().filter(e -> branchName.equals(e.getName())).findFirst();
         branchEOptional.ifPresent(e -> {
             throw new CommonException("error.branch.exist");
@@ -620,9 +612,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                              Set<DevopsEnvFileResourceE> beforeSync, Set<DevopsEnvFileResourceE> beforeSyncDelete,
                              DevopsEnvironmentE devopsEnvironmentE, DevopsEnvCommitVO devopsEnvCommitE) {
         //获取将此次最新提交与tag作比价得到diff
-        CompareResultsE compareResultsE = devopsGitRepository
+        CompareResultDTO compareResultDTO = devopsGitRepository
                 .getCompareResults(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha());
-        compareResultsE.getDiffs().forEach(t -> {
+        compareResultDTO.getDiffs().forEach(t -> {
             if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
                 if (t.getDeletedFile()) {
                     deletedFiles.add(t.getNewPath());
@@ -845,7 +837,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             String lastCommit = pushWebHookDTO.getAfter();
             Long userId = pushWebHookDTO.getUserId().longValue();
 
-            CommitE commitE = devopsGitRepository.getCommit(
+            CommitDTO commitDTO = devopsGitRepository.getCommit(
                     pushWebHookDTO.getProjectId(),
                     lastCommit,
                     userId.intValue());
@@ -856,15 +848,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchE.setUserId(userId);
                 devopsBranchE.initApplicationE(appId);
 
-                devopsBranchE.setCheckoutDate(commitE == null ? null : commitE.getCommittedDate());
+                devopsBranchE.setCheckoutDate(commitDTO.getCommittedDate());
                 devopsBranchE.setCheckoutCommit(lastCommit);
                 devopsBranchE.setBranchName(branchName);
 
                 devopsBranchE.setLastCommitUser(userId);
                 devopsBranchE.setLastCommit(lastCommit);
-                devopsBranchE.setLastCommitMsg(commitE == null ? null : commitE.getMessage());
+                devopsBranchE.setLastCommitMsg(commitDTO.getMessage());
 
-                devopsBranchE.setLastCommitDate(commitE == null ? null : commitE.getCommittedDate());
+                devopsBranchE.setLastCommitDate(commitDTO.getCommittedDate());
                 devopsGitRepository.createDevopsBranch(devopsBranchE);
 
 

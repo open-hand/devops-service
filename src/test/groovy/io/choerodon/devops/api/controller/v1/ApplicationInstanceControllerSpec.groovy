@@ -23,7 +23,11 @@ import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
+<<<<<<< HEAD
 >>>>>>> [IMP] 修改AppControler重构
+=======
+import io.choerodon.devops.infra.dto.gitlab.UserDTO
+>>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
@@ -490,7 +494,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         memberDO.setId(1)
         memberDO.setAccessLevel(AccessLevel.OWNER)
         ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
         UserDO userDO = new UserDO()
         userDO.setId(1L)
@@ -502,7 +506,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         List<PipelineDO> pipelineDOList = new ArrayList<>()
         PipelineDO pipelineDO = new PipelineDO()
         pipelineDO.setId(1)
-        io.choerodon.devops.infra.dto.gitlab.UserDO gitlabUser = new io.choerodon.devops.infra.dto.gitlab.UserDO()
+        UserDTO gitlabUser = new UserDTO()
         pipelineDO.setRef("")
         pipelineDO.setUser(gitlabUser)
         gitlabUser.setId(1)
@@ -512,7 +516,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Mockito.when(gitlabServiceClient.listPipeline(anyInt(), anyInt())).thenReturn(responseEntity4)
 
         ResponseEntity<PipelineDO> responseEntity5 = new ResponseEntity<>(pipelineDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getPipeline(anyInt(), anyInt(), anyInt())).thenReturn(responseEntity5)
+        Mockito.when(gitlabServiceClient.queryPipeline(anyInt(), anyInt(), anyInt())).thenReturn(responseEntity5)
 
         ResponseEntity responseEntity6 = new ResponseEntity<>(HttpStatus.OK)
         Mockito.when(gitlabServiceClient.deleteFile(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity6)

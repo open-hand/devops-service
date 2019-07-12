@@ -13,6 +13,15 @@ import io.choerodon.devops.app.service.impl.DevopsConfigMapServiceImpl
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
+
+
+import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
+import io.choerodon.devops.domain.application.repository.GitlabRepository
+import io.choerodon.devops.domain.application.repository.IamRepository
+=======
+>>>>>>> [IMP]修改后端结构
+<<<<<<< HEAD
+=======
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE
 
 
@@ -129,7 +138,7 @@ class DevopsConfigMapControllerSpec extends Specification {
         MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER)
         ResponseEntity<MemberDTO> responseEntity1 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity1)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity1)
 
         RepositoryFile file = new RepositoryFile()
         file.setFilePath("filePath")

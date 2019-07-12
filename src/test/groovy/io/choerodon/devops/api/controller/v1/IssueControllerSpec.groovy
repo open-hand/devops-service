@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.IssueDTO
@@ -15,10 +14,16 @@ import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
 =======
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
 >>>>>>> [IMP] 修改AppControler重构
+=======
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
+=======
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+>>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -194,7 +199,7 @@ class IssueControllerSpec extends Specification {
         MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER)
         ResponseEntity<MemberDTO> responseEntity4 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity4)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity4)
 
         List<RoleDTO> roleDTOList = new ArrayList<>()
         RoleDTO roleDTO = new RoleDTO()

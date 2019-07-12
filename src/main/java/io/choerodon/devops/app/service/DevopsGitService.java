@@ -6,7 +6,7 @@ import java.util.Map;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.infra.dto.gitlab.TagDO;
+import io.choerodon.devops.infra.dto.gitlab.TagDTO;
 
 /**
  * Creator: Runge
@@ -40,7 +40,7 @@ public interface DevopsGitService {
      * @param releaseNotes
      * @return
      */
-    TagDO updateTagRelease(Long projectId, Long appId, String tag, String releaseNotes);
+    TagDTO updateTagRelease(Long projectId, Long appId, String tag, String releaseNotes);
 
     /**
      * @param projectId
@@ -122,14 +122,14 @@ public interface DevopsGitService {
      * @param size
      * @return
      */
-    PageInfo<TagDTO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size);
+    PageInfo<TagVO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size);
 
     /**
      * @param projectId
      * @param applicationId
      * @return
      */
-    List<TagDO> getTags(Long projectId, Long applicationId);
+    List<io.choerodon.devops.infra.dto.gitlab.TagDTO> getTags(Long projectId, Long applicationId);
 
     /**
      * @param projectId

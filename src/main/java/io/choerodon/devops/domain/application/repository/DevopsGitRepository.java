@@ -5,12 +5,9 @@ import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.TagDTO;
+import io.choerodon.devops.api.vo.TagVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsBranchE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 
 /**
@@ -49,7 +46,7 @@ public interface DevopsGitRepository {
 
     void deleteDevopsBranch(Long appId, String branchName);
 
-    PageInfo<TagDTO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId);
+    PageInfo<TagVO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId);
 
     List<TagDO> getTagList(Long appId, Integer userId);
 
@@ -57,7 +54,7 @@ public interface DevopsGitRepository {
 
     BranchDO getBranch(Integer gitlabProjectId, String branch);
 
-    CompareResultsE getCompareResults(Integer gitlabProjectId, String from, String to);
+    CompareResultDTO getCompareResults(Integer gitlabProjectId, String from, String to);
 
     DevopsBranchE queryByAppAndBranchName(Long appId, String branchName);
 
@@ -76,9 +73,9 @@ public interface DevopsGitRepository {
 
     DevopsBranchE queryByBranchNameAndCommit(String branchName, String commit);
 
-    CommitE getCommit(Integer gitLabProjectId, String commit, Integer userId);
+    CommitDTO getCommit(Integer gitLabProjectId, String commit, Integer userId);
 
-    List<CommitDTO> getCommits(Integer gitLabProjectId, String branchName, String date);
+    List<io.choerodon.devops.infra.dataobject.gitlab.CommitDTO> getCommits(Integer gitLabProjectId, String branchName, String date);
 
     List<BranchDO> listBranches(Integer gitlabProjectId, Integer userId);
 }

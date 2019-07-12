@@ -14,7 +14,6 @@ import io.choerodon.devops.api.vo.PushWebHookDTO;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabCommitE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -68,23 +67,23 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             //直接从一个分支切出来另外一个分支，没有commits记录
             DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(pushWebHookDTO.getCheckoutSha(), ref);
             if (devopsGitlabCommitE == null) {
-                CommitE commitE = devopsGitRepository.getCommit(TypeUtil.objToInteger(applicationE.getGitlabProjectE().getId()), pushWebHookDTO.getCheckoutSha(), ADMIN);
+                CommitDTO commitDTO = devopsGitRepository.getCommit(TypeUtil.objToInteger(applicationE.getGitlabProjectE().getId()), pushWebHookDTO.getCheckoutSha(), ADMIN);
                 devopsGitlabCommitE = new DevopsGitlabCommitE();
                 devopsGitlabCommitE.setAppId(applicationE.getId());
-                devopsGitlabCommitE.setCommitContent(commitE.getMessage());
-                devopsGitlabCommitE.setCommitSha(commitE.getId());
+                devopsGitlabCommitE.setCommitContent(commitDTO.getMessage());
+                devopsGitlabCommitE.setCommitSha(commitDTO.getId());
                 devopsGitlabCommitE.setRef(ref);
-                devopsGitlabCommitE.setUrl(commitE.getUrl());
-                if ("root".equals(commitE.getAuthorName())) {
+                devopsGitlabCommitE.setUrl(commitDTO.getUrl());
+                if ("root".equals(commitDTO.getAuthorName())) {
                     devopsGitlabCommitE.setUserId(1L);
                 } else {
                     UserE userE = iamRepository.queryByEmail(applicationE.getProjectE().getId(),
-                            commitE.getAuthorEmail());
+                            commitDTO.getAuthorEmail());
                     if (userE != null) {
                         devopsGitlabCommitE.setUserId(userE.getId());
                     }
                 }
-                devopsGitlabCommitE.setCommitDate(commitE.getCommittedDate());
+                devopsGitlabCommitE.setCommitDate(commitDTO.getCommittedDate());
                 devopsGitlabCommitRepository.create(devopsGitlabCommitE);
             }
         }

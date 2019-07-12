@@ -1,6 +1,6 @@
-package io.choerodon.devops.domain.application.valueobject;
+package io.choerodon.devops.infra.dto.gitlab;
 
-public class Variable {
+public class VariableDTO {
 
     private String key;
     private String value;

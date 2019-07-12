@@ -16,8 +16,6 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
@@ -28,7 +26,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDTO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagNodeDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -101,7 +98,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             if (releaseNotes == null) {
                 releaseNotes = "";
             }
-            return gitlabServiceClient.updateTagRelease(gitLabProjectId, tag, releaseNotes, userId).getBody();
+            return gitlabServiceClient.updateTag(gitLabProjectId, tag, releaseNotes, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
         }
@@ -171,7 +168,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     public List<BranchDO> listGitLabBranches(Integer projectId, String path, Integer userId) {
         ResponseEntity<List<BranchDO>> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.listBranches(projectId, userId);
+            responseEntity = gitlabServiceClient.listBranch(projectId, userId);
         } catch (FeignException e) {
             throw new CommonException("error.branch.get", e);
 
@@ -216,7 +213,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public PageInfo<TagDTO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId) {
+    public PageInfo<TagVO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId) {
         ApplicationE applicationE = applicationRepository.query(appId);
         GitlabMemberE newGroupMemberE = gitlabProjectRepository.getProjectMember(
                 TypeUtil.objToInteger(applicationE.getGitlabProjectE().getId()),
@@ -226,13 +223,13 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         }
         Integer projectId = getGitLabId(appId);
         List<TagDO> tagTotalList = getGitLabTags(projectId, userId);
-        PageInfo<TagDTO> tagsPage = new PageInfo<>();
+        PageInfo<TagVO> tagsPage = new PageInfo<>();
         List<TagDO> tagList = tagTotalList.stream()
                 .filter(t -> filterTag(t, params))
                 .collect(Collectors.toCollection(ArrayList::new));
-        List<TagDTO> tagDTOS = tagList.stream()
+        List<TagVO> tagVOS = tagList.stream()
                 .sorted(this::sortTag)
-                .map(TagDTO::new)
+                .map(TagVO::new)
                 .parallel()
                 .peek(t -> {
                     UserE userE = iamRepository.queryByEmail(TypeUtil.objToLong(projectId), t.getCommit().getAuthorEmail());
@@ -243,8 +240,8 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        if (tagDTOS.size() < size * page) {
-            tagsPage.setSize(TypeUtil.objToInt(tagDTOS.size()) - (size * (page - 1)));
+        if (tagVOS.size() < size * page) {
+            tagsPage.setSize(TypeUtil.objToInt(tagVOS.size()) - (size * (page - 1)));
         } else {
             tagsPage.setSize(size);
         }
@@ -252,7 +249,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         tagsPage.setPageSize(size);
         tagsPage.setTotal(tagList.size());
         tagsPage.setPageNum(page);
-        tagsPage.setList(tagDTOS);
+        tagsPage.setList(tagVOS);
         return tagsPage;
     }
 
@@ -350,7 +347,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     @Override
     public BranchDO getBranch(Integer gitlabProjectId, String branch) {
         try {
-            return gitlabServiceClient.getBranch(gitlabProjectId, branch).getBody();
+            return gitlabServiceClient.queryBranch(gitlabProjectId, branch).getBody();
         } catch (FeignException e) {
             throw new CommonException("error.branch.get", e);
 
@@ -358,9 +355,9 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public CompareResultsE getCompareResults(Integer gitlabProjectId, String from, String to) {
+    public CompareResultDTO getCompareResults(Integer gitlabProjectId, String from, String to) {
         try {
-            return gitlabServiceClient.getCompareResults(gitlabProjectId, from, to).getBody();
+            return gitlabServiceClient.queryCompareResult(gitlabProjectId, from, to).getBody();
         } catch (FeignException e) {
             throw new CommonException("error.diffs.get", e);
         }
@@ -472,7 +469,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                 .getUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId());
         Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
         Integer gitlabUserId = devopsGitRepository.getGitlabUserId();
-        List<CommitDTO> commitDOS = new ArrayList<>();
+        List<io.choerodon.devops.infra.dataobject.gitlab.CommitDTO> commitDOS = new ArrayList<>();
         try {
             commitDOS = gitlabServiceClient.listCommits(
                     devopsMergeRequestE.getProjectId().intValue(),
@@ -511,12 +508,12 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public CommitE getCommit(Integer gitLabProjectId, String commit, Integer userId) {
-        CommitE commitE = new CommitE();
+    public CommitDTO getCommit(Integer gitLabProjectId, String commit, Integer userId) {
+        CommitDTO commitDTO = new CommitDTO();
         BeanUtils.copyProperties(
-                gitlabServiceClient.getCommit(gitLabProjectId, commit, userId).getBody(),
-                commitE);
-        return commitE;
+                gitlabServiceClient.queryCommit(gitLabProjectId, commit, userId).getBody(),
+                commitDTO);
+        return commitDTO;
     }
 
     @Override
@@ -549,7 +546,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public List<CommitDTO> getCommits(Integer gitLabProjectId, String branchName, String date) {
+    public List<io.choerodon.devops.infra.dataobject.gitlab.CommitDTO> getCommits(Integer gitLabProjectId, String branchName, String date) {
         try {
             return gitlabServiceClient.getCommits(gitLabProjectId, branchName, date).getBody();
         } catch (FeignException e) {
@@ -560,7 +557,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     @Override
     public List<BranchDO> listBranches(Integer gitlabProjectId, Integer userId) {
         try {
-            return gitlabServiceClient.listBranches(gitlabProjectId, userId).getBody();
+            return gitlabServiceClient.listBranch(gitlabProjectId, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }

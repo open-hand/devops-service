@@ -22,7 +22,7 @@ public class GitlabGroupMemberRepositoryImpl implements GitlabGroupMemberReposit
 
     @Override
     public GitlabMemberE getUserMemberByUserId(Integer groupId, Integer userId) {
-        return ConvertHelper.convert(gitlabServiceClient.getUserMemberByUserId(
+        return ConvertHelper.convert(gitlabServiceClient.queryGroupMember(
                     groupId, userId).getBody(), GitlabMemberE.class);
     }
 
@@ -33,12 +33,12 @@ public class GitlabGroupMemberRepositoryImpl implements GitlabGroupMemberReposit
 
     @Override
     public int insertMember(Integer groupId, RequestMemberDO member) {
-            return gitlabServiceClient.insertMember(groupId, member).getStatusCodeValue();
+            return gitlabServiceClient.createGroupMember(groupId, member).getStatusCodeValue();
     }
 
     @Override
     public ResponseEntity updateMember(Integer groupId, RequestMemberDO member) {
-            return gitlabServiceClient.updateMember(groupId, member);
+            return gitlabServiceClient.updateGroupMember(groupId, member);
     }
 
 }

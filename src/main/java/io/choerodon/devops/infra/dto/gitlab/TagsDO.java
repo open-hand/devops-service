@@ -7,13 +7,13 @@ import java.util.List;
  */
 public class TagsDO {
 
-    private List<TagDO> tagList;
+    private List<TagDTO> tagList;
 
     private int totalPages;
 
     private int totalElements;
 
-    public TagsDO(List<TagDO> tagList, int totalPages) {
+    public TagsDO(List<TagDTO> tagList, int totalPages) {
         this.tagList = tagList;
         this.totalPages = totalPages;
     }
@@ -24,17 +24,17 @@ public class TagsDO {
     /**
      * 构造方法
      */
-    public TagsDO(List<TagDO> tagList, int totalPages, int totalElements) {
+    public TagsDO(List<TagDTO> tagList, int totalPages, int totalElements) {
         this.tagList = tagList;
         this.totalPages = totalPages;
         this.totalElements = totalElements;
     }
 
-    public List<TagDO> getTagList() {
+    public List<TagDTO> getTagList() {
         return tagList;
     }
 
-    public void setTagList(List<TagDO> tagList) {
+    public void setTagList(List<TagDTO> tagList) {
         this.tagList = tagList;
     }
 

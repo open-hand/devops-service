@@ -244,7 +244,7 @@ class ApplicationControllerSpec extends Specification {
         memberDO.setId(1)
         memberDO.setAccessLevel(AccessLevel.OWNER)
         ResponseEntity<MemberDTO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(memberDOResponseEntity)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(memberDOResponseEntity)
 
         and: 'mock iam创建用户'
         IamAppPayLoad iamAppPayLoad = new IamAppPayLoad()
@@ -376,7 +376,7 @@ class ApplicationControllerSpec extends Specification {
     def "deleteByAppId"() {
         given: 'mock删除git项目'
         ResponseEntity responseEntity2 = new ResponseEntity(HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.deleteProjectByProjectName(anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
+        Mockito.when(gitlabServiceClient.deleteProjectByName(anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
 
         when:
         restTemplate.delete(MAPPING + "/1", 1L)

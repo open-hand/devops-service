@@ -9,18 +9,31 @@ import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.*
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+>>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.RoleSearchDTO
 import io.choerodon.devops.api.vo.iam.UserVO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+>>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
+<<<<<<< HEAD
 <<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.*
 <<<<<<< HEAD
@@ -30,6 +43,13 @@ import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO
 =======
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO
 >>>>>>> [IMP] 修改AppControler重构
+=======
+
+
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO
+=======
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+>>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -253,7 +273,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER)
         ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
         List<RoleDTO> ownerRoleDTOList = new ArrayList<>()
         List<RoleDTO> memberRoleDTOList = new ArrayList<>()
@@ -614,7 +634,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
         and: '添加用户4'
         ResponseEntity responseEntity = new ResponseEntity(HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.addMemberIntoProject(anyInt(), any(MemberDTO.class))).thenReturn(responseEntity)
+        Mockito.when(gitlabServiceClient.createProjectMember(anyInt(), any(MemberDTO.class))).thenReturn(responseEntity)
 
         and: '查询gitlab项目下是否有1和3用户'
         MemberDTO memberDO1 = new MemberDTO()
@@ -626,7 +646,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         and: '删除1和3的gitlab用户'
         ResponseEntity responseEntity1 = new ResponseEntity(HttpStatus.OK)
         ResponseEntity responseEntity2 = new ResponseEntity(HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.removeMemberFromProject(anyInt(), anyInt())).thenReturn(responseEntity1).thenReturn(responseEntity2)
+        Mockito.when(gitlabServiceClient.deleteProjectMember(anyInt(), anyInt())).thenReturn(responseEntity1).thenReturn(responseEntity2)
 
         when: '环境下为用户分配权限'
         def count = restTemplate.postForObject("/v1/projects/1/envs/1/permission", userIds, Boolean.class)
@@ -782,10 +802,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
         and: 'mock 删除gitlab仓库'
         ResponseEntity responseEntity = new ResponseEntity(HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.deleteProject(anyInt(), anyInt())).thenReturn(responseEntity)
+        Mockito.when(gitlabServiceClient.deleteProjectById(anyInt(), anyInt())).thenReturn(responseEntity)
         GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO()
         gitlabProjectDO.setId(1)
-        Mockito.when(gitlabServiceClient.getProjectById(anyInt())).thenReturn(new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK))
+        Mockito.when(gitlabServiceClient.queryProjectById(anyInt())).thenReturn(new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK))
 
         when: '删除已停用的环境'
         restTemplate.delete("/v1/projects/1/envs/999")

@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.ReleaseDO;
-import io.choerodon.devops.infra.dto.gitlab.TagDO;
+import io.choerodon.devops.infra.dto.gitlab.TagDTO;
 import org.springframework.beans.BeanUtils;
 
 /**
@@ -11,7 +11,7 @@ import org.springframework.beans.BeanUtils;
  * Time: 10:22
  * Description:
  */
-public class TagDTO {
+public class TagVO {
 
     private CommitDTO commit;
     private String commitUserImage;
@@ -19,10 +19,10 @@ public class TagDTO {
     private String tagName;
     private ReleaseDO release;
 
-    public TagDTO() {
+    public TagVO() {
     }
 
-    public TagDTO(TagDO t) {
+    public TagVO(TagDTO t) {
         BeanUtils.copyProperties(t, this);
         this.tagName = t.getName();
     }

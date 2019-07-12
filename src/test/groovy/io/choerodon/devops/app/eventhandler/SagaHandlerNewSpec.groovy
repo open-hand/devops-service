@@ -133,7 +133,7 @@ class SagaHandlerNewSpec extends Specification {
             MemberDTO memberDO = new MemberDTO()
             memberDO.setAccessLevel(AccessLevel.OWNER)
             ResponseEntity<MemberDTO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
-            Mockito.doReturn(memberDOResponseEntity).when(gitlabServiceClient).getUserMemberByUserId(any(), any())
+            Mockito.doReturn(memberDOResponseEntity).when(gitlabServiceClient).queryGroupMember(any(), any())
 
             Mockito.doReturn(null).when(gitlabServiceClient).deleteMember(any(), any())
 
@@ -143,22 +143,22 @@ class SagaHandlerNewSpec extends Specification {
             GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO()
             gitlabProjectDO.setId(1)
             ResponseEntity<GitlabProjectDTO> gitlabProjectDOResponseEntity = new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK)
-            Mockito.doReturn(gitlabProjectDOResponseEntity).when(gitlabServiceClient).getProjectById(any())
+            Mockito.doReturn(gitlabProjectDOResponseEntity).when(gitlabServiceClient).queryProjectById(any())
 
-            Mockito.doReturn(null).when(gitlabServiceClient).removeMemberFromProject(any(), any())
+            Mockito.doReturn(null).when(gitlabServiceClient).deleteProjectMember(any(), any())
 
             UserDO userDO = new UserDO()
             userDO.setName("test")
             userDO.setId(1)
 
             userDOResponseEntity = new ResponseEntity<>(userDO, HttpStatus.OK)
-            Mockito.doReturn(userDOResponseEntity).when(gitlabServiceClient).queryUserByUserId(any())
+            Mockito.doReturn(userDOResponseEntity).when(gitlabServiceClient).queryUserById(any())
 
 
             Mockito.doReturn(userDOResponseEntity).when(gitlabServiceClient).queryUserByUserName(any())
             Mockito.doReturn(null).when(gitlabServiceClient).updateGitLabUser(any(), any(), any())
-            Mockito.doReturn(null).when(gitlabServiceClient).disEnabledUserByUserId(any())
-            Mockito.doReturn(null).when(gitlabServiceClient).enabledUserByUserId(any())
+            Mockito.doReturn(null).when(gitlabServiceClient).disableUser(any())
+            Mockito.doReturn(null).when(gitlabServiceClient).enableUser(any())
             isToInit = false
 
         }

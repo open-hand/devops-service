@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.CommitVO;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.DiffE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.MilestoneE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.UserE;
 
@@ -16,7 +15,7 @@ public class MergeRequestDTO {
     private Integer approvalsBeforeMerge;
     private AssigneeDO assignee;
     private AuthorDO author;
-    private DiffE changes;
+    private DiffDTO changes;
     private Date createdAt;
     private String description;
     private Integer downvotes;
@@ -89,11 +88,11 @@ public class MergeRequestDTO {
         this.author = author;
     }
 
-    public DiffE getChanges() {
+    public DiffDTO getChanges() {
         return changes;
     }
 
-    public void setChanges(DiffE changes) {
+    public void setChanges(DiffDTO changes) {
         this.changes = changes;
     }
 

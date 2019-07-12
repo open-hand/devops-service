@@ -28,7 +28,7 @@ import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
 >>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO
-import io.choerodon.devops.domain.application.valueobject.ProjectHook
+import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO
 import io.choerodon.devops.infra.dataobject.ApplicationTemplateDO
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
@@ -249,9 +249,9 @@ class ApplicationTemplateControllerSpec extends Specification {
         given: 'mock 删除gitlab项目'
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
 
-        ProjectHook projectHook = new ProjectHook()
-        ResponseEntity<ProjectHook> responseEntity = new ResponseEntity<>(projectHook, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.deleteProject(anyInt(), anyInt())).thenReturn(responseEntity)
+        ProjectHookDTO projectHook = new ProjectHookDTO()
+        ResponseEntity<ProjectHookDTO> responseEntity = new ResponseEntity<>(projectHook, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.deleteProjectById(anyInt(), anyInt())).thenReturn(responseEntity)
 
         when: '组织下删除应用模板'
         restTemplate.delete("/v1/organizations/{project_id}/app_templates/{template_id}", org_id, 4L)

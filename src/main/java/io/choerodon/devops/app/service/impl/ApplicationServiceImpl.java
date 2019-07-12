@@ -25,140 +25,49 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
-<<<<<<< HEAD
-import io.choerodon.devops.api.vo.gitlab.MemberVO;
-import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.api.vo.AppUserPermissionRepDTO;
-import io.choerodon.devops.api.vo.ApplicationCodeDTO;
-import io.choerodon.devops.api.vo.ApplicationImportDTO;
-import io.choerodon.devops.api.vo.ApplicationRepVO;
-import io.choerodon.devops.api.vo.ApplicationReqVO;
-import io.choerodon.devops.api.vo.ApplicationTemplateRepVO;
-import io.choerodon.devops.api.vo.ApplicationUpdateVO;
-import io.choerodon.devops.api.vo.CommitVO;
-import io.choerodon.devops.api.vo.ProjectConfigDTO;
-import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.api.vo.SonarContentDTO;
-import io.choerodon.devops.api.vo.SonarContentsDTO;
-import io.choerodon.devops.api.vo.SonarTableDTO;
-import io.choerodon.devops.api.vo.UserAttrVO;
-import io.choerodon.devops.api.vo.iam.entity.AppUserPermissionE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationTemplateE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsAppShareE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsBranchE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
-=======
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.iam.entity.*;
->>>>>>> [IMP]重构后端代码
 import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
-<<<<<<< HEAD
-import io.choerodon.devops.api.vo.sonar.Bug;
-import io.choerodon.devops.api.vo.sonar.Component;
-import io.choerodon.devops.api.vo.sonar.Facet;
-import io.choerodon.devops.api.vo.sonar.Projects;
-import io.choerodon.devops.api.vo.sonar.Quality;
-import io.choerodon.devops.api.vo.sonar.SonarAnalyses;
-import io.choerodon.devops.api.vo.sonar.SonarComponent;
-import io.choerodon.devops.api.vo.sonar.SonarHistroy;
-import io.choerodon.devops.api.vo.sonar.SonarTables;
-import io.choerodon.devops.api.vo.sonar.Vulnerability;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportPayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppSyncPayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload;
-import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
-import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.app.service.GitLabService;
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.app.service.IamService;
-import io.choerodon.devops.app.service.ProjectService;
-import io.choerodon.devops.app.service.UserAttrService;
-import io.choerodon.devops.domain.application.repository.AppShareRepository;
-import io.choerodon.devops.domain.application.repository.AppUserPermissionRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
-import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-=======
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.repository.*;
->>>>>>> [IMP]重构后端代码
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
-import io.choerodon.devops.domain.application.valueobject.ProjectHook;
-import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-<<<<<<< HEAD
+import io.choerodon.devops.infra.dataobject.AppUserPermissionDTO;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dto.ApplicationDO;
-=======
-import io.choerodon.devops.infra.dataobject.AppUserPermissionDTO;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
-import io.choerodon.devops.infra.dto.ApplicationDTO;
->>>>>>> [IMP]重构后端代码
-import io.choerodon.devops.infra.dto.gitlab.BranchDO;
-import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
-import io.choerodon.devops.infra.dto.harbor.User;
-<<<<<<< HEAD
-<<<<<<< HEAD
-import io.choerodon.devops.infra.feign.ChartClient;
-import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.mapper.ApplicationMapper;
-import io.choerodon.devops.infra.dataobject.AppUserPermissionDTO;
 import io.choerodon.devops.infra.dataobject.UserAttrDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
-import io.choerodon.devops.infra.enums.AccessLevel;
-import io.choerodon.devops.infra.enums.GitPlatformType;
-import io.choerodon.devops.infra.enums.ProjectConfigType;
-import io.choerodon.devops.infra.enums.Rate;
-import io.choerodon.devops.infra.enums.SonarQubeType;
-=======
-import io.choerodon.devops.infra.dto.iam.OrganizationDO;
-import io.choerodon.devops.infra.dto.iam.ProjectDO;
-=======
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.ApplicationDO;
+import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
+import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
->>>>>>> [IMP]重构后端结构
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
->>>>>>> [IMP]重构后端代码
 import io.choerodon.devops.infra.mapper.AppUserPermissionMapper;
+import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.tool.UUIDTool;
-<<<<<<< HEAD
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-=======
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang.StringUtils;
->>>>>>> [IMP]重构后端代码
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -174,10 +83,6 @@ import org.springframework.transaction.annotation.Transactional;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-<<<<<<< HEAD
-=======
-
->>>>>>> [IMP]重构后端代码
 
 /**
  * Created by younger on 2018/3/28.
@@ -322,11 +227,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         iamAppPayLoad.setProjectId(projectId);
         iamAppPayLoad.setFrom(applicationName);
 
-<<<<<<< HEAD
-        iamService.createIamApp(organization.getId(), iamAppPayLoad);
-=======
         iamService.createIamApp(organizationVO.getId(), iamAppPayLoad);
->>>>>>> [IMP] 修改AppControler重构
         return ConvertHelper.convert(queryByCode(applicationDTO.getCode(), applicationDTO.getProjectId()), ApplicationRepVO.class);
     }
 
@@ -355,11 +256,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Saga(code = "devops-app-delete", description = "Devops删除失败应用", inputSchema = "{}")
     public void delete(Long projectId, Long appId) {
-<<<<<<< HEAD
-        ProjectVO projectE = iamService.queryIamProject(projectId);
-=======
         ProjectVO projectVO = iamService.queryIamProject(projectId);
->>>>>>> [IMP] 修改AppControler重构
         //删除应用权限
 
         appUserPermissionRepository.baseDeleteByAppId(appId);
@@ -922,13 +819,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                         + "-" + projectE.getCode() + "/" + applicationE.getCode() + ".git");
                 GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
 
-                BranchDO branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
-                if (branchDO.getName() == null) {
+                BranchDTO branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+                if (branchDTO.getName() == null) {
                     gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
                             gitlabUserE.getUsername(), accessToken);
-                    branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+                    branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
                     //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
-                    if (!branchDO.getProtected()) {
+                    if (!branchDTO.getProtected()) {
                         try {
 <<<<<<< HEAD
                             gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
@@ -938,13 +835,14 @@ public class ApplicationServiceImpl implements ApplicationService {
                                     AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
                                     gitlabProjectPayload.getUserId());
                         } catch (CommonException e) {
-                            branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
-                            if (!branchDO.getProtected()) {
+                            branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+                            if (!branchDTO.getProtected()) {
                                 throw new CommonException(e);
                             }
                         }
                     }
                 } else {
+<<<<<<< HEAD
                     if (!branchDO.getProtected()) {
 <<<<<<< HEAD
                         gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
@@ -1000,6 +898,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                     try {
 =======
 >>>>>>> [IMP]重构后端代码
+=======
+                    if (!branchDTO.getProtected()) {
+>>>>>>> [IMP]修改后端结构
                         gitLabService.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
 >>>>>>> [IMP] 修改AppControler重构
                                 AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
@@ -1064,13 +965,13 @@ public class ApplicationServiceImpl implements ApplicationService {
          * @return the application token that is stored in gitlab variables
          */
         private String getApplicationToken (Integer projectId, Integer userId){
-            List<Variable> variables = gitLabService.getVariable(projectId, userId);
-            if (variables.isEmpty()) {
+            List<VariableDTO> variableDTOS = gitLabService.getVariable(projectId, userId);
+            if (variableDTOS.isEmpty()) {
                 String token = GenerateUUID.generateUUID();
                 gitLabService.addVariable(projectId, "Token", token, false, userId);
                 return token;
             } else {
-                return variables.get(0).getValue();
+                return variableDTOS.get(0).getValue();
             }
         }
 
@@ -1235,21 +1136,29 @@ public class ApplicationServiceImpl implements ApplicationService {
          * @param userId       the gitlab user id
          */
         private void setProjectHook (ApplicationE applicationE, Integer projectId, String token, Integer userId){
-            ProjectHook projectHook = ProjectHook.allHook();
-            projectHook.setEnableSslVerification(true);
-            projectHook.setProjectId(projectId);
-            projectHook.setToken(token);
+            ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
+            projectHookDTO.setEnableSslVerification(true);
+            projectHookDTO.setProjectId(projectId);
+            projectHookDTO.setToken(token);
             String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
             uri += "devops/webhook";
+<<<<<<< HEAD
             projectHook.setUrl(uri);
             List<ProjectHook> projectHooks = gitlabRepository
                     .getHooks(projectId, userId);
             if (projectHooks.isEmpty()) {
                 applicationE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
                         projectId, userId, projectHook)
+=======
+            projectHookDTO.setUrl(uri);
+            List<ProjectHookDTO> projectHookDTOS = gitLabService.getHooks(projectId, userId);
+            if (projectHookDTOS.isEmpty()) {
+                applicationE.initHookId(TypeUtil.objToLong(gitLabService.createWebHook(
+                        projectId, userId, projectHookDTO)
+>>>>>>> [IMP]修改后端结构
                         .getId()));
             } else {
-                applicationE.initHookId(TypeUtil.objToLong(projectHooks.get(0).getId()));
+                applicationE.initHookId(TypeUtil.objToLong(projectHookDTOS.get(0).getId()));
             }
         }
 
@@ -1360,6 +1269,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             File templateWorkDir = new File(gitUtil.getWorkingDirectory(templateDir));
             File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
 
+<<<<<<< HEAD
             try {
                 List<Ref> refs = repositoryGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
                 for (Ref ref : refs) {
@@ -1461,6 +1371,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                 Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppImportPayload.getRepositoryUrl(), devOpsAppImportPayload.getAccessToken());
 
 <<<<<<< HEAD
+=======
+
+>>>>>>> [IMP]修改后端结构
                         // 将模板库中文件复制到代码库中
                         mergeTemplateToApplication(templateWorkDir, applicationWorkDir, applicationTemplateE.getId());
 
@@ -1468,8 +1381,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                         String accessToken = getToken(devOpsAppImportPayload, applicationDir, userAttrE);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
                         BranchDO branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), branchName);
                         if (branchDO.getName() == null) {
+=======
+                        BranchDTO branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), branchName);
+                        if (branchDTO.getName() == null) {
+>>>>>>> [IMP]修改后端结构
                             try {
                                 // 提交并推代码
                                 gitUtil.commitAndPush(repositoryGit, applicationE.getGitlabProjectE().getRepoURL(), accessToken, ref.getName());
@@ -1478,10 +1396,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 throw e;
                             }
 
-                            branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), branchName);
+                            branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), branchName);
                             //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
                             if (branchName.equals(MASTER)) {
-                                if (!branchDO.getProtected()) {
+                                if (!branchDTO.getProtected()) {
                                     try {
                                         gitlabRepository.createProtectBranch(devOpsAppImportPayload.getGitlabProjectId(), MASTER, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppImportPayload.getUserId());
                                     } catch (CommonException e) {
@@ -1493,8 +1411,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                             }
                         } else {
                             if (branchName.equals(MASTER)) {
+<<<<<<< HEAD
                                 if (!branchDO.getProtected()) {
                                     gitlabRepository.createProtectBranch(devOpsAppImportPayload.getGitlabProjectId(), MASTER,
+=======
+                                if (!branchDTO.getProtected()) {
+                                    gitLabService.createProtectBranch(devOpsAppImportPayload.getGitlabProjectId(), MASTER,
+>>>>>>> [IMP]修改后端结构
                                             AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
                                             devOpsAppImportPayload.getUserId());
                                 }
@@ -1724,10 +1647,20 @@ public class ApplicationServiceImpl implements ApplicationService {
         private void initBranch (DevOpsAppPayload gitlabProjectPayload, ApplicationE applicationE, String branchName){
             CommitE commitE;
             try {
+<<<<<<< HEAD
                 commitE = devopsGitRepository.getCommit(
                         gitlabProjectPayload.getGitlabProjectId(), branchName, gitlabProjectPayload.getUserId());
             } catch (Exception e) {
                 commitE = new CommitE();
+=======
+//            BeanUtils.copyProperties(
+//                    gitlabServiceClient.queryCommit(gitLabProjectId, commit, userId).getBody(),
+//                    commitE);
+                commitE = devopsGitRepository.getCommit(
+                        gitlabProjectPayload.getGitlabProjectId(), branchName, gitlabProjectPayload.getUserId());
+            } catch (Exception e) {
+                commitVO = new CommitDTO();
+>>>>>>> [IMP]修改后端结构
             }
             DevopsBranchE devopsBranchE = new DevopsBranchE();
             devopsBranchE.setUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));

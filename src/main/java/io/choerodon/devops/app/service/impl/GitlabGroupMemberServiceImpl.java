@@ -15,7 +15,7 @@ import io.choerodon.devops.domain.application.valueobject.MemberHelper;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dto.gitlab.RequestMemberDO;
+import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -172,7 +172,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     @Override
     public MemberDTO queryByUserId(Integer groupId, Integer userId) {
-        return gitlabServiceClient.getUserMemberByUserId(groupId, userId).getBody();
+        return gitlabServiceClient.queryGroupMember(groupId, userId).getBody();
     }
 
     @Override
@@ -182,12 +182,12 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     @Override
     public int create(Integer groupId, RequestMemberDO member) {
-        return gitlabServiceClient.insertMember(groupId, member).getStatusCodeValue();
+        return gitlabServiceClient.createGroupMember(groupId, member).getStatusCodeValue();
     }
 
     @Override
     public void update(Integer groupId, RequestMemberDO member) {
-        gitlabServiceClient.updateMember(groupId, member);
+        gitlabServiceClient.updateGroupMember(groupId, member);
     }
 
     /**

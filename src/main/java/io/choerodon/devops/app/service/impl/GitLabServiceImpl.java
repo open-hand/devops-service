@@ -5,20 +5,18 @@ import java.util.List;
 
 import feign.FeignException;
 import feign.RetryableException;
+import io.choerodon.devops.infra.dto.gitlab.VariableDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.gitlab.MemberVO;
-import io.choerodon.devops.api.vo.gitlab.VariableDTO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.app.service.GitLabService;
-import io.choerodon.devops.domain.application.valueobject.DeployKey;
-import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.infra.dto.gitlab.DeployKeyDTO;
+import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
-import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
@@ -46,12 +44,12 @@ public class GitLabServiceImpl implements GitLabService {
 
     @Override
     public void addVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
-        gitlabServiceClient.addVariable(gitlabProjectId, key, value, protecteds, userId);
+        gitlabServiceClient.addProjectVariable(gitlabProjectId, key, value, protecteds, userId);
     }
 
     @Override
-    public void batchAddVariable(Integer gitlabProjectId, Integer userId, List<VariableDTO> variableDTOS) {
-        gitlabServiceClient.batchAddVariable(gitlabProjectId, userId, variableDTOS);
+    public void batchAddVariable(Integer gitlabProjectId, Integer userId, List<io.choerodon.devops.api.vo.gitlab.VariableDTO> variableDTODTOS) {
+        gitlabServiceClient.batchAddProjectVariable(gitlabProjectId, userId, variableDTODTOS);
     }
 
     @Override
@@ -59,10 +57,10 @@ public class GitLabServiceImpl implements GitLabService {
         ResponseEntity<List<ImpersonationTokenDO>> impersonationTokens;
         try {
             impersonationTokens = gitlabServiceClient
-                    .listTokenByUserId(userId);
+                    .listProjectToken(userId);
         } catch (FeignException e) {
             gitUtil.deleteWorkingDirectory(name);
-            gitlabServiceClient.deleteProject(gitlabProjectId, userId);
+            gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
             throw new CommonException(e);
         }
         List<String> tokens = new ArrayList<>();
@@ -76,10 +74,10 @@ public class GitLabServiceImpl implements GitLabService {
     public String createToken(Integer gitlabProjectId, String name, Integer userId) {
         ResponseEntity<ImpersonationTokenDO> impersonationToken;
         try {
-            impersonationToken = gitlabServiceClient.createToken(userId);
+            impersonationToken = gitlabServiceClient.createProjectToken(userId);
         } catch (FeignException e) {
             gitUtil.deleteWorkingDirectory(name);
-            gitlabServiceClient.deleteProject(gitlabProjectId, userId);
+            gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
             throw new CommonException(e);
         }
         return impersonationToken.getBody().getToken();
@@ -164,7 +162,7 @@ public class GitLabServiceImpl implements GitLabService {
     @Override
     public void deleteDevOpsApp(String groupName, String projectName, Integer userId) {
         try {
-            gitlabServiceClient.deleteProjectByProjectName(groupName, projectName, userId);
+            gitlabServiceClient.deleteProjectByName(groupName, projectName, userId);
         } catch (FeignException e) {
             throw new CommonException("error.app.delete", e);
         }
@@ -184,7 +182,7 @@ public class GitLabServiceImpl implements GitLabService {
     public void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel,
                                     Integer userId) {
         try {
-            gitlabServiceClient.createProtectedBranches(
+            gitlabServiceClient.createProtectedBranch(
                     projectId, name, mergeAccessLevel, pushAccessLevel, userId);
         } catch (FeignException e) {
             throw new CommonException("error.branch.create", e);
@@ -194,7 +192,7 @@ public class GitLabServiceImpl implements GitLabService {
     @Override
     public void deleteProject(Integer projectId, Integer userId) {
         try {
-            gitlabServiceClient.deleteProject(projectId, userId);
+            gitlabServiceClient.deleteProjectById(projectId, userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -207,9 +205,9 @@ public class GitLabServiceImpl implements GitLabService {
 
 
     @Override
-    public ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook) {
+    public ProjectHookDTO createWebHook(Integer projectId, Integer userId, ProjectHookDTO projectHookDTO) {
         try {
-            return gitlabServiceClient.createProjectHook(projectId, userId, projectHook).getBody();
+            return gitlabServiceClient.createProjectHook(projectId, userId, projectHookDTO).getBody();
         } catch (FeignException e) {
             throw new CommonException("error.projecthook.create", e);
 
@@ -217,8 +215,8 @@ public class GitLabServiceImpl implements GitLabService {
     }
 
     @Override
-    public ProjectHook updateWebHook(Integer projectId, Integer hookId, Integer userId) {
-        ResponseEntity<ProjectHook> projectHookResponseEntity;
+    public ProjectHookDTO updateWebHook(Integer projectId, Integer hookId, Integer userId) {
+        ResponseEntity<ProjectHookDTO> projectHookResponseEntity;
         try {
             projectHookResponseEntity = gitlabServiceClient
                     .updateProjectHook(projectId, hookId, userId);
@@ -242,7 +240,7 @@ public class GitLabServiceImpl implements GitLabService {
     @Override
     public GitlabProjectDTO getProjectById(Integer projectId) {
         try {
-            return gitlabServiceClient.getProjectById(projectId).getBody();
+            return gitlabServiceClient.queryProjectById(projectId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -251,34 +249,34 @@ public class GitLabServiceImpl implements GitLabService {
     @Override
     public GitlabProjectDTO getProjectByName(String groupName, String projectName, Integer userId) {
         try {
-            return gitlabServiceClient.getProjectByName(userId, groupName, projectName).getBody();
+            return gitlabServiceClient.queryProjectByName(userId, groupName, projectName).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
     @Override
-    public List<ProjectHook> getHooks(Integer projectId, Integer userId) {
+    public List<ProjectHookDTO> getHooks(Integer projectId, Integer userId) {
         try {
-            return gitlabServiceClient.getProjectHook(projectId, userId).getBody();
+            return gitlabServiceClient.listProjectHook(projectId, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
     @Override
-    public List<Variable> getVariable(Integer projectId, Integer userId) {
+    public List<VariableDTO> getVariable(Integer projectId, Integer userId) {
         try {
-            return gitlabServiceClient.getVariable(projectId, userId).getBody();
+            return gitlabServiceClient.listVariable(projectId, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
     @Override
-    public List<DeployKey> getDeployKeys(Integer projectId, Integer userId) {
+    public List<DeployKeyDTO> getDeployKeys(Integer projectId, Integer userId) {
         try {
-            return gitlabServiceClient.getDeploykeys(projectId, userId).getBody();
+            return gitlabServiceClient.listDeploykey(projectId, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -296,7 +294,7 @@ public class GitLabServiceImpl implements GitLabService {
     @Override
     public void addMemberIntoProject(Integer projectId, MemberVO memberDTO) {
         try {
-            gitlabServiceClient.addMemberIntoProject(projectId, memberDTO);
+            gitlabServiceClient.createProjectMember(projectId, memberDTO);
         } catch (Exception e) {
             throw new CommonException("error.member.add", e);
         }
@@ -305,7 +303,7 @@ public class GitLabServiceImpl implements GitLabService {
     @Override
     public void updateMemberIntoProject(Integer projectId, List<MemberVO> list) {
         try {
-            gitlabServiceClient.updateMemberIntoProject(projectId, list);
+            gitlabServiceClient.updateProjectMember(projectId, list);
         } catch (Exception e) {
             throw new CommonException("error.member.update", e);
         }
@@ -314,7 +312,7 @@ public class GitLabServiceImpl implements GitLabService {
     @Override
     public void removeMemberFromProject(Integer groupId, Integer userId) {
         try {
-            gitlabServiceClient.removeMemberFromProject(groupId, userId);
+            gitlabServiceClient.deleteProjectMember(groupId, userId);
         } catch (Exception e) {
             throw new CommonException("error.member.remove", e);
         }
@@ -323,7 +321,7 @@ public class GitLabServiceImpl implements GitLabService {
     @Override
     public List<GitlabProjectDTO> getProjectsByUserId(Integer userId) {
         try {
-            return gitlabServiceClient.getProjectsByUserId(userId).getBody();
+            return gitlabServiceClient.listProjectByUser(userId).getBody();
         } catch (FeignException e) {
             throw new CommonException("error.project.get.by.userId", e);
         }

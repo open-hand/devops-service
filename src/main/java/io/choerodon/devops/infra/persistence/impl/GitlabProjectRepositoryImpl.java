@@ -49,7 +49,7 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
         ResponseEntity<List<PipelineDO>> responseEntity;
         try {
             responseEntity =
-                    gitlabServiceClient.listPipelines(projectId, page, size, userId);
+                    gitlabServiceClient.pagePipeline(projectId, page, size, userId);
         } catch (FeignException e) {
             return new ArrayList<>();
         }
@@ -60,7 +60,7 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     public GitlabPipelineE getPipeline(Integer projectId, Integer pipelineId, Integer userId) {
         ResponseEntity<PipelineDO> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.getPipeline(projectId, pipelineId, userId);
+            responseEntity = gitlabServiceClient.queryPipeline(projectId, pipelineId, userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -71,7 +71,7 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     public GitlabCommitE getCommit(Integer projectId, String sha, Integer userId) {
         ResponseEntity<CommitDTO> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.getCommit(projectId, sha, userId);
+            responseEntity = gitlabServiceClient.queryCommit(projectId, sha, userId);
         } catch (FeignException e) {
             return null;
         }
@@ -102,7 +102,7 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     @Override
     public Boolean cancel(Integer projectId, Integer pipelineId, Integer userId) {
         try {
-            gitlabServiceClient.cancel(projectId, pipelineId, userId);
+            gitlabServiceClient.cancelPipeline(projectId, pipelineId, userId);
         } catch (FeignException e) {
             return false;
         }
@@ -113,7 +113,7 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     public List<CommitStatuseDO> getCommitStatus(Integer projectId, String sha, Integer useId) {
         ResponseEntity<List<CommitStatuseDO>> commitStatuse;
         try {
-            commitStatuse = gitlabServiceClient.getCommitStatus(projectId, sha, useId);
+            commitStatuse = gitlabServiceClient.listCommitStatus(projectId, sha, useId);
         } catch (FeignException e) {
             return Collections.emptyList();
         }
@@ -154,7 +154,7 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     public List<GitlabMemberE> getAllMemberByProjectId(Integer projectId) {
         try {
             return ConvertHelper
-                    .convertList(gitlabServiceClient.getAllMemberByProjectId(projectId).getBody(), GitlabMemberE.class);
+                    .convertList(gitlabServiceClient.listMemberByProject(projectId).getBody(), GitlabMemberE.class);
         } catch (FeignException e) {
             throw new CommonException(e);
         }

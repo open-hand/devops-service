@@ -4,35 +4,26 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
-import com.github.pagehelper.util.StringUtil;
 import feign.FeignException;
 import feign.RetryableException;
-import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.gitlab.MemberDTO;
-import io.choerodon.devops.api.vo.gitlab.VariableDTO;
-import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
-import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.valueobject.*;
+import io.choerodon.devops.api.vo.AssigneeDTO;
+import io.choerodon.devops.api.vo.AuthorDTO;
+import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
 
 /**
  * Created by Sheep on 2019/7/11.
@@ -42,115 +33,116 @@ import org.springframework.stereotype.Component;
 public class GitlabServiceClientOperator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabServiceClientOperator.class);
-
-
+    private static final JSON json = new JSON();
 
     @Autowired
     private GitlabServiceClient gitlabServiceClient;
     @Autowired
+    private IamServiceClientOperator iamServiceClientOperator;
+    @Autowired
     private GitUtil gitUtil;
 
 
-    public GitlabUserE createGitLabUser(String password, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
-        ResponseEntity<UserDO> responseEntity;
+    public UserDTO createUser(String password, Integer projectsLimit, UserReqDTO userReqDTO) {
+        ResponseEntity<UserDTO> userDOResponseEntity;
         try {
-            responseEntity = gitlabServiceClient.createGitLabUser(
-                    password, projectsLimit, gitlabUserPayload);
+            userDOResponseEntity = gitlabServiceClient.createUser(
+                    password, projectsLimit, userReqDTO);
         } catch (FeignException e) {
             LOGGER.info("error.gitlab.user.create");
             throw new CommonException(e);
         }
-        return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
+        return userDOResponseEntity.getBody();
     }
 
-    public GitlabUserE getUserByUserName(String userName) {
-        ResponseEntity<UserDO> responseEntity;
+    public UserDTO queryUserByUserName(String userName) {
+        ResponseEntity<UserDTO> userDTOResponseEntity;
         try {
-            responseEntity = gitlabServiceClient.queryUserByUserName(userName);
+            userDTOResponseEntity = gitlabServiceClient.queryUserByUserName(userName);
         } catch (FeignException e) {
             return null;
         }
-        return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
+        return userDTOResponseEntity.getBody();
     }
 
-    public GitlabUserE updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
-        ResponseEntity<UserDO> responseEntity;
+    public UserDTO updateUser(Integer userId, Integer projectsLimit, UserReqDTO userReqDTO) {
+        ResponseEntity<UserDTO> userDTOResponseEntity;
         try {
-            responseEntity = gitlabServiceClient.updateGitLabUser(
-                    userId, projectsLimit, gitlabUserPayload);
+            userDTOResponseEntity = gitlabServiceClient.updateGitLabUser(
+                    userId, projectsLimit, userReqDTO);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
+        return userDTOResponseEntity.getBody();
     }
 
-    public void isEnabledGitlabUser(Integer userId) {
+    public void enableUser(Integer userId) {
 
         try {
-            gitlabServiceClient.enabledUserByUserId(userId);
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
-    }
-
-    public void disEnabledGitlabUser(Integer userId) {
-        try {
-            gitlabServiceClient.disEnabledUserByUserId(userId);
+            gitlabServiceClient.enableUser(userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
-    public GitlabUserE getGitlabUserByUserId(Integer userId) {
-        ResponseEntity<UserDO> responseEntity;
+    public void disableUser(Integer userId) {
         try {
-            responseEntity = gitlabServiceClient.queryUserByUserId(userId);
+            gitlabServiceClient.disableUser(userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
     }
 
-    public Boolean checkEmailIsExist(String email) {
-        return gitlabServiceClient.checkEmailIsExist(email).getBody();
+    public UserDTO queryUserById(Integer userId) {
+        ResponseEntity<UserDTO> userDTOResponseEntity;
+        try {
+            userDTOResponseEntity = gitlabServiceClient.queryUserById(userId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+        return userDTOResponseEntity.getBody();
     }
 
-
-    public GitlabMemberE getUserMemberByUserId(Integer groupId, Integer userId) {
-        return ConvertHelper.convert(gitlabServiceClient.getUserMemberByUserId(
-                groupId, userId).getBody(), GitlabMemberE.class);
-    }
-
-    public ResponseEntity deleteMember(Integer groupId, Integer userId) {
-        return gitlabServiceClient.deleteMember(groupId, userId);
-    }
-
-    public int insertMember(Integer groupId, RequestMemberDO member) {
-        return gitlabServiceClient.insertMember(groupId, member).getStatusCodeValue();
+    public Boolean checkEmail(String email) {
+        return gitlabServiceClient.checkEmail(email).getBody();
     }
 
 
-    public ResponseEntity updateMember(Integer groupId, RequestMemberDO member) {
-        return gitlabServiceClient.updateMember(groupId, member);
+    public MemberDTO queryGroupMember(Integer groupId, Integer userId) {
+        return gitlabServiceClient.queryGroupMember(
+                groupId, userId).getBody();
+    }
+
+    public void deleteGroupMember(Integer groupId, Integer userId) {
+         gitlabServiceClient.deleteMember(groupId, userId);
+    }
+
+    public int createGroupMember(Integer groupId, MemberDTO memberDTO) {
+        return gitlabServiceClient.createGroupMember(groupId, memberDTO).getStatusCodeValue();
     }
 
 
-    public void addVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
-        gitlabServiceClient.addVariable(gitlabProjectId, key, value, protecteds, userId);
+    public void updateGroupMember(Integer groupId, MemberDTO memberDTO) {
+         gitlabServiceClient.updateGroupMember(groupId, memberDTO);
     }
 
-    public void batchAddVariable(Integer gitlabProjectId, Integer userId, List<VariableDTO> variableDTOS) {
-        gitlabServiceClient.batchAddVariable(gitlabProjectId, userId, variableDTOS);
+
+    public void addProjectVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
+        gitlabServiceClient.addProjectVariable(gitlabProjectId, key, value, protecteds, userId);
     }
 
-    public List<String> listTokenByUserId(Integer gitlabProjectId, String name, Integer userId) {
+    public void batchAddProjectVariable(Integer gitlabProjectId, Integer userId, List<io.choerodon.devops.api.vo.gitlab.VariableDTO> variableDTODTOS) {
+        gitlabServiceClient.batchAddProjectVariable(gitlabProjectId, userId, variableDTODTOS);
+    }
+
+    public List<String> listProjectToken(Integer gitlabProjectId, String name, Integer userId) {
         ResponseEntity<List<ImpersonationTokenDO>> impersonationTokens;
         try {
             impersonationTokens = gitlabServiceClient
-                    .listTokenByUserId(userId);
+                    .listProjectToken(userId);
         } catch (FeignException e) {
             gitUtil.deleteWorkingDirectory(name);
-            gitlabServiceClient.deleteProject(gitlabProjectId, userId);
+            gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
             throw new CommonException(e);
         }
         List<String> tokens = new ArrayList<>();
@@ -160,41 +152,40 @@ public class GitlabServiceClientOperator {
         return tokens;
     }
 
-    public String createToken(Integer gitlabProjectId, String name, Integer userId) {
+    public String createProjectToken(Integer gitlabProjectId, String name, Integer userId) {
         ResponseEntity<ImpersonationTokenDO> impersonationToken;
         try {
-            impersonationToken = gitlabServiceClient.createToken(userId);
+            impersonationToken = gitlabServiceClient.createProjectToken(userId);
         } catch (FeignException e) {
             gitUtil.deleteWorkingDirectory(name);
-            gitlabServiceClient.deleteProject(gitlabProjectId, userId);
+            gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
             throw new CommonException(e);
         }
         return impersonationToken.getBody().getToken();
     }
 
-    public DevopsProjectE queryGroupByName(String groupName, Integer userId) {
-        ResponseEntity<GroupDO> groupDO;
+    public GroupDTO queryGroupByName(String groupName, Integer userId) {
+        ResponseEntity<GroupDTO> groupDTOResponseEntity;
         try {
-            groupDO = gitlabServiceClient.queryGroupByName(groupName, userId);
+            groupDTOResponseEntity = gitlabServiceClient.queryGroupByName(groupName, userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        if (groupDO != null) {
-            return ConvertHelper.convert(groupDO.getBody(), DevopsProjectE.class);
+        if (groupDTOResponseEntity != null) {
+            return groupDTOResponseEntity.getBody();
         } else {
             return null;
         }
     }
 
-    public DevopsProjectE createGroup(DevopsProjectE devopsProjectE, Integer userId) {
-        ResponseEntity<GroupDO> groupDOResponseEntity;
-        GroupDO groupDO = ConvertHelper.convert(devopsProjectE, GroupDO.class);
+    public GroupDTO createGroup(GroupDTO groupDTO, Integer userId) {
+        ResponseEntity<GroupDTO> groupDTOResponseEntity;
         try {
-            groupDOResponseEntity = gitlabServiceClient.createGroup(groupDO, userId);
+            groupDTOResponseEntity = gitlabServiceClient.createGroup(groupDTO, userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        return ConvertHelper.convert(groupDOResponseEntity.getBody(), DevopsProjectE.class);
+        return groupDTOResponseEntity.getBody();
     }
 
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
@@ -242,9 +233,9 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public void deleteDevOpsApp(String groupName, String projectName, Integer userId) {
+    public void deleteProjectByName(String groupName, String projectName, Integer userId) {
         try {
-            gitlabServiceClient.deleteProjectByProjectName(groupName, projectName, userId);
+            gitlabServiceClient.deleteProjectByName(groupName, projectName, userId);
         } catch (FeignException e) {
             throw new CommonException("error.app.delete", e);
         }
@@ -262,37 +253,37 @@ public class GitlabServiceClientOperator {
     public void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel,
                                     Integer userId) {
         try {
-            gitlabServiceClient.createProtectedBranches(
+            gitlabServiceClient.createProtectedBranch(
                     projectId, name, mergeAccessLevel, pushAccessLevel, userId);
         } catch (FeignException e) {
             throw new CommonException("error.branch.create", e);
         }
     }
 
-    public void deleteProject(Integer projectId, Integer userId) {
+    public void deleteProjectById(Integer projectId, Integer userId) {
         try {
-            gitlabServiceClient.deleteProject(projectId, userId);
+            gitlabServiceClient.deleteProjectById(projectId, userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
-    public void updateGroup(Integer projectId, Integer userId, GroupDO groupDO) {
-        gitlabServiceClient.updateGroup(projectId, userId, groupDO);
+    public void updateGroup(Integer projectId, Integer userId, GroupDTO groupDTO) {
+        gitlabServiceClient.updateGroup(projectId, userId, groupDTO);
     }
 
 
-    public ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook) {
+    public ProjectHookDTO createWebHook(Integer projectId, Integer userId, ProjectHookDTO projectHookDTO) {
         try {
-            return gitlabServiceClient.createProjectHook(projectId, userId, projectHook).getBody();
+            return gitlabServiceClient.createProjectHook(projectId, userId, projectHookDTO).getBody();
         } catch (FeignException e) {
             throw new CommonException("error.projecthook.create", e);
 
         }
     }
 
-    public ProjectHook updateWebHook(Integer projectId, Integer hookId, Integer userId) {
-        ResponseEntity<ProjectHook> projectHookResponseEntity;
+    public ProjectHookDTO updateProjectHook(Integer projectId, Integer hookId, Integer userId) {
+        ResponseEntity<ProjectHookDTO> projectHookResponseEntity;
         try {
             projectHookResponseEntity = gitlabServiceClient
                     .updateProjectHook(projectId, hookId, userId);
@@ -302,7 +293,7 @@ public class GitlabServiceClientOperator {
         return projectHookResponseEntity.getBody();
     }
 
-    public GitlabProjectDO createProject(Integer groupId, String projectName, Integer userId, boolean visibility) {
+    public GitlabProjectDTO createProject(Integer groupId, String projectName, Integer userId, boolean visibility) {
         try {
             return gitlabServiceClient
                     .createProject(groupId, projectName, userId, visibility).getBody();
@@ -312,41 +303,41 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public GitlabProjectDO getProjectById(Integer projectId) {
+    public GitlabProjectDTO queryProjectById(Integer projectId) {
         try {
-            return gitlabServiceClient.getProjectById(projectId).getBody();
+            return gitlabServiceClient.queryProjectById(projectId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
-    public GitlabProjectDO getProjectByName(String groupName, String projectName, Integer userId) {
+    public GitlabProjectDTO queryProjectByName(String groupName, String projectName, Integer userId) {
         try {
-            return gitlabServiceClient.getProjectByName(userId, groupName, projectName).getBody();
+            return gitlabServiceClient.queryProjectByName(userId, groupName, projectName).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
-    public List<ProjectHook> getHooks(Integer projectId, Integer userId) {
+    public List<ProjectHookDTO> listProjectHook(Integer projectId, Integer userId) {
         try {
-            return gitlabServiceClient.getProjectHook(projectId, userId).getBody();
+            return gitlabServiceClient.listProjectHook(projectId, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
-    public List<Variable> getVariable(Integer projectId, Integer userId) {
+    public List<VariableDTO> listVariable(Integer projectId, Integer userId) {
         try {
-            return gitlabServiceClient.getVariable(projectId, userId).getBody();
+            return gitlabServiceClient.listVariable(projectId, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
-    public List<DeployKey> getDeployKeys(Integer projectId, Integer userId) {
+    public List<DeployKeyDTO> listDeployKey(Integer projectId, Integer userId) {
         try {
-            return gitlabServiceClient.getDeploykeys(projectId, userId).getBody();
+            return gitlabServiceClient.listDeploykey(projectId, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -360,41 +351,41 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public void addMemberIntoProject(Integer projectId, MemberDTO memberDTO) {
+    public void createProjectMember(Integer projectId, MemberDTO memberDTO) {
         try {
-            gitlabServiceClient.addMemberIntoProject(projectId, memberDTO);
+            gitlabServiceClient.createProjectMember(projectId, memberDTO);
         } catch (Exception e) {
             throw new CommonException("error.member.add", e);
         }
     }
 
-    public void updateMemberIntoProject(Integer projectId, List<MemberDTO> list) {
+    public void updateProjectMember(Integer projectId, List<MemberDTO> memberDTOS) {
         try {
-            gitlabServiceClient.updateMemberIntoProject(projectId, list);
+            gitlabServiceClient.updateProjectMember(projectId, memberDTOS);
         } catch (Exception e) {
             throw new CommonException("error.member.update", e);
         }
     }
 
-    public void removeMemberFromProject(Integer groupId, Integer userId) {
+    public void deleteProjectMember(Integer groupId, Integer userId) {
         try {
-            gitlabServiceClient.removeMemberFromProject(groupId, userId);
+            gitlabServiceClient.deleteProjectMember(groupId, userId);
         } catch (Exception e) {
             throw new CommonException("error.member.remove", e);
         }
     }
 
 
-    public List<GitlabProjectDO> getProjectsByUserId(Integer userId) {
+    public List<GitlabProjectDTO> listProjectByUser(Integer userId) {
         try {
-            return gitlabServiceClient.getProjectsByUserId(userId).getBody();
+            return gitlabServiceClient.listProjectByUser(userId).getBody();
         } catch (FeignException e) {
             throw new CommonException("error.project.get.by.userId", e);
         }
     }
 
 
-    public MergeRequestDO createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, String title, String description, Integer userId) {
+    public MergeRequestDTO createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, String title, String description, Integer userId) {
         try {
             return gitlabServiceClient.createMergeRequest(projectId, sourceBranch, targetBranch, title, description, userId).getBody();
         } catch (FeignException e) {
@@ -421,12 +412,12 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public TagDO updateTag(Integer gitLabProjectId, String tag, String releaseNotes, Integer userId) {
+    public TagDTO updateTag(Integer gitLabProjectId, String tag, String releaseNotes, Integer userId) {
         try {
             if (releaseNotes == null) {
                 releaseNotes = "";
             }
-            return gitlabServiceClient.updateTagRelease(gitLabProjectId, tag, releaseNotes, userId).getBody();
+            return gitlabServiceClient.updateTag(gitLabProjectId, tag, releaseNotes, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
         }
@@ -441,8 +432,8 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public BranchDO createBranch(Integer projectId, String branchName, String baseBranch, Integer userId) {
-        ResponseEntity<BranchDO> responseEntity;
+    public BranchDTO createBranch(Integer projectId, String branchName, String baseBranch, Integer userId) {
+        ResponseEntity<BranchDTO> responseEntity;
         try {
             responseEntity =
                     gitlabServiceClient.createBranch(projectId, branchName, baseBranch, userId);
@@ -452,50 +443,48 @@ public class GitlabServiceClientOperator {
         return responseEntity.getBody();
     }
 
-    public List<BranchDO> listGitLabBranches(Integer projectId, String path, Integer userId) {
-        ResponseEntity<List<BranchDO>> responseEntity;
+    public List<BranchDTO> listBranch(Integer projectId, String path, Integer userId) {
+        ResponseEntity<List<BranchDTO>> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.listBranches(projectId, userId);
+            responseEntity = gitlabServiceClient.listBranch(projectId, userId);
         } catch (FeignException e) {
             throw new CommonException("error.branch.get", e);
 
         }
-        List<BranchDO> branches = responseEntity.getBody();
+        List<BranchDTO> branches = responseEntity.getBody();
         branches.forEach(t -> t.getCommit().setUrl(
                 String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId())));
         return branches;
     }
 
 
-    public PageInfo<TagDTO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId) {
-        ApplicationE applicationE = applicationRepository.query(appId);
-        GitlabMemberE newGroupMemberE = gitlabProjectRepository.getProjectMember(
-                TypeUtil.objToInteger(applicationE.getGitlabProjectE().getId()),
+    public PageInfo<TagDTO> pageTag(Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId) {
+        MemberDTO memberDTO = getProjectMember(
+                gitlabProjectId,
                 userId);
-        if (newGroupMemberE == null) {
+        if (memberDTO == null) {
             throw new CommonException("error.user.not.the.pro.authority");
         }
-        Integer projectId = getGitLabId(appId);
-        List<TagDO> tagTotalList = getGitLabTags(projectId, userId);
+        List<TagDTO> tagTotalList = pageTag(gitlabProjectId, userId);
         PageInfo<TagDTO> tagsPage = new PageInfo<>();
-        List<TagDO> tagList = tagTotalList.stream()
+        List<TagDTO> tagList = tagTotalList.stream()
                 .filter(t -> filterTag(t, params))
                 .collect(Collectors.toCollection(ArrayList::new));
-        List<TagDTO> tagDTOS = tagList.stream()
+        List<TagDTO> tagVOS = tagList.stream()
                 .sorted(this::sortTag)
                 .map(TagDTO::new)
                 .parallel()
                 .peek(t -> {
-                    UserE userE = iamRepository.queryByEmail(TypeUtil.objToLong(projectId), t.getCommit().getAuthorEmail());
-                    if (userE != null) {
-                        t.setCommitUserImage(userE.getImageUrl());
+                    io.choerodon.devops.infra.dto.iam.UserDTO userDTO = iamServiceClientOperator.queryByEmail(TypeUtil.objToLong(gitlabProjectId), t.getCommit().getAuthorEmail());
+                    if (userDTO != null) {
+                        t.setCommitUserImage(userDTO.getImageUrl());
                     }
                     t.getCommit().setUrl(String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId()));
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        if (tagDTOS.size() < size * page) {
-            tagsPage.setSize(TypeUtil.objToInt(tagDTOS.size()) - (size * (page - 1)));
+        if (tagVOS.size() < size * page) {
+            tagsPage.setSize(TypeUtil.objToInt(tagVOS.size()) - (size * (page - 1)));
         } else {
             tagsPage.setSize(size);
         }
@@ -503,20 +492,20 @@ public class GitlabServiceClientOperator {
         tagsPage.setPageSize(size);
         tagsPage.setTotal(tagList.size());
         tagsPage.setPageNum(page);
-        tagsPage.setList(tagDTOS);
+        tagsPage.setList(tagVOS);
         return tagsPage;
     }
 
-    private Boolean filterTag(TagDO tagDO, String params) {
+    private Boolean filterTag(TagDTO tagDTO, String params) {
         Integer index = 0;
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> maps = json.deserialize(params, Map.class);
             String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
             param = param == null ? "" : param;
             if (!param.equals("")) {
-                if (tagDO.getName().contains(param) || tagDO.getCommit().getShortId().contains(param)
-                        || tagDO.getCommit().getCommitterName().contains(param)
-                        || tagDO.getCommit().getMessage().contains(param)) {
+                if (tagDTO.getName().contains(param) || tagDTO.getCommit().getShortId().contains(param)
+                        || tagDTO.getCommit().getCommitterName().contains(param)
+                        || tagDTO.getCommit().getMessage().contains(param)) {
                     index = 1;
                 } else {
                     return false;
@@ -525,63 +514,63 @@ public class GitlabServiceClientOperator {
             Object obj = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             if (obj != null) {
                 Map<String, ArrayList<String>> mapSearch = (Map<String, ArrayList<String>>) obj;
-                index = getTagName(index, tagDO, mapSearch);
-                index = getShortId(index, tagDO, mapSearch);
-                index = getCommitterName(index, tagDO, mapSearch);
-                index = getMessage(index, tagDO, mapSearch);
+                index = getTagName(index, tagDTO, mapSearch);
+                index = getShortId(index, tagDTO, mapSearch);
+                index = getCommitterName(index, tagDTO, mapSearch);
+                index = getMessage(index, tagDTO, mapSearch);
             }
         }
         return index >= 0;
     }
 
-    private Integer getTagName(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getTagName(Integer index, TagDTO tagDTO, Map<String, ArrayList<String>> mapSearch) {
         String tagName = "tagName";
         if (mapSearch.containsKey(tagName)
                 && mapSearch.get(tagName) != null
                 && !mapSearch.get(tagName).isEmpty()
                 && mapSearch.get(tagName).get(0) != null) {
-            index = tagDO.getName().contains(mapSearch.get(tagName).get(0)) ? 1 : -1;
+            index = tagDTO.getName().contains(mapSearch.get(tagName).get(0)) ? 1 : -1;
         }
         return index;
     }
 
-    private Integer getShortId(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getShortId(Integer index, TagDTO tagDTO, Map<String, ArrayList<String>> mapSearch) {
         String shortId = "shortId";
         if (index >= 0 && mapSearch.containsKey(shortId)
                 && mapSearch.get(shortId) != null
                 && !mapSearch.get(shortId).isEmpty()
                 && mapSearch.get(shortId).get(0) != null) {
-            index = tagDO.getCommit().getId()
+            index = tagDTO.getCommit().getId()
                     .contains(mapSearch.get(shortId).get(0)) ? 1 : -1;
         }
         return index;
     }
 
-    private Integer getCommitterName(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getCommitterName(Integer index, TagDTO tagDTO, Map<String, ArrayList<String>> mapSearch) {
         String committerName = "committerName";
         if (index >= 0 && mapSearch.containsKey(committerName)
                 && mapSearch.get(committerName) != null
                 && !mapSearch.get(committerName).isEmpty()
                 && mapSearch.get(committerName).get(0) != null) {
-            index = tagDO.getCommit().getCommitterName()
+            index = tagDTO.getCommit().getCommitterName()
                     .contains(mapSearch.get(committerName).get(0)) ? 1 : -1;
         }
         return index;
     }
 
-    private Integer getMessage(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getMessage(Integer index, TagDTO tagDTO, Map<String, ArrayList<String>> mapSearch) {
         String msg = "message";
         if (index >= 0 && mapSearch.containsKey(msg)
                 && mapSearch.get(msg) != null
                 && !mapSearch.get(msg).isEmpty()
                 && mapSearch.get(msg).get(0) != null) {
-            index = tagDO.getCommit().getMessage().contains(mapSearch.get(msg).get(0)) ? 1 : -1;
+            index = tagDTO.getCommit().getMessage().contains(mapSearch.get(msg).get(0)) ? 1 : -1;
         }
         return index;
     }
 
-    public List<TagDO> getGitLabTags(Integer projectId, Integer userId) {
-        ResponseEntity<List<TagDO>> tagResponseEntity;
+    public List<TagDTO> pageTag(Integer projectId, Integer userId) {
+        ResponseEntity<List<TagDTO>> tagResponseEntity;
         try {
             tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
         } catch (FeignException e) {
@@ -591,10 +580,9 @@ public class GitlabServiceClientOperator {
     }
 
 
-
-    public BranchDO getBranch(Integer gitlabProjectId, String branch) {
+    public BranchDTO queryBranch(Integer gitlabProjectId, String branch) {
         try {
-            return gitlabServiceClient.getBranch(gitlabProjectId, branch).getBody();
+            return gitlabServiceClient.queryBranch(gitlabProjectId, branch).getBody();
         } catch (FeignException e) {
             throw new CommonException("error.branch.get", e);
 
@@ -602,164 +590,107 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public CompareResultsE getCompareResults(Integer gitlabProjectId, String from, String to) {
+    public CompareResultDTO queryCompareResult(Integer gitlabProjectId, String from, String to) {
         try {
-            return gitlabServiceClient.getCompareResults(gitlabProjectId, from, to).getBody();
+            return gitlabServiceClient.queryCompareResult(gitlabProjectId, from, to).getBody();
         } catch (FeignException e) {
             throw new CommonException("error.diffs.get", e);
         }
     }
 
-
-
-    @Override
-    public DevopsBranchE queryByAppAndBranchName(Long appId, String branchName) {
-        return ConvertHelper.convert(devopsBranchMapper
-                .queryByAppAndBranchName(appId, branchName), DevopsBranchE.class);
-    }
-
-    @Override
-    public void updateBranchIssue(Long appId, DevopsBranchE devopsBranchE) {
-        DevopsBranchDTO devopsBranchDTO = devopsBranchMapper
-                .queryByAppAndBranchName(appId, devopsBranchE.getBranchName());
-        devopsBranchDTO.setIssueId(devopsBranchE.getIssueId());
-        devopsBranchMapper.updateByPrimaryKey(devopsBranchDTO);
-    }
-
-    @Override
-    public void updateBranchLastCommit(DevopsBranchE devopsBranchE) {
-        DevopsBranchDTO branchDO = devopsBranchMapper
-                .queryByAppAndBranchName(devopsBranchE.getApplicationE().getId(), devopsBranchE.getBranchName());
-        branchDO.setLastCommit(devopsBranchE.getLastCommit());
-        branchDO.setLastCommitDate(devopsBranchE.getLastCommitDate());
-        branchDO.setLastCommitMsg(devopsBranchE.getLastCommitMsg());
-        branchDO.setLastCommitUser(devopsBranchE.getLastCommitUser());
-        devopsBranchMapper.updateByPrimaryKey(branchDO);
-
-    }
-
-    @Override
-    public DevopsBranchE createDevopsBranch(DevopsBranchE devopsBranchE) {
-        devopsBranchE.setDeleted(false);
-        DevopsBranchDTO devopsBranchDTO = ConvertHelper.convert(devopsBranchE, DevopsBranchDTO.class);
-        devopsBranchMapper.insert(devopsBranchDTO);
-        return ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
-    }
-
-    @Override
-    public DevopsBranchE qureyBranchById(Long devopsBranchId) {
-        return ConvertHelper.convert(devopsBranchMapper.selectByPrimaryKey(devopsBranchId), DevopsBranchE.class);
-    }
-
-    @Override
-    public void updateBranch(DevopsBranchE devopsBranchE) {
-        DevopsBranchDTO branchDO = ConvertHelper.convert(devopsBranchE, DevopsBranchDTO.class);
-        branchDO.setObjectVersionNumber(devopsBranchMapper.selectByPrimaryKey(devopsBranchE.getId()).getObjectVersionNumber());
-        if (devopsBranchMapper.updateByPrimaryKey(branchDO) != 1) {
-            throw new CommonException("error.branch.update");
-        }
-    }
-
-    @Override
-    public Map<String, Object> getMergeRequestList(Long projectId, Integer gitLabProjectId,
-                                                   String state,
-                                                   PageRequest pageRequest) {
-        List<DevopsMergeRequestE> allMergeRequest = devopsMergeRequestRepository
-                .getByGitlabProjectId(gitLabProjectId);
-        final int[] count = {0, 0, 0};
-        if (allMergeRequest != null && !allMergeRequest.isEmpty()) {
-            allMergeRequest.forEach(devopsMergeRequestE -> {
-                if ("merged".equals(devopsMergeRequestE.getState())) {
-                    count[0]++;
-                } else if ("opened".equals(devopsMergeRequestE.getState())) {
-                    count[1]++;
-                } else if ("closed".equals(devopsMergeRequestE.getState())) {
-                    count[2]++;
-                }
-            });
-        }
-        PageInfo<DevopsMergeRequestE> page = devopsMergeRequestRepository
-                .getByGitlabProjectId(gitLabProjectId, pageRequest);
-        if (StringUtil.isNotEmpty(state)) {
-            page = devopsMergeRequestRepository
-                    .getMergeRequestList(gitLabProjectId, state, pageRequest);
-        }
-        List<MergeRequestDTO> pageContent = new ArrayList<>();
-        List<DevopsMergeRequestE> content = page.getList();
-        if (content != null && !content.isEmpty()) {
-            content.forEach(devopsMergeRequestE -> {
-                MergeRequestDTO mergeRequestDTO = devopsMergeRequestToMergeRequest(
-                        devopsMergeRequestE);
-                pageContent.add(mergeRequestDTO);
-            });
-        }
-        int total = count[0] + count[1] + count[2];
-        PageInfo<MergeRequestDTO> pageResult = new PageInfo<>();
-        BeanUtils.copyProperties(page, pageResult);
-        pageResult.setList(pageContent);
-        Map<String, Object> result = new HashMap<>();
-        result.put("mergeCount", count[0]);
-        result.put("openCount", count[1]);
-        result.put("closeCount", count[2]);
-        result.put("totalCount", total);
-        result.put("pageResult", pageResult);
-        return result;
-    }
-
-    private MergeRequestDTO devopsMergeRequestToMergeRequest(DevopsMergeRequestE devopsMergeRequestE) {
-        MergeRequestDTO mergeRequestDTO = new MergeRequestDTO();
-        BeanUtils.copyProperties(devopsMergeRequestE, mergeRequestDTO);
-        mergeRequestDTO.setProjectId(devopsMergeRequestE.getProjectId().intValue());
-        mergeRequestDTO.setId(devopsMergeRequestE.getId().intValue());
-        mergeRequestDTO.setIid(devopsMergeRequestE.getGitlabMergeRequestId().intValue());
-        Long authorUserId = devopsGitRepository
-                .getUserIdByGitlabUserId(devopsMergeRequestE.getAuthorId());
-        Long assigneeId = devopsGitRepository
-                .getUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId());
-        Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
-        Integer gitlabUserId = devopsGitRepository.getGitlabUserId();
-        List<CommitDO> commitDOS = new ArrayList<>();
-        try {
-            commitDOS = gitlabServiceClient.listCommits(
-                    devopsMergeRequestE.getProjectId().intValue(),
-                    gitlabMergeRequestId.intValue(), gitlabUserId).getBody();
-            mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDOS, CommitDTO.class));
-        } catch (FeignException e) {
-            LOGGER.info(e.getMessage());
-        }
-        UserE authorUser = iamRepository.queryUserByUserId(authorUserId);
-        if (authorUser != null) {
-            AuthorDTO authorDTO = new AuthorDTO();
-            authorDTO.setUsername(authorUser.getLoginName());
-            authorDTO.setName(authorUser.getRealName());
-            authorDTO.setId(authorUser.getId() == null ? null : authorUser.getId().intValue());
-            authorDTO.setWebUrl(authorUser.getImageUrl());
-            mergeRequestDTO.setAuthor(authorDTO);
-        }
-        UserE assigneeUser = iamRepository.queryUserByUserId(assigneeId);
-        if (assigneeUser != null) {
-            AssigneeDTO assigneeDTO = new AssigneeDTO();
-            assigneeDTO.setUsername(assigneeUser.getLoginName());
-            assigneeDTO.setName(assigneeUser.getRealName());
-            assigneeDTO.setId(assigneeId.intValue());
-            assigneeDTO.setWebUrl(assigneeUser.getImageUrl());
-            mergeRequestDTO.setAssignee(assigneeDTO);
-        }
-        return mergeRequestDTO;
-    }
+//
+//    @Override
+//    public Map<String, Object> getMergeRequestList(Long projectId, Integer gitLabProjectId,
+//                                                   String state,
+//                                                   PageRequest pageRequest) {
+//        List<DevopsMergeRequestE> allMergeRequest = devopsMergeRequestRepository
+//                .getByGitlabProjectId(gitLabProjectId);
+//        final int[] count = {0, 0, 0};
+//        if (allMergeRequest != null && !allMergeRequest.isEmpty()) {
+//            allMergeRequest.forEach(devopsMergeRequestE -> {
+//                if ("merged".equals(devopsMergeRequestE.getState())) {
+//                    count[0]++;
+//                } else if ("opened".equals(devopsMergeRequestE.getState())) {
+//                    count[1]++;
+//                } else if ("closed".equals(devopsMergeRequestE.getState())) {
+//                    count[2]++;
+//                }
+//            });
+//        }
+//        PageInfo<DevopsMergeRequestE> page = devopsMergeRequestRepository
+//                .getByGitlabProjectId(gitLabProjectId, pageRequest);
+//        if (StringUtil.isNotEmpty(state)) {
+//            page = devopsMergeRequestRepository
+//                    .getMergeRequestList(gitLabProjectId, state, pageRequest);
+//        }
+//        List<io.choerodon.devops.api.vo.MergeRequestDTO> pageContent = new ArrayList<>();
+//        List<DevopsMergeRequestE> content = page.getList();
+//        if (content != null && !content.isEmpty()) {
+//            content.forEach(devopsMergeRequestE -> {
+//                io.choerodon.devops.api.vo.MergeRequestDTO mergeRequestDTO = devopsMergeRequestToMergeRequest(
+//                        devopsMergeRequestE);
+//                pageContent.add(mergeRequestDTO);
+//            });
+//        }
+//        int total = count[0] + count[1] + count[2];
+//        PageInfo<io.choerodon.devops.api.vo.MergeRequestDTO> pageResult = new PageInfo<>();
+//        BeanUtils.copyProperties(page, pageResult);
+//        pageResult.setList(pageContent);
+//        Map<String, Object> result = new HashMap<>();
+//        result.put("mergeCount", count[0]);
+//        result.put("openCount", count[1]);
+//        result.put("closeCount", count[2]);
+//        result.put("totalCount", total);
+//        result.put("pageResult", pageResult);
+//        return result;
+//    }
+//
+//    private io.choerodon.devops.api.vo.MergeRequestDTO devopsMergeRequestToMergeRequest(DevopsMergeRequestE devopsMergeRequestE) {
+//        io.choerodon.devops.api.vo.MergeRequestDTO mergeRequestDTO = new io.choerodon.devops.api.vo.MergeRequestDTO();
+//        BeanUtils.copyProperties(devopsMergeRequestE, mergeRequestDTO);
+//        mergeRequestDTO.setProjectId(devopsMergeRequestE.getProjectId().intValue());
+//        mergeRequestDTO.setId(devopsMergeRequestE.getId().intValue());
+//        mergeRequestDTO.setIid(devopsMergeRequestE.getGitlabMergeRequestId().intValue());
+//        Long authorUserId = devopsGitRepository
+//                .getUserIdByGitlabUserId(devopsMergeRequestE.getAuthorId());
+//        Long assigneeId = devopsGitRepository
+//                .getUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId());
+//        Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
+//        Integer gitlabUserId = devopsGitRepository.getGitlabUserId();
+//        List<CommitDTO> commitDTOS = new ArrayList<>();
+//        try {
+//            commitDTOS = gitlabServiceClient.listCommits(
+//                    devopsMergeRequestE.getProjectId().intValue(),
+//                    gitlabMergeRequestId.intValue(), gitlabUserId).getBody();
+//            mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDTOS, CommitDTO.class));
+//        } catch (FeignException e) {
+//            LOGGER.info(e.getMessage());
+//        }
+//        UserE authorUser = iamRepository.queryUserByUserId(authorUserId);
+//        if (authorUser != null) {
+//            AuthorDTO authorDTO = new AuthorDTO();
+//            authorDTO.setUsername(authorUser.getLoginName());
+//            authorDTO.setName(authorUser.getRealName());
+//            authorDTO.setId(authorUser.getId() == null ? null : authorUser.getId().intValue());
+//            authorDTO.setWebUrl(authorUser.getImageUrl());
+//            mergeRequestDTO.setAuthor(authorDTO);
+//        }
+//        UserE assigneeUser = iamRepository.queryUserByUserId(assigneeId);
+//        if (assigneeUser != null) {
+//            AssigneeDTO assigneeDTO = new AssigneeDTO();
+//            assigneeDTO.setUsername(assigneeUser.getLoginName());
+//            assigneeDTO.setName(assigneeUser.getRealName());
+//            assigneeDTO.setId(assigneeId.intValue());
+//            assigneeDTO.setWebUrl(assigneeUser.getImageUrl());
+//            mergeRequestDTO.setAssignee(assigneeDTO);
+//        }
+//        return mergeRequestDTO;
+//    }
 
 
 
-    public CommitE getCommit(Integer gitLabProjectId, String commit, Integer userId) {
-        CommitE commitE = new CommitE();
-        BeanUtils.copyProperties(
-                gitlabServiceClient.getCommit(gitLabProjectId, commit, userId).getBody(),
-                commitE);
-        return commitE;
-    }
 
-
-    private Integer sortTag(TagDO a, TagDO b) {
+    private Integer sortTag(TagDTO a, TagDTO b) {
         TagNodeDO tagA = TagNodeDO.tagNameToTagNode(a.getName());
         TagNodeDO tagB = TagNodeDO.tagNameToTagNode(b.getName());
         if (tagA != null && tagB != null) {
@@ -773,7 +704,7 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public List<CommitDO> getCommits(Integer gitLabProjectId, String branchName, String date) {
+    public List<CommitDTO> getCommits(Integer gitLabProjectId, String branchName, String date) {
         try {
             return gitlabServiceClient.getCommits(gitLabProjectId, branchName, date).getBody();
         } catch (FeignException e) {
@@ -782,75 +713,74 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public List<BranchDO> listBranches(Integer gitlabProjectId, Integer userId) {
+    public List<BranchDTO> listBranch(Integer gitlabProjectId, Integer userId) {
         try {
-            return gitlabServiceClient.listBranches(gitlabProjectId, userId).getBody();
+            return gitlabServiceClient.listBranch(gitlabProjectId, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
 
-
-    public List<GitlabPipelineE> listPipeline(Integer projectId, Integer userId) {
-        ResponseEntity<List<PipelineDO>> responseEntity;
+    public List<PipelineDTO> listPipeline(Integer projectId, Integer userId) {
+        ResponseEntity<List<PipelineDTO>> responseEntity;
         try {
             responseEntity = gitlabServiceClient.listPipeline(projectId, userId);
         } catch (FeignException e) {
             return new ArrayList<>();
         }
-        return ConvertHelper.convertList(responseEntity.getBody(), GitlabPipelineE.class);
+        return responseEntity.getBody();
     }
 
 
-    public List<GitlabPipelineE> listPipelines(Integer projectId, Integer page, Integer size, Integer userId) {
-        ResponseEntity<List<PipelineDO>> responseEntity;
+    public List<PipelineDTO> pagePipeline(Integer projectId, Integer page, Integer size, Integer userId) {
+        ResponseEntity<List<PipelineDTO>> responseEntity;
         try {
             responseEntity =
-                    gitlabServiceClient.listPipelines(projectId, page, size, userId);
+                    gitlabServiceClient.pagePipeline(projectId, page, size, userId);
         } catch (FeignException e) {
             return new ArrayList<>();
         }
-        return ConvertHelper.convertList(responseEntity.getBody(), GitlabPipelineE.class);
+        return responseEntity.getBody();
     }
 
 
-    public GitlabPipelineE getPipeline(Integer projectId, Integer pipelineId, Integer userId) {
-        ResponseEntity<PipelineDO> responseEntity;
+    public PipelineDTO queryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+        ResponseEntity<PipelineDTO> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.getPipeline(projectId, pipelineId, userId);
+            responseEntity = gitlabServiceClient.queryPipeline(projectId, pipelineId, userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        return ConvertHelper.convert(responseEntity.getBody(), GitlabPipelineE.class);
+        return responseEntity.getBody();
     }
 
 
-    public GitlabCommitE getCommit(Integer projectId, String sha, Integer userId) {
-        ResponseEntity<CommitDO> responseEntity;
+    public CommitDTO queryCommit(Integer projectId, String sha, Integer userId) {
+        ResponseEntity<CommitDTO> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.getCommit(projectId, sha, userId);
+            responseEntity = gitlabServiceClient.queryCommit(projectId, sha, userId);
         } catch (FeignException e) {
             return null;
         }
-        return ConvertHelper.convert(responseEntity.getBody(), GitlabCommitE.class);
+        return responseEntity.getBody();
     }
 
 
-    public List<GitlabJobE> listJobs(Integer projectId, Integer pipelineId, Integer userId) {
-        ResponseEntity<List<JobDO>> responseEntity;
+        public List<JobDTO> listJobs(Integer projectId, Integer pipelineId, Integer userId) {
+        ResponseEntity<List<JobDTO>> responseEntity;
         try {
             responseEntity = gitlabServiceClient.listJobs(projectId, pipelineId, userId);
         } catch (FeignException e) {
             return new ArrayList<>();
         }
-        return ConvertHelper.convertList(responseEntity.getBody(), GitlabJobE.class);
+        return responseEntity.getBody();
     }
 
 
-    public Boolean retry(Integer projectId, Integer pipelineId, Integer userId) {
+    public Boolean retryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
         try {
-            gitlabServiceClient.retry(projectId, pipelineId, userId);
+            gitlabServiceClient.retryPipeline(projectId, pipelineId, userId);
         } catch (FeignException e) {
             return false;
         }
@@ -858,9 +788,9 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public Boolean cancel(Integer projectId, Integer pipelineId, Integer userId) {
+    public Boolean cancelPipeline(Integer projectId, Integer pipelineId, Integer userId) {
         try {
-            gitlabServiceClient.cancel(projectId, pipelineId, userId);
+            gitlabServiceClient.cancelPipeline(projectId, pipelineId, userId);
         } catch (FeignException e) {
             return false;
         }
@@ -868,10 +798,10 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public List<CommitStatuseDO> getCommitStatus(Integer projectId, String sha, Integer useId) {
-        ResponseEntity<List<CommitStatuseDO>> commitStatuse;
+    public List<CommitStatuseDTO> listCommitStatus(Integer projectId, String sha, Integer useId) {
+        ResponseEntity<List<CommitStatuseDTO>> commitStatuse;
         try {
-            commitStatuse = gitlabServiceClient.getCommitStatus(projectId, sha, useId);
+            commitStatuse = gitlabServiceClient.listCommitStatus(projectId, sha, useId);
         } catch (FeignException e) {
             return Collections.emptyList();
         }
@@ -879,21 +809,21 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public List<CommitDO> listCommits(Integer projectId, Integer userId, Integer page, Integer size) {
+    public List<CommitDTO> listCommits(Integer projectId, Integer userId, Integer page, Integer size) {
         try {
-            List<CommitDO> commitDOS = new LinkedList<>();
-            commitDOS.addAll(gitlabServiceClient.listCommits(projectId, page, size, userId).getBody());
-            return commitDOS;
+            List<CommitDTO> commitDTOS = new LinkedList<>();
+            commitDTOS.addAll(gitlabServiceClient.listCommits(projectId, page, size, userId).getBody());
+            return commitDTOS;
         } catch (FeignException e) {
             throw new CommonException(e.getMessage(), e);
         }
     }
 
 
-    public GitlabMemberE getProjectMember(Integer projectId, Integer userId) {
+    public MemberDTO getProjectMember(Integer projectId, Integer userId) {
         try {
-            return ConvertHelper.convert(gitlabServiceClient.getProjectMember(
-                    projectId, userId).getBody(), GitlabMemberE.class);
+            return gitlabServiceClient.getProjectMember(
+                    projectId, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -909,10 +839,9 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public List<GitlabMemberE> getAllMemberByProjectId(Integer projectId) {
+    public List<MemberDTO> listMemberByProject(Integer projectId) {
         try {
-            return ConvertHelper
-                    .convertList(gitlabServiceClient.getAllMemberByProjectId(projectId).getBody(), GitlabMemberE.class);
+            return gitlabServiceClient.listMemberByProject(projectId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }

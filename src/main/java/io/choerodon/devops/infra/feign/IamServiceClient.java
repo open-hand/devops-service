@@ -5,16 +5,14 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.constant.PageConstant;
-import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
 import io.choerodon.devops.api.vo.iam.RoleDTO;
 import io.choerodon.devops.api.vo.iam.RoleSearchDTO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
-import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
-import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
+import io.choerodon.devops.infra.dto.iam.AppDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.UserDTO;
@@ -90,31 +88,31 @@ public interface IamServiceClient {
 
 
     @PostMapping(value = "/v1/organizations/{organization_id}/applications")
-    ResponseEntity<IamAppPayLoad> createIamApplication(@PathVariable("organization_id") Long organizationId,
-                                                       @RequestBody @Valid IamAppPayLoad iamAppPayLoad);
+    ResponseEntity<AppDTO> createIamApplication(@PathVariable("organization_id") Long organizationId,
+                                                @RequestBody @Valid AppDTO appDTO);
 
 
     @PostMapping(value = "/v1/organizations/{organization_id}/applications/{id}")
-    ResponseEntity<IamAppPayLoad> updateIamApplication(
+    ResponseEntity<AppDTO> updateIamApplication(
             @PathVariable("organization_id") Long organizationId,
             @PathVariable("id") Long id,
-            @RequestBody @Valid IamAppPayLoad iamAppPayLoad);
+            @RequestBody @Valid AppDTO appDTO);
 
 
     @PutMapping(value = "/v1/organizations/{organization_id}/applications/{id}/disable")
-    ResponseEntity<IamAppPayLoad> disableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
+    ResponseEntity<AppDTO> disableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
 
 
     @PutMapping(value = "/v1/organizations/{organization_id}/applications/{id}/enable")
-    ResponseEntity<IamAppPayLoad> enableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
+    ResponseEntity<AppDTO> enableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
 
 
     @GetMapping(value = "/v1/organizations/{organization_id}/applications")
-    ResponseEntity<PageInfo<IamAppPayLoad>> getIamApplication(@PathVariable("organization_id") Long organizationId, @RequestParam("code") String code);
+    ResponseEntity<PageInfo<AppDTO>> getIamApplication(@PathVariable("organization_id") Long organizationId, @RequestParam("code") String code);
 
     @PostMapping("/v1/organizations/{organization_id}/projects")
-    ResponseEntity<ProjectReqVO> createProject(@PathVariable(name = "organization_id") Long organizationId,
-                                               @RequestBody @Valid ProjectCreateDTO projectCreateDTO);
+    ResponseEntity<ProjectDTO> createProject(@PathVariable(name = "organization_id") Long organizationId,
+                                             @RequestBody @Valid ProjectDTO projectDTO);
 
     @PostMapping("/v1/organizations/all")
     ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(@RequestParam(defaultValue = PageConstant.PAGE, required = false, value = "page") final int page,

@@ -9,7 +9,7 @@ import io.choerodon.devops.infra.enums.PipelineStatus;
 /**
  * Created by Zenger on 2018/1/10.
  */
-public class PipelineDO {
+public class PipelineDTO {
 
     private Integer id;
     private PipelineStatus status;
@@ -18,7 +18,7 @@ public class PipelineDO {
     private String beforeSha;
     private Boolean tag;
     private String yamlErrors;
-    private UserDO user;
+    private UserDTO user;
     @JsonProperty(value = "created_at")
     private String createdAt;
     @JsonProperty(value = "updated_at")
@@ -112,11 +112,11 @@ public class PipelineDO {
         this.yamlErrors = yamlErrors;
     }
 
-    public UserDO getUser() {
+    public UserDTO getUser() {
         return user;
     }
 
-    public void setUser(UserDO user) {
+    public void setUser(UserDTO user) {
         this.user = user;
     }
 

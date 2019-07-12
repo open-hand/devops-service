@@ -25,7 +25,7 @@ import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.Stage;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO;
-import io.choerodon.devops.infra.dto.gitlab.CommitStatuseDO;
+import io.choerodon.devops.infra.dto.gitlab.CommitStatuseDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,16 +93,16 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 .listJobs(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(pipelineWebHookDTO.getObjectAttributes().getId()), gitlabUserId).stream().map(GitlabJobE::getId).collect(Collectors.toList());
 
         Stage sonar = null;
-        List<CommitStatuseDO> commitStatuseDOS = gitlabProjectRepository.getCommitStatus(applicationE.getGitlabProjectE().getId(), pipelineWebHookDTO.getObjectAttributes().getSha(), ADMIN);
-        for (CommitStatuseDO commitStatuseDO : commitStatuseDOS) {
-            if (gitlabJobIds.contains(commitStatuseDO.getId())) {
-                Stage stage = getPipelibeStage(commitStatuseDO);
+        List<CommitStatuseDTO> commitStatuseDTOS = gitlabProjectRepository.getCommitStatus(applicationE.getGitlabProjectE().getId(), pipelineWebHookDTO.getObjectAttributes().getSha(), ADMIN);
+        for (CommitStatuseDTO commitStatuseDTO : commitStatuseDTOS) {
+            if (gitlabJobIds.contains(commitStatuseDTO.getId())) {
+                Stage stage = getPipelibeStage(commitStatuseDTO);
                 stages.add(stage);
-            } else if (commitStatuseDO.getName().equals(SONARQUBE) && !stageNames.contains(SONARQUBE) && !stages.isEmpty()) {
-                Stage stage = getPipelibeStage(commitStatuseDO);
+            } else if (commitStatuseDTO.getName().equals(SONARQUBE) && !stageNames.contains(SONARQUBE) && !stages.isEmpty()) {
+                Stage stage = getPipelibeStage(commitStatuseDTO);
                 sonar = stage;
                 stages.add(stage);
-                stageNames.add(commitStatuseDO.getName());
+                stageNames.add(commitStatuseDTO.getName());
             }
         }
         DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(pipelineWebHookDTO.getObjectAttributes().getSha(), pipelineWebHookDTO.getObjectAttributes().getRef());
@@ -147,17 +147,17 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
 
-    private Stage getPipelibeStage(CommitStatuseDO commitStatuseDO) {
+    private Stage getPipelibeStage(CommitStatuseDTO commitStatuseDTO) {
         Stage stage = new Stage();
-        stage.setDescription(commitStatuseDO.getDescription());
-        stage.setId(commitStatuseDO.getId());
-        stage.setName(commitStatuseDO.getName());
-        stage.setStatus(commitStatuseDO.getStatus());
-        if (commitStatuseDO.getFinishedAt() != null) {
-            stage.setFinishedAt(commitStatuseDO.getFinishedAt());
+        stage.setDescription(commitStatuseDTO.getDescription());
+        stage.setId(commitStatuseDTO.getId());
+        stage.setName(commitStatuseDTO.getName());
+        stage.setStatus(commitStatuseDTO.getStatus());
+        if (commitStatuseDTO.getFinishedAt() != null) {
+            stage.setFinishedAt(commitStatuseDTO.getFinishedAt());
         }
-        if (commitStatuseDO.getStartedAt() != null) {
-            stage.setStartedAt(commitStatuseDO.getStartedAt());
+        if (commitStatuseDTO.getStartedAt() != null) {
+            stage.setStartedAt(commitStatuseDTO.getStartedAt());
         }
         return stage;
     }

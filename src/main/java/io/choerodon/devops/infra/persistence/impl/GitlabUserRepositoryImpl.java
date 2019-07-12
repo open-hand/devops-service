@@ -31,7 +31,7 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
     public GitlabUserE createGitLabUser(String password, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
         ResponseEntity<UserDO> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.createGitLabUser(
+            responseEntity = gitlabServiceClient.createUser(
                     password, projectsLimit, gitlabUserPayload);
         } catch (FeignException e) {
             LOGGER.info("error.gitlab.user.create");
@@ -67,7 +67,7 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
     public void isEnabledGitlabUser(Integer userId) {
 
         try {
-            gitlabServiceClient.enabledUserByUserId(userId);
+            gitlabServiceClient.enableUser(userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -76,7 +76,7 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
     @Override
     public void disEnabledGitlabUser(Integer userId) {
         try {
-            gitlabServiceClient.disEnabledUserByUserId(userId);
+            gitlabServiceClient.disableUser(userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -86,7 +86,7 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
     public GitlabUserE getGitlabUserByUserId(Integer userId) {
         ResponseEntity<UserDO> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.queryUserByUserId(userId);
+            responseEntity = gitlabServiceClient.queryUserById(userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
@@ -100,6 +100,6 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
 
     @Override
     public Boolean checkEmailIsExist(String email) {
-        return gitlabServiceClient.checkEmailIsExist(email).getBody();
+        return gitlabServiceClient.checkEmail(email).getBody();
     }
 }

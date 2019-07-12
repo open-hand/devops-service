@@ -1,8 +1,8 @@
-package io.choerodon.devops.domain.application.valueobject;
+package io.choerodon.devops.infra.dto.gitlab;
 
 import java.util.Date;
 
-public class DeployKey {
+public class DeployKeyDTO {
 
     private Integer id;
     private String title;

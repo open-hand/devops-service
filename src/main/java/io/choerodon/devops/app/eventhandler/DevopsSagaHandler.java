@@ -181,7 +181,7 @@ public class DevopsSagaHandler {
                     LOGGER.error("update application set create success status error");
                 }
             }
-//            gitlabRepository.batchAddVariable(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(devOpsAppImportPayload.getGitlabUserId()),
+//            gitlabRepository.batchAddProjectVariable(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(devOpsAppImportPayload.getGitlabUserId()),
 //                    applicationService.setVariableDTO(applicationE.getHarborConfigE().getId(),applicationE.getChartConfigE().getId()));
         }
         return data;

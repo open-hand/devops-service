@@ -47,7 +47,7 @@ class ProjectPipelineControllerSpec extends Specification {
 
     def "Cancel"() {
         when: 'Cancel jobs in a pipeline'
-        def result = restTemplate.postForObject("/v1/projects/1/gitlab_projects/1/pipelines/1/cancel", null, Boolean.class)
+        def result = restTemplate.postForObject("/v1/projects/1/gitlab_projects/1/pipelines/1/cancelPipeline", null, Boolean.class)
 
         then: '校验返回值'
         result

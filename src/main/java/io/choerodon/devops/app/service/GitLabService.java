@@ -2,13 +2,10 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.gitlab.MemberVO;
-import io.choerodon.devops.api.vo.gitlab.VariableDTO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
-import io.choerodon.devops.domain.application.valueobject.DeployKey;
-import io.choerodon.devops.domain.application.valueobject.ProjectHook;
-import io.choerodon.devops.domain.application.valueobject.Variable;
+import io.choerodon.devops.infra.dto.gitlab.DeployKeyDTO;
+import io.choerodon.devops.infra.dto.gitlab.VariableDTO;
+import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDTO;
@@ -22,7 +19,7 @@ public interface GitLabService {
 
     void addVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId);
 
-    void batchAddVariable(Integer gitlabProjectId, Integer userId, List<VariableDTO> variableDTOS);
+    void batchAddVariable(Integer gitlabProjectId, Integer userId, List<io.choerodon.devops.api.vo.gitlab.VariableDTO> variableDTODTOS);
 
     List<String> listTokenByUserId(Integer gitlabProjectId, String name, Integer userId);
 
@@ -50,7 +47,7 @@ public interface GitLabService {
 
     void updateGroup(Integer projectId, Integer userId, GroupDO groupDO);
 
-    ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook);
+    ProjectHookDTO createWebHook(Integer projectId, Integer userId, ProjectHookDTO projectHookDTO);
 
     GitlabProjectDTO createProject(Integer groupId, String projectName, Integer userId, boolean visibility);
 
@@ -58,17 +55,17 @@ public interface GitLabService {
 
     Boolean getFile(Integer projectId, String branch, String filePath);
 
-    ProjectHook updateWebHook(Integer projectId, Integer hookId, Integer userId);
+    ProjectHookDTO updateWebHook(Integer projectId, Integer hookId, Integer userId);
 
     GitlabProjectDTO getProjectById(Integer projectId);
 
     GitlabProjectDTO getProjectByName(String groupName, String projectName, Integer userId);
 
-    List<ProjectHook> getHooks(Integer projectId, Integer userId);
+    List<ProjectHookDTO> getHooks(Integer projectId, Integer userId);
 
-    List<Variable> getVariable(Integer projectId, Integer userId);
+    List<VariableDTO> getVariable(Integer projectId, Integer userId);
 
-    List<DeployKey> getDeployKeys(Integer projectId, Integer userId);
+    List<DeployKeyDTO> getDeployKeys(Integer projectId, Integer userId);
 
     /**
      * 将成员添加到gitlab项目，应该先检查成员是否存在，否则会报成员已存在的异常

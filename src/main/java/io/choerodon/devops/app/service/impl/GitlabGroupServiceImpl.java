@@ -7,16 +7,12 @@ import feign.FeignException;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
-import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
-import io.choerodon.devops.infra.dto.gitlab.GroupDO;
+import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +49,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         String gitlabProjectName = getGitlabProjectName(gitlabGroupPayload);
 
         //创建gitlab group
-        GroupDO group = new GroupDO();
+        GroupDTO group = new GroupDTO();
         // name: orgName-projectName
         group.setName(String.format(GROUP_NAME_FORMAT,
                 gitlabGroupPayload.getOrganizationName(),
@@ -92,7 +88,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         String gitlabProjectName = getGitlabProjectName(gitlabGroupPayload);
 
         //创建gitlab group
-        GroupDO group = new GroupDO();
+        GroupDTO group = new GroupDTO();
         // name: orgName-projectName
         group.setName(String.format(GROUP_NAME_FORMAT,
                 gitlabGroupPayload.getOrganizationName(),

@@ -117,7 +117,7 @@
         sort: 6
         permission:
           - "devops-service.devops-gitlab-pipeline.pagePipeline"
-          - "devops-service.project-pipeline.cancel"
+          - "devops-service.project-pipeline.cancelPipeline"
           - "devops-service.project-pipeline.retry"
     - "code-quality":
         icon: quality

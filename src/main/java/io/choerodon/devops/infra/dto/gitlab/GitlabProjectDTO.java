@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.dto.gitlab;
 import java.util.Date;
 import java.util.List;
 
-public class GitlabProjectDO {
+public class GitlabProjectDTO {
 
     private Integer approvalsBeforeMerge;
     private Boolean archived;
@@ -14,7 +14,7 @@ public class GitlabProjectDO {
     private String defaultBranch;
     private String description;
     private Integer forksCount;
-    private GitlabProjectDO forkedFromProject;
+    private GitlabProjectDTO forkedFromProject;
     private String httpUrlToRepo;
     private Integer id;
     private Boolean isPublic;
@@ -120,11 +120,11 @@ public class GitlabProjectDO {
         this.forksCount = forksCount;
     }
 
-    public GitlabProjectDO getForkedFromProject() {
+    public GitlabProjectDTO getForkedFromProject() {
         return forkedFromProject;
     }
 
-    public void setForkedFromProject(GitlabProjectDO forkedFromProject) {
+    public void setForkedFromProject(GitlabProjectDTO forkedFromProject) {
         this.forkedFromProject = forkedFromProject;
     }
 

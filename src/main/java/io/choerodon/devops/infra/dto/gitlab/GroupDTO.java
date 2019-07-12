@@ -5,7 +5,7 @@ import io.choerodon.devops.infra.enums.Visibility;
 /**
  * Created by younger on 2018/4/2.
  */
-public class GroupDO {
+public class GroupDTO {
     private Integer id;
     private String name;
     private String path;

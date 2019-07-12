@@ -4,19 +4,18 @@ import java.util.Date;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.CommitDTO;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.DiffE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.MilestoneE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.UserE;
 
 /**
  * GitLab 合并请求
  */
-public class MergeRequestDO {
+public class MergeRequestDTO {
 
     private Integer approvalsBeforeMerge;
     private AssigneeDO assignee;
     private AuthorDO author;
-    private DiffE changes;
+    private DiffDTO changes;
     private Date createdAt;
     private String description;
     private Integer downvotes;
@@ -53,7 +52,7 @@ public class MergeRequestDO {
 
     private List<CommitDTO> commits;
 
-    public static Boolean isValid(MergeRequestDO mergeRequest) {
+    public static Boolean isValid(MergeRequestDTO mergeRequest) {
         return (mergeRequest != null && mergeRequest.getId() != null);
     }
 
@@ -89,11 +88,11 @@ public class MergeRequestDO {
         this.author = author;
     }
 
-    public DiffE getChanges() {
+    public DiffDTO getChanges() {
         return changes;
     }
 
-    public void setChanges(DiffE changes) {
+    public void setChanges(DiffDTO changes) {
         this.changes = changes;
     }
 

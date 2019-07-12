@@ -10,10 +10,9 @@ import io.choerodon.devops.api.vo.DevopsBranchVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE
 import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.application.valueobject.Issue
+
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
@@ -144,7 +143,7 @@ class DevopsGitControllerSpec extends Specification {
         commitDO.setAuthorName("testAuthorName")
         tagDO.setCommit(commitDO)
         ResponseEntity<TagDO> responseEntity4 = new ResponseEntity<>(tagDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.updateTagRelease(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity4)
+        Mockito.when(gitlabServiceClient.updateTag(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity4)
 
         List<TagDO> tagDOList = new ArrayList<>()
         tagDOList.add(tagDO)
@@ -152,7 +151,7 @@ class DevopsGitControllerSpec extends Specification {
         Mockito.when(gitlabServiceClient.getTags(anyInt(), anyInt())).thenReturn(responseEntity5)
 
         BranchDO branchDO = new BranchDO()
-        CommitE commitE = new CommitE()
+        io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO commitE = new io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO()
         commitE.setMessage("message")
         commitE.setId("EcommitId")
         commitE.setCommittedDate(new Date(2018, 11, 9, 0, 0, 0))
@@ -193,7 +192,7 @@ class DevopsGitControllerSpec extends Specification {
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
         ResponseEntity<TagDO> responseEntity = new ResponseEntity<>(new TagDO(), HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(gitlabServiceClient).updateTagRelease(1, "test", "test", 1)
+        Mockito.doReturn(responseEntity).when(gitlabServiceClient).updateTag(1, "test", "test", 1)
 
         when: '更新标签'
         restTemplate.put("/v1/projects/1/apps/1/git/tags?tag=test", "test", Object.class)
@@ -303,7 +302,7 @@ class DevopsGitControllerSpec extends Specification {
         devopsBranchDTO.setAppId(1L)
         devopsBranchDTO.setOriginBranch("test")
         BranchDO branchDO = new BranchDO()
-        CommitE commitE = new CommitE()
+        io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO commitE = new io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO()
         commitE.setId("test")
         commitE.setCommittedDate(new Date())
         commitE.setMessage("test")
@@ -391,7 +390,7 @@ class DevopsGitControllerSpec extends Specification {
         branchDO.setName("test")
         branchDOList.add(branchDO)
         ResponseEntity branchResponse = new ResponseEntity(branchDOList, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.listBranches(anyInt(), anyInt())).thenReturn(branchResponse)
+        Mockito.when(gitlabServiceClient.listBranch(anyInt(), anyInt())).thenReturn(branchResponse)
 
         when: '删除分支'
         restTemplate.delete("/v1/projects/{project_id}/apps/{application_id}/git/branch?branch_name=test", 1L, 1L)
@@ -456,7 +455,7 @@ class DevopsGitControllerSpec extends Specification {
         branchDO.setName("test")
         branchDOList.add(branchDO)
         ResponseEntity branchResponse = new ResponseEntity(branchDOList, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.listBranches(anyInt(), anyInt())).thenReturn(branchResponse)
+        Mockito.when(gitlabServiceClient.listBranch(anyInt(), anyInt())).thenReturn(branchResponse)
 
         when: '校验实例名唯一性'
         def exception = restTemplate.getForEntity("/v1/projects/{project_id}/apps/{application_id}/git/check_name?branch_name=uniqueName", ExceptionResponse.class, 1L, 1L)

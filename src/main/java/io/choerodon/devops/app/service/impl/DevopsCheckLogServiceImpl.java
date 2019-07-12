@@ -24,7 +24,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
 import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabJobE;
@@ -40,9 +39,10 @@ import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.BranchDO;
-import io.choerodon.devops.infra.dto.gitlab.CommitStatuseDO;
-import io.choerodon.devops.infra.dto.gitlab.GroupDO;
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.CommitStatuseDTO;
+import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
+import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -393,17 +393,17 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     }
 
-    private Stage getPipelineStage(CommitStatuseDO commitStatuseDO) {
+    private Stage getPipelineStage(CommitStatuseDTO commitStatuseDTO) {
         Stage stage = new Stage();
-        stage.setDescription(commitStatuseDO.getDescription());
-        stage.setId(commitStatuseDO.getId());
-        stage.setName(commitStatuseDO.getName());
-        stage.setStatus(commitStatuseDO.getStatus());
-        if (commitStatuseDO.getFinishedAt() != null) {
-            stage.setFinishedAt(commitStatuseDO.getFinishedAt());
+        stage.setDescription(commitStatuseDTO.getDescription());
+        stage.setId(commitStatuseDTO.getId());
+        stage.setName(commitStatuseDTO.getName());
+        stage.setStatus(commitStatuseDTO.getStatus());
+        if (commitStatuseDTO.getFinishedAt() != null) {
+            stage.setFinishedAt(commitStatuseDTO.getFinishedAt());
         }
-        if (commitStatuseDO.getStartedAt() != null) {
-            stage.setStartedAt(commitStatuseDO.getStartedAt());
+        if (commitStatuseDTO.getStartedAt() != null) {
+            stage.setStartedAt(commitStatuseDTO.getStartedAt());
         }
         return stage;
     }
@@ -836,15 +836,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             CheckLog checkLog = new CheckLog();
             checkLog.setContent(APP + applicationDO.getName() + " create gitlab webhook");
             try {
-                ProjectHook projectHook = ProjectHook.allHook();
-                projectHook.setEnableSslVerification(true);
-                projectHook.setProjectId(applicationDO.getGitlabProjectId());
-                projectHook.setToken(applicationDO.getToken());
+                ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
+                projectHookDTO.setEnableSslVerification(true);
+                projectHookDTO.setProjectId(applicationDO.getGitlabProjectId());
+                projectHookDTO.setToken(applicationDO.getToken());
                 String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
                 uri += "devops/webhook";
-                projectHook.setUrl(uri);
+                projectHookDTO.setUrl(uri);
                 applicationDO.setHookId(TypeUtil.objToLong(gitlabRepository
-                        .createWebHook(applicationDO.getGitlabProjectId(), ADMIN, projectHook).getId()));
+                        .createWebHook(applicationDO.getGitlabProjectId(), ADMIN, projectHookDTO).getId()));
                 applicationMapper.updateByPrimaryKey(applicationDO);
                 checkLog.setResult(SUCCESS);
             } catch (Exception e) {
@@ -857,7 +857,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             CheckLog checkLog = new CheckLog();
             checkLog.setContent(APP + applicationDO.getName() + " sync branches");
             try {
-                Optional<List<BranchDO>> branchDOS = Optional.ofNullable(
+                Optional<List<BranchDTO>> branchDOS = Optional.ofNullable(
                         devopsGitRepository.listBranches(applicationDO.getGitlabProjectId(), ADMIN));
                 List<String> branchNames =
                         devopsGitRepository.listDevopsBranchesByAppId(applicationDO.getId()).stream()
@@ -910,14 +910,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     OrganizationVO organization = iamRepository
                             .queryOrganizationById(projectE.getOrganization().getId());
                     //创建gitlab group
-                    GroupDO group = new GroupDO();
+                    GroupDTO group = new GroupDTO();
                     // name: orgName-projectName
                     group.setName(String.format("%s-%s-%s",
                             organization.getName(), projectE.getName(), groupCodeSuffix));
                     // path: orgCode-projectCode
                     group.setPath(String.format("%s-%s-%s",
                             organization.getCode(), projectE.getCode(), groupCodeSuffix));
-                    ResponseEntity<GroupDO> responseEntity;
+                    ResponseEntity<GroupDTO> responseEntity;
                     try {
                         responseEntity = gitlabServiceClient.createGroup(group, ADMIN);
                         group = responseEntity.getBody();

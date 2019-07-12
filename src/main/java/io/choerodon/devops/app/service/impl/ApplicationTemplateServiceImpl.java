@@ -29,7 +29,7 @@ import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.ApplicationTemplateDTO;
-import io.choerodon.devops.infra.dto.gitlab.BranchDO;
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
@@ -241,8 +241,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             repoUrl = applicationTemplateE.getRepoUrl();
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
 
-            BranchDO branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
-            if (branchDO.getName() == null) {
+            BranchDTO branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+            if (branchDTO.getName() == null) {
                 gitUtil.push(
                         git,
                         applicationDir,

@@ -1,14 +1,25 @@
 package io.choerodon.devops.infra.dto.gitlab;
 
+import org.springframework.beans.BeanUtils;
+
 /**
  * Created by Zenger on 2018/4/8.
  */
-public class TagDO {
+public class TagDTO {
 
     private CommitDTO commit;
     private String message;
+    private String commitUserImage;
     private String name;
     private ReleaseDO release;
+
+    public TagDTO() {
+    }
+
+    public TagDTO(TagDTO t) {
+        BeanUtils.copyProperties(t, this);
+        this.name = t.getName();
+    }
 
     public CommitDTO getCommit() {
         return commit;
@@ -40,5 +51,13 @@ public class TagDO {
 
     public void setRelease(ReleaseDO release) {
         this.release = release;
+    }
+
+    public String getCommitUserImage() {
+        return commitUserImage;
+    }
+
+    public void setCommitUserImage(String commitUserImage) {
+        this.commitUserImage = commitUserImage;
     }
 }

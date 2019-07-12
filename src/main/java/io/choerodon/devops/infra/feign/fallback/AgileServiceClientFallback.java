@@ -2,8 +2,6 @@ package io.choerodon.devops.infra.feign.fallback;
 
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.valueobject.Issue;
-import io.choerodon.devops.domain.application.valueobject.ProjectInfo;
 import io.choerodon.devops.infra.feign.AgileServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

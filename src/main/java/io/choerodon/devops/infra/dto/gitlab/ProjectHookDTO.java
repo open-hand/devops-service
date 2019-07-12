@@ -1,8 +1,8 @@
-package io.choerodon.devops.domain.application.valueobject;
+package io.choerodon.devops.infra.dto.gitlab;
 
 import java.util.Date;
 
-public class ProjectHook {
+public class ProjectHookDTO {
 
 
     private Boolean buildEvents;
@@ -21,7 +21,7 @@ public class ProjectHook {
     private Boolean wikiPageEvents;
     private String token;
 
-    public ProjectHook(Boolean buildEvents, Boolean issuesEvents, Boolean mergeRequestsEvents, Boolean noteEvents, Boolean jobEvents, Boolean pipelineEvents, Boolean pushEvents, Boolean tagPushEvents, Boolean wikiPageEvents) {
+    public ProjectHookDTO(Boolean buildEvents, Boolean issuesEvents, Boolean mergeRequestsEvents, Boolean noteEvents, Boolean jobEvents, Boolean pipelineEvents, Boolean pushEvents, Boolean tagPushEvents, Boolean wikiPageEvents) {
         this.buildEvents = buildEvents;
         this.issuesEvents = issuesEvents;
         this.mergeRequestsEvents = mergeRequestsEvents;
@@ -33,15 +33,15 @@ public class ProjectHook {
         this.wikiPageEvents = wikiPageEvents;
     }
 
-    public ProjectHook() {
+    public ProjectHookDTO() {
     }
 
-    public ProjectHook(Integer id) {
+    public ProjectHookDTO(Integer id) {
         this.id = id;
     }
 
-    public static ProjectHook allHook() {
-        return new ProjectHook(false, false, true, false, true, true, true, true, false);
+    public static ProjectHookDTO allHook() {
+        return new ProjectHookDTO(false, false, true, false, true, true, true, true, false);
     }
 
     public Boolean getBuildEvents() {

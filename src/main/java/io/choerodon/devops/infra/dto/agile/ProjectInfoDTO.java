@@ -1,6 +1,10 @@
-package io.choerodon.devops.domain.application.valueobject;
+package io.choerodon.devops.infra.dto.agile;
 
-public class ProjectInfo {
+/**
+ * Created by Sheep on 2019/7/12.
+ */
+public class ProjectInfoDTO {
+
     private Long infoId;
     private Long projectId;
     private String projectCode;

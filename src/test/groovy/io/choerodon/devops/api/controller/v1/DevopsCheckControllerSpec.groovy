@@ -12,9 +12,14 @@ import io.choerodon.devops.api.vo.iam.RoleSearchDTO
 import io.choerodon.devops.api.vo.iam.UserVO
 import io.choerodon.devops.api.vo.iam.UserWithRoleDTO
 import io.choerodon.devops.app.service.DevopsCheckLogService
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE
 import io.choerodon.devops.domain.application.valueobject.ProjectHook
 import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
+=======
+import io.choerodon.devops.domain.application.repository.*
+import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO
+>>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.infra.common.util.TypeUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.common.util.enums.PipelineStatus
@@ -182,12 +187,12 @@ class DevopsCheckControllerSpec extends Specification {
 
 
         ResponseEntity<List<BranchDO>> branchRes = new ResponseEntity<>(Arrays.asList(createMockBranchDO()), HttpStatus.OK)
-        when(mockGitlabServiceClient.listBranches(anyInt(), anyInt())).thenReturn(branchRes)
+        when(mockGitlabServiceClient.listBranch(anyInt(), anyInt())).thenReturn(branchRes)
 
-        ProjectHook hook = new ProjectHook()
+        ProjectHookDTO hook = new ProjectHookDTO()
         hook.setId(2)
-        ResponseEntity<ProjectHook> res = new ResponseEntity<>(hook, HttpStatus.OK)
-        when(mockGitlabServiceClient.createProjectHook(anyInt(), anyInt(), any(ProjectHook))).thenReturn(res)
+        ResponseEntity<ProjectHookDTO> res = new ResponseEntity<>(hook, HttpStatus.OK)
+        when(mockGitlabServiceClient.createProjectHook(anyInt(), anyInt(), any(ProjectHookDTO))).thenReturn(res)
 
         // 准备升级0.9的数据
         devopsEnvironmentDO.setName("fakeEnv")
@@ -216,10 +221,10 @@ class DevopsCheckControllerSpec extends Specification {
         GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO()
         gitlabProjectDO.setId(12523)
         when(mockGitlabServiceClient.createProject(anyInt(), anyString(), anyInt(), anyBoolean())).thenReturn(new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK))
-        when(mockGitlabServiceClient.getDeploykeys(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
+        when(mockGitlabServiceClient.listDeploykey(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
         when(mockGitlabServiceClient.getFile(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK))
-        when(mockGitlabServiceClient.getProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDTO(), HttpStatus.OK))
-        when(mockGitlabServiceClient.getProjectHook(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(null, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDTO(), HttpStatus.OK))
+        when(mockGitlabServiceClient.listProjectHook(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(null, HttpStatus.OK))
 
         RoleDTO roleDTO = new RoleDTO()
         roleDTO.setId(234L)
@@ -232,7 +237,7 @@ class DevopsCheckControllerSpec extends Specification {
         when(mockIamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(page1, HttpStatus.OK))
 
         // 准备升级到0.10 的数据
-        when(mockGitlabServiceClient.updateProjectHook(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ProjectHook(), HttpStatus.OK))
+        when(mockGitlabServiceClient.updateProjectHook(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ProjectHookDTO(), HttpStatus.OK))
         when(mockGitlabServiceClient.listCommits(anyInt(), eq(1), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(createVersion10MockCommits(), HttpStatus.OK))
         when(mockGitlabServiceClient.listCommits(anyInt(), eq(2), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
         UserDTO userDO = new UserDTO()
@@ -255,7 +260,7 @@ class DevopsCheckControllerSpec extends Specification {
         po2.setCreatedAt("2018-10-13 15:33:12")
         po2.setSha("582b27c68b9fe0acbce77b873eb11c66b97409af")
         po2.setRef("feature-C7NCD-1778")
-        when(mockGitlabServiceClient.getPipeline(anyInt(), eq(10000), anyInt())).thenReturn(new ResponseEntity<>(po2, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryPipeline(anyInt(), eq(10000), anyInt())).thenReturn(new ResponseEntity<>(po2, HttpStatus.OK))
 
         PipelineDO po3 = new PipelineDO()
         UserDO u3 = new UserDO()
@@ -266,7 +271,7 @@ class DevopsCheckControllerSpec extends Specification {
         po3.setCreatedAt("2018-10-13 15:33:18")
         po3.setSha("582b27c68b9fe0acbce77b873eb11c66b974093a")
         po3.setRef("feature-C7NCD-1779")
-        when(mockGitlabServiceClient.getPipeline(anyInt(), eq(10001), anyInt())).thenReturn(new ResponseEntity<>(po3, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryPipeline(anyInt(), eq(10001), anyInt())).thenReturn(new ResponseEntity<>(po3, HttpStatus.OK))
 
         // 准备升级到0.10.4的数据
         devopsGitlabPipelineDO.setAppId(applicationDO.getId())
@@ -274,9 +279,9 @@ class DevopsCheckControllerSpec extends Specification {
         devopsGitlabPipelineDO.setPipelineId(324L)
         devopsGitlabPipelineMapper.insert(devopsGitlabPipelineDO)
 
-        when(mockGitlabServiceClient.getPipeline(anyInt(), eq((int) TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId())), anyInt())).thenReturn(new ResponseEntity<>(createMockPipelineDO(), HttpStatus.OK))
+        when(mockGitlabServiceClient.queryPipeline(anyInt(), eq((int) TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId())), anyInt())).thenReturn(new ResponseEntity<>(createMockPipelineDO(), HttpStatus.OK))
         when(mockGitlabServiceClient.listJobs(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(createMockJobDOs(), HttpStatus.OK))
-        when(mockGitlabServiceClient.getCommitStatus(anyInt(), anyString(), anyInt())).thenReturn(new ResponseEntity<>(createMockCommitStatusDOs(), HttpStatus.OK))
+        when(mockGitlabServiceClient.listCommitStatus(anyInt(), anyString(), anyInt())).thenReturn(new ResponseEntity<>(createMockCommitStatusDOs(), HttpStatus.OK))
 
         // 准备升级到0.11.0的数据
         UserWithRoleDTO userWithRoleDTO = new UserWithRoleDTO()
@@ -291,8 +296,8 @@ class DevopsCheckControllerSpec extends Specification {
         MemberDTO memberDO = new MemberDTO()
         memberDO.setId(TypeUtil.objToInteger(userAttrDO.getGitlabUserId()))
         memberDO.setAccessLevel(AccessLevel.MASTER)
-        when(mockGitlabServiceClient.getUserMemberByUserId(eq(TypeUtil.objToInteger(devopsProjectDO.getDevopsEnvGroupId())), eq(TypeUtil.objToInteger(userAttrDO.getGitlabUserId())))).thenReturn(new ResponseEntity<>(memberDO, HttpStatus.OK))
-        when(mockGitlabServiceClient.getUserMemberByUserId(eq(TypeUtil.objToInteger(devopsProjectDO.getDevopsAppGroupId())), eq(TypeUtil.objToInteger(userAttrDO.getGitlabUserId())))).thenReturn(new ResponseEntity<>(memberDO, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryGroupMember(eq(TypeUtil.objToInteger(devopsProjectDO.getDevopsEnvGroupId())), eq(TypeUtil.objToInteger(userAttrDO.getGitlabUserId())))).thenReturn(new ResponseEntity<>(memberDO, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryGroupMember(eq(TypeUtil.objToInteger(devopsProjectDO.getDevopsAppGroupId())), eq(TypeUtil.objToInteger(userAttrDO.getGitlabUserId())))).thenReturn(new ResponseEntity<>(memberDO, HttpStatus.OK))
 
         // 准备升级到0.12.0的数据
         userAttrDO2.setIamUserId(101L)
@@ -319,7 +324,7 @@ class DevopsCheckControllerSpec extends Specification {
 
         UserDO userDOForGitlabUsername = new UserDO()
         userDOForGitlabUsername.setUsername("validUsername")
-        when(mockGitlabServiceClient.queryUserByUserId(eq(TypeUtil.objToInteger(userAttrDO2.getGitlabUserId())))).thenReturn(new ResponseEntity<>(userDOForGitlabUsername, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryUserById(eq(TypeUtil.objToInteger(userAttrDO2.getGitlabUserId())))).thenReturn(new ResponseEntity<>(userDOForGitlabUsername, HttpStatus.OK))
 
         //  准备升级到0.14.0的数据
         devopsEnvPodDO.setId(100L)
@@ -349,8 +354,8 @@ class DevopsCheckControllerSpec extends Specification {
         List<MemberDTO> memberDOList = new ArrayList<>()
         memberDOList.add(memberDO)
         ResponseEntity<List<MemberDTO>> listResponseEntity = new ResponseEntity<>(memberDOList, HttpStatus.OK)
-        Mockito.doReturn(listResponseEntity).when(mockGitlabServiceClient).getAllMemberByProjectId(any())
-        Mockito.doReturn(null).when(mockGitlabServiceClient).updateMemberIntoProject(any(), any())
+        Mockito.doReturn(listResponseEntity).when(mockGitlabServiceClient).listMemberByProject(any())
+        Mockito.doReturn(null).when(mockGitlabServiceClient).updateProjectMember(any(), any())
     }
 
     def cleanup() {
@@ -545,7 +550,7 @@ class DevopsCheckControllerSpec extends Specification {
 
     // create fake branchDO
     private static BranchDO createMockBranchDO() {
-        CommitE commitE = new CommitE()
+        io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO commitE = new io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO()
         commitE.setId("5ffeae40a2440a2be046d58514e0a7c7ef7d7362")
         commitE.setAuthorName("gitlabUsername")
         commitE.setAuthorEmail("zzz@gmail.com")
