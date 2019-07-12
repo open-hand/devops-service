@@ -6,12 +6,8 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import feign.FeignException;
 import feign.RetryableException;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.AssigneeDTO;
-import io.choerodon.devops.api.vo.AuthorDTO;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
-import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.GitUtil;
@@ -114,7 +110,7 @@ public class GitlabServiceClientOperator {
     }
 
     public void deleteGroupMember(Integer groupId, Integer userId) {
-         gitlabServiceClient.deleteMember(groupId, userId);
+        gitlabServiceClient.deleteMember(groupId, userId);
     }
 
     public int createGroupMember(Integer groupId, MemberDTO memberDTO) {
@@ -123,7 +119,7 @@ public class GitlabServiceClientOperator {
 
 
     public void updateGroupMember(Integer groupId, MemberDTO memberDTO) {
-         gitlabServiceClient.updateGroupMember(groupId, memberDTO);
+        gitlabServiceClient.updateGroupMember(groupId, memberDTO);
     }
 
 
@@ -131,7 +127,7 @@ public class GitlabServiceClientOperator {
         gitlabServiceClient.addProjectVariable(gitlabProjectId, key, value, protecteds, userId);
     }
 
-    public void batchAddProjectVariable(Integer gitlabProjectId, Integer userId, List<io.choerodon.devops.api.vo.gitlab.VariableDTO> variableDTODTOS) {
+    public void batchAddProjectVariable(Integer gitlabProjectId, Integer userId, List<VariableDTO> variableDTODTOS) {
         gitlabServiceClient.batchAddProjectVariable(gitlabProjectId, userId, variableDTODTOS);
     }
 
@@ -688,8 +684,6 @@ public class GitlabServiceClientOperator {
 //    }
 
 
-
-
     private Integer sortTag(TagDTO a, TagDTO b) {
         TagNodeDO tagA = TagNodeDO.tagNameToTagNode(a.getName());
         TagNodeDO tagB = TagNodeDO.tagNameToTagNode(b.getName());
@@ -767,7 +761,7 @@ public class GitlabServiceClientOperator {
     }
 
 
-        public List<JobDTO> listJobs(Integer projectId, Integer pipelineId, Integer userId) {
+    public List<JobDTO> listJobs(Integer projectId, Integer pipelineId, Integer userId) {
         ResponseEntity<List<JobDTO>> responseEntity;
         try {
             responseEntity = gitlabServiceClient.listJobs(projectId, pipelineId, userId);

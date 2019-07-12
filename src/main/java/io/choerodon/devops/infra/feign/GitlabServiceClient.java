@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
-import io.choerodon.devops.infra.dto.gitlab.DeployKeyDTO;
-import io.choerodon.devops.infra.dto.gitlab.VariableDTO;
-import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
@@ -15,11 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+
 /**
  * gitlab服务 feign客户端
  * Created by Zenger on 2018/3/28.
  */
-@FeignClient(value = "gitlab-service", fallback= GitlabServiceClientFallback.class)
+@FeignClient(value = "gitlab-service", fallback = GitlabServiceClientFallback.class)
 public interface GitlabServiceClient {
     @GetMapping(value = "/v1/users/{userId}")
     ResponseEntity<UserDTO> queryUserById(
@@ -92,7 +90,7 @@ public interface GitlabServiceClient {
     @PutMapping(value = "/v1/projects/{projectId}/variables")
     ResponseEntity<List<Map<String, Object>>> batchAddProjectVariable(@PathVariable("projectId") Integer projectId,
                                                                       @RequestParam("userId") Integer userId,
-                                                                      @RequestBody @Valid List<io.choerodon.devops.api.vo.gitlab.VariableDTO> variableDTODTOS);
+                                                                      @RequestBody @Valid List<VariableDTO> variableDTODTOS);
 
     @DeleteMapping(value = "/v1/projects/{projectId}")
     ResponseEntity deleteProjectById(@PathVariable("projectId") Integer projectId,
