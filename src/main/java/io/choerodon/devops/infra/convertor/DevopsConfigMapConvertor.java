@@ -2,9 +2,9 @@ package io.choerodon.devops.infra.convertor;
 
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.DevopsConfigMapDTO;
+import io.choerodon.devops.api.vo.DevopsConfigMapVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsConfigMapE;
-import io.choerodon.devops.infra.dto.DevopsConfigMapDO;
+import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -20,39 +20,39 @@ import io.choerodon.devops.infra.dataobject.DevopsConfigMapDO;
 >>>>>>> [REF] refactor DevopsBranchRepository
 
 @Component
-public class DevopsConfigMapConvertor implements ConvertorI<DevopsConfigMapE, DevopsConfigMapDO, DevopsConfigMapDTO> {
+public class DevopsConfigMapConvertor implements ConvertorI<DevopsConfigMapE, DevopsConfigMapDTO, DevopsConfigMapVO> {
     @Override
-    public DevopsConfigMapE doToEntity(DevopsConfigMapDO devopsConfigMapDO) {
+    public DevopsConfigMapE doToEntity(DevopsConfigMapDTO devopsConfigMapDTO) {
         DevopsConfigMapE devopsConfigMapE = new DevopsConfigMapE();
-        BeanUtils.copyProperties(devopsConfigMapDO, devopsConfigMapE);
-        if (devopsConfigMapDO.getEnvId() != null) {
-            devopsConfigMapE.initDevopsEnvironmentE(devopsConfigMapDO.getEnvId());
+        BeanUtils.copyProperties(devopsConfigMapDTO, devopsConfigMapE);
+        if (devopsConfigMapDTO.getEnvId() != null) {
+            devopsConfigMapE.initDevopsEnvironmentE(devopsConfigMapDTO.getEnvId());
         }
-        if (devopsConfigMapDO.getCommandId() != null) {
-            devopsConfigMapE.initDevopsEnvCommandE(devopsConfigMapDO.getCommandId());
+        if (devopsConfigMapDTO.getCommandId() != null) {
+            devopsConfigMapE.initDevopsEnvCommandE(devopsConfigMapDTO.getCommandId());
         }
         return devopsConfigMapE;
     }
 
     @Override
-    public DevopsConfigMapDO entityToDo(DevopsConfigMapE devopsConfigMapE) {
-        DevopsConfigMapDO devopsConfigMapDO = new DevopsConfigMapDO();
-        BeanUtils.copyProperties(devopsConfigMapE, devopsConfigMapDO);
+    public DevopsConfigMapDTO entityToDo(DevopsConfigMapE devopsConfigMapE) {
+        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+        BeanUtils.copyProperties(devopsConfigMapE, devopsConfigMapDTO);
         if (devopsConfigMapE.getDevopsEnvCommandE() != null) {
-            devopsConfigMapDO.setCommandId(devopsConfigMapE.getDevopsEnvCommandE().getId());
+            devopsConfigMapDTO.setCommandId(devopsConfigMapE.getDevopsEnvCommandE().getId());
         }
         if (devopsConfigMapE.getDevopsEnvironmentE() != null) {
-            devopsConfigMapDO.setEnvId(devopsConfigMapE.getDevopsEnvironmentE().getId());
+            devopsConfigMapDTO.setEnvId(devopsConfigMapE.getDevopsEnvironmentE().getId());
         }
-        return devopsConfigMapDO;
+        return devopsConfigMapDTO;
     }
 
     @Override
-    public DevopsConfigMapE dtoToEntity(DevopsConfigMapDTO devopsConfigMapDTO) {
+    public DevopsConfigMapE dtoToEntity(DevopsConfigMapVO devopsConfigMapVO) {
         DevopsConfigMapE devopsConfigMapE = new DevopsConfigMapE();
-        BeanUtils.copyProperties(devopsConfigMapDTO, devopsConfigMapE);
-        if (devopsConfigMapDTO.getEnvId() != null) {
-            devopsConfigMapE.initDevopsEnvironmentE(devopsConfigMapDTO.getEnvId());
+        BeanUtils.copyProperties(devopsConfigMapVO, devopsConfigMapE);
+        if (devopsConfigMapVO.getEnvId() != null) {
+            devopsConfigMapE.initDevopsEnvironmentE(devopsConfigMapVO.getEnvId());
         }
         return devopsConfigMapE;
     }

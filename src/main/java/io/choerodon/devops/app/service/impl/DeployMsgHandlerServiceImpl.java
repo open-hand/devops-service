@@ -928,7 +928,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private void syncConfigMap(Long envId, List<DevopsEnvFileErrorE> errorDevopsFiles, ResourceCommit resourceCommit, String[] objects) {
         DevopsEnvFileResourceE devopsEnvFileResourceE;
         DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository
-                .queryByEnvIdAndName(envId, objects[1]);
+                .baseQueryByEnvIdAndName(envId, objects[1]);
         devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(envId, devopsConfigMapE.getId(), "ConfigMap");
         updateEnvCommandStatus(resourceCommit, devopsConfigMapE.getDevopsEnvCommandE().getId(),
@@ -1260,7 +1260,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 commands.add(command);
             }
         });
-        for (DevopsConfigMapE devopsConfigMapE : devopsConfigMapRepository.listByEnv(envId)) {
+        for (DevopsConfigMapE devopsConfigMapE : devopsConfigMapRepository.baseListByEnv(envId)) {
             Long commandId = devopsConfigMapE.getDevopsEnvCommandE().getId();
             if (commandId != null) {
                 Command command = new Command();
@@ -1651,22 +1651,22 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         V1ConfigMap v1ConfigMap = json.deserialize(msg, V1ConfigMap.class);
-        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryByEnvIdAndName(envId, v1ConfigMap.getMetadata().getName());
-        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
-        devopsConfigMapDTO.setDescription(v1ConfigMap.getMetadata().getName() + " config");
-        devopsConfigMapDTO.setEnvId(envId);
-        devopsConfigMapDTO.setName(v1ConfigMap.getMetadata().getName());
-        devopsConfigMapDTO.setValue(v1ConfigMap.getData());
+        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.baseQueryByEnvIdAndName(envId, v1ConfigMap.getMetadata().getName());
+        DevopsConfigMapVO devopsConfigMapVO = new DevopsConfigMapVO();
+        devopsConfigMapVO.setDescription(v1ConfigMap.getMetadata().getName() + " config");
+        devopsConfigMapVO.setEnvId(envId);
+        devopsConfigMapVO.setName(v1ConfigMap.getMetadata().getName());
+        devopsConfigMapVO.setValue(v1ConfigMap.getData());
         if (devopsConfigMapE == null) {
-            devopsConfigMapDTO.setType(CREATE_TYPE);
-            devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
+            devopsConfigMapVO.setType(CREATE_TYPE);
+            devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapVO);
         } else {
-            devopsConfigMapDTO.setId(devopsConfigMapE.getId());
-            devopsConfigMapDTO.setType(UPDATE_TYPE);
-            if (devopsConfigMapDTO.getValue().equals(gson.fromJson(devopsConfigMapE.getValue(), Map.class))) {
+            devopsConfigMapVO.setId(devopsConfigMapE.getId());
+            devopsConfigMapVO.setType(UPDATE_TYPE);
+            if (devopsConfigMapVO.getValue().equals(gson.fromJson(devopsConfigMapE.getValue(), Map.class))) {
                 return;
             } else {
-                devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
+                devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapVO);
             }
         }
 

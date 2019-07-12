@@ -9,18 +9,18 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsConfigMapE;
 
 public interface DevopsConfigMapRepository {
 
-    DevopsConfigMapE queryByEnvIdAndName(Long envId, String name);
+    DevopsConfigMapE baseQueryByEnvIdAndName(Long envId, String name);
 
-    DevopsConfigMapE create(DevopsConfigMapE devopsConfigMapE);
+    DevopsConfigMapE baseCreate(DevopsConfigMapE devopsConfigMapE);
 
-    DevopsConfigMapE update(DevopsConfigMapE devopsConfigMapE);
+    DevopsConfigMapE baseUpdate(DevopsConfigMapE devopsConfigMapE);
 
-    DevopsConfigMapE queryById(Long id);
+    DevopsConfigMapE baseQueryById(Long id);
 
-    void delete(Long id);
+    void baseDelete(Long id);
 
-    PageInfo<DevopsConfigMapE> pageByEnv(Long envId, PageRequest pageRequest, String params,Long appId);
+    PageInfo<DevopsConfigMapE> basePageByEnv(Long envId, PageRequest pageRequest, String params, Long appId);
 
-    List<DevopsConfigMapE> listByEnv(Long envId);
+    List<DevopsConfigMapE> baseListByEnv(Long envId);
 
 }

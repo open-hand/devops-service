@@ -1,7 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
+import io.choerodon.devops.infra.mapper.DevopsConfigMapMapper;
+import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1ObjectMeta;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +20,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsConfigMapDTO;
+import io.choerodon.devops.api.vo.DevopsConfigMapVO;
 import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
@@ -67,12 +71,14 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DevopsApplicationResourceRepository appResourceRepository;
+    @Autowired
+    private DevopsConfigMapMapper devopsConfigMapMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createOrUpdate(Long projectId, Boolean sync, DevopsConfigMapDTO devopsConfigMapDTO) {
+    public void createOrUpdate(Long projectId, Boolean sync, DevopsConfigMapVO devopsConfigMapVO) {
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapDTO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapVO.getEnvId());
 
         UserAttrE userAttrE = null;
         if (!sync) {
@@ -91,23 +97,23 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         }
 
         //初始化ConfigMap对象
-        V1ConfigMap v1ConfigMap = initConfigMap(devopsConfigMapDTO);
+        V1ConfigMap v1ConfigMap = initConfigMap(devopsConfigMapVO);
 
         //处理创建数据
-        DevopsConfigMapE devopsConfigMapE = ConvertHelper.convert(devopsConfigMapDTO, DevopsConfigMapE.class);
-        devopsConfigMapE.setValue(gson.toJson(devopsConfigMapDTO.getValue()));
+        DevopsConfigMapE devopsConfigMapE = ConvertHelper.convert(devopsConfigMapVO, DevopsConfigMapE.class);
+        devopsConfigMapE.setValue(gson.toJson(devopsConfigMapVO.getValue()));
         //更新判断configMap key-value是否改变
-        if (devopsConfigMapDTO.getType().equals(UPDATE_TYPE)) {
+        if (devopsConfigMapVO.getType().equals(UPDATE_TYPE)) {
 
             //更新configMap的时候校验gitops库文件是否存在,处理部署configMap时，由于没有创gitops文件导致的部署失败
-            resourceFileCheckHandler.check(devopsEnvironmentE, devopsConfigMapDTO.getId(), devopsConfigMapDTO.getName(), CONFIGMAP);
+            resourceFileCheckHandler.check(devopsEnvironmentE, devopsConfigMapVO.getId(), devopsConfigMapVO.getName(), CONFIGMAP);
 
-            if (devopsConfigMapDTO.getValue().equals(gson.fromJson(devopsConfigMapRepository.queryById(devopsConfigMapE.getId()).getValue(), Map.class))) {
-                devopsConfigMapRepository.update(devopsConfigMapE);
+            if (devopsConfigMapVO.getValue().equals(gson.fromJson(devopsConfigMapRepository.baseQueryById(devopsConfigMapE.getId()).getValue(), Map.class))) {
+                devopsConfigMapRepository.baseUpdate(devopsConfigMapE);
                 return;
             }
         }
-        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapDTO.getType());
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapVO.getType());
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
@@ -115,39 +121,39 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapDTO.getType().equals(CREATE_TYPE), filePath, devopsConfigMapE, userAttrE, devopsEnvCommandE, devopsConfigMapDTO.getAppId());
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapVO.getType().equals(CREATE_TYPE), filePath, devopsConfigMapE, userAttrE, devopsEnvCommandE, devopsConfigMapVO.getAppId());
     }
 
 
     @Override
-    public DevopsConfigMapRepDTO createOrUpdateByGitOps(DevopsConfigMapDTO devopsConfigMapDTO, Long userId) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapDTO.getEnvId());
+    public DevopsConfigMapRepDTO createOrUpdateByGitOps(DevopsConfigMapVO devopsConfigMapVO, Long userId) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapVO.getEnvId());
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //处理创建数据
-        DevopsConfigMapE devopsConfigMapE = ConvertHelper.convert(devopsConfigMapDTO, DevopsConfigMapE.class);
-        devopsConfigMapE.setValue(gson.toJson(devopsConfigMapDTO.getValue()));
-        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapDTO.getType());
+        DevopsConfigMapE devopsConfigMapE = ConvertHelper.convert(devopsConfigMapVO, DevopsConfigMapE.class);
+        devopsConfigMapE.setValue(gson.toJson(devopsConfigMapVO.getValue()));
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapVO.getType());
         devopsEnvCommandE.setCreatedBy(userId);
 
-        if (devopsConfigMapDTO.getType().equals(CREATE_TYPE)) {
-            Long configMapId = devopsConfigMapRepository.create(devopsConfigMapE).getId();
+        if (devopsConfigMapVO.getType().equals(CREATE_TYPE)) {
+            Long configMapId = devopsConfigMapRepository.baseCreate(devopsConfigMapE).getId();
             devopsEnvCommandE.setObjectId(configMapId);
             devopsConfigMapE.setId(configMapId);
             devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsConfigMapRepository.update(devopsConfigMapE);
+            devopsConfigMapRepository.baseUpdate(devopsConfigMapE);
         } else {
             devopsEnvCommandE.setObjectId(devopsConfigMapE.getId());
             devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsConfigMapRepository.update(devopsConfigMapE);
+            devopsConfigMapRepository.baseUpdate(devopsConfigMapE);
         }
         return ConvertHelper.convert(devopsConfigMapE, DevopsConfigMapRepDTO.class);
     }
 
     @Override
     public DevopsConfigMapRepDTO query(Long configMapId) {
-        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryById(configMapId);
+        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.baseQueryById(configMapId);
         DevopsConfigMapRepDTO devopsConfigMapRepDTO = ConvertHelper.convert(devopsConfigMapE, DevopsConfigMapRepDTO.class);
         devopsConfigMapRepDTO.setValue(gson.fromJson(devopsConfigMapE.getValue(), Map.class));
         return devopsConfigMapRepDTO;
@@ -155,7 +161,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
     @Override
     public PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam,Long appId) {
-        PageInfo<DevopsConfigMapE> devopsConfigMapES = devopsConfigMapRepository.pageByEnv(
+        PageInfo<DevopsConfigMapE> devopsConfigMapES = devopsConfigMapRepository.basePageByEnv(
                 envId, pageRequest, searchParam,appId);
         devopsConfigMapES.getList().forEach(devopsConfigMapE -> {
             List<String> keys = new ArrayList<>();
@@ -169,20 +175,20 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
     @Override
     public void deleteByGitOps(Long configMapId) {
-        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryById(configMapId);
+        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.baseQueryById(configMapId);
         //校验环境是否链接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         devopsEnvCommandRepository.baseListByObjectAll(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteCommandById(devopsEnvCommandE));
-        devopsConfigMapRepository.delete(configMapId);
+        devopsConfigMapRepository.baseDelete(configMapId);
         appResourceRepository.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long configMapId) {
-        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryById(configMapId);
+        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.baseQueryById(configMapId);
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId()
         );
@@ -199,7 +205,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         //更新ingress
         devopsEnvCommandE.setObjectId(configMapId);
         devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-        devopsConfigMapRepository.update(devopsConfigMapE);
+        devopsConfigMapRepository.baseUpdate(devopsConfigMapE);
 
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
@@ -209,7 +215,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), configMapId, CONFIGMAP);
         if (devopsEnvFileResourceE == null) {
-            devopsConfigMapRepository.delete(configMapId);
+            devopsConfigMapRepository.baseDelete(configMapId);
             appResourceRepository.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     CONFIG_MAP_PREFIX + devopsConfigMapE.getName() + ".yaml")) {
@@ -223,7 +229,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         } else {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
-                devopsConfigMapRepository.delete(configMapId);
+                devopsConfigMapRepository.baseDelete(configMapId);
                 appResourceRepository.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
                 devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
                 return;
@@ -260,21 +266,77 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
     @Override
     public void checkName(Long envId, String name) {
-        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryByEnvIdAndName(envId, name);
+        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.baseQueryByEnvIdAndName(envId, name);
         if (devopsConfigMapE != null) {
             throw new CommonException("error.name.exist");
         }
     }
 
 
-    private V1ConfigMap initConfigMap(DevopsConfigMapDTO devopsConfigMapDTO) {
+    @Override
+    public DevopsConfigMapDTO baseQueryByEnvIdAndName(Long envId, String name) {
+        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+        devopsConfigMapDTO.setName(name);
+        devopsConfigMapDTO.setEnvId(envId);
+        return devopsConfigMapMapper.selectOne(devopsConfigMapDTO);
+    }
+
+    @Override
+    public DevopsConfigMapDTO baseCreate(DevopsConfigMapDTO devopsConfigMapDTO) {
+        if (devopsConfigMapMapper.insert(devopsConfigMapDTO) != 1) {
+            throw new CommonException("error.configMap.create");
+        }
+        return devopsConfigMapDTO;
+    }
+
+    @Override
+    public DevopsConfigMapDTO baseUpdate(DevopsConfigMapDTO devopsConfigMapDTO) {
+        DevopsConfigMapDTO oldDevopsConfigMapDTO = devopsConfigMapMapper.selectByPrimaryKey(devopsConfigMapDTO.getId());
+        devopsConfigMapDTO.setObjectVersionNumber(oldDevopsConfigMapDTO.getObjectVersionNumber());
+        if (devopsConfigMapMapper.updateByPrimaryKeySelective(devopsConfigMapDTO) != 1) {
+            throw new CommonException("error.configMap.update");
+        }
+        return devopsConfigMapDTO;
+    }
+
+    @Override
+    public DevopsConfigMapDTO baseQueryById(Long id) {
+        return devopsConfigMapMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public void baseDelete(Long id) {
+        devopsConfigMapMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public PageInfo<DevopsConfigMapDTO> basePageByEnv(Long envId, PageRequest pageRequest, String params, Long appId) {
+        Map maps = gson.fromJson(params, Map.class);
+        PageInfo<DevopsConfigMapDTO> devopsConfigMapDOS = PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
+                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(maps.get(TypeUtil.PARAM)),
+                        appId));
+        return devopsConfigMapDOS;
+    }
+
+    @Override
+    public List<DevopsConfigMapDTO> baseListByEnv(Long envId) {
+        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+        devopsConfigMapDTO.setEnvId(envId);
+        return devopsConfigMapMapper.select(devopsConfigMapDTO);
+    }
+
+
+
+    private V1ConfigMap initConfigMap(DevopsConfigMapVO devopsConfigMapVO) {
         V1ConfigMap v1ConfigMap = new V1ConfigMap();
         v1ConfigMap.setApiVersion("v1");
         v1ConfigMap.setKind(CONFIGMAP);
         V1ObjectMeta metadata = new V1ObjectMeta();
-        metadata.setName(devopsConfigMapDTO.getName());
+        metadata.setName(devopsConfigMapVO.getName());
         v1ConfigMap.setMetadata(metadata);
-        v1ConfigMap.setData(devopsConfigMapDTO.getValue());
+        v1ConfigMap.setData(devopsConfigMapVO.getValue());
         return v1ConfigMap;
     }
 
@@ -289,7 +351,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         //操作configMap数据库
         if (isCreate) {
-            Long configMapId = devopsConfigMapRepository.create(devopsConfigMapE).getId();
+            Long configMapId = devopsConfigMapRepository.baseCreate(devopsConfigMapE).getId();
             if (appId != null) {
                 DevopsAppResourceE resourceE = new DevopsAppResourceE();
                 resourceE.setAppId(appId);
@@ -300,11 +362,11 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             devopsEnvCommandE.setObjectId(configMapId);
             devopsConfigMapE.setId(configMapId);
             devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsConfigMapRepository.update(devopsConfigMapE);
+            devopsConfigMapRepository.baseUpdate(devopsConfigMapE);
         } else {
             devopsEnvCommandE.setObjectId(devopsConfigMapE.getId());
             devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsConfigMapRepository.update(devopsConfigMapE);
+            devopsConfigMapRepository.baseUpdate(devopsConfigMapE);
         }
 
         ResourceConvertToYamlHandler<V1ConfigMap> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();

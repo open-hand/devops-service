@@ -6,7 +6,7 @@ import javax.persistence.*;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 @Table(name = "devops_config_map")
-public class DevopsConfigMapDO extends BaseDTO {
+public class DevopsConfigMapDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

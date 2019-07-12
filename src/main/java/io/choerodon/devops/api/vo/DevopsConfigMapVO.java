@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Map;
 
-public class DevopsConfigMapDTO {
+public class DevopsConfigMapVO {
 
     private Long id;
     private Long appId;

@@ -18,7 +18,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsConfigMapDTO;
+import io.choerodon.devops.api.vo.DevopsConfigMapVO;
 import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.mybatis.annotation.SortDefault;
@@ -36,7 +36,7 @@ public class DevopsConfigMapController {
      * 项目下创建配置映射
      *
      * @param projectId          项目id
-     * @param devopsConfigMapDTO 配置映射信息
+     * @param devopsConfigMapVO 配置映射信息
      * @return ResponseEntity
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
@@ -47,8 +47,8 @@ public class DevopsConfigMapController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
-            @RequestBody DevopsConfigMapDTO devopsConfigMapDTO) {
-        devopsConfigMapService.createOrUpdate(projectId, false, devopsConfigMapDTO);
+            @RequestBody DevopsConfigMapVO devopsConfigMapVO) {
+        devopsConfigMapService.createOrUpdate(projectId, false, devopsConfigMapVO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

@@ -335,7 +335,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 code = certificationE.getName();
                 break;
             case CONFIGMAP:
-                DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryById(objectId);
+                DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.baseQueryById(objectId);
                 code = devopsConfigMapE.getName();
                 break;
             case SECRET:

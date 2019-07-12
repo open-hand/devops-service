@@ -17,7 +17,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsConfigMapE;
 import io.choerodon.devops.domain.application.repository.DevopsConfigMapRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dto.DevopsConfigMapDO;
+import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapMapper;
 
 @Service
@@ -28,47 +28,47 @@ public class DevopsConfigMapRepositoryImpl implements DevopsConfigMapRepository 
     private DevopsConfigMapMapper devopsConfigMapMapper;
 
     @Override
-    public DevopsConfigMapE queryByEnvIdAndName(Long envId, String name) {
-        DevopsConfigMapDO devopsConfigMapDO = new DevopsConfigMapDO();
-        devopsConfigMapDO.setName(name);
-        devopsConfigMapDO.setEnvId(envId);
-        return ConvertHelper.convert(devopsConfigMapMapper.selectOne(devopsConfigMapDO), DevopsConfigMapE.class);
+    public DevopsConfigMapE baseQueryByEnvIdAndName(Long envId, String name) {
+        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+        devopsConfigMapDTO.setName(name);
+        devopsConfigMapDTO.setEnvId(envId);
+        return ConvertHelper.convert(devopsConfigMapMapper.selectOne(devopsConfigMapDTO), DevopsConfigMapE.class);
     }
 
     @Override
-    public DevopsConfigMapE create(DevopsConfigMapE devopsConfigMapE) {
-        DevopsConfigMapDO devopsConfigMapDO = ConvertHelper.convert(devopsConfigMapE, DevopsConfigMapDO.class);
-        if (devopsConfigMapMapper.insert(devopsConfigMapDO) != 1) {
+    public DevopsConfigMapE baseCreate(DevopsConfigMapE devopsConfigMapE) {
+        DevopsConfigMapDTO devopsConfigMapDTO = ConvertHelper.convert(devopsConfigMapE, DevopsConfigMapDTO.class);
+        if (devopsConfigMapMapper.insert(devopsConfigMapDTO) != 1) {
             throw new CommonException("error.configMap.create");
         }
-        return ConvertHelper.convert(devopsConfigMapDO, DevopsConfigMapE.class);
+        return ConvertHelper.convert(devopsConfigMapDTO, DevopsConfigMapE.class);
     }
 
     @Override
-    public DevopsConfigMapE update(DevopsConfigMapE devopsConfigMapE) {
-        DevopsConfigMapDO oldDevopsConfigMapDO = devopsConfigMapMapper.selectByPrimaryKey(devopsConfigMapE.getId());
-        DevopsConfigMapDO updateDevopsConfigMapDO = ConvertHelper.convert(devopsConfigMapE, DevopsConfigMapDO.class);
-        updateDevopsConfigMapDO.setObjectVersionNumber(oldDevopsConfigMapDO.getObjectVersionNumber());
-        if (devopsConfigMapMapper.updateByPrimaryKeySelective(updateDevopsConfigMapDO) != 1) {
+    public DevopsConfigMapE baseUpdate(DevopsConfigMapE devopsConfigMapE) {
+        DevopsConfigMapDTO oldDevopsConfigMapDTO = devopsConfigMapMapper.selectByPrimaryKey(devopsConfigMapE.getId());
+        DevopsConfigMapDTO updateDevopsConfigMapDTO = ConvertHelper.convert(devopsConfigMapE, DevopsConfigMapDTO.class);
+        updateDevopsConfigMapDTO.setObjectVersionNumber(oldDevopsConfigMapDTO.getObjectVersionNumber());
+        if (devopsConfigMapMapper.updateByPrimaryKeySelective(updateDevopsConfigMapDTO) != 1) {
             throw new CommonException("error.configMap.update");
         }
-        return ConvertHelper.convert(updateDevopsConfigMapDO, DevopsConfigMapE.class);
+        return ConvertHelper.convert(updateDevopsConfigMapDTO, DevopsConfigMapE.class);
     }
 
     @Override
-    public DevopsConfigMapE queryById(Long id) {
+    public DevopsConfigMapE baseQueryById(Long id) {
         return ConvertHelper.convert(devopsConfigMapMapper.selectByPrimaryKey(id), DevopsConfigMapE.class);
     }
 
     @Override
-    public void delete(Long id) {
+    public void baseDelete(Long id) {
         devopsConfigMapMapper.deleteByPrimaryKey(id);
     }
 
     @Override
-    public PageInfo<DevopsConfigMapE> pageByEnv(Long envId, PageRequest pageRequest, String params, Long appId) {
+    public PageInfo<DevopsConfigMapE> basePageByEnv(Long envId, PageRequest pageRequest, String params, Long appId) {
         Map maps = gson.fromJson(params, Map.class);
-        PageInfo<DevopsConfigMapDO> devopsConfigMapDOS = PageHelper
+        PageInfo<DevopsConfigMapDTO> devopsConfigMapDOS = PageHelper
                 .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(maps.get(TypeUtil.PARAM)),
@@ -77,10 +77,10 @@ public class DevopsConfigMapRepositoryImpl implements DevopsConfigMapRepository 
     }
 
     @Override
-    public List<DevopsConfigMapE> listByEnv(Long envId) {
-        DevopsConfigMapDO devopsConfigMapDO = new DevopsConfigMapDO();
-        devopsConfigMapDO.setEnvId(envId);
-        return ConvertHelper.convertList(devopsConfigMapMapper.select(devopsConfigMapDO), DevopsConfigMapE.class);
+    public List<DevopsConfigMapE> baseListByEnv(Long envId) {
+        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+        devopsConfigMapDTO.setEnvId(envId);
+        return ConvertHelper.convertList(devopsConfigMapMapper.select(devopsConfigMapDTO), DevopsConfigMapE.class);
     }
 
 
