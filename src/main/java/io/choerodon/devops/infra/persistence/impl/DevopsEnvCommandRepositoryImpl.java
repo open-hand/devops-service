@@ -110,7 +110,7 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
             devopsEnvCommandValueRepository.baseDeleteById(commandE.getDevopsEnvCommandValueDTO().getId());
         }
         devopsEnvCommandLogRepository.baseDeleteByCommandId(commandE.getId());
-        devopsCommandEventRepository.deleteByCommandId(commandE.getId());
+        devopsCommandEventRepository.baseDeleteByCommandId(commandE.getId());
         devopsEnvCommandMapper.deleteByPrimaryKey(commandE.getId());
     }
 }

@@ -1136,14 +1136,14 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository
                     .baseQueryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceE.getApplicationInstanceE().getId());
             // 删除实例事件记录
-            devopsCommandEventRepository.deletePreInstanceCommandEvent(devopsEnvCommandE.getObjectId());
+            devopsCommandEventRepository.baseDeletePreInstanceCommandEvent(devopsEnvCommandE.getObjectId());
             DevopsCommandEventE devopsCommandEventE = new DevopsCommandEventE();
             devopsCommandEventE.setEventCreationTime(event.getMetadata().getCreationTimestamp());
             devopsCommandEventE.setMessage(event.getMessage());
             devopsCommandEventE.setName(event.getInvolvedObject().getName());
             devopsCommandEventE.initDevopsEnvCommandE(devopsEnvCommandE.getId());
             devopsCommandEventE.setType(type);
-            devopsCommandEventRepository.create(devopsCommandEventE);
+            devopsCommandEventRepository.baseCreate(devopsCommandEventE);
         } catch (Exception e) {
             logger.info(e.getMessage());
         }

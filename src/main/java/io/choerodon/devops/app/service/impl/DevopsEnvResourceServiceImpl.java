@@ -202,7 +202,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             List<PodEventDTO> podEventDTOS = new ArrayList<>();
             //获取实例中job的event
             List<DevopsCommandEventE> devopsCommandJobEventES = devopsCommandEventRepository
-                    .listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.JOB.getType());
+                    .baseListByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.JOB.getType());
             if (!devopsCommandJobEventES.isEmpty()) {
                 LinkedHashMap<String, String> jobEvents = getDevopsCommandEvent(devopsCommandJobEventES);
                 jobEvents.forEach((key, value) -> {
@@ -243,7 +243,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             }
             //获取实例中pod的event
             List<DevopsCommandEventE> devopsCommandPodEventES = devopsCommandEventRepository
-                    .listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.POD.getType());
+                    .baseListByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.POD.getType());
             if (!devopsCommandPodEventES.isEmpty()) {
                 LinkedHashMap<String, String> podEvents = getDevopsCommandEvent(devopsCommandPodEventES);
                 int index = 0;

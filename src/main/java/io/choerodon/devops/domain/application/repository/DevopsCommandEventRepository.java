@@ -6,12 +6,11 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsCommandEventE;
 
 public interface DevopsCommandEventRepository {
 
-    void create(DevopsCommandEventE devopsCommandEventE);
+    void baseCreate(DevopsCommandEventE devopsCommandEventE);
 
-    List<DevopsCommandEventE> listByCommandIdAndType(Long commandId, String type);
+    List<DevopsCommandEventE> baseListByCommandIdAndType(Long commandId, String type);
 
-    void deletePreInstanceCommandEvent(Long instanceId);
+    void baseDeletePreInstanceCommandEvent(Long instanceId);
 
-    void deleteByCommandId(Long commandId);
-
+    void baseDeleteByCommandId(Long commandId);
 }
