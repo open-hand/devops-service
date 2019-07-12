@@ -2,7 +2,7 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.dto.DevopsBranchDO;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 
 
 /**
@@ -14,5 +14,5 @@ import io.choerodon.devops.infra.dto.DevopsBranchDO;
 
 public interface DevopsBranchRepository {
 
-    List<DevopsBranchDO> getDevopsBranchsByIssueId(Long issueId);
+    List<DevopsBranchDTO> baseGetDevopsBranchesByIssueId(Long issueId);
 }

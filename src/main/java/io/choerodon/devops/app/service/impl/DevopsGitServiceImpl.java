@@ -182,10 +182,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     @Saga(code = "devops-create-branch",
             description = "Devops创建分支", inputSchema = "{}")
-    public void createBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO) {
-        DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
+    public void createBranch(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO) {
+        DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchVO, DevopsBranchE.class);
 
-        checkName(projectId, applicationId, devopsBranchDTO.getBranchName());
+        checkName(projectId, applicationId, devopsBranchVO.getBranchName());
 
         Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
         devopsBranchE.setUserId(gitLabUser);
@@ -195,7 +195,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsBranchE = devopsGitRepository.createDevopsBranch(devopsBranchE);
         Long devopsBranchId = devopsBranchE.getId();
 
-        BranchSagaDTO branchSagaDTO = new BranchSagaDTO(TypeUtil.objToLong(applicationE.getGitlabProjectE().getId()), devopsBranchId, devopsBranchDTO.getBranchName(), devopsBranchDTO.getOriginBranch());
+        BranchSagaDTO branchSagaDTO = new BranchSagaDTO(TypeUtil.objToLong(applicationE.getGitlabProjectE().getId()), devopsBranchId, devopsBranchVO.getBranchName(), devopsBranchVO.getOriginBranch());
         String input = gson.toJson(branchSagaDTO);
 
 
@@ -283,14 +283,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public DevopsBranchDTO queryBranch(Long projectId, Long applicationId, String branchName) {
+    public DevopsBranchVO queryBranch(Long projectId, Long applicationId, String branchName) {
         return ConvertHelper.convert(devopsGitRepository
-                .queryByAppAndBranchName(applicationId, branchName), DevopsBranchDTO.class);
+                .queryByAppAndBranchName(applicationId, branchName), DevopsBranchVO.class);
     }
 
     @Override
-    public void updateBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO) {
-        DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
+    public void updateBranch(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO) {
+        DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchVO, DevopsBranchE.class);
         devopsGitRepository.updateBranchIssue(applicationId, devopsBranchE);
     }
 

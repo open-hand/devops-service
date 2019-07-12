@@ -54,9 +54,9 @@ public interface DevopsGitService {
      *
      * @param projectId       项目ID
      * @param applicationId   应用ID
-     * @param devopsBranchDTO 分支
+     * @param devopsBranchVO 分支
      */
-    void createBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO);
+    void createBranch(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO);
 
     /**
      * 获取工程下所有分支名
@@ -77,16 +77,16 @@ public interface DevopsGitService {
      * @param branchName    分支名
      * @return BranchUpdateDTO
      */
-    DevopsBranchDTO queryBranch(Long projectId, Long applicationId, String branchName);
+    DevopsBranchVO queryBranch(Long projectId, Long applicationId, String branchName);
 
     /**
      * 更新分支关联的问题
      *
      * @param projectId       项目 ID
      * @param applicationId   应用ID
-     * @param devopsBranchDTO 分支
+     * @param devopsBranchVO 分支
      */
-    void updateBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO);
+    void updateBranch(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO);
 
     /**
      * 删除分支

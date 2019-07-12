@@ -6,7 +6,7 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DevopsBranchDTO
+import io.choerodon.devops.api.vo.DevopsBranchVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE
@@ -20,10 +20,16 @@ import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
 =======
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
 >>>>>>> [IMP] 修改AppControler重构
+=======
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
+=======
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+>>>>>>> [REF] refactor DevopsBranchRepository
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
@@ -290,7 +296,7 @@ class DevopsGitControllerSpec extends Specification {
         UserAttrE userAttrE = new UserAttrE()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
-        DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO()
+        DevopsBranchVO devopsBranchDTO = new DevopsBranchVO()
         devopsBranchDTO.setAppName("test")
         devopsBranchDTO.setBranchName("test")
         devopsBranchDTO.setIssueId(1L)
@@ -352,7 +358,7 @@ class DevopsGitControllerSpec extends Specification {
 
     def "QueryByAppId"() {
         when: '查询单个分支'
-        def devopsBranch = restTemplate.getForObject("/v1/projects/1/apps/1/git/branch?branchName=test", DevopsBranchDTO.class)
+        def devopsBranch = restTemplate.getForObject("/v1/projects/1/apps/1/git/branch?branchName=test", DevopsBranchVO.class)
 
         then: '校验返回值'
         devopsBranch["branchName"] == "test"
@@ -360,7 +366,7 @@ class DevopsGitControllerSpec extends Specification {
 
     def "Update"() {
         given: '初始化branchDTO类'
-        DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO()
+        DevopsBranchVO devopsBranchDTO = new DevopsBranchVO()
         devopsBranchDTO.setBranchName("test")
         devopsBranchDTO.setIssueId(2L)
 

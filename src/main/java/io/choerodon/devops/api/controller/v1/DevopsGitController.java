@@ -12,7 +12,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.BranchDTO;
-import io.choerodon.devops.api.vo.DevopsBranchDTO;
+import io.choerodon.devops.api.vo.DevopsBranchVO;
 import io.choerodon.devops.api.vo.TagDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.infra.dto.gitlab.TagDO;
@@ -218,7 +218,7 @@ public class DevopsGitController {
      *
      * @param projectId       项目ID
      * @param applicationId   应用ID
-     * @param devopsBranchDTO 分支
+     * @param devopsBranchVO 分支
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -230,9 +230,9 @@ public class DevopsGitController {
             @ApiParam(value = "应用id", required = true)
             @PathVariable(value = "application_id") Long applicationId,
             @ApiParam(value = "分支", required = true)
-            @RequestBody DevopsBranchDTO devopsBranchDTO) {
+            @RequestBody DevopsBranchVO devopsBranchVO) {
         devopsGitService.createBranch(
-                projectId, applicationId, devopsBranchDTO);
+                projectId, applicationId, devopsBranchVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -275,7 +275,7 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个分支")
     @GetMapping("/branch")
-    public ResponseEntity<DevopsBranchDTO> queryByAppId(
+    public ResponseEntity<DevopsBranchVO> queryByAppId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
@@ -291,7 +291,7 @@ public class DevopsGitController {
      *
      * @param projectId       项目 ID
      * @param applicationId   应用ID
-     * @param devopsBranchDTO 分支
+     * @param devopsBranchVO 分支
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -303,8 +303,8 @@ public class DevopsGitController {
             @ApiParam(value = "应用id", required = true)
             @PathVariable(value = "application_id") Long applicationId,
             @ApiParam(value = "分支", required = true)
-            @RequestBody DevopsBranchDTO devopsBranchDTO) {
-        devopsGitService.updateBranch(projectId, applicationId, devopsBranchDTO);
+            @RequestBody DevopsBranchVO devopsBranchVO) {
+        devopsGitService.updateBranch(projectId, applicationId, devopsBranchVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

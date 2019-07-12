@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabCommitE;
 
-public class DevopsBranchDTO {
+public class DevopsBranchVO {
 
     private Long appId;
     private String appName;

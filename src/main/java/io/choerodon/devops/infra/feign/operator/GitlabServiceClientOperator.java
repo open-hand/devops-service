@@ -21,7 +21,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.valueobject.*;
-import io.choerodon.devops.infra.dto.DevopsBranchDO;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.GitUtil;
@@ -620,15 +620,15 @@ public class GitlabServiceClientOperator {
 
     @Override
     public void updateBranchIssue(Long appId, DevopsBranchE devopsBranchE) {
-        DevopsBranchDO devopsBranchDO = devopsBranchMapper
+        DevopsBranchDTO devopsBranchDTO = devopsBranchMapper
                 .queryByAppAndBranchName(appId, devopsBranchE.getBranchName());
-        devopsBranchDO.setIssueId(devopsBranchE.getIssueId());
-        devopsBranchMapper.updateByPrimaryKey(devopsBranchDO);
+        devopsBranchDTO.setIssueId(devopsBranchE.getIssueId());
+        devopsBranchMapper.updateByPrimaryKey(devopsBranchDTO);
     }
 
     @Override
     public void updateBranchLastCommit(DevopsBranchE devopsBranchE) {
-        DevopsBranchDO branchDO = devopsBranchMapper
+        DevopsBranchDTO branchDO = devopsBranchMapper
                 .queryByAppAndBranchName(devopsBranchE.getApplicationE().getId(), devopsBranchE.getBranchName());
         branchDO.setLastCommit(devopsBranchE.getLastCommit());
         branchDO.setLastCommitDate(devopsBranchE.getLastCommitDate());
@@ -641,9 +641,9 @@ public class GitlabServiceClientOperator {
     @Override
     public DevopsBranchE createDevopsBranch(DevopsBranchE devopsBranchE) {
         devopsBranchE.setDeleted(false);
-        DevopsBranchDO devopsBranchDO = ConvertHelper.convert(devopsBranchE, DevopsBranchDO.class);
-        devopsBranchMapper.insert(devopsBranchDO);
-        return ConvertHelper.convert(devopsBranchDO, DevopsBranchE.class);
+        DevopsBranchDTO devopsBranchDTO = ConvertHelper.convert(devopsBranchE, DevopsBranchDTO.class);
+        devopsBranchMapper.insert(devopsBranchDTO);
+        return ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
     }
 
     @Override
@@ -653,7 +653,7 @@ public class GitlabServiceClientOperator {
 
     @Override
     public void updateBranch(DevopsBranchE devopsBranchE) {
-        DevopsBranchDO branchDO = ConvertHelper.convert(devopsBranchE, DevopsBranchDO.class);
+        DevopsBranchDTO branchDO = ConvertHelper.convert(devopsBranchE, DevopsBranchDTO.class);
         branchDO.setObjectVersionNumber(devopsBranchMapper.selectByPrimaryKey(devopsBranchE.getId()).getObjectVersionNumber());
         if (devopsBranchMapper.updateByPrimaryKey(branchDO) != 1) {
             throw new CommonException("error.branch.update");

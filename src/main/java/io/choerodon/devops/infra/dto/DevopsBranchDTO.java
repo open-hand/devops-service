@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 @Table(name = "devops_branch")
-public class DevopsBranchDO extends BaseDTO {
+public class DevopsBranchDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

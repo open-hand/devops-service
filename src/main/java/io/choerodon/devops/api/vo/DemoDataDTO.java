@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 
 /**
  * @author zmf

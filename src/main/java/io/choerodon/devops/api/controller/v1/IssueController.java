@@ -8,7 +8,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.CustomMergeRequestDTO;
-import io.choerodon.devops.api.vo.DevopsBranchDTO;
+import io.choerodon.devops.api.vo.DevopsBranchVO;
 import io.choerodon.devops.api.vo.IssueDTO;
 import io.choerodon.devops.app.service.IssueService;
 import io.swagger.annotations.ApiOperation;
@@ -38,7 +38,7 @@ public class IssueController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的commit列表")
     @GetMapping("/commit/list")
-    public ResponseEntity<List<DevopsBranchDTO>> getCommitsByIssueId(
+    public ResponseEntity<List<DevopsBranchVO>> getCommitsByIssueId(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "issueID")

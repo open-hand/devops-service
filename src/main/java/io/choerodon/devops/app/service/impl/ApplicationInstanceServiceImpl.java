@@ -1,10 +1,18 @@
 package io.choerodon.devops.app.service.impl;
 
 
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+=======
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+>>>>>>> [REF] refactor DevopsBranchRepository
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
@@ -62,7 +70,11 @@ import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 >>>>>>> [REF] refactor DeployDetailRepository
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.repository.*;
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.AppInstanceInfoDTO;
+=======
+import io.choerodon.devops.domain.application.valueobject.*;
+>>>>>>> [REF] refactor DevopsBranchRepository
 import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.infra.dto.ApplicationInstanceOverViewDTO;
 import io.choerodon.devops.infra.dto.ApplicationLatestVersionDTO;
@@ -933,6 +945,7 @@ public DevopsEnvResourceDTO listResourcesInHelmRelease(Long instanceId){
         );
 
 
+<<<<<<< HEAD
         return devopsEnvResourceDTO;
         }
 
@@ -952,6 +965,8 @@ private List<DevopsEnvPodDTO> filterPodsAssociated(List<DevopsEnvPodDTO> devopsE
         }
 =======
 <<<<<<< HEAD
+=======
+>>>>>>> [REF] refactor DevopsBranchRepository
     /**
      * filter the pods that are associated with the deployment.
      *
