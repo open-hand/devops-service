@@ -240,6 +240,41 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.appName.query"));
     }
 
+
+    /**
+     *
+     * @param projectId
+     * @param isActive
+     * @param hasVersion
+     * @param doPage
+     * @param pageRequest
+     * @param params
+     * @return
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下分页查询应用 应用分享使用")
+    @CustomPageRequest
+    @PostMapping("/list_by_options/app_market")
+    public ResponseEntity<PageInfo<ApplicationRepDTO>> pageByOptions(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用是否启用")
+            @RequestParam(value = "active", required = false) Boolean isActive,
+            @ApiParam(value = "应用是否存在版本")
+            @RequestParam(value = "has_version", required = false) Boolean hasVersion,
+            @ApiParam(value = "是否分页")
+            @RequestParam(value = "doPage", required = false) Boolean doPage,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(
+                applicationService.listByOptions(projectId, isActive, hasVersion, doPage, pageRequest, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.appTemplate.get"));
+    }
+
     /**
      * 根据环境id获取已部署正在运行实例的应用
      *

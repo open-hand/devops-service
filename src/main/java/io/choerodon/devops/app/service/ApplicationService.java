@@ -93,6 +93,24 @@ public interface ApplicationService {
                                               String params);
 
     /**
+     * 组织下分页查询应用 远程应用分享专用
+     * @param projectId
+     * @param isActive
+     * @param hasVersion
+     * @param doPage
+     * @param pageRequest
+     * @param params
+     * @return
+     */
+    PageInfo<ApplicationRepDTO> listByOptions(Long projectId,
+                                              Boolean isActive,
+                                              Boolean hasVersion,
+                                              Boolean doPage,
+                                              PageRequest pageRequest,
+                                              String params);
+
+
+    /**
      * 处理应用创建逻辑
      *
      * @param gitlabProjectEventDTO 应用信息
