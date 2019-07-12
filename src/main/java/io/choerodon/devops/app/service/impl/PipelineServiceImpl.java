@@ -35,6 +35,7 @@ import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.NotifyClient;
+import io.choerodon.devops.infra.feign.WorkFlowServiceClient;
 import io.choerodon.devops.infra.util.CutomerContextUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -49,6 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -105,6 +107,8 @@ public class PipelineServiceImpl implements PipelineService {
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
     private NotifyClient notifyClient;
+    @Autowired
+    private WorkFlowServiceClient workFlowServiceClient;
 
     @Override
     public PageInfo<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params) {
@@ -623,10 +627,10 @@ public class PipelineServiceImpl implements PipelineService {
                 List<PipelineTaskRecordE> taskSuccessRecordList = taskRecordEList.stream().filter(t -> t.getStatus().equals(WorkFlowStatus.SUCCESS.toValue())).collect(Collectors.toList());
                 List<PipelineTaskRecordE> taskFailedRecordList = taskRecordEList.stream().filter(t -> t.getStatus().equals(WorkFlowStatus.FAILED.toValue())).collect(Collectors.toList());
                 if (taskRecordEList.size() == (taskSuccessRecordList.size() + taskFailedRecordList.size())) {
-                    workFlowRepository.stopInstance(pipelineRecordE.getProjectId(), pipelineRecordE.getBusinessKey());
+                    stopInstanceInWorkFlow(pipelineRecordE.getProjectId(), pipelineRecordE.getBusinessKey());
                 }
             } else {
-                workFlowRepository.stopInstance(pipelineRecordE.getProjectId(), pipelineRecordE.getBusinessKey());
+                stopInstanceInWorkFlow(pipelineRecordE.getProjectId(), pipelineRecordE.getBusinessKey());
             }
         }
     }
@@ -1361,7 +1365,7 @@ public class PipelineServiceImpl implements PipelineService {
                     public void onComplete() {
                         DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId, orgId);
                         try {
-                            workFlowRepository.create(projectId, pipelineDTO);
+                            createWorkFlow(projectId, pipelineDTO);
                         } catch (Exception e) {
                             throw new CommonException(e);
                         }
@@ -1391,7 +1395,7 @@ public class PipelineServiceImpl implements PipelineService {
                     public void onComplete() {
                         DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId, orgId);
                         try {
-                            workFlowRepository.approveUserTask(projectId, businessKey);
+                            approveUserTaskInWorkFlow(projectId, businessKey);
                         } catch (Exception e) {
                             throw new CommonException(e);
                         }
@@ -1443,6 +1447,30 @@ public class PipelineServiceImpl implements PipelineService {
             sendAuditSiteMassage(PipelineNoticeType.PIPELINESTOP.toValue(), auditUser, recordRelDTO.getPipelineRecordId(), stageName);
         }
         return status;
+    }
+
+
+    private String createWorkFlow(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
+        ResponseEntity<String> responseEntity = workFlowServiceClient.create(projectId, devopsPipelineDTO);
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.workflow.create");
+        }
+        return responseEntity.getBody();
+    }
+
+    private Boolean approveUserTaskInWorkFlow(Long projectId, String businessKey) {
+        ResponseEntity<Boolean> responseEntity = workFlowServiceClient.approveUserTask(projectId, businessKey);
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.workflow.approve");
+        }
+        return responseEntity.getBody();
+    }
+
+    private void stopInstanceInWorkFlow(Long projectId, String businessKey) {
+        ResponseEntity responseEntity = workFlowServiceClient.stopInstance(projectId, businessKey);
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.workflow.stop");
+        }
     }
 }
 
