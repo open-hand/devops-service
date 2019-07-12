@@ -39,10 +39,7 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
-import io.choerodon.devops.infra.dto.ApplicationVersionDO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentPodDTO;
-import io.choerodon.devops.infra.dto.DevopsGitlabCommitDO;
-import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.BranchDO;
 import io.choerodon.devops.infra.dto.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDO;
@@ -189,6 +186,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsEnvApplicationRepostitory devopsEnvApplicationRepostitory;
     @Autowired
     private AppShareRepository appShareRepository;
+    @Autowired
+    private DevopsCheckLogMapper devopsCheckLogMapper;
 
     @Override
     public void checkLog(String version) {
@@ -411,11 +410,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
 
     private void syncCommandId() {
-        devopsCheckLogRepository.syncCommandId();
+        devopsCheckLogMapper.syncCommandId();
     }
 
     private void syncCommandVersionId() {
-        devopsCheckLogRepository.syncCommandVersionId();
+        devopsCheckLogMapper.syncCommandVersionId();
     }
 
     private void syncGitOpsUserAccess(List<CheckLog> logs, String version) {
@@ -514,9 +513,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         @Override
         public void run() {
-            DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
+            DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
             List<CheckLog> logs = new ArrayList<>();
-            devopsCheckLogE.setBeginCheckDate(new Date());
+            devopsCheckLogDTO.setBeginCheckDate(new Date());
             if ("0.8".equals(version)) {
                 LOGGER.info("Start to execute upgrade task 0.8");
                 List<ApplicationDTO> applications = applicationMapper.selectAll();
@@ -566,9 +565,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } else {
                 LOGGER.info("version not matched");
             }
-            devopsCheckLogE.setLog(JSON.toJSONString(logs));
-            devopsCheckLogE.setEndCheckDate(new Date());
-            devopsCheckLogRepository.create(devopsCheckLogE);
+
+            devopsCheckLogDTO.setLog(JSON.toJSONString(logs));
+            devopsCheckLogDTO.setEndCheckDate(new Date());
+
+            devopsCheckLogMapper.insert(devopsCheckLogDTO);
         }
 
         /**
@@ -897,7 +898,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private void syncNonEnvGroupProject(List<CheckLog> logs) {
-            List<DevopsProjectDTO> projectDOList = devopsCheckLogRepository.queryNonEnvGroupProject();
+            List<DevopsProjectDTO> projectDOList = devopsCheckLogMapper.queryNonEnvGroupProject();
             LOGGER.info("{} projects need to upgrade", projectDOList.size());
             final String groupCodeSuffix = "gitops";
             projectDOList.forEach(t -> {

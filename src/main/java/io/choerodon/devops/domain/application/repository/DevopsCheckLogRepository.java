@@ -13,11 +13,11 @@ import io.choerodon.devops.infra.dto.DevopsProjectDO;
 
 public interface DevopsCheckLogRepository {
 
-    void create(DevopsCheckLogE devopsCheckLogE);
+    void baseCreateLog(DevopsCheckLogE devopsCheckLogE);
 
-    List<DevopsProjectDTO> queryNonEnvGroupProject();
+    List<DevopsProjectDTO> baseQueryNonEnvGroupProject();
 
-    void syncCommandId();
+    void baseSyncCommandId();
 
-    void syncCommandVersionId();
+    void baseSyncCommandVersionId();
 }

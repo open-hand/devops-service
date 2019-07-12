@@ -9,7 +9,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCheckLogE;
 import io.choerodon.devops.domain.application.repository.DevopsCheckLogRepository;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
-import io.choerodon.devops.infra.dto.DevopsCheckLogDO;
+import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
 
 @Service
@@ -19,22 +19,22 @@ public class DevopsCheckLogRepositoryImpl implements DevopsCheckLogRepository {
     private DevopsCheckLogMapper devopsCheckLogMapper;
 
     @Override
-    public void create(DevopsCheckLogE devopsCheckLogE) {
-        devopsCheckLogMapper.insert(ConvertHelper.convert(devopsCheckLogE, DevopsCheckLogDO.class));
+    public void baseCreateLog(DevopsCheckLogE devopsCheckLogE) {
+        devopsCheckLogMapper.insert(ConvertHelper.convert(devopsCheckLogE, DevopsCheckLogDTO.class));
     }
 
     @Override
-    public List<DevopsProjectDTO> queryNonEnvGroupProject() {
+    public List<DevopsProjectDTO> baseQueryNonEnvGroupProject() {
         return devopsCheckLogMapper.queryNonEnvGroupProject();
     }
 
     @Override
-    public void syncCommandId() {
+    public void baseSyncCommandId() {
         devopsCheckLogMapper.syncCommandId();
     }
 
     @Override
-    public void syncCommandVersionId(){
+    public void baseSyncCommandVersionId(){
         devopsCheckLogMapper.syncCommandVersionId();
     }
 }
