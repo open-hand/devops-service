@@ -5,7 +5,7 @@ import javax.persistence.Table;
 
 
 @Table(name = "devops_certification_pro_rel")
-public class DevopsCertificationProRelDO {
+public class DevopsCertificationProRelationshipDTO {
 
     @Id
     private Long certId;

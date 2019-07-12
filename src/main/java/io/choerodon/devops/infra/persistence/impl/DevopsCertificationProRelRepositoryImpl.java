@@ -9,7 +9,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCertificationProRelE;
 import io.choerodon.devops.domain.application.repository.DevopsCertificationProRelRepository;
-import io.choerodon.devops.infra.dto.DevopsCertificationProRelDO;
+import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
 import io.choerodon.devops.infra.mapper.DevopsCertificationProRelMapper;
 
 @Service
@@ -19,30 +19,30 @@ public class DevopsCertificationProRelRepositoryImpl implements DevopsCertificat
     private DevopsCertificationProRelMapper devopsCertificationProRelMapper;
 
     @Override
-    public void insert(DevopsCertificationProRelE devopsCertificationProRelE) {
-        DevopsCertificationProRelDO devopsCertificationProRelDO = ConvertHelper.convert(devopsCertificationProRelE, DevopsCertificationProRelDO.class);
+    public void baseInsertRelationship(DevopsCertificationProRelE devopsCertificationProRelE) {
+        DevopsCertificationProRelationshipDTO devopsCertificationProRelDO = ConvertHelper.convert(devopsCertificationProRelE, DevopsCertificationProRelationshipDTO.class);
         if (devopsCertificationProRelMapper.insert(devopsCertificationProRelDO) != 1) {
             throw new CommonException("error.devops.cert.project.rel.add.error");
         }
     }
 
     @Override
-    public List<DevopsCertificationProRelE> listByCertId(Long certId) {
-        DevopsCertificationProRelDO devopsCertificationProRelDO = new DevopsCertificationProRelDO();
-        devopsCertificationProRelDO.setCertId(certId);
+    public List<DevopsCertificationProRelE> baseListByCertificationId(Long certificationId) {
+        DevopsCertificationProRelationshipDTO devopsCertificationProRelDO = new DevopsCertificationProRelationshipDTO();
+        devopsCertificationProRelDO.setCertId(certificationId);
         return ConvertHelper.convertList(devopsCertificationProRelMapper.select(devopsCertificationProRelDO), DevopsCertificationProRelE.class);
     }
 
     @Override
-    public void delete(DevopsCertificationProRelE devopsCertificationProRelE) {
-        DevopsCertificationProRelDO devopsCertificationProRelDO = ConvertHelper.convert(devopsCertificationProRelE, DevopsCertificationProRelDO.class);
+    public void baseDelete(DevopsCertificationProRelE devopsCertificationProRelE) {
+        DevopsCertificationProRelationshipDTO devopsCertificationProRelDO = ConvertHelper.convert(devopsCertificationProRelE, DevopsCertificationProRelationshipDTO.class);
         devopsCertificationProRelMapper.delete(devopsCertificationProRelDO);
     }
 
     @Override
-    public void deleteByCertId(Long certId) {
-        DevopsCertificationProRelDO devopsCertificationProRelDO = new DevopsCertificationProRelDO();
-        devopsCertificationProRelDO.setCertId(certId);
+    public void baseDeleteByCertificationId(Long certificationId) {
+        DevopsCertificationProRelationshipDTO devopsCertificationProRelDO = new DevopsCertificationProRelationshipDTO();
+        devopsCertificationProRelDO.setCertId(certificationId);
         devopsCertificationProRelMapper.delete(devopsCertificationProRelDO);
     }
 }

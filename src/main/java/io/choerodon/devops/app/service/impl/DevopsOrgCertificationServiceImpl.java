@@ -90,7 +90,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
                 DevopsCertificationProRelE devopsCertificationProRelE = new DevopsCertificationProRelE();
                 devopsCertificationProRelE.setCertId(certificationE.getId());
                 devopsCertificationProRelE.setProjectId(projectId);
-                devopsCertificationProRelRepository.insert(devopsCertificationProRelE);
+                devopsCertificationProRelRepository.baseInsertRelationship(devopsCertificationProRelE);
             }
         }
     }
@@ -103,10 +103,10 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
         CertificationE certificationE = certificationRepository.baseQueryById(certId);
         //以前不跳过项目权限校验,但是现在跳过，情况集群对应的项目集群校验表
         if (skipCheckPro && !certificationE.getSkipCheckProjectPermission()) {
-            devopsCertificationProRelRepository.deleteByCertId(certId);
+            devopsCertificationProRelRepository.baseDeleteByCertificationId(certId);
         } else {
             //操作集群项目权限校验表记录
-            List<Long> projectIds = devopsCertificationProRelRepository.listByCertId(certId)
+            List<Long> projectIds = devopsCertificationProRelRepository.baseListByCertificationId(certId)
                     .stream().map(DevopsCertificationProRelE::getProjectId).collect(Collectors.toList());
 
             projects.forEach(projectId -> {
@@ -120,13 +120,13 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
                 DevopsCertificationProRelE devopsClusterProPermissionE = new DevopsCertificationProRelE();
                 devopsClusterProPermissionE.setCertId(certId);
                 devopsClusterProPermissionE.setProjectId(addProject);
-                devopsCertificationProRelRepository.insert(devopsClusterProPermissionE);
+                devopsCertificationProRelRepository.baseInsertRelationship(devopsClusterProPermissionE);
             });
             projectIds.forEach(deleteProject -> {
                 DevopsCertificationProRelE devopsClusterProPermissionE = new DevopsCertificationProRelE();
                 devopsClusterProPermissionE.setCertId(certId);
                 devopsClusterProPermissionE.setProjectId(deleteProject);
-                devopsCertificationProRelRepository.delete(devopsClusterProPermissionE);
+                devopsCertificationProRelRepository.baseDelete(devopsClusterProPermissionE);
             });
         }
         certificationE.setSkipCheckProjectPermission(orgCertificationDTO.getSkipCheckProjectPermission());
@@ -144,7 +144,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
     }
 
     public List<ProjectReqVO> listCertProjects(Long certId) {
-        return devopsCertificationProRelRepository.listByCertId(certId).stream()
+        return devopsCertificationProRelRepository.baseListByCertificationId(certId).stream()
                 .map(devopsCertificationProRelE -> {
                     ProjectVO projectE = iamRepository.queryIamProject(devopsCertificationProRelE.getProjectId());
 
@@ -155,7 +155,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
     public void deleteCert(Long certId) {
         List<CertificationE> certificationES = certificationRepository.baseListByOrgCertId(certId);
         if (certificationES.isEmpty()) {
-            devopsCertificationProRelRepository.deleteByCertId(certId);
+            devopsCertificationProRelRepository.baseDeleteByCertificationId(certId);
             certificationRepository.baseDeleteById(certId);
         } else {
             throw new CommonException("error.cert.related");
@@ -172,7 +172,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
             BeanUtils.copyProperties(projects, pageProjectDTOS);
             List<Long> projectIds;
             if (clusterId != null) {
-                projectIds = devopsCertificationProRelRepository.listByCertId(clusterId).stream()
+                projectIds = devopsCertificationProRelRepository.baseListByCertificationId(clusterId).stream()
                         .map(DevopsCertificationProRelE::getProjectId).collect(Collectors.toList());
             } else {
                 projectIds = new ArrayList<>();

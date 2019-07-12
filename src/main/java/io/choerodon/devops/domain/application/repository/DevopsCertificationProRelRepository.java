@@ -6,11 +6,11 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsCertificationProRelE;
 
 public interface DevopsCertificationProRelRepository {
 
-    void insert(DevopsCertificationProRelE devopsCertificationProRelE);
+    void baseInsertRelationship(DevopsCertificationProRelE devopsCertificationProRelE);
 
-    List<DevopsCertificationProRelE> listByCertId(Long certId);
+    List<DevopsCertificationProRelE> baseListByCertificationId(Long certificationId);
 
-    void delete(DevopsCertificationProRelE devopsCertificationProRelE);
+    void baseDelete(DevopsCertificationProRelE devopsCertificationProRelE);
 
-    void deleteByCertId(Long certId);
+    void baseDeleteByCertificationId(Long certificationId);
 }
