@@ -2,10 +2,10 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 
+import io.choerodon.devops.infra.dto.DevopsEnvironmentPodDTO;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.domain.application.repository.DeployDetailRepository;
-import io.choerodon.devops.infra.dto.DevopsEnvPodDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
 
 /**
@@ -26,8 +26,8 @@ public class DeployDetailRepositoryImpl implements DeployDetailRepository {
 
 
     @Override
-    public List<DevopsEnvPodDO> getPods(Long instanceId) {
-        return devopsEnvPodMapper.select(new DevopsEnvPodDO(instanceId));
+    public List<DevopsEnvironmentPodDTO> baseGetPods(Long instanceId) {
+        return devopsEnvPodMapper.select(new DevopsEnvironmentPodDTO(instanceId));
     }
 
 }

@@ -9,7 +9,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.devops.api.vo.ContainerDTO;
-import io.choerodon.devops.api.vo.DevopsEnvPodDTO;
+import io.choerodon.devops.api.vo.DevopsEnvironmentPodVO;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
@@ -49,7 +49,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
 
     @Override
-    public PageInfo<DevopsEnvPodDTO> listAppPod(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsEnvironmentPodVO> listAppPod(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam) {
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         PageInfo<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.listAppPod(projectId, envId, appId, instanceId, pageRequest, searchParam);
@@ -64,7 +64,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             setContainers(devopsEnvPodE);
         });
 
-        return ConvertPageHelper.convertPageInfo(devopsEnvPodEPage, DevopsEnvPodDTO.class);
+        return ConvertPageHelper.convertPageInfo(devopsEnvPodEPage, DevopsEnvironmentPodVO.class);
     }
 
     /**

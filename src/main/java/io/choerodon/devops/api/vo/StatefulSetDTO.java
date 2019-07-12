@@ -11,7 +11,7 @@ public class StatefulSetDTO {
     private Long readyReplicas;
     private Long currentReplicas;
     private String age;
-    private List<DevopsEnvPodDTO> devopsEnvPodDTOS;
+    private List<DevopsEnvironmentPodVO> devopsEnvironmentPodVOS;
 
     public String getName() {
         return name;
@@ -53,11 +53,11 @@ public class StatefulSetDTO {
         this.age = age;
     }
 
-    public List<DevopsEnvPodDTO> getDevopsEnvPodDTOS() {
-        return devopsEnvPodDTOS;
+    public List<DevopsEnvironmentPodVO> getDevopsEnvironmentPodVOS() {
+        return devopsEnvironmentPodVOS;
     }
 
-    public void setDevopsEnvPodDTOS(List<DevopsEnvPodDTO> devopsEnvPodDTOS) {
-        this.devopsEnvPodDTOS = devopsEnvPodDTOS;
+    public void setDevopsEnvironmentPodVOS(List<DevopsEnvironmentPodVO> devopsEnvironmentPodVOS) {
+        this.devopsEnvironmentPodVOS = devopsEnvironmentPodVOS;
     }
 }

@@ -1,35 +1,24 @@
 package io.choerodon.devops.infra.convertor;
 
-import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.DevopsEnvPodDTO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
-import io.choerodon.devops.infra.dto.DevopsEnvPodDO;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
 
-<<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsEnvPodConvertor.java
-=======
-import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.DevopsEnvPodDTO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
-import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO;
->>>>>>> [IMP] 修改AppControler重构:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsEnvPodConvertor.java
+import io.choerodon.devops.infra.dto.DevopsEnvironmentPodDTO;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by Zenger on 2018/4/2.
  */
 @Component
-public class DevopsEnvPodConvertor implements ConvertorI<DevopsEnvPodE, DevopsEnvPodDO, DevopsEnvPodDTO> {
+public class DevopsEnvPodConvertor implements ConvertorI<DevopsEnvPodE, DevopsEnvironmentPodDTO, DevopsEnvironmentPodVO> {
 
     @Override
-    public DevopsEnvPodDTO entityToDto(DevopsEnvPodE entity) {
-        DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
-        BeanUtils.copyProperties(entity, devopsEnvPodDTO);
-        return devopsEnvPodDTO;
+    public DevopsEnvironmentPodVO entityToDto(DevopsEnvPodE entity) {
+        DevopsEnvironmentPodVO devopsEnvironmentPodVO = new DevopsEnvironmentPodVO();
+        BeanUtils.copyProperties(entity, devopsEnvironmentPodVO);
+        return devopsEnvironmentPodVO;
     }
 
     @Override
-    public DevopsEnvPodE doToEntity(DevopsEnvPodDO dataObject) {
+    public DevopsEnvPodE doToEntity(DevopsEnvironmentPodDTO dataObject) {
         DevopsEnvPodE devopsEnvPodE = new DevopsEnvPodE();
         BeanUtils.copyProperties(dataObject, devopsEnvPodE);
         devopsEnvPodE.initApplicationInstanceE(dataObject.getAppInstanceId());
@@ -37,21 +26,21 @@ public class DevopsEnvPodConvertor implements ConvertorI<DevopsEnvPodE, DevopsEn
     }
 
     @Override
-    public DevopsEnvPodDO entityToDo(DevopsEnvPodE entity) {
-        DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO();
+    public DevopsEnvironmentPodDTO entityToDo(DevopsEnvPodE entity) {
+        DevopsEnvironmentPodDTO devopsEnvironmentPodDTO = new DevopsEnvironmentPodDTO();
         if (entity.getApplicationInstanceE() != null) {
-            devopsEnvPodDO.setAppInstanceId(entity.getApplicationInstanceE().getId());
+            devopsEnvironmentPodDTO.setAppInstanceId(entity.getApplicationInstanceE().getId());
         }
-        BeanUtils.copyProperties(entity, devopsEnvPodDO);
-        return devopsEnvPodDO;
+        BeanUtils.copyProperties(entity, devopsEnvironmentPodDTO);
+        return devopsEnvironmentPodDTO;
     }
 
 
     @Override
-    public DevopsEnvPodDTO doToDto(DevopsEnvPodDO devopsEnvPodDO) {
-        DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
-        BeanUtils.copyProperties(devopsEnvPodDO, devopsEnvPodDTO);
-        devopsEnvPodDTO.setCreationDate(devopsEnvPodDO.getCreationDate());
-        return devopsEnvPodDTO;
+    public DevopsEnvironmentPodVO doToDto(DevopsEnvironmentPodDTO devopsEnvironmentPodDTO) {
+        DevopsEnvironmentPodVO devopsEnvironmentPodVO = new DevopsEnvironmentPodVO();
+        BeanUtils.copyProperties(devopsEnvironmentPodDTO, devopsEnvironmentPodVO);
+        devopsEnvironmentPodVO.setCreationDate(devopsEnvironmentPodDTO.getCreationDate());
+        return devopsEnvironmentPodVO;
     }
 }

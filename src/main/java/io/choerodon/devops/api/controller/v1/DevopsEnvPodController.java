@@ -8,7 +8,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsEnvPodDTO;
+import io.choerodon.devops.api.vo.DevopsEnvironmentPodVO;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -45,7 +45,7 @@ public class DevopsEnvPodController {
     @ApiOperation(value = "分页查询容器管理")
     @CustomPageRequest
     @PostMapping(value = "/list_by_options")
-    public ResponseEntity<PageInfo<DevopsEnvPodDTO>> pageByOptions(
+    public ResponseEntity<PageInfo<DevopsEnvironmentPodVO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")

@@ -13,8 +13,8 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentPodDTO;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dto.DevopsEnvPodDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
@@ -40,36 +40,36 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
 
     @Override
     public DevopsEnvPodE get(DevopsEnvPodE pod) {
-        List<DevopsEnvPodDO> devopsEnvPodDOS =
-                devopsEnvPodMapper.select(ConvertHelper.convert(pod, DevopsEnvPodDO.class));
-        if (devopsEnvPodDOS.isEmpty()) {
+        List<DevopsEnvironmentPodDTO> devopsEnvironmentPodDTOS =
+                devopsEnvPodMapper.select(ConvertHelper.convert(pod, DevopsEnvironmentPodDTO.class));
+        if (devopsEnvironmentPodDTOS.isEmpty()) {
             return null;
         }
-        return ConvertHelper.convert(devopsEnvPodDOS.get(0),
+        return ConvertHelper.convert(devopsEnvironmentPodDTOS.get(0),
                 DevopsEnvPodE.class);
     }
 
     @Override
     public void insert(DevopsEnvPodE devopsEnvPodE) {
-        DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO();
-        devopsEnvPodDO.setName(devopsEnvPodE.getName());
-        devopsEnvPodDO.setNamespace(devopsEnvPodE.getNamespace());
-        if (devopsEnvPodMapper.selectOne(devopsEnvPodDO) == null) {
-            DevopsEnvPodDO pod = ConvertHelper.convert(devopsEnvPodE, DevopsEnvPodDO.class);
+        DevopsEnvironmentPodDTO devopsEnvironmentPodDTO = new DevopsEnvironmentPodDTO();
+        devopsEnvironmentPodDTO.setName(devopsEnvPodE.getName());
+        devopsEnvironmentPodDTO.setNamespace(devopsEnvPodE.getNamespace());
+        if (devopsEnvPodMapper.selectOne(devopsEnvironmentPodDTO) == null) {
+            DevopsEnvironmentPodDTO pod = ConvertHelper.convert(devopsEnvPodE, DevopsEnvironmentPodDTO.class);
             devopsEnvPodMapper.insert(pod);
         }
     }
 
     @Override
     public void update(DevopsEnvPodE devopsEnvPodE) {
-        devopsEnvPodMapper.updateByPrimaryKey(ConvertHelper.convert(devopsEnvPodE, DevopsEnvPodDO.class));
+        devopsEnvPodMapper.updateByPrimaryKey(ConvertHelper.convert(devopsEnvPodE, DevopsEnvironmentPodDTO.class));
     }
 
     @Override
     public List<DevopsEnvPodE> selectByInstanceId(Long instanceId) {
-        DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO();
-        devopsEnvPodDO.setAppInstanceId(instanceId);
-        return ConvertHelper.convertList(devopsEnvPodMapper.select(devopsEnvPodDO), DevopsEnvPodE.class);
+        DevopsEnvironmentPodDTO devopsEnvironmentPodDTO = new DevopsEnvironmentPodDTO();
+        devopsEnvironmentPodDTO.setAppInstanceId(instanceId);
+        return ConvertHelper.convertList(devopsEnvPodMapper.select(devopsEnvironmentPodDTO), DevopsEnvPodE.class);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
                     })
                     .collect(Collectors.joining(","));
         }
-        PageInfo<DevopsEnvPodDO> devopsEnvPodDOPage;
+        PageInfo<DevopsEnvironmentPodDTO> devopsEnvPodDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             devopsEnvPodDOPage = PageHelper.startPage(
@@ -114,20 +114,20 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
 
     @Override
     public void deleteByName(String name, String namespace) {
-        DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO();
-        devopsEnvPodDO.setName(name);
-        devopsEnvPodDO.setNamespace(namespace);
-        List<DevopsEnvPodDO> devopsEnvPodDOs = devopsEnvPodMapper.select(devopsEnvPodDO);
-        if (!devopsEnvPodDOs.isEmpty()) {
-            devopsEnvPodMapper.delete(devopsEnvPodDOs.get(0));
+        DevopsEnvironmentPodDTO devopsEnvironmentPodDTO = new DevopsEnvironmentPodDTO();
+        devopsEnvironmentPodDTO.setName(name);
+        devopsEnvironmentPodDTO.setNamespace(namespace);
+        List<DevopsEnvironmentPodDTO> devopsEnvironmentPodDTOS = devopsEnvPodMapper.select(devopsEnvironmentPodDTO);
+        if (!devopsEnvironmentPodDTOS.isEmpty()) {
+            devopsEnvPodMapper.delete(devopsEnvironmentPodDTOS.get(0));
         }
     }
 
     @Override
     public DevopsEnvPodE getByNameAndEnv(String name, String namespace) {
-        DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO();
-        devopsEnvPodDO.setName(name);
-        devopsEnvPodDO.setNamespace(namespace);
-        return ConvertHelper.convert(devopsEnvPodMapper.selectOne(devopsEnvPodDO), DevopsEnvPodE.class);
+        DevopsEnvironmentPodDTO devopsEnvironmentPodDTO = new DevopsEnvironmentPodDTO();
+        devopsEnvironmentPodDTO.setName(name);
+        devopsEnvironmentPodDTO.setNamespace(namespace);
+        return ConvertHelper.convert(devopsEnvPodMapper.selectOne(devopsEnvironmentPodDTO), DevopsEnvPodE.class);
     }
 }

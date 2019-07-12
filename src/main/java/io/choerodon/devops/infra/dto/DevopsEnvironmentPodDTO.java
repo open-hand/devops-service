@@ -8,7 +8,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Created by Zenger on 2018/4/14.
  */
 @Table(name = "devops_env_pod")
-public class DevopsEnvPodDO extends BaseDTO {
+public class DevopsEnvironmentPodDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,18 +40,18 @@ public class DevopsEnvPodDO extends BaseDTO {
     @Transient
     private Long projectId;
 
-    public DevopsEnvPodDO(Long appInstanceId) {
+    public DevopsEnvironmentPodDTO(Long appInstanceId) {
         this.appInstanceId = appInstanceId;
     }
 
-    public DevopsEnvPodDO() {
+    public DevopsEnvironmentPodDTO() {
 
     }
 
     /**
      * Devops Pod 数据库对象
      */
-    public DevopsEnvPodDO(Long appInstanceId, String name, String ip, String status, Boolean ready) {
+    public DevopsEnvironmentPodDTO(Long appInstanceId, String name, String ip, String status, Boolean ready) {
         this.appInstanceId = appInstanceId;
         this.name = name;
         this.ip = ip;

@@ -45,7 +45,7 @@
         </if>
     </sql>
 
-    <select id="listAppPod" resultType="io.choerodon.devops.infra.dto.DevopsEnvPodDO">
+    <select id="listAppPod" resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentPodDTO">
         SELECT
         dp.id,
         dp.ip,

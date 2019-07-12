@@ -290,9 +290,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public PageInfo<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsClusterPodVO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
         PageInfo<DevopsEnvPodE> ePage = devopsClusterRepository.pageQueryPodsByNodeName(clusterId, nodeName, pageRequest, searchParam);
-        PageInfo<DevopsClusterPodDTO> clusterPodDTOPage = new PageInfo<>();
+        PageInfo<DevopsClusterPodVO> clusterPodDTOPage = new PageInfo<>();
         BeanUtils.copyProperties(ePage, clusterPodDTOPage, "content");
         clusterPodDTOPage.setList(ePage.getList().stream().map(this::podE2ClusterPodDTO).collect(Collectors.toList()));
         return clusterPodDTOPage;
@@ -310,8 +310,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      * @param pod pod entity
      * @return the cluster pod vo
      */
-    private DevopsClusterPodDTO podE2ClusterPodDTO(DevopsEnvPodE pod) {
-        DevopsClusterPodDTO devopsEnvPodDTO = new DevopsClusterPodDTO();
+    private DevopsClusterPodVO podE2ClusterPodDTO(DevopsEnvPodE pod) {
+        DevopsClusterPodVO devopsEnvPodDTO = new DevopsClusterPodVO();
         BeanUtils.copyProperties(pod, devopsEnvPodDTO);
 
         devopsEnvPodService.setContainers(pod);

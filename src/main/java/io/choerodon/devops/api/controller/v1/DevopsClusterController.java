@@ -289,7 +289,7 @@ public class DevopsClusterController {
     @ApiOperation(value = "分页查询节点下的Pod")
     @CustomPageRequest
     @PostMapping(value = "/page_node_pods")
-    public ResponseEntity<PageInfo<DevopsClusterPodDTO>> pageQueryPodsByNodeName(
+    public ResponseEntity<PageInfo<DevopsClusterPodVO>> pageQueryPodsByNodeName(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群id", required = true)

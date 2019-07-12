@@ -13,7 +13,53 @@ import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.*;
+=======
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.validator.AppInstanceValidator;
+import io.choerodon.devops.api.vo.AppInstanceCodeDTO;
+import io.choerodon.devops.api.vo.ApplicationDeployDTO;
+import io.choerodon.devops.api.vo.ApplicationInstanceOverViewVO;
+import io.choerodon.devops.api.vo.ApplicationInstanceVO;
+import io.choerodon.devops.api.vo.ApplicationRemoteDeployDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRemoteDTO;
+import io.choerodon.devops.api.vo.DeployAppDTO;
+import io.choerodon.devops.api.vo.DeployAppDetail;
+import io.choerodon.devops.api.vo.DeployDetailDTO;
+import io.choerodon.devops.api.vo.DeployFrequencyDTO;
+import io.choerodon.devops.api.vo.DeployTimeDTO;
+import io.choerodon.devops.api.vo.DevopsEnvironmentPodVO;
+import io.choerodon.devops.api.vo.DevopsEnvPreviewAppDTO;
+import io.choerodon.devops.api.vo.DevopsEnvPreviewDTO;
+import io.choerodon.devops.api.vo.DevopsEnvPreviewInstanceVO;
+import io.choerodon.devops.api.vo.DevopsEnvResourceDTO;
+import io.choerodon.devops.api.vo.DevopsEnvUserPermissionVO;
+import io.choerodon.devops.api.vo.DevopsProjectConfigDTO;
+import io.choerodon.devops.api.vo.EnvInstanceDTO;
+import io.choerodon.devops.api.vo.EnvInstancesDTO;
+import io.choerodon.devops.api.vo.EnvVersionDTO;
+import io.choerodon.devops.api.vo.ErrorLineDTO;
+import io.choerodon.devops.api.vo.InstanceControllerDetailDTO;
+import io.choerodon.devops.api.vo.InstanceSagaDTO;
+import io.choerodon.devops.api.vo.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationInstanceE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionValueE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsDeployValueE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandValueE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsRegistrySecretE;
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
+>>>>>>> [REF] refactor DeployDetailRepository
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.dataobject.AppInstanceInfoDTO;
@@ -846,6 +892,7 @@ public DevopsEnvResourceDTO listResourcesInHelmRelease(Long
         return devopsEnvResourceDTO;
         }
 
+<<<<<<< HEAD
         <<<<<<<HEAD
 @Override
 public DevopsEnvResourceDTO listResourcesInHelmRelease(Long instanceId){
@@ -903,6 +950,25 @@ private List<DevopsEnvPodDTO> filterPodsAssociated(List<DevopsEnvPodDTO> devopsE
         podName.lastIndexOf('-',podName.lastIndexOf('-')-1));
         return deploymentName.equals(controllerNameFromPod);
         }
+=======
+<<<<<<< HEAD
+    /**
+     * filter the pods that are associated with the deployment.
+     *
+     * @param devopsEnvPodDTOS the pods to be filtered
+     * @param deploymentName   the name of deployment
+     * @return the pods
+     */
+    private List<DevopsEnvPodDTO> filterPodsAssociated
+    (List<DevopsEnvPodDTO> devopsEnvPodDTOS, String
+            deploymentName) {
+        return devopsEnvPodDTOS.stream().filter(devopsEnvPodDTO -> {
+                    String podName = devopsEnvPodDTO.getName();
+                    String controllerNameFromPod = podName.substring(0,
+                            podName.lastIndexOf('-', podName.lastIndexOf('-') - 1));
+                    return deploymentName.equals(controllerNameFromPod);
+                }
+>>>>>>> [REF] refactor DeployDetailRepository
         ).collect(Collectors.toList());
         }
 
@@ -934,11 +1000,106 @@ private List<DevopsEnvPodDTO> filterPodsAssociatedWithStatefulSet(List<DevopsEnv
         return filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS,statefulSetName);
         }
 
+<<<<<<< HEAD
 @Override
 @Saga(code = "devops-create-instance",
         description = "Devops创建实例", inputSchema = "{}")
 @Transactional(rollbackFor = Exception.class)
 public ApplicationInstanceVO createOrUpdate(ApplicationDeployDTO applicationDeployDTO){
+=======
+    @Override
+    @Saga(code = "devops-create-instance",
+            description = "Devops创建实例", inputSchema = "{}")
+    @Transactional(rollbackFor = Exception.class)
+    public ApplicationInstanceVO createOrUpdate
+            (ApplicationDeployDTO applicationDeployDTO) {
+        @Override
+        public DevopsEnvResourceDTO listResourcesInHelmRelease (Long instanceId){
+
+            // 获取相关的pod
+            List<DevopsEnvironmentPodVO> devopsEnvironmentPodVOS = ConvertHelper
+                    .convertList(devopsEnvPodRepository.selectByInstanceId(instanceId),
+                            DevopsEnvironmentPodVO.class);
+
+            DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
+                    .listResourcesInHelmRelease(instanceId);
+
+            // 关联其pod并设置deployment
+            devopsEnvResourceDTO.setDeploymentDTOS(devopsEnvResourceDTO.getDeploymentDTOS()
+                    .stream()
+                    .peek(deploymentDTO -> deploymentDTO.setDevopsEnvironmentPodVOS(filterPodsAssociated(devopsEnvironmentPodVOS, deploymentDTO.getName())))
+                    .collect(Collectors.toList())
+            );
+
+            // 关联其pod并设置daemonSet
+            devopsEnvResourceDTO.setDaemonSetDTOS(
+                    devopsEnvResourceDTO.getDaemonSetDTOS()
+                            .stream()
+                            .peek(daemonSetDTO -> daemonSetDTO.setDevopsEnvironmentPodVOS(
+                                    filterPodsAssociatedWithDaemonSet(devopsEnvironmentPodVOS, daemonSetDTO.getName())
+                            ))
+                            .collect(Collectors.toList())
+            );
+
+            // 关联其pod并设置statefulSet
+            devopsEnvResourceDTO.setStatefulSetDTOS(
+                    devopsEnvResourceDTO.getStatefulSetDTOS()
+                            .stream()
+                            .peek(statefulSetDTO -> statefulSetDTO.setDevopsEnvironmentPodVOS(
+                                    filterPodsAssociatedWithStatefulSet(devopsEnvironmentPodVOS, statefulSetDTO.getName()))
+                            )
+                            .collect(Collectors.toList())
+            );
+
+
+            return devopsEnvResourceDTO;
+        }
+
+        /**
+         * filter the pods that are associated with the deployment.
+         *
+         * @param devopsEnvironmentPodVOS the pods to be filtered
+         * @param deploymentName   the name of deployment
+         * @return the pods
+         */
+        private List<DevopsEnvironmentPodVO> filterPodsAssociated (List <DevopsEnvironmentPodVO> devopsEnvironmentPodVOS, String deploymentName){
+            return devopsEnvironmentPodVOS.stream().filter(devopsEnvPodDTO -> {
+                        String podName = devopsEnvPodDTO.getName();
+                        String controllerNameFromPod = podName.substring(0,
+                                podName.lastIndexOf('-', podName.lastIndexOf('-') - 1));
+                        return deploymentName.equals(controllerNameFromPod);
+                    }
+            ).collect(Collectors.toList());
+        }
+
+        /**
+         * filter the pods that are associated with the daemonSet.
+         *
+         * @param devopsEnvironmentPodVOS the pods to be filtered
+         * @param daemonSetName    the name of daemonSet
+         * @return the pods
+         */
+        private List<DevopsEnvironmentPodVO> filterPodsAssociatedWithDaemonSet (List <DevopsEnvironmentPodVO> devopsEnvironmentPodVOS, String daemonSetName){
+            return devopsEnvironmentPodVOS
+                    .stream()
+                    .filter(
+                            devopsEnvPodDTO -> daemonSetName.equals(devopsEnvPodDTO.getName().substring(0, devopsEnvPodDTO.getName().lastIndexOf('-')))
+                    )
+                    .collect(Collectors.toList());
+        }
+
+        /**
+         * filter the pods that are associated with the statefulSet.
+         *
+         * @param devopsEnvironmentPodVOS the pods to be filtered
+         * @param statefulSetName  the name of statefulSet
+         * @return the pods
+         */
+        private List<DevopsEnvironmentPodVO> filterPodsAssociatedWithStatefulSet (List <DevopsEnvironmentPodVO> devopsEnvironmentPodVOS, String statefulSetName){
+            // statefulSet名称逻辑和daemonSet一致
+            return filterPodsAssociatedWithDaemonSet(devopsEnvironmentPodVOS, statefulSetName);
+        }
+>>>>>>> [REF] refactor DeployDetailRepository
 
         DevopsEnvironmentE devopsEnvironmentE=devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
 

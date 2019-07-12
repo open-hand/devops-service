@@ -39,7 +39,8 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvPodDO;
+import io.choerodon.devops.infra.dto.ApplicationVersionDO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentPodDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDO;
 import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDO;
@@ -574,7 +575,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
          * 为devops_env_pod表的遗留数据的新增的node_name和restart_count字段同步数据
          */
         private void syncDevopsEnvPodNodeNameAndRestartCount() {
-            List<DevopsEnvPodDO> pods = devopsEnvPodMapper.selectAll();
+            List<DevopsEnvironmentPodDTO> pods = devopsEnvPodMapper.selectAll();
             pods.forEach(pod -> {
                 try {
                     if (StringUtils.isEmpty(pod.getNodeName())) {

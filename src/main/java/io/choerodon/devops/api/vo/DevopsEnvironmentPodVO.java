@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
-public class DevopsEnvPodDTO {
+public class DevopsEnvironmentPodVO {
 
     private Long id;
     private String name;
@@ -18,8 +18,8 @@ public class DevopsEnvPodDTO {
     private String instanceCode;
     private Long envId;
     private Long projectId;
-    private String envCode;
-    private String envName;
+    private String environmentCode;
+    private String environmentName;
     private Long objectVersionNumber;
     private Boolean isConnect;
     private Long clusterId;
@@ -99,20 +99,20 @@ public class DevopsEnvPodDTO {
         this.instanceCode = instanceCode;
     }
 
-    public String getEnvCode() {
-        return envCode;
+    public String getEnvironmentCode() {
+        return environmentCode;
     }
 
-    public void setEnvCode(String envCode) {
-        this.envCode = envCode;
+    public void setEnvironmentCode(String environmentCode) {
+        this.environmentCode = environmentCode;
     }
 
-    public String getEnvName() {
-        return envName;
+    public String getEnvironmentName() {
+        return environmentName;
     }
 
-    public void setEnvName(String envName) {
-        this.envName = envName;
+    public void setEnvironmentName(String environmentName) {
+        this.environmentName = environmentName;
     }
 
     public Long getObjectVersionNumber() {
