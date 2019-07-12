@@ -12,13 +12,13 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
 public interface DevopsCustomizeResourceRepository {
 
 
-    DevopsCustomizeResourceE create(DevopsCustomizeResourceE devopsCustomizeResourceE);
+    DevopsCustomizeResourceE baseCreate(DevopsCustomizeResourceE devopsCustomizeResourceE);
 
-    DevopsCustomizeResourceE query(Long resourceId);
+    DevopsCustomizeResourceE baseQuery(Long resourceId);
 
-    void update(DevopsCustomizeResourceE devopsCustomizeResourceE);
+    void baseUpdate(DevopsCustomizeResourceE devopsCustomizeResourceE);
 
-    void delete(Long resourceId);
+    void baseDelete(Long resourceId);
 
     List<DevopsCustomizeResourceE> listByEnvAndFilePath(Long envId, String filePath);
 

@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentVO;
 
 /**
  * Created by Sheep on 2019/6/26.
@@ -8,13 +8,13 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentE;
 public interface DevopsCustomizeResourceContentRepository {
 
 
-    DevopsCustomizeResourceContentE create(DevopsCustomizeResourceContentE devopsCustomizeResourceContentE);
+    DevopsCustomizeResourceContentVO baseCreate(DevopsCustomizeResourceContentVO devopsCustomizeResourceContentE);
 
 
-    DevopsCustomizeResourceContentE query(Long contentId);
+    DevopsCustomizeResourceContentVO baseQuery(Long contentId);
 
-    void update(DevopsCustomizeResourceContentE devopsCustomizeResourceContentE);
+    void baseUpdate(DevopsCustomizeResourceContentVO devopsCustomizeResourceContentE);
 
 
-    void delete(Long contentId);
+    void baseDelete(Long contentId);
 }

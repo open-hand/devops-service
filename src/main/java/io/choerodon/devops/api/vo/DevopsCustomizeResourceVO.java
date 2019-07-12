@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Created by Sheep on 2019/7/2.
  */
-public class DevopsCustomizeResourceDTO {
+public class DevopsCustomizeResourceVO {
 
     private Long id;
     private Long envId;

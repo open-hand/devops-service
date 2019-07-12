@@ -3,9 +3,9 @@ package io.choerodon.devops.infra.persistence.impl;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageVO;
 import io.choerodon.devops.domain.application.repository.DevopsEnvApplicationRepostitory;
-import io.choerodon.devops.infra.dto.DevopsEnvApplicationDO;
+import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,8 +23,8 @@ public class DevopsEnvApplicationRepostitoryImpl implements DevopsEnvApplication
     DevopsEnvApplicationMapper devopsEnvApplicationMapper;
 
     @Override
-    public DevopsEnvApplicationE create(DevopsEnvApplicationE devopsEnvApplicationE) {
-        DevopsEnvApplicationDO devopsEnvApplicationDO = ConvertHelper.convert(devopsEnvApplicationE,DevopsEnvApplicationDO.class);
+    public DevopsEnvApplicationE baseCreate(DevopsEnvApplicationE devopsEnvApplicationE) {
+        DevopsEnvApplicationDTO devopsEnvApplicationDO = ConvertHelper.convert(devopsEnvApplicationE,DevopsEnvApplicationDTO.class);
         if(devopsEnvApplicationMapper.insert(devopsEnvApplicationDO)!= 1){
             throw new CommonException("error.insert.env.app");
         }
@@ -32,12 +32,12 @@ public class DevopsEnvApplicationRepostitoryImpl implements DevopsEnvApplication
     }
 
     @Override
-    public List<Long> queryAppByEnvId(Long envId) {
+    public List<Long> baseQueryAppByEnvId(Long envId) {
         return devopsEnvApplicationMapper.queryAppByEnvId(envId);
     }
 
     @Override
-    public List<DevopsEnvMessageE> listResourceByEnvAndApp(Long envId, Long appId) {
+    public List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appId) {
         return devopsEnvApplicationMapper.listResourceByEnvAndApp(envId,appId);
     }
 }

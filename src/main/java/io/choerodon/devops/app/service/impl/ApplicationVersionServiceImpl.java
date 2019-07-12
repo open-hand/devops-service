@@ -47,7 +47,7 @@ import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationInstanceE;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionValueE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabCommitE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
@@ -316,7 +316,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                     deployEnvVersionDTO.setEnvName(devopsEnvironmentE.getName());
                     List<DeployInstanceVersionDTO> deployInstanceVersionDTOS = new ArrayList<>();
                     Map<Long, List<ApplicationInstanceE>> versionInstances = value.stream().collect(Collectors.groupingBy(t -> {
-                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(t.getCommandId());
+                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(t.getCommandId());
                         return devopsEnvCommandE.getObjectVersionId();
                     }));
                     if (!versionInstances.isEmpty()) {

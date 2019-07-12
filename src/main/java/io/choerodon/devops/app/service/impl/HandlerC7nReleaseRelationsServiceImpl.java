@@ -8,18 +8,12 @@ import java.util.stream.Collectors;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ApplicationDeployDTO;
 import io.choerodon.devops.api.vo.ApplicationInstanceVO;
-import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DeployMsgHandlerService;
-import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.models.V1Endpoints;
@@ -110,7 +104,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                 if (applicationDeployDTO == null) {
                                     return;
                                 }
-                                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationDeployDTO.getCommandId());
+                                DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(applicationDeployDTO.getCommandId());
                                 if (!applicationDeployDTO.getIsNotChange()) {
                                     ApplicationInstanceVO applicationInstanceVO = applicationInstanceService
                                             .createOrUpdateByGitOps(applicationDeployDTO, userId);
@@ -160,7 +154,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                             applicationInstanceVO.setId(applicationInstanceE.getId());
                             applicationInstanceVO.setCommandId(applicationInstanceE.getCommandId());
                         }
-                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceVO.getCommandId());
+                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceVO.getCommandId());
 
 
                         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = devopsServiceInstanceRepository.listByEnvIdAndInstanceCode(envId, c7nHelmRelease.getMetadata().getName());
@@ -222,11 +216,11 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         applicationDeployDTO.setAppVersionId(applicationVersionE.getId());
         applicationDeployDTO.setInstanceName(c7nHelmRelease.getMetadata().getName());
         if (type.equals("update")) {
-            DevopsEnvCommandE devopsEnvCommandE;
+            DevopsEnvCommandVO devopsEnvCommandE;
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                     .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
             if (applicationInstanceE.getCommandId() == null) {
-                devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+                devopsEnvCommandE = devopsEnvCommandRepository.baseQueryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
             } else {
                 devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
             }

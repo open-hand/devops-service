@@ -118,7 +118,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         //处理创建域名数据
         DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
@@ -163,7 +163,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         //处理域名数据
         DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
 
         //创建域名
         Long ingressId = devopsIngressRepository.createIngress(devopsIngressDO).getId();
@@ -221,7 +221,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             return;
         }
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
 
         //初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressDTO.getCertId());
@@ -261,7 +261,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressDTO.setId(id);
         DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
 
         //更新域名域名
         devopsEnvCommandE.setObjectId(id);
@@ -308,7 +308,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
         //更新ingress
         devopsEnvCommandE.setObjectId(ingressId);
@@ -387,7 +387,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        devopsEnvCommandRepository.listByObjectAll(ObjectType.INGRESS.getType(), ingressId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
+        devopsEnvCommandRepository.baseListByObjectAll(ObjectType.INGRESS.getType(), ingressId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteCommandById(devopsEnvCommandE));
         devopsIngressRepository.deleteIngress(ingressId);
         appResourceRepository.deleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
     }
@@ -462,7 +462,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                                       String path,
                                       DevopsIngressDO devopsIngressDO,
                                       UserAttrE userAttrE,
-                                      DevopsEnvCommandE devopsEnvCommandE,
+                                      DevopsEnvCommandVO devopsEnvCommandE,
                                       Long appId) {
 
         //操作域名数据库
@@ -550,8 +550,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
 
-    private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+    private DevopsEnvCommandVO initDevopsEnvCommandE(String type) {
+        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
         if (type.equals(CREATE)) {
             devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
         } else if (type.equals(UPDATE)) {

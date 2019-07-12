@@ -110,7 +110,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 return ConvertHelper.convert(devopsSecretE, SecretRepDTO.class);
             }
         }
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(secretReqDTO.getType());
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(secretReqDTO.getType());
 
         // 在gitops库处理secret文件
         operateEnvGitLabFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1Secret, devopsSecretE,
@@ -149,7 +149,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     private void operateEnvGitLabFile(Integer gitlabEnvGroupProjectId, V1Secret v1Secret, DevopsSecretE devopsSecretE,
-                                      DevopsEnvCommandE devopsEnvCommandE, Boolean isCreate, UserAttrE userAttrE, Long appId) {
+                                      DevopsEnvCommandVO devopsEnvCommandE, Boolean isCreate, UserAttrE userAttrE, Long appId) {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
 
@@ -195,7 +195,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
         // 更新secret
         devopsEnvCommandE.setObjectId(secretId);
@@ -263,7 +263,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.SECRET.toValue(), devopsSecretE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t));
+        devopsEnvCommandRepository.baseListByObjectAll(HelmObjectKind.SECRET.toValue(), devopsSecretE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteCommandById(t));
         devopsSecretRepository.deleteSecret(secretId);
         appResourceRepository.deleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
     }
@@ -279,7 +279,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         // 创建secret
         Long secretId = devopsSecretRepository.create(devopsSecretE).getId();
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
         devopsEnvCommandE.setCommandType(CREATE);
         devopsEnvCommandE.setStatus(devopsSecretE.getStatus());
         devopsEnvCommandE.setObjectId(secretId);
@@ -307,7 +307,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         // 处理secret对象
         DevopsSecretE devopsSecretE = handleSecret(secretReqDTO);
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
         // 更新secret对象
         devopsEnvCommandE.setObjectId(id);
         devopsEnvCommandE.setCreatedBy(userId);
@@ -315,8 +315,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         devopsSecretRepository.update(devopsSecretE);
     }
 
-    private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+    private DevopsEnvCommandVO initDevopsEnvCommandE(String type) {
+        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
         devopsEnvCommandE.setCommandType(type);
         devopsEnvCommandE.setObject(ObjectType.SECRET.getType());
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());

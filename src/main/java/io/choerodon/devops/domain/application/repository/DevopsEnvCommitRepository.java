@@ -3,16 +3,16 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommitE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommitVO;
 
 public interface DevopsEnvCommitRepository {
 
-    DevopsEnvCommitE create(DevopsEnvCommitE devopsEnvCommitE);
+    DevopsEnvCommitVO baseCreate(DevopsEnvCommitVO devopsEnvCommitE);
 
-    DevopsEnvCommitE queryByEnvIdAndCommit(Long envId, String commit);
+    DevopsEnvCommitVO baseQueryByEnvIdAndCommit(Long envId, String commit);
 
-    DevopsEnvCommitE query(Long id);
+    DevopsEnvCommitVO baseQuery(Long id);
 
-    List<DevopsEnvCommitE> listByEnvId(Long envId);
+    List<DevopsEnvCommitVO> baseListByEnvId(Long envId);
 
 }

@@ -14,7 +14,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDO;
+import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
 import io.choerodon.devops.infra.mapper.DevopsCustomizeResourceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -34,8 +34,8 @@ public class DevopsCustomizeResourceRepositoryImpl implements DevopsCustomizeRes
 
 
     @Override
-    public DevopsCustomizeResourceE create(DevopsCustomizeResourceE devopsCustomizeResourceE) {
-        DevopsCustomizeResourceDO devopsCustomizeResourceDO = ConvertHelper.convert(devopsCustomizeResourceE, DevopsCustomizeResourceDO.class);
+    public DevopsCustomizeResourceE baseCreate(DevopsCustomizeResourceE devopsCustomizeResourceE) {
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDO = ConvertHelper.convert(devopsCustomizeResourceE, DevopsCustomizeResourceDTO.class);
         if (devopsCustomizeResourceMapper.insert(devopsCustomizeResourceDO) != 1) {
             throw new CommonException("error.customize.resource.create.error");
         }
@@ -43,13 +43,13 @@ public class DevopsCustomizeResourceRepositoryImpl implements DevopsCustomizeRes
     }
 
     @Override
-    public DevopsCustomizeResourceE query(Long resourceId) {
+    public DevopsCustomizeResourceE baseQuery(Long resourceId) {
         return ConvertHelper.convert(devopsCustomizeResourceMapper.selectByPrimaryKey(resourceId), DevopsCustomizeResourceE.class);
     }
 
     @Override
-    public void update(DevopsCustomizeResourceE devopsCustomizeResourceE) {
-        DevopsCustomizeResourceDO devopsCustomizeResourceDO = ConvertHelper.convert(devopsCustomizeResourceE, DevopsCustomizeResourceDO.class);
+    public void baseUpdate(DevopsCustomizeResourceE devopsCustomizeResourceE) {
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDO = ConvertHelper.convert(devopsCustomizeResourceE, DevopsCustomizeResourceDTO.class);
         devopsCustomizeResourceDO.setObjectVersionNumber(devopsCustomizeResourceMapper.selectByPrimaryKey(devopsCustomizeResourceE.getId()).getObjectVersionNumber());
         if (devopsCustomizeResourceMapper.updateByPrimaryKey(devopsCustomizeResourceDO) != 1) {
             throw new CommonException("error.customize.resource.update.error");
@@ -57,14 +57,14 @@ public class DevopsCustomizeResourceRepositoryImpl implements DevopsCustomizeRes
     }
 
     @Override
-    public void delete(Long resourceId) {
+    public void baseDelete(Long resourceId) {
         devopsCustomizeResourceMapper.deleteByPrimaryKey(resourceId);
     }
 
 
     @Override
     public List<DevopsCustomizeResourceE> listByEnvAndFilePath(Long envId, String filePath) {
-        DevopsCustomizeResourceDO devopsCustomizeResourceDO = new DevopsCustomizeResourceDO();
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDO = new DevopsCustomizeResourceDTO();
         devopsCustomizeResourceDO.setEnvId(envId);
         devopsCustomizeResourceDO.setFilePath(filePath);
         return ConvertHelper.convertList(devopsCustomizeResourceMapper.select(devopsCustomizeResourceDO), DevopsCustomizeResourceE.class);
@@ -72,7 +72,7 @@ public class DevopsCustomizeResourceRepositoryImpl implements DevopsCustomizeRes
 
     @Override
     public DevopsCustomizeResourceE queryByEnvIdAndKindAndName(Long envId, String kind, String name) {
-        DevopsCustomizeResourceDO devopsCustomizeResourceDO = new DevopsCustomizeResourceDO();
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDO = new DevopsCustomizeResourceDTO();
         devopsCustomizeResourceDO.setEnvId(envId);
         devopsCustomizeResourceDO.setName(name);
         devopsCustomizeResourceDO.setK8sKind(kind);
@@ -92,7 +92,7 @@ public class DevopsCustomizeResourceRepositoryImpl implements DevopsCustomizeRes
         } else {
             maps = gson.fromJson(params, Map.class);
         }
-        PageInfo<DevopsCustomizeResourceDO> devopsCustomizeResourceDOPageInfo = PageHelper
+        PageInfo<DevopsCustomizeResourceDTO> devopsCustomizeResourceDOPageInfo = PageHelper
                 .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsCustomizeResourceMapper.pageResources(envId,
                         maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAM))));
@@ -101,7 +101,7 @@ public class DevopsCustomizeResourceRepositoryImpl implements DevopsCustomizeRes
 
     @Override
     public void checkExist(Long envId, String kind, String name) {
-        DevopsCustomizeResourceDO devopsCustomizeResourceDO = new DevopsCustomizeResourceDO();
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDO = new DevopsCustomizeResourceDTO();
         devopsCustomizeResourceDO.setK8sKind(kind);
         devopsCustomizeResourceDO.setName(name);
         devopsCustomizeResourceDO.setEnvId(envId);

@@ -156,7 +156,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .filter(DevopsEnvUserPermissionVO::getPermitted).map(DevopsEnvUserPermissionVO::getEnvId)
                 .collect(Collectors.toList());
 
-        ProjectVO projectVO = iamServiceClientOperator.queryIamProject(projectId);
+        ProjectVO projectVO = iamServiceClientOperator.queryIamProjectById(projectId);
         if (iamServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectVO)) {
             permissionEnvIds = devopsEnvironmentRepository.queryByProject(projectId).stream()
                     .map(DevopsEnvironmentE::getId).collect(Collectors.toList());

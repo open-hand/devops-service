@@ -1,32 +1,32 @@
-package io.choerodon.devops.infra.persistence.impl;
+package io.choerodon.devops.app.service.impl;
 
 import java.util.Date;
 import java.util.List;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
+import io.choerodon.devops.app.service.DevopsEnvCommandService;
 import io.choerodon.devops.domain.application.repository.DevopsCommandEventRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandLogRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
-import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import io.choerodon.devops.infra.util.PageRequestUtil;
 
 /**
- * @author crcokitwood
+ * Creator: ChangpingShi0213@gmail.com
+ * Date:  10:37 2019/7/12
+ * Description:
  */
-@Service
-public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepository {
-    private static final String INSTANCE_TYPE = "instance";
+public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
 
     @Autowired
     DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
@@ -54,8 +54,8 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     }
 
     @Override
-    public DevopsEnvCommandVO baseUpdate(DevopsEnvCommandVO devopsEnvCommandE) {
-        DevopsEnvCommandDTO devopsEnvCommandDO = ConvertHelper.convert(devopsEnvCommandE, DevopsEnvCommandDTO.class);
+    public DevopsEnvCommandVO baseUpdate(DevopsEnvCommandVO devopsEnvCommandVO) {
+        DevopsEnvCommandDTO devopsEnvCommandDO = ConvertHelper.convert(devopsEnvCommandVO, DevopsEnvCommandDTO.class);
         DevopsEnvCommandDTO newDevopsEnvCommandDO = devopsEnvCommandMapper
                 .selectByPrimaryKey(devopsEnvCommandDO.getId());
         devopsEnvCommandDO.setObjectVersionNumber(newDevopsEnvCommandDO.getObjectVersionNumber());
@@ -105,12 +105,12 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     }
 
     @Override
-    public void baseDeleteCommandById(DevopsEnvCommandVO commandE) {
-        if (commandE.getDevopsEnvCommandValueDTO() != null) {
-            devopsEnvCommandValueRepository.baseDeleteById(commandE.getDevopsEnvCommandValueDTO().getId());
+    public void baseDeleteCommandById(DevopsEnvCommandVO devopsEnvCommandVO) {
+        if (devopsEnvCommandVO.getDevopsEnvCommandValueDTO() != null) {
+            devopsEnvCommandValueRepository.baseDeleteById(devopsEnvCommandVO.getDevopsEnvCommandValueDTO().getId());
         }
-        devopsEnvCommandLogRepository.baseDeleteByCommandId(commandE.getId());
-        devopsCommandEventRepository.deleteByCommandId(commandE.getId());
-        devopsEnvCommandMapper.deleteByPrimaryKey(commandE.getId());
+        devopsEnvCommandLogRepository.baseDeleteByCommandId(devopsEnvCommandVO.getId());
+        devopsCommandEventRepository.deleteByCommandId(devopsEnvCommandVO.getId());
+        devopsEnvCommandMapper.deleteByPrimaryKey(devopsEnvCommandVO.getId());
     }
 }

@@ -272,7 +272,7 @@ class DevopsServiceControllerSpec extends Specification {
         restTemplate.delete("/v1/projects/1/service/{id}", id)
 
         then: '校验返回值'
-        devopsEnvCommandRepository.queryByObject("service", id).getCommandType() == "delete"
+        devopsEnvCommandRepository.baseQueryByObject("service", id).getCommandType() == "delete"
     }
 
     def "ListByEnvId"() {

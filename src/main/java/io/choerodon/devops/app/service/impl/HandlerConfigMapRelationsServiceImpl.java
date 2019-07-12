@@ -12,7 +12,7 @@ import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.api.vo.iam.entity.DevopsConfigMapE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsConfigMapRepository;
@@ -101,7 +101,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                                 configMap,
                                 envId, "update");
                         Boolean isNotChange = devopsConfigMapDTO.getValue().equals(gson.fromJson(devopsConfigMapRepository.queryById(devopsConfigMapE.getId()).getValue(), Map.class));
-                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsConfigMapE.getDevopsEnvCommandE().getId());
+                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsConfigMapE.getDevopsEnvCommandE().getId());
                         devopsConfigMapDTO.setId(devopsConfigMapE.getId());
                         if (!isNotChange) {
                             devopsConfigMapService.createOrUpdateByGitOps(devopsConfigMapDTO, userId);
@@ -150,7 +150,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                             devopsConfigMapRepDTO.setId(devopsConfigMapE.getId());
                             devopsConfigMapRepDTO.setCommandId(devopsConfigMapE.getDevopsEnvCommandE().getId());
                         }
-                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsConfigMapRepDTO.getCommandId());
+                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsConfigMapRepDTO.getCommandId());
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
 

@@ -39,7 +39,6 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
-import io.choerodon.devops.infra.dto.ApplicationVersionDO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDO;
 import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO;
@@ -648,10 +647,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         checkLog.setContent(String.format("Sync instance deploy value of %s", applicationInstanceE.getCode()));
                         LOGGER.info("Sync instance deploy value of {}", applicationInstanceE.getCode());
                         try {
-                            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
-                            String versionValue = applicationVersionRepository.baseQueryValue(devopsEnvCommandE.getObjectVersionId());
+                            DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
+                            String versionValue = applicationVersionRepository.queryValue(devopsEnvCommandE.getObjectVersionId());
                             String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
-                            devopsEnvCommandValueRepository.updateValueById(devopsEnvCommandE.getDevopsEnvCommandValueE().getId(), applicationInstanceService.getReplaceResult(versionValue, deployValue).getYaml());
+                            devopsEnvCommandValueRepository.baseUpdateById(devopsEnvCommandE.getDevopsEnvCommandValueDTO().getId(), applicationInstanceService.getReplaceResult(versionValue, deployValue).getYaml());
                             checkLog.setResult("success");
                         } catch (Exception e) {
                             checkLog.setResult("fail");
@@ -689,7 +688,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 checkLog.setContent(String.format(
                         "Sync environment application relationship,envId: %s, appId: %s", v.getEnvId(), v.getAppId()));
                 try {
-                    devopsEnvApplicationRepostitory.create(v);
+                    devopsEnvApplicationRepostitory.baseCreate(v);
                     checkLog.setResult("success");
                 } catch (Exception e) {
                     checkLog.setResult("fail");

@@ -6,19 +6,19 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileE;
 
 public interface DevopsEnvFileRepository {
 
-    DevopsEnvFileE create(DevopsEnvFileE devopsEnvFileE);
+    DevopsEnvFileE baseCreate(DevopsEnvFileE devopsEnvFileE);
 
-    List<DevopsEnvFileE> listByEnvId(Long envId);
+    List<DevopsEnvFileE> baseListByEnvId(Long envId);
 
-    DevopsEnvFileE queryByEnvAndPathAndCommit(Long envId, String path, String commit);
+    DevopsEnvFileE baseQueryByEnvAndPathAndCommit(Long envId, String path, String commit);
 
-    DevopsEnvFileE queryByEnvAndPathAndCommits(Long envId, String path, List<String> commits);
+    DevopsEnvFileE baseQueryByEnvAndPathAndCommits(Long envId, String path, List<String> commits);
 
-    DevopsEnvFileE queryByEnvAndPath(Long envId, String path);
+    DevopsEnvFileE baseQueryByEnvAndPath(Long envId, String path);
 
-    void update(DevopsEnvFileE devopsEnvFileE);
+    void baseUpdate(DevopsEnvFileE devopsEnvFileE);
 
-    void delete(DevopsEnvFileE devopsEnvFileE);
+    void baseDelete(DevopsEnvFileE devopsEnvFileE);
 
-    List<DevopsEnvFileE> listByEnvIdAndPath(Long envId, String path);
+    List<DevopsEnvFileE> baseListByEnvIdAndPath(Long envId, String path);
 }

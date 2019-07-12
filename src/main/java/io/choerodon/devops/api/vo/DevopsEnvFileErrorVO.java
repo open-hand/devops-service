@@ -8,7 +8,7 @@ import java.util.Date;
  * Time: 20:57
  * Description:
  */
-public class DevopsEnvFileErrorDTO {
+public class DevopsEnvFileErrorVO {
     private Long id;
     private Long envId;
     private String filePath;

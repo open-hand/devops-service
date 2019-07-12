@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-public class DevopsEnvFileDTO {
+public class DevopsEnvFileVO {
 
     private Long id;
     private Long envId;

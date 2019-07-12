@@ -386,18 +386,18 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String input;
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
         pushWebHookDTO.getCommits().forEach(commitDTO -> {
-            DevopsEnvCommitE devopsEnvCommitE = new DevopsEnvCommitE();
+            DevopsEnvCommitVO devopsEnvCommitE = new DevopsEnvCommitVO();
             devopsEnvCommitE.setEnvId(devopsEnvironmentE.getId());
             devopsEnvCommitE.setCommitSha(commitDTO.getId());
             devopsEnvCommitE.setCommitUser(TypeUtil.objToLong(pushWebHookDTO.getUserId()));
             devopsEnvCommitE.setCommitDate(commitDTO.getTimestamp());
             if (devopsEnvCommitRepository
-                    .queryByEnvIdAndCommit(devopsEnvironmentE.getId(), commitDTO.getId()) == null) {
-                devopsEnvCommitRepository.create(devopsEnvCommitE);
+                    .baseQueryByEnvIdAndCommit(devopsEnvironmentE.getId(), commitDTO.getId()) == null) {
+                devopsEnvCommitRepository.baseCreate(devopsEnvCommitE);
             }
         });
-        DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository
-                .queryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookDTO.getCheckoutSha());
+        DevopsEnvCommitVO devopsEnvCommitE = devopsEnvCommitRepository
+                .baseQueryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookDTO.getCheckoutSha());
         devopsEnvironmentE.setSagaSyncCommit(devopsEnvCommitE.getId());
         devopsEnvironmentRepository.updateSagaSyncEnvCommit(devopsEnvironmentE);
         LOGGER.info(String.format("update devopsCommit successfully: %s", pushWebHookDTO.getCheckoutSha()));
@@ -425,7 +425,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Set<DevopsEnvFileResourceE> beforeSyncDelete = new HashSet<>();
         //根据token查出环境
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
-        DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getSagaSyncCommit());
+        DevopsEnvCommitVO devopsEnvCommitE = devopsEnvCommitRepository.baseQuery(devopsEnvironmentE.getSagaSyncCommit());
         boolean tagNotExist;
         Map<String, String> objectPath;
         //从iam服务中查出项目和组织code
@@ -537,7 +537,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 error = e.getMessage();
             }
             devopsEnvFileErrorE.setError(error + ":" + errorCode);
-            devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
+            devopsEnvFileErrorRepository.baseCreateOrUpdate(devopsEnvFileErrorE);
             LOGGER.info(e.getMessage(), e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return;
@@ -546,7 +546,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         //删除文件错误记录
         DevopsEnvFileErrorE devopsEnvFileErrorE = new DevopsEnvFileErrorE();
         devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
-        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE);
+        devopsEnvFileErrorRepository.baseDelete(devopsEnvFileErrorE);
         // do sth to files
     }
 
@@ -564,20 +564,20 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     private void handleFiles(List<String> operationFiles, List<String> deletedFiles,
-                             DevopsEnvironmentE devopsEnvironmentE, DevopsEnvCommitE devopsEnvCommitE, String path) {
+                             DevopsEnvironmentE devopsEnvironmentE, DevopsEnvCommitVO devopsEnvCommitE, String path) {
         //新增解释文件记录
         for (String filePath : operationFiles) {
             DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository
-                    .queryByEnvAndPath(devopsEnvironmentE.getId(), filePath);
+                    .baseQueryByEnvAndPath(devopsEnvironmentE.getId(), filePath);
             if (devopsEnvFileE == null) {
                 devopsEnvFileE = new DevopsEnvFileE();
                 devopsEnvFileE.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                 devopsEnvFileE.setFilePath(filePath);
                 devopsEnvFileE.setEnvId(devopsEnvCommitE.getEnvId());
-                devopsEnvFileRepository.create(devopsEnvFileE);
+                devopsEnvFileRepository.baseCreate(devopsEnvFileE);
             } else {
                 devopsEnvFileE.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                devopsEnvFileRepository.update(devopsEnvFileE);
+                devopsEnvFileRepository.baseUpdate(devopsEnvFileE);
             }
         }
 
@@ -585,12 +585,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             DevopsEnvFileE devopsEnvFileE = new DevopsEnvFileE();
             devopsEnvFileE.setEnvId(devopsEnvironmentE.getId());
             devopsEnvFileE.setFilePath(filePath);
-            devopsEnvFileRepository.delete(devopsEnvFileE);
+            devopsEnvFileRepository.baseDelete(devopsEnvFileE);
         }
     }
 
     private void handleTag(PushWebHookDTO pushWebHookDTO, Integer gitLabProjectId, Integer gitLabUserId,
-                           DevopsEnvCommitE devopsEnvCommitE, Boolean tagNotExist) {
+                           DevopsEnvCommitVO devopsEnvCommitE, Boolean tagNotExist) {
         if (tagNotExist) {
             devopsGitRepository.createTag(
                     gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha(),
@@ -618,7 +618,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private void handleDiffs(Integer gitLabProjectId, List<String> operationFiles, List<String> deletedFiles,
                              Set<DevopsEnvFileResourceE> beforeSync, Set<DevopsEnvFileResourceE> beforeSyncDelete,
-                             DevopsEnvironmentE devopsEnvironmentE, DevopsEnvCommitE devopsEnvCommitE) {
+                             DevopsEnvironmentE devopsEnvironmentE, DevopsEnvCommitVO devopsEnvCommitE) {
         //获取将此次最新提交与tag作比价得到diff
         CompareResultsE compareResultsE = devopsGitRepository
                 .getCompareResults(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha());
@@ -801,7 +801,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         metadata.put(LABELS, labels);
         datas.put(METADATA, metadata);
 
-        devopsCustomizeResourceE.setDevopsCustomizeResourceContentE(new DevopsCustomizeResourceContentE(FileUtil.getYaml().dump(datas)));
+        devopsCustomizeResourceE.setDevopsCustomizeResourceContentE(new DevopsCustomizeResourceContentVO(FileUtil.getYaml().dump(datas)));
         return devopsCustomizeResourceE;
     }
 
@@ -875,7 +875,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     private DevopsEnvFileErrorE getDevopsFileError(Long envId, String filePath, String path) {
-        DevopsEnvFileErrorE devopsEnvFileErrorE = devopsEnvFileErrorRepository.queryByEnvIdAndFilePath(envId, filePath);
+        DevopsEnvFileErrorE devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseQueryByEnvIdAndFilePath(envId, filePath);
         if (devopsEnvFileErrorE == null) {
             devopsEnvFileErrorE = new DevopsEnvFileErrorE();
             devopsEnvFileErrorE.setFilePath(filePath);

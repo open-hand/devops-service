@@ -107,7 +107,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                 return;
             }
         }
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapDTO.getType());
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapDTO.getType());
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
@@ -128,7 +128,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         //处理创建数据
         DevopsConfigMapE devopsConfigMapE = ConvertHelper.convert(devopsConfigMapDTO, DevopsConfigMapE.class);
         devopsConfigMapE.setValue(gson.toJson(devopsConfigMapDTO.getValue()));
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapDTO.getType());
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapDTO.getType());
         devopsEnvCommandE.setCreatedBy(userId);
 
         if (devopsConfigMapDTO.getType().equals(CREATE_TYPE)) {
@@ -174,7 +174,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        devopsEnvCommandRepository.listByObjectAll(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
+        devopsEnvCommandRepository.baseListByObjectAll(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteCommandById(devopsEnvCommandE));
         devopsConfigMapRepository.delete(configMapId);
         appResourceRepository.deleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
     }
@@ -193,7 +193,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
 
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE_TYPE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(DELETE_TYPE);
 
 
         //更新ingress
@@ -284,7 +284,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                                       Boolean isCreate,
                                       String path,
                                       DevopsConfigMapE devopsConfigMapE,
-                                      UserAttrE userAttrE, DevopsEnvCommandE devopsEnvCommandE, Long appId) {
+                                      UserAttrE userAttrE, DevopsEnvCommandVO devopsEnvCommandE, Long appId) {
 
 
         //操作configMap数据库
@@ -316,8 +316,8 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
 
-    private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+    private DevopsEnvCommandVO initDevopsEnvCommandE(String type) {
+        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
         if (type.equals(CREATE_TYPE)) {
             devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
         } else if (type.equals(UPDATE_TYPE)) {

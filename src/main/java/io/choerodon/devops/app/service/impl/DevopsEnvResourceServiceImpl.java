@@ -188,8 +188,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Override
     public List<InstanceEventDTO> listInstancePodEvent(Long instanceId) {
         List<InstanceEventDTO> instanceEventDTOS = new ArrayList<>();
-        List<DevopsEnvCommandE> devopsEnvCommandES = devopsEnvCommandRepository
-                .queryInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
+        List<DevopsEnvCommandVO> devopsEnvCommandES = devopsEnvCommandRepository
+                .baseQueryInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
         devopsEnvCommandES.forEach(devopsEnvCommandE -> {
             InstanceEventDTO instanceEventDTO = new InstanceEventDTO();
             UserE userE = iamRepository.queryUserByUserId(devopsEnvCommandE.getCreatedBy());
@@ -213,8 +213,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 });
             }
             List<DevopsEnvResourceE> jobs = devopsEnvResourceRepository.listJobs(devopsEnvCommandE.getId());
-            List<DevopsEnvCommandLogE> devopsEnvCommandLogES = devopsEnvCommandLogRepository
-                    .queryByDeployId(devopsEnvCommandE.getId());
+            List<DevopsEnvCommandLogVO> devopsEnvCommandLogES = devopsEnvCommandLogRepository
+                    .baseQueryByDeployId(devopsEnvCommandE.getId());
             for (int i = 0; i < jobs.size(); i++) {
                 DevopsEnvResourceE job = jobs.get(i);
                 DevopsEnvResourceDetailE devopsEnvResourceDetailE =

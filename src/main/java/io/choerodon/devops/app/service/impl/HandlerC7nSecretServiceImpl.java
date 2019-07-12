@@ -13,7 +13,7 @@ import io.choerodon.devops.api.vo.SecretReqDTO;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsSecretService;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsSecretE;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
@@ -128,7 +128,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                     devopsSecretService.addSecretByGitOps(secretReqDTO, userId);
                     devopsSecretE = devopsSecretRepository.selectByEnvIdAndName(envId, secretReqDTO.getName());
                 }
-                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository
                         .query(devopsSecretE.getCommandId());
 
                 devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
@@ -164,7 +164,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                     isNotChange = true;
                 }
 
-                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsSecretE.getCommandId());
+                DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsSecretE.getCommandId());
                 if (!isNotChange) {
                     devopsSecretService
                             .updateDevopsSecretByGitOps(projectId, devopsSecretE.getId(), secretReqDTO, userId);
@@ -221,8 +221,8 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         return secretReqDTO;
     }
 
-    private DevopsEnvCommandE createDevopsEnvCommandE(String type) {
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+    private DevopsEnvCommandVO createDevopsEnvCommandE(String type) {
+        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
         if (type.equals(CREATE)) {
             devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
         } else {

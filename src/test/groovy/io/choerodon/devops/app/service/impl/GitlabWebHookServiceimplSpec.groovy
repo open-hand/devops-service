@@ -320,15 +320,15 @@ class GitlabWebHookServiceimplSpec extends Specification {
         applicationInstanceE.initDevopsEnvironmentEById(devopsEnvironmentE.getId())
         applicationInstanceE = applicationInstanceRepository.create(applicationInstanceE)
 
-        DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE()
+        DevopsEnvCommandValueVO devopsEnvCommandValueE = new DevopsEnvCommandValueVO()
         devopsEnvCommandValueE.setValue(applicationVersionValueDO.getValue())
 
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO()
         devopsEnvCommandE.setObject("instance")
         devopsEnvCommandE.setObjectId(applicationInstanceE.getId())
         devopsEnvCommandE.setCommandType("create")
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus())
-        devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId())
+        devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository.baseCreate(devopsEnvCommandValueE).getId())
 
         applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId())
         applicationInstanceRepository.update(applicationInstanceE)
@@ -350,7 +350,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsServiceE.setPorts(new ArrayList<PortMapE>())
         devopsServiceE = devopsServiceRepository.insert(devopsServiceE)
 
-        DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE1 = new DevopsEnvCommandVO()
         devopsEnvCommandE1.setObject("service")
         devopsEnvCommandE1.setObjectId(devopsServiceE.getId())
         devopsEnvCommandE1.setCommandType("create")
@@ -374,7 +374,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsIngressE.setDomain("devops-service2-front.staging.saas.test.com")
         devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE)
 
-        DevopsEnvCommandE devopsEnvCommandE2 = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE2 = new DevopsEnvCommandVO()
         devopsEnvCommandE2.setObject("ingress")
         devopsEnvCommandE2.setObjectId(devopsIngressE.getId())
         devopsEnvCommandE2.setCommandType("create")
@@ -403,7 +403,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         certificationE.setDomains(domain)
         certificationE = certificationRepository.create(certificationE);
 
-        DevopsEnvCommandE devopsEnvCommandE3 = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE3 = new DevopsEnvCommandVO()
         devopsEnvCommandE3.setObject("certificate")
         devopsEnvCommandE3.setObjectId(certificationE.getId())
         devopsEnvCommandE3.setCommandType("create")
@@ -431,7 +431,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsSecretE.setDescription("test")
         devopsSecretE = devopsSecretRepository.create(devopsSecretE)
 
-        DevopsEnvCommandE devopsEnvCommandE4 = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE4 = new DevopsEnvCommandVO()
         devopsEnvCommandE4.setObject("secret")
         devopsEnvCommandE4.setObjectId(devopsSecretE.getId())
         devopsEnvCommandE4.setCommandType("create")
@@ -457,7 +457,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsConfigMapE.setDescription("test")
         devopsConfigMapE = devopsConfigMapRepository.create(devopsConfigMapE)
 
-        DevopsEnvCommandE devopsEnvCommandE5 = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE5 = new DevopsEnvCommandVO()
         devopsEnvCommandE5.setObject("configMap")
         devopsEnvCommandE5.setObjectId(devopsConfigMapE.getId())
         devopsEnvCommandE5.setCommandType("create")

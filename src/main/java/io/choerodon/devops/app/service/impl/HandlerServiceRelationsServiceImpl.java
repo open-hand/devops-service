@@ -104,7 +104,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                 v1Endpoints,
                                 envId);
                         Boolean isNotChange = checkIsNotChange(devopsServiceE, devopsServiceReqDTO);
-                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
+                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
                         if (!isNotChange) {
                             devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceE.getId(), devopsServiceReqDTO, userId);
                             DevopsServiceE newDevopsServiceE = devopsServiceRepository
@@ -151,7 +151,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                             devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
                                     devopsServiceReqDTO.getName(), envId);
                         }
-                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
+                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
 
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
@@ -289,8 +289,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 && devopsServiceReqDTO.getExternalIp().equals(devopsServiceE.getExternalIp())));
     }
 
-    private DevopsEnvCommandE createDevopsEnvCommandE(String type) {
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+    private DevopsEnvCommandVO createDevopsEnvCommandE(String type) {
+        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
         if (type.equals("create")) {
             devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
         } else {

@@ -19,7 +19,6 @@ import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.DeployService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
@@ -559,7 +558,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (devopsEnvironmentE.getSagaSyncCommit() == null) {
             devopsGitService.fileResourceSyncSaga(pushWebHookDTO, devopsEnvironmentE.getToken());
         } else {
-            DevopsEnvCommitE sagaSyncCommit = devopsEnvCommitRepository.query(devopsEnvironmentE.getSagaSyncCommit());
+            DevopsEnvCommitVO sagaSyncCommit = devopsEnvCommitRepository.baseQuery(devopsEnvironmentE.getSagaSyncCommit());
             if (!devopsEnvironmentE.getSagaSyncCommit().equals(devopsEnvironmentE.getDevopsSyncCommit()) || !sagaSyncCommit.getCommitSha().equals(commitDO.getId())) {
                 devopsGitService.fileResourceSyncSaga(pushWebHookDTO, devopsEnvironmentE.getToken());
             }
@@ -700,16 +699,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         EnvSyncStatusDTO envSyncStatusDTO = new EnvSyncStatusDTO();
         if (devopsEnvironmentE.getAgentSyncCommit() != null) {
             envSyncStatusDTO.setAgentSyncCommit(devopsEnvCommitRepository
-                    .query(devopsEnvironmentE.getAgentSyncCommit()).getCommitSha());
+                    .baseQuery(devopsEnvironmentE.getAgentSyncCommit()).getCommitSha());
         }
         if (devopsEnvironmentE.getDevopsSyncCommit() != null) {
             envSyncStatusDTO.setDevopsSyncCommit(devopsEnvCommitRepository
-                    .query(devopsEnvironmentE.getDevopsSyncCommit())
+                    .baseQuery(devopsEnvironmentE.getDevopsSyncCommit())
                     .getCommitSha());
         }
         if (devopsEnvironmentE.getSagaSyncCommit() != null) {
             envSyncStatusDTO.setSagaSyncCommit(devopsEnvCommitRepository
-                    .query(devopsEnvironmentE.getSagaSyncCommit()).getCommitSha());
+                    .baseQuery(devopsEnvironmentE.getSagaSyncCommit()).getCommitSha());
         }
 
         gitlabUrl = gitlabUrl.endsWith("/") ? gitlabUrl.substring(0, gitlabUrl.length() - 1) : gitlabUrl;
@@ -856,15 +855,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 删除环境对应的实例
         applicationInstanceRepository.selectByEnvId(envId).forEach(instanceE ->
-                devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.INSTANCE.toValue(), instanceE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t)));
+                devopsEnvCommandRepository.baseListByObjectAll(HelmObjectKind.INSTANCE.toValue(), instanceE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteCommandById(t)));
         applicationInstanceRepository.deleteAppInstanceByEnvId(envId);
         // 删除环境对应的域名、域名路径
         devopsIngressRepository.listByEnvId(envId).forEach(ingressE ->
-                devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.INGRESS.toValue(), ingressE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t)));
+                devopsEnvCommandRepository.baseListByObjectAll(HelmObjectKind.INGRESS.toValue(), ingressE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteCommandById(t)));
         devopsIngressRepository.deleteIngressAndIngressPathByEnvId(envId);
         // 删除环境对应的网络和网络实例
         devopsServiceRepository.selectByEnvId(envId).forEach(serviceE ->
-                devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.SERVICE.toValue(), serviceE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t)));
+                devopsEnvCommandRepository.baseListByObjectAll(HelmObjectKind.SERVICE.toValue(), serviceE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteCommandById(t)));
         devopsServiceRepository.deleteServiceAndInstanceByEnvId(envId);
         // 删除环境
         devopsEnviromentRepository.deleteById(envId);

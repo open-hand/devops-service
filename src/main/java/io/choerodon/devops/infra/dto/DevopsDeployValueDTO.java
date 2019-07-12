@@ -10,7 +10,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Description:
  */
 @Table(name = "devops_deploy_value")
-public class DevopsDeployValueDO extends BaseDTO {
+public class DevopsDeployValueDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -7,17 +7,16 @@ import javax.persistence.Table;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
-@Table(name = "devops_env_file_error")
-public class DevopsEnvFileErrorDO extends BaseDTO {
+@Table(name = "devops_env_file")
+public class DevopsEnvFileDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long envId;
     private String filePath;
-    private String commit;
-    private String error;
-
+    private String devopsCommit;
+    private String agentCommit;
 
 
     public Long getId() {
@@ -44,20 +43,21 @@ public class DevopsEnvFileErrorDO extends BaseDTO {
         this.filePath = filePath;
     }
 
-    public String getCommit() {
-        return commit;
+    public String getDevopsCommit() {
+        return devopsCommit;
     }
 
-    public void setCommit(String commit) {
-        this.commit = commit;
+    public void setDevopsCommit(String devopsCommit) {
+        this.devopsCommit = devopsCommit;
     }
 
-    public String getError() {
-        return error;
+    public String getAgentCommit() {
+        return agentCommit;
     }
 
-    public void setError(String error) {
-        this.error = error;
+    public void setAgentCommit(String agentCommit) {
+        this.agentCommit = agentCommit;
     }
+
 
 }

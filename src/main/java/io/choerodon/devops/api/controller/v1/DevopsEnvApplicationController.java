@@ -7,7 +7,6 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsEnvApplicationCreationVO;
 import io.choerodon.devops.api.validator.EnvironmentApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
@@ -41,7 +40,7 @@ public class DevopsEnvApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建环境下的应用关联")
     @PostMapping("/batch_create")
-    public ResponseEntity<List<DevopsEnvApplicationDTO>> batch_create(
+    public ResponseEntity<List<DevopsEnvApplicationVO>> batch_create(
             @ApiParam(value = "关联信息", required = true)
             @RequestBody DevopsEnvApplicationCreationVO devopsEnvApplicationCreationVO) {
         validator.checkEnvIdExist(devopsEnvApplicationCreationVO.getEnvId());

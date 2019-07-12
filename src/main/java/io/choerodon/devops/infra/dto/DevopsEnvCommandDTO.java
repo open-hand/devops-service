@@ -8,7 +8,7 @@ import javax.persistence.Table;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 @Table(name = "devops_env_command")
-public class DevopsEnvCommandDO extends BaseDTO {
+public class DevopsEnvCommandDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

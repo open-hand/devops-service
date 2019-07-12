@@ -12,7 +12,7 @@ import io.choerodon.devops.api.vo.DevopsIngressPathDTO;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsIngressService;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsIngressE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE;
@@ -120,7 +120,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                             devopsIngressE = devopsIngressRepository
                                     .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                         }
-                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
+                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
 
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
@@ -161,7 +161,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                                                 t.getPath(), devopsIngressE.getId()))) {
                             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
                         }
-                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
+                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
                         if (!isNotChange) {
                             devopsIngressService.updateIngressByGitOps(devopsIngressE.getId(), devopsIngressDTO, projectId, userId);
                             DevopsIngressE newdevopsIngressE = devopsIngressRepository
@@ -245,8 +245,8 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         return devopsIngressDTO;
     }
 
-    private DevopsEnvCommandE createDevopsEnvCommandE(String type) {
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+    private DevopsEnvCommandVO createDevopsEnvCommandE(String type) {
+        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
         if (type.equals(CREATE)) {
             devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
         } else {

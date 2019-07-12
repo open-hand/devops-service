@@ -9,7 +9,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsCustomizeResourceDTO;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqDTO;
 import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
 import io.choerodon.mybatis.annotation.SortDefault;
@@ -80,8 +80,8 @@ public class DevopsCustomizeResourceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取资源详情")
     @GetMapping
-    public ResponseEntity<DevopsCustomizeResourceDTO> getResource(@PathVariable(value = "project_id") Long projectId,
-                                                                  @RequestParam(value = "resource_id") Long resourceId) {
+    public ResponseEntity<DevopsCustomizeResourceVO> getResource(@PathVariable(value = "project_id") Long projectId,
+                                                                 @RequestParam(value = "resource_id") Long resourceId) {
         devopsCustomizeResourceService.getDevopsCustomizeResourceDetail(resourceId);
         return Optional.ofNullable(devopsCustomizeResourceService.getDevopsCustomizeResourceDetail(resourceId))
                 .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
@@ -104,7 +104,7 @@ public class DevopsCustomizeResourceController {
     @ApiOperation(value = "其他K8S资源分页查询")
     @CustomPageRequest
     @PostMapping(value = "/{envId}/pageByEnv")
-    public ResponseEntity<PageInfo<DevopsCustomizeResourceDTO>> pageByEnv(
+    public ResponseEntity<PageInfo<DevopsCustomizeResourceVO>> pageByEnv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.api.vo.iam.entity.CertificationE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
@@ -195,7 +195,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     }
 
     private void updateCommandSha(String filePath, String path, Long commandId) {
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(commandId);
+        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(commandId);
         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
         devopsEnvCommandRepository.update(devopsEnvCommandE);
     }

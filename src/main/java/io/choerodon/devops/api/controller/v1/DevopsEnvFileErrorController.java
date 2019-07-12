@@ -10,7 +10,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsEnvFileErrorDTO;
+import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO;
 import io.choerodon.devops.app.service.DevopsEnvFileService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -48,7 +48,7 @@ public class DevopsEnvFileErrorController {
             roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境文件错误列表")
     @GetMapping(value = "/list")
-    public ResponseEntity<List<DevopsEnvFileErrorDTO>> list(
+    public ResponseEntity<List<DevopsEnvFileErrorVO>> list(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
@@ -70,7 +70,7 @@ public class DevopsEnvFileErrorController {
     @ApiOperation(value = "项目下查询环境文件错误列表")
     @CustomPageRequest
     @GetMapping(value = "/list_by_page")
-    public ResponseEntity<PageInfo<DevopsEnvFileErrorDTO>> page(
+    public ResponseEntity<PageInfo<DevopsEnvFileErrorVO>> page(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")

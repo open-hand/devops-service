@@ -2,9 +2,9 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentVO;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceContentRepository;
-import io.choerodon.devops.infra.dto.DevopsCustomizeResourceContentDO;
+import io.choerodon.devops.infra.dto.DevopsCustomizeResourceContentDTO;
 import io.choerodon.devops.infra.mapper.DevopsCustomizeResourceContentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,30 +19,30 @@ public class DevopsCustomizeResourceContentRepositoryImpl implements DevopsCusto
     DevopsCustomizeResourceContentMapper devopsCustomizeResourceContentMapper;
 
     @Override
-    public DevopsCustomizeResourceContentE create(DevopsCustomizeResourceContentE devopsCustomizeResourceContentE) {
-        DevopsCustomizeResourceContentDO devopsCustomizeResourceContentDO = ConvertHelper.convert(devopsCustomizeResourceContentE, DevopsCustomizeResourceContentDO.
+    public DevopsCustomizeResourceContentVO baseCreate(DevopsCustomizeResourceContentVO devopsCustomizeResourceContentE) {
+        DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDO = ConvertHelper.convert(devopsCustomizeResourceContentE, DevopsCustomizeResourceContentDTO.
                 class);
         if (devopsCustomizeResourceContentMapper.insert(devopsCustomizeResourceContentDO) != 1) {
             throw new CommonException("error.customize.resource.content.insert.error");
         }
-        return ConvertHelper.convert(devopsCustomizeResourceContentDO, DevopsCustomizeResourceContentE.class);
+        return ConvertHelper.convert(devopsCustomizeResourceContentDO, DevopsCustomizeResourceContentVO.class);
     }
 
     @Override
-    public DevopsCustomizeResourceContentE query(Long contentId) {
-        return ConvertHelper.convert(devopsCustomizeResourceContentMapper.selectByPrimaryKey(contentId), DevopsCustomizeResourceContentE.class);
+    public DevopsCustomizeResourceContentVO baseQuery(Long contentId) {
+        return ConvertHelper.convert(devopsCustomizeResourceContentMapper.selectByPrimaryKey(contentId), DevopsCustomizeResourceContentVO.class);
     }
 
     @Override
-    public void update(DevopsCustomizeResourceContentE devopsCustomizeResourceContentE) {
-        DevopsCustomizeResourceContentDO devopsCustomizeResourceContentDO = ConvertHelper.convert(devopsCustomizeResourceContentE, DevopsCustomizeResourceContentDO.class);
+    public void baseUpdate(DevopsCustomizeResourceContentVO devopsCustomizeResourceContentE) {
+        DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDO = ConvertHelper.convert(devopsCustomizeResourceContentE, DevopsCustomizeResourceContentDTO.class);
         if (devopsCustomizeResourceContentMapper.updateByPrimaryKey(devopsCustomizeResourceContentDO) != 1) {
             throw new CommonException("error.customize.resource.content.update.error");
         }
     }
 
     @Override
-    public void delete(Long contentId) {
+    public void baseDelete(Long contentId) {
         if (devopsCustomizeResourceContentMapper.deleteByPrimaryKey(contentId) != 1) {
             throw new CommonException("error.customize.resource.content.delete.error");
         }

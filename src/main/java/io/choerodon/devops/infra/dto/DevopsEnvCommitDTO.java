@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 @Table(name = "devops_env_commit")
-public class DevopsEnvCommitDO extends BaseDTO {
+public class DevopsEnvCommitDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -15,15 +15,15 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsDeployValueE;
  */
 public interface DevopsDeployValueRepository {
 
-    PageInfo<DevopsDeployValueE> listByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params);
+    PageInfo<DevopsDeployValueE> baseListByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params);
 
-    DevopsDeployValueE createOrUpdate(DevopsDeployValueE pipelineRecordE);
+    DevopsDeployValueE baseCreateOrUpdate(DevopsDeployValueE pipelineRecordE);
 
-    void delete(Long valueId);
+    void baseDelete(Long valueId);
 
-    DevopsDeployValueE queryById(Long valueId);
+    DevopsDeployValueE baseQueryById(Long valueId);
 
-    void checkName(Long projectId, String name);
+    void baseCheckName(Long projectId, String name);
 
-    List<DevopsDeployValueE> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+    List<DevopsDeployValueE> baseQueryByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 }

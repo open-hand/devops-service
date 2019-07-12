@@ -1,7 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageVO;
 
 import java.util.List;
 
@@ -11,9 +11,9 @@ import java.util.List;
  */
 
 public interface DevopsEnvApplicationRepostitory {
-    DevopsEnvApplicationE create(DevopsEnvApplicationE devopsEnvApplicationE);
+    DevopsEnvApplicationE baseCreate(DevopsEnvApplicationE devopsEnvApplicationE);
 
-    List<Long> queryAppByEnvId(Long envId);
+    List<Long> baseQueryAppByEnvId(Long envId);
 
-    List<DevopsEnvMessageE> listResourceByEnvAndApp(Long envId,Long appId);
+    List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appId);
 }

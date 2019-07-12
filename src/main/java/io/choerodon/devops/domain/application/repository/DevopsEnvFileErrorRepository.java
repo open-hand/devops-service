@@ -14,16 +14,16 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileErrorE;
  */
 public interface DevopsEnvFileErrorRepository {
 
-    DevopsEnvFileErrorE createOrUpdate(DevopsEnvFileErrorE devopsEnvFileErrorE);
+    DevopsEnvFileErrorE baseCreateOrUpdate(DevopsEnvFileErrorE devopsEnvFileErrorE);
 
-    List<DevopsEnvFileErrorE> listByEnvId(Long envId);
+    List<DevopsEnvFileErrorE> baseListByEnvId(Long envId);
 
-    PageInfo<DevopsEnvFileErrorE> pageByEnvId(Long envId, PageRequest pageRequest);
+    PageInfo<DevopsEnvFileErrorE> basePageByEnvId(Long envId, PageRequest pageRequest);
 
-    void delete(DevopsEnvFileErrorE devopsEnvFileErrorE);
+    void baseDelete(DevopsEnvFileErrorE devopsEnvFileErrorE);
 
-    DevopsEnvFileErrorE queryByEnvIdAndFilePath(Long envId, String filePath);
+    DevopsEnvFileErrorE baseQueryByEnvIdAndFilePath(Long envId, String filePath);
 
-    void  create(DevopsEnvFileErrorE devopsEnvFileErrorE);
+    void baseCreate(DevopsEnvFileErrorE devopsEnvFileErrorE);
 
 }

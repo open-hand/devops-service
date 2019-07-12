@@ -4,16 +4,16 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
 import io.choerodon.devops.domain.application.factory.DevopsEnvCommandFactory;
-import io.choerodon.devops.infra.dto.DevopsEnvCommandDO;
+import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 
 @Component
-public class DevopsEnvCommandConvertor implements ConvertorI<DevopsEnvCommandE, DevopsEnvCommandDO, Object> {
+public class DevopsEnvCommandConvertor implements ConvertorI<DevopsEnvCommandVO, DevopsEnvCommandDTO, Object> {
 
     @Override
-    public DevopsEnvCommandE doToEntity(DevopsEnvCommandDO devopsEnvCommandDO) {
-        DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
+    public DevopsEnvCommandVO doToEntity(DevopsEnvCommandDTO devopsEnvCommandDO) {
+        DevopsEnvCommandVO devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
         BeanUtils.copyProperties(devopsEnvCommandDO, devopsEnvCommandE);
         if (devopsEnvCommandDO.getValueId() != null) {
             devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandDO.getValueId());
@@ -22,11 +22,11 @@ public class DevopsEnvCommandConvertor implements ConvertorI<DevopsEnvCommandE, 
     }
 
     @Override
-    public DevopsEnvCommandDO entityToDo(DevopsEnvCommandE devopsEnvCommandE) {
-        DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO();
+    public DevopsEnvCommandDTO entityToDo(DevopsEnvCommandVO devopsEnvCommandE) {
+        DevopsEnvCommandDTO devopsEnvCommandDO = new DevopsEnvCommandDTO();
         BeanUtils.copyProperties(devopsEnvCommandE, devopsEnvCommandDO);
-        if (devopsEnvCommandE.getDevopsEnvCommandValueE() != null) {
-            devopsEnvCommandDO.setValueId(devopsEnvCommandE.getDevopsEnvCommandValueE().getId());
+        if (devopsEnvCommandE.getDevopsEnvCommandValueDTO() != null) {
+            devopsEnvCommandDO.setValueId(devopsEnvCommandE.getDevopsEnvCommandValueDTO().getId());
         }
         return devopsEnvCommandDO;
     }

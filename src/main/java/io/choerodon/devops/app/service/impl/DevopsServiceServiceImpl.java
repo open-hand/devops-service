@@ -195,7 +195,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //处理创建service对象数据
         DevopsServiceE devopsServiceE = handlerCreateService(devopsServiceReqDTO, projectId, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
 
         //初始化V1Service对象
         V1Service v1Service = initV1Service(
@@ -236,7 +236,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //处理创建service对象数据
         DevopsServiceE devopsServiceE = handlerCreateService(devopsServiceReqDTO, projectId, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
 
         //存储service对象到数据库
         devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
@@ -385,7 +385,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //更新网络的时候校验gitops库文件是否存在,处理部署网络时，由于没有创gitops文件导致的部署失败
         resourceFileCheckHandler.check(devopsEnvironmentE, id, devopsServiceReqDTO.getName(), SERVICE);
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
 
         //处理更新service对象数据
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
@@ -420,7 +420,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
 
         //处理更新service对象数据
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
@@ -464,7 +464,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
+        DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
         devopsEnvCommandE.setObjectId(id);
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
@@ -539,7 +539,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //更新数据
-        devopsEnvCommandRepository.listByObjectAll(ObjectType.SERVICE.getType(), devopsServiceE.getId()).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.deleteCommandById(devopsEnvCommandE));
+        devopsEnvCommandRepository.baseListByObjectAll(ObjectType.SERVICE.getType(), devopsServiceE.getId()).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteCommandById(devopsEnvCommandE));
         devopsServiceRepository.delete(id);
 
         //删除网络的关联关系
@@ -705,7 +705,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                       DevopsServiceE devopsServiceE,
                                       List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES,
                                       List<String> beforeDevopsServiceAppInstanceES,
-                                      DevopsEnvCommandE devopsEnvCommandE,
+                                      DevopsEnvCommandVO devopsEnvCommandE,
                                       UserAttrE userAttrE) {
 
         DevopsEnvironmentE devopsEnvironmentE =
@@ -772,8 +772,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
 
-    private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+    private DevopsEnvCommandVO initDevopsEnvCommandE(String type) {
+        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
         if (type.equals(CREATE)) {
             devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
         } else if (type.equals(UPDATE)) {

@@ -341,11 +341,11 @@ public class PipelineServiceImpl implements PipelineService {
             Long instanceId = instanceE == null ? null : instanceE.getId();
             String type = instanceId == null ? CommandType.CREATE.getType() : CommandType.UPDATE.getType();
             ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(appVersionE.getId(), taskRecordE.getEnvId(),
-                    valueRepository.queryById(taskRecordE.getValueId()).getValue(), taskRecordE.getApplicationId(), type, instanceId,
+                    valueRepository.baseQueryById(taskRecordE.getValueId()).getValue(), taskRecordE.getApplicationId(), type, instanceId,
                     taskRecordE.getInstanceName(), taskRecordE.getId(), taskRecordE.getValueId());
             if (type.equals(CommandType.UPDATE.getType())) {
                 ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
-                DevopsEnvCommandE olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
+                DevopsEnvCommandVO olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
                 if (olddevopsEnvCommandE.getObjectVersionId().equals(applicationDeployDTO.getAppVersionId())) {
                     String oldValue = applicationInstanceRepository.queryValueByInstanceId(applicationDeployDTO.getAppInstanceId());
                     if (applicationDeployDTO.getValues().trim().equals(oldValue.trim())) {

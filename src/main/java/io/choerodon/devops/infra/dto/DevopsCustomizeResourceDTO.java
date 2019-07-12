@@ -10,7 +10,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  */
 
 @Table(name = "devops_customize_resource")
-public class DevopsCustomizeResourceDO extends BaseDTO {
+public class DevopsCustomizeResourceDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

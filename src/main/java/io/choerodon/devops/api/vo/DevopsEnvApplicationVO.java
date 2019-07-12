@@ -1,9 +1,11 @@
-package io.choerodon.devops.infra.dto;
+package io.choerodon.devops.api.vo;
 
-import javax.persistence.Table;
+/**
+ * @author lizongwei
+ * @date 2019/7/1
+ */
+public class DevopsEnvApplicationVO {
 
-@Table(name = "devops_env_application")
-public class DevopsEnvApplicationDO {
     private Long appId;
     private Long envId;
 

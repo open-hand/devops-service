@@ -18,7 +18,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsDeployValueE;
 import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dto.DevopsDeployValueDO;
+import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
 
 
@@ -35,18 +35,18 @@ public class DevopsDeployValueRepositoryImpl implements DevopsDeployValueReposit
     private DevopsDeployValueMapper valueMapper;
 
     @Override
-    public PageInfo<DevopsDeployValueE> listByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsDeployValueE> baseListByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-        PageInfo<DevopsDeployValueDO> devopsAutoDeployDOS = PageHelper
+        PageInfo<DevopsDeployValueDTO> devopsAutoDeployDOS = PageHelper
                 .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> valueMapper.listByOptions(projectId, appId, envId, userId, searchParamMap, paramMap));
         return ConvertPageHelper.convertPageInfo(devopsAutoDeployDOS, DevopsDeployValueE.class);
     }
 
     @Override
-    public DevopsDeployValueE createOrUpdate(DevopsDeployValueE pipelineRecordE) {
-        DevopsDeployValueDO pipelineValueDO = ConvertHelper.convert(pipelineRecordE, DevopsDeployValueDO.class);
+    public DevopsDeployValueE baseCreateOrUpdate(DevopsDeployValueE pipelineRecordE) {
+        DevopsDeployValueDTO pipelineValueDO = ConvertHelper.convert(pipelineRecordE, DevopsDeployValueDTO.class);
         if (pipelineValueDO.getId() == null) {
             if (valueMapper.insert(pipelineValueDO) != 1) {
                 throw new CommonException("error.insert.pipeline.value");
@@ -62,22 +62,22 @@ public class DevopsDeployValueRepositoryImpl implements DevopsDeployValueReposit
     }
 
     @Override
-    public void delete(Long valueId) {
-        DevopsDeployValueDO pipelineValueDO = new DevopsDeployValueDO();
+    public void baseDelete(Long valueId) {
+        DevopsDeployValueDTO pipelineValueDO = new DevopsDeployValueDTO();
         pipelineValueDO.setId(valueId);
         valueMapper.deleteByPrimaryKey(pipelineValueDO);
     }
 
     @Override
-    public DevopsDeployValueE queryById(Long valueId) {
-        DevopsDeployValueDO pipelineValueDO = new DevopsDeployValueDO();
+    public DevopsDeployValueE baseQueryById(Long valueId) {
+        DevopsDeployValueDTO pipelineValueDO = new DevopsDeployValueDTO();
         pipelineValueDO.setId(valueId);
         return ConvertHelper.convert(valueMapper.selectByPrimaryKey(pipelineValueDO), DevopsDeployValueE.class);
     }
 
     @Override
-    public void checkName(Long projectId, String name) {
-        DevopsDeployValueDO pipelineValueDO = new DevopsDeployValueDO();
+    public void baseCheckName(Long projectId, String name) {
+        DevopsDeployValueDTO pipelineValueDO = new DevopsDeployValueDTO();
         pipelineValueDO.setProjectId(projectId);
         pipelineValueDO.setName(name);
         if (valueMapper.select(pipelineValueDO).size() > 0) {
@@ -86,8 +86,8 @@ public class DevopsDeployValueRepositoryImpl implements DevopsDeployValueReposit
     }
 
     @Override
-    public List<DevopsDeployValueE> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
-        DevopsDeployValueDO valueDO = new DevopsDeployValueDO();
+    public List<DevopsDeployValueE> baseQueryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
+        DevopsDeployValueDTO valueDO = new DevopsDeployValueDTO();
         valueDO.setProjectId(projectId);
         valueDO.setAppId(appId);
         valueDO.setEnvId(envId);

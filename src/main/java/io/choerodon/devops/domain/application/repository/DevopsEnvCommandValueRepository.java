@@ -1,13 +1,13 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandValueE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandValueVO;
 
 public interface DevopsEnvCommandValueRepository {
 
-    DevopsEnvCommandValueE create(DevopsEnvCommandValueE devopsEnvCommandValueE);
+    DevopsEnvCommandValueVO baseCreate(DevopsEnvCommandValueVO devopsEnvCommandValueE);
 
-    void deleteById(Long commandId);
+    void baseDeleteById(Long commandId);
 
-    void updateValueById(Long valueId, String value);
+    void baseUpdateById(Long valueId, String value);
 
 }

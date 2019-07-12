@@ -8,7 +8,7 @@ import java.util.Date;
  * Date:  9:44 2019/4/10
  * Description:
  */
-public class DevopsDeployValueDTO {
+public class DevopsDeployValueVO {
     private Long id;
     private String value;
     private Long projectId;

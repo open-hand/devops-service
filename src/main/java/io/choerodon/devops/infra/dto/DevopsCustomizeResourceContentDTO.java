@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 
 @Table(name = "devops_customize_resource_content")
-public class DevopsCustomizeResourceContentDO {
+public class DevopsCustomizeResourceContentDTO {
 
 
     @Id

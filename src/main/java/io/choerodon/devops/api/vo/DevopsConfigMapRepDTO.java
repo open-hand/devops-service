@@ -10,6 +10,11 @@ public class DevopsConfigMapRepDTO {
     private Long envId;
     private Long commandId;
     private String commandStatus;
+    private DevopsEnvironmentE devopsEnvironmentE;
+    private DevopsEnvCommandVO devopsEnvCommandE;
+    private String name;
+    private String description;
+    private String value;
     private String envCode;
     private String commandType;
     private Boolean envStatus;
@@ -35,12 +40,21 @@ public class DevopsConfigMapRepDTO {
         this.envId = envId;
     }
 
+<<<<<<< HEAD:src/main/java/io/choerodon/devops/api/vo/DevopsConfigMapRepDTO.java
     public Long getCommandId() {
         return commandId;
     }
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+=======
+    public DevopsEnvCommandVO getDevopsEnvCommandE() {
+        return devopsEnvCommandE;
+    }
+
+    public void initDevopsEnvCommandE(Long id) {
+        this.devopsEnvCommandE = new DevopsEnvCommandVO(id);
+>>>>>>> [IMP] 修改repository重构:src/main/java/io/choerodon/devops/api/vo/iam/entity/DevopsConfigMapE.java
     }
 
     public String getName() {

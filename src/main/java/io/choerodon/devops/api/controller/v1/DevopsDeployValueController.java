@@ -9,7 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsDeployValueDTO;
+import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -43,7 +43,7 @@ public class DevopsDeployValueController {
     @ApiOperation(value = "项目下获取流水线配置")
     @CustomPageRequest
     @PostMapping("/list_by_options")
-    public ResponseEntity<PageInfo<DevopsDeployValueDTO>> listByOptions(
+    public ResponseEntity<PageInfo<DevopsDeployValueVO>> listByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = false)
@@ -69,11 +69,11 @@ public class DevopsDeployValueController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建流水线配置")
     @PostMapping
-    public ResponseEntity<DevopsDeployValueDTO> createOrUpdate(
+    public ResponseEntity<DevopsDeployValueVO> createOrUpdate(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PipelineValueDTO")
-            @RequestBody DevopsDeployValueDTO pipelineValueDTO) {
+            @RequestBody DevopsDeployValueVO pipelineValueDTO) {
         return Optional.ofNullable(pipelineValueService.createOrUpdate(projectId, pipelineValueDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.createOrUpdate"));
@@ -89,7 +89,7 @@ public class DevopsDeployValueController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询配置详情")
     @GetMapping
-    public ResponseEntity<DevopsDeployValueDTO> queryById(
+    public ResponseEntity<DevopsDeployValueVO> queryById(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "valueId", required = true)
@@ -169,7 +169,7 @@ public class DevopsDeployValueController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据应用Id和环境Id获取配置")
     @GetMapping("/list")
-    public ResponseEntity<List<DevopsDeployValueDTO>> queryByAppIdAndEnvId(
+    public ResponseEntity<List<DevopsDeployValueVO>> queryByAppIdAndEnvId(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = true)

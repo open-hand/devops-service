@@ -4,7 +4,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandLogE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandLogVO;
 import io.choerodon.devops.domain.application.factory.DevopsInstanceResourceLogFactory;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandLogDO;
 
@@ -12,11 +12,11 @@ import io.choerodon.devops.infra.dto.DevopsEnvCommandLogDO;
  * Created by younger on 2018/4/24.
  */
 @Component
-public class DevopsEnvCommandLogConvertor implements ConvertorI<DevopsEnvCommandLogE, DevopsEnvCommandLogDO, Object> {
+public class DevopsEnvCommandLogConvertor implements ConvertorI<DevopsEnvCommandLogVO, DevopsEnvCommandLogDO, Object> {
 
     @Override
-    public DevopsEnvCommandLogE doToEntity(DevopsEnvCommandLogDO devopsEnvCommandLogDO) {
-        DevopsEnvCommandLogE devopsEnvCommandLogE =
+    public DevopsEnvCommandLogVO doToEntity(DevopsEnvCommandLogDO devopsEnvCommandLogDO) {
+        DevopsEnvCommandLogVO devopsEnvCommandLogE =
                 DevopsInstanceResourceLogFactory.createDevopsInstanceResourceLogE();
         BeanUtils.copyProperties(devopsEnvCommandLogDO, devopsEnvCommandLogE);
         if (devopsEnvCommandLogDO.getCommandId() != null) {
@@ -26,11 +26,11 @@ public class DevopsEnvCommandLogConvertor implements ConvertorI<DevopsEnvCommand
     }
 
     @Override
-    public DevopsEnvCommandLogDO entityToDo(DevopsEnvCommandLogE devopsEnvCommandLogE) {
+    public DevopsEnvCommandLogDO entityToDo(DevopsEnvCommandLogVO devopsEnvCommandLogE) {
         DevopsEnvCommandLogDO devopsEnvCommandLogDO = new DevopsEnvCommandLogDO();
         BeanUtils.copyProperties(devopsEnvCommandLogE, devopsEnvCommandLogDO);
-        if (devopsEnvCommandLogE.getDevopsEnvCommandE() != null) {
-            devopsEnvCommandLogDO.setCommandId(devopsEnvCommandLogE.getDevopsEnvCommandE().getId());
+        if (devopsEnvCommandLogE.getDevopsEnvCommandVO() != null) {
+            devopsEnvCommandLogDO.setCommandId(devopsEnvCommandLogE.getDevopsEnvCommandVO().getId());
         }
         return devopsEnvCommandLogDO;
     }

@@ -2,12 +2,10 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageE;
-import io.choerodon.devops.infra.dto.DevopsEnvApplicationDO;
-import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-public interface DevopsEnvApplicationMapper extends Mapper<DevopsEnvApplicationDO> {
+
+public interface DevopsEnvApplicationMapper extends Mapper<DevopsEnvApplicationDTO> {
 
     /**
      * 当记录不存在时，插入记录
@@ -29,5 +27,5 @@ public interface DevopsEnvApplicationMapper extends Mapper<DevopsEnvApplicationD
      * @param appId 应用Id
      * @return List 环境资源信息
      */
-    List<DevopsEnvMessageE> listResourceByEnvAndApp(@Param("envId")Long envId, @Param("appId")Long appId);
+    List<DevopsEnvMessageVO> listResourceByEnvAndApp(@Param("envId")Long envId, @Param("appId")Long appId);
 }

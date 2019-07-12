@@ -299,7 +299,7 @@ class DevopsIngressControllerSpec extends Specification {
         restTemplate.delete("/v1/projects/1/ingress/1")
 
         then: '校验返回值'
-        devopsEnvCommandRepository.queryByObject("ingress", 1L).getCommandType() == "delete"
+        devopsEnvCommandRepository.baseQueryByObject("ingress", 1L).getCommandType() == "delete"
     }
 
     def "CheckName"() {

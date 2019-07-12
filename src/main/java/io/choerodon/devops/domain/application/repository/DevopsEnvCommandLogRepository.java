@@ -2,20 +2,20 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandLogE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandLogVO;
 
 /**
  * Created by younger on 2018/4/24.
  */
 public interface DevopsEnvCommandLogRepository {
 
-    DevopsEnvCommandLogE create(DevopsEnvCommandLogE devopsEnvCommandLogE);
+    DevopsEnvCommandLogVO baseCreate(DevopsEnvCommandLogVO devopsEnvCommandLogE);
 
-    DevopsEnvCommandLogE query(Long logId);
+    DevopsEnvCommandLogVO baseQuery(Long logId);
 
-    List<DevopsEnvCommandLogE> queryByDeployId(Long deployId);
+    List<DevopsEnvCommandLogVO> baseQueryByDeployId(Long deployId);
 
-    void deletePreInstanceCommandLog(Long instanceId);
+    void baseDeleteByInstanceId(Long instanceId);
 
-    void deleteByCommandId(Long commandId);
+    void baseDeleteByCommandId(Long commandId);
 }

@@ -317,7 +317,7 @@ public class CertificationServiceImpl implements CertificationService {
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //实例相关对象数据库操作
-        devopsEnvCommandRepository.listByObjectAll(HelmObjectKind.CERTIFICATE.toValue(), certificationE.getId()).forEach(t -> devopsEnvCommandRepository.deleteCommandById(t));
+        devopsEnvCommandRepository.baseListByObjectAll(HelmObjectKind.CERTIFICATE.toValue(), certificationE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteCommandById(t));
         certificationRepository.deleteById(certId);
     }
 
@@ -359,7 +359,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public Long createCertCommandE(String type, Long certId, Long userId) {
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
         devopsEnvCommandE.setCommandType(type);
         devopsEnvCommandE.setCreatedBy(userId);
         devopsEnvCommandE.setObject(ObjectType.CERTIFICATE.getType());
