@@ -266,7 +266,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             Integer gitlabProjectId = applicationDTO.getGitlabProjectId();
             GitlabProjectDTO gitlabProjectDO = gitLabService.getProjectById(gitlabProjectId);
             if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
-                UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
                 Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
                 gitLabService.deleteProject(gitlabProjectId, gitlabUserId);
             }
@@ -809,7 +809,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 //渲染模板里面的参数
                 replaceParams(applicationE, projectE, organization, applicationDir);
 
-                UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
+                UserAttrE userAttrE = userAttrRepository.baseQueryByGitlabUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
 
                 // 获取push代码所需的access token
                 String accessToken = getToken(gitlabProjectPayload, applicationDir, userAttrE);
@@ -984,7 +984,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             // 不跳过权限检查，则为gitlab项目分配项目成员权限
             if (!devOpsAppPayload.getSkipCheckPermission()) {
                 if (!devOpsAppPayload.getUserIds().isEmpty()) {
-                    List<Long> gitlabUserIds = userAttrRepository.listByUserIds(devOpsAppPayload.getUserIds()).stream()
+                    List<Long> gitlabUserIds = userAttrRepository.baseListByUserIds(devOpsAppPayload.getUserIds()).stream()
                             .map(UserAttrE::getGitlabUserId).collect(Collectors.toList());
                     gitlabUserIds.forEach(e -> {
                         GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
@@ -1002,7 +1002,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             // 跳过权限检查，项目下所有成员自动分配权限
             else {
                 List<Long> iamUserIds = iamService.getAllMemberIdsWithoutOwner(devOpsAppPayload.getIamProjectId());
-                List<Integer> gitlabUserIds = userAttrRepository.listByUserIds(iamUserIds).stream()
+                List<Integer> gitlabUserIds = userAttrRepository.baseListByUserIds(iamUserIds).stream()
                         .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
 
                 gitlabUserIds.forEach(e ->
@@ -1184,8 +1184,13 @@ public class ApplicationServiceImpl implements ApplicationService {
             // 为项目下的成员分配对于此gitlab项目的权限
             operateGitlabMemberPermission(devOpsAppImportPayload);
 
+<<<<<<< HEAD
             if (applicationE.getApplicationTemplateE() != null) {
                 UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(TypeUtil.objToLong(devOpsAppImportPayload.getUserId()));
+=======
+            if (applicationDTO.getAppTemplateId() != null) {
+                UserAttrE userAttrE = userAttrRepository.baseQueryByGitlabUserId(TypeUtil.objToLong(devOpsAppImportPayload.getUserId()));
+>>>>>>> [REF] refactor UserAttrRepository
                 ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.query(
                         applicationE.getApplicationTemplateE().getId());
                 // 拉取模板
@@ -1696,7 +1701,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 accessToken = gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
                         applicationDir, gitlabProjectPayload.getUserId());
                 userAttrE.setGitlabToken(accessToken);
-                userAttrRepository.update(userAttrE);
+                userAttrRepository.baseUpdate(userAttrE);
             }
             return accessToken;
         }
@@ -2264,7 +2269,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         @Saga(code = "devops-import-gitlab-project", description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
         public ApplicationRepVO importApp (Long projectId, ApplicationImportDTO applicationImportDTO){
             // 获取当前操作的用户的信息
-            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
             // 校验application信息的格式
             ApplicationValidator.checkApplication(applicationImportDTO);
@@ -2406,7 +2411,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             //创建iam入口过来的应用直接用管理员去gitlab创建对应的project,避免没有对应项目的权限导致创建失败
             Long gitlabUserId = 1L;
             if (applicationName.equals(iamAppPayLoad.getFrom())) {
-                UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
                 gitlabUserId = userAttrE.getGitlabUserId();
             }
 

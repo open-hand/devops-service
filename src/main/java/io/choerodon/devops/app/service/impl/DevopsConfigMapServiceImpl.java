@@ -82,7 +82,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         UserAttrE userAttrE = null;
         if (!sync) {
-            userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             //检验gitops库是否存在，校验操作人是否是有gitops库的权限
             gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
         } else {
@@ -193,7 +193,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId()
         );
 
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);

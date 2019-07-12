@@ -4,10 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvUserPermissionE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
@@ -45,12 +41,12 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         // 待添加的用户
         List<Long> addIamUserIds = userIds.stream().filter(e -> !currentUserIds.contains(e))
                 .collect(Collectors.toList());
-        List<Integer> addgitlabUserIds = userAttrRepository.listByUserIds(addIamUserIds).stream()
+        List<Integer> addgitlabUserIds = userAttrRepository.baseListByUserIds(addIamUserIds).stream()
                 .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
         // 待删除的用户
         List<Long> deleteIamUserIds = currentUserIds.stream().filter(e -> !userIds.contains(e))
                 .collect(Collectors.toList());
-        List<Integer> deleteGitlabUserIds = userAttrRepository.listByUserIds(deleteIamUserIds).stream()
+        List<Integer> deleteGitlabUserIds = userAttrRepository.baseListByUserIds(deleteIamUserIds).stream()
                 .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
         // 更新gitlab权限
 

@@ -138,7 +138,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
 
     public Integer getGitlabUserId() {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
     }
 
@@ -222,9 +222,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             devopsBranchECreate.setLastCommitMsg(commitDTO.getMessage());
             Long commitUserId = null;
             if (commitDTO.getCommitterName().equals("root")) {
-                UserAttrE userAttrE = userAttrRepository.queryByGitlabUserName("admin");
+                UserAttrE userAttrE = userAttrRepository.baseQueryByGitlabUserName("admin");
                 if (userAttrE == null) {
-                    userAttrE = userAttrRepository.queryByGitlabUserName("admin1");
+                    userAttrE = userAttrRepository.baseQueryByGitlabUserName("admin1");
                 }
                 commitUserId = userAttrE.getGitlabUserId();
             }
@@ -244,7 +244,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         // 查询用户是否在该gitlab project下
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
             GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
@@ -289,7 +289,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void deleteBranch(Long applicationId, String branchName) {
         ApplicationE applicationE = applicationRepository.query(applicationId);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<BranchDTO> branchEList = devopsGitRepository.listBranches(applicationE.getGitlabProjectE().getId(),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         Optional<BranchDTO> branchEOptional = branchEList
@@ -406,7 +406,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
         final Integer gitLabProjectId = pushWebHookDTO.getProjectId();
         Integer gitLabUserId = pushWebHookDTO.getUserId();
-        Long userId = userAttrRepository.queryUserIdByGitlabUserId(TypeUtil.objToLong(gitLabUserId));
+        Long userId = userAttrRepository.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(gitLabUserId));
         if (userId == null) {
             gitLabUserId = 1;
         }
@@ -545,7 +545,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void checkName(Long projectId, Long applicationId, String branchName) {
         ApplicationE applicationE = applicationRepository.query(applicationId);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<BranchDTO> branchEList = devopsGitRepository.listBranches(applicationE.getGitlabProjectE().getId(),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         Optional<BranchDTO> branchEOptional = branchEList

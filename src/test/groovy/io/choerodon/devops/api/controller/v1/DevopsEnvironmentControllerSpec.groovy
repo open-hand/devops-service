@@ -357,7 +357,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         ResponseEntity<List<UserDO>> responseEntity2 = new ResponseEntity<>(userDOList, HttpStatus.OK)
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity2)
         Mockito.doReturn(responseEntity2).when(iamServiceClient).listUsersByIds(1L)
-        userAttrRepository.queryById(_ as Long) >> userAttrE
+        userAttrRepository.baseQueryById(_ as Long) >> userAttrE
 
         and: 'mock envUtil'
         GitConfigDTO gitConfigDTO = new GitConfigDTO()

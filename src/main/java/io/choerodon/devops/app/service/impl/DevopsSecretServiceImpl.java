@@ -82,7 +82,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId()
         );
 
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
@@ -188,7 +188,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteSecret(Long envId, Long secretId) {
 
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
 

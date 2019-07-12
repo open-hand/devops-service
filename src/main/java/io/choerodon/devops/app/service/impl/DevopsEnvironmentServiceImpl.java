@@ -149,7 +149,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrE == null) {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
@@ -542,7 +542,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void retryGitOps(Long envId) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
-        UserAttrE userAttrE = userAttrRepository.queryById(GitUserNameUtil.getUserId().longValue());
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(GitUserNameUtil.getUserId().longValue());
         if (userAttrE == null) {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
@@ -671,7 +671,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 Long userId = e.getId();
                 String loginName = e.getLoginName();
                 String realName = e.getRealName();
-                UserAttrE userAttrE = userAttrRepository.queryById(userId);
+                UserAttrE userAttrE = userAttrRepository.baseQueryById(userId);
                 Long gitlabUserId = userAttrE.getGitlabUserId();
 
 
@@ -871,6 +871,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnviromentRepository.deleteById(envId);
 
         // 删除gitlab库, 删除之前查询是否存在
+<<<<<<< HEAD
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
 
@@ -878,6 +879,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabUserId);
         if (gitlabProjectDO.getId() != null) {
             gitlabRepository.deleteProject(gitlabProjectDO.getId(), gitlabUserId);
+=======
+        if (devopsEnvironmentE.getGitlabEnvProjectId() != null) {
+            Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentE.getGitlabEnvProjectId());
+            GitlabProjectDTO gitlabProjectDO = gitlabRepository.getProjectById(gitlabProjectId);
+            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
+                gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
+            }
+>>>>>>> [REF] refactor UserAttrRepository
         }
         // 删除环境命名空间
         if (devopsEnvironmentE.getClusterE().getId() != null) {

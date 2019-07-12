@@ -23,17 +23,17 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
     }
 
     @Override
-    public int insert(UserAttrE userAttrE) {
+    public int baseInsert(UserAttrE userAttrE) {
         return userAttrMapper.insert(ConvertHelper.convert(userAttrE, UserAttrDTO.class));
     }
 
     @Override
-    public UserAttrE queryById(Long id) {
+    public UserAttrE baseQueryById(Long id) {
         return ConvertHelper.convert(userAttrMapper.selectByPrimaryKey(id), UserAttrE.class);
     }
 
     @Override
-    public Long queryUserIdByGitlabUserId(Long gitLabUserId) {
+    public Long baseQueryUserIdByGitlabUserId(Long gitLabUserId) {
         UserAttrDTO userAttrDO = new UserAttrDTO();
         userAttrDO.setGitlabUserId(gitLabUserId);
         if (gitLabUserId == null) {
@@ -48,21 +48,21 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
     }
 
     @Override
-    public List<UserAttrE> listByUserIds(List<Long> userIds) {
+    public List<UserAttrE> baseListByUserIds(List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
             return new ArrayList<>();
         }
         return ConvertHelper.convertList(userAttrMapper.listByUserIds(userIds), UserAttrE.class);
     }
 
-    public UserAttrE queryByGitlabUserId(Long gitlabUserId) {
+    public UserAttrE baseQueryByGitlabUserId(Long gitlabUserId) {
         UserAttrDTO userAttrDO = new UserAttrDTO();
         userAttrDO.setGitlabUserId(gitlabUserId);
         return ConvertHelper.convert(userAttrMapper.selectOne(userAttrDO), UserAttrE.class);
     }
 
     @Override
-    public void update(UserAttrE userAttrE) {
+    public void baseUpdate(UserAttrE userAttrE) {
         UserAttrDTO userAttrDO = userAttrMapper.selectByPrimaryKey(userAttrE.getIamUserId());
         userAttrDO.setGitlabToken(userAttrE.getGitlabToken());
         userAttrDO.setGitlabUserName(userAttrE.getGitlabUserName());
@@ -70,12 +70,12 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
     }
 
     @Override
-    public List<UserAttrE> list() {
+    public List<UserAttrE> baseList() {
         return ConvertHelper.convertList(userAttrMapper.selectAll(), UserAttrE.class);
     }
 
     @Override
-    public UserAttrE queryByGitlabUserName(String gitlabUserName) {
+    public UserAttrE baseQueryByGitlabUserName(String gitlabUserName) {
         UserAttrDTO userAttrDO = new UserAttrDTO();
         userAttrDO.setGitlabUserName(gitlabUserName);
         return ConvertHelper.convert(userAttrMapper.selectOne(userAttrDO), UserAttrE.class);

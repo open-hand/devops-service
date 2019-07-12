@@ -109,7 +109,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         ApplicationRepVO applicationRepDTO = createDemoApp(projectId, app);
 
-        gitlabUserId = TypeUtil.objToInteger(userAttrRepository.queryById(organizationRegisterEventPayload.getUser().getId()).getGitlabUserId());
+        gitlabUserId = TypeUtil.objToInteger(userAttrRepository.baseQueryById(organizationRegisterEventPayload.getUser().getId()).getGitlabUserId());
 
         if (applicationRepository.query(applicationRepDTO.getId()).getGitlabProjectE().getId() == null) {
             throw new CommonException("Creating gitlab project for app {} failed.", applicationRepDTO.getId());
@@ -158,7 +158,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @return 应用创建的纪录
      */
     private ApplicationRepVO createDemoApp(Long projectId, ApplicationReqVO applicationReqDTO) {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationReqDTO);
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());

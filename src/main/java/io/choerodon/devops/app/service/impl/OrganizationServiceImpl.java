@@ -26,7 +26,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public void create(OrganizationEventPayload organizationEventPayload) {
-        UserAttrE userAttrE = userAttrRepository.queryById(organizationEventPayload.getUserId());
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(organizationEventPayload.getUserId());
         if (userAttrE == null) {
             throw new CommonException("gitlab user not related to iam user");
         }

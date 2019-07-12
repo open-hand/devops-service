@@ -290,7 +290,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             DevopsGitlabPipelineE devopsGitlabPipelineE = new DevopsGitlabPipelineE();
                             devopsGitlabPipelineE.setAppId(applicationDO.getId());
                             Long userId = userAttrRepository
-                                    .queryUserIdByGitlabUserId(TypeUtil.objToLong(gitlabPipelineE.getUser()
+                                    .baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(gitlabPipelineE.getUser()
                                             .getId()));
                             devopsGitlabPipelineE.setPipelineCreateUserId(userId);
                             devopsGitlabPipelineE.setPipelineId(TypeUtil.objToLong(gitlabPipelineE.getId()));
@@ -434,7 +434,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent(userWithRoleDTO.getLoginName() + ": remove env permission");
                         try {
-                            UserAttrE userAttrE = userAttrRepository.queryById(userWithRoleDTO.getId());
+                            UserAttrE userAttrE = userAttrRepository.baseQueryById(userWithRoleDTO.getId());
                             if (userAttrE != null) {
                                 Integer gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
                                 DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
@@ -468,7 +468,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
     private void syncGitlabUserName(List<CheckLog> logs) {
-        userAttrRepository.list().stream().filter(userAttrE -> userAttrE.getGitlabUserId() != null).forEach(userAttrE ->
+        userAttrRepository.baseList().stream().filter(userAttrE -> userAttrE.getGitlabUserId() != null).forEach(userAttrE ->
                 {
                     CheckLog checkLog = new CheckLog();
                     try {
@@ -482,7 +482,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
                             userAttrE.setGitlabUserName(gitlabUserE.getUsername());
                         }
-                        userAttrRepository.update(userAttrE);
+                        userAttrRepository.baseUpdate(userAttrE);
                         LOGGER.info(SUCCESS);
                         checkLog.setResult(SUCCESS);
                         checkLog.setContent(userAttrE.getGitlabUserId() + " : init Name Succeed");
@@ -873,7 +873,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             newDevopsBranchE.setCheckoutCommit(branchDO.getCommit().getId());
                             newDevopsBranchE.setCheckoutDate(branchDO.getCommit().getCommittedDate());
                             newDevopsBranchE.setLastCommitMsg(branchDO.getCommit().getMessage());
-                            UserAttrE userAttrE = userAttrRepository.queryByGitlabUserName(branchDO.getCommit().getAuthorName());
+                            UserAttrE userAttrE = userAttrRepository.baseQueryByGitlabUserName(branchDO.getCommit().getAuthorName());
                             newDevopsBranchE.setLastCommitUser(userAttrE.getIamUserId());
                             devopsGitRepository.createDevopsBranch(newDevopsBranchE);
                             checkLog.setResult(SUCCESS);

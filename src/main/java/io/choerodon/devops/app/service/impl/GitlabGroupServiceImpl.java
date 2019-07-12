@@ -60,7 +60,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
                 gitlabGroupPayload.getOrganizationCode(),
                 gitlabGroupPayload.getProjectCode(),
                 groupCodeSuffix));
-        UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(gitlabGroupPayload.getUserId());
         DevopsProjectVO devopsProjectE = gitlabRepository.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (devopsProjectE == null) {
                 devopsProjectE =
@@ -99,7 +99,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
                 gitlabGroupPayload.getOrganizationCode(),
                 gitlabGroupPayload.getProjectCode(),
                 groupCodeSuffix));
-        UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(gitlabGroupPayload.getUserId());
         DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(gitlabGroupPayload.getProjectId());
         Integer groupId;
         if (groupCodeSuffix.isEmpty()) {

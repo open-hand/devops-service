@@ -24,7 +24,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
 
 
     public Integer getGitlabUserId() {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
     }
 

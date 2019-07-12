@@ -84,7 +84,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsCustomizeResourceReqDTO.getEnvId());
 
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
 
@@ -168,7 +168,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsCustomizeResourceE.getEnvId());
 
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);

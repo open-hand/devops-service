@@ -285,7 +285,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
     @Override
     public PageInfo<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String searchParams) {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         Boolean isProjectOwner = iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE);
         PageInfo<ApplicationVersionE> applicationVersionEPage = applicationVersionRepository.basePageByOptions(

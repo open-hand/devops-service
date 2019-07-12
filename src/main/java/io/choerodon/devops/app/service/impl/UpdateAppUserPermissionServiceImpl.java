@@ -61,7 +61,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
         switch (option) {
             // 原来跳过，现在不跳过，需要更新权限表，而且需要去掉原来gitlab中的权限
             case 1:
-                updateGitlabUserIds = userAttrRepository.listByUserIds(userIds)
+                updateGitlabUserIds = userAttrRepository.baseListByUserIds(userIds)
                         .stream().map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
                 // 获取项目下所有项目成员的gitlabUserIds，过滤掉项目所有者
                 allMemberGitlabIdsWithoutOwner = getAllGitlabMemberWithoutOwner(projectId);
@@ -88,7 +88,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
                 return true;
             // 原来不跳过，现在也不跳过，需要更新权限表
             case 3:
-                updateGitlabUserIds = userAttrRepository.listByUserIds(userIds).stream()
+                updateGitlabUserIds = userAttrRepository.baseListByUserIds(userIds).stream()
                         .map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
                 List<Integer> currentGitlabUserIds = gitlabProjectRepository.getAllMemberByProjectId(gitlabProjectId)
                         .stream().map(GitlabMemberE::getId).collect(Collectors.toList());
@@ -108,7 +108,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
 
     // 获取iam项目下所有的项目成员的gitlabUserId，过滤掉项目所有者
     private List<Integer> getAllGitlabMemberWithoutOwner(Long projectId) {
-        return userAttrRepository.listByUserIds(iamRepository.getAllMemberIdsWithoutOwner(projectId)).stream()
+        return userAttrRepository.baseListByUserIds(iamRepository.getAllMemberIdsWithoutOwner(projectId)).stream()
                 .map(UserAttrE::getGitlabUserId).collect(Collectors.toList()).stream()
                 .map(TypeUtil::objToInteger).collect(Collectors.toList());
     }

@@ -80,7 +80,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             pipelineWebHookDTO.getUser().setUsername("admin");
         }
         Integer gitlabUserId = ADMIN;
-        UserAttrE userAttrE = userAttrRepository.queryByGitlabUserName(pipelineWebHookDTO.getUser().getUsername());
+        UserAttrE userAttrE = userAttrRepository.baseQueryByGitlabUserName(pipelineWebHookDTO.getUser().getUsername());
         if (userAttrE != null) {
             gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
         }

@@ -110,7 +110,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         applicationTemplateRepository.baseCheckCode(applicationTemplateE);
         applicationTemplateRepository.baseCheckName(applicationTemplateE);
         Integer gitlabGroupId;
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         OrganizationVO organization = iamRepository.queryOrganizationById(organizationId);
         applicationTemplateE.initOrganization(organization.getId());
         applicationTemplateE.setSynchro(false);
@@ -156,7 +156,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     @Override
     public void delete(Long appTemplateId) {
         ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.baseQuery(appTemplateId);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (applicationTemplateE.getGitlabProjectE() != null) {
             gitlabRepository.deleteProject(
                     applicationTemplateE.getGitlabProjectE().getId(),
@@ -234,7 +234,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             }
             Git git = gitUtil.clone(applicationDir, type, repoUrl);
 
-            UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
+            UserAttrE userAttrE = userAttrRepository.baseQueryByGitlabUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
             String accessToken = getToken(gitlabProjectPayload, applicationDir, userAttrE);
 
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
@@ -267,7 +267,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             accessToken = gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
                     applicationDir, gitlabProjectPayload.getUserId());
             userAttrE.setGitlabToken(accessToken);
-            userAttrRepository.update(userAttrE);
+            userAttrRepository.baseUpdate(userAttrE);
         }
         return accessToken;
     }

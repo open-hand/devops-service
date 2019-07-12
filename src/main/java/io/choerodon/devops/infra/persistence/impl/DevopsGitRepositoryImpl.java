@@ -125,14 +125,14 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public Integer getGitlabUserId() {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
     }
 
     @Override
     public Long getUserIdByGitlabUserId(Long gitLabUserId) {
         try {
-            return userAttrRepository.queryUserIdByGitlabUserId(gitLabUserId);
+            return userAttrRepository.baseQueryUserIdByGitlabUserId(gitLabUserId);
         } catch (Exception e) {
             return null;
         }

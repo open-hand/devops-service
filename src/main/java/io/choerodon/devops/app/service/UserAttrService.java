@@ -1,6 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.api.vo.UserAttrVO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 
 public interface UserAttrService {
 
@@ -10,4 +13,36 @@ public interface UserAttrService {
      * @return UserAttrDTO
      */
     UserAttrVO queryByUserId(Long userId);
+
+    /**
+     *
+     * @return
+     */
+    Integer getGitlabUserId();
+
+
+    /**
+     *
+     * @param gitLabUserId
+     * @return
+     */
+    Long getUserIdByGitlabUserId(Long gitLabUserId);
+
+
+
+    int baseInsert(UserAttrDTO userAttrDTO);
+
+    UserAttrDTO baseQueryById(Long id);
+
+    Long baseQueryUserIdByGitlabUserId(Long gitLabUserId);
+
+    List<UserAttrDTO> baseListByUserIds(List<Long> userIds);
+
+    UserAttrDTO baseQueryByGitlabUserId(Long gitlabUserId);
+
+    void baseUpdate(UserAttrDTO userAttrDTO);
+
+    List<UserAttrDTO> baseList();
+
+    UserAttrDTO baseQueryByGitlabUserName(String gitlabUserName);
 }

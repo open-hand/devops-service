@@ -96,7 +96,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
 
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
@@ -233,7 +233,7 @@ public class CertificationServiceImpl implements CertificationService {
     private void operateEnvGitLabFile(String certName,
                                       DevopsEnvironmentE devopsEnvironmentE,
                                       C7nCertification c7nCertification) {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
         clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
@@ -251,7 +251,7 @@ public class CertificationServiceImpl implements CertificationService {
         Long certEnvId = certificationDTO.getEnvId();
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certEnvId);
 
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);

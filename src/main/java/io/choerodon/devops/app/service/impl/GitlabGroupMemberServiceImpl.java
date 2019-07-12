@@ -90,7 +90,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         gitlabGroupMemberDTOList.stream()
                 .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
                 .forEach(gitlabGroupMemberDTO -> {
-                    UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupMemberDTO.getUserId());
+                    UserAttrE userAttrE = userAttrRepository.baseQueryById(gitlabGroupMemberDTO.getUserId());
                     Integer gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
                     GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(
                             TypeUtil.objToInteger(gitlabUserId));
@@ -227,7 +227,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      * @param userId       userId
      */
     private void operation(Long resourceId, String resourceType, MemberHelper memberHelper, Long userId) {
-        UserAttrE userAttrE = userAttrRepository.queryById(userId);
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(userId);
         if (userAttrE == null) {
             throw new CommonException("The user you want to assign a role to is not created successfully!");
         }

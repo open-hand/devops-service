@@ -183,7 +183,7 @@ class DevopsGitControllerSpec extends Specification {
         restTemplate.postForEntity("/v1/projects/1/apps/1/git/tags?tag=test&ref=test&message=test", "test", Object.class)
 
         then: '校验'
-        userAttrRepository.queryById(_ as Long) >> userAttrE
+        userAttrRepository.baseQueryById(_ as Long) >> userAttrE
     }
 
     def "UpdateTagRelease"() {
@@ -198,7 +198,7 @@ class DevopsGitControllerSpec extends Specification {
         restTemplate.put("/v1/projects/1/apps/1/git/tags?tag=test", "test", Object.class)
 
         then: '校验'
-        userAttrRepository.queryById(_ as Long) >> userAttrE
+        userAttrRepository.baseQueryById(_ as Long) >> userAttrE
     }
 
     def "GetTagByPage"() {
@@ -244,7 +244,7 @@ class DevopsGitControllerSpec extends Specification {
         tagDOS.add(tagDO)
         ResponseEntity<List<TagDO>> tagResponseEntity = new ResponseEntity<>(tagDOS, HttpStatus.OK)
         Mockito.doReturn(tagResponseEntity).when(gitlabServiceClient).getTags(1, 1)
-        userAttrRepository.queryById(_ as Long) >> userAttrE
+        userAttrRepository.baseQueryById(_ as Long) >> userAttrE
 
         when: '获取标签列表'
         def tags = restTemplate.getForObject("/v1/projects/1/apps/1/git/tag_list", List.class)
@@ -267,7 +267,7 @@ class DevopsGitControllerSpec extends Specification {
         tagDOS.add(tagDO)
         ResponseEntity<List<TagDO>> tagResponseEntity = new ResponseEntity<>(tagDOS, HttpStatus.OK)
         Mockito.doReturn(tagResponseEntity).when(gitlabServiceClient).getTags(1, 1)
-        userAttrRepository.queryById(_ as Long) >> userAttrE
+        userAttrRepository.baseQueryById(_ as Long) >> userAttrE
 
         when: '获取标签列表'
         def exist = restTemplate.getForObject("/v1/projects/1/apps/1/git/tags_check?tag_name=test", Boolean.class)
@@ -287,7 +287,7 @@ class DevopsGitControllerSpec extends Specification {
         restTemplate.delete("/v1/projects/1/apps/1/git/tags?tag=test")
 
         then: '返回值'
-        userAttrRepository.queryById(_ as Long) >> userAttrE
+        userAttrRepository.baseQueryById(_ as Long) >> userAttrE
     }
 
     def "CreateBranch"() {
@@ -309,7 +309,7 @@ class DevopsGitControllerSpec extends Specification {
         branchDO.setCommit(commitE)
         ResponseEntity<BranchDO> branchDOResponseEntity = new ResponseEntity<>(branchDO, HttpStatus.OK)
         Mockito.doReturn(branchDOResponseEntity).when(gitlabServiceClient).createBranch(1, "test", "test", 1)
-        userAttrRepository.queryById(_ as Long) >> userAttrE
+        userAttrRepository.baseQueryById(_ as Long) >> userAttrE
 
         when: '创建分支'
         restTemplate.postForObject("/v1/projects/1/apps/1/git/branch", devopsBranchDTO, Object.class)
@@ -439,7 +439,7 @@ class DevopsGitControllerSpec extends Specification {
         ResponseEntity<List<CommitDTO>> responseEntity = new ResponseEntity<>(commitDOList, HttpStatus.OK)
         DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", gitlabServiceClient)
         Mockito.when(gitlabServiceClient.listCommits(anyInt(),anyInt(),anyInt())).thenReturn(responseEntity).thenReturn(responseEntity).thenReturn(responseEntity)
-        userAttrRepository.queryById(_ as Long) >> userAttrE
+        userAttrRepository.baseQueryById(_ as Long) >> userAttrE
 
         when: '查看所有合并请求'
         def mergeRequest = restTemplate.getForObject("/v1/projects/1/apps/1/git/merge_request/list?page=0&size=10", Map.class)

@@ -8,6 +8,7 @@ import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
+import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
@@ -40,13 +41,13 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                     gitlabConfigurationProperties.getProjectLimit(),
                     ConvertHelper.convert(gitlabUserReqDTO, GitlabUserPayload.class));
         }
-        UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(gitlabUserE.getId().longValue());
+        UserAttrE userAttrE = userAttrRepository.baseQueryByGitlabUserId(gitlabUserE.getId().longValue());
         if (userAttrE == null) {
             userAttrE = new UserAttrE();
             userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
             userAttrE.setGitlabUserId(gitlabUserE.getId().longValue());
             userAttrE.setGitlabUserName(gitlabUserE.getUsername());
-            userAttrRepository.insert(userAttrE);
+            userAttrRepository.baseInsert(userAttrE);
         }
     }
 
@@ -54,7 +55,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     public void updateGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
 
         checkGitlabUser(gitlabUserReqDTO);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
         if (userAttrE != null) {
 
             gitlabUserRepository.updateGitLabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
@@ -65,7 +66,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void isEnabledGitlabUser(Integer userId) {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(userId));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(userId));
         if (userAttrE != null) {
             gitlabUserRepository.isEnabledGitlabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
@@ -73,7 +74,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void disEnabledGitlabUser(Integer userId) {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(userId));
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(userId));
         if (userAttrE != null) {
             gitlabUserRepository.disEnabledGitlabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }

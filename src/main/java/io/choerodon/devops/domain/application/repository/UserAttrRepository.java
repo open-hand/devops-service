@@ -9,19 +9,19 @@ import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
  */
 public interface UserAttrRepository {
 
-    int insert(UserAttrE userAttrE);
+    int baseInsert(UserAttrE userAttrE);
 
-    UserAttrE queryById(Long id);
+    UserAttrE baseQueryById(Long id);
 
-    Long queryUserIdByGitlabUserId(Long gitLabUserId);
+    Long baseQueryUserIdByGitlabUserId(Long gitLabUserId);
 
-    List<UserAttrE> listByUserIds(List<Long> userIds);
+    List<UserAttrE> baseListByUserIds(List<Long> userIds);
 
-    UserAttrE queryByGitlabUserId(Long gitlabUserId);
+    UserAttrE baseQueryByGitlabUserId(Long gitlabUserId);
 
-    void update(UserAttrE userAttrE);
+    void baseUpdate(UserAttrE userAttrE);
 
-    List<UserAttrE> list();
+    List<UserAttrE> baseList();
 
-    UserAttrE queryByGitlabUserName(String gitlabUserName);
+    UserAttrE baseQueryByGitlabUserName(String gitlabUserName);
 }

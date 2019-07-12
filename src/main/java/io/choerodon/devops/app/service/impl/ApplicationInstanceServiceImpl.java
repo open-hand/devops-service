@@ -1,18 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 
-<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-=======
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
->>>>>>> [REF] refactor DevopsBranchRepository
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
@@ -21,60 +13,10 @@ import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
-<<<<<<< HEAD
 import io.choerodon.devops.api.vo.*;
-=======
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.validator.AppInstanceValidator;
-import io.choerodon.devops.api.vo.AppInstanceCodeDTO;
-import io.choerodon.devops.api.vo.ApplicationDeployDTO;
-import io.choerodon.devops.api.vo.ApplicationInstanceOverViewVO;
-import io.choerodon.devops.api.vo.ApplicationInstanceVO;
-import io.choerodon.devops.api.vo.ApplicationRemoteDeployDTO;
-import io.choerodon.devops.api.vo.ApplicationVersionRemoteDTO;
-import io.choerodon.devops.api.vo.DeployAppDTO;
-import io.choerodon.devops.api.vo.DeployAppDetail;
-import io.choerodon.devops.api.vo.DeployDetailDTO;
-import io.choerodon.devops.api.vo.DeployFrequencyDTO;
-import io.choerodon.devops.api.vo.DeployTimeDTO;
-import io.choerodon.devops.api.vo.DevopsEnvironmentPodVO;
-import io.choerodon.devops.api.vo.DevopsEnvPreviewAppDTO;
-import io.choerodon.devops.api.vo.DevopsEnvPreviewDTO;
-import io.choerodon.devops.api.vo.DevopsEnvPreviewInstanceVO;
-import io.choerodon.devops.api.vo.DevopsEnvResourceDTO;
-import io.choerodon.devops.api.vo.DevopsEnvUserPermissionVO;
-import io.choerodon.devops.api.vo.DevopsProjectConfigDTO;
-import io.choerodon.devops.api.vo.EnvInstanceDTO;
-import io.choerodon.devops.api.vo.EnvInstancesDTO;
-import io.choerodon.devops.api.vo.EnvVersionDTO;
-import io.choerodon.devops.api.vo.ErrorLineDTO;
-import io.choerodon.devops.api.vo.InstanceControllerDetailDTO;
-import io.choerodon.devops.api.vo.InstanceSagaDTO;
-import io.choerodon.devops.api.vo.ProjectConfigDTO;
-import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationInstanceE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionValueE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsDeployValueE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandValueE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsRegistrySecretE;
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
->>>>>>> [REF] refactor DeployDetailRepository
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.repository.*;
-<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.AppInstanceInfoDTO;
-=======
-import io.choerodon.devops.domain.application.valueobject.*;
->>>>>>> [REF] refactor DevopsBranchRepository
 import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.infra.dto.ApplicationInstanceOverViewDTO;
 import io.choerodon.devops.infra.dto.ApplicationLatestVersionDTO;
@@ -704,7 +646,11 @@ public void operationPodCount(String deploymentName,Long envId,Long
 
         DevopsEnvironmentE devopsEnvironmentE=devopsEnvironmentRepository.queryById(envId);
 
+<<<<<<< HEAD
         UserAttrE userAttrE=userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+=======
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+>>>>>>> [REF] refactor UserAttrRepository
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE,userAttrE);
@@ -1118,7 +1064,11 @@ public ApplicationInstanceVO createOrUpdate(ApplicationDeployDTO applicationDepl
 
         DevopsEnvironmentE devopsEnvironmentE=devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
 
+<<<<<<< HEAD
         UserAttrE userAttrE=userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+=======
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+>>>>>>> [REF] refactor UserAttrRepository
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE,userAttrE);
@@ -1566,7 +1516,11 @@ public void instanceStop(Long instanceId){
 
         DevopsEnvironmentE devopsEnvironmentE=devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
 
+<<<<<<< HEAD
         UserAttrE userAttrE=userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+=======
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+>>>>>>> [REF] refactor UserAttrRepository
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE,userAttrE);
@@ -1595,7 +1549,11 @@ public void instanceStart(Long instanceId){
 
         DevopsEnvironmentE devopsEnvironmentE=devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
 
+<<<<<<< HEAD
         UserAttrE userAttrE=userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+=======
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+>>>>>>> [REF] refactor UserAttrRepository
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE,userAttrE);
@@ -1654,9 +1612,13 @@ public void instanceReStart(Long instanceId){
 public void instanceDelete(Long instanceId){
         ApplicationInstanceE instanceE=applicationInstanceRepository.selectById(instanceId);
 
+<<<<<<< HEAD
         DevopsEnvironmentE devopsEnvironmentE=devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
 
         UserAttrE userAttrE=userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+=======
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+>>>>>>> [REF] refactor UserAttrRepository
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE,userAttrE);
@@ -1701,7 +1663,11 @@ public void instanceDelete(Long instanceId){
 
         DevopsEnvironmentE devopsEnvironmentE=devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
 
+<<<<<<< HEAD
         UserAttrE userAttrE=userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+=======
+        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+>>>>>>> [REF] refactor UserAttrRepository
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE,userAttrE);
