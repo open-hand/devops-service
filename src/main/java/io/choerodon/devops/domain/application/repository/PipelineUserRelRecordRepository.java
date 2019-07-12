@@ -10,9 +10,9 @@ import io.choerodon.devops.api.vo.iam.entity.PipelineUserRecordRelE;
  * Description:
  */
 public interface PipelineUserRelRecordRepository {
-    PipelineUserRecordRelE create(PipelineUserRecordRelE recordRelE);
+    PipelineUserRecordRelE baseCreatePipelineUserRecordRelationship(PipelineUserRecordRelE recordRelE);
 
-    List<PipelineUserRecordRelE> queryByRecordId(Long pipelineRecordId, Long stageRecordId, Long taskRecordId);
+    List<PipelineUserRecordRelE> queryPipelineUserRecordRelationshipByRecordId(Long pipelineRecordId, Long stageRecordId, Long taskRecordId);
 
-    void deleteByIds(Long pipelineRecordId, Long stageRecordId, Long taskRecordId);
+    void deletePipelineUserRecordRelationshipByIds(Long pipelineRecordId, Long stageRecordId, Long taskRecordId);
 }

@@ -23,7 +23,7 @@ public class PipelineUserRelRecordRepositoryImpl implements PipelineUserRelRecor
     private PipelineUserRecordRelMapper recordRelMapper;
 
     @Override
-    public PipelineUserRecordRelE create(PipelineUserRecordRelE recordRelE) {
+    public PipelineUserRecordRelE baseCreatePipelineUserRecordRelationship(PipelineUserRecordRelE recordRelE) {
         PipelineUserRecordRelDO recordRelDO = ConvertHelper.convert(recordRelE, PipelineUserRecordRelDO.class);
         if (recordRelMapper.insert(recordRelDO) != 1) {
             throw new CommonException("error.insert.pipeline.user.record");
@@ -32,13 +32,13 @@ public class PipelineUserRelRecordRepositoryImpl implements PipelineUserRelRecor
     }
 
     @Override
-    public List<PipelineUserRecordRelE> queryByRecordId(Long pipelineRecordId, Long stageRecordId, Long taskRecordId) {
+    public List<PipelineUserRecordRelE> queryPipelineUserRecordRelationshipByRecordId(Long pipelineRecordId, Long stageRecordId, Long taskRecordId) {
         PipelineUserRecordRelDO recordRelDO = new PipelineUserRecordRelDO(pipelineRecordId, stageRecordId, taskRecordId);
         return ConvertHelper.convertList(recordRelMapper.select(recordRelDO), PipelineUserRecordRelE.class);
     }
 
     @Override
-    public void deleteByIds(Long pipelineRecordId, Long stageRecordId, Long taskRecordId) {
+    public void deletePipelineUserRecordRelationshipByIds(Long pipelineRecordId, Long stageRecordId, Long taskRecordId) {
         PipelineUserRecordRelDO recordRelDO = new PipelineUserRecordRelDO(pipelineRecordId, stageRecordId, taskRecordId);
         recordRelMapper.delete(recordRelDO);
     }
