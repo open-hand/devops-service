@@ -73,7 +73,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
                 devopsClusterProPermissionE.setClusterId(devopsClusterE.getId());
                 devopsClusterProPermissionE.setProjectId(projectId);
-                devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
+                devopsClusterProPermissionRepository.baseInsertPermission(devopsClusterProPermissionE);
             }
         }
 
@@ -103,10 +103,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
         //以前不跳过项目权限校验,但是现在跳过，情况集群对应的项目集群校验表
         if (skipCheckPro && !devopsClusterE.getSkipCheckProjectPermission()) {
-            devopsClusterProPermissionRepository.deleteByClusterId(clusterId);
+            devopsClusterProPermissionRepository.baseDeleteByClusterId(clusterId);
         } else {
             //操作集群项目权限校验表记录
-            List<Long> projectIds = devopsClusterProPermissionRepository.listByClusterId(clusterId)
+            List<Long> projectIds = devopsClusterProPermissionRepository.baseListByClusterId(clusterId)
                     .stream().map(DevopsClusterProPermissionE::getProjectId).collect(Collectors.toList());
 
             projects.forEach(projectId -> {
@@ -120,13 +120,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
                 devopsClusterProPermissionE.setClusterId(clusterId);
                 devopsClusterProPermissionE.setProjectId(addProject);
-                devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
+                devopsClusterProPermissionRepository.baseInsertPermission(devopsClusterProPermissionE);
             });
             projectIds.forEach(deleteProject -> {
                 DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
                 devopsClusterProPermissionE.setClusterId(clusterId);
                 devopsClusterProPermissionE.setProjectId(deleteProject);
-                devopsClusterProPermissionRepository.delete(devopsClusterProPermissionE);
+                devopsClusterProPermissionRepository.baseDeletePermission(devopsClusterProPermissionE);
             });
         }
         devopsClusterE = ConvertHelper.convert(devopsClusterReqDTO, DevopsClusterE.class);
@@ -153,7 +153,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             BeanUtils.copyProperties(projects, pageProjectDTOS);
             List<Long> projectIds;
             if (clusterId != null) {
-                projectIds = devopsClusterProPermissionRepository.listByClusterId(clusterId).stream()
+                projectIds = devopsClusterProPermissionRepository.baseListByClusterId(clusterId).stream()
                         .map(DevopsClusterProPermissionE::getProjectId).collect(Collectors.toList());
             } else {
                 projectIds = new ArrayList<>();
@@ -245,7 +245,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public List<ProjectReqVO> listClusterProjects(Long organizationId, Long clusterId) {
-        return devopsClusterProPermissionRepository.listByClusterId(clusterId).stream()
+        return devopsClusterProPermissionRepository.baseListByClusterId(clusterId).stream()
                 .map(devopsClusterProPermissionE -> {
                     ProjectVO projectE = iamRepository.queryIamProject(devopsClusterProPermissionE.getProjectId());
                     return new ProjectReqVO(devopsClusterProPermissionE.getProjectId(), projectE.getName(), projectE.getCode(), null);

@@ -1,26 +1,26 @@
-package io.choerodon.devops.infra.persistence.impl;
+package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsClusterProPermissionE;
-import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
+import io.choerodon.devops.app.service.DevopsClusterProPermissionService;
 import io.choerodon.devops.infra.dto.DevopsClusterProPermissionDTO;
 import io.choerodon.devops.infra.mapper.DevopsClusterProPermissionMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+/**
+ * @author zmf
+ */
 @Service
-public class DevopsClusterProPermissionRepositoryImpl implements DevopsClusterProPermissionRepository {
-
+public class DevopsClusterProPermissionServiceImpl implements DevopsClusterProPermissionService {
     @Autowired
     DevopsClusterProPermissionMapper devopsClusterProPermissionMapper;
 
     @Override
-    public void baseInsertPermission(DevopsClusterProPermissionE devopsClusterProPermissionE) {
-        DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = ConvertHelper.convert(devopsClusterProPermissionE, DevopsClusterProPermissionDTO.class);
+    public void baseInsertPermission(DevopsClusterProPermissionDTO devopsClusterProPermissionDTO) {
         if (devopsClusterProPermissionMapper.insert(devopsClusterProPermissionDTO) != 1) {
             throw new CommonException("error.devops.cluster.project.permission.add.error");
         }
@@ -34,8 +34,7 @@ public class DevopsClusterProPermissionRepositoryImpl implements DevopsClusterPr
     }
 
     @Override
-    public void baseDeletePermission(DevopsClusterProPermissionE devopsClusterProPermissionE) {
-        DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = ConvertHelper.convert(devopsClusterProPermissionE, DevopsClusterProPermissionDTO.class);
+    public void baseDeletePermission(DevopsClusterProPermissionDTO devopsClusterProPermissionDTO) {
         devopsClusterProPermissionMapper.delete(devopsClusterProPermissionDTO);
     }
 

@@ -7,7 +7,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
 
 
 @Table(name = "devops_cluster_pro_rel")
-public class DevopsClusterProPermissionDO extends BaseDTO {
+public class DevopsClusterProPermissionDTO extends BaseDTO {
 
     @Id
     private Long clusterId;

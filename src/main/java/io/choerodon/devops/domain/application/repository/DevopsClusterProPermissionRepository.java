@@ -7,11 +7,11 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsClusterProPermissionE;
 public interface DevopsClusterProPermissionRepository {
 
 
-    void insert(DevopsClusterProPermissionE devopsClusterProPermissionE);
+    void baseInsertPermission(DevopsClusterProPermissionE devopsClusterProPermissionE);
 
-    List<DevopsClusterProPermissionE> listByClusterId(Long clusterId);
+    List<DevopsClusterProPermissionE> baseListByClusterId(Long clusterId);
 
-    void delete(DevopsClusterProPermissionE devopsClusterProPermissionE);
+    void baseDeletePermission(DevopsClusterProPermissionE devopsClusterProPermissionE);
 
-    void deleteByClusterId(Long clusterId);
+    void baseDeleteByClusterId(Long clusterId);
 }

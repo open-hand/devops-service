@@ -1404,7 +1404,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
                         devopsClusterProPermissionE.setProjectId(projectE.getId());
                         devopsClusterProPermissionE.setClusterId(devopsClusterE.getId());
-                        devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
+                        devopsClusterProPermissionRepository.baseInsertPermission(devopsClusterProPermissionE);
                         devopsEnvironmentE.initDevopsClusterEById(devopsClusterE.getId());
                         devopsEnvironmentRepository.update(devopsEnvironmentE);
                     }
