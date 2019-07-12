@@ -9,25 +9,25 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
 
 public interface DevopsClusterRepository {
 
-    DevopsClusterE create(DevopsClusterE devopsClusterE);
+    DevopsClusterE baseCreateCluster(DevopsClusterE devopsClusterE);
 
-    void checkName(DevopsClusterE devopsClusterE);
+    void baseCheckName(DevopsClusterE devopsClusterE);
 
-    void checkCode(DevopsClusterE devopsClusterE);
+    void baseCheckCode(DevopsClusterE devopsClusterE);
 
-    List<DevopsClusterE> listByProjectId(Long projectId, Long organizationId);
+    List<DevopsClusterE> baseListByProjectId(Long projectId, Long organizationId);
 
-    DevopsClusterE query(Long clusterId);
+    DevopsClusterE baseQuery(Long clusterId);
 
-    void update(DevopsClusterE devopsClusterE);
+    void baseUpdate(DevopsClusterE devopsClusterE);
 
-    PageInfo<DevopsClusterE> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
+    PageInfo<DevopsClusterE> basePageClustersByOptions(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
 
-    void delete(Long clusterId);
+    void baseDelete(Long clusterId);
 
-    DevopsClusterE queryByToken(String token);
+    DevopsClusterE baseQueryByToken(String token);
 
-    List<DevopsClusterE> list();
+    List<DevopsClusterE> baseList();
 
     /**
      * 分页查询节点下的Pod
@@ -37,9 +37,9 @@ public interface DevopsClusterRepository {
      * @param searchParam 查询参数
      * @return pods
      */
-    PageInfo<DevopsEnvPodE> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsEnvPodE> basePageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 
-    DevopsClusterE queryByCode(Long organizationId, String code);
+    DevopsClusterE baseQueryByCode(Long organizationId, String code);
 
-    void updateProjectId(Long orgId,Long proId);
+    void baseUpdateProjectId(Long orgId, Long proId);
 }

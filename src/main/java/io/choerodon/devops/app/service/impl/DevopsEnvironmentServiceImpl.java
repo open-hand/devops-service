@@ -224,7 +224,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         List<DevopsEnvGroupE> devopsEnvGroupES = devopsEnvGroupRepository.listByProjectId(projectId);
         devopsEnviromentRepDTOS.forEach(devopsEnviromentRepDTO -> {
-            DevopsClusterE devopsClusterE = devopsClusterRepository.query(devopsEnviromentRepDTO.getClusterId());
+            DevopsClusterE devopsClusterE = devopsClusterRepository.baseQuery(devopsEnviromentRepDTO.getClusterId());
             devopsEnviromentRepDTO.setClusterName(devopsClusterE == null ? null : devopsClusterE.getName());
             if (devopsEnviromentRepDTO.getDevopsEnvGroupId() == null) {
                 devopsEnviromentRepDTO.setDevopsEnvGroupId(0L);
@@ -568,7 +568,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
-        DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
+        DevopsClusterE devopsClusterE = devopsClusterRepository.baseQuery(clusterId);
         devopsEnvironmentE.initProjectE(projectId);
         devopsEnvironmentE.initDevopsClusterEById(clusterId);
         devopsEnvironmentE.setCode(code);
@@ -886,7 +886,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        List<DevopsClusterRepDTO> devopsClusterRepDTOS = ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
+        List<DevopsClusterRepDTO> devopsClusterRepDTOS = ConvertHelper.convertList(devopsClusterRepository.baseListByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
         List<Long> connectedClusterList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
         devopsClusterRepDTOS.forEach(t -> {

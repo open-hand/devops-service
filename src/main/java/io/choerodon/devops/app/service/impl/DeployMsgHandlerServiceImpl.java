@@ -1375,9 +1375,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void updateNamespaces(String msg, Long clusterId) {
-        DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
+        DevopsClusterE devopsClusterE = devopsClusterRepository.baseQuery(clusterId);
         devopsClusterE.setNamespaces(msg);
-        devopsClusterRepository.update(devopsClusterE);
+        devopsClusterRepository.baseUpdate(devopsClusterE);
 
     }
 
@@ -1386,7 +1386,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         //0.10.0-0.11.0  初始化集群信息
         logger.info(String.format("upgradeCluster message: %s", msg));
         UpgradeCluster upgradeCluster = json.deserialize(msg, UpgradeCluster.class);
-        DevopsClusterE devopsClusterE = devopsClusterRepository.queryByToken(upgradeCluster.getToken());
+        DevopsClusterE devopsClusterE = devopsClusterRepository.baseQueryByToken(upgradeCluster.getToken());
         if (devopsClusterE == null) {
             logger.info(String.format("the cluster is not exist: %s", upgradeCluster.getToken()));
             return;
@@ -1413,7 +1413,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsClusterE.setSkipCheckProjectPermission(false);
         }
         devopsClusterE.setInit(true);
-        devopsClusterRepository.update(devopsClusterE);
+        devopsClusterRepository.baseUpdate(devopsClusterE);
         GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(devopsClusterE.getId());
         Msg initClusterEnv = new Msg();
         try {

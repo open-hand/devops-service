@@ -672,7 +672,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 try {
                     Long categoryId = 1L;
                     ProjectReqVO projectDTO = createOpsProject(org.getId(), categoryId);
-                    clusterRepository.updateProjectId(org.getId(), projectDTO.getId());
+                    clusterRepository.baseUpdateProjectId(org.getId(), projectDTO.getId());
                     checkLog.setResult("success");
                 } catch (Exception e) {
                     checkLog.setResult("fail");

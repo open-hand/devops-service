@@ -3,8 +3,10 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Created by Zenger on 2018/4/12.
+ */
 public class DevopsEnvironmentPodVO {
-
     private Long id;
     private String name;
     private String ip;

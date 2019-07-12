@@ -47,7 +47,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
 
     @Override
     public String getRedisClusterKey(Long clusterId) {
-        DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
+        DevopsClusterE devopsClusterE = devopsClusterRepository.baseQuery(clusterId);
         if (devopsClusterE != null) {
             return getRedisClusterKey(clusterId, devopsClusterE.getOrganizationId());
         } else {

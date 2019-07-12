@@ -20,7 +20,7 @@ import io.choerodon.devops.domain.application.repository.DevopsClusterRepository
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dto.DevopsClusterDO;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 
 @Service
@@ -33,59 +33,59 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
     private DevopsClusterMapper devopsClusterMapper;
 
     @Override
-    public DevopsClusterE create(DevopsClusterE devopsClusterE) {
-        DevopsClusterDO devopsClusterDO = ConvertHelper.convert(devopsClusterE, DevopsClusterDO.class);
-        List<DevopsClusterDO> devopsClusterDOS = devopsClusterMapper.selectAll();
+    public DevopsClusterE baseCreateCluster(DevopsClusterE devopsClusterE) {
+        DevopsClusterDTO devopsClusterDTO = ConvertHelper.convert(devopsClusterE, DevopsClusterDTO.class);
+        List<DevopsClusterDTO> devopsClusterDTOS = devopsClusterMapper.selectAll();
         String choerodonId = GenerateUUID.generateUUID().split("-")[0];
-        if (!devopsClusterDOS.isEmpty()) {
-            devopsClusterDO.setChoerodonId(devopsClusterDOS.get(0).getChoerodonId());
+        if (!devopsClusterDTOS.isEmpty()) {
+            devopsClusterDTO.setChoerodonId(devopsClusterDTOS.get(0).getChoerodonId());
         } else {
-            devopsClusterDO.setChoerodonId(choerodonId);
+            devopsClusterDTO.setChoerodonId(choerodonId);
         }
-        if (devopsClusterMapper.insert(devopsClusterDO) != 1) {
+        if (devopsClusterMapper.insert(devopsClusterDTO) != 1) {
             throw new CommonException("error.devops.cluster.insert");
         }
-        return ConvertHelper.convert(devopsClusterDO, DevopsClusterE.class);
+        return ConvertHelper.convert(devopsClusterDTO, DevopsClusterE.class);
     }
 
     @Override
-    public void checkName(DevopsClusterE devopsClusterE) {
-        DevopsClusterDO devopsClusterDO = ConvertHelper.convert(devopsClusterE, DevopsClusterDO.class);
-        if (devopsClusterMapper.selectOne(devopsClusterDO) != null) {
+    public void baseCheckName(DevopsClusterE devopsClusterE) {
+        DevopsClusterDTO devopsClusterDTO = ConvertHelper.convert(devopsClusterE, DevopsClusterDTO.class);
+        if (devopsClusterMapper.selectOne(devopsClusterDTO) != null) {
             throw new CommonException("error.cluster.name.exist");
         }
     }
 
     @Override
-    public void checkCode(DevopsClusterE devopsClusterE) {
-        DevopsClusterDO devopsClusterDO = ConvertHelper.convert(devopsClusterE, DevopsClusterDO.class);
-        if (devopsClusterMapper.selectOne(devopsClusterDO) != null) {
+    public void baseCheckCode(DevopsClusterE devopsClusterE) {
+        DevopsClusterDTO devopsClusterDTO = ConvertHelper.convert(devopsClusterE, DevopsClusterDTO.class);
+        if (devopsClusterMapper.selectOne(devopsClusterDTO) != null) {
             throw new CommonException("error.cluster.code.exist");
         }
     }
 
     @Override
-    public List<DevopsClusterE> listByProjectId(Long projectId, Long organizationId) {
+    public List<DevopsClusterE> baseListByProjectId(Long projectId, Long organizationId) {
         return ConvertHelper.convertList(devopsClusterMapper.listByProjectId(projectId, organizationId), DevopsClusterE.class);
     }
 
     @Override
-    public DevopsClusterE query(Long clusterId) {
+    public DevopsClusterE baseQuery(Long clusterId) {
         return ConvertHelper.convert(devopsClusterMapper.selectByPrimaryKey(clusterId), DevopsClusterE.class);
     }
 
     @Override
-    public void update(DevopsClusterE devopsClusterE) {
-        DevopsClusterDO devopsClusterDO = devopsClusterMapper.selectByPrimaryKey(devopsClusterE.getId());
-        DevopsClusterDO updateDevopsCluster = ConvertHelper.convert(devopsClusterE, DevopsClusterDO.class);
-        updateDevopsCluster.setObjectVersionNumber(devopsClusterDO.getObjectVersionNumber());
+    public void baseUpdate(DevopsClusterE devopsClusterE) {
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsClusterE.getId());
+        DevopsClusterDTO updateDevopsCluster = ConvertHelper.convert(devopsClusterE, DevopsClusterDTO.class);
+        updateDevopsCluster.setObjectVersionNumber(devopsClusterDTO.getObjectVersionNumber());
         devopsClusterMapper.updateByPrimaryKeySelective(updateDevopsCluster);
         devopsClusterMapper.updateSkipCheckPro(devopsClusterE.getId(), devopsClusterE.getSkipCheckProjectPermission());
     }
 
     @Override
-    public PageInfo<DevopsClusterE> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params) {
-        PageInfo<DevopsClusterDO> devopsClusterEPage;
+    public PageInfo<DevopsClusterE> basePageClustersByOptions(Long organizationId, Boolean doPage, PageRequest pageRequest, String params) {
+        PageInfo<DevopsClusterDTO> devopsClusterEPage;
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
             devopsClusterEPage = PageHelper
@@ -98,37 +98,37 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
     }
 
     @Override
-    public void delete(Long clusterId) {
+    public void baseDelete(Long clusterId) {
         devopsClusterMapper.deleteByPrimaryKey(clusterId);
     }
 
     @Override
-    public DevopsClusterE queryByToken(String token) {
-        DevopsClusterDO devopsClusterDO = new DevopsClusterDO();
-        devopsClusterDO.setToken(token);
-        return ConvertHelper.convert(devopsClusterMapper.selectOne(devopsClusterDO), DevopsClusterE.class);
+    public DevopsClusterE baseQueryByToken(String token) {
+        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
+        devopsClusterDTO.setToken(token);
+        return ConvertHelper.convert(devopsClusterMapper.selectOne(devopsClusterDTO), DevopsClusterE.class);
     }
 
     @Override
-    public List<DevopsClusterE> list() {
+    public List<DevopsClusterE> baseList() {
         return ConvertHelper.convertList(devopsClusterMapper.selectAll(), DevopsClusterE.class);
     }
 
     @Override
-    public PageInfo<DevopsEnvPodE> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsEnvPodE> basePageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
         return ConvertPageHelper.convertPageInfo(PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> devopsClusterMapper.pageQueryPodsByNodeName(clusterId, nodeName, searchParam)), DevopsEnvPodE.class);
     }
 
     @Override
-    public DevopsClusterE queryByCode(Long organizationId, String code) {
-        DevopsClusterDO devopsClusterDO = new DevopsClusterDO();
-        devopsClusterDO.setOrganizationId(organizationId);
-        devopsClusterDO.setCode(code);
-        return ConvertHelper.convert(devopsClusterMapper.selectOne(devopsClusterDO),DevopsClusterE.class);
+    public DevopsClusterE baseQueryByCode(Long organizationId, String code) {
+        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
+        devopsClusterDTO.setOrganizationId(organizationId);
+        devopsClusterDTO.setCode(code);
+        return ConvertHelper.convert(devopsClusterMapper.selectOne(devopsClusterDTO),DevopsClusterE.class);
     }
 
     @Override
-    public void updateProjectId(Long orgId, Long proId) {
+    public void baseUpdateProjectId(Long orgId, Long proId) {
         devopsClusterMapper.updateProjectId(orgId, proId);
     }
 }

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsClusterMapper">
-    <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsClusterDO">
+    <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
         select dc.id,dc.`name` from devops_cluster dc where dc.skip_check_project_permission is true and
         dc.organization_id = #{organizationId}
         UNION
@@ -15,7 +15,7 @@
         UPDATE devops_cluster dc set dc.skip_check_project_permission = #{skipCheckPro} where dc.id = #{clusterId}
     </update>
 
-    <select id="listClusters" resultType="io.choerodon.devops.infra.dto.DevopsClusterDO">
+    <select id="listClusters" resultType="io.choerodon.devops.infra.dto.DevopsClusterDTO">
         SELECT
         *
         FROM devops_cluster dc
