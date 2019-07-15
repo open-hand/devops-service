@@ -1,6 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
 import io.choerodon.devops.api.vo.iam.entity.PipelineStageE;
+import io.choerodon.devops.infra.dto.PipelineStageDTO;
 
 import java.util.List;
 
@@ -11,13 +12,13 @@ import java.util.List;
  */
 public interface PipelineStageRepository {
 
-    PipelineStageE create(PipelineStageE pipelineStageE);
+    PipelineStageDTO baseCreate(PipelineStageDTO pipelineStageDTO);
 
-    PipelineStageE update(PipelineStageE pipelineStageE);
+    PipelineStageDTO baseUpdate(PipelineStageDTO pipelineStageDTO);
 
-    List<PipelineStageE> queryByPipelineId(Long pipelineId);
+    List<PipelineStageDTO> baseListByPipelineId(Long pipelineId);
 
-    void delete(Long stageId);
+    void baseDelete(Long stageId);
 
-    PipelineStageE queryById(Long stageId);
+    PipelineStageDTO baseQueryById(Long stageId);
 }

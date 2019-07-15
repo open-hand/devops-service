@@ -16,7 +16,7 @@ public class PipelineRecordVO {
     private Long projectId;
     private Long pipelineId;
     private Date lastUpdateDate;
-    private List<PipelineStageRecordDTO> stageDTOList;
+    private List<PipelineStageRecordVO> stageDTOList;
     private String processInstanceId;
     private String stageName;
     private Long taskRecordId;
@@ -137,11 +137,11 @@ public class PipelineRecordVO {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public List<PipelineStageRecordDTO> getStageDTOList() {
+    public List<PipelineStageRecordVO> getStageDTOList() {
         return stageDTOList;
     }
 
-    public void setStageDTOList(List<PipelineStageRecordDTO> stageDTOList) {
+    public void setStageDTOList(List<PipelineStageRecordVO> stageDTOList) {
         this.stageDTOList = stageDTOList;
     }
 }

@@ -13,7 +13,7 @@ public class PipelineReqDTO {
     private String name;
     private String triggerType;
     private List<Long> pipelineUserRelDTOS;
-    private List<PipelineStageDTO> pipelineStageDTOS;
+    private List<PipelineStageVO> pipelineStageVOS;
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
@@ -59,12 +59,12 @@ public class PipelineReqDTO {
         this.triggerType = triggerType;
     }
 
-    public List<PipelineStageDTO> getPipelineStageDTOS() {
-        return pipelineStageDTOS;
+    public List<PipelineStageVO> getPipelineStageVOS() {
+        return pipelineStageVOS;
     }
 
-    public void setPipelineStageDTOS(List<PipelineStageDTO> pipelineStageDTOS) {
-        this.pipelineStageDTOS = pipelineStageDTOS;
+    public void setPipelineStageVOS(List<PipelineStageVO> pipelineStageVOS) {
+        this.pipelineStageVOS = pipelineStageVOS;
     }
 
     public Long getProjectId() {

@@ -1,6 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
 import io.choerodon.devops.api.vo.iam.entity.PipelineStageRecordE;
+import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 
 import java.util.List;
 
@@ -10,15 +11,15 @@ import java.util.List;
  * Description:
  */
 public interface PipelineStageRecordRepository {
-    List<PipelineStageRecordE> list(Long projectId, Long pipelineRecordId);
+    List<PipelineStageRecordDTO> baseListByRecordId(Long projectId, Long pipelineRecordId);
 
-    PipelineStageRecordE createOrUpdate(PipelineStageRecordE stageRecordE);
+    PipelineStageRecordDTO baseCreateOrUpdate(PipelineStageRecordDTO pipelineStageRecordDTO);
 
-    List<PipelineStageRecordE> queryByPipeRecordId(Long pipelineRecordId, Long stageId);
+    List<PipelineStageRecordDTO> baseListByRecordAndStageId(Long pipelineRecordId, Long stageId);
 
-    PipelineStageRecordE queryById(Long recordId);
+    PipelineStageRecordDTO baseQueryByRecordId(Long recordId);
 
-    PipelineStageRecordE update(PipelineStageRecordE stageRecordE);
+    PipelineStageRecordDTO baseUpdate(PipelineStageRecordE pipelineStageRecordE);
 
-    PipelineStageRecordE queryPendingCheck(Long pipelineRecordId);
+    PipelineStageRecordE baseQueryByPendingCheckStatus(Long pipelineRecordId);
 }

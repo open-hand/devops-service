@@ -7,7 +7,7 @@ import java.util.List;
  * Date:  11:12 2019/4/4
  * Description:
  */
-public class PipelineStageRecordDTO {
+public class PipelineStageRecordVO {
     private Long id;
     private String stageName;
     private String status;

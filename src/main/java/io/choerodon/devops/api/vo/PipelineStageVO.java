@@ -8,7 +8,7 @@ import java.util.List;
  * Date:  16:20 2019/4/8
  * Description:
  */
-public class PipelineStageDTO {
+public class PipelineStageVO {
     private Long id;
     private String stageName;
     private String triggerType;

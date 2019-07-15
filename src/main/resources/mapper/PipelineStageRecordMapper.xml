@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineStageRecordMapper">
-    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.PipelineStageRecordDO">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.PipelineStageRecordDTO">
         SELECT
             dpsr.id,
             dpsr. STATUS,
@@ -19,7 +19,7 @@
         </if>
     </select>
 
-    <select id="queryPendingCheck"  resultType="io.choerodon.devops.infra.dto.PipelineStageRecordDO">
+    <select id="queryPendingCheck"  resultType="io.choerodon.devops.infra.dto.PipelineStageRecordDTO">
         SELECT
             dpsr.id
         FROM

@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.PipelineStageDO;
+import io.choerodon.devops.infra.dto.PipelineStageDTO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**
@@ -8,5 +8,5 @@ import io.choerodon.mybatis.common.Mapper;
  * Date:  17:37 2019/4/8
  * Description:
  */
-public interface PipelineStageMapper extends Mapper<PipelineStageDO> {
+public interface PipelineStageMapper extends Mapper<PipelineStageDTO> {
 }

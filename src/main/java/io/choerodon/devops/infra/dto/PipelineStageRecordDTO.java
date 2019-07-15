@@ -13,7 +13,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Description:
  */
 @Table(name = "devops_pipeline_stage_record")
-public class PipelineStageRecordDO extends BaseDTO {
+public class PipelineStageRecordDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,7 +27,7 @@ public class PipelineStageRecordDO extends BaseDTO {
     private String stageName;
     private String auditUser;
 
-    public PipelineStageRecordDO(Long projectId, Long pipelineRecordId) {
+    public PipelineStageRecordDTO(Long projectId, Long pipelineRecordId) {
         this.pipelineRecordId = pipelineRecordId;
         this.projectId = projectId;
     }
@@ -40,7 +40,7 @@ public class PipelineStageRecordDO extends BaseDTO {
         this.auditUser = auditUser;
     }
 
-    public PipelineStageRecordDO() {
+    public PipelineStageRecordDTO() {
     }
 
     public String getStageName() {

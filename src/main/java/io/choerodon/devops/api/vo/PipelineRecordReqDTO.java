@@ -21,7 +21,7 @@ public class PipelineRecordReqDTO {
     private Long stageRecordId;
     private Long taskRecordId;
     private String stageName;
-    private List<PipelineStageRecordDTO> stageRecordDTOS;
+    private List<PipelineStageRecordVO> stageRecordDTOS;
 
     public String getStageName() {
         return stageName;
@@ -111,11 +111,11 @@ public class PipelineRecordReqDTO {
         this.status = status;
     }
 
-    public List<PipelineStageRecordDTO> getStageRecordDTOS() {
+    public List<PipelineStageRecordVO> getStageRecordDTOS() {
         return stageRecordDTOS;
     }
 
-    public void setStageRecordDTOS(List<PipelineStageRecordDTO> stageRecordDTOS) {
+    public void setStageRecordDTOS(List<PipelineStageRecordVO> stageRecordDTOS) {
         this.stageRecordDTOS = stageRecordDTOS;
     }
 
