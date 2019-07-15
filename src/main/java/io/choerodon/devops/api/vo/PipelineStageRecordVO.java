@@ -16,7 +16,7 @@ public class PipelineStageRecordVO {
     private Integer isParallel;
     private String executionTime;
     private Long stageId;
-    private List<PipelineTaskRecordDTO> taskRecordDTOS;
+    private List<PipelineTaskRecordVO> taskRecordDTOS;
     private List<IamUserDTO> userDTOS;
     private Boolean index;
 
@@ -100,11 +100,11 @@ public class PipelineStageRecordVO {
         this.isParallel = isParallel;
     }
 
-    public List<PipelineTaskRecordDTO> getTaskRecordDTOS() {
+    public List<PipelineTaskRecordVO> getTaskRecordDTOS() {
         return taskRecordDTOS;
     }
 
-    public void setTaskRecordDTOS(List<PipelineTaskRecordDTO> taskRecordDTOS) {
+    public void setTaskRecordDTOS(List<PipelineTaskRecordVO> taskRecordDTOS) {
         this.taskRecordDTOS = taskRecordDTOS;
     }
 }

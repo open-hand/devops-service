@@ -10,7 +10,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.PipelineTaskRecordE;
 import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
-import io.choerodon.devops.infra.dto.PipelineTaskRecordDO;
+import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO;
 import io.choerodon.devops.infra.mapper.PipelineTaskRecordMapper;
 
 /**
@@ -24,8 +24,8 @@ public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepos
     private PipelineTaskRecordMapper taskRecordMapper;
 
     @Override
-    public PipelineTaskRecordE createOrUpdate(PipelineTaskRecordE taskRecordE) {
-        PipelineTaskRecordDO recordDO = ConvertHelper.convert(taskRecordE, PipelineTaskRecordDO.class);
+    public PipelineTaskRecordE baseCreateOrUpdateRecord(PipelineTaskRecordE taskRecordE) {
+        PipelineTaskRecordDTO recordDO = ConvertHelper.convert(taskRecordE, PipelineTaskRecordDTO.class);
         if (recordDO.getId() == null) {
             if (taskRecordMapper.insert(recordDO) != 1) {
                 throw new CommonException("error.insert.pipeline.task.record");
@@ -40,28 +40,28 @@ public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepos
     }
 
     @Override
-    public PipelineTaskRecordE queryById(Long taskRecordId) {
+    public PipelineTaskRecordE baseQueryRecordById(Long taskRecordId) {
         return ConvertHelper.convert(taskRecordMapper.selectByPrimaryKey(taskRecordId), PipelineTaskRecordE.class);
     }
 
     @Override
-    public List<PipelineTaskRecordE> queryByStageRecordId(Long stageRecordId, Long taskId) {
+    public List<PipelineTaskRecordE> baseQueryByStageRecordId(Long stageRecordId, Long taskId) {
         return ConvertHelper.convertList(taskRecordMapper.queryByStageRecordId(stageRecordId, taskId), PipelineTaskRecordE.class);
     }
 
     @Override
-    public void delete(Long recordId) {
+    public void baseDeleteRecordById(Long recordId) {
         taskRecordMapper.deleteByPrimaryKey(recordId);
     }
 
     @Override
-    public List<PipelineTaskRecordE> queryAllAutoTaskRecord(Long pipelineRecordId) {
+    public List<PipelineTaskRecordE> baseQueryAllAutoTaskRecord(Long pipelineRecordId) {
         return ConvertHelper.convertList(taskRecordMapper.queryAllAutoTaskRecord(pipelineRecordId), PipelineTaskRecordE.class);
     }
 
     @Override
-    public PipelineTaskRecordE queryPendingCheckTask(Long stageRecordId) {
-        PipelineTaskRecordDO taskRecordDO = new PipelineTaskRecordDO();
+    public PipelineTaskRecordE baseQueryPendingCheckTask(Long stageRecordId) {
+        PipelineTaskRecordDTO taskRecordDO = new PipelineTaskRecordDTO();
         taskRecordDO.setStageRecordId(stageRecordId);
         taskRecordDO.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
         return ConvertHelper.convert(taskRecordMapper.selectOne(taskRecordDO), PipelineTaskRecordE.class);

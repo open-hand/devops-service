@@ -10,15 +10,15 @@ import java.util.List;
  * Description:
  */
 public interface PipelineTaskRepository {
-    PipelineTaskE create(PipelineTaskE pipelineTaskE);
+    PipelineTaskE baseCreateTask(PipelineTaskE pipelineTaskE);
 
-    PipelineTaskE update(PipelineTaskE pipelineTaskE);
+    PipelineTaskE baseUpdateTask(PipelineTaskE pipelineTaskE);
 
-    void deleteById(Long pipelineTaskId);
+    void baseDeleteTaskById(Long pipelineTaskId);
 
-    List<PipelineTaskE> queryByStageId(Long stageId);
+    List<PipelineTaskE> baseQueryTaskByStageId(Long stageId);
 
-    PipelineTaskE queryById(Long taskId);
+    PipelineTaskE baseQueryTaskById(Long taskId);
 
-    PipelineTaskE queryByAppDeployId(Long appDeployId);
+    PipelineTaskE baseQueryTaskByAppDeployId(Long appDeployId);
 }

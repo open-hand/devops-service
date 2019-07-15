@@ -10,15 +10,15 @@ import io.choerodon.devops.api.vo.iam.entity.PipelineTaskRecordE;
  * Description:
  */
 public interface PipelineTaskRecordRepository {
-    PipelineTaskRecordE createOrUpdate(PipelineTaskRecordE taskRecordE);
+    PipelineTaskRecordE baseCreateOrUpdateRecord(PipelineTaskRecordE taskRecordE);
 
-    PipelineTaskRecordE queryById(Long taskRecordId);
+    PipelineTaskRecordE baseQueryRecordById(Long taskRecordId);
 
-    List<PipelineTaskRecordE> queryByStageRecordId(Long stageRecordId, Long taskId);
+    List<PipelineTaskRecordE> baseQueryByStageRecordId(Long stageRecordId, Long taskId);
 
-    void delete(Long recordId);
+    void baseDeleteRecordById(Long recordId);
 
-    List<PipelineTaskRecordE> queryAllAutoTaskRecord(Long pipelineRecordId);
+    List<PipelineTaskRecordE> baseQueryAllAutoTaskRecord(Long pipelineRecordId);
 
-    PipelineTaskRecordE queryPendingCheckTask(Long stageRecordId);
+    PipelineTaskRecordE baseQueryPendingCheckTask(Long stageRecordId);
 }

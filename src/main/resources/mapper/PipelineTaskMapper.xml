@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineTaskMapper">
-    <select id="queryByAppDeployId" resultType="io.choerodon.devops.infra.dto.PipelineTaskDO">
+    <select id="queryByAppDeployId" resultType="io.choerodon.devops.infra.dto.PipelineTaskDTO">
     SELECT
     *
     FROM

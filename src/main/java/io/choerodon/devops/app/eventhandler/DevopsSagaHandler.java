@@ -300,9 +300,9 @@ public class DevopsSagaHandler {
     public void pipelineAutoDeployInstance(String data) {
         ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
         Long taskRecordId = applicationDeployDTO.getRecordId();
-        Long stageRecordId = taskRecordRepository.queryById(taskRecordId).getStageRecordId();
+        Long stageRecordId = taskRecordRepository.baseQueryRecordById(taskRecordId).getStageRecordId();
         PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
-        PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(taskRecordId);
+        PipelineTaskRecordE taskRecordE = taskRecordRepository.baseQueryRecordById(taskRecordId);
         Long pipelineRecordId = stageRecordE.getPipelineRecordId();
         try {
             ApplicationInstanceVO applicationInstanceVO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
@@ -310,7 +310,7 @@ public class DevopsSagaHandler {
                 if(!taskRecordE.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                     PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceVO.getId(), WorkFlowStatus.SUCCESS.toString());
                     pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
-                    taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
+                    taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordE);
                     LOGGER.info("create pipeline auto deploy instance success");
                 }
             }
@@ -318,7 +318,7 @@ public class DevopsSagaHandler {
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
             pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
             pipelineTaskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
-            taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
+            taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordE);
             pipelineService.updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), e.getMessage());
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             user.setEmail(GitUserNameUtil.getEmail());

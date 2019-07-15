@@ -220,7 +220,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             appDeployEList.removeAll(Collections.singleton(null));
             if (!appDeployEList.isEmpty()) {
                 List<Long> stageList = appDeployEList.stream()
-                        .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()))
+                        .map(appDeploy -> taskRepository.baseQueryTaskByAppDeployId(appDeploy.getId()))
                         .filter(Objects::nonNull)
                         .map(PipelineTaskE::getStageId)
                         .distinct().collect(Collectors.toList());
