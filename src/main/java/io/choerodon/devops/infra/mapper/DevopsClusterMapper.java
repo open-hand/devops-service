@@ -3,12 +3,11 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
-
-import io.choerodon.devops.api.vo.DevopsEnvironmentPodVO;
+import io.choerodon.devops.api.vo.DevopsEnvPodVO;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 
 public interface DevopsClusterMapper extends Mapper<DevopsClusterDTO> {
 
@@ -27,9 +26,9 @@ public interface DevopsClusterMapper extends Mapper<DevopsClusterDTO> {
      * @param searchParam 查询参数
      * @return pods
      */
-    List<DevopsEnvironmentPodVO> pageQueryPodsByNodeName(@Param("clusterId") Long clusterId,
-                                                         @Param("nodeName") String nodeName,
-                                                         @Param("searchParam") String searchParam);
+    List<DevopsEnvPodVO> pageQueryPodsByNodeName(@Param("clusterId") Long clusterId,
+                                                 @Param("nodeName") String nodeName,
+                                                 @Param("searchParam") String searchParam);
 
     void updateProjectId(@Param("orgId") Long orgId,
                          @Param("proId") Long proId);

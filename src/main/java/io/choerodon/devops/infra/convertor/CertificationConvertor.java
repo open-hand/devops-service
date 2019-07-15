@@ -77,8 +77,13 @@ public class CertificationConvertor implements ConvertorI<CertificationE, Certif
         }.getType()));
         certificationVO.setCommonName(certificationVO.getDomains().get(0));
         if (dataObject.getEnvId() != null) {
+<<<<<<< HEAD
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(dataObject.getEnvId());
             certificationVO.setEnvName(devopsEnvironmentE.getName());
+=======
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(dataObject.getEnvId());
+            certificationDTO.setEnvName(devopsEnvironmentE.getName());
+>>>>>>> [IMP] 重构Repository
         }
         return certificationVO;
     }

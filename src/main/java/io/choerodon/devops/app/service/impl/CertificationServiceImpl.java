@@ -22,7 +22,6 @@ import io.choerodon.devops.api.vo.C7nCertificationDTO;
 import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.OrgCertificationDTO;
 import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
@@ -94,7 +93,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         Long envId = certificationDTO.getEnvId();
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(envId);
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -249,7 +248,7 @@ public class CertificationServiceImpl implements CertificationService {
     public void deleteById(Long certId) {
         CertificationDTO certificationDTO = baseQueryById(certId);
         Long certEnvId = certificationDTO.getEnvId();
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certEnvId);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(certEnvId);
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -259,8 +258,8 @@ public class CertificationServiceImpl implements CertificationService {
         Integer gitLabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
         String certificateType = ObjectType.CERTIFICATE.getType();
         String certName = certificationDTO.getName();
-        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                .queryByEnvIdAndResource(certEnvId, certId, certificateType);
+        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .baseQueryByEnvIdAndResourceId(certEnvId, certId, certificateType);
 
         if (devopsEnvFileResourceE == null) {
             baseDeleteById(certId);
@@ -277,7 +276,7 @@ public class CertificationServiceImpl implements CertificationService {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 baseDeleteById(certId);
-                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                devopsEnvFileResourceRepository.baseDelete(devopsEnvFileResourceE.getId());
                 return;
             }
         }
@@ -288,7 +287,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         if (devopsEnvFileResourceE.getFilePath() != null
                 && devopsEnvFileResourceRepository
-                .queryByEnvIdAndPath(certEnvId, devopsEnvFileResourceE.getFilePath()).size() == 1) {
+                .baseQueryByEnvIdAndPath(certEnvId, devopsEnvFileResourceE.getFilePath()).size() == 1) {
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 gitlabRepository.deleteFile(
@@ -331,12 +330,12 @@ public class CertificationServiceImpl implements CertificationService {
         CertificationDTO certificationDTO = baseQueryById(certId);
 
         //校验环境是否连接
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certificationDTO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
 
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //实例相关对象数据库操作
-        devopsEnvCommandRepository.baseListByObjectAll(HelmObjectKind.CERTIFICATE.toValue(), certificationDTO.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteCommandById(t));
+        devopsEnvCommandService.baseListByObject(HelmObjectKind.CERTIFICATE.toValue(), certificationDTO.getId()).forEach(t -> devopsEnvCommandService.baseDelete(t.getId()));
         baseDeleteById(certId);
     }
 
@@ -352,7 +351,7 @@ public class CertificationServiceImpl implements CertificationService {
         certificationDTOPage.getList().stream()
                 .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
                 .forEach(certificationDTO -> {
-                    DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certificationDTO.getEnvId());
+                    DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(certificationDTO.getEnvId());
                     certificationDTO.setEnvConnected(
                             connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId()));
@@ -361,9 +360,9 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public List<CertificationVO> getActiveByDomain(Long projectId, Long envId, String domain) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        return baseQueryActiveByDomain(projectId, devopsEnvironmentE.getClusterE().getId(), domain);
+    public List<CertificationVO> queryActiveCertificationByDomain(Long projectId, Long envId, String domain) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        return ConvertUtils.convertList(baseQueryActiveByDomain(projectId, devopsEnvironmentDTO.getClusterId(), domain), this::dtoToVo);
     }
 
     @Override

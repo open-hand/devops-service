@@ -376,7 +376,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         LOGGER.info(String.format("````````````````````````````` %s", pushWebHookDTO.getCheckoutSha()));
         pushWebHookDTO.setToken(token);
         String input;
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryByToken(pushWebHookDTO.getToken());
         pushWebHookDTO.getCommits().forEach(commitDTO -> {
             DevopsEnvCommitVO devopsEnvCommitE = new DevopsEnvCommitVO();
             devopsEnvCommitE.setEnvId(devopsEnvironmentE.getId());
@@ -391,7 +391,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         DevopsEnvCommitVO devopsEnvCommitE = devopsEnvCommitRepository
                 .baseQueryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookDTO.getCheckoutSha());
         devopsEnvironmentE.setSagaSyncCommit(devopsEnvCommitE.getId());
-        devopsEnvironmentRepository.updateSagaSyncEnvCommit(devopsEnvironmentE);
+        devopsEnvironmentRepository.baseUpdateSagaSyncEnvCommit(devopsEnvironmentE);
         LOGGER.info(String.format("update devopsCommit successfully: %s", pushWebHookDTO.getCheckoutSha()));
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
@@ -413,10 +413,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         List<String> operationFiles = new ArrayList<>();
         List<String> deletedFiles = new ArrayList<>();
-        Set<DevopsEnvFileResourceE> beforeSync = new HashSet<>();
-        Set<DevopsEnvFileResourceE> beforeSyncDelete = new HashSet<>();
+        Set<DevopsEnvFileResourceVO> beforeSync = new HashSet<>();
+        Set<DevopsEnvFileResourceVO> beforeSyncDelete = new HashSet<>();
         //根据token查出环境
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryByToken(pushWebHookDTO.getToken());
         DevopsEnvCommitVO devopsEnvCommitE = devopsEnvCommitRepository.baseQuery(devopsEnvironmentE.getSagaSyncCommit());
         boolean tagNotExist;
         Map<String, String> objectPath;
@@ -447,8 +447,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             if (tagNotExist) {
                 operationFiles.addAll(FileUtil.getFilesPath(path));
                 operationFiles.forEach(file -> {
-                    List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
-                            .queryByEnvIdAndPath(devopsEnvironmentE.getId(), file);
+                    List<DevopsEnvFileResourceVO> devopsEnvFileResourceES = devopsEnvFileResourceRepository
+                            .baseQueryByEnvIdAndPath(devopsEnvironmentE.getId(), file);
                     if (!devopsEnvFileResourceES.isEmpty()) {
                         beforeSync.addAll(devopsEnvFileResourceES);
                     }
@@ -474,7 +474,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             LOGGER.info("序列化k8s对象成功！");
 
-            List<DevopsEnvFileResourceE> beforeSyncFileResource = new ArrayList<>(beforeSync);
+            List<DevopsEnvFileResourceVO> beforeSyncFileResource = new ArrayList<>(beforeSync);
 
             //将k8s对象初始化为实例，网络，域名，证书，秘钥对象,处理对象文件关系
             handlerC7nReleaseRelationsService
@@ -509,7 +509,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             devopsEnvironmentE.setDevopsSyncCommit(devopsEnvCommitE.getId());
             //更新环境 解释commit
-            devopsEnvironmentRepository.updateDevopsSyncEnvCommit(devopsEnvironmentE);
+            devopsEnvironmentRepository.baseUpdateDevopsSyncEnvCommit(devopsEnvironmentE);
             //向agent发送同步指令
             deployService.sendCommand(devopsEnvironmentE);
             LOGGER.info("发送gitops同步成功指令成功");
@@ -609,7 +609,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     private void handleDiffs(Integer gitLabProjectId, List<String> operationFiles, List<String> deletedFiles,
-                             Set<DevopsEnvFileResourceE> beforeSync, Set<DevopsEnvFileResourceE> beforeSyncDelete,
+                             Set<DevopsEnvFileResourceVO> beforeSync, Set<DevopsEnvFileResourceVO> beforeSyncDelete,
                              DevopsEnvironmentE devopsEnvironmentE, DevopsEnvCommitVO devopsEnvCommitE) {
         //获取将此次最新提交与tag作比价得到diff
         CompareResultDTO compareResultDTO = devopsGitRepository
@@ -626,16 +626,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 }
             }
 
-            List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
-                    .queryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getOldPath());
+            List<DevopsEnvFileResourceVO> devopsEnvFileResourceES = devopsEnvFileResourceRepository
+                    .baseQueryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getOldPath());
             if (!devopsEnvFileResourceES.isEmpty()) {
                 beforeSync.addAll(devopsEnvFileResourceES);
             }
         });
 
         deletedFiles.forEach(file -> {
-            List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
-                    .queryByEnvIdAndPath(devopsEnvironmentE.getId(), file);
+            List<DevopsEnvFileResourceVO> devopsEnvFileResourceES = devopsEnvFileResourceRepository
+                    .baseQueryByEnvIdAndPath(devopsEnvironmentE.getId(), file);
             if (!devopsEnvFileResourceES.isEmpty()) {
                 beforeSyncDelete.addAll(devopsEnvFileResourceES);
             }
@@ -652,7 +652,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                                         List<V1Endpoints> v1Endpoints,
                                                         List<DevopsCustomizeResourceE> devopsCustomizeResourceES,
                                                         Long envId,
-                                                        List<DevopsEnvFileResourceE> beforeSyncDelete,
+                                                        List<DevopsEnvFileResourceVO> beforeSyncDelete,
                                                         List<C7nCertification> c7nCertifications) {
         Map<String, String> objectPath = new HashMap<>();
 

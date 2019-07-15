@@ -49,7 +49,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1Service> v1Services, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync, List<V1Service> v1Services, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeService = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(SERVICE))
                 .map(devopsEnvFileResourceE -> {
@@ -57,7 +57,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                             .query(devopsEnvFileResourceE.getResourceId());
                     if (devopsServiceE == null) {
                         devopsEnvFileResourceRepository
-                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), SERVICE);
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), SERVICE);
                         return null;
                     }
                     return devopsServiceE.getName();
@@ -82,7 +82,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
             if (devopsServiceE != null) {
                 devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceE.getId());
-                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsServiceE.getId(), SERVICE);
+                devopsEnvFileResourceRepository.baseDeleteByEnvIdAndResourceId(envId, devopsServiceE.getId(), SERVICE);
             }
         });
     }
@@ -114,8 +114,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
 
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                                .queryByEnvIdAndResource(envId, devopsServiceE.getId(), v1Service.getKind());
+                        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                .baseQueryByEnvIdAndResourceId(envId, devopsServiceE.getId(), v1Service.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceE,

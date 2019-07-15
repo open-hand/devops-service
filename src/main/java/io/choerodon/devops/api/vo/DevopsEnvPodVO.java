@@ -1,12 +1,11 @@
+
 package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 import java.util.List;
 
-/**
- * Created by Zenger on 2018/4/12.
- */
-public class DevopsEnvironmentPodVO {
+public class DevopsEnvPodVO {
+
     private Long id;
     private String name;
     private String ip;
@@ -20,8 +19,8 @@ public class DevopsEnvironmentPodVO {
     private String instanceCode;
     private Long envId;
     private Long projectId;
-    private String environmentCode;
-    private String environmentName;
+    private String envCode;
+    private String envName;
     private Long objectVersionNumber;
     private Boolean isConnect;
     private Long clusterId;
@@ -101,20 +100,20 @@ public class DevopsEnvironmentPodVO {
         this.instanceCode = instanceCode;
     }
 
-    public String getEnvironmentCode() {
-        return environmentCode;
+    public String getEnvCode() {
+        return envCode;
     }
 
-    public void setEnvironmentCode(String environmentCode) {
-        this.environmentCode = environmentCode;
+    public void setEnvCode(String envCode) {
+        this.envCode = envCode;
     }
 
-    public String getEnvironmentName() {
-        return environmentName;
+    public String getEnvName() {
+        return envName;
     }
 
-    public void setEnvironmentName(String environmentName) {
-        this.environmentName = environmentName;
+    public void setEnvName(String envName) {
+        this.envName = envName;
     }
 
     public Long getObjectVersionNumber() {

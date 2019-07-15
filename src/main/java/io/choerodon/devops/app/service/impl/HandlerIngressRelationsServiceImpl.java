@@ -13,7 +13,7 @@ import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsIngressE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
@@ -57,7 +57,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeIngress = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(INGRESS))
                 .map(devopsEnvFileResourceE -> {
@@ -65,7 +65,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                             .getIngress(devopsEnvFileResourceE.getResourceId());
                     if (devopsIngressDO == null) {
                         devopsEnvFileResourceRepository
-                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), INGRESS);
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), INGRESS);
                         return null;
                     }
                     return devopsIngressDO.getName();
@@ -86,7 +86,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, ingressName);
             if (devopsIngressE != null) {
                 devopsIngressService.deleteIngressByGitOps(devopsIngressE.getId());
-                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), INGRESS);
+                devopsEnvFileResourceRepository.baseDeleteByEnvIdAndResourceId(envId, devopsIngressE.getId(), INGRESS);
             }
         });
         //新增ingress
@@ -171,8 +171,8 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
 
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                                .queryByEnvIdAndResource(envId, devopsIngressE.getId(), v1beta1Ingress.getKind());
+                        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                .baseQueryByEnvIdAndResourceId(envId, devopsIngressE.getId(), v1beta1Ingress.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceE,

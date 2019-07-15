@@ -333,12 +333,12 @@ class GitlabWebHookServiceimplSpec extends Specification {
 
 
         //初始化实例文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE.setResourceId(applicationInstanceE.getId())
         devopsEnvFileResourceE.setResourceType("C7NHelmRelease")
         devopsEnvFileResourceE.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE)
 
         //初始化service
         DevopsServiceE devopsServiceE = new DevopsServiceE()
@@ -358,12 +358,12 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsServiceRepository.update(devopsServiceE)
 
         //初始化service文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE1 = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE1 = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE1.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE1.setResourceId(devopsServiceE.getId())
         devopsEnvFileResourceE1.setResourceType("Service")
         devopsEnvFileResourceE1.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE1)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE1)
 
         //初始化域名
         DevopsIngressE devopsIngressE = new DevopsIngressE()
@@ -384,12 +384,12 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsIngressRepository.updateIngress(devopsIngressDO)
 
         //初始化域名文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE2 = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE2 = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE2.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE2.setResourceId(devopsIngressE.getId())
         devopsEnvFileResourceE2.setResourceType("Ingress")
         devopsEnvFileResourceE2.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE2)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE2)
 
         //初始化证书
         CertificationE certificationE = new CertificationE()
@@ -412,12 +412,12 @@ class GitlabWebHookServiceimplSpec extends Specification {
         certificationRepository.baseUpdateCommandId(certificationE)
 
         //初始化证书文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE3 = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE3 = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE3.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE3.setResourceId(certificationE.getId())
         devopsEnvFileResourceE3.setResourceType("Certificate")
         devopsEnvFileResourceE3.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE3)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE3)
 
         //初始化Secret
         DevopsSecretE devopsSecretE = new DevopsSecretE()
@@ -440,12 +440,12 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsSecretRepository.update(devopsSecretE)
 
         //初始化Secret文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE4 = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE4 = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE4.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE4.setResourceId(devopsSecretE.getId())
         devopsEnvFileResourceE4.setResourceType("Secret")
         devopsEnvFileResourceE4.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE4)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE4)
 
         //初始化ConfigMap
         DevopsConfigMapE devopsConfigMapE = new DevopsConfigMapE()
@@ -467,12 +467,12 @@ class GitlabWebHookServiceimplSpec extends Specification {
 
 
         //初始化ConfigMap文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE5 = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE5 = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE5.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE5.setResourceId(devopsConfigMapE.getId())
         devopsEnvFileResourceE5.setResourceType("ConfigMap")
         devopsEnvFileResourceE5.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE5)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE5)
 
     }
 
@@ -578,7 +578,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 
         then:
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
-        List<DevopsEnvFileResourceE> devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndPath(1, "gitopsc.yaml")
+        List<DevopsEnvFileResourceVO> devopsEnvFileResourceE = devopsEnvFileResourceRepository.baseQueryByEnvIdAndPath(1, "gitopsc.yaml")
         devopsEnvFileResourceE.size() == 6
     }
 

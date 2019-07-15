@@ -20,7 +20,7 @@ public interface DevopsEnvApplicationService {
 
     DevopsEnvApplicationDTO baseCreate(DevopsEnvApplicationDTO devopsEnvApplicationE);
 
-    List<Long> baseQueryAppByEnvId(Long envId);
+    List<Long> baseListAppByEnvId(Long envId);
 
     List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appId);
 }

@@ -28,7 +28,7 @@ public interface DevopsDeployValueService {
 
     Boolean checkDelete(Long projectId, Long valueId);
 
-    PageInfo<DevopsDeployValueDTO> baseListByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params);
+    PageInfo<DevopsDeployValueDTO> basePageByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params);
 
     DevopsDeployValueDTO baseCreateOrUpdate(DevopsDeployValueDTO pipelineRecordE);
 

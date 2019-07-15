@@ -1,35 +1,23 @@
 package io.choerodon.devops.api.vo;
 
 /**
- * Created by Sheep on 2019/7/11.
+ * Created by n!Ck
+ * Date: 2018/10/25
+ * Time: 11:32
+ * Description:
  */
 public class DevopsEnvUserPermissionVO {
-
-
-    private String loginName;
     private Long iamUserId;
+    private String loginName;
     private String realName;
-    private Long envId;
-    private Boolean isPermitted;
 
     public DevopsEnvUserPermissionVO() {
     }
 
-    public DevopsEnvUserPermissionVO(String loginName, Long iamUserId, String realName, Long envId,
-                                    Boolean isPermitted) {
+    public DevopsEnvUserPermissionVO(String loginName, Long iamUserId, String realName) {
         this.loginName = loginName;
         this.iamUserId = iamUserId;
         this.realName = realName;
-        this.envId = envId;
-        this.isPermitted = isPermitted;
-    }
-
-    public String getLoginName() {
-        return loginName;
-    }
-
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
     }
 
     public Long getIamUserId() {
@@ -40,6 +28,14 @@ public class DevopsEnvUserPermissionVO {
         this.iamUserId = iamUserId;
     }
 
+    public String getLoginName() {
+        return loginName;
+    }
+
+    public void setLoginName(String loginName) {
+        this.loginName = loginName;
+    }
+
     public String getRealName() {
         return realName;
     }
@@ -47,21 +43,4 @@ public class DevopsEnvUserPermissionVO {
     public void setRealName(String realName) {
         this.realName = realName;
     }
-
-    public Long getEnvId() {
-        return envId;
-    }
-
-    public void setEnvId(Long envId) {
-        this.envId = envId;
-    }
-
-    public Boolean getPermitted() {
-        return isPermitted;
-    }
-
-    public void setPermitted(Boolean permitted) {
-        isPermitted = permitted;
-    }
-
 }

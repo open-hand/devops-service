@@ -9,38 +9,42 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
  */
 public interface DevopsEnvironmentRepository {
 
-    DevopsEnvironmentE create(DevopsEnvironmentE devopsEnvironmentE);
+    DevopsEnvironmentE baseCreate(DevopsEnvironmentE devopsEnvironmentE);
 
-    DevopsEnvironmentE queryById(Long id);
+    DevopsEnvironmentE baseQueryById(Long id);
 
-    Boolean activeEnvironment(Long environmentId, Boolean active);
+    Boolean baseUpdateActive(Long environmentId, Boolean active);
 
-    DevopsEnvironmentE update(DevopsEnvironmentE devopsEnvironmentE);
+    DevopsEnvironmentE baseUpdate(DevopsEnvironmentE devopsEnvironmentE);
 
-    void checkCode(DevopsEnvironmentE devopsEnvironmentE);
+    void baseCheckCode(DevopsEnvironmentE devopsEnvironmentE);
 
-    List<DevopsEnvironmentE> queryByProject(Long projectId);
+    List<DevopsEnvironmentE> baseListByProjectId(Long projectId);
 
-    List<DevopsEnvironmentE> queryByprojectAndActive(Long projectId, Boolean active);
+    List<DevopsEnvironmentE> baseListByProjectIdAndActive(Long projectId, Boolean active);
 
-    DevopsEnvironmentE queryByClusterIdAndCode(Long clusterId, String code);
+    DevopsEnvironmentE baseQueryByClusterIdAndCode(Long clusterId, String code);
 
-    DevopsEnvironmentE queryByProjectIdAndCode(Long projectId, String code);
+    DevopsEnvironmentE baseQueryByProjectIdAndCode(Long projectId, String code);
 
-    DevopsEnvironmentE queryByToken(String token);
+    DevopsEnvironmentE baseQueryByToken(String token);
 
-    List<DevopsEnvironmentE> list();
+    List<DevopsEnvironmentE> baseListAll();
 
-    void updateSagaSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
+    void baseUpdateSagaSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
 
-    void updateDevopsSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
+    void baseUpdateDevopsSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
 
-    void updateAgentSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
+    void baseUpdateAgentSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
 
 
-    void deleteById(Long id);
+    void baseDeleteById(Long id);
 
+<<<<<<< HEAD
     List<DevopsEnvironmentE> listByClusterId(Long clusterId);
 
     void updateOptions(DevopsEnvironmentE devopsEnvironmentE);
+=======
+    List<DevopsEnvironmentE> baseListByClusterId(Long clusterId);
+>>>>>>> [IMP] 重构Repository
 }

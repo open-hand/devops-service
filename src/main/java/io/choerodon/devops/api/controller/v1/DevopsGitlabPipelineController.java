@@ -10,7 +10,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsGitlabPipelineDTO;
+import io.choerodon.devops.api.vo.DevopsGitlabPipelineVO;
 import io.choerodon.devops.api.vo.PipelineFrequencyDTO;
 import io.choerodon.devops.api.vo.PipelineTimeDTO;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
@@ -103,7 +103,7 @@ public class DevopsGitlabPipelineController {
     @ApiOperation(value = "分页获取pipeline")
     @CustomPageRequest
     @GetMapping(value = "/page")
-    public ResponseEntity<PageInfo<DevopsGitlabPipelineDTO>> pagePipeline(
+    public ResponseEntity<PageInfo<DevopsGitlabPipelineVO>> pagePipeline(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")

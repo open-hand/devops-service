@@ -79,7 +79,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         if (!iamRepository.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectE)) {
             userId = DetailsHelper.getUserDetails().getUserId();
         }
-        PageInfo<DevopsDeployValueVO> valueDTOS = ConvertPageHelper.convertPageInfo(valueRepository.baseListByOptions(projectId, appId, envId, userId, pageRequest, params), DevopsDeployValueVO.class);
+        PageInfo<DevopsDeployValueVO> valueDTOS = ConvertPageHelper.convertPageInfo(valueRepository.basePageByOptions(projectId, appId, envId, userId, pageRequest, params), DevopsDeployValueVO.class);
         PageInfo<DevopsDeployValueVO> page = new PageInfo<>();
         BeanUtils.copyProperties(valueDTOS, page);
         page.setList(valueDTOS.getList().stream().peek(t -> {
@@ -87,7 +87,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
             t.setCreateUserName(userE.getLoginName());
             t.setCreateUserUrl(userE.getImageUrl());
             t.setCreateUserRealName(userE.getRealName());
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(t.getEnvId());
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.baseQueryById(t.getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 t.setEnvStatus(true);
@@ -126,8 +126,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public PageInfo<DevopsDeployValueDTO> baseListByOptions(Long projectId, Long appId, Long envId, Long
-            userId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsDeployValueDTO> basePageByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));

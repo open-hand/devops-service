@@ -15,7 +15,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsDeployValueE;
  */
 public interface DevopsDeployValueRepository {
 
-    PageInfo<DevopsDeployValueE> baseListByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params);
+    PageInfo<DevopsDeployValueE> basePageByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params);
 
     DevopsDeployValueE baseCreateOrUpdate(DevopsDeployValueE pipelineRecordE);
 

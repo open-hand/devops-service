@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper">
-    <select id="listCommits" resultType="io.choerodon.devops.infra.dto.DevopsGitlabCommitDO">
+    <select id="listCommits" resultType="io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO">
         SELECT
         dgc.id,
         dgc.user_id,
@@ -46,7 +46,7 @@
     </select>
 
 
-    <select id="queryByAppIdAndBranch" resultType="io.choerodon.devops.infra.dto.DevopsGitlabCommitDO">
+    <select id="queryByAppIdAndBranch" resultType="io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO">
         SELECT
         dgc.id,
         dgc.user_id,

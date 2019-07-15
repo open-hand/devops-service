@@ -6,9 +6,9 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvResourceDetailE;
  * Created by younger on 2018/4/24.
  */
 public interface DevopsEnvResourceDetailRepository {
-    DevopsEnvResourceDetailE create(DevopsEnvResourceDetailE devopsEnvResourceDetailE);
+    DevopsEnvResourceDetailE baseCreate(DevopsEnvResourceDetailE devopsEnvResourceDetailE);
 
-    DevopsEnvResourceDetailE query(Long messageId);
+    DevopsEnvResourceDetailE baesQueryByMessageId(Long messageId);
 
-    void update(DevopsEnvResourceDetailE devopsEnvResourceDetailE);
+    void baseUpdate(DevopsEnvResourceDetailE devopsEnvResourceDetailE);
 }

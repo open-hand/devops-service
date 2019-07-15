@@ -13,7 +13,7 @@ import java.util.List;
 public interface DevopsEnvApplicationRepostitory {
     DevopsEnvApplicationE baseCreate(DevopsEnvApplicationE devopsEnvApplicationE);
 
-    List<Long> baseQueryAppByEnvId(Long envId);
+    List<Long> baseListAppByEnvId(Long envId);
 
     List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appId);
 }

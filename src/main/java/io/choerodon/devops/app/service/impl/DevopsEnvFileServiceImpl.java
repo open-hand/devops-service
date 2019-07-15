@@ -60,7 +60,7 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     }
 
     private String getGitlabUrl(Long envId) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(envId);
         ProjectVO projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";

@@ -46,7 +46,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<C7nHelmRelease> c7nHelmReleases, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync, List<C7nHelmRelease> c7nHelmReleases, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeC7nRelease = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(C7NHELM_RELEASE))
                 .map(devopsEnvFileResourceE -> {
@@ -54,7 +54,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                             .selectById(devopsEnvFileResourceE.getResourceId());
                     if (applicationInstanceE == null) {
                         devopsEnvFileResourceRepository
-                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), C7NHELM_RELEASE);
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), C7NHELM_RELEASE);
                         return null;
                     }
                     return applicationInstanceE.getCode();
@@ -82,7 +82,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             if (applicationInstanceE != null) {
                 applicationInstanceService.instanceDeleteByGitOps(applicationInstanceE.getId());
                 devopsEnvFileResourceRepository
-                        .deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), C7NHELM_RELEASE);
+                        .baseDeleteByEnvIdAndResourceId(envId, applicationInstanceE.getId(), C7NHELM_RELEASE);
             }
         });
     }
@@ -113,8 +113,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
                                 devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                                 devopsEnvCommandRepository.update(devopsEnvCommandE);
-                                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                                        .queryByEnvIdAndResource(envId, applicationDeployDTO.getAppInstanceId(), c7nHelmRelease.getKind());
+                                DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                        .baseQueryByEnvIdAndResourceId(envId, applicationDeployDTO.getAppInstanceId(), c7nHelmRelease.getKind());
                                 devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId,
                                         devopsEnvFileResourceE,
                                         c7nHelmRelease.hashCode(), applicationDeployDTO.getAppInstanceId(),

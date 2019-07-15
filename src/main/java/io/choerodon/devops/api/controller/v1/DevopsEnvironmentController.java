@@ -309,7 +309,7 @@ public class DevopsEnvironmentController {
     @CustomPageRequest
     @ApiOperation(value = "分页查询项目下用户权限")
     @PostMapping(value = "/list")
-    public ResponseEntity<PageInfo<DevopsEnvUserPermissionDTO>> listUserPermissionByEnvId(
+    public ResponseEntity<PageInfo<DevopsEnvUserPermissionVO>> listUserPermissionByEnvId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -335,7 +335,7 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取环境下所有用户权限")
     @GetMapping(value = "/{envId}/list_all")
-    public ResponseEntity<List<DevopsEnvUserPermissionDTO>> listAllUserPermission(
+    public ResponseEntity<List<DevopsEnvUserPermissionVO>> listAllUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)

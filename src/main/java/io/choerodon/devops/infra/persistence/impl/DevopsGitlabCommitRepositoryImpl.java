@@ -15,7 +15,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabCommitE;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
 import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.dto.DevopsGitlabCommitDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +28,9 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     DevopsGitlabCommitMapper devopsGitlabCommitMapper;
 
     @Override
-    public DevopsGitlabCommitE create(DevopsGitlabCommitE devopsGitlabCommitE) {
-        DevopsGitlabCommitDO devopsGitlabCommitDO =
-                ConvertHelper.convert(devopsGitlabCommitE, DevopsGitlabCommitDO.class);
+    public DevopsGitlabCommitE baseCreate(DevopsGitlabCommitE devopsGitlabCommitE) {
+        DevopsGitlabCommitDTO devopsGitlabCommitDO =
+                ConvertHelper.convert(devopsGitlabCommitE, DevopsGitlabCommitDTO.class);
         if (!checkExist(devopsGitlabCommitE)) {
             if (devopsGitlabCommitMapper.insert(devopsGitlabCommitDO) != 1) {
                 throw new CommonException("error.gitlab.commit.create");
@@ -40,8 +40,8 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public DevopsGitlabCommitE queryByShaAndRef(String sha, String ref) {
-        DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO();
+    public DevopsGitlabCommitE baseQueryByShaAndRef(String sha, String ref) {
+        DevopsGitlabCommitDTO devopsGitlabCommitDO = new DevopsGitlabCommitDTO();
         devopsGitlabCommitDO.setCommitSha(sha);
         devopsGitlabCommitDO.setRef(ref);
         return ConvertHelper.convert(devopsGitlabCommitMapper.selectOne(devopsGitlabCommitDO),
@@ -49,8 +49,8 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public List<DevopsGitlabCommitE> listCommits(Long projectId, List<Long> appIds, Date startDate, Date endDate) {
-        List<DevopsGitlabCommitDO> devopsGitlabCommitDOList = devopsGitlabCommitMapper
+    public List<DevopsGitlabCommitE> baseListByOptions(Long projectId, List<Long> appIds, Date startDate, Date endDate) {
+        List<DevopsGitlabCommitDTO> devopsGitlabCommitDOList = devopsGitlabCommitMapper
                 .listCommits(projectId, appIds, new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime()));
         if (devopsGitlabCommitDOList == null || devopsGitlabCommitDOList.isEmpty()) {
             return new ArrayList<>();
@@ -59,12 +59,12 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public PageInfo<CommitFormRecordDTO> pageCommitRecord(Long projectId, List<Long> appId,
-                                                          PageRequest pageRequest, Map<Long, UserE> userMap,
-                                                          Date startDate, Date endDate) {
+    public PageInfo<CommitFormRecordDTO> basePageByOptions(Long projectId, List<Long> appId,
+                                                           PageRequest pageRequest, Map<Long, UserE> userMap,
+                                                           Date startDate, Date endDate) {
         List<CommitFormRecordDTO> commitFormRecordDTOList = new ArrayList<>();
 
-        PageInfo<DevopsGitlabCommitDO> devopsGitlabCommitDOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(),
+        PageInfo<DevopsGitlabCommitDTO> devopsGitlabCommitDOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(),
                 PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
                 () -> devopsGitlabCommitMapper.listCommits(projectId, appId, new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime())));
 
@@ -90,9 +90,9 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public void update(DevopsGitlabCommitE devopsGitlabCommitE) {
-        DevopsGitlabCommitDO oldDevopsGitlabCommitDO = devopsGitlabCommitMapper.selectByPrimaryKey(devopsGitlabCommitE.getId());
-        DevopsGitlabCommitDO newDevopsGitlabCommitDO = ConvertHelper.convert(devopsGitlabCommitE, DevopsGitlabCommitDO.class);
+    public void baseUpdate(DevopsGitlabCommitE devopsGitlabCommitE) {
+        DevopsGitlabCommitDTO oldDevopsGitlabCommitDO = devopsGitlabCommitMapper.selectByPrimaryKey(devopsGitlabCommitE.getId());
+        DevopsGitlabCommitDTO newDevopsGitlabCommitDO = ConvertHelper.convert(devopsGitlabCommitE, DevopsGitlabCommitDTO.class);
         newDevopsGitlabCommitDO.setObjectVersionNumber(oldDevopsGitlabCommitDO.getObjectVersionNumber());
         if (devopsGitlabCommitMapper.updateByPrimaryKeySelective(newDevopsGitlabCommitDO) != 1) {
             throw new CommonException("error.gitlab.commit.update");
@@ -100,13 +100,13 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public List<DevopsGitlabCommitE> queryByAppIdAndBranch(Long appId, String branch, Date startDate) {
+    public List<DevopsGitlabCommitE> baseListByAppIdAndBranch(Long appId, String branch, Date startDate) {
         return ConvertHelper.convertList(devopsGitlabCommitMapper.queryByAppIdAndBranch(appId, branch, startDate == null ? null : new java.sql.Date(startDate.getTime())), DevopsGitlabCommitE.class);
     }
 
 
     public boolean checkExist(DevopsGitlabCommitE devopsGitlabCommitE) {
-        DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO();
+        DevopsGitlabCommitDTO devopsGitlabCommitDO = new DevopsGitlabCommitDTO();
         devopsGitlabCommitDO.setCommitSha(devopsGitlabCommitE.getCommitSha());
         devopsGitlabCommitDO.setRef(devopsGitlabCommitE.getRef());
         if (devopsGitlabCommitMapper.selectOne(devopsGitlabCommitDO) != null) {

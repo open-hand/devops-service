@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.sql.Timestamp;
+import java.util.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kubernetes.client.JSON;
@@ -7,18 +10,18 @@ import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.util.*;
-
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
+import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.util.K8sUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.dto.DevopsEnvResourceDTO;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
+import io.choerodon.devops.infra.util.K8sUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * Created by younger on 2018/4/25.
@@ -50,21 +53,22 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     private IamRepository iamRepository;
     @Autowired
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
-
+    @Autowired
+    private DevopsEnvResourceMapper devopsEnvResourceMapper;
 
     @Override
-    public DevopsEnvResourceDTO listResourcesInHelmRelease(Long instanceId) {
+    public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
         List<DevopsEnvResourceE> devopsEnvResourceES =
-                devopsEnvResourceRepository.listByInstanceId(instanceId);
-        DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
+                devopsEnvResourceRepository.baseListByInstanceId(instanceId);
+        DevopsEnvResourceVO devopsEnvResourceDTO = new DevopsEnvResourceVO();
         if (devopsEnvResourceES == null) {
             return devopsEnvResourceDTO;
         }
 
         // 关联资源
         devopsEnvResourceES.forEach(devopsInstanceResourceE -> {
-                    DevopsEnvResourceDetailE detailE = devopsEnvResourceDetailRepository.query(devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId());
+                    DevopsEnvResourceDetailE detailE = devopsEnvResourceDetailRepository.baesQueryByMessageId(devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId());
                     if (isReleaseGenerated(detailE.getMessage())) {
                         dealWithResource(detailE, devopsInstanceResourceE, devopsEnvResourceDTO, applicationInstanceE.getDevopsEnvironmentE().getId());
                     }
@@ -97,7 +101,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO     存放处理结果的dto
      * @param envId                    环境id
      */
-    private void dealWithResource(DevopsEnvResourceDetailE devopsEnvResourceDetailE, DevopsEnvResourceE devopsInstanceResourceE, DevopsEnvResourceDTO devopsEnvResourceDTO, Long envId) {
+    private void dealWithResource(DevopsEnvResourceDetailE devopsEnvResourceDetailE, DevopsEnvResourceE devopsInstanceResourceE, DevopsEnvResourceVO devopsEnvResourceDTO, Long envId) {
         ResourceType resourceType = ResourceType.forString(devopsInstanceResourceE.getKind());
         if (resourceType == null) {
             resourceType = ResourceType.MISSTYPE;
@@ -125,7 +129,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                                     devopsServiceE.getId());
                     domainNames.forEach(domainName -> {
                         DevopsEnvResourceE devopsEnvResourceE1 =
-                                devopsEnvResourceRepository.queryResource(
+                                devopsEnvResourceRepository.baseQueryOptions(
                                         null,
                                         null,
                                         envId,
@@ -133,7 +137,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                                         domainName);
                         //升级0.11.0-0.12.0,资源表新增envId,修复以前的域名数据
                         if (devopsEnvResourceE1 == null) {
-                            devopsEnvResourceE1 = devopsEnvResourceRepository.queryResource(
+                            devopsEnvResourceE1 = devopsEnvResourceRepository.baseQueryOptions(
                                     null,
                                     null,
                                     null,
@@ -142,7 +146,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                         }
                         if (devopsEnvResourceE1 != null) {
                             DevopsEnvResourceDetailE devopsEnvResourceDetailE1 =
-                                    devopsEnvResourceDetailRepository.query(
+                                    devopsEnvResourceDetailRepository.baesQueryByMessageId(
                                             devopsEnvResourceE1.getDevopsEnvResourceDetailE().getId());
                             V1beta1Ingress v1beta1Ingress = json.deserialize(
                                     devopsEnvResourceDetailE1.getMessage(),
@@ -189,7 +193,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     public List<InstanceEventDTO> listInstancePodEvent(Long instanceId) {
         List<InstanceEventDTO> instanceEventDTOS = new ArrayList<>();
         List<DevopsEnvCommandVO> devopsEnvCommandES = devopsEnvCommandRepository
-                .baseQueryInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
+                .baseListInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
         devopsEnvCommandES.forEach(devopsEnvCommandE -> {
             InstanceEventDTO instanceEventDTO = new InstanceEventDTO();
             UserE userE = iamRepository.queryUserByUserId(devopsEnvCommandE.getCreatedBy());
@@ -212,13 +216,13 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                     podEventDTOS.add(podEventDTO);
                 });
             }
-            List<DevopsEnvResourceE> jobs = devopsEnvResourceRepository.listJobs(devopsEnvCommandE.getId());
+            List<DevopsEnvResourceE> jobs = devopsEnvResourceRepository.baseListByCommandId(devopsEnvCommandE.getId());
             List<DevopsEnvCommandLogVO> devopsEnvCommandLogES = devopsEnvCommandLogRepository
-                    .baseQueryByDeployId(devopsEnvCommandE.getId());
+                    .baseListByDeployId(devopsEnvCommandE.getId());
             for (int i = 0; i < jobs.size(); i++) {
                 DevopsEnvResourceE job = jobs.get(i);
                 DevopsEnvResourceDetailE devopsEnvResourceDetailE =
-                        devopsEnvResourceDetailRepository.query(
+                        devopsEnvResourceDetailRepository.baesQueryByMessageId(
                                 job.getDevopsEnvResourceDetailE().getId());
                 V1Job v1Job = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1Job.class);
                 if (podEventDTOS.size() < 4) {
@@ -299,7 +303,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1Pod                pod对象
      */
-    private void addPodToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1Pod v1Pod) {
+    private void addPodToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1Pod v1Pod) {
         PodDTO podDTO = new PodDTO();
         podDTO.setName(v1Pod.getMetadata().getName());
         podDTO.setDesire(TypeUtil.objToLong(v1Pod.getSpec().getContainers().size()));
@@ -326,7 +330,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta2Deployment    deployment对象
      */
-    public void addDeploymentToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1beta2Deployment v1beta2Deployment) {
+    public void addDeploymentToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2Deployment v1beta2Deployment) {
         DeploymentDTO deploymentDTO = new DeploymentDTO();
         deploymentDTO.setName(v1beta2Deployment.getMetadata().getName());
         deploymentDTO.setDesired(TypeUtil.objToLong(v1beta2Deployment.getSpec().getReplicas()));
@@ -361,7 +365,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1Service            service对象
      */
-    public void addServiceToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1Service v1Service) {
+    public void addServiceToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1Service v1Service) {
         ServiceDTO serviceDTO = new ServiceDTO();
         serviceDTO.setName(v1Service.getMetadata().getName());
         serviceDTO.setType(v1Service.getSpec().getType());
@@ -406,7 +410,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta2ReplicaSet    replicaSet对象
      */
-    public void addReplicaSetToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1beta2ReplicaSet v1beta2ReplicaSet) {
+    public void addReplicaSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2ReplicaSet v1beta2ReplicaSet) {
         if (v1beta2ReplicaSet.getSpec().getReplicas() == 0) {
             return;
         }
@@ -425,7 +429,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta2DaemonSet     daemonSet对象
      */
-    private void addDaemonSetToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1beta2DaemonSet v1beta2DaemonSet) {
+    private void addDaemonSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2DaemonSet v1beta2DaemonSet) {
         DaemonSetDTO daemonSetDTO = new DaemonSetDTO();
         daemonSetDTO.setName(v1beta2DaemonSet.getMetadata().getName());
         daemonSetDTO.setAge(v1beta2DaemonSet.getMetadata().getCreationTimestamp().toString());
@@ -442,7 +446,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta2StatefulSet   statefulSet对象
      */
-    private void addStatefulSetSetToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1beta2StatefulSet v1beta2StatefulSet) {
+    private void addStatefulSetSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2StatefulSet v1beta2StatefulSet) {
         StatefulSetDTO statefulSetDTO = new StatefulSetDTO();
         statefulSetDTO.setName(v1beta2StatefulSet.getMetadata().getName());
         statefulSetDTO.setDesiredReplicas(TypeUtil.objToLong(v1beta2StatefulSet.getSpec().getReplicas()));
@@ -459,7 +463,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO    实例资源参数
      * @param v1PersistentVolumeClaim persistentVolumeClaim对象
      */
-    private void addPersistentVolumeClaimToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1PersistentVolumeClaim v1PersistentVolumeClaim) {
+    private void addPersistentVolumeClaimToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1PersistentVolumeClaim v1PersistentVolumeClaim) {
         PersistentVolumeClaimDTO dto = new PersistentVolumeClaimDTO();
         dto.setName(v1PersistentVolumeClaim.getMetadata().getName());
         dto.setStatus(v1PersistentVolumeClaim.getStatus().getPhase());
@@ -500,5 +504,76 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         min = ((diff / (60 * 1000)) - day * 24 * 60 - hour * 60);
         sec = (diff / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
         return new Long[]{day, hour, min, sec};
+    }
+
+
+    @Override
+    public void baseCreate(DevopsEnvResourceDTO devopsEnvResourceDTO) {
+        if (devopsEnvResourceMapper.insert(devopsEnvResourceDTO) != 1) {
+            throw new CommonException("error.resource.insert");
+        }
+    }
+
+    @Override
+    public List<DevopsEnvResourceDTO> baseListByInstanceId(Long instanceId) {
+        DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
+        devopsEnvResourceDTO.setAppInstanceId(instanceId);
+        return devopsEnvResourceMapper.select(devopsEnvResourceDTO);
+    }
+
+    @Override
+    public List<DevopsEnvResourceDTO> baseListByCommandId(Long commandId) {
+        return devopsEnvResourceMapper.listJobs(commandId);
+    }
+
+    @Override
+    public void baseUpdate(DevopsEnvResourceDTO devopsEnvResourceDTO) {
+        devopsEnvResourceDTO.setObjectVersionNumber(
+                devopsEnvResourceMapper.selectByPrimaryKey(
+                        devopsEnvResourceDTO.getId()).getObjectVersionNumber());
+        if (devopsEnvResourceMapper.updateByPrimaryKeySelective(devopsEnvResourceDTO) != 1) {
+            throw new CommonException("error.resource.update");
+        }
+    }
+
+    @Override
+    public void deleteByEnvIdAndKindAndName(Long envId, String kind, String name) {
+        DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO();
+        if (devopsEnvResourceMapper.queryResource(null, null, envId, kind, name) != null) {
+            devopsEnvResourceDO.setEnvId(envId);
+        }
+        devopsEnvResourceDO.setKind(kind);
+        devopsEnvResourceDO.setName(name);
+        devopsEnvResourceMapper.delete(devopsEnvResourceDO);
+    }
+
+    @Override
+    public List<DevopsEnvResourceDTO> baseListByEnvAndType(Long envId, String type) {
+        return devopsEnvResourceMapper.listByEnvAndType(envId, type);
+    }
+
+    @Override
+    public DevopsEnvResourceDTO baseQueryByKindAndName(String kind, String name) {
+        return devopsEnvResourceMapper.queryLatestJob(kind, name);
+    }
+
+    @Override
+    public void deleteByKindAndNameAndInstanceId(String kind, String name, Long instanceId) {
+        DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
+        devopsEnvResourceDTO.setKind(kind);
+        devopsEnvResourceDTO.setName(name);
+        devopsEnvResourceDTO.setAppInstanceId(instanceId);
+        devopsEnvResourceMapper.delete(devopsEnvResourceDTO);
+    }
+
+    @Override
+    public DevopsEnvResourceDTO baseQueryOptions(Long instanceId, Long commandId, Long envId, String kind, String name) {
+        return devopsEnvResourceMapper.queryResource(instanceId, commandId, envId, kind, name);
+    }
+
+
+    @Override
+    public String getResourceDetailByNameAndTypeAndInstanceId(Long instanceId, String name, ResourceType resourceType) {
+        return devopsEnvResourceMapper.getResourceDetailByNameAndTypeAndInstanceId(instanceId, name, resourceType.getType());
     }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
@@ -36,7 +37,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
     @Override
     public Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option) {
         // 更新以前所有有权限的用户
-        List<Long> currentUserIds = devopsEnvUserPermissionRepository.listAll(id).stream()
+        List<Long> currentUserIds = devopsEnvUserPermissionRepository.baseListAll(id).stream()
                 .map(DevopsEnvUserPermissionE::getIamUserId).collect(Collectors.toList());
         // 待添加的用户
         List<Long> addIamUserIds = userIds.stream().filter(e -> !currentUserIds.contains(e))
@@ -50,14 +51,14 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
                 .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
         // 更新gitlab权限
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(id);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.baseQueryById(id);
 
         Integer gitlabProjectId = devopsEnvironmentE.getGitlabEnvProjectId().intValue();
         DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
         Integer gitlabGroupId = devopsProjectE.getDevopsEnvGroupId().intValue();
 
         super.updateGitlabUserPermission("env", gitlabGroupId, gitlabProjectId, addgitlabUserIds, deleteGitlabUserIds);
-        devopsEnvUserPermissionRepository.updateEnvUserPermission(id, addIamUserIds, deleteIamUserIds);
+        devopsEnvUserPermissionRepository.baseUpdate(id, addIamUserIds, deleteIamUserIds);
         return true;
     }
 }

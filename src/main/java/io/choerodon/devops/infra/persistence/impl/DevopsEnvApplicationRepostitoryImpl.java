@@ -32,7 +32,7 @@ public class DevopsEnvApplicationRepostitoryImpl implements DevopsEnvApplication
     }
 
     @Override
-    public List<Long> baseQueryAppByEnvId(Long envId) {
+    public List<Long> baseListAppByEnvId(Long envId) {
         return devopsEnvApplicationMapper.queryAppByEnvId(envId);
     }
 

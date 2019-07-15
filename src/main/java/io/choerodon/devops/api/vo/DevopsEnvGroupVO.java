@@ -6,7 +6,7 @@ package io.choerodon.devops.api.vo;
  * Time: 14:49
  * Description:
  */
-public class DevopsEnvGroupDTO {
+public class DevopsEnvGroupVO {
     private Long id;
     private Long projectId;
     private String name;

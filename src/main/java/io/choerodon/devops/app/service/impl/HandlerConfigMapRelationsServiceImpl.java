@@ -13,7 +13,7 @@ import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.api.vo.iam.entity.DevopsConfigMapE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsConfigMapRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
@@ -46,7 +46,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
 
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1ConfigMap> v1ConfigMaps, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync, List<V1ConfigMap> v1ConfigMaps, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeConfigMaps = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(CONFIG_MAP))
                 .map(devopsEnvFileResourceE -> {
@@ -54,7 +54,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                             .baseQueryById(devopsEnvFileResourceE.getResourceId());
                     if (devopsConfigMapE == null) {
                         devopsEnvFileResourceRepository
-                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), CONFIG_MAP);
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), CONFIG_MAP);
                         return null;
                     }
                     return devopsConfigMapE.getName();
@@ -82,7 +82,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
             if (devopsConfigMapE != null) {
                 devopsConfigMapService.deleteByGitOps(devopsConfigMapE.getId());
                 devopsEnvFileResourceRepository
-                        .deleteByEnvIdAndResource(envId, devopsConfigMapE.getId(), CONFIG_MAP);
+                        .baseDeleteByEnvIdAndResourceId(envId, devopsConfigMapE.getId(), CONFIG_MAP);
             }
         });
     }
@@ -111,8 +111,8 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                         }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                                .queryByEnvIdAndResource(envId, devopsConfigMapE.getId(), configMap.getKind());
+                        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                .baseQueryByEnvIdAndResourceId(envId, devopsConfigMapE.getId(), configMap.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceE,

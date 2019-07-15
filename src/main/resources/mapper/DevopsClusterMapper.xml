@@ -52,7 +52,7 @@
         </if>
     </sql>
 
-    <select id="pageQueryPodsByNodeName" resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentPodDTO">
+    <select id="pageQueryPodsByNodeName" resultType="io.choerodon.devops.infra.dto.DevopsEnvPodDTO">
         SELECT pod.*
         FROM devops_env_pod pod
         INNER JOIN devops_app_instance instance ON pod.app_instance_id = instance.id

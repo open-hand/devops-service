@@ -2,27 +2,23 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandLogVO;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandLogRepository;
+import io.choerodon.devops.app.service.DevopsEnvCommandLogService;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandLogDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandLogMapper;
 
 /**
- * Created by younger on 2018/4/24.
+ * Creator: ChangpingShi0213@gmail.com
+ * Date:  14:49 2019/7/12
+ * Description:
  */
-@Service
-public class DevopsEnvCommandLogRepositoryImpl implements DevopsEnvCommandLogRepository {
-
+public class DevopsEnvCommandLogServiceImpl implements DevopsEnvCommandLogService {
+    @Autowired
     private DevopsEnvCommandLogMapper devopsEnvCommandLogMapper;
-
-    public DevopsEnvCommandLogRepositoryImpl(DevopsEnvCommandLogMapper devopsEnvCommandLogMapper) {
-        this.devopsEnvCommandLogMapper = devopsEnvCommandLogMapper;
-    }
-
 
     @Override
     public DevopsEnvCommandLogVO baseCreate(DevopsEnvCommandLogVO devopsEnvCommandLogE) {

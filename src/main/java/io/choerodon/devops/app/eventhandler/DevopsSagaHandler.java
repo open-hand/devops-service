@@ -90,10 +90,10 @@ public class DevopsSagaHandler {
             throw e;
         }
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                .queryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
+                .baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
         if (devopsEnvironmentE.getFailed() != null && devopsEnvironmentE.getFailed()) {
             devopsEnvironmentE.initFailed(false);
-            devopsEnvironmentRepository.update(devopsEnvironmentE);
+            devopsEnvironmentRepository.baseUpdate(devopsEnvironmentE);
         }
         return data;
     }
@@ -109,9 +109,9 @@ public class DevopsSagaHandler {
     public String setEnvErr(String data) {
         GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                .queryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
+                .baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
         devopsEnvironmentE.initFailed(true);
-        devopsEnvironmentRepository.update(devopsEnvironmentE);
+        devopsEnvironmentRepository.baseUpdate(devopsEnvironmentE);
         return data;
     }
 

@@ -6,17 +6,17 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvResourceDetailE;
 import io.choerodon.devops.domain.application.factory.DevopsInstanceResourceMessageFactory;
-import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDO;
+import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
 
 /**
  * Created by younger on 2018/4/24.
  */
 @Component
-public class DevopsEnvResourceDetailConvertor implements ConvertorI<DevopsEnvResourceDetailE, DevopsEnvResourceDetailDO, Object> {
+public class DevopsEnvResourceDetailConvertor implements ConvertorI<DevopsEnvResourceDetailE, DevopsEnvResourceDetailDTO, Object> {
 
 
     @Override
-    public DevopsEnvResourceDetailE doToEntity(DevopsEnvResourceDetailDO devopsEnvResourceDetailDO) {
+    public DevopsEnvResourceDetailE doToEntity(DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO) {
         DevopsEnvResourceDetailE devopsEnvResourceDetailE =
                 DevopsInstanceResourceMessageFactory.createDevopsInstanceResourceMessageE();
         BeanUtils.copyProperties(devopsEnvResourceDetailDO, devopsEnvResourceDetailE);
@@ -24,8 +24,8 @@ public class DevopsEnvResourceDetailConvertor implements ConvertorI<DevopsEnvRes
     }
 
     @Override
-    public DevopsEnvResourceDetailDO entityToDo(DevopsEnvResourceDetailE devopsEnvResourceDetailE) {
-        DevopsEnvResourceDetailDO devopsEnvResourceDetailDO = new DevopsEnvResourceDetailDO();
+    public DevopsEnvResourceDetailDTO entityToDo(DevopsEnvResourceDetailE devopsEnvResourceDetailE) {
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO = new DevopsEnvResourceDetailDTO();
         BeanUtils.copyProperties(devopsEnvResourceDetailE, devopsEnvResourceDetailDO);
         return devopsEnvResourceDetailDO;
     }

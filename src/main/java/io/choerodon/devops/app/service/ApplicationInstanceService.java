@@ -289,7 +289,7 @@ public interface ApplicationInstanceService {
     void operationPodCount(String deploymentName, Long envId, Long count);
 
 
-    DevopsEnvResourceDTO listResourcesInHelmRelease(Long instanceId);
+    DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId);
 
     /**
      * 获取预览 Value

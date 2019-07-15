@@ -62,7 +62,7 @@ class DevopsSagaHandlerSpec extends Specification {
         and: '构造DevopsEnvironmentE'
         DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE()
         devopsEnvironmentE.setFailed(true)
-        PowerMockito.when(devopsEnvironmentRepository.queryByClusterIdAndCode(any(), any())).thenReturn(devopsEnvironmentE)
+        PowerMockito.when(devopsEnvironmentRepository.baseQueryByClusterIdAndCode(any(), any())).thenReturn(devopsEnvironmentE)
 
         when: '方法调用'
         def str = devopsSagaHandler.devopsCreateEnv(data)
@@ -81,7 +81,7 @@ class DevopsSagaHandlerSpec extends Specification {
         and: '构造DevopsEnvironmentE'
         DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE()
         devopsEnvironmentE.setFailed(true)
-        PowerMockito.when(devopsEnvironmentRepository.queryByClusterIdAndCode(any(), any())).thenReturn(devopsEnvironmentE)
+        PowerMockito.when(devopsEnvironmentRepository.baseQueryByClusterIdAndCode(any(), any())).thenReturn(devopsEnvironmentE)
 
         when: '方法调用'
         def str = devopsSagaHandler.setEnvErr(data)

@@ -89,7 +89,7 @@ public class IssueServiceImpl implements IssueService {
         devopsBranchDTOS.forEach(devopsBranchDO -> {
             Integer gitLabProjectId = devopsGitRepository.getGitLabId(devopsBranchDO.getAppId());
 
-            List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.queryByAppIdAndBranch(devopsBranchDO.getAppId(), devopsBranchDO.getBranchName(), devopsBranchDO.getCheckoutDate());
+            List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.baseListByAppIdAndBranch(devopsBranchDO.getAppId(), devopsBranchDO.getBranchName(), devopsBranchDO.getCheckoutDate());
 
             devopsGitlabCommitES = devopsGitlabCommitES.stream().filter(devopsGitlabCommitE ->
                     !devopsGitlabCommitE.getCommitSha().equals(devopsBranchDO.getCheckoutCommit()))

@@ -82,7 +82,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
         String resourceFilePath = String.format("custom-%s.yaml", GenerateUUID.generateUUID().substring(0, 5));
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsCustomizeResourceReqDTO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsCustomizeResourceReqDTO.getEnvId());
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -154,7 +154,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     @Override
     public void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceE devopsCustomizeResourceE, Long envId, Long userId) {
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsCustomizeResourceE.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsCustomizeResourceE.getEnvId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         HandleCoustomizeResource(devopsCustomizeResourceE.getProjectId(), devopsCustomizeResourceE.getEnvId(), devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getContent(), devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName(), type, devopsCustomizeResourceE.getId(), devopsCustomizeResourceE.getFilePath(), userId);
@@ -166,7 +166,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
         DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository.baseQuery(resourceId);
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsCustomizeResourceE.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsCustomizeResourceE.getEnvId());
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -183,10 +183,10 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                 devopsCustomizeResourceE.getFilePath())) {
             devopsCustomizeResourceRepository.baseDelete(resourceId);
             devopsCustomizeResourceContentRepository.baseDelete(devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getId());
-            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                    .queryByEnvIdAndResource(devopsEnvironmentE.getId(), resourceId, ObjectType.CUSTOM.getType());
+            DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                    .baseQueryByEnvIdAndResourceId(devopsEnvironmentE.getId(), resourceId, ObjectType.CUSTOM.getType());
             if (devopsEnvFileResourceE != null) {
-                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                devopsEnvFileResourceRepository.baseDelete(devopsEnvFileResourceE.getId());
             }
             return;
         }
@@ -229,7 +229,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         PageInfo<DevopsCustomizeResourceVO> devopsCustomizeResourceDTOPageInfo = ConvertPageHelper.convertPageInfo(devopsCustomizeResourceEPageInfo, DevopsCustomizeResourceVO.class);
         devopsCustomizeResourceDTOPageInfo.getList().forEach(devopsCustomizeResourceDTO -> {
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(envId);
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 devopsCustomizeResourceDTO.setEnvStatus(true);
@@ -244,10 +244,10 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
         DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository.baseQuery(resourceId);
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsCustomizeResourceE.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsCustomizeResourceE.getEnvId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        devopsEnvCommandRepository.baseListByObjectAll(ObjectType.CUSTOM.getType(), resourceId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteCommandById(devopsEnvCommandE));
+        devopsEnvCommandRepository.baseListByObject(ObjectType.CUSTOM.getType(), resourceId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteByEnvCommandId(devopsEnvCommandE));
         devopsCustomizeResourceRepository.baseDelete(resourceId);
         devopsCustomizeResourceContentRepository.baseDelete(devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getId());
     }

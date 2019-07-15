@@ -6,9 +6,8 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 
 
 /**
@@ -134,8 +133,8 @@ public interface DevopsEnvironmentService {
      * @param envId       环境id
      * @return page
      */
-    PageInfo<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                                   String params, Long envId);
+    PageInfo<DevopsEnvUserPermissionVO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+                                                                  String params, Long envId);
 
     /**
      * 获取环境下所有用户权限
@@ -143,7 +142,7 @@ public interface DevopsEnvironmentService {
      * @param envId 环境id
      * @return list
      */
-    List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId, Long projectId);
+    List<DevopsEnvUserPermissionVO> listAllUserPermission(Long envId);
 
     /**
      * 环境下为用户分配权限
@@ -208,4 +207,36 @@ public interface DevopsEnvironmentService {
      */
     List<DevopsEnvironmentVO> queryByProjectFromBase(Long projectId);
 
+
+    DevopsEnvironmentDTO baseCreate(DevopsEnvironmentDTO devopsEnvironmentDTO);
+
+    DevopsEnvironmentDTO baseQueryById(Long id);
+
+    Boolean baseUpdateActive(Long environmentId, Boolean active);
+
+    DevopsEnvironmentDTO baseUpdate(DevopsEnvironmentDTO devopsEnvironmentDTO);
+
+    void baseCheckCode(DevopsEnvironmentDTO devopsEnvironmentDTO);
+
+    List<DevopsEnvironmentDTO> baseListByProjectId(Long projectId);
+
+    List<DevopsEnvironmentDTO> baseListByProjectIdAndActive(Long projectId, Boolean active);
+
+    DevopsEnvironmentDTO baseQueryByClusterIdAndCode(Long clusterId, String code);
+
+    DevopsEnvironmentDTO baseQueryByProjectIdAndCode(Long projectId, String code);
+
+    DevopsEnvironmentDTO baseQueryByToken(String token);
+
+    List<DevopsEnvironmentDTO> baseListAll();
+
+    void baseUpdateSagaSyncEnvCommit(DevopsEnvironmentDTO devopsEnvironmentDTO);
+
+    void baseUpdateDevopsSyncEnvCommit(DevopsEnvironmentDTO devopsEnvironmentDTO);
+
+    void baseUpdateAgentSyncEnvCommit(DevopsEnvironmentDTO devopsEnvironmentDTO);
+
+    void baseDeleteById(Long id);
+
+    List<DevopsEnvironmentDTO> baseListByClusterId(Long clusterId);
 }

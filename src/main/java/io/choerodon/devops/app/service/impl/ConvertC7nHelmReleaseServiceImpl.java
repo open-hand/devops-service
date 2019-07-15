@@ -5,7 +5,7 @@ import java.util.Map;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationInstanceE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
@@ -52,7 +52,7 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
     }
 
     @Override
-    public void checkIfExist(List<C7nHelmRelease> c7nHelmReleases, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, C7nHelmRelease c7nHelmRelease) {
+    public void checkIfExist(List<C7nHelmRelease> c7nHelmReleases, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, C7nHelmRelease c7nHelmRelease) {
         String filePath = objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode()));
         String instanceCode = c7nHelmRelease.getMetadata().getName();
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(instanceCode, envId);
@@ -64,7 +64,7 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
                     .noneMatch(devopsEnvFileResourceE ->
                             devopsEnvFileResourceE.getResourceId()
                                     .equals(instanceId))) {
-                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, instanceId, c7nHelmRelease.getKind());
+                DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository.baseQueryByEnvIdAndResourceId(envId, instanceId, c7nHelmRelease.getKind());
                 if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())))) {
                     throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, instanceCode);
                 }

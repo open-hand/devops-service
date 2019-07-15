@@ -165,7 +165,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     public DevopsIngressDTO getIngress(Long projectId, Long ingressId) {
         DevopsIngressDO devopsIngressDO = devopsIngressMapper.selectByPrimaryKey(ingressId);
         if (devopsIngressDO != null) {
-            DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsIngressDO.getEnvId());
+            DevopsEnvironmentE devopsEnvironmentE = environmentRepository.baseQueryById(devopsIngressDO.getEnvId());
             DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO(
                     ingressId, devopsIngressDO.getDomain(), devopsIngressDO.getName(), devopsEnvironmentE.getId(),
                     devopsIngressDO.getUsable(), devopsEnvironmentE.getName());

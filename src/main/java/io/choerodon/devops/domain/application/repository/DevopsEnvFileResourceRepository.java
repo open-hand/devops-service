@@ -2,7 +2,7 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 
 /**
  * Creator: Runge
@@ -12,18 +12,18 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
  */
 public interface DevopsEnvFileResourceRepository {
 
-    DevopsEnvFileResourceE createFileResource(DevopsEnvFileResourceE devopsEnvFileResourceE);
+    DevopsEnvFileResourceVO baseCreate(DevopsEnvFileResourceVO devopsEnvFileResourceE);
 
-    DevopsEnvFileResourceE getFileResource(Long fileResourceId);
+    DevopsEnvFileResourceVO baseQuery(Long fileResourceId);
 
-    DevopsEnvFileResourceE updateFileResource(DevopsEnvFileResourceE devopsEnvFileResourceE);
+    DevopsEnvFileResourceVO baseUpdate(DevopsEnvFileResourceVO devopsEnvFileResourceE);
 
-    void deleteFileResource(Long fileResourceId);
+    void baseDelete(Long fileResourceId);
 
-    DevopsEnvFileResourceE queryByEnvIdAndResource(Long envId, Long resourceId, String resourceType);
+    DevopsEnvFileResourceVO baseQueryByEnvIdAndResourceId(Long envId, Long resourceId, String resourceType);
 
-    List<DevopsEnvFileResourceE> queryByEnvIdAndPath(Long envId, String path);
+    List<DevopsEnvFileResourceVO> baseQueryByEnvIdAndPath(Long envId, String path);
 
-    void deleteByEnvIdAndResource(Long envId, Long resourceId, String resourceType);
+    void baseDeleteByEnvIdAndResourceId(Long envId, Long resourceId, String resourceType);
 
 }

@@ -12,18 +12,18 @@ import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 
 public interface DevopsGitlabCommitRepository {
 
-    DevopsGitlabCommitE create(DevopsGitlabCommitE devopsGitlabCommitE);
+    DevopsGitlabCommitE baseCreate(DevopsGitlabCommitE devopsGitlabCommitE);
 
-    DevopsGitlabCommitE queryByShaAndRef(String sha, String ref);
+    DevopsGitlabCommitE baseQueryByShaAndRef(String sha, String ref);
 
-    List<DevopsGitlabCommitE> listCommits(Long projectId, List<Long> appIds, Date startDate, Date endDate);
+    List<DevopsGitlabCommitE> baseListByOptions(Long projectId, List<Long> appIds, Date startDate, Date endDate);
 
-    PageInfo<CommitFormRecordDTO> pageCommitRecord(Long projectId, List<Long> appId,
-                                                   PageRequest pageRequest, Map<Long, UserE> userMap,
-                                                   Date startDate, Date endDate);
+    PageInfo<CommitFormRecordDTO> basePageByOptions(Long projectId, List<Long> appId,
+                                                    PageRequest pageRequest, Map<Long, UserE> userMap,
+                                                    Date startDate, Date endDate);
 
-    void update(DevopsGitlabCommitE devopsGitlabCommitE);
+    void baseUpdate(DevopsGitlabCommitE devopsGitlabCommitE);
 
-    List<DevopsGitlabCommitE> queryByAppIdAndBranch(Long appId, String branch, Date startDate);
+    List<DevopsGitlabCommitE> baseListByAppIdAndBranch(Long appId, String branch, Date startDate);
 
 }

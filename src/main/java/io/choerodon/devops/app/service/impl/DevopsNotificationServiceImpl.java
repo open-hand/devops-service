@@ -209,7 +209,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
     @Override
     public void sendMessage(Long envId, Long notificationId, Long objectId, String objectType) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(envId);
         String objectCode = getObjectCode(objectId, objectType);
 
         //生成验证码，存放在redis
@@ -305,7 +305,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
     @Override
     public void validateCaptcha(Long envId, Long objectId, String objectType, String captcha) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(envId);
         String objectCode = getObjectCode(objectId, objectType);
         String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentE.getCode(), objectType, objectCode);
         if (!captcha.equals(redisTemplate.opsForValue().get(resendKey))) {

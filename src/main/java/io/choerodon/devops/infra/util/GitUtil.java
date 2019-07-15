@@ -509,7 +509,7 @@ public class GitUtil {
 
 
     public GitConfigDTO getGitConfig(Long clusterId) {
-        List<DevopsEnvironmentE> devopsEnvironments = devopsEnvironmentRepository.listByClusterId(clusterId);
+        List<DevopsEnvironmentE> devopsEnvironments = devopsEnvironmentRepository.baseListByClusterId(clusterId);
         GitConfigDTO gitConfigDTO = new GitConfigDTO();
         List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
         devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {

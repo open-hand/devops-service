@@ -11,7 +11,7 @@ import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceContentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceRepository;
@@ -49,7 +49,7 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
     private DevopsCustomizeResourceService devopsCustomizeResourceService;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<DevopsCustomizeResourceE> devopsCustomizeResourceES, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync, List<DevopsCustomizeResourceE> devopsCustomizeResourceES, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<DevopsCustomizeResourceE> beforeDevopsCustomResource = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(ResourceType.CUSTOM.getType()))
                 .map(devopsEnvFileResourceE -> {
@@ -57,7 +57,7 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
                             .baseQuery(devopsEnvFileResourceE.getResourceId());
                     if (devopsCustomizeResourceE == null) {
                         devopsEnvFileResourceRepository
-                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), ResourceType.CUSTOM.getType());
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), ResourceType.CUSTOM.getType());
                         return null;
                     }
                     return devopsCustomizeResourceE;
@@ -85,7 +85,7 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
             if (oldDevopsCustomizeResourceE != null) {
                 devopsCustomizeResourceService.deleteResourceByGitOps(oldDevopsCustomizeResourceE.getId());
                 devopsEnvFileResourceRepository
-                        .deleteByEnvIdAndResource(envId, oldDevopsCustomizeResourceE.getId(), ResourceType.CUSTOM.getType());
+                        .baseDeleteByEnvIdAndResourceId(envId, oldDevopsCustomizeResourceE.getId(), ResourceType.CUSTOM.getType());
             }
         });
     }
@@ -118,8 +118,8 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
                         //没发生改变,更新commit记录，更新文件对应关系记录
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                                .queryByEnvIdAndResource(envId, oldDevopsCustomizeResourceE.getId(), ResourceType.CUSTOM.getType());
+                        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                .baseQueryByEnvIdAndResourceId(envId, oldDevopsCustomizeResourceE.getId(), ResourceType.CUSTOM.getType());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceE,

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper">
-    <select id="listDevopsGitlabPipeline" resultType="io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO">
+    <select id="listDevopsGitlabPipeline" resultType="io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO">
         select
         dgp.pipeline_id,
         dgp.app_id,
@@ -33,7 +33,7 @@
     </delete>
 
 
-    <select id="listByBranch" resultType="io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO">
+    <select id="listByBranch" resultType="io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO">
         SELECT
         dgp.pipeline_id,
         dgp.app_id,

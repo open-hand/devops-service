@@ -7,16 +7,16 @@ import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.DevopsEnviromentDTO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 
 /**
  * Created by younger on 2018/4/9.
  */
 @Component
-public class DevopsEnvironmentConvertor implements ConvertorI<DevopsEnvironmentE, DevopsEnvironmentDO, DevopsEnviromentDTO> {
+public class DevopsEnvironmentConvertor implements ConvertorI<DevopsEnvironmentE, DevopsEnvironmentDTO, DevopsEnviromentDTO> {
 
     @Override
-    public DevopsEnvironmentE doToEntity(DevopsEnvironmentDO devopsEnvironmentDO) {
+    public DevopsEnvironmentE doToEntity(DevopsEnvironmentDTO devopsEnvironmentDO) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
         BeanUtils.copyProperties(devopsEnvironmentDO, devopsEnvironmentE);
         devopsEnvironmentE.initDevopsClusterEById(devopsEnvironmentDO.getClusterId());
@@ -25,8 +25,8 @@ public class DevopsEnvironmentConvertor implements ConvertorI<DevopsEnvironmentE
     }
 
     @Override
-    public DevopsEnvironmentDO entityToDo(DevopsEnvironmentE devopsEnvironmentE) {
-        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
+    public DevopsEnvironmentDTO entityToDo(DevopsEnvironmentE devopsEnvironmentE) {
+        DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO();
         if (devopsEnvironmentE.getProjectE() != null) {
             devopsEnvironmentDO.setProjectId(devopsEnvironmentE.getProjectE().getId());
         }

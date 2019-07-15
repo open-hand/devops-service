@@ -7,7 +7,7 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsEnvGroupDTO;
+import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
 import io.choerodon.devops.app.service.DevopsEnvGroupService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -40,7 +40,7 @@ public class DevopsEnvGroupController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境组")
     @PostMapping
-    public ResponseEntity<DevopsEnvGroupDTO> create(
+    public ResponseEntity<DevopsEnvGroupVO> create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组信息", required = true)
@@ -61,11 +61,11 @@ public class DevopsEnvGroupController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新环境组")
     @PutMapping
-    public ResponseEntity<DevopsEnvGroupDTO> update(
+    public ResponseEntity<DevopsEnvGroupVO> update(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组信息", required = true)
-            @RequestBody DevopsEnvGroupDTO devopsEnvGroupDTO) {
+            @RequestBody DevopsEnvGroupVO devopsEnvGroupDTO) {
         return Optional.ofNullable(devopsEnvGroupService.update(devopsEnvGroupDTO, projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.group.update"));
@@ -81,7 +81,7 @@ public class DevopsEnvGroupController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境组")
     @GetMapping
-    public ResponseEntity<List<DevopsEnvGroupDTO>> listByProject(
+    public ResponseEntity<List<DevopsEnvGroupVO>> listByProject(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvGroupService.listByProject(projectId))

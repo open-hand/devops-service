@@ -30,7 +30,7 @@ public class DevopsEnvPodContainerServiceImpl implements DevopsEnvPodContainerSe
     @Override
     public List<DevopsEnvPodContainerLogDTO> logByPodId(Long podId) {
 
-        DevopsEnvPodE devopsEnvPodE = podRepository.get(podId);
+        DevopsEnvPodE devopsEnvPodE = podRepository.baseQueryById(podId);
         if (devopsEnvPodE == null) {
             throw new CommonException("error.pod.notExist");
         }

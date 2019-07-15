@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.vo.iam.entity.CertificationE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
@@ -38,7 +38,7 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
 
     @Override
     public void checkIfExist(List<C7nCertification> c7nCertifications, Long envId,
-                             List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, C7nCertification c7nCertification) {
+                             List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, C7nCertification c7nCertification) {
         String filePath = objectPath.get(TypeUtil.objToString(c7nCertification.hashCode()));
         String certName = c7nCertification.getMetadata().getName();
         CertificationE certificationE = certificationRepository.baseQueryByEnvAndName(envId, certName);
@@ -50,8 +50,8 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
                     .noneMatch(devopsEnvFileResourceE ->
                             devopsEnvFileResourceE.getResourceId()
                                     .equals(certId))) {
-                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                        .queryByEnvIdAndResource(envId, certificationE.getId(), c7nCertification.getKind());
+                DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                        .baseQueryByEnvIdAndResourceId(envId, certificationE.getId(), c7nCertification.getKind());
                 if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath()
                         .equals(objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())))) {
                     throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + certName, filePath);

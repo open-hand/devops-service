@@ -1,37 +1,32 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.validator.DevopsSecretValidator;
+import io.choerodon.devops.api.vo.SecretRepDTO;
+import io.choerodon.devops.api.vo.SecretReqDTO;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.DevopsSecretService;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.HelmObjectKind;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.enums.SecretStatus;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.util.Base64Util;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1Secret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.SecretRepDTO;
-import io.choerodon.devops.api.vo.SecretReqDTO;
-import io.choerodon.devops.api.validator.DevopsSecretValidator;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.DevopsSecretService;
-import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
-import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.util.Base64Util;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.HelmObjectKind;
-import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.enums.SecretStatus;
 
 
 /**
@@ -79,7 +74,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         if (secretReqDTO.getValue() == null || secretReqDTO.getValue().size() == 0) {
             throw new CommonException("error.secret.value.is.null");
         }
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId()
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(secretReqDTO.getEnvId()
         );
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -151,7 +146,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private void operateEnvGitLabFile(Integer gitlabEnvGroupProjectId, V1Secret v1Secret, DevopsSecretE devopsSecretE,
                                       DevopsEnvCommandVO devopsEnvCommandE, Boolean isCreate, UserAttrE userAttrE, Long appId) {
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsSecretE.getEnvId());
 
         //操作secret数据库
         if (isCreate) {
@@ -190,7 +185,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(envId);
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
@@ -208,8 +203,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         // 查询改对象所在文件中是否含有其它对象
-        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                .queryByEnvIdAndResource(devopsEnvironmentE.getId(), secretId, SECRET);
+        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .baseQueryByEnvIdAndResourceId(devopsEnvironmentE.getId(), secretId, SECRET);
         if (devopsEnvFileResourceE == null) {
             devopsSecretRepository.deleteSecret(secretId);
             appResourceRepository.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
@@ -227,12 +222,12 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsSecretRepository.deleteSecret(secretId);
                 appResourceRepository.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
-                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                devopsEnvFileResourceRepository.baseDelete(devopsEnvFileResourceE.getId());
                 return true;
             }
         }
-        List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
-                .queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
+        List<DevopsEnvFileResourceVO> devopsEnvFileResourceES = devopsEnvFileResourceRepository
+                .baseQueryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
 
         // 如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceES.size() == 1) {
@@ -260,17 +255,17 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteSecretByGitOps(Long secretId) {
         DevopsSecretE devopsSecretE = devopsSecretRepository.queryBySecretId(secretId);
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsSecretE.getEnvId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        devopsEnvCommandRepository.baseListByObjectAll(HelmObjectKind.SECRET.toValue(), devopsSecretE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteCommandById(t));
+        devopsEnvCommandRepository.baseListByObject(HelmObjectKind.SECRET.toValue(), devopsSecretE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteByEnvCommandId(t));
         devopsSecretRepository.deleteSecret(secretId);
         appResourceRepository.baseDeleteByResourceIdAndType(secretId, ObjectType.SECRET.getType());
     }
 
     @Override
     public void addSecretByGitOps(SecretReqDTO secretReqDTO, Long userId) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(secretReqDTO.getEnvId());
         //校验环境是否链接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
@@ -294,7 +289,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     public void updateDevopsSecretByGitOps(Long projectId, Long id, SecretReqDTO secretReqDTO, Long userId) {
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(secretReqDTO.getEnvId());
         //校验环境是否链接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 

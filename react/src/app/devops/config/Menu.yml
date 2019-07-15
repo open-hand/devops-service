@@ -173,7 +173,7 @@
         Routes: /devops/deploy-overview
         sort: 4
         permission:
-          - "devops-service.application.listAll"
+          - "devops-service.application.baseListAll"
           - "devops-service.application-instance.deploy"
     - "application-deployment":
         icon: jsfiddle

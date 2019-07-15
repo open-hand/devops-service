@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsSecretE;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
@@ -52,7 +52,7 @@ public class ConvertC7nSecretServiceImpl extends ConvertK8sObjectService<V1Secre
     }
 
     @Override
-    public void checkIfExist(List<V1Secret> c7nSecrets, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete,
+    public void checkIfExist(List<V1Secret> c7nSecrets, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete,
                              Map<String, String> objectPath, V1Secret v1Secret) {
         String filePath = objectPath.get(TypeUtil.objToString(v1Secret.hashCode()));
         String secretName = v1Secret.getMetadata().getName();
@@ -63,8 +63,8 @@ public class ConvertC7nSecretServiceImpl extends ConvertK8sObjectService<V1Secre
                     .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType()
                             .equals(v1Secret.getKind()))
                     .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(secretId))) {
-                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                        .queryByEnvIdAndResource(envId, secretId, v1Secret.getKind());
+                DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                        .baseQueryByEnvIdAndResourceId(envId, secretId, v1Secret.getKind());
                 if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath()
                         .equals(objectPath.get(TypeUtil.objToString(v1Secret.hashCode())))) {
                     throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, secretName);

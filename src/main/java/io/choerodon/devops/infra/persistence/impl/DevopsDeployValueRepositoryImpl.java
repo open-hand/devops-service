@@ -35,7 +35,7 @@ public class DevopsDeployValueRepositoryImpl implements DevopsDeployValueReposit
     private DevopsDeployValueMapper valueMapper;
 
     @Override
-    public PageInfo<DevopsDeployValueE> baseListByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsDeployValueE> basePageByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));

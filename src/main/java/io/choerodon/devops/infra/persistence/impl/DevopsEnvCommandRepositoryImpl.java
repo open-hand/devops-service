@@ -78,12 +78,12 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     }
 
     @Override
-    public List<DevopsEnvCommandVO> baseQueryInstanceCommand(String objectType, Long objectId) {
+    public List<DevopsEnvCommandVO> baseListInstanceCommand(String objectType, Long objectId) {
         return ConvertHelper.convertList(devopsEnvCommandMapper.queryInstanceCommand(objectType, objectId), DevopsEnvCommandVO.class);
     }
 
     @Override
-    public PageInfo<DevopsEnvCommandVO> baseListByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
+    public PageInfo<DevopsEnvCommandVO> basePageByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
         PageInfo<ApplicationInstanceDTO> applicationInstanceDOPage = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
         return ConvertPageHelper.convertPageInfo(applicationInstanceDOPage, DevopsEnvCommandVO.class);
@@ -97,7 +97,7 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     }
 
     @Override
-    public List<DevopsEnvCommandVO> baseListByObjectAll(String objectType, Long objectId) {
+    public List<DevopsEnvCommandVO> baseListByObject(String objectType, Long objectId) {
         DevopsEnvCommandDTO devopsEnvCommandDO = new DevopsEnvCommandDTO();
         devopsEnvCommandDO.setObjectId(objectId);
         devopsEnvCommandDO.setObject(objectType);
@@ -105,7 +105,7 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     }
 
     @Override
-    public void baseDeleteCommandById(DevopsEnvCommandVO commandE) {
+    public void baseDeleteByEnvCommandId(DevopsEnvCommandVO commandE) {
         if (commandE.getDevopsEnvCommandValueDTO() != null) {
             devopsEnvCommandValueRepository.baseDeleteById(commandE.getDevopsEnvCommandValueDTO().getId());
         }

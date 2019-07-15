@@ -3,7 +3,7 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DevopsGitlabCommitDTO
+import io.choerodon.devops.api.vo.DevopsGitlabCommitVO
 <<<<<<< HEAD
 
 =======
@@ -103,7 +103,7 @@ class DevopsGitlabCommitControllerSpec extends Specification {
         devopsGitlabCommitMapper.insert(devopsGitlabCommitDO)
 
         when: '获取应用下的代码提交'
-        def devopsGitlabCommit = restTemplate.postForObject("/v1/projects/1/commits?start_date=2015/10/12&end_date=3018/10/18", [1], DevopsGitlabCommitDTO.class)
+        def devopsGitlabCommit = restTemplate.postForObject("/v1/projects/1/commits?start_date=2015/10/12&end_date=3018/10/18", [1], DevopsGitlabCommitVO.class)
 
         then: '校验返回值'
         devopsGitlabCommit != null

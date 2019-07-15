@@ -1,17 +1,16 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Created by younger on 2018/4/24.
  */
 @Table(name = "devops_env_resource")
-public class DevopsEnvResourceDO extends BaseDTO {
+public class DevopsEnvResourceDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +23,26 @@ public class DevopsEnvResourceDO extends BaseDTO {
     private Long commandId;
     private Long weight;
     private Long reversion;
+    @Transient
+    private Long  devopsEnvCommandId;
+    @Transient
+    private Long  devopsEnvironmentId;
+
+    public Long getDevopsEnvCommandId() {
+        return devopsEnvCommandId;
+    }
+
+    public void setDevopsEnvCommandId(Long devopsEnvCommandId) {
+        this.devopsEnvCommandId = devopsEnvCommandId;
+    }
+
+    public Long getDevopsEnvironmentId() {
+        return devopsEnvironmentId;
+    }
+
+    public void setDevopsEnvironmentId(Long devopsEnvironmentId) {
+        this.devopsEnvironmentId = devopsEnvironmentId;
+    }
 
     public Long getId() {
         return id;

@@ -10,19 +10,19 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
  * Created by Zenger on 2018/4/17.
  */
 public interface DevopsEnvPodRepository {
-    DevopsEnvPodE get(Long id);
+    DevopsEnvPodE baseQueryById(Long id);
 
-    DevopsEnvPodE get(DevopsEnvPodE pod);
+    DevopsEnvPodE baseQueryByPod(DevopsEnvPodE pod);
 
-    void insert(DevopsEnvPodE devopsEnvPodE);
+    void baseCreate(DevopsEnvPodE devopsEnvPodE);
 
-    List<DevopsEnvPodE> selectByInstanceId(Long instanceId);
+    List<DevopsEnvPodE> baseListByInstanceId(Long instanceId);
 
-    void update(DevopsEnvPodE devopsEnvPodE);
+    void baseUpdate(DevopsEnvPodE devopsEnvPodE);
 
-    PageInfo<DevopsEnvPodE> listAppPod(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsEnvPodE> basePageByIds(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam);
 
-    void deleteByName(String name, String namespace);
+    void baseDeleteByName(String name, String namespace);
 
-    DevopsEnvPodE getByNameAndEnv(String name, String namespace);
+    DevopsEnvPodE queryByNameAndEnvName(String name, String namespace);
 }

@@ -4,7 +4,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper">
 
     <select id="pageUserEnvPermissionByOption"
-            resultType="io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDO">
+            resultType="io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO">
         SELECT
         deup.login_name,
         deup.iam_user_id,
@@ -17,7 +17,7 @@
         <include refid="sqlparam"/>
     </select>
 
-    <select id="listAllUserPermission" resultType="io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDO">
+    <select id="listAllUserPermission" resultType="io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO">
         SELECT
         deup.login_name,
         deup.iam_user_id,
@@ -30,7 +30,7 @@
         AND deup.is_permitted = TRUE
     </select>
 
-    <select id="listAll" resultType="io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDO">
+    <select id="listAll" resultType="io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO">
         SELECT
         deup.iam_user_id,
         deup.is_permitted

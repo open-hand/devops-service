@@ -5,7 +5,7 @@ import java.util.Map;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
@@ -28,14 +28,14 @@ public class ConvertDevopsCustomResourceImpl extends ConvertK8sObjectService<Dev
 
 
     @Override
-    public void checkIfExist(List<DevopsCustomizeResourceE> devopsCustomizeResourceES, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, DevopsCustomizeResourceE devopsCustomizeResourceE) {
+    public void checkIfExist(List<DevopsCustomizeResourceE> devopsCustomizeResourceES, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, DevopsCustomizeResourceE devopsCustomizeResourceE) {
         String filePath = objectPath.get(TypeUtil.objToString(devopsCustomizeResourceE.hashCode()));
         DevopsCustomizeResourceE oldDevopsCustomizeResourceE = devopsCustomizeResourceRepository.queryByEnvIdAndKindAndName(envId, devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName());
         if (oldDevopsCustomizeResourceE != null
                 && beforeSyncDelete.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(ResourceType.CUSTOM.getType()))
                 .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(oldDevopsCustomizeResourceE.getId()))) {
-            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, oldDevopsCustomizeResourceE.getId(), ResourceType.CUSTOM.getType());
+            DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository.baseQueryByEnvIdAndResourceId(envId, oldDevopsCustomizeResourceE.getId(), ResourceType.CUSTOM.getType());
             if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(devopsCustomizeResourceE.hashCode())))) {
                 throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, devopsCustomizeResourceE.getName());
             }

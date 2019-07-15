@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.infra.gitops.YamlConvertToResourceHandler;
 
 public abstract class ConvertK8sObjectService<T> {
@@ -23,7 +23,7 @@ public abstract class ConvertK8sObjectService<T> {
     }
 
 
-    public void checkIfExist(List<T> ts, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, T t) {
+    public void checkIfExist(List<T> ts, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, T t) {
     }
 
     public T getT() {

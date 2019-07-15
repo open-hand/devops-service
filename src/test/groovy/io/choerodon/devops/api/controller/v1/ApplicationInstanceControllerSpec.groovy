@@ -887,7 +887,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "ListResources"() {
         when: '获取部署实例资源对象'
-        def dto = restTemplate.getForObject("/v1/projects/1/app_instances/1/resources", DevopsEnvResourceDTO.class)
+        def dto = restTemplate.getForObject("/v1/projects/1/app_instances/1/resources", DevopsEnvResourceVO.class)
 
         then: '校验返回值'
         dto.getPodDTOS().get(0)["name"] == "iam-service-56946b7b9f-42xnx"

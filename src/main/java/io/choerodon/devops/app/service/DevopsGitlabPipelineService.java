@@ -1,10 +1,13 @@
 package io.choerodon.devops.app.service;
 
 import java.util.Date;
+import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabPipelineE;
+import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO;
 
 public interface DevopsGitlabPipelineService {
 
@@ -18,5 +21,21 @@ public interface DevopsGitlabPipelineService {
 
     void handleCreate(PipelineWebHookDTO pipelineWebHookDTO);
 
-    PageInfo<DevopsGitlabPipelineDTO> pagePipelines(Long appId, String branch, PageRequest pageRequest, Date startTime, Date endTime);
+    PageInfo<DevopsGitlabPipelineVO> pagePipelines(Long appId, String branch, PageRequest pageRequest, Date startTime, Date endTime);
+
+    void baseCreate(DevopsGitlabPipelineDTO devopsGitlabPipelineDTO);
+
+    DevopsGitlabPipelineDTO baseQueryByGitlabPipelineId(Long id);
+
+    void baseUpdate(DevopsGitlabPipelineDTO devopsGitlabPipelineDTO);
+
+    DevopsGitlabPipelineDTO baseQueryByCommitId(Long commitId);
+
+    List<DevopsGitlabPipelineDTO> baseListByApplicationId(Long appId, Date startTime, Date endTime);
+
+    PageInfo<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appId, PageRequest pageRequest, Date startTime, Date endTime);
+
+    void baseDeleteWithoutCommit();
+
+    List<DevopsGitlabPipelineDTO> baseListByAppIdAndBranch(Long appId, String branch);
 }

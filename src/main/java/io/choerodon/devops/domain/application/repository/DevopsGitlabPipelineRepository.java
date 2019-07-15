@@ -7,29 +7,33 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabPipelineE;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO;
 
 
 =======
 import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
 >>>>>>> [IMP] 修改AppControler重构
+=======
+import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO;
+>>>>>>> [IMP] 重构Repository
 
 public interface DevopsGitlabPipelineRepository {
 
-    void create(DevopsGitlabPipelineE devopsGitlabPipelineE);
+    void baseCreate(DevopsGitlabPipelineE devopsGitlabPipelineE);
 
-    DevopsGitlabPipelineE queryByGitlabPipelineId(Long id);
+    DevopsGitlabPipelineE baseQueryByGitlabPipelineId(Long id);
 
-    void update(DevopsGitlabPipelineE devopsGitlabPipelineE);
+    void baseUpdate(DevopsGitlabPipelineE devopsGitlabPipelineE);
 
-    DevopsGitlabPipelineE queryByCommitId(Long commitId);
+    DevopsGitlabPipelineE baseQueryByCommitId(Long commitId);
 
-    List<DevopsGitlabPipelineDO> listPipeline(Long appId, Date startTime, Date endTime);
+    List<DevopsGitlabPipelineDTO> baseListByApplicationId(Long appId, Date startTime, Date endTime);
 
-    PageInfo<DevopsGitlabPipelineDO> pagePipeline(Long appId, PageRequest pageRequest, Date startTime, Date endTime);
+    PageInfo<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appId, PageRequest pageRequest, Date startTime, Date endTime);
 
-    void deleteWithoutCommit();
+    void baseDeleteWithoutCommit();
 
-    List<DevopsGitlabPipelineDO> listByBranch(Long appId, String branch);
+    List<DevopsGitlabPipelineDTO> baseListByAppIdAndBranch(Long appId, String branch);
 
 }

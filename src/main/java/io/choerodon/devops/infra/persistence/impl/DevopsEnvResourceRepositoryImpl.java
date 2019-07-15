@@ -9,7 +9,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvResourceE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvResourceRepository;
-import io.choerodon.devops.infra.dto.DevopsEnvResourceDO;
+import io.choerodon.devops.infra.dto.DevopsEnvResourceDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
 
 /**
@@ -25,34 +25,34 @@ public class DevopsEnvResourceRepositoryImpl implements DevopsEnvResourceReposit
     }
 
     @Override
-    public void create(DevopsEnvResourceE devopsEnvResourceE) {
-        DevopsEnvResourceDO devopsEnvResourceDO =
-                ConvertHelper.convert(devopsEnvResourceE, DevopsEnvResourceDO.class);
+    public void baseCreate(DevopsEnvResourceE devopsEnvResourceE) {
+        DevopsEnvResourceDTO devopsEnvResourceDO =
+                ConvertHelper.convert(devopsEnvResourceE, DevopsEnvResourceDTO.class);
         if (devopsEnvResourceMapper.insert(devopsEnvResourceDO) != 1) {
             throw new CommonException("error.resource.insert");
         }
     }
 
     @Override
-    public List<DevopsEnvResourceE> listByInstanceId(Long instanceId) {
-        DevopsEnvResourceDO devopsEnvResourceDO = new DevopsEnvResourceDO();
+    public List<DevopsEnvResourceE> baseListByInstanceId(Long instanceId) {
+        DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO();
         devopsEnvResourceDO.setAppInstanceId(instanceId);
-        List<DevopsEnvResourceDO> devopsEnvResourceDOS = devopsEnvResourceMapper.select(
+        List<DevopsEnvResourceDTO> devopsEnvResourceDOS = devopsEnvResourceMapper.select(
                 devopsEnvResourceDO);
         return ConvertHelper.convertList(devopsEnvResourceDOS, DevopsEnvResourceE.class);
     }
 
     @Override
-    public List<DevopsEnvResourceE> listJobs(Long commandId) {
+    public List<DevopsEnvResourceE> baseListByCommandId(Long commandId) {
         return ConvertHelper.convertList(
                 devopsEnvResourceMapper.listJobs(commandId),
                 DevopsEnvResourceE.class);
     }
 
     @Override
-    public void update(DevopsEnvResourceE devopsEnvResourceE) {
-        DevopsEnvResourceDO devopsEnvResourceDO = ConvertHelper.convert(
-                devopsEnvResourceE, DevopsEnvResourceDO.class);
+    public void baseUpdate(DevopsEnvResourceE devopsEnvResourceE) {
+        DevopsEnvResourceDTO devopsEnvResourceDO = ConvertHelper.convert(
+                devopsEnvResourceE, DevopsEnvResourceDTO.class);
         devopsEnvResourceDO.setObjectVersionNumber(
                 devopsEnvResourceMapper.selectByPrimaryKey(
                         devopsEnvResourceDO.getId()).getObjectVersionNumber());
@@ -63,7 +63,7 @@ public class DevopsEnvResourceRepositoryImpl implements DevopsEnvResourceReposit
 
     @Override
     public void deleteByEnvIdAndKindAndName(Long envId, String kind, String name) {
-        DevopsEnvResourceDO devopsEnvResourceDO = new DevopsEnvResourceDO();
+        DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO();
         if (devopsEnvResourceMapper.queryResource(null, null, envId, kind, name) != null) {
             devopsEnvResourceDO.setEnvId(envId);
         }
@@ -73,19 +73,19 @@ public class DevopsEnvResourceRepositoryImpl implements DevopsEnvResourceReposit
     }
 
     @Override
-    public List<DevopsEnvResourceE> listByEnvAndType(Long envId, String type) {
+    public List<DevopsEnvResourceE> baseListByEnvAndType(Long envId, String type) {
         return ConvertHelper.convertList(
                 devopsEnvResourceMapper.listByEnvAndType(envId, type), DevopsEnvResourceE.class);
     }
 
     @Override
-    public DevopsEnvResourceE queryLatestJob(String kind, String name) {
+    public DevopsEnvResourceE baseQueryByKindAndName(String kind, String name) {
         return ConvertHelper.convert(devopsEnvResourceMapper.queryLatestJob(kind, name), DevopsEnvResourceE.class);
     }
 
     @Override
     public void deleteByKindAndNameAndInstanceId(String kind, String name, Long instanceId) {
-        DevopsEnvResourceDO devopsEnvResourceDO = new DevopsEnvResourceDO();
+        DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO();
         devopsEnvResourceDO.setKind(kind);
         devopsEnvResourceDO.setName(name);
         devopsEnvResourceDO.setAppInstanceId(instanceId);
@@ -93,7 +93,7 @@ public class DevopsEnvResourceRepositoryImpl implements DevopsEnvResourceReposit
     }
 
     @Override
-    public DevopsEnvResourceE queryResource(Long instanceId, Long commandId, Long envId, String kind, String name) {
+    public DevopsEnvResourceE baseQueryOptions(Long instanceId, Long commandId, Long envId, String kind, String name) {
         return ConvertHelper.convert(devopsEnvResourceMapper.queryResource(instanceId, commandId, envId, kind, name), DevopsEnvResourceE.class);
     }
 

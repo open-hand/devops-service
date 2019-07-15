@@ -1,40 +1,35 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
+import io.choerodon.devops.api.vo.DevopsConfigMapVO;
+import io.choerodon.devops.app.service.DevopsConfigMapService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapMapper;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1ObjectMeta;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsConfigMapVO;
-import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
-import io.choerodon.devops.app.service.DevopsConfigMapService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
-import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.ObjectType;
 
 @Service
 public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
@@ -78,7 +73,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Transactional(rollbackFor = Exception.class)
     public void createOrUpdate(Long projectId, Boolean sync, DevopsConfigMapVO devopsConfigMapVO) {
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapVO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsConfigMapVO.getEnvId());
 
         UserAttrE userAttrE = null;
         if (!sync) {
@@ -126,10 +121,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
 
     @Override
-    public DevopsConfigMapRepDTO createOrUpdateByGitOps(DevopsConfigMapVO devopsConfigMapVO, Long userId) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapVO.getEnvId());
+    public DevopsConfigMapRespVO createOrUpdateByGitOps(DevopsConfigMapVO devopsConfigMapVO, Long userId) {
+        DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsConfigMapVO.getEnvId());
         //校验环境是否连接
-        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
 
         //处理创建数据
         DevopsConfigMapE devopsConfigMapE = ConvertHelper.convert(devopsConfigMapVO, DevopsConfigMapE.class);
@@ -177,10 +172,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     public void deleteByGitOps(Long configMapId) {
         DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.baseQueryById(configMapId);
         //校验环境是否链接
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsConfigMapE.getDevopsEnvironmentE().getId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        devopsEnvCommandRepository.baseListByObjectAll(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteCommandById(devopsEnvCommandE));
+        devopsEnvCommandRepository.baseListByObject(ObjectType.CONFIGMAP.getType(), configMapId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteByEnvCommandId(devopsEnvCommandE));
         devopsConfigMapRepository.baseDelete(configMapId);
         appResourceRepository.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
     }
@@ -190,7 +185,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     public void delete(Long configMapId) {
         DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.baseQueryById(configMapId);
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId()
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsConfigMapE.getDevopsEnvironmentE().getId()
         );
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -212,8 +207,8 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //查询改对象所在文件中是否含有其它对象
-        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                .queryByEnvIdAndResource(devopsEnvironmentE.getId(), configMapId, CONFIGMAP);
+        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .baseQueryByEnvIdAndResourceId(devopsEnvironmentE.getId(), configMapId, CONFIGMAP);
         if (devopsEnvFileResourceE == null) {
             devopsConfigMapRepository.baseDelete(configMapId);
             appResourceRepository.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
@@ -231,11 +226,11 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsConfigMapRepository.baseDelete(configMapId);
                 appResourceRepository.baseDeleteByResourceIdAndType(configMapId, ObjectType.CONFIGMAP.getType());
-                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                devopsEnvFileResourceRepository.baseDelete(devopsEnvFileResourceE.getId());
                 return;
             }
         }
-        List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
+        List<DevopsEnvFileResourceVO> devopsEnvFileResourceES = devopsEnvFileResourceRepository.baseQueryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceES.size() == 1) {

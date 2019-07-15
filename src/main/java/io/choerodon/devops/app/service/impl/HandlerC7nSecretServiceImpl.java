@@ -14,7 +14,7 @@ import io.choerodon.devops.api.validator.DevopsSecretValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsSecretE;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
@@ -71,7 +71,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
     }
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync,
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync,
                                  List<V1Secret> v1Secrets, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforSecret = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(SECRET))
@@ -80,7 +80,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                             .queryBySecretId(devopsEnvFileResourceE.getResourceId());
                     if (devopsSecretE == null) {
                         devopsEnvFileResourceRepository
-                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), SECRET);
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), SECRET);
                         return null;
                     }
                     return devopsSecretE.getName();
@@ -101,7 +101,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
             DevopsSecretE devopsSecretE = devopsSecretRepository.selectByEnvIdAndName(envId, secretName);
             if (devopsSecretE != null) {
                 devopsSecretService.deleteSecretByGitOps(devopsSecretE.getId());
-                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsSecretE.getId(), SECRET);
+                devopsEnvFileResourceRepository.baseDeleteByEnvIdAndResourceId(envId, devopsSecretE.getId(), SECRET);
             }
         });
 
@@ -175,8 +175,8 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
 
                 devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                 devopsEnvCommandRepository.update(devopsEnvCommandE);
-                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                        .queryByEnvIdAndResource(envId, devopsSecretE.getId(), c7nSecret.getKind());
+                DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                        .baseQueryByEnvIdAndResourceId(envId, devopsSecretE.getId(), c7nSecret.getKind());
                 devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, devopsEnvFileResourceE,
                         c7nSecret.hashCode(), devopsSecretE.getId(), c7nSecret.getKind());
             } catch (CommonException e) {

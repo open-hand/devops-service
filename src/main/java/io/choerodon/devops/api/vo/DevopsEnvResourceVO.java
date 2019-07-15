@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created by younger on 2018/4/25.
  */
-public class DevopsEnvResourceDTO {
+public class DevopsEnvResourceVO {
     private List<PodDTO> podDTOS;
     private List<ServiceDTO> serviceDTOS;
     private List<IngressDTO> ingressDTOS;
@@ -19,7 +19,7 @@ public class DevopsEnvResourceDTO {
     /**
      * 构造函数
      */
-    public DevopsEnvResourceDTO() {
+    public DevopsEnvResourceVO() {
         this.podDTOS = new ArrayList<>();
         this.deploymentDTOS = new ArrayList<>();
         this.serviceDTOS = new ArrayList<>();

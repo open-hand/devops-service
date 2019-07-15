@@ -452,7 +452,7 @@ public class ApplicationInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取部署实例资源对象")
     @GetMapping("/{appInstanceId}/resources")
-    public ResponseEntity<DevopsEnvResourceDTO> listResources(
+    public ResponseEntity<DevopsEnvResourceVO> listResources(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)

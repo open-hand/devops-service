@@ -11,7 +11,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Created by younger on 2018/4/24.
  */
 @Table(name = "devops_env_resource_detail")
-public class DevopsEnvResourceDetailDO extends BaseDTO {
+public class DevopsEnvResourceDetailDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

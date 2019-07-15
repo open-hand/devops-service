@@ -85,7 +85,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Transactional(rollbackFor=Exception.class)
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId) {
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId()
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsIngressDTO.getEnvId()
         );
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -151,7 +151,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void addIngressByGitOps(DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId) {
         //校验环境是否连接
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsIngressDTO.getEnvId());
 
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
@@ -178,7 +178,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         Boolean deleteCert = false;
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId()
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsIngressDTO.getEnvId()
         );
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -241,7 +241,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void updateIngressByGitOps(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId) {
         //校验环境是否连接
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsIngressDTO.getEnvId());
 
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
@@ -283,7 +283,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         devopsIngressDTOS.getList().forEach(devopsIngressDTO -> {
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsIngressDTO.getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 devopsIngressDTO.setEnvStatus(true);
@@ -298,7 +298,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(ingressDO.getEnvId()
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(ingressDO.getEnvId()
         );
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -320,8 +320,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //查询改对象所在文件中是否含有其它对象
-        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, INGRESS);
+        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .baseQueryByEnvIdAndResourceId(devopsEnvironmentE.getId(), ingressId, INGRESS);
         if (devopsEnvFileResourceE == null) {
             devopsIngressRepository.deleteIngress(ingressId);
             appResourceRepository.baseDeleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
@@ -342,11 +342,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 devopsIngressRepository.deleteIngress(ingressId);
                 appResourceRepository.baseDeleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
                 devopsIngressRepository.deleteIngressPath(ingressId);
-                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                devopsEnvFileResourceRepository.baseDelete(devopsEnvFileResourceE.getId());
                 return;
             }
         }
-        List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
+        List<DevopsEnvFileResourceVO> devopsEnvFileResourceES = devopsEnvFileResourceRepository.baseQueryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceES.size() == 1) {
@@ -381,11 +381,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     public void deleteIngressByGitOps(Long ingressId) {
         DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(ingressId);
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsIngressDO.getEnvId());
 
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
-        devopsEnvCommandRepository.baseListByObjectAll(ObjectType.INGRESS.getType(), ingressId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteCommandById(devopsEnvCommandE));
+        devopsEnvCommandRepository.baseListByObject(ObjectType.INGRESS.getType(), ingressId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteByEnvCommandId(devopsEnvCommandE));
         devopsIngressRepository.deleteIngress(ingressId);
         appResourceRepository.baseDeleteByResourceIdAndType(ingressId,ObjectType.INGRESS.getType());
     }

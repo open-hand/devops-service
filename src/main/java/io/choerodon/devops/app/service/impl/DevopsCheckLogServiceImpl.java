@@ -262,7 +262,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         }
                                     }
                                     devopsGitlabCommitE.setCommitDate(commitDO.getCommittedDate());
-                                    devopsGitlabCommitRepository.create(devopsGitlabCommitE);
+                                    devopsGitlabCommitRepository.baseCreate(devopsGitlabCommitE);
 
                                 });
                                 logs.add(checkLog);
@@ -307,10 +307,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 checkLog.setResult(FAILED + e.getMessage());
                             }
                             DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository
-                                    .queryByShaAndRef(gitlabPipelineE.getSha(), gitlabPipelineE.getRef());
+                                    .baseQueryByShaAndRef(gitlabPipelineE.getSha(), gitlabPipelineE.getRef());
                             if (devopsGitlabCommitE != null) {
                                 devopsGitlabCommitE.setRef(gitlabPipelineE.getRef());
-                                devopsGitlabCommitRepository.update(devopsGitlabCommitE);
+                                devopsGitlabCommitRepository.baseUpdate(devopsGitlabCommitE);
                                 devopsGitlabPipelineE.initDevopsGitlabCommitEById(devopsGitlabCommitE.getId());
                             }
                             List<Stage> stages = new ArrayList<>();
@@ -335,25 +335,25 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         }
                                     });
                             devopsGitlabPipelineE.setStage(JSONArray.toJSONString(stages));
-                            devopsGitlabPipelineRepository.create(devopsGitlabPipelineE);
+                            devopsGitlabPipelineRepository.baseCreate(devopsGitlabPipelineE);
                         });
                     } catch (Exception e) {
                         checkLog.setResult(FAILED + e.getMessage());
                     }
                     logs.add(checkLog);
                 });
-        devopsGitlabPipelineRepository.deleteWithoutCommit();
+        devopsGitlabPipelineRepository.baseDeleteWithoutCommit();
     }
 
     private void fixPipelines(List<CheckLog> logs) {
-        List<DevopsGitlabPipelineDO> gitlabPipelineES = devopsGitlabPipelineMapper.selectAll();
+        List<DevopsGitlabPipelineDTO> gitlabPipelineES = devopsGitlabPipelineMapper.selectAll();
         gitlabPipelineES.forEach(devopsGitlabPipelineDO -> {
             CheckLog checkLog = new CheckLog();
             checkLog.setContent(APP + devopsGitlabPipelineDO.getPipelineId() + "fix pipeline");
             try {
                 ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(devopsGitlabPipelineDO.getAppId());
                 if (applicationDO.getGitlabProjectId() != null) {
-                    DevopsGitlabCommitDO devopsGitlabCommitDO = devopsGitlabCommitMapper
+                    DevopsGitlabCommitDTO devopsGitlabCommitDO = devopsGitlabCommitMapper
                             .selectByPrimaryKey(devopsGitlabPipelineDO.getCommitId());
                     if (devopsGitlabCommitDO != null) {
                         GitlabPipelineE gitlabPipelineE = gitlabProjectRepository
@@ -576,7 +576,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
          * 为devops_env_pod表的遗留数据的新增的node_name和restart_count字段同步数据
          */
         private void syncDevopsEnvPodNodeNameAndRestartCount() {
-            List<DevopsEnvironmentPodDTO> pods = devopsEnvPodMapper.selectAll();
+            List<DevopsEnvPodDTO> pods = devopsEnvPodMapper.selectAll();
             pods.forEach(pod -> {
                 try {
                     if (StringUtils.isEmpty(pod.getNodeName())) {
@@ -795,7 +795,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         private void syncEnvProject(List<CheckLog> logs) {
             LOGGER.info("start to sync env project");
-            List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.list();
+            List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.baseListAll();
             devopsEnvironmentES
                     .stream()
                     .filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() == null)
@@ -812,7 +812,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                     organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode()));
                             devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
                             devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
-                            devopsEnvironmentRepository.update(devopsEnvironmentE);
+                            devopsEnvironmentRepository.baseUpdate(devopsEnvironmentE);
                             GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
                             DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectE.getId());
                             gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()));

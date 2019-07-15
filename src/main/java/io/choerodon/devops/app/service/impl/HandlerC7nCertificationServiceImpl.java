@@ -10,7 +10,7 @@ import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.api.vo.iam.entity.CertificationE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
@@ -53,7 +53,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync,
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync,
 
                                  List<C7nCertification> c7nCertifications, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<C7nCertification> updateC7nCertification = new ArrayList<>();
@@ -64,7 +64,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                             .baseQueryById(devopsEnvFileResourceE.getResourceId());
                     if (certificationE == null) {
                         devopsEnvFileResourceRepository
-                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), ObjectType.CERTIFICATE.getType());
+                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), ObjectType.CERTIFICATE.getType());
                         return null;
                     }
                     return certificationE.getName();
@@ -90,7 +90,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                     if (certificationE != null) {
                         certificationService.certDeleteByGitOps(certificationE.getId());
                         devopsEnvFileResourceRepository
-                                .deleteByEnvIdAndResource(envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
+                                .baseDeleteByEnvIdAndResourceId(envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
                     }
 
                 });
@@ -100,14 +100,14 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
             String filePath = "";
             try {
                 filePath = objectPath.get(TypeUtil.objToString(c7nCertification.hashCode()));
-                DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
+                DevopsEnvFileResourceVO devopsEnvFileResourceE = new DevopsEnvFileResourceVO();
                 devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
                 devopsEnvFileResourceE.setFilePath(filePath);
                 devopsEnvFileResourceE.setResourceId(
                         createCertificationAndGetId(
                                 envId, c7nCertification, c7nCertification.getMetadata().getName(), filePath, path, userId));
                 devopsEnvFileResourceE.setResourceType(c7nCertification.getKind());
-                devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+                devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE);
             } catch (Exception e) {
                 throw new GitOpsExplainException(e.getMessage(), filePath, e);
             }
@@ -119,8 +119,8 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         Long certId = checkC7nCertificationChanges(c7nCertification, envId, objectPath, path);
 
         String kind = c7nCertification.getKind();
-        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                .queryByEnvIdAndResource(envId, certId, kind);
+        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .baseQueryByEnvIdAndResourceId(envId, certId, kind);
         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId,
                 devopsEnvFileResourceE, c7nCertification.hashCode(), certId, kind);
 
@@ -128,7 +128,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
 
     private Long checkC7nCertificationChanges(C7nCertification c7nCertification, Long envId,
                                               Map<String, String> objectPath, String path) {
-        DevopsEnvironmentE environmentE = devopsEnvironmentRepository.queryById(envId);
+        DevopsEnvironmentE environmentE = devopsEnvironmentRepository.baseQueryById(envId);
         String certName = c7nCertification.getMetadata().getName();
         CertificationE certificationE = certificationRepository.baseQueryByEnvAndName(envId, certName);
         CertificationFileDO certificationFileDO = certificationRepository.baseGetCertFile(certificationE.getId());

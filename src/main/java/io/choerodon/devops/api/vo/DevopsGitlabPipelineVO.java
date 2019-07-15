@@ -5,7 +5,7 @@ import java.util.List;
 
 import io.choerodon.devops.domain.application.valueobject.Stage;
 
-public class DevopsGitlabPipelineDTO {
+public class DevopsGitlabPipelineVO {
 
     private String status;
     private String version;

@@ -107,7 +107,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         devopsServiceByPage.getList().forEach(devopsServiceV -> {
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceV.getEnvId());
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.baseQueryById(devopsServiceV.getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 devopsServiceV.setEnvStatus(true);
@@ -124,7 +124,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         if (!devopsServiceByPage.getList().isEmpty()) {
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceByPage.getList().get(0).getEnvId());
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.baseQueryById(devopsServiceByPage.getList().get(0).getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 devopsServiceByPage.getList().stream().forEach(devopsServiceV -> {
@@ -182,7 +182,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.baseQueryById(devopsServiceReqDTO.getEnvId());
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -227,7 +227,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Long userId) {
         //校验环境是否链接
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.baseQueryById(devopsServiceReqDTO.getEnvId());
 
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
@@ -263,7 +263,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         initDevopsServicePorts(devopsServiceReqDTO);
 
         DevopsEnvironmentE devopsEnvironmentE =
-                devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
+                devopsEnviromentRepository.baseQueryById(devopsServiceReqDTO.getEnvId());
         if (!devopsServiceRepository.checkName(devopsEnvironmentE.getId(), devopsServiceReqDTO.getName())) {
             throw new CommonException("error.service.name.exist");
         }
@@ -373,7 +373,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateDevopsService(Long projectId, Long id,
                                        DevopsServiceReqDTO devopsServiceReqDTO) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId()
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.baseQueryById(devopsServiceReqDTO.getEnvId()
         );
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -415,7 +415,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public Boolean updateDevopsServiceByGitOps(Long projectId, Long id,
                                                DevopsServiceReqDTO devopsServiceReqDTO, Long userId) {
         //校验环境是否链接
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.baseQueryById(devopsServiceReqDTO.getEnvId());
 
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
@@ -456,7 +456,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public void deleteDevopsService(Long id) {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceE.getEnvId()
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.baseQueryById(devopsServiceE.getEnvId()
         );
 
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -475,8 +475,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         String path = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         //查询改对象所在文件中是否含有其它对象
-        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                .queryByEnvIdAndResource(devopsEnvironmentE.getId(), id, SERVICE);
+        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .baseQueryByEnvIdAndResourceId(devopsEnvironmentE.getId(), id, SERVICE);
         if (devopsEnvFileResourceE == null) {
             devopsServiceRepository.delete(id);
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
@@ -494,13 +494,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
                     devopsEnvFileResourceE.getFilePath())) {
                 devopsServiceRepository.delete(id);
-                devopsEnvFileResourceRepository.deleteFileResource(devopsEnvFileResourceE.getId());
+                devopsEnvFileResourceRepository.baseDelete(devopsEnvFileResourceE.getId());
                 //删除网络的关联关系
                 appResourceRepository.baseDeleteByResourceIdAndType(id, ObjectType.SERVICE.getType());
                 return;
             }
         }
-        List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
+        List<DevopsEnvFileResourceVO> devopsEnvFileResourceES = devopsEnvFileResourceRepository.baseQueryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceES.size() == 1) {
@@ -535,11 +535,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public void deleteDevopsServiceByGitOps(Long id) {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
         //校验环境是否链接
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.baseQueryById(devopsServiceE.getEnvId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //更新数据
-        devopsEnvCommandRepository.baseListByObjectAll(ObjectType.SERVICE.getType(), devopsServiceE.getId()).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteCommandById(devopsEnvCommandE));
+        devopsEnvCommandRepository.baseListByObject(ObjectType.SERVICE.getType(), devopsServiceE.getId()).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteByEnvCommandId(devopsEnvCommandE));
         devopsServiceRepository.delete(id);
 
         //删除网络的关联关系
@@ -709,7 +709,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                       UserAttrE userAttrE) {
 
         DevopsEnvironmentE devopsEnvironmentE =
-                devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
+                devopsEnviromentRepository.baseQueryById(devopsServiceE.getEnvId());
 
         //操作网络数据库操作
         if (isCreate) {

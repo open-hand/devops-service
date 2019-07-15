@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface ClusterNodeInfoService {
     /**
-     * get redis cluster key to get node information
+     * get redis cluster key to baseQueryById node information
      *
      * @param clusterId the cluster id
      * @return the redis key according to the cluster id
@@ -20,7 +20,7 @@ public interface ClusterNodeInfoService {
     String getRedisClusterKey(Long clusterId);
 
     /**
-     * get redis cluster key to get node information
+     * get redis cluster key to baseQueryById node information
      *
      * @param clusterId      the cluster id
      * @param organizationId the organization id

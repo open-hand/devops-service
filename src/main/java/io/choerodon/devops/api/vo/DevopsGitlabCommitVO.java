@@ -9,15 +9,15 @@ import java.util.List;
  * Time: 15:09
  * Description:
  */
-public class DevopsGitlabCommitDTO {
+public class DevopsGitlabCommitVO {
     private List<CommitFormUserDTO> commitFormUserDTOList;
     private List<Date> totalCommitsDate;
 
-    public DevopsGitlabCommitDTO() {
+    public DevopsGitlabCommitVO() {
     }
 
-    public DevopsGitlabCommitDTO(List<CommitFormUserDTO> commitFormUserDTOList,
-                                 List<Date> totalCommitsDate) {
+    public DevopsGitlabCommitVO(List<CommitFormUserDTO> commitFormUserDTOList,
+                                List<Date> totalCommitsDate) {
         this.commitFormUserDTOList = commitFormUserDTOList;
         this.totalCommitsDate = totalCommitsDate;
     }

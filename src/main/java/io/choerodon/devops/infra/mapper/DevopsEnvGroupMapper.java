@@ -5,7 +5,7 @@ import java.util.List;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dto.DevopsEnvGroupDO;
+import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
 
 /**
  * Creator: Runge
@@ -13,6 +13,6 @@ import io.choerodon.devops.infra.dto.DevopsEnvGroupDO;
  * Time: 14:17
  * Description:
  */
-public interface DevopsEnvGroupMapper extends Mapper<DevopsEnvGroupDO> {
+public interface DevopsEnvGroupMapper extends Mapper<DevopsEnvGroupDTO> {
     void sortGroupInProject(@Param("projectId") Long projectId, @Param("envGroupIds") List<Long> envGroupIds);
 }

@@ -14,7 +14,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabPipelineE;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabPipelineRepository;
-import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
 
 @Service
@@ -26,24 +26,24 @@ public class DevopsGitlabPipelineRepositoryImpl implements DevopsGitlabPipelineR
 
 
     @Override
-    public void create(DevopsGitlabPipelineE devopsGitlabPipelineE) {
-        DevopsGitlabPipelineDO devopsGitlabPipelineDO = ConvertHelper.convert(devopsGitlabPipelineE, DevopsGitlabPipelineDO.class);
+    public void baseCreate(DevopsGitlabPipelineE devopsGitlabPipelineE) {
+        DevopsGitlabPipelineDTO devopsGitlabPipelineDO = ConvertHelper.convert(devopsGitlabPipelineE, DevopsGitlabPipelineDTO.class);
         if (devopsGitlabPipelineMapper.insert(devopsGitlabPipelineDO) != 1) {
             throw new CommonException("error.gitlab.pipeline.create");
         }
     }
 
     @Override
-    public DevopsGitlabPipelineE queryByGitlabPipelineId(Long id) {
-        DevopsGitlabPipelineDO devopsGitlabPipelineDO = new DevopsGitlabPipelineDO();
+    public DevopsGitlabPipelineE baseQueryByGitlabPipelineId(Long id) {
+        DevopsGitlabPipelineDTO devopsGitlabPipelineDO = new DevopsGitlabPipelineDTO();
         devopsGitlabPipelineDO.setPipelineId(id);
         return ConvertHelper.convert(devopsGitlabPipelineMapper.selectOne(devopsGitlabPipelineDO), DevopsGitlabPipelineE.class);
     }
 
     @Override
-    public void update(DevopsGitlabPipelineE devopsGitlabPipelineE) {
-        DevopsGitlabPipelineDO devopsGitlabPipelineDO = devopsGitlabPipelineMapper.selectByPrimaryKey(devopsGitlabPipelineE.getId());
-        DevopsGitlabPipelineDO updateDevopsGitlabPipelineDO = ConvertHelper.convert(devopsGitlabPipelineE, DevopsGitlabPipelineDO.class);
+    public void baseUpdate(DevopsGitlabPipelineE devopsGitlabPipelineE) {
+        DevopsGitlabPipelineDTO devopsGitlabPipelineDO = devopsGitlabPipelineMapper.selectByPrimaryKey(devopsGitlabPipelineE.getId());
+        DevopsGitlabPipelineDTO updateDevopsGitlabPipelineDO = ConvertHelper.convert(devopsGitlabPipelineE, DevopsGitlabPipelineDTO.class);
         updateDevopsGitlabPipelineDO.setObjectVersionNumber(devopsGitlabPipelineDO.getObjectVersionNumber());
         if (devopsGitlabPipelineMapper.updateByPrimaryKeySelective(updateDevopsGitlabPipelineDO) != 1) {
             throw new CommonException("error.gitlab.pipeline.update");
@@ -51,31 +51,31 @@ public class DevopsGitlabPipelineRepositoryImpl implements DevopsGitlabPipelineR
     }
 
     @Override
-    public DevopsGitlabPipelineE queryByCommitId(Long commitId) {
-        DevopsGitlabPipelineDO devopsGitlabPipelineDO = new DevopsGitlabPipelineDO();
+    public DevopsGitlabPipelineE baseQueryByCommitId(Long commitId) {
+        DevopsGitlabPipelineDTO devopsGitlabPipelineDO = new DevopsGitlabPipelineDTO();
         devopsGitlabPipelineDO.setCommitId(commitId);
         return ConvertHelper.convert(devopsGitlabPipelineMapper.selectOne(devopsGitlabPipelineDO), DevopsGitlabPipelineE.class);
     }
 
     @Override
-    public List<DevopsGitlabPipelineDO> listPipeline(Long appId, Date startTime, Date endTime) {
+    public List<DevopsGitlabPipelineDTO> baseListByApplicationId(Long appId, Date startTime, Date endTime) {
         return devopsGitlabPipelineMapper.listDevopsGitlabPipeline(appId, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime()));
     }
 
 
     @Override
-    public PageInfo<DevopsGitlabPipelineDO> pagePipeline(Long appId, PageRequest pageRequest, Date startTime, Date endTime) {
+    public PageInfo<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appId, PageRequest pageRequest, Date startTime, Date endTime) {
         return PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 devopsGitlabPipelineMapper.listDevopsGitlabPipeline(appId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
     }
 
     @Override
-    public void deleteWithoutCommit() {
+    public void baseDeleteWithoutCommit() {
         devopsGitlabPipelineMapper.deleteWithoutCommit();
     }
 
     @Override
-    public List<DevopsGitlabPipelineDO> listByBranch(Long appId, String branch) {
+    public List<DevopsGitlabPipelineDTO> baseListByAppIdAndBranch(Long appId, String branch) {
         return devopsGitlabPipelineMapper.listByBranch(appId, branch);
     }
 }

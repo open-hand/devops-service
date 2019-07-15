@@ -10,7 +10,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.CommitFormRecordDTO;
-import io.choerodon.devops.api.vo.DevopsGitlabCommitDTO;
+import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -46,7 +46,7 @@ public class DevopsGitlabCommitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取应用下的代码提交")
     @PostMapping
-    public ResponseEntity<DevopsGitlabCommitDTO> getCommits(
+    public ResponseEntity<DevopsGitlabCommitVO> getCommits(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ids", required = true)

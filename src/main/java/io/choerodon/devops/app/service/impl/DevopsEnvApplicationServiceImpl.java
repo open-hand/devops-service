@@ -52,7 +52,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
 
     @Override
     public List<ApplicationRepVO> queryAppByEnvId(Long envId) {
-        List<Long> appIds = devopsEnvApplicationRepostitory.baseQueryAppByEnvId(envId);
+        List<Long> appIds = devopsEnvApplicationRepostitory.baseListAppByEnvId(envId);
         List<ApplicationRepVO> repDTOS = new ArrayList<>();
         appIds.forEach(v ->
                 repDTOS.add(ConvertHelper.convert(applicationRepository.query(v), ApplicationRepVO.class))
@@ -110,7 +110,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     }
 
     @Override
-    public List<Long> baseQueryAppByEnvId(Long envId) {
+    public List<Long> baseListAppByEnvId(Long envId) {
         return devopsEnvApplicationMapper.queryAppByEnvId(envId);
     }
 

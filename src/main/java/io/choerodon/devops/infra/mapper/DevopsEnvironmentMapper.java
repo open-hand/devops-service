@@ -4,18 +4,18 @@ import java.util.List;
 
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentViewDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 /**
  * Created by younger on 2018/4/9.
  */
-public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDO> {
+public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
 
     void updateDevopsEnvGroupId(@Param("envId") Long envId);
 
-    DevopsEnvironmentDO queryByToken(@Param("token") String token);
+    DevopsEnvironmentDTO queryByToken(@Param("token") String token);
 
     void updateSagaSyncEnvCommit(@Param("envId") Long envId, @Param("sagaSyncCommit") Long sagaSyncCommit);
 

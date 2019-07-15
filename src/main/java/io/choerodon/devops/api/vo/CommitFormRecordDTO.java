@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
-import io.choerodon.devops.infra.dto.DevopsGitlabCommitDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 
 /**
  * Created by n!Ck
@@ -26,7 +26,7 @@ public class CommitFormRecordDTO {
 
     public CommitFormRecordDTO(Long userId, String imgUrl,
                                String userName,
-                               DevopsGitlabCommitDO devopsGitlabCommitDO) {
+                               DevopsGitlabCommitDTO devopsGitlabCommitDO) {
         this.userId = userId;
         this.appId = devopsGitlabCommitDO.getAppId();
         this.imgUrl = imgUrl;

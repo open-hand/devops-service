@@ -311,7 +311,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                     .collect(Collectors.groupingBy(t -> t.getDevopsEnvironmentE().getId()));
             if (!envInstances.isEmpty()) {
                 envInstances.forEach((key, value) -> {
-                    DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(key);
+                    DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(key);
                     DeployEnvVersionDTO deployEnvVersionDTO = new DeployEnvVersionDTO();
                     deployEnvVersionDTO.setEnvName(devopsEnvironmentE.getName());
                     List<DeployInstanceVersionDTO> deployInstanceVersionDTOS = new ArrayList<>();
@@ -368,7 +368,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         List<ApplicationVersionAndCommitDTO> applicationVersionAndCommitDTOS = new ArrayList<>();
         applicationVersionES.forEach(applicationVersionE -> {
             ApplicationVersionAndCommitDTO applicationVersionAndCommitDTO = new ApplicationVersionAndCommitDTO();
-            DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(applicationVersionE.getCommit(), branch);
+            DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.baseQueryByShaAndRef(applicationVersionE.getCommit(), branch);
             UserE userE = iamRepository.queryUserByUserId(devopsGitlabCommitE.getUserId());
             applicationVersionAndCommitDTO.setAppName(applicationE.getName());
             applicationVersionAndCommitDTO.setCommit(applicationVersionE.getCommit());

@@ -2,7 +2,10 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.dto.DevopsEnvironmentPodDTO;
+<<<<<<< HEAD
+import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+=======
+>>>>>>> [IMP] 重构Repository
 
 /**
  * Creator: Runge
@@ -11,5 +14,9 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentPodDTO;
  * Description:
  */
 public interface DeployDetailRepository {
-    List<DevopsEnvironmentPodDTO> baseGetPods(Long instanceId);
+<<<<<<< HEAD
+    List<DevopsEnvPodDTO> baseGetPods(Long instanceId);
+=======
+    List<DevopsEnvPodDTO> getPods(Long instanceId);
+>>>>>>> [IMP] 重构Repository
 }

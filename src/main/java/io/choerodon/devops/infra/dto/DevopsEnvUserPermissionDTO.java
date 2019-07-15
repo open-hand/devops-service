@@ -12,17 +12,17 @@ import io.choerodon.mybatis.entity.BaseDTO;
  */
 
 @Table(name = "devops_env_user_permission")
-public class DevopsEnvUserPermissionDO extends BaseDTO {
+public class DevopsEnvUserPermissionDTO extends BaseDTO {
     private String loginName;
     private Long iamUserId;
     private String realName;
     private Long envId;
     private Boolean isPermitted;
 
-    public DevopsEnvUserPermissionDO() {
+    public DevopsEnvUserPermissionDTO() {
     }
 
-    public DevopsEnvUserPermissionDO(String loginName, Long iamUserId, String realName, Long envId, Boolean isPermitted) {
+    public DevopsEnvUserPermissionDTO(String loginName, Long iamUserId, String realName, Long envId, Boolean isPermitted) {
         this.loginName = loginName;
         this.iamUserId = iamUserId;
         this.realName = realName;

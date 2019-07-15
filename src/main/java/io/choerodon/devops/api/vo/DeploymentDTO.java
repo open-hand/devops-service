@@ -15,7 +15,7 @@ public class DeploymentDTO {
     private String age;
     private List<Integer> ports;
     private Map<String,String> labels;
-    private List<DevopsEnvironmentPodVO> devopsEnvironmentPodVOS;
+    private List<DevopsEnvPodVO> devopsEnvPodDTOS;
 
     public String getName() {
         return name;
@@ -81,11 +81,11 @@ public class DeploymentDTO {
         this.labels = labels;
     }
 
-    public List<DevopsEnvironmentPodVO> getDevopsEnvironmentPodVOS() {
-        return devopsEnvironmentPodVOS;
+    public List<DevopsEnvPodVO> getDevopsEnvPodDTOS() {
+        return devopsEnvPodDTOS;
     }
 
-    public void setDevopsEnvironmentPodVOS(List<DevopsEnvironmentPodVO> devopsEnvironmentPodVOS) {
-        this.devopsEnvironmentPodVOS = devopsEnvironmentPodVOS;
+    public void setDevopsEnvPodDTOS(List<DevopsEnvPodVO> devopsEnvPodDTOS) {
+        this.devopsEnvPodDTOS = devopsEnvPodDTOS;
     }
 }

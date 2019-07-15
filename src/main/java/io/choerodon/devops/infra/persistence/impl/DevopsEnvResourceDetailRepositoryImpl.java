@@ -6,7 +6,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvResourceDetailE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvResourceDetailRepository;
-import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDO;
+import io.choerodon.devops.infra.dto.DevopsEnvResourceDetailDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceDetailMapper;
 
 /**
@@ -23,9 +23,9 @@ public class DevopsEnvResourceDetailRepositoryImpl implements DevopsEnvResourceD
 
 
     @Override
-    public DevopsEnvResourceDetailE create(DevopsEnvResourceDetailE devopsEnvResourceDetailE) {
-        DevopsEnvResourceDetailDO devopsEnvResourceDetailDO =
-                ConvertHelper.convert(devopsEnvResourceDetailE, DevopsEnvResourceDetailDO.class);
+    public DevopsEnvResourceDetailE baseCreate(DevopsEnvResourceDetailE devopsEnvResourceDetailE) {
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO =
+                ConvertHelper.convert(devopsEnvResourceDetailE, DevopsEnvResourceDetailDTO.class);
         if (devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO) != 1) {
             throw new CommonException("error.message.insert");
         }
@@ -33,16 +33,16 @@ public class DevopsEnvResourceDetailRepositoryImpl implements DevopsEnvResourceD
     }
 
     @Override
-    public DevopsEnvResourceDetailE query(Long messageId) {
+    public DevopsEnvResourceDetailE baesQueryByMessageId(Long messageId) {
         return ConvertHelper.convert(
                 devopsEnvResourceDetailMapper.selectByPrimaryKey(messageId),
                 DevopsEnvResourceDetailE.class);
     }
 
     @Override
-    public void update(DevopsEnvResourceDetailE devopsEnvResourceDetailE) {
-        DevopsEnvResourceDetailDO devopsEnvResourceDetailDO = ConvertHelper.convert(
-                devopsEnvResourceDetailE, DevopsEnvResourceDetailDO.class);
+    public void baseUpdate(DevopsEnvResourceDetailE devopsEnvResourceDetailE) {
+        DevopsEnvResourceDetailDTO devopsEnvResourceDetailDO = ConvertHelper.convert(
+                devopsEnvResourceDetailE, DevopsEnvResourceDetailDTO.class);
         devopsEnvResourceDetailDO.setObjectVersionNumber(
                 devopsEnvResourceDetailMapper.selectByPrimaryKey(
                         devopsEnvResourceDetailDO.getId()).getObjectVersionNumber());

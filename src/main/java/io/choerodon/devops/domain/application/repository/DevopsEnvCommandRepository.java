@@ -19,13 +19,13 @@ public interface DevopsEnvCommandRepository {
 
     List<DevopsEnvCommandVO> baseListByEnvId(Long envId);
 
-    List<DevopsEnvCommandVO> baseQueryInstanceCommand(String objectType, Long objectId);
+    List<DevopsEnvCommandVO> baseListInstanceCommand(String objectType, Long objectId);
 
-    PageInfo<DevopsEnvCommandVO> baseListByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime);
+    PageInfo<DevopsEnvCommandVO> basePageByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime);
 
     void baseDelete(Long commandId);
 
-    List<DevopsEnvCommandVO> baseListByObjectAll(String objectType, Long objectId);
+    List<DevopsEnvCommandVO> baseListByObject(String objectType, Long objectId);
 
-    void baseDeleteCommandById(DevopsEnvCommandVO commandE);
+    void baseDeleteByEnvCommandId(DevopsEnvCommandVO commandE);
 }

@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.DevopsEnvironmentPodVO;
+import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 
 /**
  * Creator: Runge
@@ -11,5 +11,5 @@ import io.choerodon.devops.api.vo.DevopsEnvironmentPodVO;
  * Description:
  */
 public interface DeployDetailService {
-    List<DevopsEnvironmentPodVO> baseQueryPods(Long instanceId);
+    List<DevopsEnvPodVO> getPods(Long instanceId);
 }

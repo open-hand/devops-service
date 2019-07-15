@@ -1,14 +1,15 @@
-package io.choerodon.devops.domain.application.repository;
+package io.choerodon.devops.app.service;
 
 import java.util.List;
 
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandLogVO;
 
 /**
- * Created by younger on 2018/4/24.
+ * Creator: ChangpingShi0213@gmail.com
+ * Date:  14:48 2019/7/12
+ * Description:
  */
-public interface DevopsEnvCommandLogRepository {
-
+public interface DevopsEnvCommandLogService {
     DevopsEnvCommandLogVO baseCreate(DevopsEnvCommandLogVO devopsEnvCommandLogE);
 
     DevopsEnvCommandLogVO baseQuery(Long logId);

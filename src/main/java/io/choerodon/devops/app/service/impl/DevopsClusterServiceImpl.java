@@ -286,7 +286,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public Boolean IsClusterRelatedEnvs(Long clusterId) {
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
-        List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.listByClusterId(clusterId);
+        List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.baseListByClusterId(clusterId);
         if (connectedEnvList.contains(clusterId) || !devopsEnvironmentES.isEmpty()) {
             throw new CommonException("error.cluster.delete");
         }

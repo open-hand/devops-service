@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * @author zmf
  */
-public class DevopsClusterPodVO extends DevopsEnvironmentPodVO {
+public class DevopsClusterPodVO extends DevopsEnvPodVO {
     private List<DevopsEnvPodContainerLogDTO> containersForLogs;
 
     public List<DevopsEnvPodContainerLogDTO> getContainersForLogs() {
