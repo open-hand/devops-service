@@ -212,7 +212,7 @@ public class ApplicationController {
         return Optional.ofNullable(
                 applicationService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.list"));
+                .orElseThrow(() -> new CommonException("error.application.baseList"));
     }
 
     /**
@@ -334,7 +334,7 @@ public class ApplicationController {
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationService.listAll(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.applications.list.all"));
+                .orElseThrow(() -> new CommonException("error.applications.baseList.all"));
     }
 
     /**

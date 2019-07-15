@@ -12,7 +12,7 @@ public class DevopsBranchVO {
     private Long issueId;
     private String branchName;
     private List<DevopsGitlabCommitE> commits;
-    private List<CustomMergeRequestDTO> mergeRequests;
+    private List<CustomMergeRequestVO> mergeRequests;
 
     public String getOriginBranch() {
         return originBranch;
@@ -62,11 +62,11 @@ public class DevopsBranchVO {
         this.commits = commits;
     }
 
-    public List<CustomMergeRequestDTO> getMergeRequests() {
+    public List<CustomMergeRequestVO> getMergeRequests() {
         return mergeRequests;
     }
 
-    public void setMergeRequests(List<CustomMergeRequestDTO> mergeRequests) {
+    public void setMergeRequests(List<CustomMergeRequestVO> mergeRequests) {
         this.mergeRequests = mergeRequests;
     }
 }

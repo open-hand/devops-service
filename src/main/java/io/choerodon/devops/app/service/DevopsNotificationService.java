@@ -4,7 +4,7 @@ import java.util.Set;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.DevopsNotificationDTO;
+import io.choerodon.devops.api.vo.DevopsNotificationVO;
 import io.choerodon.devops.api.vo.ResourceCheckDTO;
 
 /**
@@ -13,15 +13,15 @@ import io.choerodon.devops.api.vo.ResourceCheckDTO;
  * Description:
  */
 public interface DevopsNotificationService {
-    DevopsNotificationDTO create(Long projectId, DevopsNotificationDTO notificationDTO);
+    DevopsNotificationVO create(Long projectId, DevopsNotificationVO notificationDTO);
 
-    DevopsNotificationDTO update(Long projectId, DevopsNotificationDTO notificationDTO);
+    DevopsNotificationVO update(Long projectId, DevopsNotificationVO notificationDTO);
 
     void delete(Long notificationId);
 
-    DevopsNotificationDTO queryById(Long notificationId);
+    DevopsNotificationVO queryById(Long notificationId);
 
-    PageInfo<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
+    PageInfo<DevopsNotificationVO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
 
 
     Set<String> check(Long projectId, Long envId);

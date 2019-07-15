@@ -7,6 +7,8 @@ import feign.FeignException;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
@@ -17,7 +19,6 @@ import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
 
 /**
  * Created with IntelliJ IDEA.
@@ -63,8 +64,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         UserAttrE userAttrE = userAttrRepository.baseQueryById(gitlabGroupPayload.getUserId());
         DevopsProjectVO devopsProjectE = gitlabRepository.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (devopsProjectE == null) {
-                devopsProjectE =
-                        ConvertHelper.convert(gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getBody(), DevopsProjectVO.class);
+            devopsProjectE =
+                    ConvertHelper.convert(gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getBody(), DevopsProjectVO.class);
         }
         DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(gitlabGroupPayload.getProjectId());
         if (groupCodeSuffix.isEmpty()) {
@@ -72,7 +73,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         } else if ("-gitops".equals(groupCodeSuffix)) {
             devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(devopsProjectE.getId()));
         }
-        devopsProjectRepository.updateProjectAttr(devopsProjectDO);
+        devopsProjectRepository.baseUpdate(devopsProjectDO);
     }
 
     private String getGitlabProjectName(GitlabGroupPayload gitlabGroupPayload) {
@@ -99,8 +100,10 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
                 gitlabGroupPayload.getOrganizationCode(),
                 gitlabGroupPayload.getProjectCode(),
                 groupCodeSuffix));
-        UserAttrE userAttrE = userAttrRepository.baseQueryById(gitlabGroupPayload.getUserId());
-        DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(gitlabGroupPayload.getProjectId());
+
+        UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(gitlabGroupPayload.getProjectId());
+
         Integer groupId;
         if (groupCodeSuffix.isEmpty()) {
             groupId = TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId());

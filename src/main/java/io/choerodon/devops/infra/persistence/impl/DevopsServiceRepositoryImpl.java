@@ -19,8 +19,8 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dto.DevopsServiceDO;
-import io.choerodon.devops.infra.dto.DevopsServiceQueryDO;
+import io.choerodon.devops.infra.dto.DevopsServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
 
 /**
@@ -37,19 +37,19 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     }
 
     @Override
-    public Boolean checkName(Long envId, String name) {
-        DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
-        devopsServiceDO.setEnvId(envId);
-        devopsServiceDO.setName(name);
-        if (devopsServiceMapper.selectOne(devopsServiceDO) != null) {
+    public Boolean baseCheckName(Long envId, String name) {
+        DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
+        devopsServiceDTO.setEnvId(envId);
+        devopsServiceDTO.setName(name);
+        if (devopsServiceMapper.selectOne(devopsServiceDTO) != null) {
             return false;
         }
         return true;
     }
 
     @Override
-    public PageInfo<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, Long instanceId, PageRequest pageRequest,
-                                                            String searchParam, Long appId) {
+    public PageInfo<DevopsServiceV> basePageByOptions(Long projectId, Long envId, Long instanceId, PageRequest pageRequest,
+                                                      String searchParam, Long appId) {
 
         Sort sort = pageRequest.getSort();
         String sortResult = "";
@@ -76,11 +76,11 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         int start = getBegin(pageRequest.getPage(), pageRequest.getSize());
         int stop = start + pageRequest.getSize();
         //分页组件暂不支持级联查询，只能手写分页
-        PageInfo<DevopsServiceQueryDO> result = new PageInfo();
+        PageInfo<DevopsServiceQueryDTO> result = new PageInfo();
         result.setPageSize(pageRequest.getSize());
         result.setPageNum(pageRequest.getPage());
         int count;
-        List<DevopsServiceQueryDO> devopsServiceQueryDOList;
+        List<DevopsServiceQueryDTO> devopsServiceQueryDTOList;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             count = devopsServiceMapper.selectCountByName(
@@ -88,21 +88,21 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), appId);
 
             result.setTotal(count);
-            devopsServiceQueryDOList = devopsServiceMapper.listDevopsServiceByPage(
+            devopsServiceQueryDTOList = devopsServiceMapper.listDevopsServiceByPage(
                     projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), sortResult, appId);
-            result.setList(devopsServiceQueryDOList.subList(start, stop > devopsServiceQueryDOList.size() ? devopsServiceQueryDOList.size() : stop));
+            result.setList(devopsServiceQueryDTOList.subList(start, stop > devopsServiceQueryDTOList.size() ? devopsServiceQueryDTOList.size() : stop));
         } else {
             count = devopsServiceMapper
                     .selectCountByName(projectId, envId, instanceId, null, null, appId);
             result.setTotal(count);
-            devopsServiceQueryDOList =
+            devopsServiceQueryDTOList =
                     devopsServiceMapper.listDevopsServiceByPage(
                             projectId, envId, instanceId, null, null, sortResult, appId);
-            result.setList(devopsServiceQueryDOList.subList(start, stop > devopsServiceQueryDOList.size() ? devopsServiceQueryDOList.size() : stop));
+            result.setList(devopsServiceQueryDTOList.subList(start, stop > devopsServiceQueryDTOList.size() ? devopsServiceQueryDTOList.size() : stop));
         }
-        if (devopsServiceQueryDOList.size() < pageRequest.getSize() * pageRequest.getPage()) {
-            result.setSize(TypeUtil.objToInt(devopsServiceQueryDOList.size()) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
+        if (devopsServiceQueryDTOList.size() < pageRequest.getSize() * pageRequest.getPage()) {
+            result.setSize(TypeUtil.objToInt(devopsServiceQueryDTOList.size()) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
         } else {
             result.setSize(pageRequest.getSize());
         }
@@ -115,100 +115,93 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     }
 
     @Override
-    public List<DevopsServiceV> listDevopsService(Long envId) {
-        List<DevopsServiceQueryDO> devopsServiceQueryDOList = devopsServiceMapper.listDevopsService(envId);
-        return ConvertHelper.convertList(devopsServiceQueryDOList, DevopsServiceV.class);
+    public List<DevopsServiceV> baseListByEnvId(Long envId) {
+        List<DevopsServiceQueryDTO> devopsServiceQueryDTOList = devopsServiceMapper.listByEnvId(envId);
+        return ConvertHelper.convertList(devopsServiceQueryDTOList, DevopsServiceV.class);
     }
 
     @Override
-    public DevopsServiceV selectById(Long id) {
-        return ConvertHelper.convert(devopsServiceMapper.selectById(id), DevopsServiceV.class);
+    public DevopsServiceV baseQueryById(Long id) {
+        return ConvertHelper.convert(devopsServiceMapper.queryById(id), DevopsServiceV.class);
     }
 
     @Override
     public DevopsServiceE insert(DevopsServiceE devopsServiceE) {
-        DevopsServiceDO devopsServiceDO = ConvertHelper.convert(
-                devopsServiceE, DevopsServiceDO.class);
-        if (devopsServiceMapper.insert(devopsServiceDO) != 1) {
+        DevopsServiceDTO devopsServiceDTO = ConvertHelper.convert(
+                devopsServiceE, DevopsServiceDTO.class);
+        if (devopsServiceMapper.insert(devopsServiceDTO) != 1) {
             throw new CommonException("error.k8s.service.create");
         }
-        return ConvertHelper.convert(devopsServiceDO, DevopsServiceE.class);
+        return ConvertHelper.convert(devopsServiceDTO, DevopsServiceE.class);
     }
 
     @Override
-    public DevopsServiceE query(Long id) {
+    public DevopsServiceE baseQuery(Long id) {
         return ConvertHelper.convert(devopsServiceMapper.selectByPrimaryKey(id), DevopsServiceE.class);
     }
 
     @Override
-    public void delete(Long id) {
+    public void baseDelete(Long id) {
         devopsServiceMapper.deleteByPrimaryKey(id);
     }
 
     @Override
-    public void update(DevopsServiceE devopsServiceE) {
-        DevopsServiceDO devopsServiceDO = devopsServiceMapper.selectByPrimaryKey(devopsServiceE.getId());
-        DevopsServiceDO devopsServiceDOUpdate = ConvertHelper.convert(devopsServiceE, DevopsServiceDO.class);
+    public void baseUpdate(DevopsServiceE devopsServiceE) {
+        DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsServiceE.getId());
+        DevopsServiceDTO devopsServiceDTOUpdate = ConvertHelper.convert(devopsServiceE, DevopsServiceDTO.class);
         if (devopsServiceE.getLabels() == null) {
-            devopsServiceMapper.setLablesToNull(devopsServiceE.getId());
+            devopsServiceMapper.updateLables(devopsServiceE.getId());
         }
         if (devopsServiceE.getExternalIp() == null) {
             devopsServiceMapper.setExternalIpNull(devopsServiceE.getId());
         }
-        devopsServiceDOUpdate.setObjectVersionNumber(devopsServiceDO.getObjectVersionNumber());
-        if (devopsServiceMapper.updateByPrimaryKeySelective(devopsServiceDOUpdate) != 1) {
+        devopsServiceDTOUpdate.setObjectVersionNumber(devopsServiceDTO.getObjectVersionNumber());
+        if (devopsServiceMapper.updateByPrimaryKeySelective(devopsServiceDTOUpdate) != 1) {
             throw new CommonException("error.k8s.service.update");
         }
     }
 
     @Override
-    public void setLablesToNull(Long id) {
-        devopsServiceMapper.setLablesToNull(id);
+    public void baseUpdateLables(Long id) {
+        devopsServiceMapper.updateLables(id);
     }
 
     @Override
-    public void setEndPointToNull(Long id) {
-        devopsServiceMapper.setEndPointToNull(id);
+    public void baseUpdateEndPoint(Long id) {
+        devopsServiceMapper.updateEndPoint(id);
     }
 
     @Override
-    public List<Long> selectDeployedEnv() {
+    public List<Long> baseListEnvByRunningService() {
         return devopsServiceMapper.selectDeployedEnv();
     }
 
     @Override
-    public DevopsServiceE selectByNameAndEnvId(String name, Long envId) {
-        DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
-        devopsServiceDO.setName(name);
-        devopsServiceDO.setEnvId(envId);
-        return ConvertHelper.convert(devopsServiceMapper.selectOne(devopsServiceDO), DevopsServiceE.class);
+    public DevopsServiceE baseQueryByNameAndEnvId(String name, Long envId) {
+        DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
+        devopsServiceDTO.setName(name);
+        devopsServiceDTO.setEnvId(envId);
+        return ConvertHelper.convert(devopsServiceMapper.selectOne(devopsServiceDTO), DevopsServiceE.class);
     }
 
     @Override
-    public Boolean checkEnvHasService(Long envId) {
-        return devopsServiceMapper.checkEnvHasService(envId);
+    public Boolean baseCheckServiceByEnv(Long envId) {
+        return devopsServiceMapper.checkServiceByEnv(envId);
     }
 
     @Override
-    public List<DevopsServiceE> list() {
+    public List<DevopsServiceE> baseList() {
         return ConvertHelper.convertList(devopsServiceMapper.selectAll(), DevopsServiceE.class);
     }
 
     @Override
-    public List<DevopsServiceE> selectByEnvId(Long envId) {
-        DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
-        devopsServiceDO.setEnvId(envId);
-        return ConvertHelper.convertList(devopsServiceMapper.select(devopsServiceDO), DevopsServiceE.class);
-    }
-
-    @Override
-    public void deleteServiceAndInstanceByEnvId(Long envId) {
-        DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
-        devopsServiceDO.setEnvId(envId);
+    public void baseDeleteServiceAndInstanceByEnvId(Long envId) {
+        DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
+        devopsServiceDTO.setEnvId(envId);
         // 环境下的serviceIds
-        List<Long> serviceIds = devopsServiceMapper.select(devopsServiceDO).stream().map(DevopsServiceDO::getId)
+        List<Long> serviceIds = devopsServiceMapper.select(devopsServiceDTO).stream().map(DevopsServiceDTO::getId)
                 .collect(Collectors.toList());
-        devopsServiceMapper.delete(devopsServiceDO);
+        devopsServiceMapper.delete(devopsServiceDTO);
         if (!serviceIds.isEmpty()) {
             devopsServiceMapper.deleteServiceInstance(serviceIds);
         }

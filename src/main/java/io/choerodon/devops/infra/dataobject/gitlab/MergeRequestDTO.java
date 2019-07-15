@@ -353,20 +353,20 @@ public class MergeRequestDTO {
     }
 
     /**
-     * Get the list of users that have approved the merge request.
+     * Get the baseList of users that have approved the merge request.
      * NOTE: This property will only be used when listing, approiving, or unapproving a merge request.
      *
-     * @return the list of users that have approved the merge request
+     * @return the baseList of users that have approved the merge request
      */
     public List<UserE> getApprovedBy() {
         return approvedBy;
     }
 
     /**
-     * Set the list of users that have approved the merge request.
+     * Set the baseList of users that have approved the merge request.
      * NOTE: This property will only be used when listing, approiving, or unapproving a merge request.
      *
-     * @param approvedBy the list of users that have approved the merge request
+     * @param approvedBy the baseList of users that have approved the merge request
      */
     public void setApprovedBy(List<UserE> approvedBy) {
         this.approvedBy = approvedBy;

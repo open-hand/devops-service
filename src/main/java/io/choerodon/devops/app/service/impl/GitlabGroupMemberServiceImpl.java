@@ -101,7 +101,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     DevopsProjectVO devopsProjectE;
                     GitlabMemberE gitlabMemberE;
                     if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
-                        devopsProjectE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
+                        devopsProjectE = devopsProjectRepository.baseQueryByProjectId(gitlabGroupMemberDTO.getResourceId());
                         gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                 TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()), gitlabUserId);
                         if (gitlabMemberE != null && gitlabMemberE.getId() != null) {
@@ -242,7 +242,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         // 如果当前iam用户只有项目成员的权限
         if (AccessLevel.DEVELOPER.equals(accessLevel)) {
             // 查看是不是由项目所有者改为项目成员
-            devopsProjectE = devopsProjectRepository.queryDevopsProject(resourceId);
+            devopsProjectE = devopsProjectRepository.baseQueryByProjectId(resourceId);
             groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                     TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()),
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
@@ -288,7 +288,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         }
                     });
                     // 给gitlab应用组分配owner角色
-                    devopsProjectE = devopsProjectRepository.queryDevopsProject(resourceId);
+                    devopsProjectE = devopsProjectRepository.baseQueryByProjectId(resourceId);
                     groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                             TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()),
                             (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));

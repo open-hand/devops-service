@@ -1,17 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsProjectConfigValidator;
-import io.choerodon.devops.api.vo.DevopsProjectConfigDTO;
+import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
 import io.choerodon.devops.api.vo.ProjectConfigDTO;
 import io.choerodon.devops.api.vo.ProjectDefaultConfigDTO;
 import io.choerodon.devops.api.vo.ProjectVO;
@@ -23,9 +22,13 @@ import io.choerodon.devops.domain.application.repository.DevopsProjectRepository
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.dto.DevopsProjectConfigDTO;
 import io.choerodon.devops.infra.dto.harbor.*;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper;
+import io.choerodon.devops.infra.util.PageRequestUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -66,40 +69,43 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     @Autowired
     private ApplicationRepository applicationRepository;
 
+    @Autowired
+    private DevopsProjectConfigMapper devopsProjectConfigMapper;
+
 
     @Override
-    public DevopsProjectConfigDTO create(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
-        if (devopsProjectConfigDTO.getType().equals(HARBOR) && devopsProjectConfigDTO.getConfig().getProject() != null) {
-            checkRegistryProjectIsPrivate(devopsProjectConfigDTO);
+    public DevopsProjectConfigVO create(Long projectId, DevopsProjectConfigVO devopsProjectConfigVO) {
+        if (devopsProjectConfigVO.getType().equals(HARBOR) && devopsProjectConfigVO.getConfig().getProject() != null) {
+            checkRegistryProjectIsPrivate(devopsProjectConfigVO);
         }
-        DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
+        DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigVO, DevopsProjectConfigE.class);
         devopsProjectConfigE.setProjectId(projectId);
-        configValidator.checkConfigType(devopsProjectConfigDTO);
+        configValidator.checkConfigType(devopsProjectConfigVO);
 
-        devopsProjectConfigRepository.checkName(projectId, devopsProjectConfigE.getName());
-        DevopsProjectConfigE res = devopsProjectConfigRepository.create(devopsProjectConfigE);
-        return ConvertHelper.convert(res, DevopsProjectConfigDTO.class);
+        devopsProjectConfigRepository.baseCheckByName(projectId, devopsProjectConfigE.getName());
+        DevopsProjectConfigE res = devopsProjectConfigRepository.baseCreate(devopsProjectConfigE);
+        return ConvertHelper.convert(res, DevopsProjectConfigVO.class);
     }
 
-    private void checkRegistryProjectIsPrivate(DevopsProjectConfigDTO devopsProjectConfigDTO) {
+    private void checkRegistryProjectIsPrivate(DevopsProjectConfigVO devopsProjectConfigVO) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setBaseUrl(devopsProjectConfigDTO.getConfig().getUrl());
-        configurationProperties.setUsername(devopsProjectConfigDTO.getConfig().getUserName());
-        configurationProperties.setPassword(devopsProjectConfigDTO.getConfig().getPassword());
+        configurationProperties.setBaseUrl(devopsProjectConfigVO.getConfig().getUrl());
+        configurationProperties.setUsername(devopsProjectConfigVO.getConfig().getUserName());
+        configurationProperties.setPassword(devopsProjectConfigVO.getConfig().getPassword());
         configurationProperties.setInsecureSkipTlsVerify(false);
-        configurationProperties.setProject(devopsProjectConfigDTO.getConfig().getProject());
+        configurationProperties.setProject(devopsProjectConfigVO.getConfig().getProject());
         configurationProperties.setType(HARBOR);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         HarborClient harborClient = retrofit.create(HarborClient.class);
-        Call<List<ProjectDetail>> listProject = harborClient.listProject(devopsProjectConfigDTO.getConfig().getProject());
+        Call<List<ProjectDetail>> listProject = harborClient.listProject(devopsProjectConfigVO.getConfig().getProject());
         Response<List<ProjectDetail>> projectResponse = null;
         try {
             projectResponse = listProject.execute();
             if (projectResponse != null && projectResponse.body() != null) {
                 if ("false".equals(projectResponse.body().get(0).getMetadata().getHarborPublic())) {
-                    devopsProjectConfigDTO.getConfig().setPrivate(true);
+                    devopsProjectConfigVO.getConfig().setPrivate(true);
                 } else {
-                    devopsProjectConfigDTO.getConfig().setPrivate(false);
+                    devopsProjectConfigVO.getConfig().setPrivate(false);
                 }
             }
         } catch (IOException e) {
@@ -108,45 +114,45 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     }
 
     @Override
-    public DevopsProjectConfigDTO updateByPrimaryKeySelective(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
-        if (devopsProjectConfigDTO.getType().equals(HARBOR) && devopsProjectConfigDTO.getConfig().getProject() != null) {
-            checkRegistryProjectIsPrivate(devopsProjectConfigDTO);
+    public DevopsProjectConfigVO updateByPrimaryKeySelective(Long projectId, DevopsProjectConfigVO devopsProjectConfigVO) {
+        if (devopsProjectConfigVO.getType().equals(HARBOR) && devopsProjectConfigVO.getConfig().getProject() != null) {
+            checkRegistryProjectIsPrivate(devopsProjectConfigVO);
         }
-        DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
-        if (!ObjectUtils.isEmpty(devopsProjectConfigDTO.getType())) {
-            configValidator.checkConfigType(devopsProjectConfigDTO);
+        DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigVO, DevopsProjectConfigE.class);
+        if (!ObjectUtils.isEmpty(devopsProjectConfigVO.getType())) {
+            configValidator.checkConfigType(devopsProjectConfigVO);
         }
-        return ConvertHelper.convert(devopsProjectConfigRepository.updateByPrimaryKeySelective(devopsProjectConfigE), DevopsProjectConfigDTO.class);
+        return ConvertHelper.convert(devopsProjectConfigRepository.baseUpdate(devopsProjectConfigE), DevopsProjectConfigVO.class);
     }
 
     @Override
-    public DevopsProjectConfigDTO queryByPrimaryKey(Long id) {
-        return ConvertHelper.convert(devopsProjectConfigRepository.queryByPrimaryKey(id), DevopsProjectConfigDTO.class);
+    public DevopsProjectConfigVO queryByPrimaryKey(Long id) {
+        return ConvertHelper.convert(devopsProjectConfigRepository.baseQuery(id), DevopsProjectConfigVO.class);
     }
 
     @Override
-    public PageInfo<DevopsProjectConfigDTO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
-        return ConvertPageHelper.convertPageInfo(devopsProjectConfigRepository.listByOptions(projectId, pageRequest, params), DevopsProjectConfigDTO.class);
+    public PageInfo<DevopsProjectConfigVO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
+        return ConvertPageHelper.convertPageInfo(devopsProjectConfigRepository.basePageByOptions(projectId, pageRequest, params), DevopsProjectConfigVO.class);
     }
 
     @Override
     public void delete(Long id) {
-        devopsProjectConfigRepository.delete(id);
+        devopsProjectConfigRepository.baseDelete(id);
     }
 
     @Override
-    public List<DevopsProjectConfigDTO> queryByIdAndType(Long projectId, String type) {
-        return ConvertHelper.convertList(devopsProjectConfigRepository.queryByIdAndType(projectId, type), DevopsProjectConfigDTO.class);
+    public List<DevopsProjectConfigVO> queryByIdAndType(Long projectId, String type) {
+        return ConvertHelper.convertList(devopsProjectConfigRepository.baseListByIdAndType(projectId, type), DevopsProjectConfigVO.class);
     }
 
     @Override
     public void checkName(Long projectId, String name) {
-        devopsProjectConfigRepository.checkName(projectId, name);
+        devopsProjectConfigRepository.baseCheckByName(projectId, name);
     }
 
     @Override
     public Boolean checkIsUsed(Long configId) {
-        return devopsProjectConfigRepository.checkIsUsed(configId);
+        return devopsProjectConfigRepository.baseCheckUsed(configId);
     }
 
     @Override
@@ -159,7 +165,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         HarborClient harborClient = retrofit.create(HarborClient.class);
         if (harborPrivate) {
             //设置为私有后将harbor项目设置为私有,新增项目默认harbor配置,以及更新项目下所有应用的默认harbor配置
-            DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
+            DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(projectId);
             String username = devopsProjectE.getHarborProjectUserName() == null ? String.format("user%s%s", organization.getId(), projectId) : devopsProjectE.getHarborProjectUserName();
             String email = devopsProjectE.getHarborProjectUserEmail() == null ? String.format("%s@harbor.com", username) : devopsProjectE.getHarborProjectUserEmail();
             String password = devopsProjectE.getHarborProjectUserPassword() == null ? String.format("%sA", username) : devopsProjectE.getHarborProjectUserPassword();
@@ -221,14 +227,14 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                 devopsProjectE.setHarborProjectUserEmail(user.getEmail());
             }
             devopsProjectE.setHarborProjectIsPrivate(true);
-            devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDTO.class));
+            devopsProjectRepository.baseUpdate(ConvertHelper.convert(devopsProjectE, DevopsProjectDTO.class));
 
 
             //新增项目harbor配置
-            DevopsProjectConfigDTO devopsProjectConfigDTO = new DevopsProjectConfigDTO();
-            devopsProjectConfigDTO.setName("project_harbor_default");
-            devopsProjectConfigDTO.setType(HARBOR);
-            devopsProjectConfigDTO.setProjectId(projectId);
+            DevopsProjectConfigVO devopsProjectConfigVO = new DevopsProjectConfigVO();
+            devopsProjectConfigVO.setName("project_harbor_default");
+            devopsProjectConfigVO.setType(HARBOR);
+            devopsProjectConfigVO.setProjectId(projectId);
             ProjectConfigDTO projectConfigDTO = new ProjectConfigDTO();
             projectConfigDTO.setPrivate(true);
             projectConfigDTO.setUrl(harborConfigurationProperties.getBaseUrl());
@@ -236,11 +242,11 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
             projectConfigDTO.setUserName(user.getUsername());
             projectConfigDTO.setEmail(user.getEmail());
             projectConfigDTO.setProject(organization.getCode() + "-" + projectE.getCode());
-            devopsProjectConfigDTO.setConfig(projectConfigDTO);
-            DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.create(ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class));
+            devopsProjectConfigVO.setConfig(projectConfigDTO);
+            DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.baseCreate(ConvertHelper.convert(devopsProjectConfigVO, DevopsProjectConfigE.class));
 
             //更新项目下所有应用的harbor配置为该默认配置
-            List<DevopsProjectConfigE> oldDevopsProjectConfigEs = devopsProjectConfigRepository.queryByIdAndType(projectId, HARBOR);
+            List<DevopsProjectConfigE> oldDevopsProjectConfigEs = devopsProjectConfigRepository.baseListByIdAndType(projectId, HARBOR);
             applicationRepository.updateAppHarborConfig(projectId, devopsProjectConfigE.getId(), oldDevopsProjectConfigEs.get(0).getId(), true);
         } else {
             //设置为公有后将harbor项目设置为公有,删除成员角色,并删除项目默认harbor配置,以及更新项目下所有应用的默认harbor配置
@@ -272,14 +278,14 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                         }
                         harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMembers.body().get(0).getId().intValue()).execute();
                     }
-                    DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByName(projectId, "project_harbor_default");
-                    DevopsProjectConfigE newDevopsProjectConfigE = devopsProjectConfigRepository.queryByName(null, "harbor_default");
+                    DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.baseQueryByName(projectId, "project_harbor_default");
+                    DevopsProjectConfigE newDevopsProjectConfigE = devopsProjectConfigRepository.baseQueryByName(null, "harbor_default");
 
-                    DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
+                    DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(projectId);
                     devopsProjectE.setHarborProjectIsPrivate(false);
-                    devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDTO.class));
+                    devopsProjectRepository.baseUpdate(ConvertHelper.convert(devopsProjectE, DevopsProjectDTO.class));
                     applicationRepository.updateAppHarborConfig(projectId, newDevopsProjectConfigE.getId(), devopsProjectConfigE.getId(), false);
-                    devopsProjectConfigRepository.delete(devopsProjectConfigE.getId());
+                    devopsProjectConfigRepository.baseDelete(devopsProjectConfigE.getId());
 
                 }
             } catch (IOException e) {
@@ -292,16 +298,16 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     @Override
     public ProjectDefaultConfigDTO getProjectDefaultConfig(Long projectId) {
         ProjectDefaultConfigDTO projectDefaultConfigDTO = new ProjectDefaultConfigDTO();
-        DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(projectId);
         projectDefaultConfigDTO.setHarborIsPrivate(devopsProjectE.getHarborProjectIsPrivate());
-        List<DevopsProjectConfigE> harborConfigs = devopsProjectConfigRepository.queryByIdAndType(projectId, HARBOR);
+        List<DevopsProjectConfigE> harborConfigs = devopsProjectConfigRepository.baseListByIdAndType(projectId, HARBOR);
         Optional<DevopsProjectConfigE> devopsConfigE = harborConfigs.stream().filter(devopsProjectConfigE -> devopsProjectConfigE.getName().equals("project_harbor_default")).findFirst();
         if (devopsConfigE.isPresent()) {
             projectDefaultConfigDTO.setHarborConfigName(devopsConfigE.get().getName());
         } else {
             projectDefaultConfigDTO.setHarborConfigName(harborConfigs.get(0).getName());
         }
-        List<DevopsProjectConfigE> chartConfigs = devopsProjectConfigRepository.queryByIdAndType(projectId, CHART);
+        List<DevopsProjectConfigE> chartConfigs = devopsProjectConfigRepository.baseListByIdAndType(projectId, CHART);
         Optional<DevopsProjectConfigE> chartConfig = chartConfigs.stream().filter(devopsProjectConfigE -> devopsProjectConfigE.getName().equals("chart_default")).findFirst();
 
         if (chartConfig.isPresent()) {
@@ -309,5 +315,77 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         }
 
         return projectDefaultConfigDTO;
+    }
+
+
+    public DevopsProjectConfigDTO baseCreate(DevopsProjectConfigDTO devopsProjectConfigDTO) {
+        if (devopsProjectConfigMapper.insert(devopsProjectConfigDTO) != 1) {
+            throw new CommonException("error.devops.project.config.create");
+        }
+        return devopsProjectConfigDTO;
+    }
+
+    /**
+     * @param devopsProjectConfigDTO
+     * @return true为不存在同名值  false存在
+     */
+    public Boolean baseCheckByName(DevopsProjectConfigDTO devopsProjectConfigDTO) {
+        return ObjectUtils.isEmpty(devopsProjectConfigMapper.selectOne(devopsProjectConfigDTO));
+    }
+
+    public DevopsProjectConfigDTO baseUpdate(DevopsProjectConfigDTO devopsProjectConfigDTO) {
+        if (devopsProjectConfigMapper.updateByPrimaryKeySelective(devopsProjectConfigDTO) != 1) {
+            throw new CommonException("error.devops.project.config.update");
+        }
+        return devopsProjectConfigMapper.selectByPrimaryKey(devopsProjectConfigDTO);
+    }
+
+    public DevopsProjectConfigDTO baseQuery(Long id) {
+        return devopsProjectConfigMapper.selectByPrimaryKey(id);
+    }
+
+
+    public DevopsProjectConfigDTO baseQueryByName(Long projectId, String name) {
+        DevopsProjectConfigDTO paramDO = new DevopsProjectConfigDTO();
+        paramDO.setProjectId(projectId);
+        paramDO.setName(name);
+        return devopsProjectConfigMapper.selectOne(paramDO);
+    }
+
+    public DevopsProjectConfigDTO baseCheckByName(String name) {
+        return devopsProjectConfigMapper.queryByNameWithNoProject(name);
+    }
+
+    public PageInfo<DevopsProjectConfigDTO> basePageByOptions(Long projectId, PageRequest pageRequest, String params) {
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+
+        PageInfo<DevopsProjectConfigDTO> devopsProjectConfigDTOPageInfo = PageHelper
+                .startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () -> devopsProjectConfigMapper.listByOptions(projectId,
+                        (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
+                        (String) mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
+        return devopsProjectConfigDTOPageInfo;
+    }
+
+    public void baseDelete(Long id) {
+        if (devopsProjectConfigMapper.deleteByPrimaryKey(id) != 1) {
+            throw new CommonException("error.devops.project.config.delete");
+        }
+    }
+
+    public List<DevopsProjectConfigDTO> baseListByIdAndType(Long projectId, String type) {
+        return devopsProjectConfigMapper.listByIdAndType(projectId, type);
+    }
+
+    public void baseCheckByName(Long projectId, String name) {
+        DevopsProjectConfigDTO projectConfigDO = new DevopsProjectConfigDTO();
+        projectConfigDO.setProjectId(projectId);
+        projectConfigDO.setName(name);
+        if (devopsProjectConfigMapper.selectOne(projectConfigDO) != null) {
+            throw new CommonException("error.project.config.exist");
+        }
+    }
+
+    public Boolean baseCheckUsed(Long checkIsUsed) {
+        return devopsProjectConfigMapper.checkIsUsed(checkIsUsed).isEmpty();
     }
 }

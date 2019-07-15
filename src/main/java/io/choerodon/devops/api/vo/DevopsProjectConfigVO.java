@@ -4,7 +4,7 @@ package io.choerodon.devops.api.vo;
  * @author zongw.lee@gmail.com
  * @since 2019/03/11
  */
-public class DevopsProjectConfigDTO {
+public class DevopsProjectConfigVO {
 
     private Long id;
 

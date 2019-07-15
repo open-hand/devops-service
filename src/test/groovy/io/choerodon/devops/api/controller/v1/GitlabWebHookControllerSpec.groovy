@@ -115,7 +115,7 @@ class GitlabWebHookControllerSpec extends Specification {
             devopsEnvironmentDO.setCode("env-test-webhook")
             devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
-            // mock list user
+            // mock baseList user
             UserDO userDO = new UserDO()
             userDO.setId(1L)
             PageInfo<UserDO> page = new PageInfo<>(Collections.singletonList(userDO))

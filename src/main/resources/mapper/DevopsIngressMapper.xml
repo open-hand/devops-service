@@ -22,7 +22,7 @@
         di. NAME
     </select>
 
-    <select id="selectIngress" resultType="io.choerodon.devops.infra.dto.DevopsIngressDO">
+    <select id="selectIngress" resultType="io.choerodon.devops.infra.dto.DevopsIngressDTO">
         SELECT DISTINCT
         di.id id,
         di.project_id projectId,

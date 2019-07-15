@@ -48,6 +48,7 @@ import io.choerodon.devops.infra.dto.ApplicationDO;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 import io.choerodon.devops.infra.dto.harbor.User;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
@@ -640,16 +641,15 @@ public class ApplicationServiceImpl implements ApplicationService {
             List<Long> appIds = appUserPermissionMapper.select(appUserPermissionDO).stream()
                     .map(AppUserPermissionDTO::getAppId).collect(Collectors.toList());
 
-                resultDTOList.stream().filter(e -> e != null && !e.getPermission()).forEach(e -> {
-                    if (appIds.contains(e.getId())) {
-                        e.setPermission(true);
-                    }
-                });
-            } else {
-                resultDTOList.stream().filter(Objects::nonNull).forEach(e -> e.setPermission(true));
-            }
-            return resultDTOList;
+            resultDTOList.stream().filter(e -> e != null && !e.getPermission()).forEach(e -> {
+                if (appIds.contains(e.getId())) {
+                    e.setPermission(true);
+                }
+            });
+        } else {
+            resultDTOList.stream().filter(Objects::nonNull).forEach(e -> e.setPermission(true));
         }
+<<<<<<< HEAD
 <<<<<<< HEAD
         return resultDTOList;
     }
@@ -718,37 +718,42 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 <<<<<<< HEAD
 =======
+=======
+        return resultDTOList;
+    }
+>>>>>>> [IMP]重构后端断码
 
-        @Override
-        public List<ApplicationRepVO> listAll (Long projectId){
-            return ConvertHelper.convertList(applicationRepository.listAll(projectId), ApplicationRepVO.class);
+    @Override
+    public List<ApplicationRepVO> listAll(Long projectId) {
+        return ConvertHelper.convertList(applicationRepository.listAll(projectId), ApplicationRepVO.class);
+    }
+
+    @Override
+    public void checkName(Long projectId, String name) {
+        applicationRepository.checkName(projectId, name);
+    }
+
+    @Override
+    public void checkCode(Long projectId, String code) {
+        ApplicationE applicationE = new ApplicationE();
+        applicationE.initProjectE(projectId);
+        applicationE.setCode(code);
+        applicationRepository.checkCode(applicationE);
+    }
+
+    @Override
+    public List<ApplicationTemplateRepVO> listTemplate(Long projectId, Boolean isPredefined) {
+        ProjectVO projectE = iamService.queryIamProject(projectId);
+        List<ApplicationTemplateE> applicationTemplateES = applicationTemplateRepository.baseListByOrganizationId(projectE.getOrganization().getId())
+                .stream()
+                .filter(ApplicationTemplateE::getSynchro).collect(Collectors.toList());
+        if (isPredefined != null && isPredefined) {
+            applicationTemplateES = applicationTemplateES.stream().filter(applicationTemplateE -> applicationTemplateE.getOrganization().getId() == null).collect(Collectors.toList());
         }
+        return ConvertHelper.convertList(applicationTemplateES, ApplicationTemplateRepVO.class);
+    }
 
-        @Override
-        public void checkName (Long projectId, String name){
-            applicationRepository.checkName(projectId, name);
-        }
-
-        @Override
-        public void checkCode (Long projectId, String code){
-            ApplicationE applicationE = new ApplicationE();
-            applicationE.initProjectE(projectId);
-            applicationE.setCode(code);
-            applicationRepository.checkCode(applicationE);
-        }
-
-        @Override
-        public List<ApplicationTemplateRepVO> listTemplate (Long projectId, Boolean isPredefined){
-            ProjectVO projectE = iamService.queryIamProject(projectId);
-            List<ApplicationTemplateE> applicationTemplateES = applicationTemplateRepository.baseListByOrganizationId(projectE.getOrganization().getId())
-                    .stream()
-                    .filter(ApplicationTemplateE::getSynchro).collect(Collectors.toList());
-            if (isPredefined != null && isPredefined) {
-                applicationTemplateES = applicationTemplateES.stream().filter(applicationTemplateE -> applicationTemplateE.getOrganization().getId() == null).collect(Collectors.toList());
-            }
-            return ConvertHelper.convertList(applicationTemplateES, ApplicationTemplateRepVO.class);
-        }
-
+<<<<<<< HEAD
 >>>>>>> [IMP]重构后端代码
         /**
          * analyze location of the dockerfile in the template
@@ -850,6 +855,24 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public void operationApplication(DevOpsAppPayload gitlabProjectPayload) {
         DevopsProjectVO devopsProjectE = devopsProjectRepository.queryByGitlabGroupId(
+=======
+    /**
+     * analyze location of the dockerfile in the template
+     *
+     * @param templateWorkDir       template work dir
+     * @param applicationTemplateId application template id
+     */
+    private void analyzeDockerfileToMap(File templateWorkDir, Long applicationTemplateId) {
+        Collection<File> dockerfile = FileUtils.listFiles(templateWorkDir, filenameFilter, TrueFileFilter.INSTANCE);
+        Optional<File> df = dockerfile.stream().findFirst();
+        templateDockerfileMap.putIfAbsent(applicationTemplateId, df.map(f -> f.getAbsolutePath().replace(templateWorkDir.getAbsolutePath() + System.getProperty("file.separator"), "")).orElse(DOCKER_FILE_NAME));
+    }
+
+
+    @Override
+    public void operationApplication(DevOpsAppPayload gitlabProjectPayload) {
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByGitlabAppGroupId(
+>>>>>>> [IMP]重构后端断码
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         ApplicationE applicationE = applicationRepository.queryByCode(gitlabProjectPayload.getPath(),
                 devopsProjectE.getProjectE().getId());
@@ -870,7 +893,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         operateGitlabMemberPermission(gitlabProjectPayload);
 
         if (applicationE.getApplicationTemplateE() != null) {
+<<<<<<< HEAD
             ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.query(
+=======
+            ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.baseQuery(
+>>>>>>> [IMP]重构后端断码
                     applicationE.getApplicationTemplateE().getId());
             //拉取模板
             String applicationDir = APPLICATION + System.currentTimeMillis();
@@ -888,6 +915,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     + "-" + projectE.getCode() + "/" + applicationE.getCode() + ".git");
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
 
+<<<<<<< HEAD
             BranchDO branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
             if (branchDO.getName() == null) {
                 gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
@@ -901,12 +929,28 @@ public class ApplicationServiceImpl implements ApplicationService {
 =======
                     if (!branchDTO.getProtected()) {
 >>>>>>> [IMP]修改后端结构
+=======
+            BranchDTO branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+            if (branchDTO.getName() == null) {
+                gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
+                        gitlabUserE.getUsername(), accessToken);
+                branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+                //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
+                if (!branchDTO.getProtected()) {
+                    try {
+>>>>>>> [IMP]重构后端断码
                         gitLabService.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
 >>>>>>> [IMP] 修改AppControler重构
                                 AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
                                 gitlabProjectPayload.getUserId());
+                    } catch (CommonException e) {
+                        branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+                        if (!branchDTO.getProtected()) {
+                            throw new CommonException(e);
+                        }
                     }
                 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -970,58 +1014,63 @@ public class ApplicationServiceImpl implements ApplicationService {
                 String token = GenerateUUID.generateUUID();
                 gitLabService.addVariable(projectId, "Token", token, false, userId);
                 return token;
+=======
+>>>>>>> [IMP]重构后端断码
             } else {
-                return variableDTOS.get(0).getValue();
-            }
-        }
-
-        /**
-         * 处理当前项目成员对于此gitlab应用的权限
-         *
-         * @param devOpsAppPayload 此次操作相关信息
-         */
-        private void operateGitlabMemberPermission (DevOpsAppPayload devOpsAppPayload){
-            // 不跳过权限检查，则为gitlab项目分配项目成员权限
-            if (!devOpsAppPayload.getSkipCheckPermission()) {
-                if (!devOpsAppPayload.getUserIds().isEmpty()) {
-                    List<Long> gitlabUserIds = userAttrRepository.baseListByUserIds(devOpsAppPayload.getUserIds()).stream()
-                            .map(UserAttrE::getGitlabUserId).collect(Collectors.toList());
-                    gitlabUserIds.forEach(e -> {
-                        GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
-                        if (gitlabGroupMemberE != null) {
-                            gitlabGroupMemberRepository.deleteMember(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
-                        }
-                        GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository.getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
-                        if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
-                            gitLabService.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
-                                    new MemberVO(TypeUtil.objToInteger(e), 30, ""));
-                        }
-                    });
+                if (!branchDTO.getProtected()) {
+                    gitLabService.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
+                            AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
+                            gitlabProjectPayload.getUserId());
                 }
             }
-            // 跳过权限检查，项目下所有成员自动分配权限
-            else {
-                List<Long> iamUserIds = iamService.getAllMemberIdsWithoutOwner(devOpsAppPayload.getIamProjectId());
-                List<Integer> gitlabUserIds = userAttrRepository.baseListByUserIds(iamUserIds).stream()
-                        .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
+            initBranch(gitlabProjectPayload, applicationE, MASTER);
+        }
+        try {
+            String applicationToken = getApplicationToken(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
+            applicationE.setToken(applicationToken);
+            applicationE.initGitlabProjectE(TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
+            applicationE.initSynchro(true);
+            applicationE.setFailed(false);
+            // set project hook id for application
+            setProjectHook(applicationE, gitlabProjectDO.getId(), applicationToken, gitlabProjectPayload.getUserId());
+            // 更新并校验
+            applicationRepository.updateSql(applicationE);
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+    }
 
-                gitlabUserIds.forEach(e ->
-                        updateGitlabMemberPermission(devOpsAppPayload, e));
+    /**
+     * 处理当前项目成员对于此gitlab应用的权限
+     *
+     * @param devOpsAppPayload 此次操作相关信息
+     */
+    private void operateGitlabMemberPermission(DevOpsAppPayload devOpsAppPayload) {
+        // 不跳过权限检查，则为gitlab项目分配项目成员权限
+        if (!devOpsAppPayload.getSkipCheckPermission()) {
+            if (!devOpsAppPayload.getUserIds().isEmpty()) {
+                List<Long> gitlabUserIds = userAttrRepository.baseListByUserIds(devOpsAppPayload.getUserIds()).stream()
+                        .map(UserAttrE::getGitlabUserId).collect(Collectors.toList());
+                gitlabUserIds.forEach(e -> {
+                    GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
+                    if (gitlabGroupMemberE != null) {
+                        gitlabGroupMemberRepository.deleteMember(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
+                    }
+                    GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository.getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
+                    if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
+                        gitLabService.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
+                                new MemberVO(TypeUtil.objToInteger(e), 30, ""));
+                    }
+                });
             }
         }
+        // 跳过权限检查，项目下所有成员自动分配权限
+        else {
+            List<Long> iamUserIds = iamService.getAllMemberIdsWithoutOwner(devOpsAppPayload.getIamProjectId());
+            List<Integer> gitlabUserIds = userAttrRepository.baseListByUserIds(iamUserIds).stream()
+                    .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
 
-        private void updateGitlabMemberPermission (DevOpsAppPayload devOpsAppPayload, Integer gitlabUserId){
-            GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
-            if (gitlabGroupMemberE != null) {
-                gitlabGroupMemberRepository.deleteMember(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
-            }
-            GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository.getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(gitlabUserId));
-            if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
-                gitLabService.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
-                        new MemberVO(TypeUtil.objToInteger(gitlabUserId), 30, ""));
-            }
-        }
-
+<<<<<<< HEAD
 <<<<<<< HEAD
     private void updateGitlabMemberPermission(DevOpsAppPayload devOpsAppPayload, Integer gitlabUserId) {
         GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
@@ -1160,8 +1209,14 @@ public class ApplicationServiceImpl implements ApplicationService {
             } else {
                 applicationE.initHookId(TypeUtil.objToLong(projectHookDTOS.get(0).getId()));
             }
+=======
+            gitlabUserIds.forEach(e ->
+                    updateGitlabMemberPermission(devOpsAppPayload, e));
+>>>>>>> [IMP]重构后端断码
         }
+    }
 
+<<<<<<< HEAD
         @Override
         public void operationApplicationImport (DevOpsAppImportPayload devOpsAppImportPayload){
             // 准备相关的数据
@@ -1178,12 +1233,45 @@ public class ApplicationServiceImpl implements ApplicationService {
                 gitlabProjectDO = gitlabRepository.createProject(devOpsAppImportPayload.getGroupId(),
                         devOpsAppImportPayload.getPath(),
                         devOpsAppImportPayload.getUserId(), false);
+=======
+
+    /**
+     * 处理当前项目成员对于此gitlab应用的权限
+     *
+     * @param devOpsAppPayload 此次操作相关信息
+     */
+    private void operateGitlabMemberPermission(DevOpsAppPayload devOpsAppPayload) {
+        // 不跳过权限检查，则为gitlab项目分配项目成员权限
+        if (!devOpsAppPayload.getSkipCheckPermission()) {
+            if (!devOpsAppPayload.getUserIds().isEmpty()) {
+                List<Long> gitlabUserIds = userAttrRepository.listByUserIds(devOpsAppPayload.getUserIds()).stream()
+                        .map(UserAttrE::getGitlabUserId).collect(Collectors.toList());
+                gitlabUserIds.forEach(e -> {
+                    GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
+                    if (gitlabGroupMemberE != null) {
+                        gitlabGroupMemberRepository.deleteMember(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(e));
+                    }
+                    GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository.getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
+                    if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
+                        gitLabService.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
+                                new MemberVO(TypeUtil.objToInteger(e), 30, ""));
+                    }
+                });
+>>>>>>> [IMP]重构后端断码
             }
-            devOpsAppImportPayload.setGitlabProjectId(gitlabProjectDO.getId());
+        }
+        // 跳过权限检查，项目下所有成员自动分配权限
+        else {
+            List<Long> iamUserIds = iamService.getAllMemberIdsWithoutOwner(devOpsAppPayload.getIamProjectId());
+            List<Integer> gitlabUserIds = userAttrRepository.listByUserIds(iamUserIds).stream()
+                    .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
 
-            // 为项目下的成员分配对于此gitlab项目的权限
-            operateGitlabMemberPermission(devOpsAppImportPayload);
+            gitlabUserIds.forEach(e ->
+                    updateGitlabMemberPermission(devOpsAppPayload, e));
+        }
+    }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             if (applicationE.getApplicationTemplateE() != null) {
                 UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(TypeUtil.objToLong(devOpsAppImportPayload.getUserId()));
@@ -1198,20 +1286,120 @@ public class ApplicationServiceImpl implements ApplicationService {
                 Git templateGit = cloneTemplate(applicationTemplateE, templateDir);
                 // 渲染模板里面的参数
                 replaceParams(applicationE, projectE, organization, templateDir);
+=======
+    private void updateGitlabMemberPermission(DevOpsAppPayload devOpsAppPayload, Integer gitlabUserId) {
+        GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
+        if (gitlabGroupMemberE != null) {
+            gitlabGroupMemberRepository.deleteMember(devOpsAppPayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
+        }
+        GitlabMemberE gitlabProjectMemberE = gitlabProjectRepository.getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(gitlabUserId));
+        if (gitlabProjectMemberE == null || gitlabProjectMemberE.getId() == null) {
+            gitLabService.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
+                    new MemberVO(TypeUtil.objToInteger(gitlabUserId), 30, ""));
+        }
+    }
 
-                // clone外部代码仓库
-                String applicationDir = APPLICATION + UUIDTool.genUuid();
-                Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppImportPayload.getRepositoryUrl(), devOpsAppImportPayload.getAccessToken());
+    /**
+     * 拉取模板库到本地
+     *
+     * @param applicationTemplateE 模板库的信息
+     * @param applicationDir       本地库地址
+     * @return 本地库的git实例
+     */
+    private Git cloneTemplate(ApplicationTemplateE applicationTemplateE, String applicationDir) {
+        String repoUrl = applicationTemplateE.getRepoUrl();
+        String type = applicationTemplateE.getCode();
+        if (applicationTemplateE.getOrganization().getId() != null) {
+            repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
+            repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
+            type = MASTER;
+        }
+        return gitUtil.clone(applicationDir, type, repoUrl);
+    }
+>>>>>>> [IMP]重构后端断码
 
 
+    /**
+     * set project hook id for application
+     *
+     * @param applicationE the application entity
+     * @param projectId    the gitlab project id
+     * @param token        the token for project hook
+     * @param userId       the gitlab user id
+     */
+    private void setProjectHook(ApplicationE applicationE, Integer projectId, String token, Integer userId) {
+        ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
+        projectHookDTO.setEnableSslVerification(true);
+        projectHookDTO.setProjectId(projectId);
+        projectHookDTO.setToken(token);
+        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
+        uri += "devops/webhook";
+        projectHookDTO.setUrl(uri);
+        List<ProjectHookDTO> projectHookDTOS = gitLabService.getHooks(projectId, userId);
+        if (projectHookDTOS.isEmpty()) {
+            applicationE.initHookId(TypeUtil.objToLong(gitLabService.createWebHook(
+                    projectId, userId, projectHookDTO)
+                    .getId()));
+        } else {
+            applicationE.initHookId(TypeUtil.objToLong(projectHookDTOS.get(0).getId()));
+        }
+    }
+
+<<<<<<< HEAD
                 // 设置Application对应的gitlab项目的仓库地址
                 String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
                 applicationE.initGitlabProjectEByUrl(repoUrl + organization.getCode()
                         + "-" + projectE.getCode() + "/" + applicationE.getCode() + ".git");
+=======
+>>>>>>> [IMP]重构后端断码
 
-                File templateWorkDir = new File(gitUtil.getWorkingDirectory(templateDir));
-                File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
+    @Override
+    public void operationApplicationImport(DevOpsAppImportPayload devOpsAppImportPayload) {
+        // 准备相关的数据
+        DevopsProjectVO devopsProjectVO = devopsProjectRepository.baseQueryByGitlabAppGroupId(
+                TypeUtil.objToInteger(devOpsAppImportPayload.getGroupId()));
+        ApplicationDTO applicationDTO = queryByCodeFromBase(devOpsAppImportPayload.getPath(),
+                devopsProjectVO.getProjectE().getId());
+        ProjectVO projectE = iamService.queryIamProject(devopsProjectVO.getProjectE().getId());
+        OrganizationVO organization = iamService.queryOrganizationById(projectE.getOrganization().getId());
+        GitlabProjectDTO gitlabProjectDO = gitLabService
+                .getProjectByName(organization.getCode() + "-" + projectE.getCode(), applicationDTO.getCode(),
+                        devOpsAppImportPayload.getUserId());
+        if (gitlabProjectDO.getId() == null) {
+            gitlabProjectDO = gitLabService.createProject(devOpsAppImportPayload.getGroupId(),
+                    devOpsAppImportPayload.getPath(),
+                    devOpsAppImportPayload.getUserId(), false);
+        }
+        devOpsAppImportPayload.setGitlabProjectId(gitlabProjectDO.getId());
 
+        // 为项目下的成员分配对于此gitlab项目的权限
+        operateGitlabMemberPermission(devOpsAppImportPayload);
+
+        if (applicationDTO.getAppTemplateId() != null) {
+            UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(TypeUtil.objToLong(devOpsAppImportPayload.getUserId()));
+            ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.query(
+                    applicationDTO.getAppTemplateId());
+
+            // 拉取模板
+            String templateDir = APPLICATION + UUIDTool.genUuid();
+            Git templateGit = cloneTemplate(applicationTemplateE, templateDir);
+            // 渲染模板里面的参数
+            replaceParams(applicationDTO, projectE, organization, templateDir);
+
+            // clone外部代码仓库
+            String applicationDir = APPLICATION + UUIDTool.genUuid();
+            Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppImportPayload.getRepositoryUrl(), devOpsAppImportPayload.getAccessToken());
+
+
+            // 设置Application对应的gitlab项目的仓库地址
+            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+            applicationDTO.setRepoUrl(repoUrl + organization.getCode()
+                    + "-" + projectE.getCode() + "/" + applicationDTO.getCode() + ".git");
+
+            File templateWorkDir = new File(gitUtil.getWorkingDirectory(templateDir));
+            File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
+
+<<<<<<< HEAD
                 try {
                     List<Ref> refs = repositoryGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
                     for (Ref ref : refs) {
@@ -1275,6 +1463,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
 
 <<<<<<< HEAD
+=======
+>>>>>>> [IMP]重构后端断码
             try {
                 List<Ref> refs = repositoryGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
                 for (Ref ref : refs) {
@@ -1291,6 +1481,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     if (!branchName.equals(MASTER)) {
                         repositoryGit.checkout().setCreateBranch(true).setName(branchName).call();
                     }
+<<<<<<< HEAD
 >>>>>>> [IMP] 修改AppControler重构
 =======
         /**
@@ -1310,6 +1501,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
             return gitUtil.clone(applicationDir, type, repoUrl);
         }
+=======
+>>>>>>> [IMP]重构后端断码
 
         /**
          * set project hook id for application
@@ -1337,6 +1530,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
         }
 
+<<<<<<< HEAD
         @Override
         public void operationApplicationImport (DevOpsAppImportPayload devOpsAppImportPayload){
             // 准备相关的数据
@@ -1601,35 +1795,53 @@ public class ApplicationServiceImpl implements ApplicationService {
                                             AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
                                             devOpsAppImportPayload.getUserId());
                                 }
+=======
+                    // 将模板库中文件复制到代码库中
+                    mergeTemplateToApplication(templateWorkDir, applicationWorkDir, applicationTemplateE.getId());
+
+                    // 获取push代码所需的access token
+                    String accessToken = getToken(devOpsAppImportPayload, applicationDir, userAttrE);
+
+                    BranchDTO branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), branchName);
+                    if (branchDTO.getName() == null) {
+                        try {
+                            // 提交并推代码
+                            gitUtil.commitAndPush(repositoryGit, applicationDTO.getGitlabProjectE().getRepoURL(), accessToken, ref.getName());
+                        } catch (CommonException e) {
+                            releaseResources(templateWorkDir, applicationWorkDir, templateGit, repositoryGit);
+                            throw e;
+                        }
+
+                        branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), branchName);
+                        //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
+                        if (branchName.equals(MASTER)) {
+                            if (!branchDTO.getProtected()) {
+                                try {
+                                    gitLabService.createProtectBranch(devOpsAppImportPayload.getGitlabProjectId(), MASTER, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppImportPayload.getUserId());
+                                } catch (CommonException e) {
+                                    if (!devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER).getProtected()) {
+                                        throw new CommonException(e);
+                                    }
+                                }
                             }
                         }
-                        initBranch(devOpsAppImportPayload, applicationDTO, branchName);
+                    } else {
+                        if (branchName.equals(MASTER)) {
+                            if (!branchDTO.getProtected()) {
+                                gitLabService.createProtectBranch(devOpsAppImportPayload.getGitlabProjectId(), MASTER,
+                                        AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
+                                        devOpsAppImportPayload.getUserId());
+>>>>>>> [IMP]重构后端断码
+                            }
+                        }
                     }
-                } catch (GitAPIException e) {
-                    e.printStackTrace();
+                    initBranch(devOpsAppImportPayload, applicationDTO, branchName);
                 }
-
-                releaseResources(templateWorkDir, applicationWorkDir, templateGit, repositoryGit);
+            } catch (GitAPIException e) {
+                e.printStackTrace();
             }
 
-
-            try {
-                // 设置appliation的属性
-                String applicationToken = getApplicationToken(gitlabProjectDO.getId(), devOpsAppImportPayload.getUserId());
-                applicationDTO.initGitlabProjectE(TypeUtil.objToInteger(devOpsAppImportPayload.getGitlabProjectId()));
-                applicationDTO.setToken(applicationToken);
-                applicationDTO.setSynchro(true);
-
-                // set project hook id for application
-                setProjectHook(applicationDTO, gitlabProjectDO.getId(), applicationToken, devOpsAppImportPayload.getUserId());
-
-                // 更新并校验
-                if (applicationRepository.update(applicationDTO) != 1) {
-                    throw new CommonException(ERROR_UPDATE_APP);
-                }
-            } catch (Exception e) {
-                throw new CommonException(e.getMessage(), e);
-            }
+            releaseResources(templateWorkDir, applicationWorkDir, templateGit, repositoryGit);
         }
 >>>>>>> [IMP]重构后端代码
 
@@ -1811,6 +2023,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devopsGitRepository.createDevopsBranch(devopsBranchE);
     }
 
+<<<<<<< HEAD
     private void replaceParams(ApplicationDTO applicationDTO, ProjectVO projectVO, OrganizationVO organizationVO,
                                String applicationDir) {
         try {
@@ -1874,39 +2087,91 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (!appGitlabCiFile.exists() && templateGitlabCiFile.exists()) {
                 FileUtil.copyFile(templateGitlabCiFile, appGitlabCiFile);
             }
+=======
+        try {
+            // 设置appliation的属性
+            String applicationToken = getApplicationToken(gitlabProjectDO.getId(), devOpsAppImportPayload.getUserId());
+            applicationDTO.initGitlabProjectE(TypeUtil.objToInteger(devOpsAppImportPayload.getGitlabProjectId()));
+            applicationDTO.setToken(applicationToken);
+            applicationDTO.setSynchro(true);
+>>>>>>> [IMP]重构后端断码
 
-            // Dockerfile 文件
-            if (!templateDockerfileMap.containsKey(applicationTemplateId)) {
-                analyzeDockerfileToMap(templateWorkDir, applicationTemplateId);
-            }
-            File appDockerFile = new File(applicationWorkDir, templateDockerfileMap.get(applicationTemplateId));
-            File templateDockerFile = new File(templateWorkDir, templateDockerfileMap.get(applicationTemplateId));
-            if (!appDockerFile.exists() && templateDockerFile.exists()) {
-                FileUtil.copyFile(templateDockerFile, appDockerFile);
-            }
+            // set project hook id for application
+            setProjectHook(applicationDTO, gitlabProjectDO.getId(), applicationToken, devOpsAppImportPayload.getUserId());
 
-            // chart文件夹
-            File appChartDir = new File(applicationWorkDir, CHART_DIR);
-            File templateChartDir = new File(templateWorkDir, CHART_DIR);
-            if (!appChartDir.exists() && templateChartDir.exists()) {
-                FileUtil.copyDir(templateChartDir, appChartDir);
+            // 更新并校验
+            if (applicationRepository.update(applicationDTO) != 1) {
+                throw new CommonException(ERROR_UPDATE_APP);
             }
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+    }
+
+
+    /**
+     * 释放资源
+     */
+    private void releaseResources(File templateWorkDir, File applicationWorkDir, Git templateGit, Git repositoryGit) {
+        if (templateGit != null) {
+            templateGit.close();
+        }
+        if (repositoryGit != null) {
+            repositoryGit.close();
+        }
+        FileUtil.deleteDirectory(templateWorkDir);
+        FileUtil.deleteDirectory(applicationWorkDir);
+    }
+
+    /**
+     * 将模板库中的chart包，dockerfile，gitlab-ci文件复制到导入的代码仓库中
+     * 复制文件前会判断文件是否存在，如果存在则不复制
+     *
+     * @param templateWorkDir       模板库工作目录
+     * @param applicationWorkDir    应用库工作目录
+     * @param applicationTemplateId application template id
+     */
+    private void mergeTemplateToApplication(File templateWorkDir, File applicationWorkDir, Long
+            applicationTemplateId) {
+        // ci 文件
+        File appGitlabCiFile = new File(applicationWorkDir, GITLAB_CI_FILE);
+        File templateGitlabCiFile = new File(templateWorkDir, GITLAB_CI_FILE);
+        if (!appGitlabCiFile.exists() && templateGitlabCiFile.exists()) {
+            FileUtil.copyFile(templateGitlabCiFile, appGitlabCiFile);
         }
 
-        @Override
-        @Saga(code = "devops-create-app-fail",
-                description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
-        public void setAppErrStatus (String input, Long projectId){
-            sagaClient.startSaga("devops-create-app-fail", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
+        // Dockerfile 文件
+        if (!templateDockerfileMap.containsKey(applicationTemplateId)) {
+            analyzeDockerfileToMap(templateWorkDir, applicationTemplateId);
+        }
+        File appDockerFile = new File(applicationWorkDir, templateDockerfileMap.get(applicationTemplateId));
+        File templateDockerFile = new File(templateWorkDir, templateDockerfileMap.get(applicationTemplateId));
+        if (!appDockerFile.exists() && templateDockerFile.exists()) {
+            FileUtil.copyFile(templateDockerFile, appDockerFile);
         }
 
-        private void initBranch (DevOpsAppPayload gitlabProjectPayload, ApplicationDTO applicationDTO, String branchName)
-        {
-            CommitVO commitVO = new CommitVO();
-            try {
+        // chart文件夹
+        File appChartDir = new File(applicationWorkDir, CHART_DIR);
+        File templateChartDir = new File(templateWorkDir, CHART_DIR);
+        if (!appChartDir.exists() && templateChartDir.exists()) {
+            FileUtil.copyDir(templateChartDir, appChartDir);
+        }
+    }
+
+    @Override
+    @Saga(code = "devops-create-app-fail",
+            description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
+    public void setAppErrStatus(String input, Long projectId) {
+        sagaClient.startSaga("devops-create-app-fail", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
+    }
+
+    private void initBranch(DevOpsAppPayload gitlabProjectPayload, ApplicationDTO applicationDTO, String branchName) {
+        CommitVO commitVO = new CommitVO();
+        try {
 //            BeanUtils.copyProperties(
 //                    gitlabServiceClient.getCommit(gitLabProjectId, commit, userId).getBody(),
 //                    commitE);
+<<<<<<< HEAD
                 commitE = devopsGitRepository.getCommit(
                         gitlabProjectPayload.getGitlabProjectId(), branchName, gitlabProjectPayload.getUserId());
             } catch (Exception e) {
@@ -1939,8 +2204,43 @@ public class ApplicationServiceImpl implements ApplicationService {
                 gitUtil.deleteWorkingDirectory(applicationDir);
                 throw new CommonException(e.getMessage(), e);
             }
+=======
+            commitE = devopsGitRepository.getCommit(
+                    gitlabProjectPayload.getGitlabProjectId(), branchName, gitlabProjectPayload.getUserId());
+        } catch (Exception e) {
+            commitVO = new CommitDTO();
         }
+        DevopsBranchE devopsBranchE = new DevopsBranchE();
+        devopsBranchE.setUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
+        devopsBranchE.setApplicationE(applicationDTO);
+        devopsBranchE.setBranchName(branchName);
+        devopsBranchE.setCheckoutCommit(commitVO.getId());
+        devopsBranchE.setCheckoutDate(commitVO.getCommittedDate());
+        devopsBranchE.setLastCommitUser(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
+        devopsBranchE.setLastCommitMsg(commitVO.getMessage());
+        devopsBranchE.setLastCommitDate(commitVO.getCommittedDate());
+        devopsBranchE.setLastCommit(commitVO.getId());
+        devopsGitRepository.createDevopsBranch(devopsBranchE);
+    }
 
+
+    private void replaceParams(ApplicationDTO applicationDTO, ProjectVO projectVO, OrganizationVO organizationVO,
+                               String applicationDir) {
+        try {
+            File file = new File(gitUtil.getWorkingDirectory(applicationDir));
+            Map<String, String> params = new HashMap<>();
+            params.put("{{group.name}}", organizationVO.getCode() + "-" + projectVO.getCode());
+            params.put("{{service.code}}", applicationDTO.getCode());
+            FileUtil.replaceReturnFile(file, params);
+        } catch (Exception e) {
+            //删除模板
+            gitUtil.deleteWorkingDirectory(applicationDir);
+            throw new CommonException(e.getMessage(), e);
+>>>>>>> [IMP]重构后端断码
+        }
+    }
+
+<<<<<<< HEAD
         private String getToken (DevOpsAppPayload gitlabProjectPayload, String applicationDir, UserAttrE userAttrE){
             String accessToken = userAttrE.getGitlabToken();
             if (accessToken == null) {
@@ -1951,7 +2251,19 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
             return accessToken;
 >>>>>>> [IMP]重构后端代码
+=======
+
+    private String getToken(DevOpsAppPayload gitlabProjectPayload, String applicationDir, UserAttrE userAttrE) {
+        String accessToken = userAttrE.getGitlabToken();
+        if (accessToken == null) {
+            accessToken = gitLabService.createToken(gitlabProjectPayload.getGitlabProjectId(),
+                    applicationDir, gitlabProjectPayload.getUserId());
+            userAttrE.setGitlabToken(accessToken);
+            userAttrRepository.update(userAttrE);
+>>>>>>> [IMP]重构后端断码
         }
+        return accessToken;
+    }
 
 <<<<<<< HEAD
         @Override
@@ -1965,12 +2277,24 @@ public class ApplicationServiceImpl implements ApplicationService {
             return resultList;
 =======
 
-        @Override
-        public String queryFile (String token, String type){
-            ApplicationE applicationE = applicationRepository.queryByToken(token);
-            if (applicationE == null) {
-                return null;
+    @Override
+    public String queryFile(String token, String type) {
+        ApplicationE applicationE = applicationRepository.queryByToken(token);
+        if (applicationE == null) {
+            return null;
+        }
+        try {
+            ProjectVO projectE = iamService.queryIamProject(applicationE.getProjectE().getId());
+            OrganizationVO organization = iamService.queryOrganizationById(projectE.getOrganization().getId());
+            InputStream inputStream;
+            ProjectConfigDTO harborProjectConfig;
+            ProjectConfigDTO chartProjectConfig;
+            if (applicationE.getHarborConfigE() != null) {
+                harborProjectConfig = devopsProjectConfigRepository.baseQuery(applicationE.getHarborConfigE().getId()).getConfig();
+            } else {
+                harborProjectConfig = devopsProjectConfigRepository.baseListByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getConfig();
             }
+<<<<<<< HEAD
             try {
                 ProjectVO projectE = iamService.queryIamProject(applicationE.getProjectE().getId());
                 OrganizationVO organization = iamService.queryOrganizationById(projectE.getOrganization().getId());
@@ -2225,90 +2549,147 @@ public class ApplicationServiceImpl implements ApplicationService {
                             .listByActiveAndPubAndVersion(projectId, true, pageRequest, params),
                     ApplicationReqVO.class);
         }
+=======
+            if (applicationE.getChartConfigE() != null) {
+                chartProjectConfig = devopsProjectConfigRepository.baseQuery(applicationE.getChartConfigE().getId()).getConfig();
+            } else {
+                chartProjectConfig = devopsProjectConfigRepository.baseListByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getConfig();
+            }
+            if (type == null) {
+                inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
+            } else {
+                inputStream = this.getClass().getResourceAsStream("/shell/" + type + ".sh");
+            }
+            Map<String, String> params = new HashMap<>();
+            String groupName = organization.getCode() + "-" + projectE.getCode();
+            if (harborProjectConfig.getProject() != null) {
+                groupName = harborProjectConfig.getProject();
+            }
+            String dockerUrl = harborProjectConfig.getUrl().replace("http://", "").replace("https://", "");
+            dockerUrl = dockerUrl.endsWith("/") ? dockerUrl.substring(0, dockerUrl.length() - 1) : dockerUrl;
 
-        @Override
-        public List<AppUserPermissionRepDTO> listAllUserPermission (Long appId){
-            List<Long> userIds = appUserPermissionRepository.baseListByAppId(appId).stream().map(AppUserPermissionE::getIamUserId)
-                    .collect(Collectors.toList());
-            List<UserE> userEList = iamService.listUsersByIds(userIds);
-            List<AppUserPermissionRepDTO> resultList = new ArrayList<>();
-            userEList.forEach(
-                    e -> resultList.add(new AppUserPermissionRepDTO(e.getId(), e.getLoginName(), e.getRealName())));
-            return resultList;
+            params.put("{{ GROUP_NAME }}", groupName);
+            params.put("{{ PROJECT_NAME }}", applicationE.getCode());
+            params.put("{{ PRO_CODE }}", projectE.getCode());
+            params.put("{{ ORG_CODE }}", organization.getCode());
+            params.put("{{ DOCKER_REGISTRY }}", dockerUrl);
+            params.put("{{ DOCKER_USERNAME }}", harborProjectConfig.getUserName());
+            params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
+            params.put("{{ CHART_REGISTRY }}", chartProjectConfig.getUrl().endsWith("/") ? chartProjectConfig.getUrl().substring(0, chartProjectConfig.getUrl().length() - 1) : chartProjectConfig.getUrl());
+            return FileUtil.replaceReturnString(inputStream, params);
+        } catch (CommonException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status, Long appId) {
+        List<ApplicationCodeDTO> applicationCodeDTOS = ConvertHelper
+                .convertList(applicationRepository.listByEnvId(projectId, envId, status),
+                        ApplicationCodeDTO.class);
+        if (appId != null) {
+            ApplicationE applicationE = applicationRepository.query(appId);
+            ApplicationCodeDTO applicationCodeDTO = new ApplicationCodeDTO();
+            BeanUtils.copyProperties(applicationE, applicationCodeDTO);
+            DevopsAppShareE applicationMarketE = applicationMarketRepository.baseQueryByAppId(appId);
+            if (applicationMarketE != null) {
+                applicationCodeDTO.setPublishLevel(applicationMarketE.getPublishLevel());
+                applicationCodeDTO.setContributor(applicationMarketE.getContributor());
+                applicationCodeDTO.setDescription(applicationMarketE.getDescription());
+            }
+            for (int i = 0; i < applicationCodeDTOS.size(); i++) {
+                if (applicationCodeDTOS.get(i).getId().equals(applicationE.getId())) {
+                    applicationCodeDTOS.remove(applicationCodeDTOS.get(i));
+                }
+            }
+            applicationCodeDTOS.add(0, applicationCodeDTO);
+        }
+        return applicationCodeDTOS;
+    }
+
+    @Override
+    public PageInfo<ApplicationCodeDTO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
+        return ConvertPageHelper.convertPageInfo(applicationRepository.pageByEnvId(projectId, envId, appId, pageRequest),
+                ApplicationCodeDTO.class);
+    }
+
+    @Override
+    public PageInfo<ApplicationReqVO> pageByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest,
+                                                                   String params) {
+        return ConvertPageHelper.convertPageInfo(applicationRepository
+                        .listByActiveAndPubAndVersion(projectId, true, pageRequest, params),
+                ApplicationReqVO.class);
+    }
+>>>>>>> [IMP]重构后端断码
+
+    @Override
+    public List<AppUserPermissionRepDTO> listAllUserPermission(Long appId) {
+        List<Long> userIds = appUserPermissionRepository.baseListByAppId(appId).stream().map(AppUserPermissionE::getIamUserId)
+                .collect(Collectors.toList());
+        List<UserE> userEList = iamService.listUsersByIds(userIds);
+        List<AppUserPermissionRepDTO> resultList = new ArrayList<>();
+        userEList.forEach(
+                e -> resultList.add(new AppUserPermissionRepDTO(e.getId(), e.getLoginName(), e.getRealName())));
+        return resultList;
+    }
+
+    @Override
+    public Boolean validateRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String
+            accessToken) {
+        if (!REPOSITORY_URL_PATTERN.matcher(repositoryUrl).matches()) {
+            return Boolean.FALSE;
         }
 
-        @Override
-        public Boolean validateRepositoryUrlAndToken (GitPlatformType gitPlatformType, String repositoryUrl, String
-        accessToken){
-            if (!REPOSITORY_URL_PATTERN.matcher(repositoryUrl).matches()) {
-                return Boolean.FALSE;
-            }
+        // 当不存在access_token时，默认将仓库识别为公开的
+        return GitUtil.validRepositoryUrl(repositoryUrl, accessToken);
+    }
 
-            // 当不存在access_token时，默认将仓库识别为公开的
-            return GitUtil.validRepositoryUrl(repositoryUrl, accessToken);
+    /**
+     * ensure the repository url and access token are valid.
+     *
+     * @param gitPlatformType git platform type
+     * @param repositoryUrl   repository url
+     * @param accessToken     access token (Nullable)
+     */
+    private void checkRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String
+            accessToken) {
+        Boolean validationResult = validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, accessToken);
+        if (Boolean.FALSE.equals(validationResult)) {
+            throw new CommonException("error.repository.token.invalid");
+        } else if (validationResult == null) {
+            throw new CommonException("error.repository.empty");
         }
-
-        /**
-         * ensure the repository url and access token are valid.
-         *
-         * @param gitPlatformType git platform type
-         * @param repositoryUrl   repository url
-         * @param accessToken     access token (Nullable)
-         */
-        private void checkRepositoryUrlAndToken (GitPlatformType gitPlatformType, String repositoryUrl, String
-        accessToken){
-            Boolean validationResult = validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, accessToken);
-            if (Boolean.FALSE.equals(validationResult)) {
-                throw new CommonException("error.repository.token.invalid");
-            } else if (validationResult == null) {
-                throw new CommonException("error.repository.empty");
-            }
-        }
-
-        @Override
-        @Saga(code = "devops-import-gitlab-project", description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
-        public ApplicationRepVO importApp (Long projectId, ApplicationImportDTO applicationImportDTO){
-            // 获取当前操作的用户的信息
-            UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-
-            // 校验application信息的格式
-            ApplicationValidator.checkApplication(applicationImportDTO);
-
-            // 校验名称唯一性
-            applicationRepository.checkName(projectId, applicationImportDTO.getName());
-
-            // 校验code唯一性
-            applicationRepository.checkCode(projectId, applicationImportDTO.getCode());
-
-            // 校验repository（和token） 地址是否有效
-            GitPlatformType gitPlatformType = GitPlatformType.from(applicationImportDTO.getPlatformType());
-            checkRepositoryUrlAndToken(gitPlatformType, applicationImportDTO.getRepositoryUrl(), applicationImportDTO.getAccessToken());
-
-            ProjectVO projectE = iamService.queryIamProject(projectId);
-            OrganizationVO organization = iamService.queryOrganizationById(projectE.getOrganization().getId());
-
-            ApplicationE applicationE = fromImportDtoToEntity(applicationImportDTO);
-
-            applicationE.initProjectE(projectId);
+    }
 
 
-            applicationE.initActive(true);
-            applicationE.initSynchro(false);
-            applicationE.setIsSkipCheckPermission(applicationImportDTO.getIsSkipCheckPermission());
-            applicationE.initHarborConfig(applicationImportDTO.getHarborConfigId());
-            applicationE.initChartConfig(applicationImportDTO.getChartConfigId());
+    @Override
+    @Saga(code = "devops-import-gitlab-project", description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
+    public ApplicationRepVO importApp(Long projectId, ApplicationImportDTO applicationImportDTO) {
+        // 获取当前操作的用户的信息
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
-            // 查询创建应用所在的gitlab应用组
-            DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
-            GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                    TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()),
-                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        // 校验application信息的格式
+        ApplicationValidator.checkApplication(applicationImportDTO);
 
-            // 校验用户的gitlab权限
-            if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
-                throw new CommonException("error.user.not.owner");
-            }
+        // 校验名称唯一性
+        applicationRepository.checkName(projectId, applicationImportDTO.getName());
 
+        // 校验code唯一性
+        applicationRepository.checkCode(projectId, applicationImportDTO.getCode());
+
+        // 校验repository（和token） 地址是否有效
+        GitPlatformType gitPlatformType = GitPlatformType.from(applicationImportDTO.getPlatformType());
+        checkRepositoryUrlAndToken(gitPlatformType, applicationImportDTO.getRepositoryUrl(), applicationImportDTO.getAccessToken());
+
+        ProjectVO projectE = iamService.queryIamProject(projectId);
+        OrganizationVO organization = iamService.queryOrganizationById(projectE.getOrganization().getId());
+
+        ApplicationE applicationE = fromImportDtoToEntity(applicationImportDTO);
+
+        applicationE.initProjectE(projectId);
+
+
+<<<<<<< HEAD
             // 创建应用
             applicationE = applicationRepository.create(applicationE);
             Long appId = applicationE.getId();
@@ -2347,10 +2728,21 @@ public class ApplicationServiceImpl implements ApplicationService {
                 userIds.forEach(e -> appUserPermissionRepository.baseCreate(e, appId));
             }
 >>>>>>> [IMP]重构后端代码
+=======
+        applicationE.initActive(true);
+        applicationE.initSynchro(false);
+        applicationE.setIsSkipCheckPermission(applicationImportDTO.getIsSkipCheckPermission());
+        applicationE.initHarborConfig(applicationImportDTO.getHarborConfigId());
+        applicationE.initChartConfig(applicationImportDTO.getChartConfigId());
+>>>>>>> [IMP]重构后端断码
 
-            String input = gson.toJson(devOpsAppImportPayload);
-            sagaClient.startSaga("devops-import-gitlab-project", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
+        // 查询创建应用所在的gitlab应用组
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(applicationE.getProjectE().getId());
+        GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()),
+                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         // 如果不跳过权限检查
         List<Long> userIds = applicationImportDTO.getUserIds();
@@ -2361,13 +2753,52 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 =======
             return ConvertHelper.convert(applicationRepository.query(appId), ApplicationRepVO.class);
+=======
+        // 校验用户的gitlab权限
+        if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+            throw new CommonException("error.user.not.owner");
+>>>>>>> [IMP]重构后端断码
         }
 
-        @Override
-        public ApplicationRepVO queryByCode (Long projectId, String code){
-            return ConvertHelper.convert(applicationRepository.queryByCode(code, projectId), ApplicationRepVO.class);
+        // 创建应用
+        applicationE = applicationRepository.create(applicationE);
+        Long appId = applicationE.getId();
+
+        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
+        iamAppPayLoad.setApplicationCategory(APPLICATION);
+        iamAppPayLoad.setApplicationType(applicationImportDTO.getType());
+        iamAppPayLoad.setCode(applicationImportDTO.getCode());
+        iamAppPayLoad.setName(applicationImportDTO.getName());
+        iamAppPayLoad.setEnabled(true);
+        iamAppPayLoad.setOrganizationId(organization.getId());
+        iamAppPayLoad.setProjectId(projectId);
+        iamAppPayLoad.setFrom(applicationName);
+        //iam创建应用
+        iamService.createIamApp(organization.getId(), iamAppPayLoad);
+
+        // 创建saga payload
+        DevOpsAppImportPayload devOpsAppImportPayload = new DevOpsAppImportPayload();
+        devOpsAppImportPayload.setType(APPLICATION);
+        devOpsAppImportPayload.setPath(applicationImportDTO.getCode());
+        devOpsAppImportPayload.setOrganizationId(organization.getId());
+        devOpsAppImportPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        devOpsAppImportPayload.setGroupId(TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()));
+        devOpsAppImportPayload.setUserIds(applicationImportDTO.getUserIds());
+        devOpsAppImportPayload.setSkipCheckPermission(applicationImportDTO.getIsSkipCheckPermission());
+        devOpsAppImportPayload.setAppId(appId);
+        devOpsAppImportPayload.setIamProjectId(projectId);
+        devOpsAppImportPayload.setPlatformType(gitPlatformType);
+        devOpsAppImportPayload.setRepositoryUrl(applicationImportDTO.getRepositoryUrl());
+        devOpsAppImportPayload.setAccessToken(applicationImportDTO.getAccessToken());
+        devOpsAppImportPayload.setGitlabUserId(userAttrE.getGitlabUserId());
+
+        // 如果不跳过权限检查
+        List<Long> userIds = applicationImportDTO.getUserIds();
+        if (!applicationImportDTO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
+            userIds.forEach(e -> appUserPermissionRepository.baseCreate(e, appId));
         }
 
+<<<<<<< HEAD
 >>>>>>> [IMP]重构后端代码
 
         @Override
@@ -2407,14 +2838,16 @@ public class ApplicationServiceImpl implements ApplicationService {
                     userIds = appUserPermissionRepository.baseListByAppId(applicationE.getId()).stream().map(AppUserPermissionE::getIamUserId).collect(Collectors.toList());
                 }
             }
+=======
+        String input = gson.toJson(devOpsAppImportPayload);
+        sagaClient.startSaga("devops-import-gitlab-project", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
 
-            //创建iam入口过来的应用直接用管理员去gitlab创建对应的project,避免没有对应项目的权限导致创建失败
-            Long gitlabUserId = 1L;
-            if (applicationName.equals(iamAppPayLoad.getFrom())) {
-                UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                gitlabUserId = userAttrE.getGitlabUserId();
-            }
+        return ConvertHelper.convert(applicationRepository.query(appId), ApplicationRepVO.class);
+    }
+>>>>>>> [IMP]重构后端断码
 
+
+<<<<<<< HEAD
             DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(iamAppPayLoad.getProjectId());
 
             //创建saga payload
@@ -2519,77 +2952,115 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
             applicationRepository.delete(applicationE.getId());
 >>>>>>> [IMP]重构后端代码
+=======
+    @Override
+    public ApplicationRepVO queryByCode(Long projectId, String code) {
+        return ConvertHelper.convert(applicationRepository.queryByCode(code, projectId), ApplicationRepVO.class);
+    }
+
+
+    @Override
+    @Saga(code = "devops-create-gitlab-project",
+            description = "Devops创建gitlab项目", inputSchema = "{}")
+    public void createIamApplication(IamAppPayLoad iamAppPayLoad) {
+
+        List<Long> userIds = new ArrayList<>();
+        ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        if (applicationE == null) {
+            applicationE = new ApplicationE();
+            applicationE.setIsSkipCheckPermission(true);
+            applicationE.setName(iamAppPayLoad.getName());
+            applicationE.setCode(iamAppPayLoad.getCode());
+            applicationE.initActive(true);
+            applicationE.initSynchro(false);
+            applicationE.initProjectE(iamAppPayLoad.getProjectId());
+            applicationE.setType("normal");
+            if (iamAppPayLoad.getApplicationType().equals(TEST)) {
+                applicationE.setType("test");
+            }
+            applicationE = applicationRepository.create(applicationE);
+        } else {
+            //创建iam入口过来的应用直接跳过权限校验，从devops入口过来的应用选择了特定用户权限，需要给特定用户分配该用户权限
+            if (!applicationE.getIsSkipCheckPermission()) {
+                userIds = appUserPermissionRepository.baseListByAppId(applicationE.getId()).stream().map(AppUserPermissionE::getIamUserId).collect(Collectors.toList());
+            }
         }
 
-        @Override
-        public Boolean checkHarbor (String url, String userName, String password, String project, String email){
-            ConfigurationProperties configurationProperties = new ConfigurationProperties();
-            configurationProperties.setBaseUrl(url);
-            configurationProperties.setUsername(userName);
-            configurationProperties.setPassword(password);
-            configurationProperties.setInsecureSkipTlsVerify(false);
-            configurationProperties.setProject(project);
-            configurationProperties.setType("harbor");
-            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-            HarborClient harborClient = retrofit.create(HarborClient.class);
-            Call<User> getUser = harborClient.getCurrentUser();
-            Response<User> userResponse = null;
-            try {
-                userResponse = getUser.execute();
-                if (userResponse.raw().code() != 200) {
-                    if (userResponse.raw().code() == 401) {
-                        throw new CommonException("error.harbor.user.password");
-                    } else {
-                        throw new CommonException(userResponse.errorBody().string());
-                    }
-                }
-            } catch (IOException e) {
-                throw new CommonException(e);
-            }
-            //校验用户的邮箱是否匹配
-            if (!email.equals(userResponse.body().getEmail())) {
-                throw new CommonException("error.user.email.not.equal");
-            }
+        //创建iam入口过来的应用直接用管理员去gitlab创建对应的project,避免没有对应项目的权限导致创建失败
+        Long gitlabUserId = 1L;
+        if (applicationName.equals(iamAppPayLoad.getFrom())) {
+            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            gitlabUserId = userAttrE.getGitlabUserId();
+        }
 
-            //如果传入了project,校验用户是否有project的权限
-            Call<List<ProjectDetail>> listProject = harborClient.listProject(project);
-            Response<List<ProjectDetail>> projectResponse = null;
-            try {
-                projectResponse = listProject.execute();
-                if (projectResponse.body() == null) {
-                    throw new CommonException("error.harbor.project.permission");
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(iamAppPayLoad.getProjectId());
+
+        //创建saga payload
+        DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
+        devOpsAppPayload.setType(APPLICATION);
+        devOpsAppPayload.setPath(iamAppPayLoad.getCode());
+        devOpsAppPayload.setOrganizationId(iamAppPayLoad.getOrganizationId());
+        devOpsAppPayload.setUserId(TypeUtil.objToInteger(gitlabUserId));
+        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()));
+        devOpsAppPayload.setUserIds(userIds);
+        devOpsAppPayload.setSkipCheckPermission(applicationE.getIsSkipCheckPermission());
+        devOpsAppPayload.setAppId(applicationE.getId());
+        devOpsAppPayload.setIamProjectId(iamAppPayLoad.getProjectId());
+        //0.14.0-0.15.0的时候，同步已有的app到iam，此时app已经存在gitlab project,不需要再创建
+        if (applicationE.getGitlabProjectE() == null) {
+            String input = gson.toJson(devOpsAppPayload);
+            sagaClient.startSaga("devops-create-gitlab-project", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), iamAppPayLoad.getProjectId()));
+>>>>>>> [IMP]重构后端断码
+        }
+    }
+
+    @Override
+    public void updateIamApplication(IamAppPayLoad iamAppPayLoad) {
+        ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        applicationE.setName(iamAppPayLoad.getName());
+        applicationRepository.update(applicationE);
+    }
+
+    @Override
+    public void deleteIamApplication(IamAppPayLoad iamAppPayLoad) {
+        ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        if (applicationE.getGitlabProjectE() != null) {
+            gitLabService.deleteProject(applicationE.getGitlabProjectE().getId(), 1);
+        }
+        applicationRepository.delete(applicationE.getId());
+    }
+
+    @Override
+    public Boolean checkHarbor(String url, String userName, String password, String project, String email) {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(url);
+        configurationProperties.setUsername(userName);
+        configurationProperties.setPassword(password);
+        configurationProperties.setInsecureSkipTlsVerify(false);
+        configurationProperties.setProject(project);
+        configurationProperties.setType("harbor");
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        HarborClient harborClient = retrofit.create(HarborClient.class);
+        Call<User> getUser = harborClient.getCurrentUser();
+        Response<User> userResponse = null;
+        try {
+            userResponse = getUser.execute();
+            if (userResponse.raw().code() != 200) {
+                if (userResponse.raw().code() == 401) {
+                    throw new CommonException("error.harbor.user.password");
                 } else {
-                    if (project != null) {
-                        List<ProjectDetail> projects = (projectResponse.body()).stream().filter(a -> (a.getName().equals(configurationProperties.getProject()))).collect(Collectors.toList());
-                        if (projects.isEmpty()) {
-                            throw new CommonException("error.harbor.project.permission");
-                        }
-                    }
+                    throw new CommonException(userResponse.errorBody().string());
                 }
-            } catch (IOException e) {
-                throw new CommonException(e);
             }
-            return true;
+        } catch (IOException e) {
+            throw new CommonException(e);
+        }
+        //校验用户的邮箱是否匹配
+        if (!email.equals(userResponse.body().getEmail())) {
+            throw new CommonException("error.user.email.not.equal");
         }
 
-
-        @Override
-        public Boolean checkChart (String url){
-            ConfigurationProperties configurationProperties = new ConfigurationProperties();
-            configurationProperties.setBaseUrl(url);
-            configurationProperties.setType("chart");
-            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-            ChartClient chartClient = retrofit.create(ChartClient.class);
-            chartClient.getHealth();
-            Call<Object> getHealth = chartClient.getHealth();
-            try {
-                getHealth.execute();
-            } catch (IOException e) {
-                throw new CommonException(e);
-            }
-            return true;
-        }
-
+<<<<<<< HEAD
 
         private ApplicationE fromImportDtoToEntity (ApplicationImportDTO applicationImportDTO){
 <<<<<<< HEAD
@@ -2601,16 +3072,48 @@ public class ApplicationServiceImpl implements ApplicationService {
             BeanUtils.copyProperties(applicationImportDTO, applicationE);
             if (applicationImportDTO.getApplicationTemplateId() != null) {
                 applicationE.initApplicationTemplateE(applicationImportDTO.getApplicationTemplateId());
+=======
+        //如果传入了project,校验用户是否有project的权限
+        Call<List<ProjectDetail>> listProject = harborClient.listProject(project);
+        Response<List<ProjectDetail>> projectResponse = null;
+        try {
+            projectResponse = listProject.execute();
+            if (projectResponse.body() == null) {
+                throw new CommonException("error.harbor.project.permission");
+            } else {
+                if (project != null) {
+                    List<ProjectDetail> projects = (projectResponse.body()).stream().filter(a -> (a.getName().equals(configurationProperties.getProject()))).collect(Collectors.toList());
+                    if (projects.isEmpty()) {
+                        throw new CommonException("error.harbor.project.permission");
+                    }
+                }
+>>>>>>> [IMP]重构后端断码
             }
-            applicationE.initHarborConfig(applicationImportDTO.getHarborConfigId());
-            applicationE.initChartConfig(applicationImportDTO.getChartConfigId());
-            return applicationE;
+        } catch (IOException e) {
+            throw new CommonException(e);
         }
+        return true;
+    }
 
 
-        @Override
-        public SonarContentsDTO getSonarContent (Long projectId, Long appId){
+    @Override
+    public Boolean checkChart(String url) {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(url);
+        configurationProperties.setType("chart");
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        ChartClient chartClient = retrofit.create(ChartClient.class);
+        chartClient.getHealth();
+        Call<Object> getHealth = chartClient.getHealth();
+        try {
+            getHealth.execute();
+        } catch (IOException e) {
+            throw new CommonException(e);
+        }
+        return true;
+    }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             //没有使用sonarqube直接返回空对象
@@ -2663,172 +3166,112 @@ public class ApplicationServiceImpl implements ApplicationService {
             ApplicationE applicationE = applicationRepository.query(appId);
             ProjectVO projectE = iamService.queryIamProject(projectId);
             OrganizationVO organization = iamService.queryOrganizationById(projectE.getOrganization().getId());
+=======
+>>>>>>> [IMP]重构后端断码
+
+    private ApplicationE fromImportDtoToEntity(ApplicationImportDTO applicationImportDTO) {
+        ApplicationE applicationE = new ApplicationE();
+        applicationE.initProjectE(applicationImportDTO.getProjectId());
+        BeanUtils.copyProperties(applicationImportDTO, applicationE);
+        if (applicationImportDTO.getApplicationTemplateId() != null) {
+            applicationE.initApplicationTemplateE(applicationImportDTO.getApplicationTemplateId());
+        }
+        applicationE.initHarborConfig(applicationImportDTO.getHarborConfigId());
+        applicationE.initChartConfig(applicationImportDTO.getChartConfigId());
+        return applicationE;
+    }
 
 
-            //初始化sonarClient
-            SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-            String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
-            sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
-            try {
+    @Override
+    public SonarContentsDTO getSonarContent(Long projectId, Long appId) {
 
-                //初始化查询参数
-                Map<String, String> queryContentMap = new HashMap<>();
-                queryContentMap.put("additionalFields", "metrics,periods");
-                queryContentMap.put("componentKey", key);
-                queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,new_bugs,new_vulnerabilities,sqale_index,code_smells,new_technical_debt,new_code_smells,coverage,tests,new_coverage,duplicated_lines_density,duplicated_blocks,new_duplicated_lines_density,ncloc,ncloc_language_distribution");
+        //没有使用sonarqube直接返回空对象
+        if (sonarqubeUrl.equals("")) {
+            return new SonarContentsDTO();
+        }
+        SonarContentsDTO sonarContentsDTO = new SonarContentsDTO();
+        List<SonarContentDTO> sonarContentDTOS = new ArrayList<>();
+        ApplicationE applicationE = applicationRepository.query(appId);
+        ProjectVO projectE = iamService.queryIamProject(projectId);
+        OrganizationVO organization = iamService.queryOrganizationById(projectE.getOrganization().getId());
 
-                //根据project-key查询sonarqube项目内容
-                Response<SonarComponent> sonarComponentResponse = sonarClient.getSonarComponet(queryContentMap).execute();
-                if (sonarComponentResponse.raw().code() != 200) {
-                    if (sonarComponentResponse.raw().code() == 404) {
-                        return new SonarContentsDTO();
-                    }
-                    if (sonarComponentResponse.raw().code() == 401) {
-                        throw new CommonException("error.sonarqube.user");
-                    }
-                    throw new CommonException(sonarComponentResponse.errorBody().string());
-                }
-                if (sonarComponentResponse.body() == null) {
+
+        //初始化sonarClient
+        SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
+        String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
+        sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
+        try {
+
+            //初始化查询参数
+            Map<String, String> queryContentMap = new HashMap<>();
+            queryContentMap.put("additionalFields", "metrics,periods");
+            queryContentMap.put("componentKey", key);
+            queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,new_bugs,new_vulnerabilities,sqale_index,code_smells,new_technical_debt,new_code_smells,coverage,tests,new_coverage,duplicated_lines_density,duplicated_blocks,new_duplicated_lines_density,ncloc,ncloc_language_distribution");
+
+            //根据project-key查询sonarqube项目内容
+            Response<SonarComponent> sonarComponentResponse = sonarClient.getSonarComponet(queryContentMap).execute();
+            if (sonarComponentResponse.raw().code() != 200) {
+                if (sonarComponentResponse.raw().code() == 404) {
                     return new SonarContentsDTO();
                 }
-                if (sonarComponentResponse.body().getPeriods() != null && sonarComponentResponse.body().getPeriods().size() > 0) {
-                    sonarContentsDTO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
-                    sonarContentsDTO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
-                    sonarContentsDTO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
-                } else {
-                    Map<String, String> analyseMap = new HashMap<>();
-                    analyseMap.put("project", key);
-                    analyseMap.put("ps", "3");
-
-                    //查询上一次的分析时间
-                    Response<SonarAnalyses> sonarAnalyses = sonarClient.getAnalyses(analyseMap).execute();
-                    if (sonarAnalyses.raw().code() == 200 && sonarAnalyses.body().getAnalyses() != null && sonarAnalyses.body().getAnalyses().size() > 0) {
-                        sonarContentsDTO.setDate(sonarAnalyses.body().getAnalyses().get(0).getDate());
-                    }
+                if (sonarComponentResponse.raw().code() == 401) {
+                    throw new CommonException("error.sonarqube.user");
                 }
+                throw new CommonException(sonarComponentResponse.errorBody().string());
+            }
+            if (sonarComponentResponse.body() == null) {
+                return new SonarContentsDTO();
+            }
+            if (sonarComponentResponse.body().getPeriods() != null && sonarComponentResponse.body().getPeriods().size() > 0) {
+                sonarContentsDTO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
+                sonarContentsDTO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
+                sonarContentsDTO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
+            } else {
+                Map<String, String> analyseMap = new HashMap<>();
+                analyseMap.put("project", key);
+                analyseMap.put("ps", "3");
 
-                //分类型对sonarqube project查询返回的结果进行处理
-                sonarComponentResponse.body().getComponent().getMeasures().stream().forEach(measure -> {
-                    SonarQubeType sonarQubeType = SonarQubeType.forValue(String.valueOf(measure.getMetric()));
-                    switch (sonarQubeType) {
-                        case BUGS:
-                            SonarContentDTO bug = new SonarContentDTO();
-                            bug.setKey(measure.getMetric());
-                            bug.setValue(measure.getValue() == null ? "0" : measure.getValue());
-                            bug.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=BUG", sonarqubeUrl, key));
-                            try {
-                                Map<String, String> queryBugMap = getQueryMap(key, "BUG", false);
-                                Response<Bug> bugResponse = sonarClient.getBugs(queryBugMap).execute();
-                                if (bugResponse.raw().code() != 200) {
-                                    throw new CommonException(bugResponse.errorBody().string());
-                                }
-                                List<Facet> facets = bugResponse.body().getFacets();
-                                getRate(bug, facets);
-                            } catch (IOException e) {
-                                throw new CommonException(e);
-                            }
-                            sonarContentDTOS.add(bug);
-                            break;
-                        case VULNERABILITIES:
-                            SonarContentDTO vulnerabilities = new SonarContentDTO();
-                            vulnerabilities.setKey(measure.getMetric());
-                            vulnerabilities.setValue(measure.getValue() == null ? "0" : measure.getValue());
-                            vulnerabilities.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=VULNERABILITY", sonarqubeUrl, key));
-                            try {
-                                Map<String, String> queryVulnerabilitiesMap = getQueryMap(key, "VULNERABILITY", false);
-                                Response<Vulnerability> vulnerabilityResponse = sonarClient.getVulnerability(queryVulnerabilitiesMap).execute();
-                                if (vulnerabilityResponse.raw().code() != 200) {
-                                    throw new CommonException(vulnerabilityResponse.errorBody().string());
-                                }
-                                List<Facet> facets = vulnerabilityResponse.body().getFacets();
-                                getRate(vulnerabilities, facets);
-                            } catch (IOException e) {
-                                throw new CommonException(e);
-                            }
-                            sonarContentDTOS.add(vulnerabilities);
-                            break;
-                        case NEW_BUGS:
-                            SonarContentDTO newBug = new SonarContentDTO();
-                            newBug.setKey(measure.getMetric());
-                            newBug.setValue(measure.getValue() == null ? "0" : measure.getValue());
-                            newBug.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=BUG", sonarqubeUrl, key));
-                            try {
-                                Map<String, String> queryNewBugMap = getQueryMap(key, "BUG", true);
+                //查询上一次的分析时间
+                Response<SonarAnalyses> sonarAnalyses = sonarClient.getAnalyses(analyseMap).execute();
+                if (sonarAnalyses.raw().code() == 200 && sonarAnalyses.body().getAnalyses() != null && sonarAnalyses.body().getAnalyses().size() > 0) {
+                    sonarContentsDTO.setDate(sonarAnalyses.body().getAnalyses().get(0).getDate());
+                }
+            }
 
-                                Response<Bug> newBugResponse = sonarClient.getNewBugs(queryNewBugMap).execute();
-                                if (newBugResponse.raw().code() != 200) {
-                                    throw new CommonException(newBugResponse.errorBody().string());
-                                }
-                                List<Facet> facets = newBugResponse.body().getFacets();
-                                getRate(newBug, facets);
-                            } catch (IOException e) {
-                                throw new CommonException(e);
+            //分类型对sonarqube project查询返回的结果进行处理
+            sonarComponentResponse.body().getComponent().getMeasures().stream().forEach(measure -> {
+                SonarQubeType sonarQubeType = SonarQubeType.forValue(String.valueOf(measure.getMetric()));
+                switch (sonarQubeType) {
+                    case BUGS:
+                        SonarContentDTO bug = new SonarContentDTO();
+                        bug.setKey(measure.getMetric());
+                        bug.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        bug.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=BUG", sonarqubeUrl, key));
+                        try {
+                            Map<String, String> queryBugMap = getQueryMap(key, "BUG", false);
+                            Response<Bug> bugResponse = sonarClient.getBugs(queryBugMap).execute();
+                            if (bugResponse.raw().code() != 200) {
+                                throw new CommonException(bugResponse.errorBody().string());
                             }
-                            sonarContentDTOS.add(newBug);
-                            break;
-                        case NEW_VULNERABILITIES:
-                            SonarContentDTO newVulnerabilities = new SonarContentDTO();
-                            newVulnerabilities.setKey(measure.getMetric());
-                            newVulnerabilities.setValue(measure.getPeriods().get(0).getValue());
-                            newVulnerabilities.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=VULNERABILITY", sonarqubeUrl, key));
-                            try {
-                                Map<String, String> queryNewVulnerabilitiesMap = getQueryMap(key, "VULNERABILITY", true);
-                                Response<Vulnerability> newVulnerabilityResponse = sonarClient.getNewVulnerability(queryNewVulnerabilitiesMap).execute();
-                                if (newVulnerabilityResponse.raw().code() != 200) {
-                                    throw new CommonException(newVulnerabilityResponse.errorBody().string());
-                                }
-                                List<Facet> facets = newVulnerabilityResponse.body().getFacets();
-                                getRate(newVulnerabilities, facets);
-                            } catch (IOException e) {
-                                throw new CommonException(e);
+                            List<Facet> facets = bugResponse.body().getFacets();
+                            getRate(bug, facets);
+                        } catch (IOException e) {
+                            throw new CommonException(e);
+                        }
+                        sonarContentDTOS.add(bug);
+                        break;
+                    case VULNERABILITIES:
+                        SonarContentDTO vulnerabilities = new SonarContentDTO();
+                        vulnerabilities.setKey(measure.getMetric());
+                        vulnerabilities.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        vulnerabilities.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=VULNERABILITY", sonarqubeUrl, key));
+                        try {
+                            Map<String, String> queryVulnerabilitiesMap = getQueryMap(key, "VULNERABILITY", false);
+                            Response<Vulnerability> vulnerabilityResponse = sonarClient.getVulnerability(queryVulnerabilitiesMap).execute();
+                            if (vulnerabilityResponse.raw().code() != 200) {
+                                throw new CommonException(vulnerabilityResponse.errorBody().string());
                             }
-                            sonarContentDTOS.add(newVulnerabilities);
-                            break;
-                        case SQALE_INDEX:
-                            SonarContentDTO debt = new SonarContentDTO();
-                            debt.setKey(measure.getMetric());
-                            debt.setValue(measure.getValue() == null ? "0" : measure.getValue());
-                            double day = measure.getValue() == null ? 0 : TypeUtil.objTodouble(measure.getValue()) / 480;
-                            double hour = measure.getValue() == null ? 0 : TypeUtil.objTodouble(measure.getValue()) / 60;
-                            if (day >= 1) {
-                                debt.setValue(String.format("%sd", Math.round(day)));
-                            } else if (hour >= 1) {
-                                debt.setValue(String.format("%sh", Math.round(hour)));
-                            } else {
-                                debt.setValue(String.format("%s%s", Math.round(TypeUtil.objTodouble(measure.getValue() == null ? 0 : measure.getValue())), measure.getValue() == null ? "" : "min"));
-                            }
-                            debt.setUrl(String.format("%sproject/issues?facetMode=effort&id=%s&resolved=false&types=CODE_SMELL", sonarqubeUrl, key));
-                            sonarContentDTOS.add(debt);
-                            break;
-                        case CODE_SMELLS:
-                            SonarContentDTO codeSmells = new SonarContentDTO();
-                            codeSmells.setKey(measure.getMetric());
-                            double result = measure.getValue() == null ? 0 : TypeUtil.objToLong(measure.getValue()) / 1000;
-                            if (result > 0) {
-                                if (TypeUtil.objToLong(measure.getValue()) % 1000 == 0) {
-                                    codeSmells.setValue(String.format("%sK", result));
-                                } else {
-                                    BigDecimal codeSmellDecimal = new BigDecimal(result);
-                                    codeSmells.setValue(String.format("%sK", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
-                                }
-                            } else {
-                                codeSmells.setValue(measure.getValue() == null ? "0" : measure.getValue());
-                            }
-                            codeSmells.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=CODE_SMELL", sonarqubeUrl, key));
-                            sonarContentDTOS.add(codeSmells);
-                            break;
-                        case NEW_TECHNICAL_DEBT:
-                            SonarContentDTO newDebt = new SonarContentDTO();
-                            newDebt.setKey(measure.getMetric());
-                            double newDay = TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) / 480;
-                            double newHour = TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) / 60;
-                            if (newDay >= 1) {
-                                newDebt.setValue(String.format("%sd", Math.round(newDay)));
-                            } else if (newHour >= 1) {
-                                newDebt.setValue(String.format("%sh", Math.round(newHour)));
-                            } else {
-                                newDebt.setValue(String.format("%s%s", measure.getPeriods().get(0).getValue(), measure.getPeriods().get(0).getValue().equals("0") ? "" : "min"));
-                            }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -2849,85 +3292,179 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 }
                             } else {
                                 newCodeSmells.setValue(measure.getPeriods().get(0).getValue());
+=======
+                            List<Facet> facets = vulnerabilityResponse.body().getFacets();
+                            getRate(vulnerabilities, facets);
+                        } catch (IOException e) {
+                            throw new CommonException(e);
+                        }
+                        sonarContentDTOS.add(vulnerabilities);
+                        break;
+                    case NEW_BUGS:
+                        SonarContentDTO newBug = new SonarContentDTO();
+                        newBug.setKey(measure.getMetric());
+                        newBug.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        newBug.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=BUG", sonarqubeUrl, key));
+                        try {
+                            Map<String, String> queryNewBugMap = getQueryMap(key, "BUG", true);
+
+                            Response<Bug> newBugResponse = sonarClient.getNewBugs(queryNewBugMap).execute();
+                            if (newBugResponse.raw().code() != 200) {
+                                throw new CommonException(newBugResponse.errorBody().string());
+>>>>>>> [IMP]重构后端断码
                             }
-                            newCodeSmells.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=CODE_SMELL", sonarqubeUrl, key));
-                            sonarContentDTOS.add(newCodeSmells);
-                            break;
-                        case COVERAGE:
-                            SonarContentDTO coverage = new SonarContentDTO();
-                            coverage.setKey(measure.getMetric());
-                            coverage.setValue(measure.getValue() == null ? "0" : measure.getValue());
-                            coverage.setUrl(String.format("%scomponent_measures?id=%s&metric=coverage", sonarqubeUrl, key));
-                            sonarContentDTOS.add(coverage);
-                            break;
-                        case NEW_COVERAGE:
-                            SonarContentDTO newCoverage = new SonarContentDTO();
-                            newCoverage.setKey(measure.getMetric());
-                            BigDecimal codeSmellDecimal = new BigDecimal(measure.getPeriods().get(0).getValue());
-                            newCoverage.setValue(String.format("%s", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
-                            newCoverage.setUrl(String.format("%scomponent_measures?id=%s&metric=new_coverage", sonarqubeUrl, key));
-                            sonarContentDTOS.add(newCoverage);
-                            break;
-                        case DUPLICATED_LINES_DENSITY:
-                            SonarContentDTO duplicated = new SonarContentDTO();
-                            duplicated.setKey(measure.getMetric());
-                            duplicated.setValue(measure.getValue() == null ? "0" : measure.getValue());
-                            duplicated.setUrl(String.format("%scomponent_measures?id=%s&metric=duplicated_lines_density", sonarqubeUrl, key));
-                            if (TypeUtil.objTodouble(measure.getValue()) >= 0 && TypeUtil.objTodouble(measure.getValue()) < 3) {
-                                duplicated.setRate("A");
-                            } else if (TypeUtil.objTodouble(measure.getValue()) >= 3 && TypeUtil.objTodouble(measure.getValue()) < 10) {
-                                duplicated.setRate("B");
-                            } else if (TypeUtil.objTodouble(measure.getValue()) >= 10 && TypeUtil.objTodouble(measure.getValue()) < 20) {
-                                duplicated.setRate("C");
+                            List<Facet> facets = newBugResponse.body().getFacets();
+                            getRate(newBug, facets);
+                        } catch (IOException e) {
+                            throw new CommonException(e);
+                        }
+                        sonarContentDTOS.add(newBug);
+                        break;
+                    case NEW_VULNERABILITIES:
+                        SonarContentDTO newVulnerabilities = new SonarContentDTO();
+                        newVulnerabilities.setKey(measure.getMetric());
+                        newVulnerabilities.setValue(measure.getPeriods().get(0).getValue());
+                        newVulnerabilities.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=VULNERABILITY", sonarqubeUrl, key));
+                        try {
+                            Map<String, String> queryNewVulnerabilitiesMap = getQueryMap(key, "VULNERABILITY", true);
+                            Response<Vulnerability> newVulnerabilityResponse = sonarClient.getNewVulnerability(queryNewVulnerabilitiesMap).execute();
+                            if (newVulnerabilityResponse.raw().code() != 200) {
+                                throw new CommonException(newVulnerabilityResponse.errorBody().string());
+                            }
+                            List<Facet> facets = newVulnerabilityResponse.body().getFacets();
+                            getRate(newVulnerabilities, facets);
+                        } catch (IOException e) {
+                            throw new CommonException(e);
+                        }
+                        sonarContentDTOS.add(newVulnerabilities);
+                        break;
+                    case SQALE_INDEX:
+                        SonarContentDTO debt = new SonarContentDTO();
+                        debt.setKey(measure.getMetric());
+                        debt.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        double day = measure.getValue() == null ? 0 : TypeUtil.objTodouble(measure.getValue()) / 480;
+                        double hour = measure.getValue() == null ? 0 : TypeUtil.objTodouble(measure.getValue()) / 60;
+                        if (day >= 1) {
+                            debt.setValue(String.format("%sd", Math.round(day)));
+                        } else if (hour >= 1) {
+                            debt.setValue(String.format("%sh", Math.round(hour)));
+                        } else {
+                            debt.setValue(String.format("%s%s", Math.round(TypeUtil.objTodouble(measure.getValue() == null ? 0 : measure.getValue())), measure.getValue() == null ? "" : "min"));
+                        }
+                        debt.setUrl(String.format("%sproject/issues?facetMode=effort&id=%s&resolved=false&types=CODE_SMELL", sonarqubeUrl, key));
+                        sonarContentDTOS.add(debt);
+                        break;
+                    case CODE_SMELLS:
+                        SonarContentDTO codeSmells = new SonarContentDTO();
+                        codeSmells.setKey(measure.getMetric());
+                        double result = measure.getValue() == null ? 0 : TypeUtil.objToLong(measure.getValue()) / 1000;
+                        if (result > 0) {
+                            if (TypeUtil.objToLong(measure.getValue()) % 1000 == 0) {
+                                codeSmells.setValue(String.format("%sK", result));
                             } else {
-                                duplicated.setRate("D");
+                                BigDecimal codeSmellDecimal = new BigDecimal(result);
+                                codeSmells.setValue(String.format("%sK", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
                             }
-                            sonarContentDTOS.add(duplicated);
-                            break;
-                        case DUPLICATED_BLOCKS:
-                            SonarContentDTO duplicatedBlocks = new SonarContentDTO();
-                            duplicatedBlocks.setKey(measure.getMetric());
-                            duplicatedBlocks.setValue(measure.getValue() == null ? "0" : measure.getValue());
-                            duplicatedBlocks.setUrl(String.format("%scomponent_measures?id=%s&metric=duplicated_blocks", sonarqubeUrl, key));
-                            sonarContentDTOS.add(duplicatedBlocks);
-                            break;
-                        case NEW_DUPLICATED_LINES_DENSITY:
-                            SonarContentDTO newDuplicated = new SonarContentDTO();
-                            newDuplicated.setKey(measure.getMetric());
-                            if (TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) == 0) {
-                                newDuplicated.setValue("0");
+                        } else {
+                            codeSmells.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        }
+                        codeSmells.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=CODE_SMELL", sonarqubeUrl, key));
+                        sonarContentDTOS.add(codeSmells);
+                        break;
+                    case NEW_TECHNICAL_DEBT:
+                        SonarContentDTO newDebt = new SonarContentDTO();
+                        newDebt.setKey(measure.getMetric());
+                        double newDay = TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) / 480;
+                        double newHour = TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) / 60;
+                        if (newDay >= 1) {
+                            newDebt.setValue(String.format("%sd", Math.round(newDay)));
+                        } else if (newHour >= 1) {
+                            newDebt.setValue(String.format("%sh", Math.round(newHour)));
+                        } else {
+                            newDebt.setValue(String.format("%s%s", measure.getPeriods().get(0).getValue(), measure.getPeriods().get(0).getValue().equals("0") ? "" : "min"));
+                        }
+                        newDebt.setUrl(String.format("%sproject/issues?facetMode=effort&id=%s&resolved=false&sinceLeakPeriod=true&types=CODE_SMELL", sonarqubeUrl, key));
+                        sonarContentDTOS.add(newDebt);
+                        break;
+                    case NEW_CODE_SMELLS:
+                        SonarContentDTO newCodeSmells = new SonarContentDTO();
+                        newCodeSmells.setKey(measure.getMetric());
+                        double newResult = TypeUtil.objToLong(measure.getPeriods().get(0).getValue()) / 1000;
+                        if (newResult > 0) {
+                            if (TypeUtil.objToLong(measure.getPeriods().get(0).getValue()) % 1000 == 0) {
+                                newCodeSmells.setValue(String.format("%sK", newResult));
                             } else {
-                                BigDecimal b = new BigDecimal(TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()));
-                                newDuplicated.setValue(TypeUtil.objToString(b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
+                                BigDecimal codeSmellDecimal = new BigDecimal(newResult);
+                                newCodeSmells.setValue(String.format("%sK", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
                             }
-                            newDuplicated.setUrl(String.format("%scomponent_measures?id=%s&metric=new_duplicated_lines_density", sonarqubeUrl, key));
-                            sonarContentDTOS.add(newDuplicated);
-                            break;
-                        case NCLOC:
-                            SonarContentDTO ncloc = new SonarContentDTO();
-                            ncloc.setKey(measure.getMetric());
-                            double nclocResult = TypeUtil.objTodouble(measure.getValue()) / 1000;
-                            if (nclocResult >= 0) {
-                                if (TypeUtil.objToLong(measure.getValue()) % 1000 == 0) {
-                                    ncloc.setValue(String.format("%sK", nclocResult));
-                                } else {
-                                    BigDecimal nclocDecimal = new BigDecimal(nclocResult);
-                                    ncloc.setValue(String.format("%sK", nclocDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
-                                }
+                        } else {
+                            newCodeSmells.setValue(measure.getPeriods().get(0).getValue());
+                        }
+                        newCodeSmells.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=CODE_SMELL", sonarqubeUrl, key));
+                        sonarContentDTOS.add(newCodeSmells);
+                        break;
+                    case COVERAGE:
+                        SonarContentDTO coverage = new SonarContentDTO();
+                        coverage.setKey(measure.getMetric());
+                        coverage.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        coverage.setUrl(String.format("%scomponent_measures?id=%s&metric=coverage", sonarqubeUrl, key));
+                        sonarContentDTOS.add(coverage);
+                        break;
+                    case NEW_COVERAGE:
+                        SonarContentDTO newCoverage = new SonarContentDTO();
+                        newCoverage.setKey(measure.getMetric());
+                        BigDecimal codeSmellDecimal = new BigDecimal(measure.getPeriods().get(0).getValue());
+                        newCoverage.setValue(String.format("%s", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
+                        newCoverage.setUrl(String.format("%scomponent_measures?id=%s&metric=new_coverage", sonarqubeUrl, key));
+                        sonarContentDTOS.add(newCoverage);
+                        break;
+                    case DUPLICATED_LINES_DENSITY:
+                        SonarContentDTO duplicated = new SonarContentDTO();
+                        duplicated.setKey(measure.getMetric());
+                        duplicated.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        duplicated.setUrl(String.format("%scomponent_measures?id=%s&metric=duplicated_lines_density", sonarqubeUrl, key));
+                        if (TypeUtil.objTodouble(measure.getValue()) >= 0 && TypeUtil.objTodouble(measure.getValue()) < 3) {
+                            duplicated.setRate("A");
+                        } else if (TypeUtil.objTodouble(measure.getValue()) >= 3 && TypeUtil.objTodouble(measure.getValue()) < 10) {
+                            duplicated.setRate("B");
+                        } else if (TypeUtil.objTodouble(measure.getValue()) >= 10 && TypeUtil.objTodouble(measure.getValue()) < 20) {
+                            duplicated.setRate("C");
+                        } else {
+                            duplicated.setRate("D");
+                        }
+                        sonarContentDTOS.add(duplicated);
+                        break;
+                    case DUPLICATED_BLOCKS:
+                        SonarContentDTO duplicatedBlocks = new SonarContentDTO();
+                        duplicatedBlocks.setKey(measure.getMetric());
+                        duplicatedBlocks.setValue(measure.getValue() == null ? "0" : measure.getValue());
+                        duplicatedBlocks.setUrl(String.format("%scomponent_measures?id=%s&metric=duplicated_blocks", sonarqubeUrl, key));
+                        sonarContentDTOS.add(duplicatedBlocks);
+                        break;
+                    case NEW_DUPLICATED_LINES_DENSITY:
+                        SonarContentDTO newDuplicated = new SonarContentDTO();
+                        newDuplicated.setKey(measure.getMetric());
+                        if (TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) == 0) {
+                            newDuplicated.setValue("0");
+                        } else {
+                            BigDecimal b = new BigDecimal(TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()));
+                            newDuplicated.setValue(TypeUtil.objToString(b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
+                        }
+                        newDuplicated.setUrl(String.format("%scomponent_measures?id=%s&metric=new_duplicated_lines_density", sonarqubeUrl, key));
+                        sonarContentDTOS.add(newDuplicated);
+                        break;
+                    case NCLOC:
+                        SonarContentDTO ncloc = new SonarContentDTO();
+                        ncloc.setKey(measure.getMetric());
+                        double nclocResult = TypeUtil.objTodouble(measure.getValue()) / 1000;
+                        if (nclocResult >= 0) {
+                            if (TypeUtil.objToLong(measure.getValue()) % 1000 == 0) {
+                                ncloc.setValue(String.format("%sK", nclocResult));
                             } else {
-                                ncloc.setValue(measure.getValue());
+                                BigDecimal nclocDecimal = new BigDecimal(nclocResult);
+                                ncloc.setValue(String.format("%sK", nclocDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
                             }
-                            if (TypeUtil.objToLong(measure.getValue()) > 0 && TypeUtil.objToLong(measure.getValue()) < 1000) {
-                                ncloc.setRate("XS");
-                            } else if (TypeUtil.objToLong(measure.getValue()) >= 1000 && TypeUtil.objToLong(measure.getValue()) < 10000) {
-                                ncloc.setRate("S");
-                            } else if (TypeUtil.objToLong(measure.getValue()) >= 10000 && TypeUtil.objToLong(measure.getValue()) < 100000) {
-                                ncloc.setRate("M");
-                            } else if (TypeUtil.objToLong(measure.getValue()) >= 100000 && TypeUtil.objToLong(measure.getValue()) < 500000) {
-                                ncloc.setRate("L");
-                            } else {
-                                ncloc.setRate("XL");
-                            }
+<<<<<<< HEAD
                             sonarContentDTOS.add(ncloc);
                             break;
                         case TESTS:
@@ -2951,6 +3488,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                             break;
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> [IMP]重构后端断码
                         } else {
                             ncloc.setValue(measure.getValue());
                         }
@@ -3058,188 +3597,120 @@ public class ApplicationServiceImpl implements ApplicationService {
                             vulnerabilities.add(sonarHistroy.getValue());
                         });
                         sonarTableDTO.setVulnerabilities(vulnerabilities);
+<<<<<<< HEAD
 >>>>>>> [IMP] 修改AppControler重构
 =======
 >>>>>>> [IMP]重构后端代码
+=======
+>>>>>>> [IMP]重构后端断码
                     }
                 });
-                sonarContentsDTO.setSonarContents(sonarContentDTOS);
             } catch (IOException e) {
                 throw new CommonException(e);
             }
-            return sonarContentsDTO;
         }
+        if (COVERAGE.equals(type)) {
+            queryMap.put("metrics", "lines_to_cover,uncovered_lines,coverage");
+            try {
+                Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
+                if (sonarTablesResponse.raw().code() != 200) {
+                    if (sonarTablesResponse.raw().code() == 404) {
+                        return new SonarTableDTO();
+                    }
+                    throw new CommonException(sonarTablesResponse.errorBody().string());
+                }
+                List<String> linesToCover = new ArrayList<>();
+                List<String> dates = new ArrayList<>();
+                List<String> unCoverLines = new ArrayList<>();
+                List<String> coverLines = new ArrayList<>();
+                List<String> coverage = new ArrayList<>();
+                sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.COVERAGE.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            coverage.add(sonarHistroy.getValue());
+                        });
+                        sonarTableDTO.setCoverage(coverage);
+                    }
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.LINES_TO_COVER.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            linesToCover.add(sonarHistroy.getValue());
+                            dates.add(sonarHistroy.getDate());
+                        });
+                        sonarTableDTO.setDates(dates);
+                        sonarTableDTO.setLinesToCover(linesToCover);
+                    }
 
-        @Override
-        public SonarTableDTO getSonarTable (Long projectId, Long appId, String type, Date startTime, Date endTime){
-            if (sonarqubeUrl.equals("")) {
-                return new SonarTableDTO();
-            }
-            Calendar c = Calendar.getInstance();
-            c.setTime(endTime);
-            c.add(Calendar.DAY_OF_MONTH, 1);
-            Date tomorrow = c.getTime();
-            SonarTableDTO sonarTableDTO = new SonarTableDTO();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
-            ApplicationE applicationE = applicationRepository.query(appId);
-            ProjectVO projectE = iamService.queryIamProject(projectId);
-            OrganizationVO organization = iamService.queryOrganizationById(projectE.getOrganization().getId());
-            SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-            String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), applicationE.getCode());
-            sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
-            Map<String, String> queryMap = new HashMap<>();
-            queryMap.put("component", key);
-            queryMap.put("ps", "1000");
-            if (ISSUE.equals(type)) {
-                queryMap.put("metrics", "bugs,code_smells,vulnerabilities");
-                try {
-                    Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
-                    if (sonarTablesResponse.raw().code() != 200) {
-                        if (sonarTablesResponse.raw().code() == 404) {
-                            return new SonarTableDTO();
-                        }
-                        if (sonarTablesResponse.raw().code() == 401) {
-                            throw new CommonException("error.sonarqube.user");
-                        }
-                        throw new CommonException(sonarTablesResponse.errorBody().string());
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.UNCOVERED_LINES.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            unCoverLines.add(sonarHistroy.getValue());
+                        });
                     }
-                    List<String> bugs = new ArrayList<>();
-                    List<String> dates = new ArrayList<>();
-                    List<String> codeSmells = new ArrayList<>();
-                    List<String> vulnerabilities = new ArrayList<>();
-                    sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
-                        if (sonarTableMeasure.getMetric().equals(SonarQubeType.BUGS.getType())) {
-                            sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                    getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                            ).forEach(sonarHistroy -> {
-                                bugs.add(sonarHistroy.getValue());
-                                dates.add(sonarHistroy.getDate());
-                            });
-                            sonarTableDTO.setDates(dates);
-                            sonarTableDTO.setBugs(bugs);
-                        }
-                        if (sonarTableMeasure.getMetric().equals(SonarQubeType.CODE_SMELLS.getType())) {
-                            sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                    getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                            ).forEach(sonarHistroy -> {
-                                codeSmells.add(sonarHistroy.getValue());
-                            });
-                            sonarTableDTO.setCodeSmells(codeSmells);
-                        }
-                        if (sonarTableMeasure.getMetric().equals(SonarQubeType.VULNERABILITIES.getType())) {
-                            sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                    getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                            ).forEach(sonarHistroy -> {
-                                vulnerabilities.add(sonarHistroy.getValue());
-                            });
-                            sonarTableDTO.setVulnerabilities(vulnerabilities);
-                        }
-                    });
-                } catch (IOException e) {
-                    throw new CommonException(e);
+                });
+                for (int i = 0; i < linesToCover.size(); i++) {
+                    coverLines.add(TypeUtil.objToString(TypeUtil.objToLong(linesToCover.get(i)) - TypeUtil.objToLong(unCoverLines.get(i))));
                 }
+                sonarTableDTO.setCoverLines(coverLines);
+            } catch (IOException e) {
+                throw new CommonException(e);
             }
-            if (COVERAGE.equals(type)) {
-                queryMap.put("metrics", "lines_to_cover,uncovered_lines,coverage");
-                try {
-                    Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
-                    if (sonarTablesResponse.raw().code() != 200) {
-                        if (sonarTablesResponse.raw().code() == 404) {
-                            return new SonarTableDTO();
-                        }
-                        throw new CommonException(sonarTablesResponse.errorBody().string());
-                    }
-                    List<String> linesToCover = new ArrayList<>();
-                    List<String> dates = new ArrayList<>();
-                    List<String> unCoverLines = new ArrayList<>();
-                    List<String> coverLines = new ArrayList<>();
-                    List<String> coverage = new ArrayList<>();
-                    sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
-                        if (sonarTableMeasure.getMetric().equals(SonarQubeType.COVERAGE.getType())) {
-                            sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                    getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                            ).forEach(sonarHistroy -> {
-                                coverage.add(sonarHistroy.getValue());
-                            });
-                            sonarTableDTO.setCoverage(coverage);
-                        }
-                        if (sonarTableMeasure.getMetric().equals(SonarQubeType.LINES_TO_COVER.getType())) {
-                            sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                    getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                            ).forEach(sonarHistroy -> {
-                                linesToCover.add(sonarHistroy.getValue());
-                                dates.add(sonarHistroy.getDate());
-                            });
-                            sonarTableDTO.setDates(dates);
-                            sonarTableDTO.setLinesToCover(linesToCover);
-                        }
-
-                        if (sonarTableMeasure.getMetric().equals(SonarQubeType.UNCOVERED_LINES.getType())) {
-                            sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                    getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                            ).forEach(sonarHistroy -> {
-                                unCoverLines.add(sonarHistroy.getValue());
-                            });
-                        }
-                    });
-                    for (int i = 0; i < linesToCover.size(); i++) {
-                        coverLines.add(TypeUtil.objToString(TypeUtil.objToLong(linesToCover.get(i)) - TypeUtil.objToLong(unCoverLines.get(i))));
-                    }
-                    sonarTableDTO.setCoverLines(coverLines);
-                } catch (IOException e) {
-                    throw new CommonException(e);
-                }
-            }
-            if (DUPLICATE.equals(type)) {
-                queryMap.put("metrics", "ncloc,duplicated_lines,duplicated_lines_density");
-                try {
-                    Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
-                    if (sonarTablesResponse.raw().code() != 200) {
-                        if (sonarTablesResponse.raw().code() == 404) {
-                            return new SonarTableDTO();
-                        }
-                        throw new CommonException(sonarTablesResponse.errorBody().string());
-                    }
-                    List<String> nclocs = new ArrayList<>();
-                    List<String> dates = new ArrayList<>();
-                    List<String> duplicatedLines = new ArrayList<>();
-                    List<String> duplicatedLinesRate = new ArrayList<>();
-                    sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
-                        if (sonarTableMeasure.getMetric().equals(SonarQubeType.NCLOC.getType())) {
-                            sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                    getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                            ).forEach(sonarHistroy -> {
-                                nclocs.add(sonarHistroy.getValue());
-                                dates.add(sonarHistroy.getDate());
-                            });
-                            sonarTableDTO.setNclocs(nclocs);
-                            sonarTableDTO.setDates(dates);
-                        }
-                        if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES.getType())) {
-                            sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                    getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                            ).forEach(sonarHistroy ->
-                                    duplicatedLines.add(sonarHistroy.getValue())
-                            );
-                            sonarTableDTO.setDuplicatedLines(duplicatedLines);
-                        }
-                        if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES_DENSITY.getType())) {
-                            sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                    getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                            ).forEach(sonarHistroy -> {
-                                duplicatedLinesRate.add(sonarHistroy.getValue());
-                            });
-                            sonarTableDTO.setDuplicatedLinesRate(duplicatedLinesRate);
-                        }
-                    });
-                } catch (IOException e) {
-                    throw new CommonException(e);
-                }
-            }
-            return sonarTableDTO;
         }
+        if (DUPLICATE.equals(type)) {
+            queryMap.put("metrics", "ncloc,duplicated_lines,duplicated_lines_density");
+            try {
+                Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
+                if (sonarTablesResponse.raw().code() != 200) {
+                    if (sonarTablesResponse.raw().code() == 404) {
+                        return new SonarTableDTO();
+                    }
+                    throw new CommonException(sonarTablesResponse.errorBody().string());
+                }
+                List<String> nclocs = new ArrayList<>();
+                List<String> dates = new ArrayList<>();
+                List<String> duplicatedLines = new ArrayList<>();
+                List<String> duplicatedLinesRate = new ArrayList<>();
+                sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.NCLOC.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            nclocs.add(sonarHistroy.getValue());
+                            dates.add(sonarHistroy.getDate());
+                        });
+                        sonarTableDTO.setNclocs(nclocs);
+                        sonarTableDTO.setDates(dates);
+                    }
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy ->
+                                duplicatedLines.add(sonarHistroy.getValue())
+                        );
+                        sonarTableDTO.setDuplicatedLines(duplicatedLines);
+                    }
+                    if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES_DENSITY.getType())) {
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
+                        ).forEach(sonarHistroy -> {
+                            duplicatedLinesRate.add(sonarHistroy.getValue());
+                        });
+                        sonarTableDTO.setDuplicatedLinesRate(duplicatedLinesRate);
+                    }
+                });
+            } catch (IOException e) {
+                throw new CommonException(e);
+            }
+        }
+        return sonarTableDTO;
+    }
 
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         public String getGitlabUrl (Long projectId, Long appId){
             ApplicationE applicationE = applicationRepository.query(appId);
@@ -3267,9 +3738,17 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (applicationDTO == null || !applicationDTO.getProjectId().equals(projectId)) {
                 throw new CommonException("error.app.project.notMatch");
             }
+=======
+    public void baseCheckApp(Long projectId, Long appId) {
+        ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(appId);
+        if (applicationDTO == null || !applicationDTO.getProjectId().equals(projectId)) {
+            throw new CommonException("error.app.project.notMatch");
+>>>>>>> [IMP]重构后端断码
         }
+    }
 
 
+<<<<<<< HEAD
         public int baseUpdate (ApplicationDTO applicationDTO){
             ApplicationDTO oldApplicationDTO = applicationMapper.selectByPrimaryKey(applicationDTO.getId());
             if (applicationDTO.getFailed() != null && !applicationDTO.getFailed()) {
@@ -3283,8 +3762,18 @@ public class ApplicationServiceImpl implements ApplicationService {
         public void updateApplicationStatus (ApplicationDTO applicationDTO){
             applicationMapper.updateApplicationStatus(applicationDTO.getId(), applicationDTO.getToken(),
                     applicationDTO.getGitlabProjectId(), applicationDTO.getHookId(), applicationDTO.getSynchro());
+=======
+    public int baseUpdate(ApplicationDTO applicationDTO) {
+        ApplicationDTO oldApplicationDTO = applicationMapper.selectByPrimaryKey(applicationDTO.getId());
+        if (applicationDTO.getFailed() != null && !applicationDTO.getFailed()) {
+            applicationMapper.updateAppToSuccess(applicationDTO.getId());
+>>>>>>> [IMP]重构后端断码
         }
+        applicationDTO.setObjectVersionNumber(oldApplicationDTO.getObjectVersionNumber());
+        return applicationMapper.updateByPrimaryKeySelective(applicationDTO);
+    }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         private boolean getHistory (Date startTime, Date endTime, SimpleDateFormat sdf, SonarHistroy sonarHistroy){
             try {
@@ -3296,12 +3785,18 @@ public class ApplicationServiceImpl implements ApplicationService {
         public ApplicationDTO baseQuery (Long applicationId){
             return applicationMapper.selectByPrimaryKey(applicationId);
         }
+=======
+    public void updateApplicationStatus(ApplicationDTO applicationDTO) {
+        applicationMapper.updateApplicationStatus(applicationDTO.getId(), applicationDTO.getToken(),
+                applicationDTO.getGitlabProjectId(), applicationDTO.getHookId(), applicationDTO.getSynchro());
+    }
+>>>>>>> [IMP]重构后端断码
 
-        public PageInfo<ApplicationDTO> basePageByOptions (Long projectId, Boolean isActive, Boolean hasVersion, Boolean
-        appMarket,
-                String type, Boolean doPage, PageRequest pageRequest, String params){
-            PageInfo<ApplicationDTO> applicationDTOPageInfo = new PageInfo<>();
+    public ApplicationDTO baseQuery(Long applicationId) {
+        return applicationMapper.selectByPrimaryKey(applicationId);
+    }
 
+<<<<<<< HEAD
             Map<String, Object> mapParams = TypeUtil.castMapParams(params);
             //是否需要分页
             if (doPage != null && !doPage) {
@@ -3317,137 +3812,164 @@ public class ApplicationServiceImpl implements ApplicationService {
             return applicationDTOPageInfo;
 >>>>>>> [IMP]重构后端代码
         }
+=======
+    public PageInfo<ApplicationDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
+            appMarket,
+                                                      String type, Boolean doPage, PageRequest pageRequest, String params) {
+        PageInfo<ApplicationDTO> applicationDTOPageInfo = new PageInfo<>();
+>>>>>>> [IMP]重构后端断码
 
-        public PageInfo<ApplicationDTO> basePageCodeRepository (Long projectId, PageRequest pageRequest, String params,
-                Boolean isProjectOwner, Long userId){
-            Map maps = gson.fromJson(params, Map.class);
-            return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listCodeRepository(projectId,
-                    TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(maps.get(TypeUtil.PARAM)), isProjectOwner, userId));
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+        //是否需要分页
+        if (doPage != null && !doPage) {
+            applicationDTOPageInfo.setList(applicationMapper.list(projectId, isActive, hasVersion, appMarket, type,
+                    (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
+                    mapParams.get(TypeUtil.PARAM).toString(), PageRequestUtil.checkSortIsEmpty(pageRequest)));
+        } else {
+            applicationDTOPageInfo = PageHelper
+                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.list(projectId, isActive, hasVersion, appMarket, type,
+                            (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
+                            (String) mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         }
+        return applicationDTOPageInfo;
+    }
+
+    public PageInfo<ApplicationDTO> basePageCodeRepository(Long projectId, PageRequest pageRequest, String params,
+                                                           Boolean isProjectOwner, Long userId) {
+        Map maps = gson.fromJson(params, Map.class);
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listCodeRepository(projectId,
+                TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                TypeUtil.cast(maps.get(TypeUtil.PARAM)), isProjectOwner, userId));
+    }
 
 
-        public ApplicationDTO baseQueryByCode (String code, Long projectId){
-            ApplicationDTO applicationDTO = new ApplicationDTO();
-            applicationDTO.setProjectId(projectId);
-            applicationDTO.setCode(code);
-            return applicationMapper.selectOne(applicationDTO);
-        }
+    public ApplicationDTO baseQueryByCode(String code, Long projectId) {
+        ApplicationDTO applicationDTO = new ApplicationDTO();
+        applicationDTO.setProjectId(projectId);
+        applicationDTO.setCode(code);
+        return applicationMapper.selectOne(applicationDTO);
+    }
 
-        public ApplicationDTO baseQueryByCodeWithNullProject (String code){
-            return applicationMapper.queryByCodeWithNoProject(code);
-        }
+    public ApplicationDTO baseQueryByCodeWithNullProject(String code) {
+        return applicationMapper.queryByCodeWithNoProject(code);
+    }
 
-        public List<ApplicationDTO> baseListByEnvId (Long projectId, Long envId, String status){
-            return applicationMapper.listByEnvId(projectId, envId, null, status);
-        }
-
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
         public PageInfo<ApplicationDTO> basePageByEnvId (Long projectId, Long envId, Long appId, PageRequest pageRequest)
         {
             return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listByEnvId(projectId, envId, appId, NODELETED));
+=======
+    public List<ApplicationDTO> baseListByEnvId(Long projectId, Long envId, String status) {
+        return applicationMapper.listByEnvId(projectId, envId, null, status);
+    }
+>>>>>>> [IMP]重构后端断码
 
+    public PageInfo<ApplicationDTO> basePageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listByEnvId(projectId, envId, appId, NODELETED));
+
+    }
+
+    public List<ApplicationDTO> baseListByActive(Long projectId) {
+        return applicationMapper.listByActive(projectId);
+    }
+
+    public List<ApplicationDTO> baseListDeployedApp(Long projectId) {
+        return applicationMapper.listDeployedApp(projectId);
+    }
+
+
+    public PageInfo<ApplicationDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
+                                                                        PageRequest pageRequest, String params) {
+        Map<String, Object> searchParam = null;
+        String param = null;
+        if (!StringUtils.isEmpty(params)) {
+            Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
+            searchParam = TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM));
+            param = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM));
         }
+        Map<String, Object> finalSearchParam = searchParam;
+        String finalParam = param;
 
-        public List<ApplicationDTO> baseListByActive (Long projectId){
-            return applicationMapper.listByActive(projectId);
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper
+                .basePageByActiveAndPubAndHasVersion(projectId, isActive, finalSearchParam, finalParam));
+    }
+
+    public ApplicationDTO baseQueryByToken(String token) {
+        return applicationMapper.queryByToken(token);
+    }
+
+    public void baseCheckAppCanDisable(Long applicationId) {
+        if (applicationMapper.checkAppCanDisable(applicationId) == 0) {
+            throw new CommonException("error.app.publishedOrDeployed");
         }
+    }
 
-        public List<ApplicationDTO> baseListDeployedApp (Long projectId){
-            return applicationMapper.listDeployedApp(projectId);
+    public List<ApplicationDTO> baseListByCode(String code) {
+        return applicationMapper.listByCode(code);
+    }
+
+    public List<ApplicationDTO> baseListByGitLabProjectIds(List<Long> gitLabProjectIds) {
+        return applicationMapper.listByGitLabProjectIds(gitLabProjectIds);
+    }
+
+    public void baseDelete(Long appId) {
+        applicationMapper.deleteByPrimaryKey(appId);
+    }
+
+    public List<ApplicationDTO> baseListByProjectIdAndSkipCheck(Long projectId) {
+        ApplicationDTO applicationDTO = new ApplicationDTO();
+        applicationDTO.setProjectId(projectId);
+        applicationDTO.setIsSkipCheckPermission(true);
+        return applicationMapper.select(applicationDTO);
+    }
+
+
+    public List<ApplicationDTO> baseListByProjectId(Long projectId) {
+        ApplicationDTO applicationDTO = new ApplicationDTO();
+        applicationDTO.setProjectId(projectId);
+        return applicationMapper.select(applicationDTO);
+    }
+
+    public void baseUpdateHarborConfig(Long projectId, Long newConfigId, Long oldConfigId, boolean harborPrivate) {
+        applicationMapper.updateHarborConfig(projectId, newConfigId, oldConfigId, harborPrivate);
+    }
+
+
+    public String getGitlabUrl(Long projectId, Long appId) {
+        ApplicationDTO applicationDTO = baseQuery(appId);
+        if (applicationDTO.getGitlabProjectId() != null) {
+            ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+            OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+            return gitlabUrl + urlSlash
+                    + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
+                    + applicationDTO.getCode();
         }
+        return "";
+    }
 
-
-        public PageInfo<ApplicationDTO> basePageByActiveAndPubAndHasVersion (Long projectId, Boolean isActive,
-                PageRequest pageRequest, String params){
-            Map<String, Object> searchParam = null;
-            String param = null;
-            if (!StringUtils.isEmpty(params)) {
-                Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
-                searchParam = TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM));
-                param = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM));
-            }
-            Map<String, Object> finalSearchParam = searchParam;
-            String finalParam = param;
-
-            return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper
-                    .basePageByActiveAndPubAndHasVersion(projectId, isActive, finalSearchParam, finalParam));
+    private Integer getGitLabId(Long applicationId) {
+        ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(applicationId);
+        if (applicationDTO != null) {
+            return applicationDTO.getGitlabProjectId();
+        } else {
+            throw new CommonException("error.application.select");
         }
+    }
 
-        public ApplicationDTO baseQueryByToken (String token){
-            return applicationMapper.queryByToken(token);
+
+    private boolean getHistory(Date startTime, Date endTime, SimpleDateFormat sdf, SonarHistroy sonarHistroy) {
+        try {
+            return sdf.parse(sonarHistroy.getDate()).compareTo(startTime) >= 0 && sdf.parse(sonarHistroy.getDate()).compareTo(endTime) <= 0;
+        } catch (ParseException e) {
+            throw new CommonException(e);
         }
-
-        public void baseCheckAppCanDisable (Long applicationId){
-            if (applicationMapper.checkAppCanDisable(applicationId) == 0) {
-                throw new CommonException("error.app.publishedOrDeployed");
-            }
-        }
-
-        public List<ApplicationDTO> baseListByCode (String code){
-            return applicationMapper.listByCode(code);
-        }
-
-        public List<ApplicationDTO> baseListByGitLabProjectIds (List < Long > gitLabProjectIds) {
-            return applicationMapper.listByGitLabProjectIds(gitLabProjectIds);
-        }
-
-        public void baseDelete (Long appId){
-            applicationMapper.deleteByPrimaryKey(appId);
-        }
-
-        public List<ApplicationDTO> baseListByProjectIdAndSkipCheck (Long projectId){
-            ApplicationDTO applicationDTO = new ApplicationDTO();
-            applicationDTO.setProjectId(projectId);
-            applicationDTO.setIsSkipCheckPermission(true);
-            return applicationMapper.select(applicationDTO);
-        }
+    }
 
 
-        public List<ApplicationDTO> baseListByProjectId (Long projectId){
-            ApplicationDTO applicationDTO = new ApplicationDTO();
-            applicationDTO.setProjectId(projectId);
-            return applicationMapper.select(applicationDTO);
-        }
-
-        public void baseUpdateHarborConfig (Long projectId, Long newConfigId, Long oldConfigId,boolean harborPrivate){
-            applicationMapper.updateHarborConfig(projectId, newConfigId, oldConfigId, harborPrivate);
-        }
-
-
-        public String getGitlabUrl (Long projectId, Long appId){
-            ApplicationDTO applicationDTO = baseQuery(appId);
-            if (applicationDTO.getGitlabProjectId() != null) {
-                ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-                OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-                String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-                return gitlabUrl + urlSlash
-                        + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
-                        + applicationDTO.getCode();
-            }
-            return "";
-        }
-
-        private Integer getGitLabId (Long applicationId){
-            ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(applicationId);
-            if (applicationDTO != null) {
-                return applicationDTO.getGitlabProjectId();
-            } else {
-                throw new CommonException("error.application.select");
-            }
-        }
-
-
-        private boolean getHistory (Date startTime, Date endTime, SimpleDateFormat sdf, SonarHistroy sonarHistroy){
-            try {
-                return sdf.parse(sonarHistroy.getDate()).compareTo(startTime) >= 0 && sdf.parse(sonarHistroy.getDate()).compareTo(endTime) <= 0;
-            } catch (ParseException e) {
-                throw new CommonException(e);
-            }
-        }
-
-
+<<<<<<< HEAD
 >>>>>>> [IMP]重构后端代码
         private void getRate (SonarContentDTO sonarContentDTO, List < Facet > facets){
             sonarContentDTO.setRate("A");
@@ -3462,17 +3984,32 @@ public class ApplicationServiceImpl implements ApplicationService {
                         if (!sonarContentDTO.getRate().equals("D") && !sonarContentDTO.getRate().equals("E")) {
                             sonarContentDTO.setRate("C");
                         }
+=======
+    private void getRate(SonarContentDTO sonarContentDTO, List<Facet> facets) {
+        sonarContentDTO.setRate("A");
+        facets.stream().filter(facet -> facet.getProperty().equals(SEVERITIES)).forEach(facet -> {
+            facet.getValues().stream().forEach(value -> {
+                if (value.getVal().equals(Rate.MINOR.getRate()) && value.getCount() >= 1) {
+                    if (sonarContentDTO.getRate().equals("A")) {
+                        sonarContentDTO.setRate("B");
+>>>>>>> [IMP]重构后端断码
                     }
-                    if (value.getVal().equals(Rate.CRITICAL.getRate()) && value.getCount() >= 1) {
-                        if (!sonarContentDTO.getRate().equals("E")) {
-                            sonarContentDTO.setRate("D");
-                        }
+                }
+                if (value.getVal().equals(Rate.MAJOR.getRate()) && value.getCount() >= 1) {
+                    if (!sonarContentDTO.getRate().equals("D") && !sonarContentDTO.getRate().equals("E")) {
+                        sonarContentDTO.setRate("C");
                     }
-                    if (value.getVal().equals(Rate.BLOCKER.getRate()) && value.getCount() >= 1) {
-                        sonarContentDTO.setRate("E");
+                }
+                if (value.getVal().equals(Rate.CRITICAL.getRate()) && value.getCount() >= 1) {
+                    if (!sonarContentDTO.getRate().equals("E")) {
+                        sonarContentDTO.setRate("D");
                     }
-                });
+                }
+                if (value.getVal().equals(Rate.BLOCKER.getRate()) && value.getCount() >= 1) {
+                    sonarContentDTO.setRate("E");
+                }
             });
+<<<<<<< HEAD
 <<<<<<< HEAD
         }
 
@@ -3529,6 +4066,10 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
             return applicationDTO;
         }
+=======
+        });
+    }
+>>>>>>> [IMP]重构后端断码
 
 <<<<<<< HEAD
         private ApplicationDTO queryByCode (String code, Long projectId){
@@ -3551,6 +4092,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         return applicationDTO;
     }
 
+<<<<<<< HEAD
     private void checkNameFromBase(Long projectId, String appName) {
         ApplicationDTO applicationDTO = new ApplicationDTO();
         applicationDTO.setProjectId(projectId);
@@ -3594,48 +4136,64 @@ public class ApplicationServiceImpl implements ApplicationService {
                 throw new CommonException("error.name.exist");
             }
 >>>>>>> [IMP]重构后端代码
-        }
-
-        private void baseCheckCode (ApplicationDTO applicationDTO){
-            if (!applicationMapper.select(applicationDTO).isEmpty()) {
-                throw new CommonException("error.code.exist");
-            }
-        }
-
-        private ApplicationDTO baseCreate (ApplicationDTO applicationDTO){
-            if (applicationMapper.insert(applicationDTO) != 1) {
-                throw new CommonException("error.application.create.insert");
-            }
-            return applicationDTO;
-        }
-<<<<<<<HEAD
-
-        private ApplicationDTO queryByCode (String code, Long projectId){
-            ApplicationDTO applicationDTO = new ApplicationDTO();
-            applicationDTO.setProjectId(projectId);
-            applicationDTO.setCode(code);
-            return applicationMapper.selectOne(applicationDTO);
-        }
-
-        private int updateFromBase (ApplicationDTO applicationDTO){
-            if (applicationDTO.getFailed() != null && !applicationDTO.getFailed()) {
-                applicationMapper.updateAppToSuccess(applicationDTO.getId());
-            }
-            applicationDTO.setObjectVersionNumber(applicationDTO.getObjectVersionNumber());
-            return applicationMapper.updateByPrimaryKeySelective(applicationDTO);
-        }
-
-        private ApplicationDTO queryByCodeFromBase (String code, Long projectId){
-            ApplicationDTO applicationDO = new ApplicationDTO();
-            applicationDO.setProjectId(projectId);
-            applicationDO.setCode(code);
-            return applicationMapper.selectOne(applicationDO);
-        }
 =======
->>>>>>> [IMP]重构后端代码
+    private Map<String, String> getQueryMap(String key, String type, Boolean newAdd) {
+        Map<String, String> map = new HashMap<>();
+        map.put("componentKeys", key);
+        map.put("s", "FILE_LINE");
+        map.put("resolved", "false");
+        map.put("types", type);
+        if (newAdd) {
+            map.put("sinceLeakPeriod", "true");
+>>>>>>> [IMP]重构后端断码
+        }
+        map.put("ps", "100");
+        map.put("facets", "severities,types");
+        map.put("additionalFields", "_all");
+        return map;
     }
+
+
+    private ApplicationDTO getApplicationDTO(Long projectId, ApplicationReqVO applicationReqDTO) {
+        ApplicationDTO applicationDTO = ConvertHelper.convert(applicationReqDTO, ApplicationDTO.class);
+        baseCheckName(projectId, applicationDTO.getName());
+        baseCheckCode(applicationDTO);
+        applicationDTO.setActive(true);
+        applicationDTO.setSynchro(false);
+        applicationDTO.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
+        applicationDTO.setHarborConfigId(applicationReqDTO.getHarborConfigId());
+        applicationDTO.setChartConfigId(applicationReqDTO.getChartConfigId());
+        return applicationDTO;
+    }
+
+    private void baseCheckName(Long projectId, String appName) {
+        ApplicationDTO applicationDTO = new ApplicationDTO();
+        applicationDTO.setProjectId(projectId);
+        applicationDTO.setName(appName);
+        if (applicationMapper.selectOne(applicationDTO) != null) {
+            throw new CommonException("error.name.exist");
+        }
+    }
+
+    private void baseCheckCode(ApplicationDTO applicationDTO) {
+        if (!applicationMapper.select(applicationDTO).isEmpty()) {
+            throw new CommonException("error.code.exist");
+        }
+    }
+
+    private ApplicationDTO baseCreate(ApplicationDTO applicationDTO) {
+        if (applicationMapper.insert(applicationDTO) != 1) {
+            throw new CommonException("error.application.create.insert");
+        }
+        return applicationDTO;
+    }
+<<<<<<< HEAD
 <<<<<<< HEAD
 }
 >>>>>>> [IMP] 修改AppControler重构
 =======
 >>>>>>> [IMP]重构后端代码
+=======
+
+}
+>>>>>>> [IMP]重构后端断码

@@ -4,8 +4,8 @@ import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DevopsIngressDTO
-import io.choerodon.devops.api.vo.DevopsIngressPathDTO
+import io.choerodon.devops.api.vo.DevopsIngressPathVO
+import io.choerodon.devops.api.vo.DevopsIngressVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE
@@ -98,9 +98,9 @@ class DevopsIngressControllerSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO()
+    DevopsIngressVO devopsIngressDTO = new DevopsIngressVO()
     @Shared
-    DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO()
+    DevopsIngressPathVO devopsIngressPathDTO = new DevopsIngressPathVO()
     @Shared
     DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared
@@ -131,7 +131,7 @@ class DevopsIngressControllerSpec extends Specification {
         devopsIngressPathDTO.setServicePort(7777L)
         devopsIngressPathDTO.setServiceName("test")
         devopsIngressPathDTO.setServiceStatus("running")
-        List<DevopsIngressPathDTO> pathList = new ArrayList<>()
+        List<DevopsIngressPathVO> pathList = new ArrayList<>()
         pathList.add(devopsIngressPathDTO)
 
         devopsIngressDTO.setEnvId(1L)
@@ -251,16 +251,16 @@ class DevopsIngressControllerSpec extends Specification {
 
     def "Update"() {
         given: '初始化DTO类'
-        devopsIngressPathDTO = new DevopsIngressPathDTO()
+        devopsIngressPathDTO = new DevopsIngressPathVO()
         devopsIngressPathDTO.setPath("/bootz")
         devopsIngressPathDTO.setServiceId(1L)
         devopsIngressPathDTO.setServicePort(7777L)
         devopsIngressPathDTO.setServiceName("test")
         devopsIngressPathDTO.setServiceStatus("running")
-        List<DevopsIngressPathDTO> pathList = new ArrayList<>()
+        List<DevopsIngressPathVO> pathList = new ArrayList<>()
         pathList.add(devopsIngressPathDTO)
         // 修改后的DTO
-        DevopsIngressDTO newDevopsIngressDTO = new DevopsIngressDTO()
+        DevopsIngressVO newDevopsIngressDTO = new DevopsIngressVO()
         newDevopsIngressDTO.setId(1L)
         newDevopsIngressDTO.setEnvId(1L)
         newDevopsIngressDTO.setCertId(1L)
@@ -284,7 +284,7 @@ class DevopsIngressControllerSpec extends Specification {
 
     def "QueryDomainId"() {
         when: '项目下查询域名'
-        def dto = restTemplate.getForObject("/v1/projects/1/ingress/1", DevopsIngressDTO.class)
+        def dto = restTemplate.getForObject("/v1/projects/1/ingress/1", DevopsIngressVO.class)
 
         then: '校验返回值'
         dto["domain"] == "test.test-test.test"

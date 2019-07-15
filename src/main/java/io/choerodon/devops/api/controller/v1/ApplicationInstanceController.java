@@ -396,7 +396,7 @@ public class ApplicationInstanceController {
      * @param appId        应用id
      * @param appVersionId 应用版本id
      * @param envId        环境id
-     * @return list of AppInstanceCodeDTO
+     * @return baseList of AppInstanceCodeDTO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
@@ -422,7 +422,7 @@ public class ApplicationInstanceController {
      * @param projectId 项目id
      * @param appId     应用id
      * @param envId     环境id
-     * @return list of AppInstanceCodeDTO
+     * @return baseList of AppInstanceCodeDTO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
@@ -791,7 +791,7 @@ public class ApplicationInstanceController {
      * @param projectId 项目id
      * @param appId     应用id
      * @param envId     环境id
-     * @return list of AppInstanceCodeDTO
+     * @return baseList of AppInstanceCodeDTO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})

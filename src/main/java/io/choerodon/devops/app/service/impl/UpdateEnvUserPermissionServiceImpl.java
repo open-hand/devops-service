@@ -54,7 +54,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.baseQueryById(id);
 
         Integer gitlabProjectId = devopsEnvironmentE.getGitlabEnvProjectId().intValue();
-        DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(devopsEnvironmentE.getProjectE().getId());
         Integer gitlabGroupId = devopsProjectE.getDevopsEnvGroupId().intValue();
 
         super.updateGitlabUserPermission("env", gitlabGroupId, gitlabProjectId, addgitlabUserIds, deleteGitlabUserIds);

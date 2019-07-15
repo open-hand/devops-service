@@ -1,26 +1,30 @@
 package io.choerodon.devops.domain.application.repository;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectE;
 =======
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 >>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 
+=======
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+>>>>>>> [IMP]重构后端断码
 
 
 /**
  * Created by younger on 2018/3/29.
  */
 public interface DevopsProjectRepository {
-    void createProject(DevopsProjectDTO devopsProjectDO);
+    void baseCreate(DevopsProjectDTO devopsProjectDTO);
 
-    void updateProjectAttr(DevopsProjectDTO devopsProjectDO);
+    void baseUpdate(DevopsProjectDTO devopsProjectDTO);
 
-    DevopsProjectVO queryDevopsProject(Long projectId);
+    DevopsProjectDTO baseQueryByProjectId(Long projectId);
 
-    DevopsProjectVO queryByGitlabGroupId(Integer gitlabGroupId);
+    DevopsProjectDTO baseQueryByGitlabAppGroupId(Integer appGroupId);
 
-    DevopsProjectVO queryByEnvGroupId(Integer envGroupId);
+    DevopsProjectDTO baseQueryByGitlabEnvGroupId(Integer envGroupId);
 
 }

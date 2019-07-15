@@ -7,7 +7,7 @@ import java.util.List;
  * Date:  17:23 2019/5/13
  * Description:
  */
-public class DevopsNotificationDTO {
+public class DevopsNotificationVO {
     private Long id;
     private Long envId;
     private String envName;
@@ -15,7 +15,7 @@ public class DevopsNotificationDTO {
     private List<String> notifyTriggerEvent;
     private String notifyObject;
     private List<String> notifyType;
-    private List<DevopsNotificationUserRelDTO> userRelDTOS;
+    private List<DevopsNotificationUserRelVO> userRelDTOS;
     private Long objectVersionNumber;
     private List<Long> userRelIds;
 
@@ -75,11 +75,11 @@ public class DevopsNotificationDTO {
         this.notifyType = notifyType;
     }
 
-    public List<DevopsNotificationUserRelDTO> getUserRelDTOS() {
+    public List<DevopsNotificationUserRelVO> getUserRelDTOS() {
         return userRelDTOS;
     }
 
-    public void setUserRelDTOS(List<DevopsNotificationUserRelDTO> userRelDTOS) {
+    public void setUserRelDTOS(List<DevopsNotificationUserRelVO> userRelDTOS) {
         this.userRelDTOS = userRelDTOS;
     }
 

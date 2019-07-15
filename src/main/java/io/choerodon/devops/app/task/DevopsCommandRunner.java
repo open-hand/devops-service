@@ -49,13 +49,13 @@ public class DevopsCommandRunner implements CommandLineRunner {
 
     private void initConfig(ProjectConfigDTO configDTO, String configName, String configType) {
         DevopsProjectConfigE newConfigE = new DevopsProjectConfigE(configName, configDTO, configType);
-        DevopsProjectConfigE oldConfigE = devopsProjectConfigRepository.queryByName(null, configName);
+        DevopsProjectConfigE oldConfigE = devopsProjectConfigRepository.baseQueryByName(null, configName);
         if (oldConfigE == null) {
-            devopsProjectConfigRepository.create(newConfigE);
+            devopsProjectConfigRepository.baseCreate(newConfigE);
         } else if (!configDTO.equals(oldConfigE.getConfig())) {
             newConfigE.setId(oldConfigE.getId());
             newConfigE.setObjectVersionNumber(oldConfigE.getObjectVersionNumber());
-            devopsProjectConfigRepository.updateByPrimaryKeySelective(newConfigE);
+            devopsProjectConfigRepository.baseUpdate(newConfigE);
         }
     }
 }

@@ -28,7 +28,7 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
     @Override
     public void checkIfExist(List<V1Service> v1Services, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, V1Service v1Service) {
         String filePath = objectPath.get(TypeUtil.objToString(v1Service.hashCode()));
-        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
+        DevopsServiceE devopsServiceE = devopsServiceRepository.baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
         if (devopsServiceE != null &&
                 beforeSyncDelete.stream()
                         .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(v1Service.getKind()))

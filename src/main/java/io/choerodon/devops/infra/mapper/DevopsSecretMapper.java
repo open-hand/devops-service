@@ -3,10 +3,9 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
-
-import io.choerodon.devops.infra.dto.DevopsSecretDO;
 
 /**
  * Created by n!Ck
@@ -14,12 +13,12 @@ import io.choerodon.devops.infra.dto.DevopsSecretDO;
  * Time: 上午10:13
  * Description:
  */
-public interface DevopsSecretMapper extends Mapper<DevopsSecretDO> {
+public interface DevopsSecretMapper extends Mapper<DevopsSecretDTO> {
 
-    DevopsSecretDO selectById(@Param("secretId") Long secretId);
+    DevopsSecretDTO selectById(@Param("secretId") Long secretId);
 
-    List<DevopsSecretDO> listByOption(@Param("envId") Long envId,
-                                      @Param("searchParam") Map<String, Object> searchParam,
-                                      @Param("param") String param,
-                                      @Param("appId") Long appId);
+    List<DevopsSecretDTO> listByOption(@Param("envId") Long envId,
+                                       @Param("searchParam") Map<String, Object> searchParam,
+                                       @Param("param") String param,
+                                       @Param("appId") Long appId);
 }

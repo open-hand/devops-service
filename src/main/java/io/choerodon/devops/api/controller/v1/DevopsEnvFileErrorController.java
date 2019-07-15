@@ -42,7 +42,7 @@ public class DevopsEnvFileErrorController {
      *
      * @param projectId 项目 ID
      * @param envId     环境 ID
-     * @return list of DevopsEnvFileErrorDTO
+     * @return baseList of DevopsEnvFileErrorDTO
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
@@ -55,7 +55,7 @@ public class DevopsEnvFileErrorController {
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvFileService.listByEnvId(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.fileError.list"));
+                .orElseThrow(() -> new CommonException("error.env.fileError.baseList"));
     }
 
     /**
@@ -63,7 +63,7 @@ public class DevopsEnvFileErrorController {
      *
      * @param projectId 项目 ID
      * @param envId     环境 ID
-     * @return list of DevopsEnvFileErrorDTO
+     * @return baseList of DevopsEnvFileErrorDTO
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
@@ -80,6 +80,6 @@ public class DevopsEnvFileErrorController {
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvFileService.pageByEnvId(envId, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.fileError.list"));
+                .orElseThrow(() -> new CommonException("error.env.fileError.baseList"));
     }
 }

@@ -9,7 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsNotificationDTO;
+import io.choerodon.devops.api.vo.DevopsNotificationVO;
 import io.choerodon.devops.api.vo.ResourceCheckDTO;
 import io.choerodon.devops.app.service.DevopsNotificationService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -42,11 +42,11 @@ public class DevopsNotificationController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建通知")
     @PostMapping
-    public ResponseEntity<DevopsNotificationDTO> create(
+    public ResponseEntity<DevopsNotificationVO> create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "通知信息", required = true)
-            @RequestBody DevopsNotificationDTO notificationDTO) {
+            @RequestBody DevopsNotificationVO notificationDTO) {
         return Optional.ofNullable(notificationService.create(projectId, notificationDTO))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.notification.create"));
@@ -62,11 +62,11 @@ public class DevopsNotificationController {
     @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新通知")
     @PutMapping
-    public ResponseEntity<DevopsNotificationDTO> update(
+    public ResponseEntity<DevopsNotificationVO> update(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "通知信息", required = true)
-            @RequestBody DevopsNotificationDTO notificationDTO) {
+            @RequestBody DevopsNotificationVO notificationDTO) {
         return Optional.ofNullable(notificationService.update(projectId, notificationDTO))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.notification.update"));
@@ -102,7 +102,7 @@ public class DevopsNotificationController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下获取通知详情")
     @GetMapping(value = "/{notification_id}")
-    public ResponseEntity<DevopsNotificationDTO> queryById(
+    public ResponseEntity<DevopsNotificationVO> queryById(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "通知ID", required = true)
@@ -125,7 +125,7 @@ public class DevopsNotificationController {
     @ApiOperation(value = "通知列表")
     @CustomPageRequest
     @PostMapping(value = "/list")
-    public ResponseEntity<PageInfo<DevopsNotificationDTO>> listByOptions(
+    public ResponseEntity<PageInfo<DevopsNotificationVO>> listByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id", required = false)

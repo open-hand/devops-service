@@ -442,7 +442,7 @@ class DevopsGitControllerSpec extends Specification {
         userAttrRepository.baseQueryById(_ as Long) >> userAttrE
 
         when: '查看所有合并请求'
-        def mergeRequest = restTemplate.getForObject("/v1/projects/1/apps/1/git/merge_request/list?page=0&size=10", Map.class)
+        def mergeRequest = restTemplate.getForObject("/v1/projects/1/apps/1/git/merge_request/baseList?page=0&size=10", Map.class)
 
         then: '校验返回值'
         !mergeRequest.isEmpty()

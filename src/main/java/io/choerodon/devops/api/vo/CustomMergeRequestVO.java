@@ -1,36 +1,26 @@
-package io.choerodon.devops.infra.dto;
+package io.choerodon.devops.api.vo;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.util.Date;
 
-import io.choerodon.mybatis.entity.BaseDTO;
+public class CustomMergeRequestVO {
 
-
-/**
- * Created with IntelliJ IDEA.
- * User: Runge
- * Date: 2018/4/9
- * Time: 14:23
- * Description:
- */
-
-@Table(name = "devops_merge_request")
-public class DevopsMergeRequestDO extends BaseDTO {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Long projectId;
+
+    private Long applicationId;
+
+    private String imageUrl;
 
     private Long gitlabMergeRequestId;
 
     private Long authorId;
 
+    private String authorName;
+
     private Long assigneeId;
+
+    private String assigneeName;
 
     private String sourceBranch;
 
@@ -43,22 +33,6 @@ public class DevopsMergeRequestDO extends BaseDTO {
     private Date createdAt;
 
     private Date updatedAt;
-
-    public DevopsMergeRequestDO() {
-    }
-
-    /**
-     * constructor a new merge request item
-     *
-     * @param projectId    devops application ID
-     * @param sourceBranch source branch to merge
-     * @param targetBranch target merge branch
-     */
-    public DevopsMergeRequestDO(Long projectId, String sourceBranch, String targetBranch) {
-        this.projectId = projectId;
-        this.sourceBranch = sourceBranch;
-        this.targetBranch = targetBranch;
-    }
 
     public Long getId() {
         return id;
@@ -92,12 +66,28 @@ public class DevopsMergeRequestDO extends BaseDTO {
         this.authorId = authorId;
     }
 
+    public String getAuthorName() {
+        return authorName;
+    }
+
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
+
     public Long getAssigneeId() {
         return assigneeId;
     }
 
     public void setAssigneeId(Long assigneeId) {
         this.assigneeId = assigneeId;
+    }
+
+    public String getAssigneeName() {
+        return assigneeName;
+    }
+
+    public void setAssigneeName(String assigneeName) {
+        this.assigneeName = assigneeName;
     }
 
     public String getSourceBranch() {
@@ -146,5 +136,21 @@ public class DevopsMergeRequestDO extends BaseDTO {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Long getApplicationId() {
+        return applicationId;
+    }
+
+    public void setApplicationId(Long applicationId) {
+        this.applicationId = applicationId;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

@@ -50,7 +50,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
 
         ApplicationE applicationE = applicationRepository.query(appId);
         Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
-        DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(applicationE.getProjectE().getId());
         Integer gitlabGroupId = devopsProjectE.getDevopsAppGroupId().intValue();
 
         // 如果之前对应的gitlab project同步失败时，不进行后续操作

@@ -2,14 +2,22 @@ package io.choerodon.devops.infra.convertor;
 
 import com.google.gson.Gson;
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.DevopsProjectConfigDTO;
+import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
 import io.choerodon.devops.api.vo.ProjectConfigDTO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
+<<<<<<< HEAD
 <<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsProjectConfigConvertor.java
 import io.choerodon.devops.infra.dto.DevopsProjectConfigDO;
 =======
 import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
 >>>>>>> [IMP] 修改AppControler重构:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsProjectConfigConvertor.java
+=======
+<<<<<<< HEAD:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsProjectConfigConvertor.java
+import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
+=======
+import io.choerodon.devops.infra.dto.DevopsProjectConfigDTO;
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a:src/main/java/io/choerodon/devops/infra/convertor/DevopsProjectConfigConvertor.java
+>>>>>>> [IMP]重构后端断码
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -19,40 +27,40 @@ import org.springframework.stereotype.Component;
  * @since 2019/03/11
  */
 @Component
-public class DevopsProjectConfigConvertor implements ConvertorI<DevopsProjectConfigE, DevopsProjectConfigDO, DevopsProjectConfigDTO> {
+public class DevopsProjectConfigConvertor implements ConvertorI<DevopsProjectConfigE, DevopsProjectConfigDTO, DevopsProjectConfigVO> {
 
     private static final Gson gson = new Gson();
 
     @Override
-    public DevopsProjectConfigE doToEntity(DevopsProjectConfigDO devopsProjectConfigDO) {
+    public DevopsProjectConfigE doToEntity(DevopsProjectConfigDTO devopsProjectConfigDTO) {
         DevopsProjectConfigE devopsProjectConfigE = new DevopsProjectConfigE();
-        BeanUtils.copyProperties(devopsProjectConfigDO, devopsProjectConfigE);
-        ProjectConfigDTO configDTO = gson.fromJson(devopsProjectConfigDO.getConfig(), ProjectConfigDTO.class);
+        BeanUtils.copyProperties(devopsProjectConfigDTO, devopsProjectConfigE);
+        ProjectConfigDTO configDTO = gson.fromJson(devopsProjectConfigDTO.getConfig(), ProjectConfigDTO.class);
         devopsProjectConfigE.setConfig(configDTO);
         return devopsProjectConfigE;
     }
 
     @Override
-    public DevopsProjectConfigDO entityToDo(DevopsProjectConfigE devopsProjectConfigE) {
-        DevopsProjectConfigDO devopsProjectConfigDO = new DevopsProjectConfigDO();
-        BeanUtils.copyProperties(devopsProjectConfigE, devopsProjectConfigDO);
+    public DevopsProjectConfigDTO entityToDo(DevopsProjectConfigE devopsProjectConfigE) {
+        DevopsProjectConfigDTO devopsProjectConfigDTO = new DevopsProjectConfigDTO();
+        BeanUtils.copyProperties(devopsProjectConfigE, devopsProjectConfigDTO);
         String configJson = gson.toJson(devopsProjectConfigE.getConfig());
-        devopsProjectConfigDO.setConfig(configJson);
-        return devopsProjectConfigDO;
+        devopsProjectConfigDTO.setConfig(configJson);
+        return devopsProjectConfigDTO;
     }
 
 
     @Override
-    public DevopsProjectConfigE dtoToEntity(DevopsProjectConfigDTO devopsProjectConfigDTO) {
+    public DevopsProjectConfigE dtoToEntity(DevopsProjectConfigVO devopsProjectConfigVO) {
         DevopsProjectConfigE devopsProjectConfigE = new DevopsProjectConfigE();
-        BeanUtils.copyProperties(devopsProjectConfigDTO, devopsProjectConfigE);
+        BeanUtils.copyProperties(devopsProjectConfigVO, devopsProjectConfigE);
         return devopsProjectConfigE;
     }
 
     @Override
-    public DevopsProjectConfigDTO entityToDto(DevopsProjectConfigE devopsProjectConfigE) {
-        DevopsProjectConfigDTO devopsProjectConfigDTO = new DevopsProjectConfigDTO();
-        BeanUtils.copyProperties(devopsProjectConfigE, devopsProjectConfigDTO);
-        return devopsProjectConfigDTO;
+    public DevopsProjectConfigVO entityToDto(DevopsProjectConfigE devopsProjectConfigE) {
+        DevopsProjectConfigVO devopsProjectConfigVO = new DevopsProjectConfigVO();
+        BeanUtils.copyProperties(devopsProjectConfigE, devopsProjectConfigVO);
+        return devopsProjectConfigVO;
     }
 }

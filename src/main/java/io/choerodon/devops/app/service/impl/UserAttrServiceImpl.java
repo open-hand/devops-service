@@ -106,4 +106,5 @@ public class UserAttrServiceImpl implements UserAttrService {
         userAttrDO.setGitlabUserName(gitlabUserName);
         return userAttrMapper.selectOne(userAttrDO);
     }
+
 }

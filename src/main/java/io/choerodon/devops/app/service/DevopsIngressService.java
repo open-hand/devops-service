@@ -2,10 +2,9 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.kubernetes.client.models.V1beta1HTTPIngressPath;
 import io.kubernetes.client.models.V1beta1Ingress;
-
-import io.choerodon.devops.api.vo.DevopsIngressDTO;
 
 /**
  * Creator: Runge
@@ -18,37 +17,37 @@ public interface DevopsIngressService {
     /**
      * 项目下创建域名
      *
-     * @param devopsIngressDTO 域名参数
+     * @param devopsIngressVO 域名参数
      * @param projectId        项目Id
      */
-    void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId);
+    void addIngress(DevopsIngressVO devopsIngressVO, Long projectId);
 
     /**
      * 项目下创建域名,GitOps
      *
-     * @param devopsIngressDTO 域名参数
+     * @param devopsIngressVO 域名参数
      * @param projectId        项目Id
      */
-    void addIngressByGitOps(DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId);
+    void addIngressByGitOps(DevopsIngressVO devopsIngressVO, Long projectId, Long userId);
 
     /**
      * 项目下更新域名
      *
      * @param id               域名Id
-     * @param devopsIngressDTO 域名参数
+     * @param devopsIngressVO 域名参数
      * @param projectId        项目Id
      */
-    void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId);
+    void updateIngress(Long id, DevopsIngressVO devopsIngressVO, Long projectId);
 
 
     /**
      * 项目下更新域名,GitOps
      *
      * @param id               域名Id
-     * @param devopsIngressDTO 域名参数
+     * @param devopsIngressVO 域名参数
      * @param projectId        项目Id
      */
-    void updateIngressByGitOps(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId);
+    void updateIngressByGitOps(Long id, DevopsIngressVO devopsIngressVO, Long projectId, Long userId);
 
 
     /**
@@ -56,9 +55,9 @@ public interface DevopsIngressService {
      *
      * @param projectId 项目Id
      * @param ingressId 域名Id
-     * @return DevopsIngressDTO
+     * @return DevopsIngressVO
      */
-    DevopsIngressDTO getIngress(Long projectId, Long ingressId);
+    DevopsIngressVO getIngress(Long projectId, Long ingressId);
 
     /**
      * 项目下删除域名
@@ -123,5 +122,5 @@ public interface DevopsIngressService {
      * @param params      模糊查询参数
      * @return Page
      */
-    PageInfo<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsIngressVO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
 }

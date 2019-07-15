@@ -80,7 +80,7 @@ public interface ApplicationInstanceService {
      * @param appId        应用id
      * @param appVersionId 应用版本id
      * @param envId        环境id
-     * @return list of AppInstanceCodeDTO
+     * @return baseList of AppInstanceCodeDTO
      */
     List<AppInstanceCodeDTO> listByOptions(Long projectId, Long appId, Long appVersionId, Long envId);
 
@@ -90,7 +90,7 @@ public interface ApplicationInstanceService {
      * @param projectId 项目id
      * @param appId     应用id
      * @param envId     环境id
-     * @return list of AppInstanceCodeDTO
+     * @return baseList of AppInstanceCodeDTO
      */
     List<AppInstanceCodeDTO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 
@@ -100,7 +100,7 @@ public interface ApplicationInstanceService {
      * @param projectId 项目id
      * @param appId     应用id
      * @param envId     环境id
-     * @return list of AppInstanceCodeDTO
+     * @return baseList of AppInstanceCodeDTO
      */
     List<AppInstanceCodeDTO> getByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 

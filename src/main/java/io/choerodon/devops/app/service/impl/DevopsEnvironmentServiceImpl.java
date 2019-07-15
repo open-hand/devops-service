@@ -160,7 +160,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         // 查询创建应用所在的gitlab应用组
-        DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(projectId);
         GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
@@ -293,7 +293,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnviromentRepDTO> listDeployed(Long projectId) {
-        List<Long> envList = devopsServiceRepository.selectDeployedEnv();
+        List<Long> envList = devopsServiceRepository.baseListEnvByRunningService();
         return listByProjectIdAndActive(projectId, true).stream().filter(t ->
                 envList.contains(t.getId())).collect(Collectors.toList());
     }
@@ -611,7 +611,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload) {
-        DevopsProjectVO gitlabGroupE = devopsProjectRepository.queryByEnvGroupId(
+        DevopsProjectVO gitlabGroupE = devopsProjectRepository.baseQueryByGitlabEnvGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                 .baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
@@ -850,13 +850,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvCommandRepository.baseListByObject(HelmObjectKind.INSTANCE.toValue(), instanceE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteByEnvCommandId(t)));
         applicationInstanceRepository.deleteAppInstanceByEnvId(envId);
         // 删除环境对应的域名、域名路径
-        devopsIngressRepository.listByEnvId(envId).forEach(ingressE ->
-                devopsEnvCommandRepository.baseListByObject(HelmObjectKind.INGRESS.toValue(), ingressE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteByEnvCommandId(t)));
+        devopsIngressRepository.baseListByEnvId(envId).forEach(ingressE ->
+                devopsEnvCommandRepository.baseListByObjectAll(HelmObjectKind.INGRESS.toValue(), ingressE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteCommandById(t)));
         devopsIngressRepository.deleteIngressAndIngressPathByEnvId(envId);
         // 删除环境对应的网络和网络实例
-        devopsServiceRepository.selectByEnvId(envId).forEach(serviceE ->
-                devopsEnvCommandRepository.baseListByObject(HelmObjectKind.SERVICE.toValue(), serviceE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteByEnvCommandId(t)));
-        devopsServiceRepository.deleteServiceAndInstanceByEnvId(envId);
+        devopsServiceRepository.baseListByEnvId(envId).forEach(serviceE ->
+                devopsEnvCommandRepository.baseListByObjectAll(HelmObjectKind.SERVICE.toValue(), serviceE.getId()).forEach(t -> devopsEnvCommandRepository.baseDeleteCommandById(t)));
+        devopsServiceRepository.baseDeleteServiceAndInstanceByEnvId(envId);
+
         // 删除环境
         baseDeleteById(envId);
         // 删除gitlab库, 删除之前查询是否存在

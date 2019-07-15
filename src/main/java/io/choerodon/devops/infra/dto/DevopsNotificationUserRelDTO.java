@@ -8,15 +8,15 @@ import javax.persistence.Table;
  * Description:
  */
 @Table(name = "devops_notification_user_rel")
-public class DevopsNotificationUserRelDO {
+public class DevopsNotificationUserRelDTO {
 
     private Long userId;
     private Long notificationId;
 
-    public DevopsNotificationUserRelDO() {
+    public DevopsNotificationUserRelDTO() {
     }
 
-    public DevopsNotificationUserRelDO(Long userId, Long notificationId) {
+    public DevopsNotificationUserRelDTO(Long userId, Long notificationId) {
         this.userId = userId;
         this.notificationId = notificationId;
     }

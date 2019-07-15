@@ -13,7 +13,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Description:
  */
 @Table(name = "devops_ingress")
-public class DevopsIngressDO extends BaseDTO {
+public class DevopsIngressDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,7 +31,7 @@ public class DevopsIngressDO extends BaseDTO {
     @Transient
     private String namespace;
     @Transient
-    private List<DevopsIngressPathDO> devopsIngressPathDOS;
+    private List<DevopsIngressPathDTO> devopsIngressPathDTOS;
     @Transient
     private String commandType;
     @Transient
@@ -39,33 +39,33 @@ public class DevopsIngressDO extends BaseDTO {
     @Transient
     private String error;
 
-    public DevopsIngressDO() {
+    public DevopsIngressDTO() {
     }
 
-    public DevopsIngressDO(String name) {
+    public DevopsIngressDTO(String name) {
         this.name = name;
     }
 
     /**
      * 构造函数
      */
-    public DevopsIngressDO(Long projectId, Long envId, String domain, String name) {
+    public DevopsIngressDTO(Long projectId, Long envId, String domain, String name) {
         this.projectId = projectId;
         this.envId = envId;
         this.domain = domain;
         this.name = name;
     }
 
-    public DevopsIngressDO(Long projectId) {
+    public DevopsIngressDTO(Long projectId) {
         this.projectId = projectId;
     }
 
-    public DevopsIngressDO(Long projectId, String name) {
+    public DevopsIngressDTO(Long projectId, String name) {
         this.projectId = projectId;
         this.name = name;
     }
 
-    public DevopsIngressDO(String domain, Long projectId) {
+    public DevopsIngressDTO(String domain, Long projectId) {
         this.projectId = projectId;
         this.domain = domain;
     }
@@ -74,7 +74,7 @@ public class DevopsIngressDO extends BaseDTO {
     /**
      * 构造函数
      */
-    public DevopsIngressDO(Long id, Long projectId, Long envId, String domain, String name, String status) {
+    public DevopsIngressDTO(Long id, Long projectId, Long envId, String domain, String name, String status) {
         this.id = id;
         this.name = name;
         this.projectId = projectId;
@@ -164,12 +164,12 @@ public class DevopsIngressDO extends BaseDTO {
         this.certId = certId;
     }
 
-    public List<DevopsIngressPathDO> getDevopsIngressPathDOS() {
-        return devopsIngressPathDOS;
+    public List<DevopsIngressPathDTO> getDevopsIngressPathDTOS() {
+        return devopsIngressPathDTOS;
     }
 
-    public void setDevopsIngressPathDOS(List<DevopsIngressPathDO> devopsIngressPathDOS) {
-        this.devopsIngressPathDOS = devopsIngressPathDOS;
+    public void setDevopsIngressPathDTOS(List<DevopsIngressPathDTO> devopsIngressPathDTOS) {
+        this.devopsIngressPathDTOS = devopsIngressPathDTOS;
     }
 
     public Long getCommandId() {
@@ -212,7 +212,7 @@ public class DevopsIngressDO extends BaseDTO {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DevopsIngressDO that = (DevopsIngressDO) o;
+        DevopsIngressDTO that = (DevopsIngressDTO) o;
         return Objects.equals(id, that.id)
                 && Objects.equals(projectId, that.projectId)
                 && Objects.equals(envId, that.envId)

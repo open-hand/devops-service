@@ -56,7 +56,7 @@ public class ConvertC7nSecretServiceImpl extends ConvertK8sObjectService<V1Secre
                              Map<String, String> objectPath, V1Secret v1Secret) {
         String filePath = objectPath.get(TypeUtil.objToString(v1Secret.hashCode()));
         String secretName = v1Secret.getMetadata().getName();
-        DevopsSecretE devopsSecretE = devopsSecretRepository.selectByEnvIdAndName(envId, secretName);
+        DevopsSecretE devopsSecretE = devopsSecretRepository.baseQueryByEnvIdAndName(envId, secretName);
         if (devopsSecretE != null) {
             Long secretId = devopsSecretE.getId();
             if (beforeSyncDelete.stream()

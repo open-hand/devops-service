@@ -29,7 +29,7 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
     @Override
     public void checkIfExist(List<V1beta1Ingress> v1beta1Ingresses, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, V1beta1Ingress v1beta1Ingress) {
         String filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
-        DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
+        DevopsIngressE devopsIngressE = devopsIngressRepository.baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
         if (devopsIngressE != null
                 && beforeSyncDelete.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(v1beta1Ingress.getKind()))

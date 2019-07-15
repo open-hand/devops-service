@@ -6,7 +6,7 @@ import javax.persistence.Transient;
 /**
  * Created by Zenger on 2018/4/19.
  */
-public class DevopsServiceQueryDO {
+public class DevopsServiceQueryDTO {
 
     private Long id;
     private String name;

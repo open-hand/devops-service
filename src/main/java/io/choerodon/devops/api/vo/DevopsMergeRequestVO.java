@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-public class DevopsMergeRequestDTO {
+public class DevopsMergeRequestVO {
 
     private String objectKind;
 

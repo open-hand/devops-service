@@ -36,10 +36,10 @@ public class DevopsEnvironmentValidator {
                         InstanceStatus.RUNNING.getStatus().equals(applicationInstanceE.getStatus()))) {
             throw new CommonException("error.env.stop.instanceExist");
         }
-        if (devopsServiceRepository.checkEnvHasService(envId)) {
+        if (devopsServiceRepository.baseCheckServiceByEnv(envId)) {
             throw new CommonException("error.env.stop.serviceExist");
         }
-        if (devopsIngressRepository.checkEnvHasIngress(envId)) {
+        if (devopsIngressRepository.baseCheckByEnv(envId)) {
             throw new CommonException("error.env.stop.IngressExist");
         }
         if (appDeployRepository.queryByEnvId(envId).size() > 0) {

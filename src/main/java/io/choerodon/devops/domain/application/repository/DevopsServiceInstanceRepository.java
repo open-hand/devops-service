@@ -3,25 +3,26 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.iam.entity.DevopsServiceAppInstanceE;
+import io.choerodon.devops.infra.dto.DevopsServiceAppInstanceDTO;
 
 /**
  * Created by Zenger on 2018/4/19.
  */
 public interface DevopsServiceInstanceRepository {
 
-    void insert(DevopsServiceAppInstanceE devopsServiceInstanceE);
+    void baseCreate(DevopsServiceAppInstanceDTO devopsServiceAppInstanceDTO);
 
-    DevopsServiceAppInstanceE queryByOptions(Long serviceId, Long instanceId);
+    DevopsServiceAppInstanceDTO baseQueryByOptions(Long serviceId, Long instanceId);
 
-    List<DevopsServiceAppInstanceE> selectByServiceId(Long serviceId);
+    List<DevopsServiceAppInstanceE> baseListByServiceId(Long serviceId);
 
-    void deleteByOptions(Long serviceId, String instanceCode);
+    void baseDeleteByOptions(Long serviceId, String instanceCode);
 
-    void updateInstanceId(Long serviceInstanceId, Long instanceId);
+    void baseUpdateInstanceId(Long serviceInstanceId, Long instanceId);
 
-    void deleteById(Long id);
+    void baseDeleteById(Long id);
 
-    List<DevopsServiceAppInstanceE> selectByInstanceId(Long instanceId);
+    List<DevopsServiceAppInstanceDTO> baseListByInstanceId(Long instanceId);
 
-    List<DevopsServiceAppInstanceE> listByEnvIdAndInstanceCode(Long envId, String instanceCode);
+    List<DevopsServiceAppInstanceDTO> baseListByEnvIdAndInstanceCode(Long envId, String instanceCode);
 }

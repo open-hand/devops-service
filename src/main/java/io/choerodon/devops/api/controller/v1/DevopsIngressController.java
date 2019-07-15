@@ -8,7 +8,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsIngressDTO;
+import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -39,7 +39,7 @@ public class DevopsIngressController {
      * 项目下创建域名
      *
      * @param projectId        项目id
-     * @param devopsIngressDTO 域名信息
+     * @param devopsIngressVO 域名信息
      * @return ResponseEntity
      */
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
@@ -50,8 +50,8 @@ public class DevopsIngressController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
-            @RequestBody DevopsIngressDTO devopsIngressDTO) {
-        devopsIngressService.addIngress(devopsIngressDTO, projectId);
+            @RequestBody DevopsIngressVO devopsIngressVO) {
+        devopsIngressService.addIngress(devopsIngressVO, projectId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -60,7 +60,7 @@ public class DevopsIngressController {
      *
      * @param projectId        项目ID
      * @param id               域名ID
-     * @param devopsIngressDTO 域名信息
+     * @param devopsIngressVO 域名信息
      * @return ResponseEntity
      */
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
@@ -73,8 +73,8 @@ public class DevopsIngressController {
             @ApiParam(value = "域名ID", required = true)
             @PathVariable Long id,
             @ApiParam(value = "域名信息", required = true)
-            @RequestBody DevopsIngressDTO devopsIngressDTO) {
-        devopsIngressService.updateIngress(id, devopsIngressDTO, projectId);
+            @RequestBody DevopsIngressVO devopsIngressVO) {
+        devopsIngressService.updateIngress(id, devopsIngressVO, projectId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -84,14 +84,14 @@ public class DevopsIngressController {
      *
      * @param projectId 项目ID
      * @param id        域名ID
-     * @return DevopsIngressDTO
+     * @return DevopsIngressVO
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询域名")
     @GetMapping(value = "/{id}")
-    public ResponseEntity<DevopsIngressDTO> queryDomainId(
+    public ResponseEntity<DevopsIngressVO> queryDomainId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
@@ -186,7 +186,7 @@ public class DevopsIngressController {
     @CustomPageRequest
     @ApiOperation(value = "环境总览域名查询")
     @PostMapping(value = "/{envId}/listByEnv")
-    public ResponseEntity<PageInfo<DevopsIngressDTO>> listByEnv(
+    public ResponseEntity<PageInfo<DevopsIngressVO>> listByEnv(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore

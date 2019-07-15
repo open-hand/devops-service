@@ -77,7 +77,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(SECRET))
                 .map(devopsEnvFileResourceE -> {
                     DevopsSecretE devopsSecretE = devopsSecretRepository
-                            .queryBySecretId(devopsEnvFileResourceE.getResourceId());
+                            .baseQuery(devopsEnvFileResourceE.getResourceId());
                     if (devopsSecretE == null) {
                         devopsEnvFileResourceRepository
                                 .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), SECRET);
@@ -98,7 +98,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         });
         //删除secret,删除文件对象关联关系
         beforSecret.forEach(secretName -> {
-            DevopsSecretE devopsSecretE = devopsSecretRepository.selectByEnvIdAndName(envId, secretName);
+            DevopsSecretE devopsSecretE = devopsSecretRepository.baseQueryByEnvIdAndName(envId, secretName);
             if (devopsSecretE != null) {
                 devopsSecretService.deleteSecretByGitOps(devopsSecretE.getId());
                 devopsEnvFileResourceRepository.baseDeleteByEnvIdAndResourceId(envId, devopsSecretE.getId(), SECRET);
@@ -120,13 +120,13 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
 
                 checkSecretName(c7nSecret);
                 DevopsSecretE devopsSecretE = devopsSecretRepository
-                        .selectByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
+                        .baseQueryByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
                 SecretReqDTO secretReqDTO;
                 // 初始化secret对象参数，存在secret则直接创建文件对象关联关系
                 if (devopsSecretE == null) {
                     secretReqDTO = getSecretReqDTO(c7nSecret, envId, CREATE);
                     devopsSecretService.addSecretByGitOps(secretReqDTO, userId);
-                    devopsSecretE = devopsSecretRepository.selectByEnvIdAndName(envId, secretReqDTO.getName());
+                    devopsSecretE = devopsSecretRepository.baseQueryByEnvIdAndName(envId, secretReqDTO.getName());
                 }
                 DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository
                         .query(devopsSecretE.getCommandId());
@@ -155,7 +155,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 boolean isNotChange = false;
                 filePath = objectPath.get(TypeUtil.objToString(c7nSecret.hashCode()));
                 DevopsSecretE devopsSecretE = devopsSecretRepository
-                        .selectByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
+                        .baseQueryByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
                 checkSecretName(c7nSecret);
                 // 初始化secret对象参数,更新secret并更新文件对象关联关系
                 SecretReqDTO secretReqDTO = getSecretReqDTO(c7nSecret, envId, "update");
@@ -169,7 +169,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                     devopsSecretService
                             .updateDevopsSecretByGitOps(projectId, devopsSecretE.getId(), secretReqDTO, userId);
                     DevopsSecretE newSecretE = devopsSecretRepository
-                            .selectByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
+                            .baseQueryByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
                     devopsEnvCommandE = devopsEnvCommandRepository.query(newSecretE.getCommandId());
                 }
 

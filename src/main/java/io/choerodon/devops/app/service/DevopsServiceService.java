@@ -3,13 +3,9 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-<<<<<<< HEAD
-=======
-
->>>>>>> [IMP] applicationController重构
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.DevopsServiceDTO;
 import io.choerodon.devops.api.vo.DevopsServiceReqDTO;
+import io.choerodon.devops.api.vo.DevopsServiceVO;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -85,17 +81,17 @@ public interface DevopsServiceService {
      * 分页查询网络列表
      *
      * @param envId 参数
-     * @return List of DevopsServiceDTO
+     * @return List of DevopsServiceVO
      */
-    List<DevopsServiceDTO> listDevopsService(Long envId);
+    List<DevopsServiceVO> listDevopsService(Long envId);
 
     /**
      * 查询单个网络
      *
      * @param id 网络id
-     * @return DevopsServiceDTO
+     * @return DevopsServiceVO
      */
-    DevopsServiceDTO query(Long id);
+    DevopsServiceVO query(Long id);
 
     /**
      * /**
@@ -105,9 +101,9 @@ public interface DevopsServiceService {
      * @param envId       环境id
      * @param pageRequest 分页参数
      * @param searchParam 查询参数
-     * @return Page of DevopsServiceDTO
+     * @return Page of DevopsServiceVO
      */
-    PageInfo<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsServiceVO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
 
 
     /**
@@ -115,9 +111,9 @@ public interface DevopsServiceService {
      *
      * @param envId       网络id
      * @param serviceName 网络名
-     * @return DevopsServiceDTO
+     * @return DevopsServiceVO
      */
-    DevopsServiceDTO queryByName(Long envId, String serviceName);
+    DevopsServiceVO queryByName(Long envId, String serviceName);
 
     /**
      * 查询实例下关联的网络域名（不包含chart）
@@ -126,7 +122,7 @@ public interface DevopsServiceService {
      * @param instanceId  实例Id
      * @param pageRequest 分页参数
      * @param appId       应用id
-     * @return Page of DevopsServiceDTO
+     * @return Page of DevopsServiceVO
      */
-    PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest,Long appId);
+    PageInfo<DevopsServiceVO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest, Long appId);
 }

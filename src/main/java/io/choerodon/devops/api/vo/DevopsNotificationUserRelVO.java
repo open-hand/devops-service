@@ -5,7 +5,7 @@ package io.choerodon.devops.api.vo;
  * Date:  17:27 2019/5/13
  * Description:
  */
-public class DevopsNotificationUserRelDTO {
+public class DevopsNotificationUserRelVO {
     private Long userId;
     private String loginName;
     private String realName;

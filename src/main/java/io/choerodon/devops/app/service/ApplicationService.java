@@ -138,7 +138,7 @@ public interface ApplicationService {
      * @param projectId 项目id
      * @param envId     环境Id
      * @param status    环境状态
-     * @return list of ApplicationRepDTO
+     * @return baseList of ApplicationRepDTO
      */
     List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status, Long appId);
 
@@ -148,7 +148,7 @@ public interface ApplicationService {
      * @param projectId   项目id
      * @param envId       环境Id
      * @param pageRequest 分页参数
-     * @return list of ApplicationRepDTO
+     * @return baseList of ApplicationRepDTO
      */
     PageInfo<ApplicationCodeDTO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest);
 
@@ -156,7 +156,7 @@ public interface ApplicationService {
      * 项目下查询所有已经启用的应用
      *
      * @param projectId 项目id
-     * @return list of ApplicationRepDTO
+     * @return baseList of ApplicationRepDTO
      */
     List<ApplicationRepVO> listByActive(Long projectId);
 
@@ -164,7 +164,7 @@ public interface ApplicationService {
      * 项目下查询所有可选已经启用的应用
      *
      * @param projectId 项目id
-     * @return list of ApplicationRepDTO
+     * @return baseList of ApplicationRepDTO
      */
     List<ApplicationRepVO> listAll(Long projectId);
 
@@ -199,7 +199,7 @@ public interface ApplicationService {
      * @param projectId   项目id
      * @param pageRequest 分页参数
      * @param params      查询参数
-     * @return list of ApplicationRepDTO
+     * @return baseList of ApplicationRepDTO
      */
     PageInfo<ApplicationReqVO> pageByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
 

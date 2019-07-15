@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsNotificationMapper">
-    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.DevopsNotificationDO">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.DevopsNotificationDTO">
         SELECT
         dn.id,
         dn.env_id,

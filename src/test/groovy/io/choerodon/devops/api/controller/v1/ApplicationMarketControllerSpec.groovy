@@ -204,7 +204,7 @@ class ApplicationMarketControllerSpec extends Specification {
         applicationInstanceMapper.insert(applicationInstanceDO)
 
         when: '查询所有发布在应用市场的应用'
-        def page = restTemplate.postForObject("/v1/projects/1/apps_market/list", searchParam, Page.class)
+        def page = restTemplate.postForObject("/v1/projects/1/apps_market/baseList", searchParam, Page.class)
 
         then: '验证返回值'
         page.getContent().get(0)["name"] == "appName"
@@ -340,7 +340,7 @@ class ApplicationMarketControllerSpec extends Specification {
     }
 
     def "ExportFile"() {
-        given: '准备dto list'
+        given: '准备dto baseList'
         List<AppMarketDownloadDTO> dtoList = new ArrayList<>()
         AppMarketDownloadDTO appMarketDownloadDTO = new AppMarketDownloadDTO()
         appMarketDownloadDTO.setAppMarketId(applicationMarketMapper.selectAll().get(0).getId())

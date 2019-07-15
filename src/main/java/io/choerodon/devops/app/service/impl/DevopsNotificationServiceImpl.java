@@ -5,7 +5,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -17,12 +19,16 @@ import io.choerodon.devops.app.service.DevopsNotificationService;
 import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.infra.dto.DevopsNotificationDTO;
+import io.choerodon.devops.infra.mapper.DevopsNotificationMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.TriggerObject;
 import io.choerodon.devops.infra.enums.TriggerType;
-import io.choerodon.devops.infra.dto.DevopsIngressDO;
+import io.choerodon.devops.infra.dto.DevopsIngressDTO;
 import io.choerodon.devops.infra.feign.NotifyClient;
+import io.choerodon.devops.infra.util.PageRequestUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +47,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final Long timeout = 600L;
     public static final String DEVOPS_DELETE_INSTANCE_4_SMS = "devopsDeleteInstance4Sms";
+    public static final Gson gson = new Gson();
+
 
 
     @Autowired
@@ -67,9 +75,12 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     private DevopsSecretRepository devopsSecretRepository;
     @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    @Autowired
+    private DevopsNotificationMapper devopsNotificationMapper;
+
 
     @Override
-    public DevopsNotificationDTO create(Long projectId, DevopsNotificationDTO notificationDTO) {
+    public DevopsNotificationVO create(Long projectId, DevopsNotificationVO notificationDTO) {
         DevopsNotificationE notificationE = ConvertHelper.convert(notificationDTO, DevopsNotificationE.class);
         Set<String> resources = check(projectId, notificationDTO.getEnvId());
         notificationDTO.getNotifyTriggerEvent().forEach(event -> {
@@ -78,21 +89,21 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             }
         });
         notificationE.setProjectId(projectId);
-        notificationE = notificationRepository.createOrUpdate(notificationE);
+        notificationE = notificationRepository.baseCreateOrUpdate(notificationE);
         List<Long> userRelIds = notificationDTO.getUserRelIds();
         if (userRelIds != null && !userRelIds.isEmpty()) {
             Long notificationId = notificationE.getId();
             userRelIds.forEach(t -> {
-                notificationUserRelRepository.create(notificationId, t);
+                notificationUserRelRepository.baseCreate(notificationId, t);
             });
         }
         return notificationDTO;
     }
 
     @Override
-    public DevopsNotificationDTO update(Long projectId, DevopsNotificationDTO notificationDTO) {
+    public DevopsNotificationVO update(Long projectId, DevopsNotificationVO notificationDTO) {
         DevopsNotificationE notificationE = ConvertHelper.convert(notificationDTO, DevopsNotificationE.class);
-        DevopsNotificationE oldNotificationE = notificationRepository.queryById(notificationDTO.getId());
+        DevopsNotificationE oldNotificationE = notificationRepository.baseQuery(notificationDTO.getId());
         Set<String> resources = check(projectId, notificationDTO.getEnvId());
         List<String> events = notificationDTO.getNotifyTriggerEvent();
         events.removeAll(Arrays.asList(oldNotificationE.getNotifyTriggerEvent().split(",")));
@@ -104,32 +115,32 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             });
         }
         notificationE.setProjectId(projectId);
-        notificationRepository.createOrUpdate(notificationE);
+        notificationRepository.baseCreateOrUpdate(notificationE);
         updateUserRel(notificationDTO);
         return notificationDTO;
     }
 
     @Override
     public void delete(Long notificationId) {
-        notificationRepository.deleteById(notificationId);
+        notificationRepository.baseDelete(notificationId);
         notificationUserRelRepository.delete(notificationId, null);
     }
 
     @Override
-    public DevopsNotificationDTO queryById(Long notificationId) {
-        DevopsNotificationDTO notificationDTO = ConvertHelper.convert(notificationRepository.queryById(notificationId), DevopsNotificationDTO.class);
-        List<Long> userRelIds = notificationUserRelRepository.queryByNoticaionId(notificationId).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
+    public DevopsNotificationVO queryById(Long notificationId) {
+        DevopsNotificationVO notificationDTO = ConvertHelper.convert(notificationRepository.baseQuery(notificationId), DevopsNotificationVO.class);
+        List<Long> userRelIds = notificationUserRelRepository.baseListByNotificationId(notificationId).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
         notificationDTO.setUserRelIds(userRelIds);
         return notificationDTO;
     }
 
     @Override
-    public PageInfo<DevopsNotificationDTO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest) {
-        PageInfo<DevopsNotificationDTO> page = ConvertPageHelper.convertPageInfo(notificationRepository.listByOptions(projectId, envId, params, pageRequest), DevopsNotificationDTO.class);
-        List<DevopsNotificationDTO> list = new ArrayList<>();
+    public PageInfo<DevopsNotificationVO> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest) {
+        PageInfo<DevopsNotificationVO> page = ConvertPageHelper.convertPageInfo(notificationRepository.basePageByOptions(projectId, envId, params, pageRequest), DevopsNotificationVO.class);
+        List<DevopsNotificationVO> list = new ArrayList<>();
         page.getList().forEach(t -> {
             if ("specifier".equals(t.getNotifyObject())) {
-                List<DevopsNotificationUserRelDTO> userRelDTOS = ConvertHelper.convertList(notificationUserRelRepository.queryByNoticaionId(t.getId()), DevopsNotificationUserRelDTO.class);
+                List<DevopsNotificationUserRelVO> userRelDTOS = ConvertHelper.convertList(notificationUserRelRepository.baseListByNotificationId(t.getId()), DevopsNotificationUserRelVO.class);
                 userRelDTOS = userRelDTOS.stream().peek(u -> {
                     UserE userE = iamRepository.queryUserByUserId(u.getUserId());
                     if (userE != null) {
@@ -142,7 +153,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             }
             list.add(t);
         });
-        PageInfo<DevopsNotificationDTO> dtoPage = new PageInfo<>();
+        PageInfo<DevopsNotificationVO> dtoPage = new PageInfo<>();
         BeanUtils.copyProperties(page, dtoPage);
         dtoPage.setList(list);
         return dtoPage;
@@ -151,14 +162,14 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Override
     public Set<String> check(Long projectId, Long envId) {
         Set<String> hashSet = new HashSet<>();
-        notificationRepository.queryByEnvId(projectId, envId).forEach(t -> Collections.addAll(hashSet, t.getNotifyTriggerEvent().split(",")));
+        notificationRepository.baseListByEnvId(projectId, envId).forEach(t -> Collections.addAll(hashSet, t.getNotifyTriggerEvent().split(",")));
         return hashSet;
     }
 
     @Override
     public ResourceCheckDTO checkResourceDelete(Long envId, String objectType) {
         ResourceCheckDTO resourceCheckDTO = new ResourceCheckDTO();
-        List<DevopsNotificationE> devopsNotificationES = notificationRepository.ListByEnvId(envId);
+        List<DevopsNotificationE> devopsNotificationES = notificationRepository.baseListByEnvId(envId);
         if (devopsNotificationES.isEmpty()) {
             return resourceCheckDTO;
         }
@@ -190,7 +201,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                     } else if (devopsNotificationE.getNotifyObject().equals(TriggerObject.OWNER.getObject())) {
                         resourceCheckDTO.setUser("项目所有者");
                     } else {
-                        List<Long> userIds = notificationUserRelRepository.queryByNoticaionId(devopsNotificationE.getId()).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
+                        List<Long> userIds = notificationUserRelRepository.baseListByNotificationId(devopsNotificationE.getId()).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
                         iamRepository.listUsersByIds(userIds).stream().map(UserE::getRealName).collect(Collectors.toList());
                         resourceCheckDTO.setUser(StringUtils.join(iamRepository.listUsersByIds(userIds).stream().map(userE -> {
                             if (userE.getRealName() != null) {
@@ -219,7 +230,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
 
         //生成发送消息需要的模板对象
-        DevopsNotificationE devopsNotificationE = notificationRepository.queryById(notificationId);
+        DevopsNotificationE devopsNotificationE = notificationRepository.baseQuery(notificationId);
         List<String> triggerTypes = Arrays.asList(devopsNotificationE.getNotifyType().split(","));
         NotifyDTO notifyDTO = new NotifyDTO();
         Map<String, Object> params = new HashMap<>();
@@ -264,7 +275,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             }
             notifyDTO.setTargetUsers(users);
         } else {
-            List<Long> userIds = notificationUserRelRepository.queryByNoticaionId(devopsNotificationE.getId()).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
+            List<Long> userIds = notificationUserRelRepository.baseListByNotificationId(devopsNotificationE.getId()).stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
             List<NoticeSendDTO.User> users = new ArrayList<>();
             params.put("mobile", StringUtils.join(iamRepository.listUsersByIds(userIds).stream().map(userE -> {
                 NoticeSendDTO.User user = new NoticeSendDTO.User();
@@ -323,12 +334,12 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 code = applicationInstanceE.getCode();
                 break;
             case SERVICE:
-                DevopsServiceE devopsServiceE = devopsServiceRepository.query(objectId);
+                DevopsServiceE devopsServiceE = devopsServiceRepository.baseQuery(objectId);
                 code = devopsServiceE.getName();
                 break;
             case INGRESS:
-                DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(objectId);
-                code = devopsIngressDO.getName();
+                DevopsIngressDTO devopsIngressDTO = devopsIngressRepository.basePageByOptions(objectId);
+                code = devopsIngressDTO.getName();
                 break;
             case CERTIFICATE:
                 CertificationE certificationE = certificationRepository.baseQueryById(objectId);
@@ -339,7 +350,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 code = devopsConfigMapE.getName();
                 break;
             case SECRET:
-                DevopsSecretE devopsSecretE = devopsSecretRepository.queryBySecretId(objectId);
+                DevopsSecretE devopsSecretE = devopsSecretRepository.baseQuery(objectId);
                 code = devopsSecretE.getName();
                 break;
             default:
@@ -377,9 +388,9 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         return result;
     }
 
-    private void updateUserRel(DevopsNotificationDTO notificationDTO) {
+    private void updateUserRel(DevopsNotificationVO notificationDTO) {
         List<Long> addUserIds = new ArrayList<>();
-        List<Long> oldUserIds = notificationUserRelRepository.queryByNoticaionId(notificationDTO.getId())
+        List<Long> oldUserIds = notificationUserRelRepository.baseListByNotificationId(notificationDTO.getId())
                 .stream().map(DevopsNotificationUserRelE::getUserId).collect(Collectors.toList());
         if (notificationDTO.getUserRelIds() != null) {
             List<Long> newUserIds = notificationDTO.getUserRelIds();
@@ -392,10 +403,46 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             });
         }
         if (!addUserIds.isEmpty()) {
-            addUserIds.forEach(t -> notificationUserRelRepository.create(notificationDTO.getId(), t));
+            addUserIds.forEach(t -> notificationUserRelRepository.baseCreate(notificationDTO.getId(), t));
         }
         if (!oldUserIds.isEmpty()) {
             oldUserIds.forEach(t -> notificationUserRelRepository.delete(notificationDTO.getId(), t));
         }
+    }
+
+    public DevopsNotificationDTO baseCreateOrUpdate(DevopsNotificationDTO devopsNotificationDTO) {
+       if (devopsNotificationDTO.getId() == null) {
+            if (devopsNotificationMapper.insert(devopsNotificationDTO) != 1) {
+                throw new CommonException("error.notification.create");
+            }
+        } else {
+            if (devopsNotificationMapper.updateByPrimaryKeySelective(devopsNotificationDTO) != 1) {
+                throw new CommonException("error.notification.update");
+            }
+        }
+        return devopsNotificationDTO;
+    }
+
+    public void baseDelete(Long notificationId) {
+        devopsNotificationMapper.deleteByPrimaryKey(notificationId);
+    }
+
+    public DevopsNotificationDTO baseQuery(Long notificationId) {
+        return devopsNotificationMapper.selectByPrimaryKey(notificationId);
+    }
+
+    public PageInfo<DevopsNotificationDTO> basePageByOptions(Long projectId, Long envId, String params, PageRequest pageRequest) {
+        Map<String, Object> map = gson.fromJson(params, Map.class);
+        Map<String, Object> searchParamMap = TypeUtil.cast(map.get(TypeUtil.SEARCH_PARAM));
+        String paramMap = TypeUtil.cast(map.get(TypeUtil.PARAM));
+        PageInfo<DevopsNotificationDTO> notificationDOPage = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsNotificationMapper.listByOptions(projectId, envId, searchParamMap, paramMap));
+        return notificationDOPage;
+    }
+
+    public List<DevopsNotificationDTO> baseListByEnvId(Long projectId, Long envId) {
+        DevopsNotificationDTO devopsNotificationDTO = new DevopsNotificationDTO();
+        devopsNotificationDTO.setProjectId(projectId);
+        devopsNotificationDTO.setEnvId(envId);
+        return devopsNotificationMapper.select(devopsNotificationDTO);
     }
 }

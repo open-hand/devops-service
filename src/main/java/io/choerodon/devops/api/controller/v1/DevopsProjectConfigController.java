@@ -9,7 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsProjectConfigDTO;
+import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
 import io.choerodon.devops.api.vo.ProjectDefaultConfigDTO;
 import io.choerodon.devops.app.service.DevopsProjectConfigService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -36,18 +36,18 @@ public class DevopsProjectConfigController {
      * 项目下创建配置
      *
      * @param projectId              项目id
-     * @param devopsProjectConfigDTO 配置信息
-     * @return ResponseEntity<DevopsProjectConfigDTO>
+     * @param devopsProjectConfigVO 配置信息
+     * @return ResponseEntity<DevopsProjectConfigVO>
      */
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建配置映射")
     @PostMapping
-    public ResponseEntity<DevopsProjectConfigDTO> create(
+    public ResponseEntity<DevopsProjectConfigVO> create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置信息", required = true)
-            @RequestBody DevopsProjectConfigDTO devopsProjectConfigDTO) {
-        return Optional.ofNullable(devopsProjectConfigService.create(projectId, devopsProjectConfigDTO))
+            @RequestBody DevopsProjectConfigVO devopsProjectConfigVO) {
+        return Optional.ofNullable(devopsProjectConfigService.create(projectId, devopsProjectConfigVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.create"));
     }
@@ -74,18 +74,18 @@ public class DevopsProjectConfigController {
      * 项目下更新配置信息
      *
      * @param projectId              项目id
-     * @param devopsProjectConfigDTO 配置信息
-     * @return ResponseEntity<DevopsProjectConfigDTO>
+     * @param devopsProjectConfigVO 配置信息
+     * @return ResponseEntity<DevopsProjectConfigVO>
      */
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新配置信息")
     @PutMapping
-    public ResponseEntity<DevopsProjectConfigDTO> update(
+    public ResponseEntity<DevopsProjectConfigVO> update(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置信息", required = true)
-            @RequestBody DevopsProjectConfigDTO devopsProjectConfigDTO) {
-        return Optional.ofNullable(devopsProjectConfigService.updateByPrimaryKeySelective(projectId, devopsProjectConfigDTO))
+            @RequestBody DevopsProjectConfigVO devopsProjectConfigVO) {
+        return Optional.ofNullable(devopsProjectConfigService.updateByPrimaryKeySelective(projectId, devopsProjectConfigVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.update"));
     }
@@ -121,7 +121,7 @@ public class DevopsProjectConfigController {
     @ApiOperation(value = "项目下分页查询配置")
     @CustomPageRequest
     @PostMapping("/list_by_options")
-    public ResponseEntity<PageInfo<DevopsProjectConfigDTO>> pageByOptions(
+    public ResponseEntity<PageInfo<DevopsProjectConfigVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -139,12 +139,12 @@ public class DevopsProjectConfigController {
      *
      * @param projectId       项目id
      * @param projectConfigId 配置id
-     * @return ResponseEntity<DevopsProjectConfigDTO>
+     * @return ResponseEntity<DevopsProjectConfigVO>
      */
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下根据配置Id查询配置")
     @GetMapping("/{project_config_id}")
-    public ResponseEntity<DevopsProjectConfigDTO> queryByPrimaryKey(
+    public ResponseEntity<DevopsProjectConfigVO> queryByPrimaryKey(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置Id", required = true)
@@ -166,7 +166,7 @@ public class DevopsProjectConfigController {
     @ApiOperation(value = "项目下根据类型查询配置")
     @CustomPageRequest
     @GetMapping("/type")
-    public ResponseEntity<List<DevopsProjectConfigDTO>> queryByIdAndType(
+    public ResponseEntity<List<DevopsProjectConfigVO>> queryByIdAndType(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置类型", required = true)

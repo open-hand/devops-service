@@ -227,7 +227,7 @@ class IssueControllerSpec extends Specification {
         devopsMergeRequestMapper.insert(devopsMergeRequestDO1)
 
         when: '根据issueId获取issue关联的commit列表'
-        def list = restTemplate.getForObject("/v1/project/1/issue/1/commit/list", List.class)
+        def list = restTemplate.getForObject("/v1/project/1/issue/1/commit/baseList", List.class)
 
         then: '校验返回值'
         list.get(0)["branchName"] == "branch"
@@ -236,7 +236,7 @@ class IssueControllerSpec extends Specification {
 
     def "GetMergeRequestsByIssueId"() {
         when: '根据issueId获取issue关联的mergerequest列表'
-        def list = restTemplate.getForObject("/v1/project/1/issue/1/merge_request/list", List.class)
+        def list = restTemplate.getForObject("/v1/project/1/issue/1/merge_request/baseList", List.class)
 
         then: '校验返回值'
         list.get(0)["sourceBranch"] == "branch"

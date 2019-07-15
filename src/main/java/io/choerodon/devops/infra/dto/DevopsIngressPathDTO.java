@@ -16,7 +16,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  */
 
 @Table(name = "devops_ingress_path")
-public class DevopsIngressPathDO extends BaseDTO {
+public class DevopsIngressPathDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,17 +27,17 @@ public class DevopsIngressPathDO extends BaseDTO {
     private String serviceName;
     private Long servicePort;
 
-    public DevopsIngressPathDO() {
+    public DevopsIngressPathDTO() {
     }
 
-    public DevopsIngressPathDO(Long ingressId) {
+    public DevopsIngressPathDTO(Long ingressId) {
         this.ingressId = ingressId;
     }
 
     /**
      * 构造函数
      */
-    public DevopsIngressPathDO(Long ingressId, String path, Long serviceId, String serviceName, Long servicePort) {
+    public DevopsIngressPathDTO(Long ingressId, String path, Long serviceId, String serviceName, Long servicePort) {
         this.ingressId = ingressId;
         this.path = path;
         this.serviceId = serviceId;
@@ -103,7 +103,7 @@ public class DevopsIngressPathDO extends BaseDTO {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DevopsIngressPathDO that = (DevopsIngressPathDO) o;
+        DevopsIngressPathDTO that = (DevopsIngressPathDTO) o;
         return Objects.equals(ingressId, that.ingressId)
                 && Objects.equals(path, that.path)
                 && Objects.equals(serviceId, that.serviceId)

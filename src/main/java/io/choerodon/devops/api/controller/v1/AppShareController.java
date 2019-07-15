@@ -79,7 +79,7 @@ public class AppShareController {
      * @param projectId   项目id
      * @param pageRequest 分页参数
      * @param searchParam 搜索参数
-     * @return list of ApplicationReleasingDTO
+     * @return baseList of ApplicationReleasingDTO
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下分页查询所有发布在应用市场的应用")
@@ -104,7 +104,7 @@ public class AppShareController {
      * @param projectId   项目id
      * @param pageRequest 分页参数
      * @param searchParam 搜索参数
-     * @return list of ApplicationReleasingDTO
+     * @return baseList of ApplicationReleasingDTO
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

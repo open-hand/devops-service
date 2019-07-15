@@ -379,8 +379,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsServiceE.setId(2L)
         devopsServiceE1.setEnvId(2L)
         devopsServiceE1.setStatus("running")
-        devopsServiceRepository.insert(devopsServiceE)
-        devopsServiceRepository.insert(devopsServiceE1)
+        devopsServiceRepository.baseCreate(devopsServiceE)
+        devopsServiceRepository.baseCreate(devopsServiceE1)
 
         and: 'mock envUtil方法'
         List<Long> envList = new ArrayList<>()
@@ -582,7 +582,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         HttpEntity<String> strEntity = new HttpEntity<String>(params, headers)
 
         when: '分页查询项目下用户权限'
-        def page = restTemplate.postForObject("/v1/projects/1/envs/list?page=0&size=5", strEntity, Page.class)
+        def page = restTemplate.postForObject("/v1/projects/1/envs/baseList?page=0&size=5", strEntity, Page.class)
 
         then: '返回值'
         page != null

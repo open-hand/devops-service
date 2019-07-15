@@ -38,7 +38,7 @@ public class OrgAppShareController {
      * @param isSite      is_site
      * @param pageRequest 分页参数
      * @param searchParam 搜索参数
-     * @return list of ApplicationReleasingDTO
+     * @return baseList of ApplicationReleasingDTO
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "查询所有已发布的应用")
@@ -62,7 +62,7 @@ public class OrgAppShareController {
     /**
      * 根据shareId获取应用详情
      *
-     * @return list of ApplicationReleasingDTO
+     * @return baseList of ApplicationReleasingDTO
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据shareId获取应用详情")
@@ -79,7 +79,7 @@ public class OrgAppShareController {
     /**
      * 根据shareId更新应用共享
      *
-     * @return list of ApplicationReleasingDTO
+     * @return baseList of ApplicationReleasingDTO
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据shareId更新应用共享")

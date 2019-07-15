@@ -238,11 +238,11 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
             versionRemoteDTO.setReadMeValue(applicationVersionReadmeMapper.selectByPrimaryKey(applicationVersionE.getApplicationVersionReadmeV().getId()).getReadme());
             ApplicationE applicationE = applicationRepository.query(applicationVersionE.getApplicationE().getId());
             if (applicationE.getHarborConfigE() == null) {
-                appVersionAndValueDTO.setHarbor(devopsProjectConfigRepository.queryByName(null, "harbor_default").getConfig());
-                appVersionAndValueDTO.setChart(devopsProjectConfigRepository.queryByName(null, "chart_default").getConfig());
+                appVersionAndValueDTO.setHarbor(devopsProjectConfigRepository.baseQueryByName(null, "harbor_default").getConfig());
+                appVersionAndValueDTO.setChart(devopsProjectConfigRepository.baseQueryByName(null, "chart_default").getConfig());
             } else {
-                appVersionAndValueDTO.setHarbor(devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId()).getConfig());
-                appVersionAndValueDTO.setChart(devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getChartConfigE().getId()).getConfig());
+                appVersionAndValueDTO.setHarbor(devopsProjectConfigRepository.baseQuery(applicationE.getHarborConfigE().getId()).getConfig());
+                appVersionAndValueDTO.setChart(devopsProjectConfigRepository.baseQuery(applicationE.getChartConfigE().getId()).getConfig());
             }
             appVersionAndValueDTO.setVersionRemoteDTO(versionRemoteDTO);
         }

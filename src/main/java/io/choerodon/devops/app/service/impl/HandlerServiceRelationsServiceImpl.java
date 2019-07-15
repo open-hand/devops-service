@@ -54,7 +54,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(SERVICE))
                 .map(devopsEnvFileResourceE -> {
                     DevopsServiceE devopsServiceE = devopsServiceRepository
-                            .query(devopsEnvFileResourceE.getResourceId());
+                            .baseQuery(devopsEnvFileResourceE.getResourceId());
                     if (devopsServiceE == null) {
                         devopsEnvFileResourceRepository
                                 .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), SERVICE);
@@ -79,7 +79,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         updateService(objectPath, envId, projectId, updateV1Service, v1Endpoints, path, userId);
         //删除service,和文件对象关联关系
         beforeService.forEach(serviceName -> {
-            DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
+            DevopsServiceE devopsServiceE = devopsServiceRepository.baseQueryByNameAndEnvId(serviceName, envId);
             if (devopsServiceE != null) {
                 devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceE.getId());
                 devopsEnvFileResourceRepository.baseDeleteByEnvIdAndResourceId(envId, devopsServiceE.getId(), SERVICE);
@@ -96,7 +96,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         filePath = objectPath.get(TypeUtil.objToString(v1Service.hashCode()));
 
                         DevopsServiceE devopsServiceE = devopsServiceRepository
-                                .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
+                                .baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
                         checkServiceName(v1Service);
                         //初始化网络参数,更新网络和网络关联关系
                         DevopsServiceReqDTO devopsServiceReqDTO = getDevopsServiceDTO(
@@ -108,7 +108,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         if (!isNotChange) {
                             devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceE.getId(), devopsServiceReqDTO, userId);
                             DevopsServiceE newDevopsServiceE = devopsServiceRepository
-                                    .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
+                                    .baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
                             devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsServiceE.getCommandId());
                         }
 
@@ -139,7 +139,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
 
                         checkServiceName(v1Service);
                         DevopsServiceE devopsServiceE = devopsServiceRepository
-                                .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
+                                .baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
                         DevopsServiceReqDTO devopsServiceReqDTO;
                         //初始化网络参数,创建时判断网络是否存在，存在则直接创建文件对象关联关系
                         if (devopsServiceE == null) {
@@ -148,7 +148,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                     v1Endpoints,
                                     envId);
                             devopsServiceService.insertDevopsServiceByGitOps(projectId, devopsServiceReqDTO, userId);
-                            devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
+                            devopsServiceE = devopsServiceRepository.baseQueryByNameAndEnvId(
                                     devopsServiceReqDTO.getName(), envId);
                         }
                         DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
@@ -248,7 +248,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         List<PortMapE> oldPort = devopsServiceE.getPorts();
         //查询网络对应的实例
         List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
-                devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
+                devopsServiceInstanceRepository.baseListByServiceId(devopsServiceE.getId());
         Boolean isUpdate = false;
         if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null && devopsServiceReqDTO.getAppInstance() != null) {
             List<String> newInstanceCode = devopsServiceReqDTO.getAppInstance();

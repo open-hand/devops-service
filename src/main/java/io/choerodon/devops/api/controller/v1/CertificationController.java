@@ -118,7 +118,7 @@ public class CertificationController {
      *
      * @param projectId 项目id
      * @param domain    域名
-     * @return CertificationVO list
+     * @return CertificationVO baseList
      */
     @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})

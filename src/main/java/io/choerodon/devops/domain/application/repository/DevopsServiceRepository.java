@@ -5,45 +5,45 @@ import com.github.pagehelper.PageInfo;
 import java.util.List;
 
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
+import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 
 /**
  * Created by Zenger on 2018/4/13.
  */
 public interface DevopsServiceRepository {
 
-    DevopsServiceE insert(DevopsServiceE devopsServiceE);
+    DevopsServiceDTO baseCreate(DevopsServiceDTO devopsServiceDTO);
 
-    DevopsServiceE query(Long id);
+    DevopsServiceDTO baseQuery(Long id);
 
-    void delete(Long id);
+    void baseDelete(Long id);
 
-    void update(DevopsServiceE devopsServiceE);
+    void baseUpdate(DevopsServiceDTO devopsServiceDTO);
 
-    Boolean checkName(Long envId, String name);
+    Boolean baseCheckName(Long envId, String name);
 
 
-    PageInfo<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, Long instanceId,
-                                                     PageRequest pageRequest, String searchParam, Long appId);
+    PageInfo<DevopsServiceVO> basePageByOptions(Long projectId, Long envId, Long instanceId,
+                                                PageRequest pageRequest, String searchParam, Long appId);
 
-    List<DevopsServiceV> listDevopsService(Long envId);
+    List<DevopsServiceVO> baseListByEnvId(Long envId);
 
-    DevopsServiceV selectById(Long id);
+    DevopsServiceVO baseQueryById(Long id);
 
-    List<Long> selectDeployedEnv();
+    List<Long> baseListEnvByRunningService();
 
-    DevopsServiceE selectByNameAndEnvId(String name, Long envId);
+    DevopsServiceDTO baseQueryByNameAndEnvId(String name, Long envId);
 
-    Boolean checkEnvHasService(Long envId);
+    Boolean baseCheckServiceByEnv(Long envId);
 
-    List<DevopsServiceE> list();
+    List<DevopsServiceDTO> baseList();
 
-    List<DevopsServiceE> selectByEnvId(Long envId);
+    void baseUpdateLables(Long id);
 
-    void setLablesToNull(Long id);
+    void baseDeleteServiceAndInstanceByEnvId(Long envId);
 
-    void deleteServiceAndInstanceByEnvId(Long envId);
-
-    void setEndPointToNull(Long id);
+    void baseUpdateEndPoint(Long id);
 }

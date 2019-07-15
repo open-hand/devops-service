@@ -11,7 +11,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Created by Zenger on 2018/4/14.
  */
 @Table(name = "devops_service")
-public class DevopsServiceDO extends BaseDTO {
+public class DevopsServiceDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

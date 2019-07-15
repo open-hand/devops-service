@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by Zenger on 2018/4/19.
  */
-public class DevopsServiceDTO {
+public class DevopsServiceVO {
 
     private Long id;
     private String name;
@@ -23,7 +23,7 @@ public class DevopsServiceDTO {
     private String commandStatus;
     private String error;
     private String loadBalanceIp;
-    private List<DevopsIngressDTO> devopsIngressDTOS;
+    private List<DevopsIngressVO> devopsIngressVOS;
 
     public Long getId() {
         return id;
@@ -153,11 +153,11 @@ public class DevopsServiceDTO {
         this.loadBalanceIp = loadBalanceIp;
     }
 
-    public List<DevopsIngressDTO> getDevopsIngressDTOS() {
-        return devopsIngressDTOS;
+    public List<DevopsIngressVO> getDevopsIngressVOS() {
+        return devopsIngressVOS;
     }
 
-    public void setDevopsIngressDTOS(List<DevopsIngressDTO> devopsIngressDTOS) {
-        this.devopsIngressDTOS = devopsIngressDTOS;
+    public void setDevopsIngressVOS(List<DevopsIngressVO> devopsIngressVOS) {
+        this.devopsIngressVOS = devopsIngressVOS;
     }
 }

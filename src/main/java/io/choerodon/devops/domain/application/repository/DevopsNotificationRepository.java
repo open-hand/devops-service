@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.iam.entity.DevopsNotificationE;
+import io.choerodon.devops.infra.dto.DevopsNotificationDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -13,15 +14,13 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsNotificationE;
  */
 public interface DevopsNotificationRepository {
 
-    DevopsNotificationE createOrUpdate(DevopsNotificationE notificationE);
+    DevopsNotificationDTO baseCreateOrUpdate(DevopsNotificationDTO devopsNotificationDTO);
 
-    void deleteById(Long notificationId);
+    void baseDelete(Long notificationId);
 
-    DevopsNotificationE queryById(Long notificationId);
+    DevopsNotificationDTO baseQuery(Long notificationId);
 
-    List<DevopsNotificationE> ListByEnvId(Long envId);
+    PageInfo<DevopsNotificationDTO> basePageByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
 
-    PageInfo<DevopsNotificationE> listByOptions(Long projectId, Long envId, String params, PageRequest pageRequest);
-
-    List<DevopsNotificationE> queryByEnvId(Long projectId,Long envId);
+    List<DevopsNotificationDTO> baseListByEnvId(Long projectId, Long envId);
 }

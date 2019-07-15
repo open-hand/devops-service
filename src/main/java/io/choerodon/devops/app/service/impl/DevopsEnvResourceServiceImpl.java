@@ -121,11 +121,11 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             case SERVICE:
                 V1Service v1Service = json.deserialize(devopsEnvResourceDetailE.getMessage(),
                         V1Service.class);
-                DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
+                DevopsServiceE devopsServiceE = devopsServiceRepository.baseQueryByNameAndEnvId(
                         devopsInstanceResourceE.getName(), envId);
                 if (devopsServiceE != null) {
                     List<String> domainNames =
-                            devopsIngressRepository.queryIngressNameByServiceId(
+                            devopsIngressRepository.baseListNameByServiceId(
                                     devopsServiceE.getId());
                     domainNames.forEach(domainName -> {
                         DevopsEnvResourceE devopsEnvResourceE1 =

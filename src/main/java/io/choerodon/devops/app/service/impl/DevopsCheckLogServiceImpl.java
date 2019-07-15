@@ -437,7 +437,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             UserAttrE userAttrE = userAttrRepository.baseQueryById(userWithRoleDTO.getId());
                             if (userAttrE != null) {
                                 Integer gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
-                                DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
+                                DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(projectId);
                                 GitlabMemberE envgroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                         TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()), gitlabUserId);
                                 GitlabMemberE appgroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
@@ -814,7 +814,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
                             devopsEnvironmentRepository.baseUpdate(devopsEnvironmentE);
                             GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
-                            DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(projectE.getId());
+                            DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(projectE.getId());
                             gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()));
                             gitlabProjectPayload.setUserId(ADMIN);
                             gitlabProjectPayload.setPath(devopsEnvironmentE.getCode());
@@ -923,7 +923,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         group = responseEntity.getBody();
                         DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(projectId);
                         devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(group.getId()));
-                        devopsProjectRepository.updateProjectAttr(devopsProjectDO);
+                        devopsProjectRepository.baseUpdate(devopsProjectDO);
                         checkLog.setResult(SUCCESS);
                     } catch (CommonException e) {
                         checkLog.setResult(e.getMessage());

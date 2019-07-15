@@ -4,8 +4,8 @@ import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DevopsServiceDTO
 import io.choerodon.devops.api.vo.DevopsServiceReqDTO
+import io.choerodon.devops.api.vo.DevopsServiceVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.entity.PortMapE
@@ -248,7 +248,7 @@ class DevopsServiceControllerSpec extends Specification {
         newDevopsServiceReqDTO.setExternalIp("1.2.1.1")
 
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
-        id = devopsServiceRepository.selectByNameAndEnvId("svcsvc", 1L).getId()
+        id = devopsServiceRepository.baseQueryByNameAndEnvId("svcsvc", 1L).getId()
         devopsEnvFileResourceDO = devopsEnvFileResourceMapper.selectByPrimaryKey(1L)
         devopsEnvFileResourceDO.setResourceId(id)
         devopsEnvFileResourceMapper.updateByPrimaryKey(devopsEnvFileResourceDO)
@@ -296,7 +296,7 @@ class DevopsServiceControllerSpec extends Specification {
 
     def "Query"() {
         when: '查询单个网络'
-        def dto = restTemplate.getForObject("/v1/projects/1/service/{id}", DevopsServiceDTO.class, id)
+        def dto = restTemplate.getForObject("/v1/projects/1/service/{id}", DevopsServiceVO.class, id)
 
         then: '校验返回值'
         dto != null

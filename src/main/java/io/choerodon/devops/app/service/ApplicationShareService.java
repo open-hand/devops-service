@@ -35,7 +35,7 @@ public interface ApplicationShareService {
      * @param projectId   项目id
      * @param pageRequest 分页参数
      * @param searchParam 模糊查询参数
-     * @return list of ApplicationReleasingDTO
+     * @return baseList of ApplicationReleasingDTO
      */
     PageInfo<ApplicationReleasingDTO> listMarketAppsByProjectId(
             Long projectId,
@@ -47,7 +47,7 @@ public interface ApplicationShareService {
      *
      * @param pageRequest 分页参数
      * @param searchParam 模糊查询参数
-     * @return list of ApplicationReleasingDTO
+     * @return baseList of ApplicationReleasingDTO
      */
     PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(
             Boolean isSite,
@@ -74,7 +74,7 @@ public interface ApplicationShareService {
      * @param projectId   项目id
      * @param pageRequest 分页参数
      * @param searchParam 模糊查询参数
-     * @return list of ApplicationReleasingDTO
+     * @return baseList of ApplicationReleasingDTO
      */
     PageInfo<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam);
 

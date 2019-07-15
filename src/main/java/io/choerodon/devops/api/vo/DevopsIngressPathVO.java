@@ -8,7 +8,7 @@ import java.util.Objects;
  * Time: 15:43
  * Description:
  */
-public class DevopsIngressPathDTO {
+public class DevopsIngressPathVO {
 
     private String path;
     private Long serviceId;
@@ -16,13 +16,13 @@ public class DevopsIngressPathDTO {
     private String serviceStatus;
     private Long servicePort;
 
-    public DevopsIngressPathDTO() {
+    public DevopsIngressPathVO() {
     }
 
     /**
      * 构造函数
      */
-    public DevopsIngressPathDTO(String path, Long serviceId, String serviceName, String serviceStatus) {
+    public DevopsIngressPathVO(String path, Long serviceId, String serviceName, String serviceStatus) {
         this.path = path;
         this.serviceId = serviceId;
         this.serviceName = serviceName;
@@ -77,7 +77,7 @@ public class DevopsIngressPathDTO {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DevopsIngressPathDTO that = (DevopsIngressPathDTO) o;
+        DevopsIngressPathVO that = (DevopsIngressPathVO) o;
         return Objects.equals(path, that.path)
                 && Objects.equals(serviceId, that.serviceId)
                 && Objects.equals(servicePort,that.servicePort);

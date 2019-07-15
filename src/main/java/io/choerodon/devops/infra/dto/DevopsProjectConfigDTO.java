@@ -12,7 +12,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * @since 2019/03/11
  */
 @Table(name = "devops_project_config")
-public class DevopsProjectConfigDO extends BaseDTO {
+public class DevopsProjectConfigDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

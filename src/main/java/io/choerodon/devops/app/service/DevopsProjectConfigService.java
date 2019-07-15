@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.DevopsProjectConfigDTO;
+import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
 import io.choerodon.devops.api.vo.ProjectDefaultConfigDTO;
 
 import java.util.List;
@@ -12,17 +12,17 @@ import java.util.List;
  * @since 2019/03/11
  */
 public interface DevopsProjectConfigService {
-    DevopsProjectConfigDTO create(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO);
+    DevopsProjectConfigVO create(Long projectId, DevopsProjectConfigVO devopsProjectConfigVO);
 
-    DevopsProjectConfigDTO updateByPrimaryKeySelective(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO);
+    DevopsProjectConfigVO updateByPrimaryKeySelective(Long projectId, DevopsProjectConfigVO devopsProjectConfigVO);
 
-    DevopsProjectConfigDTO queryByPrimaryKey(Long id);
+    DevopsProjectConfigVO queryByPrimaryKey(Long id);
 
-    PageInfo<DevopsProjectConfigDTO> listByOptions(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<DevopsProjectConfigVO> listByOptions(Long projectId, PageRequest pageRequest, String params);
 
     void delete(Long id);
 
-    List<DevopsProjectConfigDTO> queryByIdAndType(Long projectId, String type);
+    List<DevopsProjectConfigVO> queryByIdAndType(Long projectId, String type);
 
     /**
      * 创建配置校验名称是否存在

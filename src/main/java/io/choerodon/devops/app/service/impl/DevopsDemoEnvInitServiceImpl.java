@@ -171,7 +171,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         applicationE.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
 
         // 查询创建应用所在的gitlab应用组
-        DevopsProjectVO devopsProjectE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
+        DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(applicationE.getProjectE().getId());
         GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
@@ -189,8 +189,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devOpsAppPayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
 
         //设置仓库Id
-        List<DevopsProjectConfigDTO> configDTOS1 = projectConfigService.queryByIdAndType(null, "harbor");
-        List<DevopsProjectConfigDTO> configDTOS2 = projectConfigService.queryByIdAndType(null, "chart");
+        List<DevopsProjectConfigVO> configDTOS1 = projectConfigService.queryByIdAndType(null,"harbor");
+        List<DevopsProjectConfigVO> configDTOS2 = projectConfigService.queryByIdAndType(null,"chart");
         applicationE.initHarborConfig(configDTOS1.get(0).getId());
         applicationE.initChartConfig(configDTOS2.get(0).getId());
 

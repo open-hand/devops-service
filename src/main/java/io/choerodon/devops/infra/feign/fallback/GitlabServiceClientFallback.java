@@ -373,7 +373,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity getAllMemberByProjectId(Integer projectId) {
-        throw new CommonException("error.project.member.list");
+        throw new CommonException("error.project.member.baseList");
     }
 
     @Override

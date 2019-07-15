@@ -102,7 +102,7 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
         when: '项目下查询环境文件错误列表'
-        def list = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/list", List.class)
+        def list = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/baseList", List.class)
 
         then: '校验返回结果'
         list.size() == 2

@@ -1,26 +1,36 @@
-package io.choerodon.devops.api.vo;
+package io.choerodon.devops.infra.dto;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
 
-public class CustomMergeRequestDTO {
+import io.choerodon.mybatis.entity.BaseDTO;
 
+
+/**
+ * Created with IntelliJ IDEA.
+ * User: Runge
+ * Date: 2018/4/9
+ * Time: 14:23
+ * Description:
+ */
+
+@Table(name = "devops_merge_request")
+public class DevopsMergeRequestDTO extends BaseDTO {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Long projectId;
-
-    private Long applicationId;
-
-    private String imageUrl;
 
     private Long gitlabMergeRequestId;
 
     private Long authorId;
 
-    private String authorName;
-
     private Long assigneeId;
-
-    private String assigneeName;
 
     private String sourceBranch;
 
@@ -33,6 +43,22 @@ public class CustomMergeRequestDTO {
     private Date createdAt;
 
     private Date updatedAt;
+
+    public DevopsMergeRequestDTO() {
+    }
+
+    /**
+     * constructor a new merge request item
+     *
+     * @param projectId    devops application ID
+     * @param sourceBranch source branch to merge
+     * @param targetBranch target merge branch
+     */
+    public DevopsMergeRequestDTO(Long projectId, String sourceBranch, String targetBranch) {
+        this.projectId = projectId;
+        this.sourceBranch = sourceBranch;
+        this.targetBranch = targetBranch;
+    }
 
     public Long getId() {
         return id;
@@ -66,28 +92,12 @@ public class CustomMergeRequestDTO {
         this.authorId = authorId;
     }
 
-    public String getAuthorName() {
-        return authorName;
-    }
-
-    public void setAuthorName(String authorName) {
-        this.authorName = authorName;
-    }
-
     public Long getAssigneeId() {
         return assigneeId;
     }
 
     public void setAssigneeId(Long assigneeId) {
         this.assigneeId = assigneeId;
-    }
-
-    public String getAssigneeName() {
-        return assigneeName;
-    }
-
-    public void setAssigneeName(String assigneeName) {
-        this.assigneeName = assigneeName;
     }
 
     public String getSourceBranch() {
@@ -136,21 +146,5 @@ public class CustomMergeRequestDTO {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public Long getApplicationId() {
-        return applicationId;
-    }
-
-    public void setApplicationId(Long applicationId) {
-        this.applicationId = applicationId;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
     }
 }

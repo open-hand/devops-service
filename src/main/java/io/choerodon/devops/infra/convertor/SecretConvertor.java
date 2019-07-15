@@ -8,8 +8,8 @@ import com.google.gson.reflect.TypeToken;
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.SecretReqDTO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsSecretE;
+import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 import io.choerodon.devops.infra.util.Base64Util;
-import io.choerodon.devops.infra.dto.DevopsSecretDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
  * Description:
  */
 @Component
-public class SecretConvertor implements ConvertorI<DevopsSecretE, DevopsSecretDO, SecretReqDTO> {
+public class SecretConvertor implements ConvertorI<DevopsSecretE, DevopsSecretDTO, SecretReqDTO> {
 
     private static final Gson gson = new Gson();
 
@@ -43,19 +43,19 @@ public class SecretConvertor implements ConvertorI<DevopsSecretE, DevopsSecretDO
     }
 
     @Override
-    public DevopsSecretDO entityToDo(DevopsSecretE devopsSecretE) {
-        DevopsSecretDO devopsSecretDO = new DevopsSecretDO();
-        BeanUtils.copyProperties(devopsSecretE, devopsSecretDO);
-        devopsSecretDO.setValue(gson.toJson(devopsSecretE.getValue()));
-        return devopsSecretDO;
+    public DevopsSecretDTO entityToDo(DevopsSecretE devopsSecretE) {
+        DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
+        BeanUtils.copyProperties(devopsSecretE, devopsSecretDTO);
+        devopsSecretDTO.setValue(gson.toJson(devopsSecretE.getValue()));
+        return devopsSecretDTO;
     }
 
     @Override
-    public DevopsSecretE doToEntity(DevopsSecretDO devopsSecretDO) {
+    public DevopsSecretE doToEntity(DevopsSecretDTO devopsSecretDTO) {
         DevopsSecretE devopsSecretE = new DevopsSecretE();
-        BeanUtils.copyProperties(devopsSecretDO, devopsSecretE);
+        BeanUtils.copyProperties(devopsSecretDTO, devopsSecretE);
         Map<String, String> secretMaps = gson
-                .fromJson(devopsSecretDO.getValue(), new TypeToken<Map<String, String>>() {
+                .fromJson(devopsSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
                 }.getType());
         devopsSecretE.setValue(secretMaps);
         return devopsSecretE;

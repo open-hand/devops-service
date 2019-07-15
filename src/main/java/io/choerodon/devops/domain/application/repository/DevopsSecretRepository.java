@@ -6,6 +6,7 @@ import java.util.List;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.iam.entity.DevopsSecretE;
+import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 
 /**
  * Created by n!Ck
@@ -15,19 +16,19 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsSecretE;
  */
 public interface DevopsSecretRepository {
 
-    DevopsSecretE create(DevopsSecretE devopsSecretE);
+    DevopsSecretDTO baseCreate(DevopsSecretDTO devopsSecretDTO);
 
-    void update(DevopsSecretE devopsSecretE);
+    void baseUpdate(DevopsSecretDTO devopsSecretDTO);
 
-    void deleteSecret(Long secretId);
+    void baseDelete(Long secretId);
 
-    void checkName(String name, Long envId);
+    void baseCheckName(String name, Long envId);
 
-    DevopsSecretE queryBySecretId(Long secretId);
+    DevopsSecretDTO baseQuery(Long secretId);
 
-    DevopsSecretE selectByEnvIdAndName(Long envId, String name);
+    DevopsSecretDTO baseQueryByEnvIdAndName(Long envId, String name);
 
-    PageInfo<DevopsSecretE> listByOption(Long envId, PageRequest pageRequest, String params, Long appId);
+    PageInfo<DevopsSecretDTO> basePageByOption(Long envId, PageRequest pageRequest, String params, Long appId);
 
-    List<DevopsSecretE> listByEnv(Long envId);
+    List<DevopsSecretDTO> baseListByEnv(Long envId);
 }

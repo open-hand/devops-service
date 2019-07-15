@@ -3,6 +3,7 @@ package io.choerodon.devops.domain.application.repository;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
+import io.choerodon.devops.infra.dto.DevopsProjectConfigDTO;
 
 import java.util.List;
 
@@ -11,25 +12,26 @@ import java.util.List;
  * @since 2019/03/11
  */
 public interface DevopsProjectConfigRepository {
-    DevopsProjectConfigE create(DevopsProjectConfigE devopsProjectConfigE);
 
-    Boolean checkNameWithProjectUniqueness(DevopsProjectConfigE devopsProjectConfigE);
+    DevopsProjectConfigDTO baseCreate(DevopsProjectConfigDTO devopsProjectConfigDTO);
 
-    DevopsProjectConfigE updateByPrimaryKeySelective(DevopsProjectConfigE devopsProjectConfigE);
+    Boolean baseCheckByName(DevopsProjectConfigDTO devopsProjectConfigDTO);
 
-    DevopsProjectConfigE queryByPrimaryKey(Long id);
+    DevopsProjectConfigDTO baseUpdate(DevopsProjectConfigDTO devopsProjectConfigDTO);
 
-    DevopsProjectConfigE queryByName(Long projectId, String name);
+    DevopsProjectConfigDTO baseQuery(Long id);
 
-    DevopsProjectConfigE queryByNameWithNullProject(String name);
+    DevopsProjectConfigDTO baseQueryByName(Long projectId, String name);
 
-    PageInfo<DevopsProjectConfigE> listByOptions(Long projectId, PageRequest pageRequest, String params);
+    DevopsProjectConfigDTO baseQueryByNameWithNullProject(String name);
 
-    void delete(Long id);
+    PageInfo<DevopsProjectConfigDTO> basePageByOptions(Long projectId, PageRequest pageRequest, String params);
 
-    List<DevopsProjectConfigE> queryByIdAndType(Long projectId, String type);
+    void baseDelete(Long id);
 
-    void checkName(Long projectId, String name);
+    List<DevopsProjectConfigDTO> baseListByIdAndType(Long projectId, String type);
 
-    Boolean checkIsUsed(Long checkIsUsed);
+    void baseCheckByName(Long projectId, String name);
+
+    Boolean baseCheckUsed(Long checkIsUsed);
 }

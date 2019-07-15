@@ -10,7 +10,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Description:
  */
 @Table(name = "devops_notification")
-public class DevopsNotificationDO extends BaseDTO {
+public class DevopsNotificationDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

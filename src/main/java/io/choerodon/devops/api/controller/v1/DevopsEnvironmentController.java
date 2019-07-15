@@ -329,7 +329,7 @@ public class DevopsEnvironmentController {
      *
      * @param projectId 项目id
      * @param envId     环境id
-     * @return list
+     * @return baseList
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})

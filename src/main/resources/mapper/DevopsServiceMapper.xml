@@ -57,7 +57,7 @@
         ) t
     </select>
 
-    <select id="listDevopsService" resultType="io.choerodon.devops.infra.dto.DevopsServiceQueryDO">
+    <select id="listDevopsService" resultType="io.choerodon.devops.infra.dto.DevopsServiceQueryDTO">
         SELECT
         ds.id,
         ds.`name`,
@@ -69,6 +69,7 @@
             AND ds.env_id = #{envId}
         </if>
     </select>
+
 
     <select id="listDevopsServiceByPage" resultMap="devopsServiceResult">
         SELECT
@@ -167,7 +168,7 @@
         `status` = 'running';
     </select>
 
-    <resultMap id="devopsServiceResult" type="io.choerodon.devops.infra.dto.DevopsServiceQueryDO">
+    <resultMap id="devopsServiceResult" type="io.choerodon.devops.infra.dto.DevopsServiceQueryDTO">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="externalIp" column="external_ip"/>

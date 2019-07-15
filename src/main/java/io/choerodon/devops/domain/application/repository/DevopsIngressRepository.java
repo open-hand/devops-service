@@ -4,8 +4,9 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.DevopsIngressDTO;
+import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsIngressE;
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.DevopsIngressPathE;
 <<<<<<< HEAD
 import io.choerodon.devops.infra.dto.DevopsIngressDO;
@@ -15,6 +16,12 @@ import io.choerodon.devops.infra.dto.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 >>>>>>> [IMP] 修改AppControler重构
 
+=======
+import io.choerodon.devops.infra.dto.DevopsIngressDTO;
+import io.choerodon.devops.infra.dto.DevopsIngressPathDTO;
+
+
+>>>>>>> [IMP]重构后端断码
 /**
  * Creator: Runge
  * Date: 2018/4/20
@@ -22,50 +29,50 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
  * Description:
  */
 public interface DevopsIngressRepository {
-    DevopsIngressDO createIngress(DevopsIngressDO devopsIngressDO);
+    DevopsIngressDTO baseCreateIngressAndPath(DevopsIngressDTO devopsIngressDTO);
 
-    void updateIngressAndIngressPath(DevopsIngressDO devopsIngressDO);
+    void baseUpdateIngressAndIngressPath(DevopsIngressDTO devopsIngressDTO);
 
-    void updateIngress(DevopsIngressDO devopsIngressDO);
+    void baseUpdateIngress(DevopsIngressDTO devopsIngressDTO);
 
 
-    PageInfo<DevopsIngressDTO> getIngress(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params);
+    PageInfo<DevopsIngressVO> basePageByOptions(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params);
 
-    DevopsIngressDTO getIngress(Long projectId, Long ingressId);
+    DevopsIngressVO baseQuery(Long projectId, Long ingressId);
 
-    DevopsIngressDO getIngress(Long ingressId);
+    DevopsIngressDTO baseQuery(Long ingressId);
 
-    void deleteIngress(Long ingressId);
+    void baseDelete(Long ingressId);
 
-    Long setStatus(Long envId, String name, String status);
+    Long baseUpdateStatus(Long envId, String name, String status);
 
-    List<String> queryIngressNameByServiceId(Long serviceId);
+    List<String> baseListNameByServiceId(Long serviceId);
 
-    Boolean checkIngressName(Long envId, String name);
+    Boolean baseCheckName(Long envId, String name);
 
-    Boolean checkIngressAndPath(Long envId, String domain, String path, Long id);
+    Boolean baseCheckPath(Long envId, String domain, String path, Long id);
 
-    DevopsIngressE selectByEnvAndName(Long envId, String name);
+    DevopsIngressDTO baseCheckByEnvAndName(Long envId, String name);
 
-    DevopsIngressE insertIngress(DevopsIngressE devopsIngressE);
+    DevopsIngressDTO baseCreateIngress(DevopsIngressE devopsIngressE);
 
-    void insertIngressPath(DevopsIngressPathE devopsIngressPathE);
+    void baseCreatePath(DevopsIngressPathDTO devopsIngressPathDTO);
 
-    List<DevopsIngressPathE> selectByEnvIdAndServiceName(Long envId, String serviceName);
+    List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceName(Long envId, String serviceName);
 
-    List<DevopsIngressPathE> selectByEnvIdAndServiceId(Long envId, Long serviceId);
+    List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceId(Long envId, Long serviceId);
 
-    List<DevopsIngressPathE> selectByIngressId(Long ingressId);
+    List<DevopsIngressPathDTO> baseListPathByIngressId(Long ingressId);
 
-    List<DevopsIngressE> listByEnvId(Long envId);
+    List<DevopsIngressDTO> baseListByEnvId(Long envId);
 
-    void updateIngressPath(DevopsIngressPathE devopsIngressPathE);
+    void baseUpdatePath(DevopsIngressPathDTO devopsIngressPathDTO);
 
-    void deleteIngressPath(Long ingressId);
+    void baseDeletePathByIngressId(Long ingressId);
 
-    Boolean checkEnvHasIngress(Long envId);
+    Boolean baseCheckByEnv(Long envId);
 
-    List<DevopsIngressE> list();
+    List<DevopsIngressDTO> baseList();
 
-    void deleteIngressAndIngressPathByEnvId(Long envId);
+    void baseDeleteByEnv(Long envId);
 }

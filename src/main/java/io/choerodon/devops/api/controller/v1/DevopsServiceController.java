@@ -11,7 +11,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.DevopsServiceDTO;
+import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.api.vo.DevopsServiceReqDTO;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.mybatis.annotation.SortDefault;
@@ -131,14 +131,14 @@ public class DevopsServiceController {
      *
      * @param projectId 项目id
      * @param envId     参数
-     * @return List of DevopsServiceDTO
+     * @return List of DevopsServiceVO
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境查询网络列表")
     @GetMapping
-    public ResponseEntity<List<DevopsServiceDTO>> listByEnvId(
+    public ResponseEntity<List<DevopsServiceVO>> listByEnvId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID", required = true)
@@ -153,13 +153,13 @@ public class DevopsServiceController {
      *
      * @param projectId 项目id
      * @param id        网络id
-     * @return DevopsServiceDTO
+     * @return DevopsServiceVO
      */
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个网络")
     @GetMapping(value = "/{id}")
-    public ResponseEntity<DevopsServiceDTO> query(
+    public ResponseEntity<DevopsServiceVO> query(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "网络ID", required = true)
@@ -176,13 +176,13 @@ public class DevopsServiceController {
      * @param projectId 项目id
      * @param envId   网络id
      * @param name  网络名
-     * @return DevopsServiceDTO
+     * @return DevopsServiceVO
      */
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据网络名查询网络")
     @GetMapping(value = "/query_by_name")
-    public ResponseEntity<DevopsServiceDTO> queryByName(
+    public ResponseEntity<DevopsServiceVO> queryByName(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id", required = true)
@@ -201,7 +201,7 @@ public class DevopsServiceController {
      * @param envId       环境id
      * @param pageRequest 分页参数
      * @param searchParam 查询参数
-     * @return Page of DevopsServiceDTO
+     * @return Page of DevopsServiceVO
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
@@ -209,7 +209,7 @@ public class DevopsServiceController {
     @ApiOperation(value = "环境总览网络查询")
     @CustomPageRequest
     @PostMapping(value = "/{envId}/listByEnv")
-    public ResponseEntity<PageInfo<DevopsServiceDTO>> listByEnv(
+    public ResponseEntity<PageInfo<DevopsServiceVO>> listByEnv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
@@ -231,7 +231,7 @@ public class DevopsServiceController {
      * @param projectId   项目id
      * @param instanceId   实例Id
      * @param pageRequest 分页参数
-     * @return Page of DevopsServiceDTO
+     * @return Page of DevopsServiceVO
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
@@ -239,7 +239,7 @@ public class DevopsServiceController {
     @ApiOperation(value = "查询实例下关联的网络域名（不包含chart）")
     @CustomPageRequest
     @PostMapping(value = "/listByInstance")
-    public ResponseEntity<PageInfo<DevopsServiceDTO>> listByInstance(
+    public ResponseEntity<PageInfo<DevopsServiceVO>> listByInstance(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例id")

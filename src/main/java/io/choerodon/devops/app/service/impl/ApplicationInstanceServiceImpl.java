@@ -13,7 +13,29 @@ import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.*;
+=======
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.validator.AppInstanceValidator;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationInstanceE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionValueE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsDeployValueE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandValueE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsRegistrySecretE;
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
+>>>>>>> [IMP]重构后端断码
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.dataobject.AppInstanceInfoDTO;
@@ -1400,6 +1422,7 @@ private String getSecret(ApplicationE applicationE,String
         secretCode,String namespace,Long envId,Long clusterId){
         >>>>>>>[IMP]重构后端代码
         //如果应用绑定了私有镜像库,则处理secret
+<<<<<<< HEAD
         if(applicationE.getHarborConfigE()!=null){
         DevopsProjectConfigE devopsProjectConfigE=devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId());
         if(devopsProjectConfigE.getConfig().getPrivate()!=null){
@@ -1429,6 +1452,37 @@ private String getSecret(ApplicationE applicationE,String
         secretCode=devopsRegistrySecretE.getSecretCode();
         }
         }
+=======
+        if (applicationE.getHarborConfigE() != null) {
+            DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.baseQuery(applicationE.getHarborConfigE().getId());
+            if (devopsProjectConfigE.getConfig().getPrivate() != null) {
+                DevopsRegistrySecretE devopsRegistrySecretE = devopsRegistrySecretRepository.baseQueryByEnvAndId(namespace, devopsProjectConfigE.getId());
+                if (devopsRegistrySecretE == null) {
+                    //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
+                    List<DevopsRegistrySecretE> devopsRegistrySecretES = devopsRegistrySecretRepository.listByConfig(devopsProjectConfigE.getId());
+                    if (devopsRegistrySecretES.isEmpty()) {
+                        secretCode = String.format("%s%s%s%s", "registry-secret-", devopsProjectConfigE.getId(), "-", GenerateUUID.generateUUID().substring(0, 5));
+                    } else {
+                        secretCode = devopsRegistrySecretES.get(0).getSecretCode();
+                    }
+                    devopsRegistrySecretE = new DevopsRegistrySecretE(envId, devopsProjectConfigE.getId(), namespace, secretCode, gson.toJson(devopsProjectConfigE.getConfig()));
+                    devopsRegistrySecretRepository.baseCreate(devopsRegistrySecretE);
+                    deployService.operateSecret(clusterId, namespace, secretCode, devopsProjectConfigE.getConfig(), CREATE);
+                } else {
+                    //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
+                    if (!devopsRegistrySecretE.getSecretDetail().equals(gson.toJson(devopsProjectConfigE.getConfig()))) {
+                        devopsRegistrySecretE.setSecretDetail(gson.toJson(devopsProjectConfigE.getConfig()));
+                        devopsRegistrySecretRepository.baseUpdate(devopsRegistrySecretE);
+                        deployService.operateSecret(clusterId, namespace, devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), UPDATE);
+                    } else {
+                        if (!devopsRegistrySecretE.getStatus()) {
+                            deployService.operateSecret(clusterId, namespace, devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), UPDATE);
+                        }
+                    }
+                    secretCode = devopsRegistrySecretE.getSecretCode();
+                }
+            }
+>>>>>>> [IMP]重构后端断码
         }
         return secretCode;
         }
@@ -2172,6 +2226,7 @@ private ApplicationVersionE createVersion(ApplicationE
         return versionE;
         }
 
+<<<<<<< HEAD
         <<<<<<<HEAD
         String fileName=GenerateUUID.generateUUID()+YAML_SUFFIX;
                 String path="deployfile";
@@ -2209,6 +2264,28 @@ private DevopsProjectConfigE createConfig
         devopsPrpjectConfigE.setName(name);
         devopsPrpjectConfigE.setType(type);
         return devopsProjectConfigRepository.create(devopsPrpjectConfigE);
+=======
+    /**
+     * 创建远程配置
+     *
+     * @param type
+     * @param code
+     * @param projectConfigDTO
+     * @return
+     */
+    private DevopsProjectConfigE createConfig
+    (String type, String code, ProjectConfigDTO
+            projectConfigDTO) {
+        String name = code + "-" + type;
+        DevopsProjectConfigE devopsPrpjectConfigE = devopsProjectConfigRepository.baseQueryByNameWithNullProject(name);
+        if (devopsPrpjectConfigE == null) {
+            DevopsProjectConfigVO devopsProjectConfigVO = new DevopsProjectConfigVO();
+            devopsProjectConfigVO.setConfig(projectConfigDTO);
+            devopsPrpjectConfigE = ConvertHelper.convert(devopsProjectConfigVO, DevopsProjectConfigE.class);
+            devopsPrpjectConfigE.setName(name);
+            devopsPrpjectConfigE.setType(type);
+            return devopsProjectConfigRepository.baseCreate(devopsPrpjectConfigE);
+>>>>>>> [IMP]重构后端断码
         }
         return devopsPrpjectConfigE;
         >>>>>>>[IMP]重构后端代码

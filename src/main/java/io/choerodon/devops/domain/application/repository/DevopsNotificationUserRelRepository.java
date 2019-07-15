@@ -3,6 +3,7 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.iam.entity.DevopsNotificationUserRelE;
+import io.choerodon.devops.infra.dto.DevopsNotificationUserRelDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -10,10 +11,11 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsNotificationUserRelE;
  * Description:
  */
 public interface DevopsNotificationUserRelRepository {
-    DevopsNotificationUserRelE create(Long notificationId, Long userId);
+    
+    DevopsNotificationUserRelDTO baseCreate(Long notificationId, Long userId);
 
-    void delete(Long notificationId, Long userId);
+    void baseDelete(Long notificationId, Long userId);
 
-    List<DevopsNotificationUserRelE> queryByNoticaionId(Long notificationId);
+    List<DevopsNotificationUserRelDTO> baseListByNotificationId(Long notificationId);
 
 }

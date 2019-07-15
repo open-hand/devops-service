@@ -346,7 +346,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsServiceE.setEnvId(devopsEnvironmentE.getId())
         devopsServiceE.setAppId(1L)
         devopsServiceE.setPorts(new ArrayList<PortMapE>())
-        devopsServiceE = devopsServiceRepository.insert(devopsServiceE)
+        devopsServiceE = devopsServiceRepository.baseCreate(devopsServiceE)
 
         DevopsEnvCommandVO devopsEnvCommandE1 = new DevopsEnvCommandVO()
         devopsEnvCommandE1.setObject("service")
@@ -355,7 +355,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsEnvCommandE1.setStatus(CommandStatus.SUCCESS.getStatus())
 
         devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId())
-        devopsServiceRepository.update(devopsServiceE)
+        devopsServiceRepository.baseUpdate(devopsServiceE)
 
         //初始化service文件关系
         DevopsEnvFileResourceVO devopsEnvFileResourceE1 = new DevopsEnvFileResourceVO()
@@ -370,7 +370,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsIngressE.setName("ing" + code)
         devopsIngressE.setEnvId(devopsEnvironmentE.getId())
         devopsIngressE.setDomain("devops-service2-front.staging.saas.test.com")
-        devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE)
+        devopsIngressE = devopsIngressRepository.baseCreateIngress(devopsIngressE)
 
         DevopsEnvCommandVO devopsEnvCommandE2 = new DevopsEnvCommandVO()
         devopsEnvCommandE2.setObject("ingress")
@@ -381,7 +381,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 
         DevopsIngressDO devopsIngressDO = devopsIngressMapper.selectByPrimaryKey(devopsIngressE.getId())
         devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE2).getId())
-        devopsIngressRepository.updateIngress(devopsIngressDO)
+        devopsIngressRepository.baseUpdateIngress(devopsIngressDO)
 
         //初始化域名文件关系
         DevopsEnvFileResourceVO devopsEnvFileResourceE2 = new DevopsEnvFileResourceVO()
@@ -427,7 +427,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         keys.put("test", "test")
         devopsSecretE.setValue(keys)
         devopsSecretE.setDescription("test")
-        devopsSecretE = devopsSecretRepository.create(devopsSecretE)
+        devopsSecretE = devopsSecretRepository.baseCreate(devopsSecretE)
 
         DevopsEnvCommandVO devopsEnvCommandE4 = new DevopsEnvCommandVO()
         devopsEnvCommandE4.setObject("secret")
@@ -437,7 +437,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsEnvCommandRepository.create(devopsEnvCommandE4)
 
         devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE4).getId())
-        devopsSecretRepository.update(devopsSecretE)
+        devopsSecretRepository.baseUpdate(devopsSecretE)
 
         //初始化Secret文件关系
         DevopsEnvFileResourceVO devopsEnvFileResourceE4 = new DevopsEnvFileResourceVO()

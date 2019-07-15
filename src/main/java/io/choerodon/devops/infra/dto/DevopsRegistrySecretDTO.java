@@ -12,7 +12,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  */
 
 @Table(name = "devops_registry_secret")
-public class DevopsRegistrySecretDO extends BaseDTO {
+public class DevopsRegistrySecretDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

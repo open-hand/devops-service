@@ -3,9 +3,10 @@ package io.choerodon.devops.domain.application.valueobject;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.api.vo.DevopsIngressDTO;
+import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.EndPointPortDTO;
 import io.choerodon.devops.api.vo.iam.entity.PortMapE;
+<<<<<<< HEAD
 <<<<<<< HEAD
 import io.choerodon.devops.infra.dto.ServiceInstanceDO;
 
@@ -14,6 +15,10 @@ import io.choerodon.devops.infra.dto.ServiceInstanceDO;
 import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
 >>>>>>> [IMP] 修改AppControler重构
 
+=======
+import io.choerodon.devops.infra.dto.ServiceInstanceDO;
+
+>>>>>>> [IMP]重构后端断码
 /**
  * Created by Zenger on 2018/4/19.
  */
@@ -39,7 +44,7 @@ public class DevopsServiceV {
     private String commandType;
     private String commandStatus;
     private String error;
-    private List<DevopsIngressDTO> devopsIngressDTOS;
+    private List<DevopsIngressVO> devopsIngressVOS;
 
     public Long getId() {
         return id;
@@ -202,11 +207,11 @@ public class DevopsServiceV {
     }
 
 
-    public List<DevopsIngressDTO> getDevopsIngressDTOS() {
-        return devopsIngressDTOS;
+    public List<DevopsIngressVO> getDevopsIngressVOS() {
+        return devopsIngressVOS;
     }
 
-    public void setDevopsIngressDTOS(List<DevopsIngressDTO> devopsIngressDTOS) {
-        this.devopsIngressDTOS = devopsIngressDTOS;
+    public void setDevopsIngressVOS(List<DevopsIngressVO> devopsIngressVOS) {
+        this.devopsIngressVOS = devopsIngressVOS;
     }
 }

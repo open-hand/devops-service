@@ -160,7 +160,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         applicationVersionE.setCommit(commit);
         applicationVersionE.setVersion(version);
         if (applicationE.getChartConfigE() != null) {
-            DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getChartConfigE().getId());
+            DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.baseQuery(applicationE.getChartConfigE().getId());
             helmUrl = devopsProjectConfigE.getConfig().getUrl();
         }
 

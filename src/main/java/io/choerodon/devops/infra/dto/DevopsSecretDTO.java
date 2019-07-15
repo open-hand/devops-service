@@ -12,7 +12,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  */
 
 @Table(name = "devops_secret")
-public class DevopsSecretDO extends BaseDTO {
+public class DevopsSecretDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,10 +28,10 @@ public class DevopsSecretDO extends BaseDTO {
     @Transient
     private String commandType;
 
-    public DevopsSecretDO() {
+    public DevopsSecretDTO() {
     }
 
-    public DevopsSecretDO(Long id) {
+    public DevopsSecretDTO(Long id) {
         this.id = id;
     }
 

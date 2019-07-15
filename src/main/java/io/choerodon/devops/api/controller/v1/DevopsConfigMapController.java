@@ -123,7 +123,7 @@ public class DevopsConfigMapController {
      * @param pageRequest 分页参数
      * @param searchParam 查询参数
      * @param appId       应用id
-     * @return Page of DevopsServiceDTO
+     * @return Page of DevopsServiceVO
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,

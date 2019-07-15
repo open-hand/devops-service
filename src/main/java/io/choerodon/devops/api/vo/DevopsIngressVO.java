@@ -10,7 +10,7 @@ import java.util.Objects;
  * Time: 14:56
  * Description:
  */
-public class DevopsIngressDTO {
+public class DevopsIngressVO {
 
     private Long id;
     private Long appId;
@@ -24,19 +24,19 @@ public class DevopsIngressDTO {
     private Long certId;
     private String certName;
     private String certStatus;
-    private List<DevopsIngressPathDTO> pathList;
+    private List<DevopsIngressPathVO> pathList;
     private String commandType;
     private String commandStatus;
     private String error;
 
-    public DevopsIngressDTO() {
+    public DevopsIngressVO() {
     }
 
     /**
      * 构造函数
      */
-    public DevopsIngressDTO(Long id, String domain, String name,
-                            Long envId, Boolean isUsable, String envName) {
+    public DevopsIngressVO(Long id, String domain, String name,
+                           Long envId, Boolean isUsable, String envName) {
         this.envId = envId;
         this.id = id;
         this.name = name;
@@ -78,21 +78,21 @@ public class DevopsIngressDTO {
         this.envStatus = envStatus;
     }
 
-    public List<DevopsIngressPathDTO> getPathList() {
+    public List<DevopsIngressPathVO> getPathList() {
         return pathList;
     }
 
-    public void setPathList(List<DevopsIngressPathDTO> pathList) {
+    public void setPathList(List<DevopsIngressPathVO> pathList) {
         this.pathList = pathList;
     }
 
-    public DevopsIngressPathDTO queryLastDevopsIngressPathDTO() {
+    public DevopsIngressPathVO queryLastDevopsIngressPathDTO() {
         Integer size = pathList.size();
         return size == 0 ? null : pathList.get(size - 1);
     }
 
-    public void addDevopsIngressPathDTO(DevopsIngressPathDTO devopsIngressPathDTO) {
-        this.pathList.add(devopsIngressPathDTO);
+    public void addDevopsIngressPathDTO(DevopsIngressPathVO devopsIngressPathVO) {
+        this.pathList.add(devopsIngressPathVO);
     }
 
     public Long getEnvId() {
@@ -191,7 +191,7 @@ public class DevopsIngressDTO {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DevopsIngressDTO that = (DevopsIngressDTO) o;
+        DevopsIngressVO that = (DevopsIngressVO) o;
         return Objects.equals(domain, that.domain)
                 && Objects.equals(name, that.name)
                 && Objects.equals(envId, that.envId)
