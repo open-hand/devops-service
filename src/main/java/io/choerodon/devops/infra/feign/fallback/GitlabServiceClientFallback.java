@@ -42,12 +42,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<MemberDTO> createGroupMember(Integer groupId, RequestMemberDO requestMember) {
+    public ResponseEntity<MemberDTO> createGroupMember(Integer groupId, RequestMemberDTO requestMember) {
         throw new CommonException("error.add.member");
     }
 
     @Override
-    public ResponseEntity<MemberDTO> updateGroupMember(Integer groupId, RequestMemberDO requestMember) {
+    public ResponseEntity<MemberDTO> updateGroupMember(Integer groupId, RequestMemberDTO requestMember) {
         throw new CommonException("error.update.member");
     }
 

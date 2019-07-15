@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.dto.iam;
 /**
  * Created by Sheep on 2019/7/12.
  */
-public class AppDTO {
+public class IamAppDTO {
 
 
     private Long id;

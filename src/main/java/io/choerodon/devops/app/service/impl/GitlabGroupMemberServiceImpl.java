@@ -6,15 +6,20 @@ import java.util.stream.Collectors;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
 import io.choerodon.devops.api.vo.gitlab.MemberVO;
+import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
+import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.MemberHelper;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -180,13 +185,13 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     }
 
     @Override
-    public int create(Integer groupId, RequestMemberDO member) {
-        return gitlabServiceClient.createGroupMember(groupId, member).getStatusCodeValue();
+    public int create(Integer groupId, MemberDTO memberDTO) {
+        return gitlabServiceClient.createGroupMember(groupId, memberDTO).getStatusCodeValue();
     }
 
     @Override
-    public void update(Integer groupId, RequestMemberDO member) {
-        gitlabServiceClient.updateGroupMember(groupId, member);
+    public void update(Integer groupId, MemberDTO memberDTO) {
+        gitlabServiceClient.updateGroupMember(groupId, memberDTO);
     }
 
     /**

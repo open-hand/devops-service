@@ -9,6 +9,7 @@ import feign.RetryableException;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -471,7 +472,7 @@ public class GitlabServiceClientOperator {
                 .map(TagDTO::new)
                 .parallel()
                 .peek(t -> {
-                    io.choerodon.devops.infra.dto.iam.UserDTO userDTO = iamServiceClientOperator.queryByEmail(TypeUtil.objToLong(gitlabProjectId), t.getCommit().getAuthorEmail());
+                    IamUserDTO userDTO = iamServiceClientOperator.queryByEmail(TypeUtil.objToLong(gitlabProjectId), t.getCommit().getAuthorEmail());
                     if (userDTO != null) {
                         t.setCommitUserImage(userDTO.getImageUrl());
                     }

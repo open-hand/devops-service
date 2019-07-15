@@ -16,10 +16,10 @@ import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.vo.iam.*;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
-import io.choerodon.devops.infra.dto.iam.AppDTO;
+import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.UserDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,9 +56,9 @@ public class IamServiceClientOperator {
         }
     }
 
-    public UserDTO queryUserByLoginName(String userName) {
+    public IamUserDTO queryUserByLoginName(String userName) {
         try {
-            ResponseEntity<UserDTO> responseEntity = iamServiceClient.queryByLoginName(userName);
+            ResponseEntity<IamUserDTO> responseEntity = iamServiceClient.queryByLoginName(userName);
             return responseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("get user by longin name {} error", userName);
@@ -96,13 +96,13 @@ public class IamServiceClientOperator {
         return returnList;
     }
 
-    public List<UserDTO> listUsersByIds(List<Long> ids) {
-        List<UserDTO> userES = new ArrayList<>();
+    public List<IamUserDTO> listUsersByIds(List<Long> ids) {
+        List<IamUserDTO> userES = new ArrayList<>();
         if (ids != null && !ids.isEmpty()) {
             Long[] newIds = new Long[ids.size()];
             try {
                 userES = ConvertHelper.convertList(iamServiceClient
-                        .listUsersByIds(ids.toArray(newIds)).getBody(), UserDTO.class);
+                        .listUsersByIds(ids.toArray(newIds)).getBody(), IamUserDTO.class);
             } catch (Exception e) {
                 throw new CommonException("error.users.get", e);
             }
@@ -110,19 +110,19 @@ public class IamServiceClientOperator {
         return userES;
     }
 
-    public UserDTO queryUserByUserId(Long id) {
+    public IamUserDTO queryUserByUserId(Long id) {
         List<Long> ids = new ArrayList<>();
         ids.add(id);
-        List<UserDTO> userES = this.listUsersByIds(ids);
+        List<IamUserDTO> userES = this.listUsersByIds(ids);
         if (userES != null && !userES.isEmpty()) {
             return userES.get(0);
         }
         return null;
     }
 
-    public PageInfo<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
-                                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                                    Long roleId, Long projectId, Boolean doPage) {
+    public PageInfo<IamUserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+                                                                       RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                                       Long roleId, Long projectId, Boolean doPage) {
         try {
             return iamServiceClient
                     .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
@@ -147,9 +147,9 @@ public class IamServiceClientOperator {
         }
     }
 
-    public UserDTO queryByEmail(Long projectId, String email) {
+    public IamUserDTO queryByEmail(Long projectId, String email) {
         try {
-            ResponseEntity<PageInfo<UserDTO>> userDOResponseEntity = iamServiceClient
+            ResponseEntity<PageInfo<IamUserDTO>> userDOResponseEntity = iamServiceClient
                     .listUsersByEmail(projectId, 0, 0, email);
             if (userDOResponseEntity.getBody().getList().isEmpty()) {
                 return null;
@@ -181,25 +181,25 @@ public class IamServiceClientOperator {
         List<Long> memberIds =
 
                 this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), memberId,
-                        projectId, false).getList().stream().map(UserDTO::getId).collect(Collectors.toList());
+                        projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         List<Long> ownerIds =
                 this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), ownerId,
 
-                        projectId, false).getList().stream().map(UserDTO::getId).collect(Collectors.toList());
+                        projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
     }
 
-    public List<UserDTO> getAllMember(Long projectId) {
+    public List<IamUserDTO> getAllMember(Long projectId) {
         // 获取项目成员id
         Long memberId = this.queryRoleIdByCode(PROJECT_MEMBER);
         // 获取项目所有者id
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
 
-        List<UserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), memberId,
+        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), memberId,
                 projectId, false).getList();
-        List<Long> memberIds = list.stream().filter(userDTO -> userDTO.getEnabled()).map(UserDTO::getId).collect(Collectors.toList());
+        List<Long> memberIds = list.stream().filter(userDTO -> userDTO.getEnabled()).map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), ownerId,
 
@@ -222,22 +222,22 @@ public class IamServiceClientOperator {
         return !roleDTOS.isEmpty();
     }
 
-    public AppDTO createIamApp(Long organizationId, AppDTO appDTO) {
-        ResponseEntity<AppDTO> appDTOResponseEntity = null;
+    public IamAppDTO createIamApp(Long organizationId, IamAppDTO appDTO) {
+        ResponseEntity<IamAppDTO> appDTOResponseEntity = null;
         try {
             appDTOResponseEntity = iamServiceClient.createIamApplication(organizationId, appDTO);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        AppDTO result = appDTOResponseEntity.getBody();
+        IamAppDTO result = appDTOResponseEntity.getBody();
         if (result == null || result.getProjectId() == null) {
             throw new CommonException("error.code.exist");
         }
         return result;
     }
 
-    public AppDTO updateIamApp(Long organizationId, Long id, AppDTO appDTO) {
-        ResponseEntity<AppDTO> appDTOResponseEntity = null;
+    public IamAppDTO updateIamApp(Long organizationId, Long id, IamAppDTO appDTO) {
+        ResponseEntity<IamAppDTO> appDTOResponseEntity = null;
         try {
             appDTOResponseEntity = iamServiceClient.updateIamApplication(organizationId, id, appDTO);
         } catch (FeignException e) {
@@ -246,8 +246,8 @@ public class IamServiceClientOperator {
         return appDTOResponseEntity.getBody();
     }
 
-    public AppDTO queryIamAppByCode(Long organizationId, String code) {
-        ResponseEntity<PageInfo<AppDTO>> pageInfoResponseEntity = null;
+    public IamAppDTO queryIamAppByCode(Long organizationId, String code) {
+        ResponseEntity<PageInfo<IamAppDTO>> pageInfoResponseEntity = null;
         try {
             pageInfoResponseEntity = iamServiceClient.getIamApplication(organizationId, code);
         } catch (FeignException e) {

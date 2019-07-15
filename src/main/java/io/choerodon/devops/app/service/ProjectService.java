@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 
 /**
  * Created with IntelliJ IDEA.

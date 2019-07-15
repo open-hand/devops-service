@@ -4,16 +4,17 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
-import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
+import io.choerodon.devops.infra.dto.iam.IamAppDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -22,25 +23,25 @@ import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
  */
 public interface IamService {
 
-    ProjectVO queryIamProject(Long projectId);
+    ProjectDTO queryIamProject(Long projectId);
 
-    OrganizationVO queryOrganization();
+    OrganizationDTO queryOrganization();
 
-    OrganizationVO queryOrganizationById(Long organizationId);
+    OrganizationDTO queryOrganizationById(Long organizationId);
 
-    UserE queryByLoginName(String userName);
+    IamUserDTO queryByLoginName(String userName);
 
-    List<ProjectVO> listIamProjectByOrgId(Long organizationId, String name, String[] params);
+    List<ProjectDTO> listIamProjectByOrgId(Long organizationId, String name, String[] params);
 
-    PageInfo<ProjectVO> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
+    PageInfo<ProjectDTO> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
 
-    List<UserE> listUsersByIds(List<Long> ids);
+    List<IamUserDTO> listUsersByIds(List<Long> ids);
 
-    UserE queryUserByUserId(Long id);
+    IamUserDTO queryUserByUserId(Long id);
 
-    UserE queryByEmail(Long projectId, String email);
+    IamUserDTO queryByEmail(Long projectId, String email);
 
-    PageInfo<UserVO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+    PageInfo<IamUserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
                                                             RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId,
                                                             Long projectId, Boolean doPage);
 
@@ -56,13 +57,13 @@ public interface IamService {
 
     Boolean isProjectOwner(Long userId, ProjectVO projectE);
 
-    IamAppPayLoad createIamApp(Long organizationId, IamAppPayLoad iamAppPayLoad);
+    IamAppDTO createIamApp(Long organizationId, IamAppDTO iamAppDTO);
 
-    IamAppPayLoad updateIamApp(Long organizationId, Long id, IamAppPayLoad iamAppPayLoad);
+    IamAppDTO updateIamApp(Long organizationId, Long id, IamAppDTO iamAppDTO);
 
-    IamAppPayLoad queryIamAppByCode(Long organizationId, String code);
+    IamAppDTO queryIamAppByCode(Long organizationId, String code);
 
-    ProjectReqVO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO);
+    ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO);
 
     PageInfo<OrganizationSimplifyDTO> getAllOrgs(Integer page, Integer size);
 }

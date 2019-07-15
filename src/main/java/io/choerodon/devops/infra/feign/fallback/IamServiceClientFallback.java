@@ -14,7 +14,7 @@ import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDT
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.UserDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,17 +47,17 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<UserDTO> queryByLoginName(String loginName) {
+    public ResponseEntity<IamUserDTO> queryByLoginName(String loginName) {
         throw new CommonException("error.user.get.byLoginName");
     }
 
     @Override
-    public ResponseEntity<UserDTO> queryById(Long id) {
+    public ResponseEntity<IamUserDTO> queryById(Long id) {
         throw new CommonException("error.user.get.byId");
     }
 
     @Override
-    public ResponseEntity<PageInfo<UserDTO>> queryInProjectById(Long projectId, Long id) {
+    public ResponseEntity<PageInfo<IamUserDTO>> queryInProjectById(Long projectId, Long id) {
         throw new CommonException("error.userInProject.get");
     }
 
@@ -67,12 +67,12 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<UserDTO>> listUsersByIds(Long[] ids) {
+    public ResponseEntity<List<IamUserDTO>> listUsersByIds(Long[] ids) {
         throw new CommonException("error.user.get.byIds");
     }
 
     @Override
-    public ResponseEntity<PageInfo<UserDTO>> listUsersByEmail(Long projectId, int page, int size, String email) {
+    public ResponseEntity<PageInfo<IamUserDTO>> listUsersByEmail(Long projectId, int page, int size, String email) {
         return new ResponseEntity("error.user.get.byEmail", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

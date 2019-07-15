@@ -27,7 +27,7 @@ import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.*
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.dto.iam.UserDTO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
@@ -240,12 +240,12 @@ class DevopsCheckControllerSpec extends Specification {
         when(mockGitlabServiceClient.updateProjectHook(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ProjectHookDTO(), HttpStatus.OK))
         when(mockGitlabServiceClient.listCommits(anyInt(), eq(1), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(createVersion10MockCommits(), HttpStatus.OK))
         when(mockGitlabServiceClient.listCommits(anyInt(), eq(2), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
-        UserDTO userDO = new UserDTO()
+        IamUserDTO userDO = new IamUserDTO()
         userDO.setId(234L)
-        List<UserDTO> users = new ArrayList<>()
+        List<IamUserDTO> users = new ArrayList<>()
         users.add(userDO)
 //        PageInfo userPageInfo = new PageInfo(1, 10, true)
-        PageInfo<UserDTO> userPage = new PageInfo(users)
+        PageInfo<IamUserDTO> userPage = new PageInfo(users)
         when(mockIamServiceClient.listUsersByEmail(anyLong(), anyInt(), anyInt(), anyString())).thenReturn(new ResponseEntity<>(userPage, HttpStatus.OK))
 
 
@@ -305,11 +305,11 @@ class DevopsCheckControllerSpec extends Specification {
         userAttrDO2.setGitlabUserId(101L)
         userAttrMapper.insert(userAttrDO2)
 
-        UserDTO userRet1 = new UserDTO()
+        IamUserDTO userRet1 = new IamUserDTO()
         userRet1.setId(userAttrDO.getIamUserId())
         userRet1.setLoginName("admin")
 
-        UserDTO userRet2 = new UserDTO()
+        IamUserDTO userRet2 = new IamUserDTO()
         userRet2.setId(userAttrDO2.getIamUserId())
         userRet2.setLoginName("12241&*(@^1`")
 

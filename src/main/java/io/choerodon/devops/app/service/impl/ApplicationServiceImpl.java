@@ -15,55 +15,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.asgard.saga.producer.StartSagaBuilder;
-import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.validator.ApplicationValidator;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.gitlab.MemberVO;
-import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
-import io.choerodon.devops.api.vo.sonar.*;
-import io.choerodon.devops.app.eventhandler.payload.*;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
-import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-import io.choerodon.devops.infra.dataobject.AppUserPermissionDTO;
-import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
-import io.choerodon.devops.infra.dataobject.UserAttrDTO;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dto.ApplicationDO;
-import io.choerodon.devops.infra.dto.ApplicationDTO;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
-import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
-import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
-import io.choerodon.devops.infra.dto.harbor.User;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.ChartClient;
-import io.choerodon.devops.infra.feign.HarborClient;
-import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.mapper.AppUserPermissionMapper;
-import io.choerodon.devops.infra.mapper.ApplicationMapper;
-import io.choerodon.devops.infra.mapper.UserAttrMapper;
-import io.choerodon.devops.infra.util.*;
-import io.choerodon.websocket.tool.UUIDTool;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
@@ -85,6 +36,60 @@ import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.validator.ApplicationValidator;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.gitlab.MemberVO;
+import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
+import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
+import io.choerodon.devops.api.vo.sonar.*;
+import io.choerodon.devops.app.eventhandler.payload.*;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.dataobject.AppUserPermissionDTO;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
+import io.choerodon.devops.infra.dataobject.UserAttrDTO;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.ApplicationDO;
+import io.choerodon.devops.infra.dto.ApplicationDTO;
+<<<<<<< HEAD
+import io.choerodon.devops.infra.dto.gitlab.*;
+=======
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
+>>>>>>> [IMP] 重构AplicationControler
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
+import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
+import io.choerodon.devops.infra.dto.harbor.User;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.ChartClient;
+import io.choerodon.devops.infra.feign.HarborClient;
+import io.choerodon.devops.infra.feign.SonarClient;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.ApplicationMapper;
+import io.choerodon.devops.infra.mapper.UserAttrMapper;
+import io.choerodon.devops.infra.util.*;
+import io.choerodon.websocket.tool.UUIDTool;
+
 /**
  * Created by younger on 2018/3/28.
  */
@@ -93,6 +98,7 @@ import retrofit2.Retrofit;
 public class ApplicationServiceImpl implements ApplicationService {
     public static final String SEVERITIES = "severities";
     public static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
+    public static final String NODELETED = "nodeleted";
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
     private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
     private static final String DOCKER_FILE_NAME = "Dockerfile";
@@ -117,8 +123,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String ERROR_UPDATE_APP = "error.application.update";
     private static final String TEST = "test-application";
     private static final String DUPLICATE = "duplicate";
-    public static final String NODELETED = "nodeleted";
-
     private Gson gson = new Gson();
     private JSON json = new JSON();
 
@@ -135,41 +139,14 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Value("${services.sonarqube.password:}")
     private String password;
 
-
-    @Autowired
-    private ApplicationRepository applicationRepository;
-    @Autowired
-    private ApplicationTemplateRepository applicationTemplateRepository;
-    @Autowired
-    private DevopsProjectRepository devopsProjectRepository;
     @Autowired
     private GitUtil gitUtil;
     @Autowired
-    private GitlabUserRepository gitlabUserRepository;
-    @Autowired
-    private UserAttrRepository userAttrRepository;
-    @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository;
-    @Autowired
-    private DevopsGitRepository devopsGitRepository;
-    @Autowired
-    private SagaClient sagaClient;
-    @Autowired
-    private AppShareRepository applicationMarketRepository;
-    @Autowired
-    private AppUserPermissionRepository appUserPermissionRepository;
-    @Autowired
-    private GitlabProjectRepository gitlabProjectRepository;
-    @Autowired
-    private DevopsProjectConfigRepository devopsProjectConfigRepository;
-    @Autowired
     private ApplicationMapper applicationMapper;
-
     @Autowired
     private UserAttrMapper userAttrMapper;
     @Autowired
-    private AppUserPermissionMapper appUserPermissionMapper;
-
+    private SagaClient sagaClient;
     @Autowired
     private TransactionalProducer producer;
     @Autowired
@@ -186,6 +163,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
 
+    @Autowired
+    private ApplicationUserPermissionService applicationUserPermissionService;
+
+
     @Override
     @Saga(code = "devops-create-application",
             description = "Devops创建应用", inputSchema = "{}")
@@ -195,13 +176,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationReqVO);
         ProjectVO projectVO = iamService.queryIamProject(projectId);
-        OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganization().getId());
+        OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganizationId());
         // 查询创建应用所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
         MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
-        if (memberDTO == null || memberDTO.getAccessLevel() != AccessLevel.OWNER) {
+        if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
             throw new CommonException("error.user.not.owner");
         }
 
@@ -215,7 +196,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         // 如果不跳过权限检查
         List<Long> userIds = applicationReqVO.getUserIds();
         if (!applicationReqVO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
-            userIds.forEach(e -> appUserPermissionRepository.baseCreate(e, appId));
+            userIds.forEach(e -> applicationUserPermissionService.baseCreate(e, appId));
         }
 
         IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
@@ -229,14 +210,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         iamAppPayLoad.setFrom(applicationName);
 
         iamService.createIamApp(organizationVO.getId(), iamAppPayLoad);
-        return ConvertHelper.convert(queryByCode(applicationDTO.getCode(), applicationDTO.getProjectId()), ApplicationRepVO.class);
+        return ConvertHelper.convert(queryByCode(applicationDTO.getProjectId(), applicationDTO.getCode()), ApplicationRepVO.class);
     }
 
 
     @Override
     public ApplicationRepVO query(Long projectId, Long applicationId) {
         ProjectVO projectVO = iamService.queryIamProject(projectId);
-        OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganization().getId());
+        OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganizationId());
         ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(applicationId);
         ApplicationRepVO applicationRepVO = ConvertHelper.convert(applicationDTO, ApplicationRepVO.class);
         //url地址拼接
@@ -260,22 +241,22 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectVO projectVO = iamService.queryIamProject(projectId);
         //删除应用权限
 
-        appUserPermissionRepository.baseDeleteByAppId(appId);
+        applicationUserPermissionService.baseDeleteByAppId(appId);
         //删除gitlab project
         ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(appId);
         if (applicationDTO.getGitlabProjectId() != null) {
             Integer gitlabProjectId = applicationDTO.getGitlabProjectId();
             GitlabProjectDTO gitlabProjectDO = gitLabService.getProjectById(gitlabProjectId);
             if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
-                UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
+                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
                 gitLabService.deleteProject(gitlabProjectId, gitlabUserId);
             }
         }
         //删除iam应用
         DevOpsAppSyncPayload appSyncPayload = new DevOpsAppSyncPayload();
         appSyncPayload.setProjectId(projectId);
-        appSyncPayload.setOrganizationId(projectVO.getOrganization().getId());
+        appSyncPayload.setOrganizationId(projectVO.getOrganizationId());
         appSyncPayload.setCode(applicationDTO.getCode());
         producer.applyAndReturn(
                 StartSagaBuilder
@@ -302,15 +283,16 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationDTO.setChartConfigId(applicationUpdateVO.getChartConfigId());
 
         Long appId = applicationUpdateVO.getId();
-        ApplicationE oldApplicationE = applicationRepository.query(appId);
+        ApplicationDTO oldApplicationDTO = applicationMapper.selectByPrimaryKey(appId);
 
-        if (!oldApplicationE.getName().equals(applicationUpdateVO.getName())) {
-            checkNameFromBase(applicationDTO.getProjectId(), applicationDTO.getName());
+        if (!oldApplicationDTO.getName().equals(applicationUpdateVO.getName())) {
+            baseCheckName(applicationDTO.getProjectId(), applicationDTO.getName());
         }
-        if (updateFromBase(applicationDTO) != 1) {
+        if (baseUpdate(applicationDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_APP);
         }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             if (!oldApplicationE.getName().equals(applicationUpdateVO.getName())) {
                 ProjectVO projectE = iamService.queryIamProject(oldApplicationE.getProjectE().getId());
@@ -370,6 +352,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!oldApplicationE.getName().equals(applicationUpdateVO.getName())) {
             ProjectVO projectVO = iamService.queryIamProject(oldApplicationE.getProjectE().getId());
             OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganization().getId());
+=======
+        if (!oldApplicationDTO.getName().equals(applicationUpdateVO.getName())) {
+            ProjectVO projectVO = iamService.queryIamProject(oldApplicationDTO.getProjectId());
+            OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganizationId());
+>>>>>>> [IMP] 重构AplicationControler
             IamAppPayLoad iamAppPayLoad = iamService.queryIamAppByCode(organizationVO.getId(), applicationDTO.getCode());
             iamAppPayLoad.setName(applicationUpdateVO.getName());
             iamService.updateIamApp(organizationVO.getId(), iamAppPayLoad.getId(), iamAppPayLoad);
@@ -379,25 +366,20 @@ public class ApplicationServiceImpl implements ApplicationService {
         DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
         devOpsUserPayload.setIamProjectId(projectId);
         devOpsUserPayload.setAppId(appId);
-        devOpsUserPayload.setGitlabProjectId(oldApplicationE.getGitlabProjectE().getId());
+        devOpsUserPayload.setGitlabProjectId(oldApplicationDTO.getGitlabProjectId());
         devOpsUserPayload.setIamUserIds(applicationUpdateVO.getUserIds());
 
-        if (oldApplicationE.getIsSkipCheckPermission() && applicationUpdateVO.getIsSkipCheckPermission()) {
+        if (oldApplicationDTO.getIsSkipCheckPermission() && applicationUpdateVO.getIsSkipCheckPermission()) {
             return false;
-        } else if (oldApplicationE.getIsSkipCheckPermission() && !applicationUpdateVO.getIsSkipCheckPermission()) {
-            applicationUpdateVO.getUserIds().forEach(e -> appUserPermissionMapper.insert(new AppUserPermissionDTO(e, appId)));
+        } else if (oldApplicationDTO.getIsSkipCheckPermission() && !applicationUpdateVO.getIsSkipCheckPermission()) {
+            applicationUpdateVO.getUserIds().forEach(e -> applicationUserPermissionService.baseCreate(e, appId));
             devOpsUserPayload.setOption(1);
-        } else if (!oldApplicationE.getIsSkipCheckPermission() && applicationUpdateVO.getIsSkipCheckPermission()) {
-            AppUserPermissionDTO appUserPermissionDO = new AppUserPermissionDTO();
-            appUserPermissionDO.setAppId(appId);
-            appUserPermissionMapper.delete(appUserPermissionDO);
+        } else if (!oldApplicationDTO.getIsSkipCheckPermission() && applicationUpdateVO.getIsSkipCheckPermission()) {
+            applicationUserPermissionService.baseDeleteByAppId(appId);
             devOpsUserPayload.setOption(2);
         } else {
-            AppUserPermissionDTO appUserPermissionDO = new AppUserPermissionDTO();
-            appUserPermissionDO.setAppId(appId);
-            appUserPermissionMapper.delete(appUserPermissionDO);
-            applicationUpdateVO.getUserIds().forEach(e -> appUserPermissionMapper.insert(new AppUserPermissionDTO(e, appId)));
-
+            applicationUserPermissionService.baseDeleteByAppId(appId);
+            applicationUpdateVO.getUserIds().forEach(e -> applicationUserPermissionService.baseCreate(e, appId));
             devOpsUserPayload.setOption(3);
 >>>>>>> [IMP] 修改AppControler重构
 <<<<<<< HEAD
@@ -467,13 +449,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     public Boolean updateActive(Long appId, Boolean active) {
         ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(appId);
         applicationDTO.setActive(active);
-        if (updateFromBase(applicationDTO) != 1) {
+        if (baseUpdate(applicationDTO) != 1) {
             throw new CommonException("error.application.active");
         }
         ProjectVO projectVO = iamService.queryIamProject(applicationDTO.getId());
         DevOpsAppSyncPayload opsAppSyncPayload = new DevOpsAppSyncPayload();
         opsAppSyncPayload.setActive(active);
-        opsAppSyncPayload.setOrganizationId(projectVO.getOrganization().getId());
+        opsAppSyncPayload.setOrganizationId(projectVO.getOrganizationId());
         opsAppSyncPayload.setProjectId(applicationDTO.getId());
         opsAppSyncPayload.setCode(applicationDTO.getCode());
         producer.applyAndReturn(
@@ -497,7 +479,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         PageInfo<ApplicationDTO> applicationDTOS = listByOptionsFromBase(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectVO projectVO = iamService.queryIamProject(projectId);
-        OrganizationVO organization = iamService.queryOrganizationById(projectVO.getOrganization().getId());
+        OrganizationVO organization = iamService.queryOrganizationById(projectVO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
         initApplicationParams(projectVO, organization, applicationDTOS.getList(), urlSlash);
@@ -534,7 +516,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectVO projectVO = iamService.queryIamProject(projectId);
         Boolean isProjectOwner = iamService.isProjectOwner(userAttrDTO.getIamUserId(), projectVO);
-        OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganization().getId());
+        OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganizationId());
 
         Map maps = gson.fromJson(params, Map.class);
         PageInfo<ApplicationDTO> applicationES = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listCodeRepository(projectId,

@@ -12,10 +12,10 @@ import io.choerodon.devops.api.vo.iam.RoleSearchDTO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
-import io.choerodon.devops.infra.dto.iam.AppDTO;
+import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.UserDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.fallback.IamServiceClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -41,29 +41,29 @@ public interface IamServiceClient {
     ResponseEntity<MemberRoleV> addMemberRole(@PathVariable("projectId") Long projectId, @RequestBody @Valid MemberRoleV memberRoleVo);
 
     @GetMapping(value = "/v1/users")
-    ResponseEntity<UserDTO> queryByLoginName(@RequestParam("login_name") String loginName);
+    ResponseEntity<IamUserDTO> queryByLoginName(@RequestParam("login_name") String loginName);
 
     @GetMapping(value = "/v1/users/{id}/info")
-    ResponseEntity<UserDTO> queryById(@PathVariable("id") Long id);
+    ResponseEntity<IamUserDTO> queryById(@PathVariable("id") Long id);
 
     @GetMapping(value = "v1/projects/{project_id}/users?id={id}")
-    ResponseEntity<PageInfo<UserDTO>> queryInProjectById(@PathVariable("project_id") Long projectId, @PathVariable("id") Long id);
+    ResponseEntity<PageInfo<IamUserDTO>> queryInProjectById(@PathVariable("project_id") Long projectId, @PathVariable("id") Long id);
 
     @GetMapping(value = "/v1/organizations/{id}/projects")
     ResponseEntity<PageInfo<ProjectDTO>> queryProjectByOrgId(@PathVariable("id") Long id, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("name") String name, @RequestParam("params") String[] params);
 
     @PostMapping(value = "/v1/users/ids")
-    ResponseEntity<List<UserDTO>> listUsersByIds(@RequestBody Long[] ids);
+    ResponseEntity<List<IamUserDTO>> listUsersByIds(@RequestBody Long[] ids);
 
     @GetMapping(value = "/v1/projects/{project_id}/users")
-    ResponseEntity<PageInfo<UserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
+    ResponseEntity<PageInfo<IamUserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users/count")
     ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
                                                                        @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users")
-    ResponseEntity<PageInfo<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
+    ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
             @RequestParam("page") int page,
             @RequestParam("size") int size,
             @RequestParam(name = "role_id") Long roleId,
@@ -88,27 +88,27 @@ public interface IamServiceClient {
 
 
     @PostMapping(value = "/v1/organizations/{organization_id}/applications")
-    ResponseEntity<AppDTO> createIamApplication(@PathVariable("organization_id") Long organizationId,
-                                                @RequestBody @Valid AppDTO appDTO);
+    ResponseEntity<IamAppDTO> createIamApplication(@PathVariable("organization_id") Long organizationId,
+                                                   @RequestBody @Valid IamAppDTO appDTO);
 
 
     @PostMapping(value = "/v1/organizations/{organization_id}/applications/{id}")
-    ResponseEntity<AppDTO> updateIamApplication(
+    ResponseEntity<IamAppDTO> updateIamApplication(
             @PathVariable("organization_id") Long organizationId,
             @PathVariable("id") Long id,
-            @RequestBody @Valid AppDTO appDTO);
+            @RequestBody @Valid IamAppDTO appDTO);
 
 
     @PutMapping(value = "/v1/organizations/{organization_id}/applications/{id}/disable")
-    ResponseEntity<AppDTO> disableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
+    ResponseEntity<IamAppDTO> disableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
 
 
     @PutMapping(value = "/v1/organizations/{organization_id}/applications/{id}/enable")
-    ResponseEntity<AppDTO> enableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
+    ResponseEntity<IamAppDTO> enableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
 
 
     @GetMapping(value = "/v1/organizations/{organization_id}/applications")
-    ResponseEntity<PageInfo<AppDTO>> getIamApplication(@PathVariable("organization_id") Long organizationId, @RequestParam("code") String code);
+    ResponseEntity<PageInfo<IamAppDTO>> getIamApplication(@PathVariable("organization_id") Long organizationId, @RequestParam("code") String code);
 
     @PostMapping("/v1/organizations/{organization_id}/projects")
     ResponseEntity<ProjectDTO> createProject(@PathVariable(name = "organization_id") Long organizationId,

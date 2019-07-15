@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.dto.iam;
 
 import java.util.Date;
 
-public class UserDTO {
+public class IamUserDTO {
 
     private Long id;
     private String loginName;
