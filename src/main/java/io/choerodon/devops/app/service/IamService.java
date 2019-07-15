@@ -53,7 +53,7 @@ public interface IamService {
 
     List<Long> getAllMemberIdsWithoutOwner(Long projectId);
 
-    List<UserVO> getAllMember(Long projectId);
+    List<IamUserDTO> getAllMember(Long projectId);
 
     Boolean isProjectOwner(Long userId, ProjectVO projectE);
 

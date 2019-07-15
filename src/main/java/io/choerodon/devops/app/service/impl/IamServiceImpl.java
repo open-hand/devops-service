@@ -13,7 +13,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.vo.iam.*;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
+import io.choerodon.devops.api.vo.iam.RoleDTO;
+import io.choerodon.devops.api.vo.iam.RoleSearchDTO;
+import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
 import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
@@ -214,12 +217,12 @@ public class IamServiceImpl implements IamService {
         List<Long> memberIds =
 
                 this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), memberId,
-                        projectId, false).getList().stream().map(UserVO::getId).collect(Collectors.toList());
+                        projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         List<Long> ownerIds =
                 this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), ownerId,
 
-                        projectId, false).getList().stream().map(UserVO::getId).collect(Collectors.toList());
+                        projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
     }
 
