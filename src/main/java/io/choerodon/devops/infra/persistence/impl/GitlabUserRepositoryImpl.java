@@ -5,7 +5,6 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
 import io.choerodon.devops.infra.dataobject.gitlab.UserDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.slf4j.Logger;

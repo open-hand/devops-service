@@ -17,7 +17,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.PipelineRecordE;
 import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.dto.PipelineRecordDO;
+import io.choerodon.devops.infra.dto.PipelineRecordDTO;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
 
 /**
@@ -33,18 +33,18 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
     private PipelineRecordMapper pipelineRecordMapper;
 
     @Override
-    public PageInfo<PipelineRecordE> listByOptions(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Map<String, Object> classifyParam) {
+    public PageInfo<PipelineRecordE> basePageByOptions(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Map<String, Object> classifyParam) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-        PageInfo<PipelineRecordDO> pipelineDOS = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        PageInfo<PipelineRecordDTO> pipelineDOS = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 pipelineRecordMapper.listByOptions(projectId, pipelineId, searchParamMap, paramMap, classifyParam));
         return ConvertPageHelper.convertPageInfo(pipelineDOS, PipelineRecordE.class);
     }
 
     @Override
-    public PipelineRecordE create(PipelineRecordE pipelineRecordE) {
-        PipelineRecordDO pipelineRecordDO = ConvertHelper.convert(pipelineRecordE, PipelineRecordDO.class);
+    public PipelineRecordE baseCreate(PipelineRecordE pipelineRecordE) {
+        PipelineRecordDTO pipelineRecordDO = ConvertHelper.convert(pipelineRecordE, PipelineRecordDTO.class);
         if (pipelineRecordMapper.insert(pipelineRecordDO) != 1) {
             throw new CommonException("error.insert.pipeline.record");
         }
@@ -52,8 +52,8 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
     }
 
     @Override
-    public PipelineRecordE update(PipelineRecordE pipelineRecordE) {
-        PipelineRecordDO pipelineRecordDO = ConvertHelper.convert(pipelineRecordE, PipelineRecordDO.class);
+    public PipelineRecordE baseUpdate(PipelineRecordE pipelineRecordE) {
+        PipelineRecordDTO pipelineRecordDO = ConvertHelper.convert(pipelineRecordE, PipelineRecordDTO.class);
         pipelineRecordDO.setObjectVersionNumber(pipelineRecordMapper.selectByPrimaryKey(pipelineRecordDO).getObjectVersionNumber());
         if (pipelineRecordMapper.updateByPrimaryKeySelective(pipelineRecordDO) != 1) {
             throw new CommonException("error.update.pipeline.record");
@@ -62,24 +62,24 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
     }
 
     @Override
-    public PipelineRecordE queryById(Long recordId) {
+    public PipelineRecordE baseQueryById(Long recordId) {
         return ConvertHelper.convert(pipelineRecordMapper.selectByPrimaryKey(recordId), PipelineRecordE.class);
     }
 
     @Override
-    public List<PipelineRecordE> queryByPipelineId(Long pipelineId) {
-        PipelineRecordDO pipelineRecordDO = new PipelineRecordDO();
+    public List<PipelineRecordE> baseQueryByPipelineId(Long pipelineId) {
+        PipelineRecordDTO pipelineRecordDO = new PipelineRecordDTO();
         pipelineRecordDO.setPipelineId(pipelineId);
         return ConvertHelper.convertList(pipelineRecordMapper.select(pipelineRecordDO), PipelineRecordE.class);
     }
 
     @Override
-    public void updateEdited(Long pipelineId) {
+    public void baseUpdateWithEdited(Long pipelineId) {
         pipelineRecordMapper.updateEdited(pipelineId);
     }
 
     @Override
-    public List<Long> queryAllRecordUserIds(Long pipelineRecordId) {
+    public List<Long> baseQueryAllRecordUserIds(Long pipelineRecordId) {
         return pipelineRecordMapper.queryAllRecordUserIds(pipelineRecordId);
     }
 

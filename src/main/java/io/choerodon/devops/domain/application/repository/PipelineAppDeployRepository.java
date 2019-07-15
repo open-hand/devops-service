@@ -10,22 +10,22 @@ import io.choerodon.devops.api.vo.iam.entity.PipelineAppDeployE;
  * Description:
  */
 public interface PipelineAppDeployRepository {
-    PipelineAppDeployE create(PipelineAppDeployE pipelineAppDeployE);
+    PipelineAppDeployE baseCreate(PipelineAppDeployE pipelineAppDeployE);
 
-    PipelineAppDeployE update(PipelineAppDeployE pipelineAppDeployE);
+    PipelineAppDeployE baseUpdate(PipelineAppDeployE pipelineAppDeployE);
 
-    void deleteById(Long appDelpoyId);
+    void baseDeleteById(Long appDelpoyId);
 
-    PipelineAppDeployE queryById(Long appDelpoyId);
+    PipelineAppDeployE baseQueryById(Long appDelpoyId);
 
-    List<PipelineAppDeployE> queryByAppId(Long appId);
+    List<PipelineAppDeployE> baseQueryByAppId(Long appId);
 
-    void checkName(String name, Long envId);
+    void baseCheckName(String name, Long envId);
 
-    List<PipelineAppDeployE> queryByValueId(Long valueId);
+    List<PipelineAppDeployE> baseQueryByValueId(Long valueId);
 
-    List<PipelineAppDeployE> queryByEnvId(Long envId);
+    List<PipelineAppDeployE> baseQueryByEnvId(Long envId);
 
-    void updateInstanceId(Long instanceId);
+    void baseUpdateWithInstanceId(Long instanceId);
 
 }

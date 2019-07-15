@@ -213,7 +213,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         ApplicationVersionE insertApplicationVersionE = applicationVersionRepository.baseQueryByAppIdAndVersion(versionE.getApplicationE().getId(), versionE.getVersion());
 
         if (insertApplicationVersionE != null && insertApplicationVersionE.getVersion() != null) {
-            List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByAppId(insertApplicationVersionE.getApplicationE().getId())
+            List<PipelineAppDeployE> appDeployEList = appDeployRepository.baseQueryByAppId(insertApplicationVersionE.getApplicationE().getId())
                     .stream().map(deployE ->
                             filterAppDeploy(deployE, insertApplicationVersionE.getVersion())
                     ).collect(Collectors.toList());
@@ -229,7 +229,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                         .distinct().collect(Collectors.toList());
                 List<PipelineE> pipelineES = new ArrayList<>();
                 pipelineList.forEach(pipelineId -> {
-                    PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
+                    PipelineE pipelineE = pipelineRepository.baseQueryById(pipelineId);
                     if (pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType())) {
                         pipelineES.add(pipelineE);
                     }

@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import io.choerodon.devops.domain.application.repository.OrgRepository;
 import io.choerodon.devops.domain.application.valueobject.ProjectCategoryEDTO;
 import io.choerodon.devops.infra.feign.OrgServiceClient;
 import org.slf4j.Logger;
@@ -24,7 +23,7 @@ public class OrgRepositoryImpl implements OrgRepository {
     }
 
     @Override
-    public ProjectCategoryEDTO createProjectCategory(Long organizationId, ProjectCategoryEDTO createDTO) {
+    public ProjectCategoryEDTO baseCreate(Long organizationId, ProjectCategoryEDTO createDTO) {
             ResponseEntity<ProjectCategoryEDTO> simplifyDTOs = orgServiceClient
                     .createProjectCategory(organizationId, createDTO);
             return simplifyDTOs.getBody();

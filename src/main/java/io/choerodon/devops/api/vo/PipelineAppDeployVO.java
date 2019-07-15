@@ -7,7 +7,7 @@ import java.util.List;
  * Date:  9:35 2019/4/4
  * Description:
  */
-public class PipelineAppDeployDTO {
+public class PipelineAppDeployVO {
     private Long id;
     private Long applicationId;
     private List<String> triggerVersion;

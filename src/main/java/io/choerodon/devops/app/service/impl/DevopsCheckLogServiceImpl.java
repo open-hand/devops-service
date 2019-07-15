@@ -719,7 +719,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             List<MenuCodeDTO> list = new ArrayList<>();
             MenuCodeDTO menuCodeDTO = new MenuCodeDTO();
             list.add(menuCodeDTO);
-            return orgRepository.createProjectCategory(orgId, categoryEDTO);
+            return orgRepository.baseCreate(orgId, categoryEDTO);
         }
 
         private ProjectReqVO createOpsProject(Long orgId, Long categoryId) {

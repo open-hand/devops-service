@@ -115,7 +115,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public Boolean checkDelete(Long projectId, Long valueId) {
-        List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByValueId(valueId);
+        List<PipelineAppDeployE> appDeployEList = appDeployRepository.baseQueryByValueId(valueId);
         if (appDeployEList == null || appDeployEList.isEmpty()) {
             List<ApplicationInstanceE> instanceEList = applicationInstanceRepository.listByValueId(valueId);
             if (instanceEList == null || instanceEList.isEmpty()) {

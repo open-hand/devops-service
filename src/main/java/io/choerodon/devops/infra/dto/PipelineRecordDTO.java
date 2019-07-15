@@ -13,7 +13,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Description:
  */
 @Table(name = "devops_pipeline_record")
-public class PipelineRecordDO extends BaseDTO {
+public class PipelineRecordDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

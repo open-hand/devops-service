@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDO;
+import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -8,7 +8,7 @@ import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDO;
  * Description:
  */
 public interface MarketConnectInfoRepositpry {
-    void createOrUpdate(DevopsMarketConnectInfoDO marketConnectInfoDO);
+    void baseCreateOrUpdate(DevopsMarketConnectInfoDTO marketConnectInfoDO);
 
-    DevopsMarketConnectInfoDO query();
+    DevopsMarketConnectInfoDTO baseQuery();
 }

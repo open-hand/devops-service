@@ -28,8 +28,8 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.CheckAuditDTO;
 import io.choerodon.devops.api.vo.IamUserDTO;
 import io.choerodon.devops.api.vo.PipelineCheckDeployDTO;
-import io.choerodon.devops.api.vo.PipelineDTO;
-import io.choerodon.devops.api.vo.PipelineRecordDTO;
+import io.choerodon.devops.api.vo.PipelineVO;
+import io.choerodon.devops.api.vo.PipelineRecordVO;
 import io.choerodon.devops.api.vo.PipelineRecordListDTO;
 import io.choerodon.devops.api.vo.PipelineRecordReqDTO;
 import io.choerodon.devops.api.vo.PipelineReqDTO;
@@ -119,7 +119,7 @@ public class PipelineController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "启/停用流水线")
     @PutMapping(value = "/{pipeline_id}")
-    public ResponseEntity<PipelineDTO> updateIsEnabled(
+    public ResponseEntity<PipelineVO> updateIsEnabled(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
@@ -163,7 +163,7 @@ public class PipelineController {
     @ApiOperation(value = "项目下获取流水线")
     @CustomPageRequest
     @PostMapping("/list_by_options")
-    public ResponseEntity<PageInfo<PipelineDTO>> listByOptions(
+    public ResponseEntity<PageInfo<PipelineVO>> listByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "创建者", required = false)
@@ -193,7 +193,7 @@ public class PipelineController {
     @ApiOperation(value = "项目下获取流水线记录")
     @CustomPageRequest
     @PostMapping("/list_record")
-    public ResponseEntity<PageInfo<PipelineRecordDTO>> listRecords(
+    public ResponseEntity<PageInfo<PipelineRecordVO>> listRecords(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = false)
@@ -377,7 +377,7 @@ public class PipelineController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取所有流水线")
     @GetMapping(value = "/all_pipeline")
-    public ResponseEntity<List<PipelineDTO>> listPipelineDTO(
+    public ResponseEntity<List<PipelineVO>> listPipelineDTO(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(pipelineService.listPipelineDTO(projectId))

@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDO;
+import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDTO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**
@@ -8,5 +8,5 @@ import io.choerodon.mybatis.common.Mapper;
  * Date:  20:13 2019/7/2
  * Description:
  */
-public interface MarketConnectInfoMapper extends Mapper<DevopsMarketConnectInfoDO> {
+public interface MarketConnectInfoMapper extends Mapper<DevopsMarketConnectInfoDTO> {
 }

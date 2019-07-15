@@ -7,7 +7,7 @@ import java.util.Date;
  * Date:  9:52 2019/4/4
  * Description:
  */
-public class PipelineDTO {
+public class PipelineVO {
     private Long id;
     private String name;
     private String triggerType;

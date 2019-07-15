@@ -66,7 +66,7 @@ import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.dto.ApplicationShareVersionDTO;
 import io.choerodon.devops.infra.dto.ApplicationShareDTO;
-import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDO;
+import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDTO;
 import io.choerodon.devops.infra.feign.AppShareClient;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
 import io.choerodon.websocket.tool.UUIDTool;
@@ -545,7 +545,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
     @Override
     public PageInfo<ApplicationReleasingDTO> pageListRemoteApps(Long projectId, PageRequest pageRequest, String params) {
-        DevopsMarketConnectInfoDO marketConnectInfoDO = marketConnectInfoRepositpry.query();
+        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
         }
@@ -570,7 +570,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
     @Override
     public PageInfo<ApplicationVersionRepDTO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params) {
-        DevopsMarketConnectInfoDO marketConnectInfoDO = marketConnectInfoRepositpry.query();
+        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
         }
@@ -597,7 +597,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
     @Override
     public AppVersionAndValueDTO getConfigInfoByVerionId(Long appId, Long versionId, String accessToken) {
-        DevopsMarketConnectInfoDO marketConnectInfoDO = marketConnectInfoRepositpry.query();
+        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
         }
@@ -873,9 +873,9 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
     @Override
     public void saveToken(AccessTokenDTO tokenDTO) {
-        DevopsMarketConnectInfoDO connectInfoDO = new DevopsMarketConnectInfoDO();
+        DevopsMarketConnectInfoDTO connectInfoDO = new DevopsMarketConnectInfoDTO();
         BeanUtils.copyProperties(tokenDTO, connectInfoDO);
-        marketConnectInfoRepositpry.createOrUpdate(connectInfoDO);
+        marketConnectInfoRepositpry.baseCreateOrUpdate(connectInfoDO);
     }
 
     public ApplicationShareDTO baseCreateOrUpdate(ApplicationShareDTO applicationShareDTO) {

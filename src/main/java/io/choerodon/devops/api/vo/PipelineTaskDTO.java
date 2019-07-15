@@ -15,7 +15,7 @@ public class PipelineTaskDTO {
     private List<Long> taskUserRelDTOS;
     private Integer isCountersigned;
     private Long appDeployId;
-    private PipelineAppDeployDTO appDeployDTOS;
+    private PipelineAppDeployVO appDeployDTOS;
     private Long stageId;
     private Long projectId;
     private Long objectVersionNumber;
@@ -101,11 +101,11 @@ public class PipelineTaskDTO {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public PipelineAppDeployDTO getAppDeployDTOS() {
+    public PipelineAppDeployVO getAppDeployDTOS() {
         return appDeployDTOS;
     }
 
-    public void setAppDeployDTOS(PipelineAppDeployDTO appDeployDTOS) {
+    public void setAppDeployDTOS(PipelineAppDeployVO appDeployDTOS) {
         this.appDeployDTOS = appDeployDTOS;
     }
 }

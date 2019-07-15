@@ -11,7 +11,7 @@ import javax.persistence.Table;
  * Description:
  */
 @Table(name = "devops_market_connect_info")
-public class DevopsMarketConnectInfoDO {
+public class DevopsMarketConnectInfoDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

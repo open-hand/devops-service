@@ -12,7 +12,6 @@ import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabCommitE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabPipelineE;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.dataobject.gitlab.JobDO;

@@ -13,18 +13,18 @@ import io.choerodon.devops.api.vo.iam.entity.PipelineRecordE;
  * Description:
  */
 public interface PipelineRecordRepository {
-    PageInfo<PipelineRecordE> listByOptions(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Map<String, Object> classifyParam);
+    PageInfo<PipelineRecordE> basePageByOptions(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Map<String, Object> classifyParam);
 
-    PipelineRecordE create(PipelineRecordE pipelineRecordE);
+    PipelineRecordE baseCreate(PipelineRecordE pipelineRecordE);
 
-    PipelineRecordE update(PipelineRecordE pipelineRecordE);
+    PipelineRecordE baseUpdate(PipelineRecordE pipelineRecordE);
 
-    PipelineRecordE queryById(Long recordId);
+    PipelineRecordE baseQueryById(Long recordId);
 
-    List<PipelineRecordE> queryByPipelineId(Long pipelineId);
+    List<PipelineRecordE> baseQueryByPipelineId(Long pipelineId);
 
-    void updateEdited(Long pipelineId);
+    void baseUpdateWithEdited(Long pipelineId);
 
-    List<Long> queryAllRecordUserIds(Long pipelineRecordId);
+    List<Long> baseQueryAllRecordUserIds(Long pipelineRecordId);
 
 }

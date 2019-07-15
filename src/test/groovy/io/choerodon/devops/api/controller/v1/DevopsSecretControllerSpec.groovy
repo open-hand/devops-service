@@ -15,8 +15,6 @@ import io.choerodon.devops.app.service.impl.DevopsSecretServiceImpl
 =======
 
 
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
-import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
 =======
 >>>>>>> [IMP]修改后端结构

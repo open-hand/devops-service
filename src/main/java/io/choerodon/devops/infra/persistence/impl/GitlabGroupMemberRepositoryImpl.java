@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
 import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.http.ResponseEntity;

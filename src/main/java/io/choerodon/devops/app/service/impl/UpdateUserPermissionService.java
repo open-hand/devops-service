@@ -4,9 +4,6 @@ import java.util.List;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 

@@ -13,19 +13,19 @@ import io.choerodon.devops.api.vo.iam.entity.PipelineE;
  * Description:
  */
 public interface PipelineRepository {
-    PageInfo<PipelineE> listByOptions(Long projectId, PageRequest pageRequest, String params, Map<String, Object> classifyParam);
+    PageInfo<PipelineE> baseListByOptions(Long projectId, PageRequest pageRequest, String params, Map<String, Object> classifyParam);
 
-    PipelineE create(Long projectId, PipelineE pipelineE);
+    PipelineE baseCreate(Long projectId, PipelineE pipelineE);
 
-    PipelineE update(Long projectId, PipelineE pipelineE);
+    PipelineE baseUpdate(Long projectId, PipelineE pipelineE);
 
-    PipelineE updateIsEnabled(Long pipelineId, Integer isEnabled);
+    PipelineE baseUpdateWithEnabled(Long pipelineId, Integer isEnabled);
 
-    PipelineE queryById(Long pipelineId);
+    PipelineE baseQueryById(Long pipelineId);
 
-    void delete(Long pipelineId);
+    void baseDelete(Long pipelineId);
 
-    void checkName(Long projectId, String name);
+    void baseCheckName(Long projectId, String name);
 
-    List<PipelineE> queryByProjectId(Long projectId);
+    List<PipelineE> baseQueryByProjectId(Long projectId);
 }

@@ -1916,8 +1916,14 @@ public void instanceDelete(Long instanceId){
                     instanceE.getId(), C7NHELM_RELEASE, null, false, devopsEnvironmentE.getId(), path);
 >>>>>>> [IMP] 重构Repository
         }
+<<<<<<< HEAD
         appDeployRepository.updateInstanceId(instanceId);
         }
+=======
+        appDeployRepository.baseUpdateWithInstanceId(instanceId);
+    }
+
+>>>>>>> [IMP] 重构部分Repository
 
         <<<<<<<HEAD
 @Override
@@ -1974,9 +1980,15 @@ public void checkName(String instanceName,Long
         AppInstanceValidator.checkName(instanceName);
         ApplicationInstanceE applicationInstanceE=new ApplicationInstanceE();
         applicationInstanceE.setCode(instanceName);
+<<<<<<< HEAD
         applicationInstanceRepository.checkName(instanceName,envId);
         appDeployRepository.checkName(instanceName,envId);
         }
+=======
+        applicationInstanceRepository.checkName(instanceName, envId);
+        appDeployRepository.baseCheckName(instanceName, envId);
+    }
+>>>>>>> [IMP] 重构部分Repository
 
 <<<<<<< HEAD
 private String getNameSpace(Long envId){

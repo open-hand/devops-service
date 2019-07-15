@@ -19,7 +19,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabPipelineRepository;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.Stage;

@@ -6,7 +6,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.iam.entity.PipelineAppDeployE;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.infra.dto.PipelineAppDeployDO;
+import io.choerodon.devops.infra.dto.PipelineAppDeployDTO;
 import io.choerodon.devops.infra.mapper.PipelineAppDeployMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,8 +23,8 @@ public class PipelineAppDeployRepositoryImpl implements PipelineAppDeployReposit
     private PipelineAppDeployMapper appDeployMapper;
 
     @Override
-    public PipelineAppDeployE create(PipelineAppDeployE pipelineAppDeployE) {
-        PipelineAppDeployDO appDeployDO = ConvertHelper.convert(pipelineAppDeployE, PipelineAppDeployDO.class);
+    public PipelineAppDeployE baseCreate(PipelineAppDeployE pipelineAppDeployE) {
+        PipelineAppDeployDTO appDeployDO = ConvertHelper.convert(pipelineAppDeployE, PipelineAppDeployDTO.class);
         if (appDeployMapper.insert(appDeployDO) != 1) {
             throw new CommonException("error.insert.pipeline.app.deploy");
         }
@@ -32,8 +32,8 @@ public class PipelineAppDeployRepositoryImpl implements PipelineAppDeployReposit
     }
 
     @Override
-    public PipelineAppDeployE update(PipelineAppDeployE pipelineAppDeployE) {
-        PipelineAppDeployDO appDeployDO = ConvertHelper.convert(pipelineAppDeployE, PipelineAppDeployDO.class);
+    public PipelineAppDeployE baseUpdate(PipelineAppDeployE pipelineAppDeployE) {
+        PipelineAppDeployDTO appDeployDO = ConvertHelper.convert(pipelineAppDeployE, PipelineAppDeployDTO.class);
         if (appDeployMapper.updateByPrimaryKeySelective(appDeployDO) != 1) {
             throw new CommonException("error.update.pipeline.app.deploy");
         }
@@ -41,25 +41,25 @@ public class PipelineAppDeployRepositoryImpl implements PipelineAppDeployReposit
     }
 
     @Override
-    public void deleteById(Long appDelpoyId) {
+    public void baseDeleteById(Long appDelpoyId) {
         appDeployMapper.deleteByPrimaryKey(appDelpoyId);
     }
 
     @Override
-    public PipelineAppDeployE queryById(Long appDelpoyId) {
+    public PipelineAppDeployE baseQueryById(Long appDelpoyId) {
         return ConvertHelper.convert(appDeployMapper.queryById(appDelpoyId), PipelineAppDeployE.class);
     }
 
     @Override
-    public List<PipelineAppDeployE> queryByAppId(Long appId) {
-        PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
+    public List<PipelineAppDeployE> baseQueryByAppId(Long appId) {
+        PipelineAppDeployDTO appDeployDO = new PipelineAppDeployDTO();
         appDeployDO.setApplicationId(appId);
         return ConvertHelper.convertList(appDeployMapper.select(appDeployDO), PipelineAppDeployE.class);
     }
 
     @Override
-    public void checkName(String name, Long envId) {
-        PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
+    public void baseCheckName(String name, Long envId) {
+        PipelineAppDeployDTO appDeployDO = new PipelineAppDeployDTO();
         appDeployDO.setInstanceName(name);
         appDeployDO.setEnvId(envId);
 
@@ -69,21 +69,21 @@ public class PipelineAppDeployRepositoryImpl implements PipelineAppDeployReposit
     }
 
     @Override
-    public List<PipelineAppDeployE> queryByValueId(Long valueId) {
-        PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
+    public List<PipelineAppDeployE> baseQueryByValueId(Long valueId) {
+        PipelineAppDeployDTO appDeployDO = new PipelineAppDeployDTO();
         appDeployDO.setValueId(valueId);
         return ConvertHelper.convertList(appDeployMapper.select(appDeployDO), PipelineAppDeployE.class);
     }
 
     @Override
-    public List<PipelineAppDeployE> queryByEnvId(Long envId) {
-        PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
+    public List<PipelineAppDeployE> baseQueryByEnvId(Long envId) {
+        PipelineAppDeployDTO appDeployDO = new PipelineAppDeployDTO();
         appDeployDO.setEnvId(envId);
         return ConvertHelper.convertList(appDeployMapper.select(appDeployDO), PipelineAppDeployE.class);
     }
 
     @Override
-    public void updateInstanceId(Long instanceId) {
+    public void baseUpdateWithInstanceId(Long instanceId) {
         appDeployMapper.updateInstanceId(instanceId);
     }
 }

@@ -10,13 +10,15 @@ import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.CheckAuditDTO;
 import io.choerodon.devops.api.vo.IamUserDTO;
 import io.choerodon.devops.api.vo.PipelineCheckDeployDTO;
-import io.choerodon.devops.api.vo.PipelineDTO;
-import io.choerodon.devops.api.vo.PipelineRecordDTO;
+import io.choerodon.devops.api.vo.PipelineVO;
+import io.choerodon.devops.api.vo.PipelineRecordVO;
 import io.choerodon.devops.api.vo.PipelineRecordListDTO;
 import io.choerodon.devops.api.vo.PipelineRecordReqDTO;
 import io.choerodon.devops.api.vo.PipelineReqDTO;
 import io.choerodon.devops.api.vo.PipelineUserRecordRelDTO;
 import io.choerodon.devops.api.vo.iam.UserVO;
+import io.choerodon.devops.api.vo.iam.entity.PipelineE;
+import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 
 /**
@@ -25,15 +27,15 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
  * Description:
  */
 public interface PipelineService {
-    PageInfo<PipelineDTO> listByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params);
+    PageInfo<PipelineVO> listByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params);
 
-    PageInfo<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed);
+    PageInfo<PipelineRecordVO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed);
 
     PipelineReqDTO create(Long projectId, PipelineReqDTO pipelineReqDTO);
 
     PipelineReqDTO update(Long projectId, PipelineReqDTO pipelineReqDTO);
 
-    PipelineDTO updateIsEnabled(Long projectId, Long pipelineId, Integer isEnabled);
+    PipelineVO updateIsEnabled(Long projectId, Long pipelineId, Integer isEnabled);
 
     void delete(Long projectId, Long pipelineId);
 
@@ -61,7 +63,7 @@ public interface PipelineService {
 
     void checkName(Long projectId, String name);
 
-    List<PipelineDTO> listPipelineDTO(Long projectId);
+    List<PipelineVO> listPipelineDTO(Long projectId);
 
     List<UserVO> getAllUsers(Long projectId);
 
@@ -74,4 +76,20 @@ public interface PipelineService {
     void failed(Long projectId, Long recordId);
 
     void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params);
+
+    PageInfo<PipelineDTO> baseListByOptions(Long projectId, PageRequest pageRequest, String params, Map<String, Object> classifyParam);
+
+    PipelineDTO baseCreate(Long projectId, PipelineDTO pipelineDTO);
+
+    PipelineDTO baseUpdate(Long projectId, PipelineDTO pipelineDTO);
+
+    PipelineDTO baseUpdateWithEnabled(Long pipelineId, Integer isEnabled);
+
+    PipelineDTO baseQueryById(Long pipelineId);
+
+    void baseDelete(Long pipelineId);
+
+    void baseCheckName(Long projectId, String name);
+
+    List<PipelineDTO> baseQueryByProjectId(Long projectId);
 }

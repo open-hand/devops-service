@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
 import io.choerodon.devops.api.vo.gitlab.MemberVO;
-import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;

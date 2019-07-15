@@ -19,12 +19,15 @@ import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.domain.application.entity.DevopsProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
 
+<<<<<<< HEAD
 >>>>>>> [IMP]修复后端结构
 
 =======
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.GitlabRepository
+=======
+>>>>>>> [IMP] 重构部分Repository
 import io.choerodon.devops.domain.application.repository.IamRepository
 >>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO

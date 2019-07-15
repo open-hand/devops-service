@@ -306,7 +306,7 @@ public class DevopsSagaHandler {
         Long pipelineRecordId = stageRecordE.getPipelineRecordId();
         try {
             ApplicationInstanceVO applicationInstanceVO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
-            if (!pipelineRecordRepository.queryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordE.getIsParallel() == 1) {
+            if (!pipelineRecordRepository.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordE.getIsParallel() == 1) {
                 if(!taskRecordE.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                     PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceVO.getId(), WorkFlowStatus.SUCCESS.toString());
                     pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());

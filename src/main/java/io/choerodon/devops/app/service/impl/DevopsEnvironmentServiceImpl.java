@@ -19,7 +19,6 @@ import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
-import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
@@ -51,7 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 /**
  * Created by younger on 2018/4/9.
