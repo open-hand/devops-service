@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.GitlabUserRequestDTO;
+import io.choerodon.devops.infra.dto.gitlab.UserDTO;
 
 /**
  * Created by Zenger on 2018/3/28.
@@ -16,4 +17,6 @@ public interface GitlabUserService {
     void disEnabledGitlabUser(Integer userId);
 
     Boolean checkEmailIsExist(String email);
+
+    UserDTO queryGitlabUserByUserId(Integer userId);
 }

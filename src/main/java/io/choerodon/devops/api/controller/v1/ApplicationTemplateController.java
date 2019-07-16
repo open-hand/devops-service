@@ -10,14 +10,15 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.ApplicationTemplateDTO;
 import io.choerodon.devops.api.vo.ApplicationTemplateRepVO;
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
+import io.choerodon.devops.api.vo.ApplicationTemplateVO;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,17 +32,14 @@ import springfox.documentation.annotations.ApiIgnore;
 public class ApplicationTemplateController {
     private static final String ERROR_GET = "error.appTemplate.get";
 
+    @Autowired
     private ApplicationTemplateService applicationTemplateService;
-
-    public ApplicationTemplateController(ApplicationTemplateService applicationTemplateService) {
-        this.applicationTemplateService = applicationTemplateService;
-    }
 
     /**
      * 组织下创建应用模板
      *
-     * @param organizationId         组织id
-     * @param applicationTemplateDTO 模板信息
+     * @param organizationId        组织id
+     * @param applicationTemplateVO 模板信息
      * @return ApplicationTemplateDTO
      */
     @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
@@ -51,8 +49,8 @@ public class ApplicationTemplateController {
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
-            @RequestBody ApplicationTemplateDTO applicationTemplateDTO) {
-        return Optional.ofNullable(applicationTemplateService.create(applicationTemplateDTO, organizationId))
+            @RequestBody ApplicationTemplateVO applicationTemplateVO) {
+        return Optional.ofNullable(applicationTemplateService.create(applicationTemplateVO, organizationId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appTemplate.create"));
     }
@@ -111,7 +109,7 @@ public class ApplicationTemplateController {
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
             @PathVariable Long appTemplateId) {
-        return Optional.ofNullable(applicationTemplateService.query(appTemplateId))
+        return Optional.ofNullable(applicationTemplateService.queryByTemplateId(appTemplateId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_GET));
     }
@@ -153,7 +151,7 @@ public class ApplicationTemplateController {
     public ResponseEntity<List<ApplicationTemplateRepVO>> listByOrgId(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId) {
-        return Optional.ofNullable(applicationTemplateService.list(organizationId))
+        return Optional.ofNullable(applicationTemplateService.listAllByOrganizationId(organizationId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_GET));
     }

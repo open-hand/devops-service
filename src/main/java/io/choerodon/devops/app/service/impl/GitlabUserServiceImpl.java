@@ -2,13 +2,16 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.regex.Pattern;
 
+import feign.FeignException;
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitlabUserRequestDTO;
 import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.infra.dto.gitlab.UserDTO;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,5 +99,16 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     @Override
     public Boolean checkEmailIsExist(String email) {
         return gitlabUserRepository.checkEmailIsExist(email);
+    }
+
+    @Override
+    UserDTO getGitlabUserByUserId(Integer userId) {
+        ResponseEntity<UserDO> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.queryUserById(userId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+        return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
     }
 }

@@ -8,9 +8,14 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.ApplicationTemplateDTO
+import io.choerodon.devops.api.vo.ApplicationTemplateVO
 import io.choerodon.devops.api.vo.ApplicationTemplateRepVO
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO
+<<<<<<< HEAD
+=======
+import io.choerodon.devops.api.vo.ApplicationTemplateVO
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO
+>>>>>>> [REF] refactor ApplicationTemplateController
 import io.choerodon.devops.app.service.ApplicationTemplateService
 import io.choerodon.devops.app.service.DevopsGitService
 <<<<<<< HEAD
@@ -129,7 +134,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     //组织下创建应用模板
     def "createTemplate"() {
         given: "初始化数据"
-        ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO()
+        ApplicationTemplateVO applicationTemplateDTO = new ApplicationTemplateVO()
         applicationTemplateDTO.setId(4L)
         applicationTemplateDTO.setCode("code")
         applicationTemplateDTO.setName("app")

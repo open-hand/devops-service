@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by younger on 2018/3/27.
  */
-public class ApplicationTemplateDTO {
+public class ApplicationTemplateVO {
 
     private Long id;
     private Long organizationId;

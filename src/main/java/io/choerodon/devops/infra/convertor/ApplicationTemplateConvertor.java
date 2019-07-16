@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.convertor;
 
+import io.choerodon.devops.api.vo.ApplicationTemplateVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +14,7 @@ import io.choerodon.devops.infra.dto.ApplicationTemplateDTO;
  * Created by younger on 2018/3/27.
  */
 @Component
-public class ApplicationTemplateConvertor implements ConvertorI<ApplicationTemplateE, ApplicationTemplateDTO, io.choerodon.devops.api.vo.ApplicationTemplateDTO> {
+public class ApplicationTemplateConvertor implements ConvertorI<ApplicationTemplateE, ApplicationTemplateDTO, ApplicationTemplateVO> {
 
     @Override
     public ApplicationTemplateE doToEntity(ApplicationTemplateDTO applicationTemplateDTO) {
@@ -41,10 +42,10 @@ public class ApplicationTemplateConvertor implements ConvertorI<ApplicationTempl
 
 
     @Override
-    public ApplicationTemplateE dtoToEntity(io.choerodon.devops.api.vo.ApplicationTemplateDTO applicationTemplateDTO) {
+    public ApplicationTemplateE dtoToEntity(ApplicationTemplateVO applicationTemplateVO) {
         ApplicationTemplateE applicationTemplateE = ApplicationTemplateFactory.createApplicationTemplateE();
-        BeanUtils.copyProperties(applicationTemplateDTO, applicationTemplateE);
-        applicationTemplateE.initOrganization(applicationTemplateDTO.getOrganizationId());
+        BeanUtils.copyProperties(applicationTemplateVO, applicationTemplateE);
+        applicationTemplateE.initOrganization(applicationTemplateVO.getOrganizationId());
         return applicationTemplateE;
     }
 

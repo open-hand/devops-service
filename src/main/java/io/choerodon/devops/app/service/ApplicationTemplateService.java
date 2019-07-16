@@ -4,10 +4,10 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.ApplicationTemplateDTO;
-import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
-import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.api.vo.ApplicationTemplateRepVO;
+import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
+import io.choerodon.devops.api.vo.ApplicationTemplateVO;
+import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 
 /**
  * Created by younger on 2018/3/27.
@@ -17,11 +17,11 @@ public interface ApplicationTemplateService {
     /**
      * 组织下创建应用模板
      *
-     * @param applicationTemplateDTO 模板信息
+     * @param applicationTemplateVO 模板信息
      * @param organizationId         组织Id
      * @return ApplicationTemplateDTO
      */
-    ApplicationTemplateRepVO create(ApplicationTemplateDTO applicationTemplateDTO, Long organizationId);
+    ApplicationTemplateRepVO create(ApplicationTemplateVO applicationTemplateVO, Long organizationId);
 
     /**
      * 组织下更新应用模板
@@ -45,7 +45,7 @@ public interface ApplicationTemplateService {
      * @param appTemplateId 模板id
      * @return ApplicationTemplateDTO
      */
-    ApplicationTemplateRepVO query(Long appTemplateId);
+    ApplicationTemplateRepVO queryByTemplateId(Long appTemplateId);
 
     /**
      * 组织下分页查询应用模板
@@ -70,7 +70,7 @@ public interface ApplicationTemplateService {
      * @param organizationId 组织Id
      * @return List
      */
-    List<ApplicationTemplateRepVO> list(Long organizationId);
+    List<ApplicationTemplateRepVO> listAllByOrganizationId(Long organizationId);
 
     /**
      * 创建模板校验名称是否存在

@@ -3,48 +3,47 @@ package io.choerodon.devops.app.service.impl;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationTemplateValidator;
 import io.choerodon.devops.api.vo.ApplicationTemplateRepVO;
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationTemplateE;
+import io.choerodon.devops.api.vo.ApplicationTemplateVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
-import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.devops.app.service.GitLabService;
+import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.UserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.enums.Visibility;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.mapper.ApplicationTemplateMapper;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.api.Git;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
+import org.springframework.util.StringUtils;
 
 /**
  * Created by younger on 2018/3/27.
@@ -78,23 +77,23 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     private String gitlabUrl;
 
     @Autowired
-    private IamRepository iamRepository;
+    private IamService iamRepository;
     @Autowired
-    private GitlabRepository gitlabRepository;
-    @Autowired
-    private ApplicationTemplateRepository applicationTemplateRepository;
+    private GitLabService gitlabRepository;
     @Autowired
     private GitUtil gitUtil;
     @Autowired
     private UserAttrRepository userAttrRepository;
     @Autowired
-    private GitlabUserRepository gitlabUserRepository;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
-    private DevopsGitRepository devopsGitRepository;
+    private DevopsGitService devopsGitRepository;
     @Autowired
     private ApplicationTemplateMapper applicationTemplateMapper;
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
+    @Autowired
+    private TransactionalProducer transactionalProducer;
 
     @Autowired
     private SagaClient sagaClient;
@@ -103,18 +102,17 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     @Override
     @Saga(code = "devops-create-gitlab-template-project",
             description = "devops创建gitlab模板项目", inputSchema = "{}")
-    public ApplicationTemplateRepVO create(io.choerodon.devops.api.vo.ApplicationTemplateDTO applicationTemplateDTO, Long organizationId) {
-        ApplicationTemplateValidator.checkApplicationTemplate(applicationTemplateDTO);
-        ApplicationTemplateE applicationTemplateE = ConvertHelper.convert(
-                applicationTemplateDTO, ApplicationTemplateE.class);
-        applicationTemplateRepository.baseCheckCode(applicationTemplateE);
-        applicationTemplateRepository.baseCheckName(applicationTemplateE);
+    public ApplicationTemplateRepVO create(ApplicationTemplateVO applicationTemplateVO, Long organizationId) {
+        ApplicationTemplateValidator.checkApplicationTemplate(applicationTemplateVO);
+        ApplicationTemplateDTO applicationTemplateDTO = templateVoToDto(applicationTemplateVO);
+        baseCheckCode(applicationTemplateDTO);
+        baseCheckName(applicationTemplateDTO);
         Integer gitlabGroupId;
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         OrganizationVO organization = iamRepository.queryOrganizationById(organizationId);
-        applicationTemplateE.initOrganization(organization.getId());
-        applicationTemplateE.setSynchro(false);
-        applicationTemplateE.setFailed(false);
+        applicationTemplateDTO.setOrganizationId(organization.getId());
+        applicationTemplateDTO.setSynchro(false);
+        applicationTemplateDTO.setFailed(false);
         DevopsProjectVO devopsProjectE = gitlabRepository.queryGroupByName(
                 organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (devopsProjectE == null) {
@@ -130,45 +128,45 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
         gitlabProjectPayload.setGroupId(gitlabGroupId);
         gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        gitlabProjectPayload.setPath(applicationTemplateDTO.getCode());
+        gitlabProjectPayload.setPath(applicationTemplateVO.getCode());
         gitlabProjectPayload.setOrganizationId(organization.getId());
         gitlabProjectPayload.setType(TEMPLATE);
 
-        if (applicationTemplateRepository.baseCreate(applicationTemplateE) == null) {
-            throw new CommonException("error.applicationTemplate.insert");
-        }
         String input = gson.toJson(gitlabProjectPayload);
-        sagaClient.startSaga("devops-create-gitlab-template-project", new StartInstanceDTO(input, "", "", ResourceLevel.ORGANIZATION.value(), organizationId));
+        transactionalProducer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withSagaCode("devops-create-gitlab-template-project")
+                        .withJson(input)
+                        .withLevel(ResourceLevel.ORGANIZATION)
+                        .withSourceId(organizationId),
+                builder -> {
+                });
 
-        return ConvertHelper.convert(applicationTemplateRepository.baseQueryByCode(organization.getId(),
-                applicationTemplateDTO.getCode()), ApplicationTemplateRepVO.class);
+        return templateDtoToResponse(baseQueryByCode(organization.getId(), applicationTemplateDTO.getCode()));
     }
 
     @Override
     public ApplicationTemplateRepVO update(ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO, Long organizationId) {
-        ApplicationTemplateE applicationTemplateE = ConvertHelper.convert(
-                applicationTemplateUpdateDTO, ApplicationTemplateE.class);
-        applicationTemplateE.initOrganization(organizationId);
-        return ConvertHelper.convert(applicationTemplateRepository.baseUpdate(applicationTemplateE),
-                ApplicationTemplateRepVO.class);
+        ApplicationTemplateDTO templateDTO = new ApplicationTemplateDTO();
+        BeanUtils.copyProperties(applicationTemplateUpdateDTO, templateDTO);
+        return templateDtoToResponse(baseUpdate(templateDTO));
     }
 
     @Override
     public void delete(Long appTemplateId) {
-        ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.baseQuery(appTemplateId);
+        ApplicationTemplateDTO applicationTemplateDTO = baseQuery(appTemplateId);
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        if (applicationTemplateE.getGitlabProjectE() != null) {
+        if (applicationTemplateDTO.getGitlabProjectId() != null) {
             gitlabRepository.deleteProject(
-                    applicationTemplateE.getGitlabProjectE().getId(),
+                    TypeUtil.objToInteger(applicationTemplateDTO.getGitlabProjectId()),
                     TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
-        applicationTemplateRepository.baseDelete(appTemplateId);
+        applicationTemplateMapper.deleteByPrimaryKey(appTemplateId);
     }
 
     @Override
-    public ApplicationTemplateRepVO query(Long appTemplateId) {
-        ApplicationTemplateRepVO applicationTemplateRepDTO = ConvertHelper.convert(applicationTemplateRepository
-                .baseQuery(appTemplateId), ApplicationTemplateRepVO.class);
+    public ApplicationTemplateRepVO queryByTemplateId(Long appTemplateId) {
+        ApplicationTemplateRepVO applicationTemplateRepDTO = templateDtoToResponse(baseQuery(appTemplateId));
         String repoUrl = applicationTemplateRepDTO.getRepoUrl();
         if (applicationTemplateRepDTO.getOrganizationId() != null) {
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
@@ -180,36 +178,44 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
 
     @Override
     public PageInfo<ApplicationTemplateRepVO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam) {
-        PageInfo<ApplicationTemplateRepVO> applicationTemplateRepDTOPage = ConvertPageHelper
-                .convertPageInfo(applicationTemplateRepository.baseListByOptions(
-                        pageRequest, organizationId, searchParam),
-                        ApplicationTemplateRepVO.class);
+
+        PageInfo<ApplicationTemplateRepVO> applicationTemplateRepDTOPage = ConvertUtils.convertPage(basePageByOptions(pageRequest, organizationId, searchParam), this::templateDtoToResponse);
         List<ApplicationTemplateRepVO> applicationTemplateRepDTOList = applicationTemplateRepDTOPage.getList();
-        setAppTemplateRepoUrl(applicationTemplateRepDTOList);
+        applicationTemplateRepDTOList.forEach(this::setAppTemplateRepoUrl);
         applicationTemplateRepDTOPage.setList(applicationTemplateRepDTOList);
         return applicationTemplateRepDTOPage;
     }
 
-    private void setAppTemplateRepoUrl(List<ApplicationTemplateRepVO> applicationTemplateRepDTOList) {
-        for (ApplicationTemplateRepVO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
-            String repoUrl = applicationTemplateRepDTO.getRepoUrl();
-            if (applicationTemplateRepDTO.getOrganizationId() != null) {
-                repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
-                repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
-            }
-            applicationTemplateRepDTO.setRepoUrl(repoUrl);
+//    private void setAppTemplateRepoUrl(List<ApplicationTemplateRepVO> applicationTemplateRepDTOList) {
+//        for (ApplicationTemplateRepVO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
+//            String repoUrl = applicationTemplateRepDTO.getRepoUrl();
+//            if (applicationTemplateRepDTO.getOrganizationId() != null) {
+//                repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
+//                repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
+//            }
+//            applicationTemplateRepDTO.setRepoUrl(repoUrl);
+//        }
+//    }
+
+    private void setAppTemplateRepoUrl(ApplicationTemplateRepVO applicationTemplateRepDTO) {
+        String repoUrl = applicationTemplateRepDTO.getRepoUrl();
+        if (applicationTemplateRepDTO.getOrganizationId() != null) {
+            repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
+            repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
         }
+        applicationTemplateRepDTO.setRepoUrl(repoUrl);
     }
+
 
     @Override
     public void operationApplicationTemplate(GitlabProjectPayload gitlabProjectPayload) {
 
-        ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.baseQueryByCode(
+        ApplicationTemplateDTO applicationTemplateDTO = baseQueryByCode(
                 gitlabProjectPayload.getOrganizationId(), gitlabProjectPayload.getPath());
 
         OrganizationVO organization = iamRepository.queryOrganizationById(gitlabProjectPayload.getOrganizationId());
 
-        GitlabProjectDTO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "_template", applicationTemplateE.getCode(), gitlabProjectPayload.getUserId());
+        GitlabProjectDTO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "_template", applicationTemplateDTO.getCode(), gitlabProjectPayload.getUserId());
 
         if (gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(),
@@ -218,12 +224,10 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
 
         gitlabProjectPayload.setGitlabProjectId(gitlabProjectDO.getId());
 
-        applicationTemplateE.initGitlabProjectE(
-                TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
+        applicationTemplateDTO.setGitlabProjectId(TypeUtil.objToLong(gitlabProjectPayload.getGitlabProjectId()));
         String applicationDir = gitlabProjectPayload.getType() + System.currentTimeMillis();
-        if (applicationTemplateE.getCopyFrom() != null) {
-            ApplicationTemplateRepVO templateRepDTO = ConvertHelper.convert(applicationTemplateRepository
-                    .baseQuery(applicationTemplateE.getCopyFrom()), ApplicationTemplateRepVO.class);
+        if (applicationTemplateDTO.getCopyFrom() != null) {
+            ApplicationTemplateRepVO templateRepDTO = templateDtoToResponse(baseQuery(applicationTemplateDTO.getCopyFrom()));
             //拉取模板
             String repoUrl = templateRepDTO.getRepoUrl();
             String type = templateRepDTO.getCode();
@@ -237,11 +241,11 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             UserAttrE userAttrE = userAttrRepository.baseQueryByGitlabUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
             String accessToken = getToken(gitlabProjectPayload, applicationDir, userAttrE);
 
-            GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
-            repoUrl = applicationTemplateE.getRepoUrl();
+            UserDTO gitlabUserE = gitlabServiceClientOperator.queryUserById(gitlabProjectPayload.getUserId());
+            repoUrl = applicationTemplateDTO.getRepoUrl();
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
 
-            BranchDTO branchDTO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+            BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), MASTER);
             if (branchDTO.getName() == null) {
                 gitUtil.push(
                         git,
@@ -257,8 +261,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                         gitlabProjectPayload.getUserId());
             }
         }
-        applicationTemplateE.setSynchro(true);
-        applicationTemplateRepository.baseUpdate(applicationTemplateE);
+        applicationTemplateDTO.setSynchro(true);
+        baseUpdate(applicationTemplateDTO);
     }
 
     private String getToken(GitlabProjectPayload gitlabProjectPayload, String applicationDir, UserAttrE userAttrE) {
@@ -273,52 +277,59 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     }
 
     @Override
-    public List<ApplicationTemplateRepVO> list(Long organizationId) {
-        List<ApplicationTemplateRepVO> applicationTemplateRepDTOList = ConvertHelper.convertList(
-                applicationTemplateRepository.baseListByOrganizationId(organizationId),
-                ApplicationTemplateRepVO.class);
-        setAppTemplateRepoUrl(applicationTemplateRepDTOList);
-        return applicationTemplateRepDTOList;
+    public List<ApplicationTemplateRepVO> listAllByOrganizationId(Long organizationId) {
+        return baseListByOrganizationId(organizationId).stream()
+                .map(this::templateDtoToResponse)
+                .peek(this::setAppTemplateRepoUrl)
+                .collect(Collectors.toList());
     }
 
     @Override
     public void checkName(Long organizationId, String name) {
-        ApplicationTemplateE applicationTemplateE = ApplicationTemplateFactory.createApplicationTemplateE();
-        applicationTemplateE.initOrganization(organizationId);
-        applicationTemplateE.setName(name);
-        applicationTemplateRepository.baseCheckName(applicationTemplateE);
+        ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO();
+        applicationTemplateDTO.setOrganizationId(organizationId);
+        applicationTemplateDTO.setName(name);
+        baseCheckName(applicationTemplateDTO);
     }
 
     @Override
     public void checkCode(Long organizationId, String code) {
-        ApplicationTemplateE applicationTemplateE = ApplicationTemplateFactory.createApplicationTemplateE();
-        applicationTemplateE.initOrganization(organizationId);
-        applicationTemplateE.setCode(code);
-        applicationTemplateRepository.baseCheckCode(applicationTemplateE);
+        ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO();
+        applicationTemplateDTO.setOrganizationId(organizationId);
+        applicationTemplateDTO.setCode(code);
+        baseCheckCode(applicationTemplateDTO);
     }
 
     @Override
     public ApplicationTemplateRepVO queryByCode(Long organizationId, String code) {
-        return ConvertHelper.convert(applicationTemplateRepository.baseQueryByCode(organizationId, code), ApplicationTemplateRepVO.class);
+        return templateDtoToResponse(baseQueryByCode(organizationId, code));
     }
 
 
     @Override
     public Boolean applicationTemplateExist(String uuid) {
-        return applicationTemplateRepository.baseCheckTeamplateExist(uuid);
+        return baseCheckTemplateExist(uuid);
     }
 
     @Override
     @Saga(code = "devops-set-appTemplate-err",
             description = "Devops设置创建应用模板状态失败", inputSchema = "{}")
     public void setAppTemplateErrStatus(String input, Long organizationId) {
-        sagaClient.startSaga("devops-set-appTemplate-err", new StartInstanceDTO(input, "", "", ResourceLevel.ORGANIZATION.value(), organizationId));
+        transactionalProducer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withLevel(ResourceLevel.ORGANIZATION)
+                        .withSourceId(organizationId)
+                        .withJson(input)
+                        .withSagaCode("devops-set-appTemplate-err"),
+                builder -> {
+                }
+        );
     }
 
 
     public ApplicationTemplateDTO baseCreate(ApplicationTemplateDTO applicationTemplateDTO) {
 
-        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(applicationTemplateDTO.getOrganizationId())
+        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(applicationTemplateDTO.getOrganizationId());
         applicationTemplateDTO.setRepoUrl(
                 organizationDTO.getCode() + "_template" + "/"
                         + applicationTemplateDTO.getCode() + ".git");
@@ -353,7 +364,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         PageInfo<ApplicationTemplateDTO> applicationTemplateDTOPageInfo;
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> maps = json.deserialize(params, Map.class);
-            if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
+            if (StringUtils.isEmpty(maps.get(TypeUtil.SEARCH_PARAM))) {
                 applicationTemplateDTOPageInfo = PageHelper.startPage(
                         pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationTemplateMapper.listByOrganizationId(
                         organizationId,
@@ -400,9 +411,33 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         }
     }
 
-    public Boolean baseCheckTeamplateExist(String uuid) {
+    public Boolean baseCheckTemplateExist(String uuid) {
         ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO();
         applicationTemplateDTO.setUuid(uuid);
         return !applicationTemplateMapper.select(applicationTemplateDTO).isEmpty();
+    }
+
+    /**
+     * convert VO to DTO
+     *
+     * @param applicationTemplateVO input vo
+     * @return dto
+     */
+    private ApplicationTemplateDTO templateVoToDto(ApplicationTemplateVO applicationTemplateVO) {
+        ApplicationTemplateDTO dto = new ApplicationTemplateDTO();
+        BeanUtils.copyProperties(applicationTemplateVO, dto);
+        return dto;
+    }
+
+    /**
+     * convert DTO to response VO
+     *
+     * @param applicationTemplateDTO input dto
+     * @return response vo
+     */
+    private ApplicationTemplateRepVO templateDtoToResponse(ApplicationTemplateDTO applicationTemplateDTO) {
+        ApplicationTemplateRepVO vo = new ApplicationTemplateRepVO();
+        BeanUtils.copyProperties(applicationTemplateDTO, vo);
+        return vo;
     }
 }
