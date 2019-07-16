@@ -54,8 +54,8 @@ public class DevopsEnvApplicationController {
      * @return List
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "查询环境下的所有应用")
-    @GetMapping("/all")
+    @ApiOperation(value = "查询环境下关联的所有应用")
+    @GetMapping
     public ResponseEntity<List<ApplicationRepDTO>> queryAppByEnvId(
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId) {
