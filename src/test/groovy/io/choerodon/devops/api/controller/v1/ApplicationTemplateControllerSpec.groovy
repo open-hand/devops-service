@@ -9,7 +9,7 @@ import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.ApplicationTemplateVO
-import io.choerodon.devops.api.vo.ApplicationTemplateRepVO
+import io.choerodon.devops.api.vo.ApplicationTemplateRespVO
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO
 <<<<<<< HEAD
 =======
@@ -164,7 +164,7 @@ class ApplicationTemplateControllerSpec extends Specification {
         Mockito.when(gitlabServiceClient.createGroup(any(GroupDO.class), anyInt())).thenReturn(newResponseEntity)
 
         when: '组织下创建应用模板'
-        def entity = restTemplate.postForEntity("/v1/organizations/1/app_templates", applicationTemplateDTO, ApplicationTemplateRepVO.class)
+        def entity = restTemplate.postForEntity("/v1/organizations/1/app_templates", applicationTemplateDTO, ApplicationTemplateRespVO.class)
 
         then: '验证响应状态码'
         entity.statusCode.is2xxSuccessful()
@@ -183,7 +183,7 @@ class ApplicationTemplateControllerSpec extends Specification {
         applicationTemplateUpdateDTO.setDescription("des")
 
         when: '组织下更新应用模板'
-        restTemplate.put("/v1/organizations/1/app_templates", applicationTemplateUpdateDTO, ApplicationTemplateRepVO.class)
+        restTemplate.put("/v1/organizations/1/app_templates", applicationTemplateUpdateDTO, ApplicationTemplateRespVO.class)
 
         then: '返回值'
         ApplicationTemplateDO applicationTemplateDO = applicationTemplateMapper.selectByPrimaryKey(4L)
@@ -195,7 +195,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     // 组织下查询单个应用模板
     def "queryByAppTemplateId"() {
         when: '组织下查询单个应用模板'
-        def object = restTemplate.getForObject("/v1/organizations/{org_id}/app_templates/{template_id}", ApplicationTemplateRepVO.class, org_id, template_id)
+        def object = restTemplate.getForObject("/v1/organizations/{org_id}/app_templates/{template_id}", ApplicationTemplateRespVO.class, org_id, template_id)
 
         then: '验证返回结果'
         object["code"] == "code"

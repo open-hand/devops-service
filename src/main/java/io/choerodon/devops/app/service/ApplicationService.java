@@ -5,7 +5,19 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.*;
+=======
+import io.choerodon.devops.api.vo.AppUserPermissionRepDTO;
+import io.choerodon.devops.api.vo.ApplicationCodeDTO;
+import io.choerodon.devops.api.vo.ApplicationImportDTO;
+import io.choerodon.devops.api.vo.ApplicationRepVO;
+import io.choerodon.devops.api.vo.ApplicationReqVO;
+import io.choerodon.devops.api.vo.ApplicationTemplateRespVO;
+import io.choerodon.devops.api.vo.ApplicationUpdateVO;
+import io.choerodon.devops.api.vo.SonarContentsDTO;
+import io.choerodon.devops.api.vo.SonarTableDTO;
+>>>>>>> [REF] refactor ApplicationTemplateController
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
@@ -191,7 +203,7 @@ public interface ApplicationService {
      * @param isPredefined 是否只查询预定义模板
      * @return Page
      */
-    List<ApplicationTemplateRepVO> listTemplate(Long projectId, Boolean isPredefined);
+    List<ApplicationTemplateRespVO> listTemplate(Long projectId, Boolean isPredefined);
 
     /**
      * 项目下查询已经启用有版本未发布的应用

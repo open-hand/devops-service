@@ -724,7 +724,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<ApplicationTemplateRepVO> listTemplate(Long projectId, Boolean isPredefined) {
+    public List<ApplicationTemplateRespVO> listTemplate(Long projectId, Boolean isPredefined) {
         ProjectVO projectE = iamService.queryIamProject(projectId);
         List<ApplicationTemplateE> applicationTemplateES = applicationTemplateRepository.baseListByOrganizationId(projectE.getOrganization().getId())
                 .stream()
@@ -732,7 +732,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (isPredefined != null && isPredefined) {
             applicationTemplateES = applicationTemplateES.stream().filter(applicationTemplateE -> applicationTemplateE.getOrganization().getId() == null).collect(Collectors.toList());
         }
-        return ConvertHelper.convertList(applicationTemplateES, ApplicationTemplateRepVO.class);
+        return ConvertHelper.convertList(applicationTemplateES, ApplicationTemplateRespVO.class);
     }
 
 <<<<<<< HEAD

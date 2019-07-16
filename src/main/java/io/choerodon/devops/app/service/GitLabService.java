@@ -7,7 +7,6 @@ import io.choerodon.devops.infra.dto.gitlab.DeployKeyDTO;
 import io.choerodon.devops.infra.dto.gitlab.VariableDTO;
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
-import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDTO;
 
 /**

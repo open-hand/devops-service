@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.eventhandler;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_CREATE_GITLAB_TEMPLATE_PROJECT;
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_SET_APPLICATION_TEMPLATE_ERROR;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -232,7 +235,7 @@ public class DevopsSagaHandler {
      */
     @SagaTask(code = "devopsCreateGitlabProjectTemplateErr",
             description = "set  DevOps app template status error",
-            sagaCode = "devops-set-appTemplate-err",
+            sagaCode = DEVOPS_SET_APPLICATION_TEMPLATE_ERROR,
             maxRetryCount = 3,
             seq = 1)
     public String setAppTemplateErr(String data) {
@@ -249,7 +252,7 @@ public class DevopsSagaHandler {
      */
     @SagaTask(code = "devopsOperationGitlabTemplateProject",
             description = "devops create GitLab template project",
-            sagaCode = "devops-create-gitlab-template-project",
+            sagaCode = DEVOPS_CREATE_GITLAB_TEMPLATE_PROJECT,
             maxRetryCount = 3,
             seq = 1)
     public String createTemplate(String data) {

@@ -31,7 +31,7 @@ import io.choerodon.devops.api.vo.ApplicationCodeDTO;
 import io.choerodon.devops.api.vo.ApplicationImportDTO;
 import io.choerodon.devops.api.vo.ApplicationRepVO;
 import io.choerodon.devops.api.vo.ApplicationReqVO;
-import io.choerodon.devops.api.vo.ApplicationTemplateRepVO;
+import io.choerodon.devops.api.vo.ApplicationTemplateRespVO;
 import io.choerodon.devops.api.vo.ApplicationUpdateVO;
 import io.choerodon.devops.api.vo.SonarContentsDTO;
 import io.choerodon.devops.api.vo.SonarTableDTO;
@@ -399,7 +399,7 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询所有应用模板")
     @GetMapping("/template")
-    public ResponseEntity<List<ApplicationTemplateRepVO>> listTemplate(
+    public ResponseEntity<List<ApplicationTemplateRespVO>> listTemplate(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否只查询预定义")
