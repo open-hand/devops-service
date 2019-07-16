@@ -55,7 +55,7 @@ public interface IamService {
 
     List<IamUserDTO> getAllMember(Long projectId);
 
-    Boolean isProjectOwner(Long userId, ProjectVO projectE);
+    Boolean isProjectOwner(Long userId, ProjectDTO projectDTO);
 
     IamAppDTO createIamApp(Long organizationId, IamAppDTO iamAppDTO);
 

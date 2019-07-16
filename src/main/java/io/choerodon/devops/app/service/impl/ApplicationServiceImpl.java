@@ -67,8 +67,12 @@ import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.ApplicationDO;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dto.gitlab.*;
 =======
+=======
+import io.choerodon.devops.infra.dto.ApplicationUserPermissionDTO;
+>>>>>>> [IMP] 修改aplicationController重构
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 >>>>>>> [IMP] 重构AplicationControler
@@ -77,6 +81,7 @@ import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 import io.choerodon.devops.infra.dto.harbor.User;
+import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -86,6 +91,7 @@ import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
+import io.choerodon.devops.infra.mapper.ApplicationUserPermissionMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.tool.UUIDTool;
@@ -146,6 +152,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private UserAttrMapper userAttrMapper;
     @Autowired
+    private ApplicationUserPermissionMapper applicationUserPermissionMapper;
+    @Autowired
     private SagaClient sagaClient;
     @Autowired
     private TransactionalProducer producer;
@@ -175,8 +183,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationRepVO create(Long projectId, ApplicationReqVO applicationReqVO) {
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationReqVO);
-        ProjectVO projectVO = iamService.queryIamProject(projectId);
-        OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganizationId());
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         // 查询创建应用所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
         MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
@@ -199,32 +207,34 @@ public class ApplicationServiceImpl implements ApplicationService {
             userIds.forEach(e -> applicationUserPermissionService.baseCreate(e, appId));
         }
 
-        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
-        iamAppPayLoad.setApplicationCategory(APPLICATION);
-        iamAppPayLoad.setApplicationType(applicationReqVO.getType());
-        iamAppPayLoad.setCode(applicationReqVO.getCode());
-        iamAppPayLoad.setName(applicationReqVO.getName());
-        iamAppPayLoad.setEnabled(true);
-        iamAppPayLoad.setOrganizationId(organizationVO.getId());
-        iamAppPayLoad.setProjectId(projectId);
-        iamAppPayLoad.setFrom(applicationName);
+        IamAppDTO iamAppDTO = new IamAppDTO();
+        iamAppDTO.setApplicationCategory(APPLICATION);
+        iamAppDTO.setApplicationType(applicationReqVO.getType());
+        iamAppDTO.setCode(applicationReqVO.getCode());
+        iamAppDTO.setName(applicationReqVO.getName());
+        iamAppDTO.setEnabled(true);
+        iamAppDTO.setOrganizationId(organizationDTO.getId());
+        iamAppDTO.setProjectId(projectId);
+        iamAppDTO.setFrom(applicationName);
 
-        iamService.createIamApp(organizationVO.getId(), iamAppPayLoad);
-        return ConvertHelper.convert(queryByCode(applicationDTO.getProjectId(), applicationDTO.getCode()), ApplicationRepVO.class);
+        iamService.createIamApp(organizationDTO.getId(), iamAppDTO);
+        ApplicationRepVO applicationRepVO = new ApplicationRepVO();
+        BeanUtils.copyProperties(baseQueryByCode(applicationDTO.getCode(), applicationDTO.getProjectId()), applicationRepVO);
+        return applicationRepVO;
     }
 
 
     @Override
     public ApplicationRepVO query(Long projectId, Long applicationId) {
-        ProjectVO projectVO = iamService.queryIamProject(projectId);
-        OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganizationId());
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(applicationId);
         ApplicationRepVO applicationRepVO = ConvertHelper.convert(applicationDTO, ApplicationRepVO.class);
         //url地址拼接
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         if (applicationDTO.getGitlabProjectId() != null) {
             applicationRepVO.setRepoUrl(gitlabUrl + urlSlash
-                    + organizationVO.getCode() + "-" + projectVO.getCode() + "/"
+                    + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/"
                     + applicationDTO.getCode() + ".git");
         }
         if (applicationDTO.getIsSkipCheckPermission()) {
@@ -238,7 +248,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Saga(code = "devops-app-delete", description = "Devops删除失败应用", inputSchema = "{}")
     public void delete(Long projectId, Long appId) {
-        ProjectVO projectVO = iamService.queryIamProject(projectId);
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         //删除应用权限
 
         applicationUserPermissionService.baseDeleteByAppId(appId);
@@ -256,7 +266,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         //删除iam应用
         DevOpsAppSyncPayload appSyncPayload = new DevOpsAppSyncPayload();
         appSyncPayload.setProjectId(projectId);
-        appSyncPayload.setOrganizationId(projectVO.getOrganizationId());
+        appSyncPayload.setOrganizationId(projectDTO.getOrganizationId());
         appSyncPayload.setCode(applicationDTO.getCode());
         producer.applyAndReturn(
                 StartSagaBuilder
@@ -354,12 +364,20 @@ public class ApplicationServiceImpl implements ApplicationService {
             OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganization().getId());
 =======
         if (!oldApplicationDTO.getName().equals(applicationUpdateVO.getName())) {
+<<<<<<< HEAD
             ProjectVO projectVO = iamService.queryIamProject(oldApplicationDTO.getProjectId());
             OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganizationId());
 >>>>>>> [IMP] 重构AplicationControler
             IamAppPayLoad iamAppPayLoad = iamService.queryIamAppByCode(organizationVO.getId(), applicationDTO.getCode());
             iamAppPayLoad.setName(applicationUpdateVO.getName());
             iamService.updateIamApp(organizationVO.getId(), iamAppPayLoad.getId(), iamAppPayLoad);
+=======
+            ProjectDTO projectDTO = iamService.queryIamProject(oldApplicationDTO.getProjectId());
+            OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
+            IamAppDTO iamAppDTO = iamService.queryIamAppByCode(organizationDTO.getId(), applicationDTO.getCode());
+            iamAppDTO.setName(applicationUpdateVO.getName());
+            iamService.updateIamApp(organizationDTO.getId(), iamAppDTO.getId(), iamAppDTO);
+>>>>>>> [IMP] 修改aplicationController重构
         }
 
         // 创建gitlabUserPayload
@@ -452,10 +470,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (baseUpdate(applicationDTO) != 1) {
             throw new CommonException("error.application.active");
         }
-        ProjectVO projectVO = iamService.queryIamProject(applicationDTO.getId());
+        ProjectDTO projectDTO = iamService.queryIamProject(applicationDTO.getId());
         DevOpsAppSyncPayload opsAppSyncPayload = new DevOpsAppSyncPayload();
         opsAppSyncPayload.setActive(active);
-        opsAppSyncPayload.setOrganizationId(projectVO.getOrganizationId());
+        opsAppSyncPayload.setOrganizationId(projectDTO.getOrganizationId());
         opsAppSyncPayload.setProjectId(applicationDTO.getId());
         opsAppSyncPayload.setCode(applicationDTO.getCode());
         producer.applyAndReturn(
@@ -478,14 +496,14 @@ public class ApplicationServiceImpl implements ApplicationService {
                                                     PageRequest pageRequest, String params) {
         PageInfo<ApplicationDTO> applicationDTOS = listByOptionsFromBase(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        ProjectVO projectVO = iamService.queryIamProject(projectId);
-        OrganizationVO organization = iamService.queryOrganizationById(projectVO.getOrganizationId());
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
-        initApplicationParams(projectVO, organization, applicationDTOS.getList(), urlSlash);
+        initApplicationParams(projectDTO, organizationDTO, applicationDTOS.getList(), urlSlash);
 
         PageInfo<ApplicationRepVO> resultDTOPage = ConvertPageHelper.convertPageInfo(applicationDTOS, ApplicationRepVO.class);
-        resultDTOPage.setList(setApplicationRepVOPermission(applicationDTOS.getList(), userAttrDTO, projectVO));
+        resultDTOPage.setList(setApplicationRepVOPermission(applicationDTOS.getList(), userAttrDTO, projectDTO));
         return resultDTOPage;
     }
 
@@ -514,9 +532,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     public PageInfo<ApplicationRepVO> pageCodeRepository(Long projectId, PageRequest pageRequest, String params) {
 
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        ProjectVO projectVO = iamService.queryIamProject(projectId);
-        Boolean isProjectOwner = iamService.isProjectOwner(userAttrDTO.getIamUserId(), projectVO);
-        OrganizationVO organizationVO = iamService.queryOrganizationById(projectVO.getOrganizationId());
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        Boolean isProjectOwner = iamService.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO);
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
 
         Map maps = gson.fromJson(params, Map.class);
         PageInfo<ApplicationDTO> applicationES = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listCodeRepository(projectId,
@@ -524,8 +542,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                 TypeUtil.cast(maps.get(TypeUtil.PARAM)), isProjectOwner, userAttrDTO.getIamUserId()));
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
+<<<<<<< HEAD
         initApplicationParams(projectVO, organizationVO, applicationES.getList(), urlSlash);
 >>>>>>> [IMP] 修改AppControler重构
+=======
+        initApplicationParams(projectDTO, organizationDTO, applicationES.getList(), urlSlash);
+>>>>>>> [IMP] 修改aplicationController重构
 
             initApplicationParams(projectE, organization, applicationES.getList(), urlSlash);
 
@@ -533,6 +555,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             return ConvertPageHelper.convertPageInfo(applicationES, ApplicationRepVO.class);
         }
 
+<<<<<<< HEAD
         private void initApplicationParams (ProjectVO projectE, OrganizationVO
         organization, List < ApplicationE > applicationES, String urlSlash){
             List<String> projectKeys = new ArrayList<>();
@@ -547,6 +570,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                     LOGGER.info(e.getMessage(), e);
 =======
     private void initApplicationParams(ProjectVO projectE, OrganizationVO organization, List<ApplicationDTO> applicationDTOS, String urlSlash) {
+=======
+    private void initApplicationParams(ProjectDTO projectDTO, OrganizationDTO organizationDTO, List<ApplicationDTO> applicationDTOS, String urlSlash) {
+>>>>>>> [IMP] 修改aplicationController重构
         List<String> projectKeys = new ArrayList<>();
         if (!sonarqubeUrl.equals("")) {
             SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, "sonar", userName, password);
@@ -588,9 +614,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         for (ApplicationDTO t : applicationDTOS) {
             if (t.getGitlabProjectId() != null) {
                 t.setRepoUrl(
-                        gitlabUrl + urlSlash + organization.getCode() + "-" + projectE.getCode() + "/" +
+                        gitlabUrl + urlSlash + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/" +
                                 t.getCode() + ".git");
-                String key = String.format("%s-%s:%s", organization.getCode(), projectE.getCode(), t.getCode());
+                String key = String.format("%s-%s:%s", organizationDTO.getCode(), projectDTO.getCode(), t.getCode());
                 if (!projectKeys.isEmpty() && projectKeys.contains(key)) {
                     t.setSonarUrl(sonarqubeUrl);
                 }
@@ -612,15 +638,15 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     private List<ApplicationRepVO> setApplicationRepVOPermission(List<ApplicationDTO> applicationDTOList,
-                                                                 UserAttrDTO userAttrDTO, ProjectVO projectE) {
+                                                                 UserAttrDTO userAttrDTO, ProjectDTO projectDTO) {
         List<ApplicationRepVO> resultDTOList = ConvertHelper.convertList(applicationDTOList, ApplicationRepVO.class);
         if (userAttrDTO == null) {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
-        if (!iamService.isProjectOwner(userAttrDTO.getIamUserId(), projectE)) {
-            AppUserPermissionDTO appUserPermissionDO = new AppUserPermissionDTO();
+        if (!iamService.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO)) {
+            ApplicationUserPermissionDTO appUserPermissionDO = new ApplicationUserPermissionDTO();
             appUserPermissionDO.setIamUserId(userAttrDTO.getIamUserId());
-            List<Long> appIds = appUserPermissionMapper.select(appUserPermissionDO).stream()
+            List<Long> appIds = applicationUserPermissionMapper.select(appUserPermissionDO).stream()
                     .map(AppUserPermissionDTO::getAppId).collect(Collectors.toList());
 
             resultDTOList.stream().filter(e -> e != null && !e.getPermission()).forEach(e -> {

@@ -1,11 +1,9 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 
 /**
  * Created by Zenger on 2018/3/28.

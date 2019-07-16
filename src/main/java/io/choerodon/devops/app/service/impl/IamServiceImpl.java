@@ -249,11 +249,11 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public Boolean isProjectOwner(Long userId, ProjectVO projectE) {
+    public Boolean isProjectOwner(Long userId, ProjectDTO projectDTO) {
         List<ProjectWithRoleDTO> projectWithRoleDTOList = listProjectWithRoleDTO(userId);
         List<RoleDTO> roleDTOS = new ArrayList<>();
         projectWithRoleDTOList.stream().filter(projectWithRoleDTO ->
-                projectWithRoleDTO.getName().equals(projectE.getName())).forEach(projectWithRoleDTO ->
+                projectWithRoleDTO.getName().equals(projectDTO.getName())).forEach(projectWithRoleDTO ->
                 roleDTOS.addAll(projectWithRoleDTO.getRoles()
                         .stream().filter(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))
                         .collect(Collectors.toList())));
