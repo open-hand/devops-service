@@ -5,19 +5,13 @@ import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
-import io.choerodon.devops.api.vo.gitlab.MemberVO;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.MemberHelper;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -153,7 +147,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     }
 
     @Override
-    public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
+    public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrDTO userAttrDTO) {
         DevopsProjectVO devopsProjectE = devopsProjectRepository
                 .queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
         if (devopsEnvironmentE.getGitlabEnvProjectId() == null) {
@@ -161,13 +155,13 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         }
         GitlabMemberE groupMemberE = gitlabGroupMemberRepository
                 .getUserMemberByUserId(TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()),
-                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (groupMemberE != null && groupMemberE.getAccessLevel() == AccessLevel.OWNER.toValue()) {
             return;
         }
         GitlabMemberE newGroupMemberE = gitlabProjectRepository.getProjectMember(
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (newGroupMemberE == null || (newGroupMemberE.getAccessLevel() != AccessLevel.MASTER.toValue())) {
             throw new CommonException("error.user.not.env.pro.owner");
         }

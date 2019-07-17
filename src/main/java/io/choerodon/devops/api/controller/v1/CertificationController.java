@@ -58,7 +58,7 @@ public class CertificationController {
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
-        certificationService.baseCreate(projectId, certification, key, cert, false);
+        certificationService.createCertification(projectId, certification, key, cert, false);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -108,7 +108,7 @@ public class CertificationController {
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(certificationService.basePage(projectId, envId, pageRequest, params))
+        return Optional.ofNullable(certificationService.pageByOptions(projectId, envId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.page"));
     }
@@ -124,14 +124,14 @@ public class CertificationController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "通过域名查询已生效的证书")
     @PostMapping("/active")
-    public ResponseEntity<List<CertificationVO>> getActiveByDomain(
+    public ResponseEntity<List<CertificationVO>> getActiveCertificationByDomain(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "域名")
             @RequestParam(value = "domain") String domain) {
-        return Optional.ofNullable(certificationService.getActiveByDomain(projectId, envId, domain))
+        return Optional.ofNullable(certificationService.queryActiveCertificationByDomain(projectId, envId, domain))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.queryByDomain"));
     }
@@ -198,7 +198,7 @@ public class CertificationController {
     public ResponseEntity<List<OrgCertificationDTO>> listOrgCert(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(certificationService.baseListByProject(projectId))
+        return Optional.ofNullable(certificationService.listOrgCertInProject(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.page"));
     }

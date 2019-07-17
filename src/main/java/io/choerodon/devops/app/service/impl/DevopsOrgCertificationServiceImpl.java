@@ -23,7 +23,7 @@ import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GenerateUUID;
 import io.choerodon.devops.infra.util.SslUtil;
-import io.choerodon.devops.infra.dto.CertificationFileDO;
+import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -83,7 +83,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
         certificationE.setOrganizationId(organizationId);
         certificationE.setSkipCheckProjectPermission(orgCertificationDTO.getSkipCheckProjectPermission());
         certificationE.setDomains(Arrays.asList(orgCertificationDTO.getDomain()));
-        certificationE.setCertificationFileId(certificationRepository.baseStoreCertFile(new CertificationFileDO(orgCertificationDTO.getCertValue(), orgCertificationDTO.getKeyValue())));
+        certificationE.setCertificationFileId(certificationRepository.baseStoreCertFile(new CertificationFileDTO(orgCertificationDTO.getCertValue(), orgCertificationDTO.getKeyValue())));
         certificationE = certificationRepository.baseCreate(certificationE);
         if (!orgCertificationDTO.getSkipCheckProjectPermission() && orgCertificationDTO.getProjects() != null) {
             for (Long projectId : orgCertificationDTO.getProjects()) {

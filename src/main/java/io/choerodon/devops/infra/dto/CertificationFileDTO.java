@@ -14,7 +14,7 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * Description:
  */
 @Table(name = "devops_certification_file")
-public class CertificationFileDO extends BaseDTO {
+public class CertificationFileDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,12 +28,12 @@ public class CertificationFileDO extends BaseDTO {
      * @param certFile cert file
      * @param keyFile  private key file
      */
-    public CertificationFileDO(String certFile, String keyFile) {
+    public CertificationFileDTO(String certFile, String keyFile) {
         this.certFile = certFile;
         this.keyFile = keyFile;
     }
 
-    public CertificationFileDO() {
+    public CertificationFileDTO() {
 
     }
 

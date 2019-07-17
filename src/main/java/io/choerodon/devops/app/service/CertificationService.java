@@ -9,7 +9,7 @@ import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.OrgCertificationDTO;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.infra.dto.CertificationDTO;
-import io.choerodon.devops.infra.dto.CertificationFileDO;
+import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -26,8 +26,8 @@ public interface CertificationService {
      * @param projectId        项目id
      * @param certificationDTO 证书
      */
-    void baseCreate(Long projectId, C7nCertificationDTO certificationDTO,
-                    MultipartFile key, MultipartFile cert, Boolean isGitOps);
+    void createCertification(Long projectId, C7nCertificationDTO certificationDTO,
+                             MultipartFile key, MultipartFile cert, Boolean isGitOps);
 
     C7nCertification getC7nCertification(String name, String type, List<String> domains,
                                          String keyContent, String certContent, String envCode);
@@ -36,9 +36,9 @@ public interface CertificationService {
 
     void certDeleteByGitOps(Long certId);
 
-    PageInfo<CertificationVO> basePage(Long projectId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String params);
 
-    List<CertificationVO> getActiveByDomain(Long projectId, Long envId, String domain);
+    List<CertificationVO> queryActiveCertificationByDomain(Long projectId, Long envId, String domain);
 
     Boolean checkCertNameUniqueInEnv(Long envId, String certName);
 
@@ -54,7 +54,7 @@ public interface CertificationService {
 
     Long createCertCommandE(String type, Long certId, Long userId);
 
-    List<OrgCertificationDTO> baseListByProject(Long projectId);
+    List<OrgCertificationDTO> listOrgCertInProject(Long projectId);
 
     CertificationDTO baseCreate(CertificationDTO certificationVO);
 
@@ -80,9 +80,9 @@ public interface CertificationService {
 
     Boolean baseCheckCertNameUniqueInEnv(Long envId, String certName);
 
-    Long baseStoreCertFile(CertificationFileDO certificationFileDO);
+    Long baseStoreCertFile(CertificationFileDTO certificationFileDTO);
 
-    CertificationFileDO baseQueryCertFile(Long certId);
+    CertificationFileDTO baseQueryCertFile(Long certId);
 
     List<CertificationDTO> baseListByEnvId(Long envId);
 

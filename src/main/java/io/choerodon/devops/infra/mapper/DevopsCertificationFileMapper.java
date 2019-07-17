@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.CertificationFileDO;
+import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**
@@ -10,5 +10,5 @@ import io.choerodon.mybatis.common.Mapper;
  * Description:
  */
 
-public interface DevopsCertificationFileMapper extends Mapper<CertificationFileDO> {
+public interface DevopsCertificationFileMapper extends Mapper<CertificationFileDTO> {
 }

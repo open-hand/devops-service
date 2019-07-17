@@ -33,7 +33,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.enums.CertificationStatus;
 
 import io.choerodon.devops.infra.dto.CertificationDTO;
-import io.choerodon.devops.infra.dto.CertificationFileDO;
+import io.choerodon.devops.infra.dto.CertificationFileDTO;
 
 >>>>>>> [IMP]修复后端结构
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
@@ -193,13 +193,13 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     }
 
     @Override
-    public Long baseStoreCertFile(CertificationFileDO certificationFileDO) {
-        devopsCertificationFileMapper.insert(certificationFileDO);
-        return certificationFileDO.getId();
+    public Long baseStoreCertFile(CertificationFileDTO certificationFileDTO) {
+        devopsCertificationFileMapper.insert(certificationFileDTO);
+        return certificationFileDTO.getId();
     }
 
     @Override
-    public CertificationFileDO baseGetCertFile(Long certId) {
+    public CertificationFileDTO baseGetCertFile(Long certId) {
         CertificationDTO certificationDTO = devopsCertificationMapper.selectByPrimaryKey(certId);
         return devopsCertificationFileMapper.selectByPrimaryKey(certificationDTO.getCertificationFileId());
     }

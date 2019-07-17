@@ -22,15 +22,17 @@ import io.choerodon.devops.api.vo.C7nCertificationDTO;
 import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.OrgCertificationDTO;
 import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.app.service.CertificationService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
 import io.choerodon.devops.infra.dto.CertificationDTO;
-import io.choerodon.devops.infra.dto.CertificationFileDO;
+import io.choerodon.devops.infra.dto.CertificationFileDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
@@ -56,25 +58,25 @@ public class CertificationServiceImpl implements CertificationService {
 
 
     @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    private DevopsEnvironmentService devopsEnvironmentRepository;
     @Autowired
-    private IamRepository iamRepository;
+    private IamServiceClientOperator iamRepository;
     @Autowired
     private DevopsCertificationValidator devopsCertificationValidator;
     @Autowired
-    private UserAttrRepository userAttrRepository;
+    private UserAttrService userAttrRepository;
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private DevopsEnvFileResourceService devopsEnvFileResourceRepository;
     @Autowired
-    private GitlabRepository gitlabRepository;
+    private GitlabServiceClientOperator gitlabRepository;
     @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    private DevopsEnvCommandService devopsEnvCommandRepository;
     @Autowired
-    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    private DevopsEnvUserPermissionService devopsEnvUserPermissionRepository;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
 
@@ -88,21 +90,21 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void baseCreate(Long projectId, C7nCertificationDTO certificationDTO,
-                           MultipartFile key, MultipartFile cert, Boolean isGitOps) {
+    public void createCertification(Long projectId, C7nCertificationDTO certificationDTO,
+                                    MultipartFile key, MultipartFile cert, Boolean isGitOps) {
 
         Long envId = certificationDTO.getEnvId();
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(envId);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentRepository.baseQueryById(envId);
 
-        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrDTO userAttrDTO = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
-        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
 
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectE.getCode(), FILE_SEPARATOR, devopsEnvironmentE.getCode());
+        ProjectDTO projectDTO = iamRepository.queryIamProjectById(projectId);
+        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectDTO.getCode(), FILE_SEPARATOR, devopsEnvironmentDTO.getCode());
 
         String certFileName;
         String keyFileName;
@@ -138,11 +140,11 @@ public class CertificationServiceImpl implements CertificationService {
         List<String> domains = certificationDTO.getDomains();
 
 
-        CertificationFileDO certificationFileDO = null;
+        CertificationFileDTO certificationFileDTO = null;
         //如果创建的时候选择证书
         if (certificationDTO.getCertId() != null) {
             certificationDTO.setType(UPLOAD);
-            certificationFileDO = baseQueryCertFile(baseQueryById(certificationDTO.getCertId()).getId());
+            certificationFileDTO = baseQueryCertFile(baseQueryById(certificationDTO.getCertId()).getId());
         }
 
         devopsCertificationValidator.checkCertification(envId, certName);
@@ -150,22 +152,22 @@ public class CertificationServiceImpl implements CertificationService {
 
         // status operating
         CertificationDTO newCertificationDTO = new CertificationDTO(null,
-                certName, devopsEnvironmentE.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationDTO.getCertId());
+                certName, devopsEnvironmentDTO.getId(), gson.toJson(domains), CertificationStatus.OPERATING.getStatus(), certificationDTO.getCertId());
 
         C7nCertification c7nCertification = null;
 
         if (!isGitOps) {
-            String envCode = devopsEnvironmentE.getCode();
+            String envCode = devopsEnvironmentDTO.getCode();
 
             c7nCertification = getC7nCertification(
-                    certName, type, domains, certificationFileDO == null ? certificationDTO.getKeyValue() : certificationFileDO.getKeyFile(), certificationFileDO == null ? certificationDTO.getCertValue() : certificationFileDO.getCertFile(), envCode);
+                    certName, type, domains, certificationFileDTO == null ? certificationDTO.getKeyValue() : certificationFileDTO.getKeyFile(), certificationFileDTO == null ? certificationDTO.getCertValue() : certificationFileDTO.getCertFile(), envCode);
 
             createAndStore(newCertificationDTO, c7nCertification);
 
             // sent certification to agent
             ResourceConvertToYamlHandler<C7nCertification> certificationOperation = new ResourceConvertToYamlHandler<>();
             certificationOperation.setType(c7nCertification);
-            operateEnvGitLabFile(certName, devopsEnvironmentE, c7nCertification);
+            operateEnvGitLabFile(certName, devopsEnvironmentDTO, c7nCertification);
 
         } else {
             createAndStore(newCertificationDTO, c7nCertification);
@@ -200,7 +202,7 @@ public class CertificationServiceImpl implements CertificationService {
             if (existCert != null) {
                 CertificationDTO certificationDTO = new CertificationDTO();
                 certificationDTO.setCertificationFileId(baseStoreCertFile(
-                        new CertificationFileDO(existCert.getCert(), existCert.getKey())));
+                        new CertificationFileDTO(existCert.getCert(), existCert.getKey())));
                 certificationDTO.setId(certId);
                 baseUpdateCertFileId(certificationDTO);
             }
@@ -232,15 +234,15 @@ public class CertificationServiceImpl implements CertificationService {
     private void operateEnvGitLabFile(String certName,
                                       DevopsEnvironmentE devopsEnvironmentE,
                                       C7nCertification c7nCertification) {
-        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        UserAttrDTO userAttrDTO = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrDTO);
         clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
 
         ResourceConvertToYamlHandler<C7nCertification> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(c7nCertification);
         resourceConvertToYamlHandler.operationEnvGitlabFile(CERT_PREFIX + certName,
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "create",
-                userAttrE.getGitlabUserId(), null, null, null, false, null, null);
+                userAttrDTO.getGitlabUserId(), null, null, null, false, null, null);
     }
 
     @Override
@@ -311,7 +313,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public List<OrgCertificationDTO> baseListByProject(Long projectId) {
+    public List<OrgCertificationDTO> listOrgCertInProject(Long projectId) {
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         List<OrgCertificationDTO> orgCertificationDTOS = new ArrayList<>();
         baseListByProject(projectId, projectE.getOrganization().getId()).forEach(certificationDTO -> {
@@ -340,7 +342,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public PageInfo<CertificationVO> basePage(Long projectId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
         if (params == null) {
             params = "{}";
         }
@@ -555,13 +557,13 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public Long baseStoreCertFile(CertificationFileDO certificationFileDO) {
-        devopsCertificationFileMapper.insert(certificationFileDO);
-        return certificationFileDO.getId();
+    public Long baseStoreCertFile(CertificationFileDTO certificationFileDTO) {
+        devopsCertificationFileMapper.insert(certificationFileDTO);
+        return certificationFileDTO.getId();
     }
 
     @Override
-    public CertificationFileDO baseQueryCertFile(Long certId) {
+    public CertificationFileDTO baseQueryCertFile(Long certId) {
         CertificationDTO certificationDTO = devopsCertificationMapper.selectByPrimaryKey(certId);
         return devopsCertificationFileMapper.selectByPrimaryKey(certificationDTO.getCertificationFileId());
     }

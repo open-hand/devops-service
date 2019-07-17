@@ -7,10 +7,14 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.iam.entity.CertificationE;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dto.CertificationFileDO;
 =======
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 >>>>>>> [IMP] 修改AppControler重构
+=======
+import io.choerodon.devops.infra.dto.CertificationFileDTO;
+>>>>>>> [REF] refactor CertificationController. to be continued.
 
 /**
  * Created by n!Ck
@@ -48,9 +52,9 @@ public interface CertificationRepository {
 
     Boolean baseCheckCertNameUniqueInEnv(Long envId, String certName);
 
-    Long baseStoreCertFile(CertificationFileDO certificationFileDO);
+    Long baseStoreCertFile(CertificationFileDTO certificationFileDTO);
 
-    CertificationFileDO baseGetCertFile(Long certId);
+    CertificationFileDTO baseGetCertFile(Long certId);
 
     List<CertificationE> baseListByEnvId(Long envId);
 

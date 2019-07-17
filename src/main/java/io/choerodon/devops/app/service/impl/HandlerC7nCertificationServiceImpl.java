@@ -8,11 +8,7 @@ import java.util.stream.Collectors;
 
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.api.vo.iam.entity.CertificationE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
@@ -20,11 +16,11 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvironmentReposi
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.certification.CertificationExistCert;
 import io.choerodon.devops.domain.application.valueobject.certification.CertificationSpec;
-import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
+import io.choerodon.devops.infra.dto.CertificationFileDTO;
+import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.dto.CertificationFileDO;
 import io.kubernetes.client.models.V1Endpoints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -131,15 +127,15 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         DevopsEnvironmentE environmentE = devopsEnvironmentRepository.baseQueryById(envId);
         String certName = c7nCertification.getMetadata().getName();
         CertificationE certificationE = certificationRepository.baseQueryByEnvAndName(envId, certName);
-        CertificationFileDO certificationFileDO = certificationRepository.baseGetCertFile(certificationE.getId());
+        CertificationFileDTO certificationFileDTO = certificationRepository.baseGetCertFile(certificationE.getId());
         String type;
         String keyContent = null;
-        String certContent = null;
         Map<String,String> issuerRef = new HashMap<>();
-        if (certificationFileDO != null) {
+        String certContent = null;
+        if (certificationFileDTO != null) {
             type = CertificationType.UPLOAD.getType();
-            keyContent = certificationFileDO.getKeyFile();
-            certContent = certificationFileDO.getCertFile();
+            keyContent = certificationFileDTO.getKeyFile();
+            certContent = certificationFileDTO.getCertFile();
             issuerRef.put("name", LOCALHOST);
             issuerRef.put("kind", CLUSTER_ISSUER);
         } else {
@@ -183,7 +179,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
             CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
             if (existCert != null) {
                 certificationE.setCertificationFileId(certificationRepository.baseStoreCertFile(
-                        new CertificationFileDO(existCert.getCert(), existCert.getKey())));
+                        new CertificationFileDTO(existCert.getCert(), existCert.getKey())));
             }
             Long commandId = certificationService
                     .createCertCommandE(CommandType.CREATE.getType(), certificationE.getId(), userId);
