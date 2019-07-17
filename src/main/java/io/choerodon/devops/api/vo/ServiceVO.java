@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by younger on 2018/4/25.
  */
-public class ServiceDTO {
+public class ServiceVO {
     private String name;
     private String type;
     private String clusterIp;
@@ -13,7 +13,7 @@ public class ServiceDTO {
     private String port;
     private String targetPort;
     private String age;
-    private List<IngressDTO> ingressDTOS;
+    private List<IngressVO> ingressVOS;
 
     public String getName() {
         return name;

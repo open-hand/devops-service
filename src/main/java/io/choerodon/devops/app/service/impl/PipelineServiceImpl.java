@@ -357,20 +357,20 @@ public class PipelineServiceImpl implements PipelineService {
             ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(taskRecordE.getInstanceName(), taskRecordE.getEnvId());
             Long instanceId = instanceE == null ? null : instanceE.getId();
             String type = instanceId == null ? CommandType.CREATE.getType() : CommandType.UPDATE.getType();
-            ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(appVersionE.getId(), taskRecordE.getEnvId(),
+            ApplicationDeployVO applicationDeployVO = new ApplicationDeployVO(appVersionE.getId(), taskRecordE.getEnvId(),
                     valueRepository.baseQueryById(taskRecordE.getValueId()).getValue(), taskRecordE.getApplicationId(), type, instanceId,
                     taskRecordE.getInstanceName(), taskRecordE.getId(), taskRecordE.getValueId());
             if (type.equals(CommandType.UPDATE.getType())) {
-                ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
+                ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployVO.getAppInstanceId());
                 DevopsEnvCommandVO olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
-                if (olddevopsEnvCommandE.getObjectVersionId().equals(applicationDeployDTO.getAppVersionId())) {
-                    String oldValue = applicationInstanceRepository.queryValueByInstanceId(applicationDeployDTO.getAppInstanceId());
-                    if (applicationDeployDTO.getValues().trim().equals(oldValue.trim())) {
-                        applicationDeployDTO.setIsNotChange(true);
+                if (olddevopsEnvCommandE.getObjectVersionId().equals(applicationDeployVO.getAppVersionId())) {
+                    String oldValue = applicationInstanceRepository.queryValueByInstanceId(applicationDeployVO.getAppInstanceId());
+                    if (applicationDeployVO.getValues().trim().equals(oldValue.trim())) {
+                        applicationDeployVO.setIsNotChange(true);
                     }
                 }
             }
-            String input = gson.toJson(applicationDeployDTO);
+            String input = gson.toJson(applicationDeployVO);
             sagaClient.startSaga("devops-pipeline-auto-deploy-instance", new StartInstanceDTO(input, "env", taskRecordE.getEnvId().toString(), ResourceLevel.PROJECT.value(), taskRecordE.getProjectId()));
         } catch (Exception e) {
             sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId().longValue());

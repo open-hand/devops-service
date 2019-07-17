@@ -79,7 +79,7 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
 
     @Override
     public List<DevopsEnvCommandVO> baseListInstanceCommand(String objectType, Long objectId) {
-        return ConvertHelper.convertList(devopsEnvCommandMapper.queryInstanceCommand(objectType, objectId), DevopsEnvCommandVO.class);
+        return ConvertHelper.convertList(devopsEnvCommandMapper.listInstanceCommand(objectType, objectId), DevopsEnvCommandVO.class);
     }
 
     @Override

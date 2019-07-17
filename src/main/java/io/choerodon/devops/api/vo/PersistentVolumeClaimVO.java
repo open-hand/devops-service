@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * @author zmf
  */
-public class PersistentVolumeClaimDTO {
+public class PersistentVolumeClaimVO {
     private String name;
     private String status;
     private String capacity;

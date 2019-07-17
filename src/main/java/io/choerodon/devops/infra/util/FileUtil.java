@@ -21,7 +21,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.valueobject.HighlightMarker;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
+import io.choerodon.devops.domain.application.valueobject.InstanceValueVO;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -365,10 +365,10 @@ public class FileUtil {
      * @param path 路径
      * @return 返回替换结果
      */
-    public static ReplaceResult replaceNew(String path) {
+    public static InstanceValueVO replaceNew(String path) {
         BufferedReader stdInput = null;
         BufferedReader stdError = null;
-        ReplaceResult replaceResult = null;
+        InstanceValueVO instanceValueVO = null;
         try {
             String command = EXEC_PATH + " " + path;
             Process p = Runtime.getRuntime().exec(command);
@@ -386,7 +386,7 @@ public class FileUtil {
             }
             String result = stringBuilder.toString();
             String err = null;
-            replaceResult = loadResult(result);
+            instanceValueVO = loadResult(result);
             while ((err = stdError.readLine()) != null) {
                 err += err;
             }
@@ -404,22 +404,22 @@ public class FileUtil {
                 logger.info(e.getMessage(), e);
             }
         }
-        return replaceResult;
+        return instanceValueVO;
     }
 
-    private static ReplaceResult loadResult(String yml) {
+    private static InstanceValueVO loadResult(String yml) {
         String[] strings = yml.split("------love----you------choerodon----");
         if (strings.length < 2) {
             throw new CommonException("error.value.illegal");
         }
         Yaml yaml = new Yaml();
         Object map = yaml.load(strings[2]);
-        ReplaceResult replaceResult = replaceNew(strings[0], (Map) map);
-        replaceResult.setDeltaYaml(strings[1]);
-        return replaceResult;
+        InstanceValueVO instanceValueVO = replaceNew(strings[0], (Map) map);
+        instanceValueVO.setDeltaYaml(strings[1]);
+        return instanceValueVO;
     }
 
-    private static ReplaceResult replaceNew(String yaml, Map map) {
+    private static InstanceValueVO replaceNew(String yaml, Map map) {
         Composer composer = new Composer(new ParserImpl(new StreamReader(yaml)), new Resolver());
         MappingNode mappingNode = (MappingNode) composer.getSingleNode();
         List<Integer> addLines = new ArrayList<>();
@@ -451,11 +451,11 @@ public class FileUtil {
             }
         }
 
-        ReplaceResult replaceResult = new ReplaceResult();
-        replaceResult.setNewLines(addLines);
-        replaceResult.setHighlightMarkers(highlightMarkers);
-        replaceResult.setYaml(yaml);
-        return replaceResult;
+        InstanceValueVO instanceValueVO = new InstanceValueVO();
+        instanceValueVO.setNewLines(addLines);
+        instanceValueVO.setHighlightMarkers(highlightMarkers);
+        instanceValueVO.setYaml(yaml);
+        return instanceValueVO;
 
     }
 

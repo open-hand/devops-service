@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
+import io.choerodon.devops.api.vo.ContainerVO;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -39,6 +40,16 @@ public class DevopsEnvPodDTO extends BaseDTO {
     private String envName;
     @Transient
     private Long projectId;
+    @Transient
+    private List<ContainerVO> containers;
+
+    public List<ContainerVO> getContainers() {
+        return containers;
+    }
+
+    public void setContainers(List<ContainerVO> containers) {
+        this.containers = containers;
+    }
 
     public DevopsEnvPodDTO(Long appInstanceId) {
         this.appInstanceId = appInstanceId;

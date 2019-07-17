@@ -8,6 +8,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 
 
 /**
@@ -194,11 +195,11 @@ public interface DevopsEnvironmentService {
     void retryGitOps(Long envId);
 
     /**
-     * @param devopsEnvironmentE
-     * @param userAttrE
+     *
+     * @param devopsEnvironmentDTO
+     * @param userAttrDTO
      */
-    void checkEnv(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE);
-
+    void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO);
 
     /**
      *
@@ -206,7 +207,6 @@ public interface DevopsEnvironmentService {
      * @return
      */
     List<DevopsEnvironmentVO> queryByProjectFromBase(Long projectId);
-
 
     DevopsEnvironmentDTO baseCreate(DevopsEnvironmentDTO devopsEnvironmentDTO);
 

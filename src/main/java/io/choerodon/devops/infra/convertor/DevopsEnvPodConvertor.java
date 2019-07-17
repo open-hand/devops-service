@@ -6,7 +6,10 @@ import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import org.springframework.stereotype.Component;
 =======
 import io.choerodon.core.convertor.ConvertorI;
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
+=======
+>>>>>>> [IMP]重构后端代码
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
 import org.springframework.beans.BeanUtils;
 

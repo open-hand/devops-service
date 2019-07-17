@@ -5,6 +5,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -24,6 +26,21 @@ public class DevopsRegistrySecretDTO extends BaseDTO {
     private String secretDetail;
     private Boolean status;
     private Long objectVersionNumber;
+
+
+
+    public DevopsRegistrySecretDTO() {
+    }
+
+    public DevopsRegistrySecretDTO(Long envId, Long configId, String envCode, String secretCode, String secretDetail) {
+        this.envId = envId;
+        this.namespace = envCode;
+        this.configId = configId;
+        this.secretCode = secretCode;
+        this.secretDetail = secretDetail;
+        this.status = false;
+    }
+
 
     public Long getId() {
         return id;

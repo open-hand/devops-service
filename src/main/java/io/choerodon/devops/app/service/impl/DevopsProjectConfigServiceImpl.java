@@ -11,7 +11,7 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsProjectConfigValidator;
 import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
-import io.choerodon.devops.api.vo.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectConfigVO;
 import io.choerodon.devops.api.vo.ProjectDefaultConfigDTO;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
@@ -235,14 +235,14 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
             devopsProjectConfigVO.setName("project_harbor_default");
             devopsProjectConfigVO.setType(HARBOR);
             devopsProjectConfigVO.setProjectId(projectId);
-            ProjectConfigDTO projectConfigDTO = new ProjectConfigDTO();
-            projectConfigDTO.setPrivate(true);
-            projectConfigDTO.setUrl(harborConfigurationProperties.getBaseUrl());
-            projectConfigDTO.setPassword(user.getPassword());
-            projectConfigDTO.setUserName(user.getUsername());
-            projectConfigDTO.setEmail(user.getEmail());
-            projectConfigDTO.setProject(organization.getCode() + "-" + projectE.getCode());
-            devopsProjectConfigVO.setConfig(projectConfigDTO);
+            ProjectConfigVO projectConfigVO = new ProjectConfigVO();
+            projectConfigVO.setPrivate(true);
+            projectConfigVO.setUrl(harborConfigurationProperties.getBaseUrl());
+            projectConfigVO.setPassword(user.getPassword());
+            projectConfigVO.setUserName(user.getUsername());
+            projectConfigVO.setEmail(user.getEmail());
+            projectConfigVO.setProject(organization.getCode() + "-" + projectE.getCode());
+            devopsProjectConfigVO.setConfig(projectConfigVO);
             DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.baseCreate(ConvertHelper.convert(devopsProjectConfigVO, DevopsProjectConfigE.class));
 
             //更新项目下所有应用的harbor配置为该默认配置

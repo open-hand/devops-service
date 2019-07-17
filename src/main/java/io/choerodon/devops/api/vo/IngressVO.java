@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by younger on 2018/4/25.
  */
-public class IngressDTO {
+public class IngressVO {
     private String name;
     private String hosts;
     private String address;

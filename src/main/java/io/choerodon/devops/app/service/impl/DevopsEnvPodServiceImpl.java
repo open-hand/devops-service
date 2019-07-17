@@ -17,7 +17,6 @@ import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvResourceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;

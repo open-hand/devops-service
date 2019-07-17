@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.convertor;
 import com.google.gson.Gson;
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
-import io.choerodon.devops.api.vo.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectConfigVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
 <<<<<<< HEAD
 <<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsProjectConfigConvertor.java
@@ -35,7 +35,7 @@ public class DevopsProjectConfigConvertor implements ConvertorI<DevopsProjectCon
     public DevopsProjectConfigE doToEntity(DevopsProjectConfigDTO devopsProjectConfigDTO) {
         DevopsProjectConfigE devopsProjectConfigE = new DevopsProjectConfigE();
         BeanUtils.copyProperties(devopsProjectConfigDTO, devopsProjectConfigE);
-        ProjectConfigDTO configDTO = gson.fromJson(devopsProjectConfigDTO.getConfig(), ProjectConfigDTO.class);
+        ProjectConfigVO configDTO = gson.fromJson(devopsProjectConfigDTO.getConfig(), ProjectConfigVO.class);
         devopsProjectConfigE.setConfig(configDTO);
         return devopsProjectConfigE;
     }

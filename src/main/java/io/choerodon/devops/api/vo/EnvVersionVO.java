@@ -9,25 +9,25 @@ import java.util.List;
  * Time: 21:11
  * Description:
  */
-public class EnvVersionDTO {
+public class EnvVersionVO {
     private Long versionId;
     private String version;
     private Integer runningCount;
     private Boolean isLatest;
-    private List<EnvInstancesDTO> instances;
+    private List<EnvInstancesVO> instances;
 
-    public EnvVersionDTO() {
+    public EnvVersionVO() {
     }
 
     /**
      * 构造函数
      */
-    public EnvVersionDTO(Long versionId, String version, Long instanceId, String instanceName, String instanceStatus) {
+    public EnvVersionVO(Long versionId, String version, Long instanceId, String instanceName, String instanceStatus) {
         this.versionId = versionId;
         this.version = version;
         this.runningCount = 1;
         this.instances = new ArrayList<>();
-        this.instances.add(new EnvInstancesDTO(instanceId, instanceName, instanceStatus));
+        this.instances.add(new EnvInstancesVO(instanceId, instanceName, instanceStatus));
     }
 
     public Long getVersionId() {
@@ -54,16 +54,16 @@ public class EnvVersionDTO {
         this.runningCount = runningCount;
     }
 
-    public List<EnvInstancesDTO> getInstances() {
+    public List<EnvInstancesVO> getInstances() {
         return instances;
     }
 
-    public void setInstances(List<EnvInstancesDTO> instances) {
+    public void setInstances(List<EnvInstancesVO> instances) {
         this.instances = instances;
     }
 
     public void appendInstanceList(Long instanceId, String instanceName, String instanceStatus) {
-        this.instances.add(new EnvInstancesDTO(instanceId, instanceName, instanceStatus));
+        this.instances.add(new EnvInstancesVO(instanceId, instanceName, instanceStatus));
         this.runningCount += 1;
     }
 

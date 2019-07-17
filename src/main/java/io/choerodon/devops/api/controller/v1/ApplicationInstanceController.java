@@ -12,7 +12,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
+import io.choerodon.devops.domain.application.valueobject.InstanceValueVO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -122,7 +122,7 @@ public class ApplicationInstanceController {
     }
 
     /**
-     * 获取最新部署配置
+     * 获取实例上次部署配置
      *
      * @param projectId     项目id
      * @param appInstanceId 实例id
@@ -130,14 +130,14 @@ public class ApplicationInstanceController {
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取配置")
-    @GetMapping(value = "/{appInstanceId}/value")
-    public ResponseEntity<ReplaceResult> queryValue(
+    @ApiOperation(value = "获取实例上次部署配置")
+    @GetMapping(value = "/{appInstanceId}/last_deploy_value")
+    public ResponseEntity<InstanceValueVO> queryLastDeployValue(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
-        return Optional.ofNullable(applicationInstanceService.queryValue(appInstanceId))
+        return Optional.ofNullable(applicationInstanceService.queryLastDeployValue(appInstanceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.instance.value.get"));
     }
@@ -155,14 +155,14 @@ public class ApplicationInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多部署详情(Json格式)")
     @GetMapping(value = "/{appInstanceId}/deployment_detail_json")
-    public ResponseEntity<InstanceControllerDetailDTO> getDeploymentDetailsJsonByInstanceId(
+    public ResponseEntity<InstanceControllerDetailVO> getDeploymentDetailsJsonByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
             @RequestParam(value = "deployment_name") String deploymentName,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
-        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailJson(appInstanceId, deploymentName, ResourceType.DEPLOYMENT), HttpStatus.OK);
+        return new ResponseEntity<>(applicationInstanceService.queryInstanceResourceDetailJson(appInstanceId, deploymentName, ResourceType.DEPLOYMENT), HttpStatus.OK);
     }
 
     /**
@@ -177,14 +177,14 @@ public class ApplicationInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多daemonSet详情(Json格式)")
     @GetMapping(value = "/{appInstanceId}/daemon_set_detail_json")
-    public ResponseEntity<InstanceControllerDetailDTO> getDaemonSetDetailsJsonByInstanceId(
+    public ResponseEntity<InstanceControllerDetailVO> getDaemonSetDetailsJsonByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
             @RequestParam(value = "daemon_set_name") String daemonSetName,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
-        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailJson(appInstanceId, daemonSetName, ResourceType.DAEMONSET), HttpStatus.OK);
+        return new ResponseEntity<>(applicationInstanceService.queryInstanceResourceDetailJson(appInstanceId, daemonSetName, ResourceType.DAEMONSET), HttpStatus.OK);
     }
 
     /**
@@ -199,14 +199,14 @@ public class ApplicationInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多statefulSet详情(Json格式)")
     @GetMapping(value = "/{appInstanceId}/stateful_set_detail_json")
-    public ResponseEntity<InstanceControllerDetailDTO> getStatefulSetDetailsJsonByInstanceId(
+    public ResponseEntity<InstanceControllerDetailVO> getStatefulSetDetailsJsonByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
             @RequestParam(value = "stateful_set_name") String statefulSetName,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
-        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailJson(appInstanceId, statefulSetName, ResourceType.STATEFULSET), HttpStatus.OK);
+        return new ResponseEntity<>(applicationInstanceService.queryInstanceResourceDetailJson(appInstanceId, statefulSetName, ResourceType.STATEFULSET), HttpStatus.OK);
     }
 
     /**
@@ -221,7 +221,7 @@ public class ApplicationInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多部署详情(Yaml格式)")
     @GetMapping(value = "/{appInstanceId}/deployment_detail_yaml")
-    public ResponseEntity<InstanceControllerDetailDTO> getDeploymentDetailsYamlByInstanceId(
+    public ResponseEntity<InstanceControllerDetailVO> getDeploymentDetailsYamlByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
@@ -243,7 +243,7 @@ public class ApplicationInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多daemonSet详情(Yaml格式)")
     @GetMapping(value = "/{appInstanceId}/daemon_set_detail_yaml")
-    public ResponseEntity<InstanceControllerDetailDTO> getDaemonSetDetailsYamlByInstanceId(
+    public ResponseEntity<InstanceControllerDetailVO> getDaemonSetDetailsYamlByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
@@ -265,7 +265,7 @@ public class ApplicationInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多statefulSet详情(Yaml格式)")
     @GetMapping(value = "/{appInstanceId}/stateful_set_detail_yaml")
-    public ResponseEntity<InstanceControllerDetailDTO> getStatefulSetDetailsYamlByInstanceId(
+    public ResponseEntity<InstanceControllerDetailVO> getStatefulSetDetailsYamlByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
@@ -276,19 +276,19 @@ public class ApplicationInstanceController {
     }
 
     /**
-     * 获取升级 Value
+     * 获取升级Value
      *
      * @param projectId     项目id
      * @param appInstanceId 实例id
      * @param appVersionId  版本Id
-     * @return ReplaceResult
+     * @return InstanceValueVO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取升级 Value")
-    @GetMapping(value = "/{appInstanceId}/appVersion/{appVersionId}/value")
-    public ResponseEntity<ReplaceResult> queryUpgradeValue(
+    @ApiOperation(value = "获取升级Value")
+    @GetMapping(value = "/{appInstanceId}/appVersion/{appVersionId}/upgrade_value")
+    public ResponseEntity<InstanceValueVO> queryUpgradeValue(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署ID", required = true)
@@ -301,19 +301,19 @@ public class ApplicationInstanceController {
     }
 
     /**
-     * 查询value列表
+     * 查询应用部署时value
      *
      * @param projectId    项目id
      * @param type         部署类型
      * @param instanceId   实例Id
      * @param appVersionId 版本id
-     * @return ReplaceResult
+     * @return InstanceValueVO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询value列表")
-    @GetMapping("/value")
-    public ResponseEntity<ReplaceResult> queryValues(
+    @ApiOperation(value = "查询应用部署时value")
+    @GetMapping("/deploy_value")
+    public ResponseEntity<InstanceValueVO> queryDeployValue(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "type", required = true)
@@ -322,7 +322,7 @@ public class ApplicationInstanceController {
             @RequestParam(required = false) Long instanceId,
             @ApiParam(value = "版本ID")
             @RequestParam Long appVersionId) {
-        return Optional.ofNullable(applicationInstanceService.queryValues(type, instanceId, appVersionId))
+        return Optional.ofNullable(applicationInstanceService.queryDeployValue(type, instanceId, appVersionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.values.query"));
     }
@@ -330,21 +330,21 @@ public class ApplicationInstanceController {
 
     /**
      * @param projectId     项目id
-     * @param replaceResult 部署value
-     * @return ReplaceResult
+     * @param instanceValueVO 部署value
+     * @return InstanceValueVO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询预览value")
     @PostMapping("/previewValue")
-    public ResponseEntity<ReplaceResult> previewValues(
+    public ResponseEntity<InstanceValueVO> previewValues(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "replaceResult", required = true)
-            @RequestBody ReplaceResult replaceResult,
+            @ApiParam
+            @RequestBody InstanceValueVO instanceValueVO,
             @ApiParam(value = "版本ID", required = true)
             @RequestParam Long appVersionId) {
-        return Optional.ofNullable(applicationInstanceService.previewValues(replaceResult, appVersionId))
+        return Optional.ofNullable(applicationInstanceService.queryPreviewValues(instanceValueVO, appVersionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.values.query"));
     }
@@ -352,26 +352,26 @@ public class ApplicationInstanceController {
     /**
      * 校验values
      *
-     * @param replaceResult values对象
+     * @param instanceValueVO values对象
      * @return List
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验values")
     @PostMapping("/value_format")
-    public ResponseEntity<List<ErrorLineDTO>> formatValue(
+    public ResponseEntity<List<ErrorLineVO>> formatValue(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "value", required = true)
-            @RequestBody ReplaceResult replaceResult) {
-        return new ResponseEntity<>(applicationInstanceService.formatValue(replaceResult), HttpStatus.OK);
+            @RequestBody InstanceValueVO instanceValueVO) {
+        return new ResponseEntity<>(applicationInstanceService.formatValue(instanceValueVO), HttpStatus.OK);
     }
 
     /**
      * 部署应用
      *
      * @param projectId            项目id
-     * @param applicationDeployDTO 部署信息
+     * @param applicationDeployVO 部署信息
      * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "部署应用")
@@ -383,8 +383,8 @@ public class ApplicationInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
-            @RequestBody ApplicationDeployDTO applicationDeployDTO) {
-        return Optional.ofNullable(applicationInstanceService.createOrUpdate(applicationDeployDTO))
+            @RequestBody ApplicationDeployVO applicationDeployVO) {
+        return Optional.ofNullable(applicationInstanceService.createOrUpdate(applicationDeployVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.deploy"));
     }
@@ -401,8 +401,8 @@ public class ApplicationInstanceController {
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询运行中的实例")
-    @GetMapping("/options")
-    public ResponseEntity<List<AppInstanceCodeDTO>> listByAppVersionId(
+    @GetMapping("/list_running_instance")
+    public ResponseEntity<List<RunningInstanceVO>> listRunningInstance(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID")
@@ -411,7 +411,7 @@ public class ApplicationInstanceController {
             @RequestParam(required = false) Long appId,
             @ApiParam(value = "应用版本 ID")
             @RequestParam(required = false) Long appVersionId) {
-        return Optional.ofNullable(applicationInstanceService.listByOptions(projectId, appId, appVersionId, envId))
+        return Optional.ofNullable(applicationInstanceService.listRunningInstance(projectId, appId, appVersionId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_QUERY));
     }
@@ -428,12 +428,12 @@ public class ApplicationInstanceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境下某应用运行中或失败的实例")
     @GetMapping("/listByAppIdAndEnvId")
-    public ResponseEntity<List<AppInstanceCodeDTO>> listByAppIdAndEnvId(
+    public ResponseEntity<List<RunningInstanceVO>> listByAppIdAndEnvId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID")
             @RequestParam Long envId,
-            @ApiParam(value = "应用Id")
+            @ApiParam(value = "应用 Id")
             @RequestParam Long appId) {
         return Optional.ofNullable(applicationInstanceService.listByAppIdAndEnvId(projectId, appId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -442,7 +442,7 @@ public class ApplicationInstanceController {
 
 
     /**
-     * 获取部署实例资源对象
+     * 获取部署实例release相关对象
      *
      * @param projectId     项目id
      * @param appInstanceId 实例id
@@ -450,9 +450,9 @@ public class ApplicationInstanceController {
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取部署实例资源对象")
+    @ApiOperation(value = "获取部署实例release相关对象")
     @GetMapping("/{appInstanceId}/resources")
-    public ResponseEntity<DevopsEnvResourceVO> listResources(
+    public ResponseEntity<DevopsEnvResourceVO> listResourcesInHelmRelease(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
@@ -473,7 +473,7 @@ public class ApplicationInstanceController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取部署实例Event事件")
     @GetMapping("/{app_instanceId}/events")
-    public ResponseEntity<List<InstanceEventDTO>> listEvents(
+    public ResponseEntity<List<InstanceEventVO>> listEvents(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
@@ -499,7 +499,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long instanceId) {
-        applicationInstanceService.instanceStop(instanceId);
+        applicationInstanceService.stopInstance(instanceId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -519,7 +519,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long instanceId) {
-        applicationInstanceService.instanceStart(instanceId);
+        applicationInstanceService.startInstance(instanceId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -539,7 +539,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long instanceId) {
-        applicationInstanceService.instanceReStart(instanceId);
+        applicationInstanceService.restartInstance(instanceId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -559,7 +559,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long instanceId) {
-        applicationInstanceService.instanceDelete(instanceId);
+        applicationInstanceService.deleteInstance(instanceId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -743,7 +743,7 @@ public class ApplicationInstanceController {
      * 部署自动化测试应用
      *
      * @param projectId            项目id
-     * @param applicationDeployDTO 部署信息
+     * @param applicationDeployVO 部署信息
      * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "部署自动化测试应用")
@@ -755,8 +755,8 @@ public class ApplicationInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
-            @RequestBody ApplicationDeployDTO applicationDeployDTO) {
-        applicationInstanceService.deployTestApp(applicationDeployDTO);
+            @RequestBody ApplicationDeployVO applicationDeployVO) {
+        applicationInstanceService.deployTestApp(applicationDeployVO);
     }
 
     /**
@@ -797,7 +797,7 @@ public class ApplicationInstanceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境下某应用运行中或失败的实例")
     @GetMapping("/getByAppIdAndEnvId")
-    public ResponseEntity<List<AppInstanceCodeDTO>> getByAppIdAndEnvId(
+    public ResponseEntity<List<RunningInstanceVO>> getByAppIdAndEnvId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)

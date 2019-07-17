@@ -4,50 +4,50 @@ import java.util.List;
 
 public class DevopsEnvPreviewInstanceVO extends ApplicationInstanceVO {
 
-    private List<ServiceDTO> serviceDTOS;
-    private List<IngressDTO> ingressDTOS;
-    private List<DaemonSetDTO> daemonSetDTOS;
-    private List<StatefulSetDTO> statefulSetDTOS;
-    private List<PersistentVolumeClaimDTO> persistentVolumeClaimDTOS;
+    private List<ServiceVO> serviceVOS;
+    private List<IngressVO> ingressVOS;
+    private List<DaemonSetVO> daemonSetVOS;
+    private List<StatefulSetVO> statefulSetVOS;
+    private List<PersistentVolumeClaimVO> persistentVolumeClaimVOS;
 
 
-    public List<ServiceDTO> getServiceDTOS() {
-        return serviceDTOS;
+    public List<ServiceVO> getServiceVOS() {
+        return serviceVOS;
     }
 
-    public void setServiceDTOS(List<ServiceDTO> serviceDTOS) {
-        this.serviceDTOS = serviceDTOS;
+    public void setServiceVOS(List<ServiceVO> serviceVOS) {
+        this.serviceVOS = serviceVOS;
     }
 
-    public List<IngressDTO> getIngressDTOS() {
-        return ingressDTOS;
+    public List<IngressVO> getIngressVOS() {
+        return ingressVOS;
     }
 
-    public void setIngressDTOS(List<IngressDTO> ingressDTOS) {
-        this.ingressDTOS = ingressDTOS;
+    public void setIngressVOS(List<IngressVO> ingressVOS) {
+        this.ingressVOS = ingressVOS;
     }
 
-    public List<DaemonSetDTO> getDaemonSetDTOS() {
-        return daemonSetDTOS;
+    public List<DaemonSetVO> getDaemonSetVOS() {
+        return daemonSetVOS;
     }
 
-    public void setDaemonSetDTOS(List<DaemonSetDTO> daemonSetDTOS) {
-        this.daemonSetDTOS = daemonSetDTOS;
+    public void setDaemonSetVOS(List<DaemonSetVO> daemonSetVOS) {
+        this.daemonSetVOS = daemonSetVOS;
     }
 
-    public List<StatefulSetDTO> getStatefulSetDTOS() {
-        return statefulSetDTOS;
+    public List<StatefulSetVO> getStatefulSetVOS() {
+        return statefulSetVOS;
     }
 
-    public void setStatefulSetDTOS(List<StatefulSetDTO> statefulSetDTOS) {
-        this.statefulSetDTOS = statefulSetDTOS;
+    public void setStatefulSetVOS(List<StatefulSetVO> statefulSetVOS) {
+        this.statefulSetVOS = statefulSetVOS;
     }
 
-    public List<PersistentVolumeClaimDTO> getPersistentVolumeClaimDTOS() {
-        return persistentVolumeClaimDTOS;
+    public List<PersistentVolumeClaimVO> getPersistentVolumeClaimVOS() {
+        return persistentVolumeClaimVOS;
     }
 
-    public void setPersistentVolumeClaimDTOS(List<PersistentVolumeClaimDTO> persistentVolumeClaimDTOS) {
-        this.persistentVolumeClaimDTOS = persistentVolumeClaimDTOS;
+    public void setPersistentVolumeClaimVOS(List<PersistentVolumeClaimVO> persistentVolumeClaimVOS) {
+        this.persistentVolumeClaimVOS = persistentVolumeClaimVOS;
     }
 }

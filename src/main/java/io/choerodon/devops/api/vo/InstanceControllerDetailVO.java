@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * @author zmf
  */
-public class InstanceControllerDetailDTO {
+public class InstanceControllerDetailVO {
     /**
      * instance id from the web request
      */
@@ -14,9 +14,9 @@ public class InstanceControllerDetailDTO {
      */
     private Object detail;
 
-    public InstanceControllerDetailDTO() {}
+    public InstanceControllerDetailVO() {}
 
-    public InstanceControllerDetailDTO(Long instanceId, Object detail) {
+    public InstanceControllerDetailVO(Long instanceId, Object detail) {
         this.instanceId = instanceId;
         this.detail = detail;
     }

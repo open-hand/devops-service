@@ -6,18 +6,18 @@ package io.choerodon.devops.api.vo;
  * Time: 09:55
  * Description:
  */
-public class EnvInstancesDTO {
+public class EnvInstancesVO {
     private Long instanceId;
     private String instanceName;
     private String instanceStatus;
 
-    public EnvInstancesDTO() {
+    public EnvInstancesVO() {
     }
 
     /**
      * 构造函数
      */
-    public EnvInstancesDTO(Long instanceId, String instanceName, String instanceStatus) {
+    public EnvInstancesVO(Long instanceId, String instanceName, String instanceStatus) {
         this.instanceId = instanceId;
         this.instanceName = instanceName;
         this.instanceStatus = instanceStatus;

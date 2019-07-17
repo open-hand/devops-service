@@ -7,11 +7,7 @@ import java.util.regex.Pattern;
 import com.alibaba.fastjson.JSONArray;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsClusterE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
-import io.choerodon.devops.app.service.DeployService;
+import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.Payload;
@@ -32,7 +28,7 @@ import org.springframework.stereotype.Service;
  * Created by younger on 2018/4/18.
  */
 @Service
-public class DeployServiceImpl implements DeployService {
+public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String ERROR_PAYLOAD_ERROR = "error.payload.error";
     private static final String KEY_FORMAT = "cluster:%d.release:%s";
     private static final String CLUSTER_FORMAT = "cluster:%s";
@@ -173,15 +169,15 @@ public class DeployServiceImpl implements DeployService {
     }
 
     @Override
-    public void operateSecret(Long clusterId, String namespace, String secretName, ProjectConfigDTO projectConfigDTO, String Type) {
+    public void operateSecret(Long clusterId, String namespace, String secretName, ProjectConfigVO projectConfigVO, String Type) {
         Msg msg = new Msg();
         SecretPayLoad secretPayLoad = new SecretPayLoad();
-        secretPayLoad.setEmail(projectConfigDTO.getEmail());
+        secretPayLoad.setEmail(projectConfigVO.getEmail());
         secretPayLoad.setName(secretName);
         secretPayLoad.setNamespace(namespace);
-        secretPayLoad.setServer(projectConfigDTO.getUrl());
-        secretPayLoad.setUsername(projectConfigDTO.getUserName());
-        secretPayLoad.setPassword(projectConfigDTO.getPassword());
+        secretPayLoad.setServer(projectConfigVO.getUrl());
+        secretPayLoad.setUsername(projectConfigVO.getUserName());
+        secretPayLoad.setPassword(projectConfigVO.getPassword());
 
         try {
             msg.setPayload(mapper.writeValueAsString(secretPayLoad));

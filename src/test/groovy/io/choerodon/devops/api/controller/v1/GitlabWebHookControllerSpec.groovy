@@ -11,7 +11,7 @@ import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService
 
 
-import io.choerodon.devops.app.service.DeployService
+import io.choerodon.devops.app.service.AgentCommandService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
@@ -74,7 +74,7 @@ class GitlabWebHookControllerSpec extends Specification {
     @Autowired
     private DevopsGitRepository devopsGitRepository
     @Autowired
-    private DeployService deployService
+    private AgentCommandService deployService
     @Autowired
     private DevopsGitService devopsGitService
 

@@ -17,8 +17,8 @@ public class ApplicationInstanceOverViewVO {
     private Long latestVersionId;
     private String latestVersion;
     private Integer latestVersionRunning;
-    private List<EnvInstancesDTO> instances;
-    private List<EnvInstanceDTO> envInstances;
+    private List<EnvInstancesVO> instances;
+    private List<EnvInstanceVO> envInstances;
     private Long projectId;
 
     public ApplicationInstanceOverViewVO() {
@@ -76,20 +76,20 @@ public class ApplicationInstanceOverViewVO {
         this.latestVersion = latestVersion;
     }
 
-    public List<EnvInstanceDTO> getEnvInstances() {
+    public List<EnvInstanceVO> getEnvInstances() {
         return envInstances;
     }
 
-    public void setEnvInstances(List<EnvInstanceDTO> envInstances) {
+    public void setEnvInstances(List<EnvInstanceVO> envInstances) {
         this.envInstances = envInstances;
     }
 
-    public EnvInstanceDTO queryLastEnvInstanceDTO() {
+    public EnvInstanceVO queryLastEnvInstanceVO() {
         return envInstances.get(envInstances.size() - 1);
     }
 
-    public void appendEnvInstanceDTOS(EnvInstanceDTO envInstanceDTO) {
-        this.envInstances.add(envInstanceDTO);
+    public void appendEnvInstanceVOS(EnvInstanceVO envInstanceVO) {
+        this.envInstances.add(envInstanceVO);
     }
 
     public Integer getLatestVersionRunning() {
@@ -112,15 +112,15 @@ public class ApplicationInstanceOverViewVO {
         this.latestVersionId = latestVersionId;
     }
 
-    public List<EnvInstancesDTO> getInstances() {
+    public List<EnvInstancesVO> getInstances() {
         return instances;
     }
 
-    public void setInstances(List<EnvInstancesDTO> instances) {
+    public void setInstances(List<EnvInstancesVO> instances) {
         this.instances = instances;
     }
 
-    public void appendInstances(EnvInstancesDTO instancesDTO) {
+    public void appendInstances(EnvInstancesVO instancesDTO) {
         this.instances.add(instancesDTO);
     }
 

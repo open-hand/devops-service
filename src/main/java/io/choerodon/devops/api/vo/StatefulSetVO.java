@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * @author zmf
  */
-public class StatefulSetDTO {
+public class StatefulSetVO {
     private String name;
     private Long desiredReplicas;
     private Long readyReplicas;

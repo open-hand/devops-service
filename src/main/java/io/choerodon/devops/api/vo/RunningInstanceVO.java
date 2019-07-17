@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by Zenger on 2018/4/18.
  */
-public class AppInstanceCodeDTO {
+public class RunningInstanceVO {
 
     private String id;
     private String code;

@@ -2,19 +2,19 @@ package io.choerodon.devops.domain.application.valueobject;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.ErrorLineDTO;
+import io.choerodon.devops.api.vo.ErrorLineVO;
 
 /**
  * yaml 转换结果
  *
  * @author crockitwood
  */
-public class ReplaceResult {
+public class InstanceValueVO {
     private String yaml;
     private List<HighlightMarker> highlightMarkers;
     private Integer totalLine;
     private String errorMsg;
-    private List<ErrorLineDTO> errorLines;
+    private List<ErrorLineVO> errorLines;
     private List<Integer> newLines;
     private String deltaYaml;
     private String name;
@@ -53,11 +53,11 @@ public class ReplaceResult {
         this.errorMsg = errorMsg;
     }
 
-    public List<ErrorLineDTO> getErrorLines() {
+    public List<ErrorLineVO> getErrorLines() {
         return errorLines;
     }
 
-    public void setErrorLines(List<ErrorLineDTO> errorLines) {
+    public void setErrorLines(List<ErrorLineVO> errorLines) {
         this.errorLines = errorLines;
     }
 

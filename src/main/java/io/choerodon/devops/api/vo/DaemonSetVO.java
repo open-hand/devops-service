@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * @author zmf
  */
-public class DaemonSetDTO {
+public class DaemonSetVO {
     private String name;
     private Long desiredScheduled;
     private Long currentScheduled;
@@ -53,11 +53,11 @@ public class DaemonSetDTO {
         this.age = age;
     }
 
-    public List<DevopsEnvPodVO> getDevopsEnvPodDTOS() {
+    public List<DevopsEnvironmentPodVO> getDevopsEnvPodDTOS() {
         return devopsEnvPodDTOS;
     }
 
-    public void setDevopsEnvPodDTOS(List<DevopsEnvPodVO> devopsEnvPodDTOS) {
+    public void setDevopsEnvPodDTOS(List<DevopsEnvironmentPodVO> devopsEnvPodDTOS) {
         this.devopsEnvPodDTOS = devopsEnvPodDTOS;
     }
 }

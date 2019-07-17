@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
-public class InstanceEventDTO {
+public class InstanceEventVO {
     private String type;
     private String status;
     private Date createTime;

@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.config;
 
-import io.choerodon.devops.api.vo.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectConfigVO;
 
 public class ConfigurationProperties extends HarborConfigurationProperties {
 
@@ -20,7 +20,7 @@ public class ConfigurationProperties extends HarborConfigurationProperties {
         this.setEnabled(harborConfigurationProperties.isEnabled());
     }
 
-    public ConfigurationProperties(ProjectConfigDTO config) {
+    public ConfigurationProperties(ProjectConfigVO config) {
         this.setBaseUrl(config.getUrl());
         this.setProject(config.getProject());
         this.setUsername(config.getUserName());

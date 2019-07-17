@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by younger on 2018/4/25.
  */
-public class PodDTO {
+public class PodVO {
     private String name;
     private Long ready;
     private Long desire;

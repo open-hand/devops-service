@@ -19,6 +19,10 @@ public interface DevopsEnvUserPermissionService {
 
     List<DevopsEnvUserPermissionVO> listByEnvId(Long envId);
 
+    List<DevopsEnvUserPermissionVO> listAll(Long envId);
+
+    void updateEnvUserPermission(Long envId, List<Long> addUsersList, List<Long> deleteUsersList);
+
     List<DevopsEnvUserPermissionDTO> listByUserId(Long userId);
 
     void checkEnvDeployPermission(Long userId, Long envId);

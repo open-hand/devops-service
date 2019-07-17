@@ -3,20 +3,23 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.api.vo.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectConfigVO;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsClusterE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 
 /**
  * Created by younger on 2018/4/18.
  */
-public interface DeployService {
+public interface AgentCommandService {
     void sendCommand(DevopsEnvironmentE devopsEnvironmentE);
 
-    void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE,
-                String releaseName, DevopsEnvironmentE devopsEnvironmentE, String values,
+    void deploy(ApplicationDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO,
+                String releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values,
                 Long commandId, String secretCode);
 
     void initCluster(Long clusterId);
@@ -35,5 +38,5 @@ public interface DeployService {
 
     void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count);
 
-    void operateSecret(Long clusterId, String namespace, String secretName, ProjectConfigDTO projectConfigDTO, String type);
+    void operateSecret(Long clusterId, String namespace, String secretName, ProjectConfigVO projectConfigVO, String type);
 }

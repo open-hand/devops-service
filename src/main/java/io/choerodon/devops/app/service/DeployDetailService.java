@@ -11,5 +11,5 @@ import io.choerodon.devops.api.vo.DevopsEnvPodVO;
  * Description:
  */
 public interface DeployDetailService {
-    List<DevopsEnvPodVO> getPods(Long instanceId);
+    List<DevopsEnvPodVO> baseQueryPods(Long instanceId);
 }

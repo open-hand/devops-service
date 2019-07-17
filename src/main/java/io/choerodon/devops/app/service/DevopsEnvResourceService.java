@@ -3,8 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.DevopsEnvResourceVO;
-import io.choerodon.devops.api.vo.InstanceEventDTO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvResourceE;
+import io.choerodon.devops.api.vo.InstanceEventVO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 
@@ -22,8 +21,13 @@ public interface DevopsEnvResourceService {
      */
     DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId);
 
-    List<InstanceEventDTO> listInstancePodEvent(Long instanceId);
-
+    /**
+     * 获取部署实例Event事件
+     *
+     * @param instanceId
+     * @return
+     */
+    List<InstanceEventVO> listInstancePodEvent(Long instanceId);
 
     void baseCreate(DevopsEnvResourceDTO devopsEnvResourceDTO);
 

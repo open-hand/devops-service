@@ -7,6 +7,7 @@ import java.util.List;
 public class DevopsEnvPodVO {
 
     private Long id;
+    private Long appInstanceId;
     private String name;
     private String ip;
     private Boolean isReady;
@@ -24,7 +25,7 @@ public class DevopsEnvPodVO {
     private Long objectVersionNumber;
     private Boolean isConnect;
     private Long clusterId;
-    private List<ContainerDTO> containers;
+    private List<ContainerVO> containers;
     private String nodeName;
     private Long restartCount;
 
@@ -172,11 +173,11 @@ public class DevopsEnvPodVO {
         this.clusterId = clusterId;
     }
 
-    public List<ContainerDTO> getContainers() {
+    public List<ContainerVO> getContainers() {
         return containers;
     }
 
-    public void setContainers(List<ContainerDTO> containers) {
+    public void setContainers(List<ContainerVO> containers) {
         this.containers = containers;
     }
 
@@ -194,5 +195,13 @@ public class DevopsEnvPodVO {
 
     public void setRestartCount(Long restartCount) {
         this.restartCount = restartCount;
+    }
+
+    public Long getAppInstanceId() {
+        return appInstanceId;
+    }
+
+    public void setAppInstanceId(Long appInstanceId) {
+        this.appInstanceId = appInstanceId;
     }
 }

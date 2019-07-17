@@ -5,6 +5,9 @@ import java.util.List;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.app.service.DevopsCommandEventService;
+import io.choerodon.devops.app.service.DevopsEnvCommandLogService;
+import io.choerodon.devops.app.service.DevopsEnvCommandValueService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.choerodon.base.domain.PageRequest;
@@ -29,64 +32,55 @@ import io.choerodon.devops.infra.util.PageRequestUtil;
 public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
 
     @Autowired
-    DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
+    DevopsEnvCommandValueService devopsEnvCommandValueService;
     @Autowired
-    DevopsEnvCommandLogRepository devopsEnvCommandLogRepository;
+    DevopsEnvCommandLogService devopsEnvCommandLogService;
     @Autowired
-    DevopsCommandEventRepository devopsCommandEventRepository;
+    DevopsCommandEventService devopsCommandEventService;
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
 
 
     @Override
-    public DevopsEnvCommandVO baseCreate(DevopsEnvCommandVO devopsEnvCommandE) {
-        DevopsEnvCommandDTO devopsEnvCommandDO = ConvertHelper.convert(devopsEnvCommandE, DevopsEnvCommandDTO.class);
-        if (devopsEnvCommandMapper.insert(devopsEnvCommandDO) != 1) {
+    public DevopsEnvCommandDTO baseCreate(DevopsEnvCommandDTO devopsEnvCommandDTO) {
+        if (devopsEnvCommandMapper.insert(devopsEnvCommandDTO) != 1) {
             throw new CommonException("error.env.command.insert");
         }
-        return ConvertHelper.convert(devopsEnvCommandDO, DevopsEnvCommandVO.class);
+        return devopsEnvCommandDTO;
     }
 
     @Override
-    public DevopsEnvCommandVO baseQueryByObject(String objectType, Long objectId) {
-        return ConvertHelper.convert(
-                devopsEnvCommandMapper.queryByObject(objectType, objectId), DevopsEnvCommandVO.class);
+    public DevopsEnvCommandDTO baseQueryByObject(String objectType, Long objectId) {
+        return devopsEnvCommandMapper.queryByObject(objectType, objectId);
     }
 
     @Override
-    public DevopsEnvCommandVO baseUpdate(DevopsEnvCommandVO devopsEnvCommandVO) {
-        DevopsEnvCommandDTO devopsEnvCommandDO = ConvertHelper.convert(devopsEnvCommandVO, DevopsEnvCommandDTO.class);
-        DevopsEnvCommandDTO newDevopsEnvCommandDO = devopsEnvCommandMapper
-                .selectByPrimaryKey(devopsEnvCommandDO.getId());
-        devopsEnvCommandDO.setObjectVersionNumber(newDevopsEnvCommandDO.getObjectVersionNumber());
-        if (devopsEnvCommandMapper.updateByPrimaryKeySelective(devopsEnvCommandDO) != 1) {
+    public DevopsEnvCommandDTO baseUpdate(DevopsEnvCommandDTO devopsEnvCommandDTO) {
+        DevopsEnvCommandDTO oldDevopsEnvCommandDO = devopsEnvCommandMapper
+                .selectByPrimaryKey(devopsEnvCommandDTO.getId());
+        devopsEnvCommandDTO.setObjectVersionNumber(oldDevopsEnvCommandDO.getObjectVersionNumber());
+        if (devopsEnvCommandMapper.updateByPrimaryKeySelective(devopsEnvCommandDTO) != 1) {
             throw new CommonException("error.env.command.update");
         }
-        return ConvertHelper.convert(devopsEnvCommandDO, DevopsEnvCommandVO.class);
+        return devopsEnvCommandDTO;
     }
 
     @Override
-    public DevopsEnvCommandVO baseQuery(Long id) {
-        DevopsEnvCommandDTO devopsEnvCommandDO = devopsEnvCommandMapper.selectByPrimaryKey(id);
-        return ConvertHelper.convert(devopsEnvCommandDO, DevopsEnvCommandVO.class);
+    public DevopsEnvCommandDTO baseQuery(Long id) {
+        return devopsEnvCommandMapper.selectByPrimaryKey(id);
+    }
+
+
+    @Override
+    public List<DevopsEnvCommandDTO> baseListInstanceCommand(String objectType, Long objectId) {
+        return devopsEnvCommandMapper.listInstanceCommand(objectType, objectId);
     }
 
     @Override
-    public List<DevopsEnvCommandVO> baseListByEnvId(Long envId) {
-        DevopsEnvCommandDTO devopsEnvCommandDO = new DevopsEnvCommandDTO();
-        return ConvertHelper.convertList(devopsEnvCommandMapper.select(devopsEnvCommandDO), DevopsEnvCommandVO.class);
-    }
-
-    @Override
-    public List<DevopsEnvCommandVO> baseListInstanceCommand(String objectType, Long objectId) {
-        return ConvertHelper.convertList(devopsEnvCommandMapper.queryInstanceCommand(objectType, objectId), DevopsEnvCommandVO.class);
-    }
-
-    @Override
-    public PageInfo<DevopsEnvCommandVO> basePageByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
-        PageInfo<ApplicationInstanceDTO> applicationInstanceDOPage = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+    public PageInfo<DevopsEnvCommandDTO> basePageByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
+        PageInfo<DevopsEnvCommandDTO> devopsEnvCommandDTOPageInfo = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
-        return ConvertPageHelper.convertPageInfo(applicationInstanceDOPage, DevopsEnvCommandVO.class);
+        return devopsEnvCommandDTOPageInfo;
     }
 
     @Override
@@ -97,20 +91,19 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     }
 
     @Override
-    public List<DevopsEnvCommandVO> baseListByObject(String objectType, Long objectId) {
+    public List<DevopsEnvCommandDTO> baseListByObject(String objectType, Long objectId) {
         DevopsEnvCommandDTO devopsEnvCommandDO = new DevopsEnvCommandDTO();
         devopsEnvCommandDO.setObjectId(objectId);
         devopsEnvCommandDO.setObject(objectType);
-        return ConvertHelper.convertList(devopsEnvCommandMapper.select(devopsEnvCommandDO), DevopsEnvCommandVO.class);
+        return devopsEnvCommandMapper.select(devopsEnvCommandDO);
     }
 
-    @Override
-    public void baseDeleteByEnvCommandId(DevopsEnvCommandVO devopsEnvCommandVO) {
-        if (devopsEnvCommandVO.getDevopsEnvCommandValueDTO() != null) {
-            devopsEnvCommandValueRepository.baseDeleteById(devopsEnvCommandVO.getDevopsEnvCommandValueDTO().getId());
+    public void baseDeleteByEnvCommandId(DevopsEnvCommandDTO devopsEnvCommandDTO) {
+        if (devopsEnvCommandDTO.getValueId() != null) {
+            devopsEnvCommandValueService.baseDeleteById(devopsEnvCommandDTO.getValueId());
         }
-        devopsEnvCommandLogRepository.baseDeleteByCommandId(devopsEnvCommandVO.getId());
-        devopsCommandEventRepository.deleteByCommandId(devopsEnvCommandVO.getId());
-        devopsEnvCommandMapper.deleteByPrimaryKey(devopsEnvCommandVO.getId());
+        devopsEnvCommandLogService.baseDeleteByCommandId(devopsEnvCommandDTO.getId());
+        devopsCommandEventService.baseDeleteByCommandId(devopsEnvCommandDTO.getId());
+        devopsEnvCommandMapper.deleteByPrimaryKey(devopsEnvCommandDTO.getId());
     }
 }

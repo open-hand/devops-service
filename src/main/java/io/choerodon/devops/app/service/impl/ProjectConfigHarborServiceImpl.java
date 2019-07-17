@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectConfigVO;
 import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.app.service.ProjectConfigHarborService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
@@ -31,7 +31,7 @@ public class ProjectConfigHarborServiceImpl implements ProjectConfigHarborServic
 
     //创建harbor仓库
     @Override
-    public void createHarbor(ProjectConfigDTO config, Long projectId) {
+    public void createHarbor(ProjectConfigVO config, Long projectId) {
         try {
             ConfigurationProperties configurationProperties = new ConfigurationProperties(config);
             configurationProperties.setType("harbor");

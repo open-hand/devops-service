@@ -94,11 +94,10 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     }
 
     @Override
-    public List<DevopsEnvUserPermissionE> listByUserId(Long userId) {
+    public List<DevopsEnvUserPermissionDTO> listByUserId(Long userId) {
         DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO();
         devopsEnvUserPermissionDO.setIamUserId(userId);
-        return ConvertHelper.convertList(devopsEnvUserPermissionMapper.select(devopsEnvUserPermissionDO),
-                DevopsEnvUserPermissionE.class);
+        return devopsEnvUserPermissionMapper.select(devopsEnvUserPermissionDO);
     }
 
     @Override

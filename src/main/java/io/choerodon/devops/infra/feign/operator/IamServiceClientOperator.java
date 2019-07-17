@@ -211,11 +211,11 @@ public class IamServiceClientOperator {
         return list;
     }
 
-    public Boolean isProjectOwner(Long userId, ProjectVO projectVO) {
+    public Boolean isProjectOwner(Long userId, ProjectDTO projectDTO) {
         List<ProjectWithRoleDTO> projectWithRoleDTOList = listProjectWithRoleDTO(userId);
         List<RoleDTO> roleDTOS = new ArrayList<>();
         projectWithRoleDTOList.stream().filter(projectWithRoleDTO ->
-                projectWithRoleDTO.getName().equals(projectVO.getName())).forEach(projectWithRoleDTO ->
+                projectWithRoleDTO.getName().equals(projectDTO.getName())).forEach(projectWithRoleDTO ->
                 roleDTOS.addAll(projectWithRoleDTO.getRoles()
                         .stream().filter(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))
                         .collect(Collectors.toList())));

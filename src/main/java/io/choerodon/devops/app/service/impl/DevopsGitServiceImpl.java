@@ -19,7 +19,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.DeployService;
+import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.domain.application.repository.*;
@@ -104,7 +104,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
-    private DeployService deployService;
+    private AgentCommandService agentCommandService;
     @Autowired
     private DevopsEnvFileRepository devopsEnvFileRepository;
     @Autowired
@@ -511,7 +511,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             //更新环境 解释commit
             devopsEnvironmentRepository.baseUpdateDevopsSyncEnvCommit(devopsEnvironmentE);
             //向agent发送同步指令
-            deployService.sendCommand(devopsEnvironmentE);
+            agentCommandService.sendCommand(devopsEnvironmentE);
             LOGGER.info("发送gitops同步成功指令成功");
         } catch (CommonException e) {
             String filePath = "";

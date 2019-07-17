@@ -17,16 +17,12 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.gitlab.MemberVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
-import io.choerodon.devops.app.service.DeployService;
+import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.common.util.enums.EnvironmentGitopsStatus;
@@ -116,7 +112,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsClusterRepository devopsClusterRepository;
     @Autowired
-    private DeployService deployService;
+    private AgentCommandService agentCommandService;
     @Autowired
     private GitlabProjectRepository gitlabProjectRepository;
     @Autowired
@@ -203,7 +199,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         try {
             input = objectMapper.writeValueAsString(gitlabProjectPayload);
             sagaClient.startSaga("devops-create-env", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
-            deployService.initEnv(devopsEnvironmentE, devopsEnviromentDTO.getClusterId());
+            agentCommandService.initEnv(devopsEnvironmentE, devopsEnviromentDTO.getClusterId());
         } catch (JsonProcessingException e) {
             throw new CommonException(e.getMessage(), e);
         }
@@ -496,7 +492,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         if (devopsEnvironmentUpdateDTO.getClusterId() != null && !devopsEnvironmentUpdateDTO.getClusterId()
                 .equals(beforeDevopsEnvironmentE.getClusterE().getId())) {
-            deployService.initCluster(devopsEnvironmentUpdateDTO.getClusterId());
+            agentCommandService.initCluster(devopsEnvironmentUpdateDTO.getClusterId());
         }
         return ConvertHelper.convert(devopsEnviromentRepository.baseUpdate(
                 devopsEnvironmentE), DevopsEnvironmentUpdateDTO.class);
@@ -870,7 +866,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         // 删除环境命名空间
         if (devopsEnvironmentE.getClusterE().getId() != null) {
-            deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
+            agentCommandService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
         }
     }
 

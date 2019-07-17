@@ -21,6 +21,7 @@ import io.choerodon.devops.api.vo.SonarTableDTO;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
+import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 
 /**
@@ -323,4 +324,58 @@ public interface ApplicationService {
      */
     SonarTableDTO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime);
 
+    void baseCheckApp(Long projectId, Long appId);
+
+    int baseUpdate(ApplicationDTO applicationDTO);
+
+    void updateApplicationStatus(ApplicationDTO applicationDTO);
+
+    ApplicationDTO baseQuery(Long applicationId);
+
+    PageInfo<ApplicationDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
+            appMarket,
+                                                      String type, Boolean doPage, PageRequest pageRequest, String params);
+
+    PageInfo<ApplicationDTO> basePageCodeRepository(Long projectId, PageRequest pageRequest, String params,
+                                                           Boolean isProjectOwner, Long userId);
+
+
+    ApplicationDTO baseQueryByCode(String code, Long projectId);
+
+    ApplicationDTO baseQueryByCodeWithNullProject(String code);
+
+    List<ApplicationDTO> baseListByEnvId(Long projectId, Long envId, String status);
+
+    PageInfo<ApplicationDTO> basePageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest);
+
+    List<ApplicationDTO> baseListByActive(Long projectId);
+
+    List<ApplicationDTO> baseListDeployedApp(Long projectId);
+
+    PageInfo<ApplicationDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
+                                                                        PageRequest pageRequest, String params);
+
+    ApplicationDTO baseQueryByToken(String token);
+
+    void baseCheckAppCanDisable(Long applicationId);
+
+    List<ApplicationDTO> baseListByCode(String code);
+
+    List<ApplicationDTO> baseListByGitLabProjectIds(List<Long> gitLabProjectIds);
+
+    void baseDelete(Long appId);
+
+    List<ApplicationDTO> baseListByProjectIdAndSkipCheck(Long projectId);
+
+    List<ApplicationDTO> baseListByProjectId(Long projectId);
+
+    void baseUpdateHarborConfig(Long projectId, Long newConfigId, Long oldConfigId, boolean harborPrivate);
+
+    ApplicationDTO getApplicationDTO(Long projectId, ApplicationReqVO applicationReqDTO);
+
+    void baseCheckName(Long projectId, String appName);
+
+    void baseCheckCode(ApplicationDTO applicationDTO);
+
+    ApplicationDTO baseCreate(ApplicationDTO applicationDTO);
 }

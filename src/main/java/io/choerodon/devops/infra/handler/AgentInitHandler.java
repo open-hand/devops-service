@@ -7,7 +7,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.app.service.DeployService;
+import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.websocket.session.AgentConfigurer;
 import io.choerodon.websocket.session.AgentSessionManager;
 import io.choerodon.websocket.session.Session;
@@ -26,7 +26,7 @@ public class AgentInitHandler implements AgentConfigurer {
     @Autowired
     DevopsClusterProPermissionRepository devopsClusterProPermissionRepository;
     @Autowired
-    private DeployService deployService;
+    private AgentCommandService agentCommandService;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
     @Value("${services.gitlab.sshUrl}")
@@ -47,9 +47,9 @@ public class AgentInitHandler implements AgentConfigurer {
                 List<Long> upgraded = clusterConnectionHandler.getUpdatedEnvList();
                 if (connected.contains(clusterId) && !upgraded.contains(clusterId)) {
                     DevopsClusterE devopsClusterE = devopsClusterRepository.baseQuery(clusterId);
-                    deployService.upgradeCluster(devopsClusterE);
+                    agentCommandService.upgradeCluster(devopsClusterE);
                 }
-                deployService.initCluster(clusterId);
+                agentCommandService.initCluster(clusterId);
             } catch (Exception e) {
                 throw new CommonException("read envId from agent session failed", e);
             }

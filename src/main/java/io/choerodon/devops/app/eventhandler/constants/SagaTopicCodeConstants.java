@@ -14,4 +14,11 @@ public class SagaTopicCodeConstants {
      * Devops设置创建应用模板状态失败
      */
     public static final String DEVOPS_SET_APPLICATION_TEMPLATE_ERROR = "devops-set-appTemplate-err";
+
+    /**
+     * Devops创建实例
+     */
+    public static final String DEVOPS_CREATE_INSTANCE = "devops-create-instance";
+
+
 }

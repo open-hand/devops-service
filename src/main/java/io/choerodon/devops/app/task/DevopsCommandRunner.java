@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.task;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.ProjectConfigVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
@@ -33,13 +33,13 @@ public class DevopsCommandRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         try {
-            ProjectConfigDTO harborConfig = new ProjectConfigDTO();
+            ProjectConfigVO harborConfig = new ProjectConfigVO();
             harborConfig.setUrl(servicesHarborBaseurl);
             harborConfig.setUserName(servicesHarborUsername);
             harborConfig.setPassword(servicesHarborPassword);
             initConfig(harborConfig, HARBOR_NAME, ProjectConfigType.HARBOR.getType());
 
-            ProjectConfigDTO chartConfig = new ProjectConfigDTO();
+            ProjectConfigVO chartConfig = new ProjectConfigVO();
             chartConfig.setUrl(servicesHelmUrl);
             initConfig(chartConfig, CHART_NAME, ProjectConfigType.CHART.getType());
         } catch (Exception e) {
@@ -47,7 +47,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
         }
     }
 
-    private void initConfig(ProjectConfigDTO configDTO, String configName, String configType) {
+    private void initConfig(ProjectConfigVO configDTO, String configName, String configType) {
         DevopsProjectConfigE newConfigE = new DevopsProjectConfigE(configName, configDTO, configType);
         DevopsProjectConfigE oldConfigE = devopsProjectConfigRepository.baseQueryByName(null, configName);
         if (oldConfigE == null) {

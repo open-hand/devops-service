@@ -7,90 +7,90 @@ import java.util.List;
  * Created by younger on 2018/4/25.
  */
 public class DevopsEnvResourceVO {
-    private List<PodDTO> podDTOS;
-    private List<ServiceDTO> serviceDTOS;
-    private List<IngressDTO> ingressDTOS;
-    private List<DeploymentDTO> deploymentDTOS;
-    private List<ReplicaSetDTO> replicaSetDTOS;
-    private List<DaemonSetDTO> daemonSetDTOS;
-    private List<StatefulSetDTO> statefulSetDTOS;
-    private List<PersistentVolumeClaimDTO> persistentVolumeClaimDTOS;
+    private List<PodVO> podVOS;
+    private List<ServiceVO> serviceVOS;
+    private List<IngressVO> ingressVOS;
+    private List<DeploymentVO> deploymentVOS;
+    private List<ReplicaSetVO> replicaSetVOS;
+    private List<DaemonSetVO> daemonSetVOS;
+    private List<StatefulSetVO> statefulSetVOS;
+    private List<PersistentVolumeClaimVO> persistentVolumeClaimVOS;
 
     /**
      * 构造函数
      */
     public DevopsEnvResourceVO() {
-        this.podDTOS = new ArrayList<>();
-        this.deploymentDTOS = new ArrayList<>();
-        this.serviceDTOS = new ArrayList<>();
-        this.ingressDTOS = new ArrayList<>();
-        this.replicaSetDTOS = new ArrayList<>();
-        this.daemonSetDTOS = new ArrayList<>();
-        this.statefulSetDTOS = new ArrayList<>();
-        this.persistentVolumeClaimDTOS = new ArrayList<>();
+        this.podVOS = new ArrayList<>();
+        this.deploymentVOS = new ArrayList<>();
+        this.serviceVOS = new ArrayList<>();
+        this.ingressVOS = new ArrayList<>();
+        this.replicaSetVOS = new ArrayList<>();
+        this.daemonSetVOS = new ArrayList<>();
+        this.statefulSetVOS = new ArrayList<>();
+        this.persistentVolumeClaimVOS = new ArrayList<>();
     }
 
-    public List<PodDTO> getPodDTOS() {
-        return podDTOS;
+    public List<PodVO> getPodVOS() {
+        return podVOS;
     }
 
-    public void setPodDTOS(List<PodDTO> podDTOS) {
-        this.podDTOS = podDTOS;
+    public void setPodVOS(List<PodVO> podVOS) {
+        this.podVOS = podVOS;
     }
 
-    public List<ServiceDTO> getServiceDTOS() {
-        return serviceDTOS;
+    public List<ServiceVO> getServiceVOS() {
+        return serviceVOS;
     }
 
-    public void setServiceDTOS(List<ServiceDTO> serviceDTOS) {
-        this.serviceDTOS = serviceDTOS;
+    public void setServiceVOS(List<ServiceVO> serviceVOS) {
+        this.serviceVOS = serviceVOS;
     }
 
-    public List<IngressDTO> getIngressDTOS() {
-        return ingressDTOS;
+    public List<IngressVO> getIngressVOS() {
+        return ingressVOS;
     }
 
-    public void setIngressDTOS(List<IngressDTO> ingressDTOS) {
-        this.ingressDTOS = ingressDTOS;
+    public void setIngressVOS(List<IngressVO> ingressVOS) {
+        this.ingressVOS = ingressVOS;
     }
 
-    public List<DeploymentDTO> getDeploymentDTOS() {
-        return deploymentDTOS;
+    public List<DeploymentVO> getDeploymentVOS() {
+        return deploymentVOS;
     }
 
-    public void setDeploymentDTOS(List<DeploymentDTO> deploymentDTOS) {
-        this.deploymentDTOS = deploymentDTOS;
+    public void setDeploymentVOS(List<DeploymentVO> deploymentVOS) {
+        this.deploymentVOS = deploymentVOS;
     }
 
-    public List<ReplicaSetDTO> getReplicaSetDTOS() {
-        return replicaSetDTOS;
+    public List<ReplicaSetVO> getReplicaSetVOS() {
+        return replicaSetVOS;
     }
 
-    public void setReplicaSetDTOS(List<ReplicaSetDTO> replicaSetDTOS) {
-        this.replicaSetDTOS = replicaSetDTOS;
+    public void setReplicaSetVOS(List<ReplicaSetVO> replicaSetVOS) {
+        this.replicaSetVOS = replicaSetVOS;
     }
 
-    public List<DaemonSetDTO> getDaemonSetDTOS() {
-        return daemonSetDTOS;
+    public List<DaemonSetVO> getDaemonSetVOS() {
+        return daemonSetVOS;
     }
 
-    public void setDaemonSetDTOS(List<DaemonSetDTO> daemonSetDTOS) {
-        this.daemonSetDTOS = daemonSetDTOS;
+    public void setDaemonSetVOS(List<DaemonSetVO> daemonSetVOS) {
+        this.daemonSetVOS = daemonSetVOS;
     }
 
-    public List<StatefulSetDTO> getStatefulSetDTOS() {
-        return statefulSetDTOS;
+    public List<StatefulSetVO> getStatefulSetVOS() {
+        return statefulSetVOS;
     }
 
-    public void setStatefulSetDTOS(List<StatefulSetDTO> statefulSetDTOS) {
-        this.statefulSetDTOS = statefulSetDTOS;
+    public void setStatefulSetVOS(List<StatefulSetVO> statefulSetVOS) {
+        this.statefulSetVOS = statefulSetVOS;
     }
 
-    public List<PersistentVolumeClaimDTO> getPersistentVolumeClaimDTOS() {
-        return persistentVolumeClaimDTOS;
+    public List<PersistentVolumeClaimVO> getPersistentVolumeClaimVOS() {
+        return persistentVolumeClaimVOS;
     }
 
-    public void setPersistentVolumeClaimDTOS(List<PersistentVolumeClaimDTO> persistentVolumeClaimDTOS) {
-        this.persistentVolumeClaimDTOS = persistentVolumeClaimDTOS;
+    public void setPersistentVolumeClaimVOS(List<PersistentVolumeClaimVO> persistentVolumeClaimVOS) {
+        this.persistentVolumeClaimVOS = persistentVolumeClaimVOS;
     }
 }

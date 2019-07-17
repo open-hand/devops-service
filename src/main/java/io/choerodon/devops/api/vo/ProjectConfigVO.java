@@ -9,7 +9,7 @@ import com.alibaba.fastjson.JSON;
  * @author zongw.lee@gmail.com
  * @since 2019/03/13
  */
-public class ProjectConfigDTO implements Serializable {
+public class ProjectConfigVO implements Serializable {
 
     private String url;
 

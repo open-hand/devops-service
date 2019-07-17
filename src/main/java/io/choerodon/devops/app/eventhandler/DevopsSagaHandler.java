@@ -301,25 +301,25 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public void pipelineAutoDeployInstance(String data) {
-        ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
-        Long taskRecordId = applicationDeployDTO.getRecordId();
+        ApplicationDeployVO applicationDeployVO = gson.fromJson(data, ApplicationDeployVO.class);
+        Long taskRecordId = applicationDeployVO.getRecordId();
         Long stageRecordId = taskRecordRepository.baseQueryRecordById(taskRecordId).getStageRecordId();
         PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
         PipelineTaskRecordE taskRecordE = taskRecordRepository.baseQueryRecordById(taskRecordId);
         Long pipelineRecordId = stageRecordE.getPipelineRecordId();
         try {
-            ApplicationInstanceVO applicationInstanceVO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
+            ApplicationInstanceVO applicationInstanceVO = applicationInstanceService.createOrUpdate(applicationDeployVO);
             if (!pipelineRecordRepository.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordE.getIsParallel() == 1) {
                 if(!taskRecordE.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                     PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceVO.getId(), WorkFlowStatus.SUCCESS.toString());
-                    pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
+                    pipelineTaskRecordE.setId(applicationDeployVO.getRecordId());
                     taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordE);
                     LOGGER.info("create pipeline auto deploy instance success");
                 }
             }
         } catch (Exception e) {
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
-            pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
+            pipelineTaskRecordE.setId(applicationDeployVO.getRecordId());
             pipelineTaskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordE);
             pipelineService.updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), e.getMessage());
@@ -355,8 +355,8 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateInstance(String data) {
-        InstanceSagaDTO instanceSagaDTO = gson.fromJson(data, InstanceSagaDTO.class);
-        applicationInstanceService.createInstanceBySaga(instanceSagaDTO);
+        InstanceSagaPayload instanceSagaPayload = gson.fromJson(data, InstanceSagaPayload.class);
+        applicationInstanceService.createInstanceBySaga(instanceSagaPayload);
         return data;
     }
 }

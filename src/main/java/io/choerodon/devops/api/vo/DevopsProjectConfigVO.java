@@ -10,7 +10,7 @@ public class DevopsProjectConfigVO {
 
     private String name;
 
-    private ProjectConfigDTO config;
+    private ProjectConfigVO config;
 
     private Long projectId;
 
@@ -34,11 +34,11 @@ public class DevopsProjectConfigVO {
         this.name = name;
     }
 
-    public ProjectConfigDTO getConfig() {
+    public ProjectConfigVO getConfig() {
         return config;
     }
 
-    public void setConfig(ProjectConfigDTO config) {
+    public void setConfig(ProjectConfigVO config) {
         this.config = config;
     }
 

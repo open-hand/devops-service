@@ -14,8 +14,8 @@ public class ApplicationRemoteDeployDTO {
     private boolean isNotChange;
     private ApplicationRemoteDTO appRemoteDTO;
     private ApplicationVersionRemoteDTO versionRemoteDTO;
-    private ProjectConfigDTO harbor;
-    private ProjectConfigDTO chart;
+    private ProjectConfigVO harbor;
+    private ProjectConfigVO chart;
 
     public String getType() {
         return type;
@@ -81,19 +81,19 @@ public class ApplicationRemoteDeployDTO {
         this.versionRemoteDTO = versionRemoteDTO;
     }
 
-    public ProjectConfigDTO getHarbor() {
+    public ProjectConfigVO getHarbor() {
         return harbor;
     }
 
-    public void setHarbor(ProjectConfigDTO harbor) {
+    public void setHarbor(ProjectConfigVO harbor) {
         this.harbor = harbor;
     }
 
-    public ProjectConfigDTO getChart() {
+    public ProjectConfigVO getChart() {
         return chart;
     }
 
-    public void setChart(ProjectConfigDTO chart) {
+    public void setChart(ProjectConfigVO chart) {
         this.chart = chart;
     }
 }

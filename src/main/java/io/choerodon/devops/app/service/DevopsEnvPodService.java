@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.DevopsEnvPodVO;
+import io.choerodon.devops.api.vo.DevopsEnvironmentPodVO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 
 /**
@@ -21,7 +21,7 @@ public interface DevopsEnvPodService {
      * @param searchParam
      * @return
      */
-    PageInfo<DevopsEnvPodVO> listAppPod(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsEnvironmentPodVO> listAppPod(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam);
 
     void setContainers(DevopsEnvPodDTO devopsEnvPodDTO);
 

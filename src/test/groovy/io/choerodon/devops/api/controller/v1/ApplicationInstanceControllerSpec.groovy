@@ -11,9 +11,13 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.*
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
+<<<<<<< HEAD
 
 
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult
+=======
+import io.choerodon.devops.domain.application.valueobject.InstanceValueVO
+>>>>>>> [IMP]重构后端代码
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
@@ -607,7 +611,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "QueryValue"() {
         when: '获取部署 Value'
-        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/value", ReplaceResult.class)
+        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/value", InstanceValueVO.class)
 
         then:
         result.getDeltaYaml().equals("")
@@ -616,7 +620,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "QueryUpgradeValue"() {
         when: '获取升级 Value'
-        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/appVersion/1/value", ReplaceResult.class)
+        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/appVersion/1/value", InstanceValueVO.class)
 
         then:
         result.getDeltaYaml().equals("")
@@ -624,7 +628,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "QueryValues"() {
         when: '查询value列表'
-        def result = restTemplate.getForObject("/v1/projects/1/app_instances/value?appId=1&envId=1&appVersionId=1", ReplaceResult.class)
+        def result = restTemplate.getForObject("/v1/projects/1/app_instances/value?appId=1&envId=1&appVersionId=1", InstanceValueVO.class)
 
         then: '校验返回值'
         result.getDeltaYaml().equals("")
@@ -632,11 +636,11 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "PreviewValues"() {
         given:
-        ReplaceResult replaceResult = new ReplaceResult()
+        InstanceValueVO replaceResult = new InstanceValueVO()
         replaceResult.setYaml(applicationVersionValueDO.getValue())
 
         when: '查询value列表'
-        def result = restTemplate.postForObject("/v1/projects/1/app_instances/previewValue?appVersionId=1", replaceResult, ReplaceResult.class)
+        def result = restTemplate.postForObject("/v1/projects/1/app_instances/previewValue?appVersionId=1", replaceResult, InstanceValueVO.class)
 
         then: '校验返回值'
         result.getDeltaYaml().equals("")
@@ -650,7 +654,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long projectId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json?deployment_name=" + deploymentName, InstanceControllerDetailDTO, projectId, map.get("instanceId"))
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json?deployment_name=" + deploymentName, InstanceControllerDetailVO, projectId, map.get("instanceId"))
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
         ((Map<String, Map>) entity.getBody().getDetail()).get("metadata") != null
@@ -674,7 +678,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long projectId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml?deployment_name=" + deploymentName, InstanceControllerDetailDTO, projectId, map.get("instanceId"))
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml?deployment_name=" + deploymentName, InstanceControllerDetailVO, projectId, map.get("instanceId"))
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
@@ -698,7 +702,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long instanceId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_json?daemon_set_name=" + daemonSetName, InstanceControllerDetailDTO, projectId, instanceId)
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_json?daemon_set_name=" + daemonSetName, InstanceControllerDetailVO, projectId, instanceId)
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
         ((Map<String, Map>) entity.getBody().getDetail()).get("metadata") != null
@@ -718,7 +722,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long instanceId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_yaml?daemon_set_name=" + daemonSetName, InstanceControllerDetailDTO, projectId, instanceId)
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_yaml?daemon_set_name=" + daemonSetName, InstanceControllerDetailVO, projectId, instanceId)
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
@@ -739,7 +743,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long instanceId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_json?stateful_set_name=" + statefulSetName, InstanceControllerDetailDTO, projectId, instanceId)
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_json?stateful_set_name=" + statefulSetName, InstanceControllerDetailVO, projectId, instanceId)
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
         ((Map<String, Map>) entity.getBody().getDetail()).get("metadata") != null
@@ -759,7 +763,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long instanceId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_yaml?stateful_set_name=" + statefulSetName, InstanceControllerDetailDTO, projectId, instanceId)
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_yaml?stateful_set_name=" + statefulSetName, InstanceControllerDetailVO, projectId, instanceId)
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
@@ -805,7 +809,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "FormatValue"() {
         given: '初始化replaceResult'
-        ReplaceResult result = new ReplaceResult()
+        InstanceValueVO result = new InstanceValueVO()
         result.setYaml("env:\n" +
                 "  open:\n" +
                 "    PRO_API_HOST: api.example.com.cn1\n" +
@@ -827,7 +831,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     //部署实例
     def "Deploy"() {
         given: '初始化applicationDeployDTO'
-        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO()
+        ApplicationDeployVO applicationDeployDTO = new ApplicationDeployVO()
         applicationDeployDTO.setEnvironmentId(1L)
         applicationDeployDTO.setValues(applicationVersionValueDO.getValue())
         applicationDeployDTO.setAppId(1L)
@@ -843,7 +847,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         gitUtil.cloneBySsh(_ as String, _ as String) >> null
 
         when: '部署应用'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployDTO.class)
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployVO.class)
 
         then: '校验返回值'
         dto != null
@@ -853,7 +857,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     def "deployTestApp"() {
         given: "准备数据"
         def url = MAPPING + "/deploy_test_app"
-        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO()
+        ApplicationDeployVO applicationDeployDTO = new ApplicationDeployVO()
         applicationDeployDTO.setEnvironmentId(1L)
         applicationDeployDTO.setValues(applicationVersionValueDO.getValue())
         applicationDeployDTO.setAppId(1L)
@@ -890,11 +894,11 @@ class ApplicationInstanceControllerSpec extends Specification {
         def dto = restTemplate.getForObject("/v1/projects/1/app_instances/1/resources", DevopsEnvResourceVO.class)
 
         then: '校验返回值'
-        dto.getPodDTOS().get(0)["name"] == "iam-service-56946b7b9f-42xnx"
-        dto.getServiceDTOS().get(0)["name"] == "config-server"
-        dto.getIngressDTOS().get(0)["name"] == "devops-service"
-        dto.getDeploymentDTOS().get(0)["name"] == "iam-service"
-        dto.getReplicaSetDTOS().get(0)["name"] == "springboot-14f93-55f7896455"
+        dto.getPodVOS().get(0)["name"] == "iam-service-56946b7b9f-42xnx"
+        dto.getServiceVOS().get(0)["name"] == "config-server"
+        dto.getIngressVOS().get(0)["name"] == "devops-service"
+        dto.getDeploymentVOS().get(0)["name"] == "iam-service"
+        dto.getReplicaSetVOS().get(0)["name"] == "springboot-14f93-55f7896455"
     }
 
     def "ListEvents"() {

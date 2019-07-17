@@ -3,13 +3,14 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.ApplicationVersionAndCommitDTO;
 import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.vo.DeployVersionDTO;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
+import io.choerodon.devops.infra.dto.ApplicationLatestVersionDTO;
+import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -122,4 +123,57 @@ public interface ApplicationVersionService {
     ApplicationVersionRepDTO queryByAppAndVersion(Long appId, String version);
 
     void checkAutoDeploy(ApplicationVersionE versionE);
+
+    List<ApplicationLatestVersionDTO> baseListAppNewestVersion(Long projectId);
+
+    ApplicationVersionDTO baseCreate(ApplicationVersionDTO applicationVersionDTO);
+
+    List<ApplicationVersionDTO> baseListByAppId(Long appId, Boolean isPublish);
+
+    PageInfo<ApplicationVersionDTO> basePageByPublished(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam);
+
+
+    List<ApplicationVersionDTO> baseListAppDeployedVersion(Long projectId, Long appId);
+
+    ApplicationVersionDTO baseQuery(Long appVersionId);
+
+    List<ApplicationVersionDTO> baseListByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+
+    String baseQueryValue(Long versionId);
+
+    ApplicationVersionDTO baseQueryByAppIdAndVersion(Long appId, String version);
+
+    void baseUpdatePublishLevelByIds(List<Long> appVersionIds, Long level);
+
+    PageInfo<ApplicationVersionDTO> basePageByOptions(Long projectId, Long appId, PageRequest pageRequest,
+                                                      String searchParam, Boolean isProjectOwner,
+                                                      Long userId);
+
+    List<ApplicationVersionDTO> baseListByPublished(Long applicationId);
+
+    Boolean baseCheckByAppIdAndVersionIds(Long appId, List<Long> appVersionIds);
+
+    Long baseCreateReadme(String readme);
+
+    String baseQueryReadme(Long readmeValueId);
+
+    void baseUpdate(ApplicationVersionDTO applicationVersionDTO);
+
+    List<ApplicationVersionDTO> baseListUpgradeVersion(Long appVersionId);
+
+    void baseCheckByProjectAndVersionId(Long projectId, Long appVersionId);
+
+    ApplicationVersionDTO baseQueryByCommitSha(Long appId, String ref, String sha);
+
+    ApplicationVersionDTO baseQueryNewestVersion(Long appId);
+
+    List<ApplicationVersionDTO> baseListByAppVersionIds(List<Long> appVersionIds);
+
+    List<ApplicationVersionDTO> baseListByAppIdAndBranch(Long appId, String branch);
+
+    String baseQueryByPipelineId(Long pipelineId, String branch, Long appId);
+
+    String baseQueryValueByAppId(Long appId);
+
+    void baseUpdatePublishTime();
 }

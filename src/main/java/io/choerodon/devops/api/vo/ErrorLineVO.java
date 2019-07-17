@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-public class ErrorLineDTO {
+public class ErrorLineVO {
 
     private Long lineNumber;
     private String errorMsg;

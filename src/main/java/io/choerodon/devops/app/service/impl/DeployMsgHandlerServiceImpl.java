@@ -662,7 +662,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaeStopFail(String key, String msg, Long clusterId) {
-
         updateInstanceStatus(key, KeyParseTool.getReleaseName(key),
                 clusterId,
                 InstanceStatus.RUNNING.getStatus(),

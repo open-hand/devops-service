@@ -33,7 +33,7 @@ public class ApplicationInstanceVO {
     private Boolean isConnect;
     private Long objectVersionNumber;
     private Long projectId;
-    private List<DeploymentDTO> deploymentDTOS;
+    private List<DeploymentVO> deploymentVOS;
 
     public Long getId() {
         return id;
@@ -227,12 +227,12 @@ public class ApplicationInstanceVO {
         this.commandVersionId = commandVersionId;
     }
 
-    public List<DeploymentDTO> getDeploymentDTOS() {
-        return deploymentDTOS;
+    public List<DeploymentVO> getDeploymentVOS() {
+        return deploymentVOS;
     }
 
-    public void setDeploymentDTOS(List<DeploymentDTO> deploymentDTOS) {
-        this.deploymentDTOS = deploymentDTOS;
+    public void setDeploymentVOS(List<DeploymentVO> deploymentVOS) {
+        this.deploymentVOS = deploymentVOS;
     }
 
     public Long getServiceCount() {

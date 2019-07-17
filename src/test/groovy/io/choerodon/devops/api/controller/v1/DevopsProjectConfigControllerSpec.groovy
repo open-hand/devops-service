@@ -5,7 +5,7 @@ import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsProjectConfigVO
-import io.choerodon.devops.api.vo.ProjectConfigDTO
+import io.choerodon.devops.api.vo.ProjectConfigVO
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository
 import io.choerodon.devops.infra.feign.HarborClient
@@ -48,7 +48,7 @@ class DevopsProjectConfigControllerSpec extends Specification {
         devopsProjectConfigDTO.setName("test")
         devopsProjectConfigDTO.setType("chart")
         devopsProjectConfigDTO.setProjectId(project_id)
-        ProjectConfigDTO projectConfigDTO = new ProjectConfigDTO()
+        ProjectConfigVO projectConfigDTO = new ProjectConfigVO()
         projectConfigDTO.setEmail("test")
         projectConfigDTO.setPassword("test")
         projectConfigDTO.setPrivate(true)

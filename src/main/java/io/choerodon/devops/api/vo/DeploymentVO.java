@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Created by younger on 2018/4/25.
  */
-public class DeploymentDTO {
+public class DeploymentVO {
     private String name;
     private Long desired;
     private Long current;

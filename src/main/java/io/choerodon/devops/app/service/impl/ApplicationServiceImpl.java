@@ -2269,8 +2269,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             ProjectVO projectE = iamService.queryIamProject(applicationE.getProjectE().getId());
             OrganizationVO organization = iamService.queryOrganizationById(projectE.getOrganization().getId());
             InputStream inputStream;
-            ProjectConfigDTO harborProjectConfig;
-            ProjectConfigDTO chartProjectConfig;
+            ProjectConfigVO harborProjectConfig;
+            ProjectConfigVO chartProjectConfig;
             if (applicationE.getHarborConfigE() != null) {
                 harborProjectConfig = devopsProjectConfigRepository.baseQuery(applicationE.getHarborConfigE().getId()).getConfig();
             } else {

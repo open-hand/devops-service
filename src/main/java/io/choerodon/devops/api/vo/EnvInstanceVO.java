@@ -9,14 +9,14 @@ import java.util.List;
  * Time: 20:59
  * Description:
  */
-public class EnvInstanceDTO {
+public class EnvInstanceVO {
     private Long envId;
-    private List<EnvVersionDTO> envVersions;
+    private List<EnvVersionVO> envVersions;
 
-    public EnvInstanceDTO() {
+    public EnvInstanceVO() {
     }
 
-    public EnvInstanceDTO(Long envId) {
+    public EnvInstanceVO(Long envId) {
         this.envId = envId;
         this.envVersions = new ArrayList<>();
     }
@@ -29,19 +29,19 @@ public class EnvInstanceDTO {
         this.envId = envId;
     }
 
-    public List<EnvVersionDTO> getEnvVersions() {
+    public List<EnvVersionVO> getEnvVersions() {
         return envVersions;
     }
 
-    public void setEnvVersions(List<EnvVersionDTO> envVersions) {
+    public void setEnvVersions(List<EnvVersionVO> envVersions) {
         this.envVersions = envVersions;
     }
 
-    public EnvVersionDTO queryLastEnvVersionDTO() {
+    public EnvVersionVO queryLastEnvVersionVO() {
         return envVersions.get(envVersions.size() - 1);
     }
 
-    public void addEnvVersionDTOS(EnvVersionDTO envVersionDTO) {
-        this.envVersions.add(envVersionDTO);
+    public void addEnvVersionDTOS(EnvVersionVO envVersionVO) {
+        this.envVersions.add(envVersionVO);
     }
 }

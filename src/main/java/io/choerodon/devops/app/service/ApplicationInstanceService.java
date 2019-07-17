@@ -8,7 +8,7 @@ import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
+import io.choerodon.devops.domain.application.valueobject.InstanceValueVO;
 import io.choerodon.devops.infra.enums.ResourceType;
 
 /**
@@ -54,24 +54,24 @@ public interface ApplicationInstanceService {
      * @param versionId  版本id
      * @return List
      */
-    ReplaceResult queryValues(String type, Long instanceId, Long versionId);
+    InstanceValueVO queryDeployValue(String type, Long instanceId, Long versionId);
 
 
     /**
      * 部署应用
      *
-     * @param applicationDeployDTO 部署信息
+     * @param applicationDeployVO 部署信息
      * @return ApplicationInstanceVO
      */
-    ApplicationInstanceVO createOrUpdate(ApplicationDeployDTO applicationDeployDTO);
+    ApplicationInstanceVO createOrUpdate(ApplicationDeployVO applicationDeployVO);
 
     /**
      * 部署应用,GitOps
      *
-     * @param applicationDeployDTO 部署信息
+     * @param applicationDeployVO 部署信息
      * @return ApplicationInstanceVO
      */
-    ApplicationInstanceVO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId);
+    ApplicationInstanceVO createOrUpdateByGitOps(ApplicationDeployVO applicationDeployVO, Long userId);
 
     /**
      * 查询运行中的实例
@@ -80,9 +80,9 @@ public interface ApplicationInstanceService {
      * @param appId        应用id
      * @param appVersionId 应用版本id
      * @param envId        环境id
-     * @return baseList of AppInstanceCodeDTO
+     * @return baseList of RunningInstanceVO
      */
-    List<AppInstanceCodeDTO> listByOptions(Long projectId, Long appId, Long appVersionId, Long envId);
+    List<RunningInstanceVO> listRunningInstance(Long projectId, Long appId, Long appVersionId, Long envId);
 
     /**
      * 环境下某应用运行中或失败的实例
@@ -92,7 +92,7 @@ public interface ApplicationInstanceService {
      * @param envId     环境id
      * @return baseList of AppInstanceCodeDTO
      */
-    List<AppInstanceCodeDTO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+    List<RunningInstanceVO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 
     /**
      * 环境下某应用运行中或失败的实例，判断自动部署是否可替换该实例
@@ -102,7 +102,7 @@ public interface ApplicationInstanceService {
      * @param envId     环境id
      * @return baseList of AppInstanceCodeDTO
      */
-    List<AppInstanceCodeDTO> getByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+    List<RunningInstanceVO> getByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 
 
     /**
@@ -110,14 +110,14 @@ public interface ApplicationInstanceService {
      *
      * @param instanceId 实例id
      */
-    void instanceStop(Long instanceId);
+    void stopInstance(Long instanceId);
 
     /**
      * 实例重启
      *
      * @param instanceId 实例id
      */
-    void instanceStart(Long instanceId);
+    void startInstance(Long instanceId);
 
 
     /**
@@ -125,14 +125,14 @@ public interface ApplicationInstanceService {
      *
      * @param instanceId 实例id
      */
-    void instanceReStart(Long instanceId);
+    void restartInstance(Long instanceId);
 
     /**
      * 实例删除
      *
      * @param instanceId 实例id
      */
-    void instanceDelete(Long instanceId);
+    void deleteInstance(Long instanceId);
 
 
     /**
@@ -149,15 +149,15 @@ public interface ApplicationInstanceService {
      * @param instanceId 实例id
      * @return string
      */
-    ReplaceResult queryValue(Long instanceId);
+    InstanceValueVO queryLastDeployValue(Long instanceId);
 
     /**
      * 校验values
      *
-     * @param replaceResult values对象
+     * @param instanceValueVO values对象
      * @return List
      */
-    List<ErrorLineDTO> formatValue(ReplaceResult replaceResult);
+    List<ErrorLineVO> formatValue(InstanceValueVO instanceValueVO);
 
 
     /**
@@ -183,16 +183,16 @@ public interface ApplicationInstanceService {
      * @param deployValue
      * @return
      */
-    ReplaceResult getReplaceResult(String versionValue, String deployValue);
+    InstanceValueVO getReplaceResult(String versionValue, String deployValue);
 
     /**
      * 获取升级 Value
      *
      * @param instanceId 实例id
      * @param versionId  版本Id
-     * @return ReplaceResult
+     * @return InstanceValueVO
      */
-    ReplaceResult queryUpgradeValue(Long instanceId, Long versionId);
+    InstanceValueVO queryUpgradeValue(Long instanceId, Long versionId);
 
     /**
      * 获取部署时长报表
@@ -245,10 +245,10 @@ public interface ApplicationInstanceService {
     /**
      * 部署自动化测试应用
      *
-     * @param applicationDeployDTO 部署信息
+     * @param applicationDeployVO 部署信息
      * @return ApplicationInstanceVO
      */
-    void deployTestApp(ApplicationDeployDTO applicationDeployDTO);
+    void deployTestApp(ApplicationDeployVO applicationDeployVO);
 
     /**
      * 根据实例id获取更多资源详情(json格式）
@@ -258,7 +258,7 @@ public interface ApplicationInstanceService {
      * @param resourceType 资源类型
      * @return 包含json格式的资源详情的DTO
      */
-    InstanceControllerDetailDTO getInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
+    InstanceControllerDetailVO queryInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
 
     /**
      * 根据实例id获取更多资源详情(yaml格式）
@@ -268,7 +268,7 @@ public interface ApplicationInstanceService {
      * @param resourceType 资源类型
      * @return 包含yaml格式的资源详情的DTO
      */
-    InstanceControllerDetailDTO getInstanceResourceDetailYaml(Long instanceId, String resourceName, ResourceType resourceType);
+    InstanceControllerDetailVO getInstanceResourceDetailYaml(Long instanceId, String resourceName, ResourceType resourceType);
 
     /**
      * 查询自动化测试应用实例状态
@@ -294,11 +294,11 @@ public interface ApplicationInstanceService {
     /**
      * 获取预览 Value
      *
-     * @param replaceResult yaml
+     * @param instanceValueVO yaml
      * @param appVersionId  版本Id
-     * @return ReplaceResult
+     * @return InstanceValueVO
      */
-    ReplaceResult previewValues(ReplaceResult replaceResult, Long appVersionId);
+    InstanceValueVO queryPreviewValues(InstanceValueVO instanceValueVO, Long appVersionId);
 
     /**
      * 部署远程应用
@@ -310,7 +310,7 @@ public interface ApplicationInstanceService {
 
 
     /**
-     * @param instanceSagaDTO
+     * @param instanceSagaPayload
      */
-    void createInstanceBySaga(InstanceSagaDTO instanceSagaDTO);
+    void createInstanceBySaga(InstanceSagaPayload instanceSagaPayload);
 }

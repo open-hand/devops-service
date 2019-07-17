@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
+import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -14,23 +15,21 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
  * Description:
  */
 public interface DevopsEnvCommandService {
-    DevopsEnvCommandVO baseCreate(DevopsEnvCommandVO devopsEnvCommandVO);
+    DevopsEnvCommandDTO baseCreate(DevopsEnvCommandDTO devopsEnvCommandDTO);
 
-    DevopsEnvCommandVO baseQueryByObject(String objectType, Long objectId);
+    DevopsEnvCommandDTO baseQueryByObject(String objectType, Long objectId);
 
-    DevopsEnvCommandVO baseUpdate(DevopsEnvCommandVO devopsEnvCommandVO);
+    DevopsEnvCommandDTO baseUpdate(DevopsEnvCommandDTO devopsEnvCommandDTO);
 
-    DevopsEnvCommandVO baseQuery(Long id);
+    DevopsEnvCommandDTO baseQuery(Long id);
 
-    List<DevopsEnvCommandVO> baseListByEnvId(Long envId);
+    List<DevopsEnvCommandDTO> baseListInstanceCommand(String objectType, Long objectId);
 
-    List<DevopsEnvCommandVO> baseListInstanceCommand(String objectType, Long objectId);
-
-    PageInfo<DevopsEnvCommandVO> basePageByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime);
+    PageInfo<DevopsEnvCommandDTO> basePageByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime);
 
     void baseDelete(Long commandId);
 
-    List<DevopsEnvCommandVO> baseListByObject(String objectType, Long objectId);
+    List<DevopsEnvCommandDTO> baseListByObject(String objectType, Long objectId);
 
-    void baseDeleteByEnvCommandId(DevopsEnvCommandVO devopsEnvCommandVO);
+    void baseDeleteByEnvCommandId(DevopsEnvCommandDTO devopsEnvCommandDTO);
 }

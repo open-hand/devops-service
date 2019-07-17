@@ -402,7 +402,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
 
-
+    @Override
     public List<ApplicationLatestVersionDTO> baseListAppNewestVersion(Long projectId) {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         List<ProjectDTO> projectEList = iamServiceClientOperator.listIamProjectByOrgId(projectDTO.getOrganizationId(), null, null);
@@ -599,7 +599,6 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         return applicationVersionMapper.listByAppVersionIds(appVersionIds);
     }
 
-    @Override
     public List<ApplicationVersionVO> baseListByAppIdAndBranch(Long appId, String branch) {
         return ConvertHelper.convertList(applicationVersionMapper.listByAppIdAndBranch(appId, branch), ApplicationVersionVO.class);
     }

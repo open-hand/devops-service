@@ -10,7 +10,7 @@ import io.choerodon.devops.app.service.GitlabWebHookService
 import io.choerodon.devops.api.vo.iam.entity.*
 
 import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.app.service.DeployService
+import io.choerodon.devops.app.service.AgentCommandService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.enums.CommandStatus
@@ -153,7 +153,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
     private DevopsGitRepository devopsGitRepository
 
     @Autowired
-    private DeployService deployService
+    private AgentCommandService deployService
 
     @Autowired
     @Qualifier("mockEnvUtil")

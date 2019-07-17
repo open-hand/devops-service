@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by younger on 2018/4/25.
  */
-public class ReplicaSetDTO {
+public class ReplicaSetVO {
     private String name;
     private Long desired;
     private Long current;

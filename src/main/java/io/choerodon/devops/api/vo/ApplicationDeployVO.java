@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-public class ApplicationDeployDTO {
+public class ApplicationDeployVO {
     private Long appVersionId;
     private Long environmentId;
     private String values;
@@ -13,10 +13,10 @@ public class ApplicationDeployDTO {
     private Long recordId;
     private Long valueId;
 
-    public ApplicationDeployDTO() {
+    public ApplicationDeployVO() {
     }
 
-    public ApplicationDeployDTO(Long appVersionId, Long environmentId, String values, Long appId, String type, Long appInstanceId, String instanceName, Long recordId, Long valueId) {
+    public ApplicationDeployVO(Long appVersionId, Long environmentId, String values, Long appId, String type, Long appInstanceId, String instanceName, Long recordId, Long valueId) {
         this.appVersionId = appVersionId;
         this.environmentId = environmentId;
         this.values = values;
