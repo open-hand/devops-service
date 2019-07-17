@@ -375,7 +375,7 @@
         JOIN devops_env de ON de.id = dai.env_id
         LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
         where da.project_id = #{projectId} and cmd.command_type in ('create','update') and cmd.`status` not in
-        ('doing','operating')
+        ('doing','operating') and cmd.object = 'instance' and dai.status != 'deleted'
         <if test="startTime != null">
             AND cmd.creation_date >= CONCAT('','${startTime}',' 00:00:00')
         </if>
@@ -420,6 +420,8 @@
         LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
         where  cmd.command_type in ('create','update')
         and cmd.`status` not in ('doing','operating')
+        and cmd.object = 'instance'
+        and dai.status != 'deleted'
         <if test="startTime != null">
             AND cmd.creation_date >= CONCAT('','${startTime}',' 00:00:00')
         </if>
