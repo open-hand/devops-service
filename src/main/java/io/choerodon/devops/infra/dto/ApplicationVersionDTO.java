@@ -36,6 +36,16 @@ public class ApplicationVersionDTO extends BaseDTO {
     private String appCode;
     @Transient
     private Boolean appStatus;
+    @Transient
+    private String readme;
+
+    public String getReadme() {
+        return readme;
+    }
+
+    public void setReadme(String readme) {
+        this.readme = readme;
+    }
 
     public Date getPublishTime() {
         return publishTime;

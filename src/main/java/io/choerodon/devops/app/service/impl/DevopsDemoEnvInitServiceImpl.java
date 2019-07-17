@@ -143,7 +143,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         createFakeApplicationVersion(applicationRepDTO.getId());
 
 //        7. 发布应用
-        ApplicationReleasingDTO applicationReleasingDTO = demoDataDTO.getApplicationRelease();
+        ApplicationReleasingVO applicationReleasingDTO = demoDataDTO.getApplicationRelease();
         applicationReleasingDTO.setAppId(applicationRepDTO.getId());
         applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
         applicationMarketService.create(projectId, applicationReleasingDTO);

@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
+import io.choerodon.devops.api.vo.ApplicationReleasingVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsAppShareE;
 <<<<<<< HEAD
 <<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/AppShareConvertor.java
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
  * Created by ernst on 2018/5/12.
  */
 @Component
-public class AppShareConvertor implements ConvertorI<DevopsAppShareE, ApplicationShareDTO, ApplicationReleasingDTO> {
+public class AppShareConvertor implements ConvertorI<DevopsAppShareE, ApplicationShareDTO, ApplicationReleasingVO> {
 
     @Override
     public ApplicationShareDTO entityToDo(DevopsAppShareE applicationMarketE) {
@@ -34,8 +34,8 @@ public class AppShareConvertor implements ConvertorI<DevopsAppShareE, Applicatio
     }
 
     @Override
-    public ApplicationReleasingDTO entityToDto(DevopsAppShareE entity) {
-        ApplicationReleasingDTO applicationReleasingDTO = new ApplicationReleasingDTO();
+    public ApplicationReleasingVO entityToDto(DevopsAppShareE entity) {
+        ApplicationReleasingVO applicationReleasingDTO = new ApplicationReleasingVO();
         BeanUtils.copyProperties(entity, applicationReleasingDTO);
         applicationReleasingDTO.setAppId(entity.getApplicationE().getId());
         applicationReleasingDTO.setLastUpdatedDate(entity.getMarketUpdatedDate());
@@ -51,7 +51,7 @@ public class AppShareConvertor implements ConvertorI<DevopsAppShareE, Applicatio
     }
 
     @Override
-    public ApplicationShareDTO dtoToDo(ApplicationReleasingDTO dto) {
+    public ApplicationShareDTO dtoToDo(ApplicationReleasingVO dto) {
         ApplicationShareDTO appMarketDO = new ApplicationShareDTO();
         BeanUtils.copyProperties(dto, appMarketDO);
         return appMarketDO;

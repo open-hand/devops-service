@@ -13,7 +13,7 @@ import retrofit2.http.QueryMap;
 
 import io.choerodon.devops.api.vo.AccessTokenCheckResultDTO;
 import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
-import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
+import io.choerodon.devops.api.vo.ApplicationReleasingVO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -23,7 +23,7 @@ import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
 public interface AppShareClient {
 
     @POST("v1/public/app_shares/by_token")
-    Call<PageInfo<ApplicationReleasingDTO>> getAppShares(@QueryMap Map<String, Object> map);
+    Call<PageInfo<ApplicationReleasingVO>> getAppShares(@QueryMap Map<String, Object> map);
 
     @POST("v1/public/app_shares/{app_id}/list_versions")
     Call<PageInfo<ApplicationVersionRespVO>> listVersionByAppId(@Path("app_id") Long appId,

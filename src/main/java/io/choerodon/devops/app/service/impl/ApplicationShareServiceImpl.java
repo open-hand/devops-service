@@ -1,31 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import io.choerodon.base.domain.Sort;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
-import io.choerodon.devops.infra.mapper.ApplicationShareMapper;
-import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -34,41 +18,29 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import retrofit2.Response;
 
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.AccessTokenCheckResultDTO;
-import io.choerodon.devops.api.vo.AccessTokenDTO;
-import io.choerodon.devops.api.vo.AppMarketDownloadDTO;
-import io.choerodon.devops.api.vo.AppMarketTgzDTO;
-import io.choerodon.devops.api.vo.AppMarketVersionDTO;
-import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
-import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
-import io.choerodon.devops.api.vo.ApplicationVersionRemoteDTO;
-import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
-import io.choerodon.devops.api.vo.ProjectReqVO;
-import io.choerodon.devops.app.service.ApplicationShareService;
-import io.choerodon.devops.api.vo.iam.entity.AppShareResourceE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionValueE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsAppShareE;
-import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import io.choerodon.devops.domain.application.repository.MarketConnectInfoRepositpry;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.dto.ApplicationShareVersionDTO;
-import io.choerodon.devops.infra.dto.ApplicationShareDTO;
-import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDTO;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.AppShareClient;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
+import io.choerodon.devops.infra.mapper.ApplicationShareMapper;
+import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.tool.UUIDTool;
 
 /**
@@ -96,19 +68,9 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     private String helmUrl;
 
     @Autowired
-    private ApplicationVersionRepository applicationVersionRepository;
-    @Autowired
-    private AppShareRepository appShareRepository;
-    @Autowired
-    private AppShareRecouceRepository appShareRecouceRepository;
-    @Autowired
-    private IamRepository iamRepository;
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private IamService iamService;
     @Autowired
     private HarborConfigurationProperties harborConfigurationProperties;
-    @Autowired
-    private ApplicationVersionValueRepository applicationVersionValueRepository;
     @Autowired
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
     @Autowired
@@ -121,128 +83,137 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     private ApplicationShareMapper applicationShareMapper;
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
+    @Autowired
+    private ApplicationVersionService applicationVersionService;
+    @Autowired
+    private ApplicationShareResourceService applicationShareResourceService;
+    @Autowired
+    private ApplicationService applicationService;
+    @Autowired
+    private DevopsProjectConfigService devopsProjectConfigService;
+    @Autowired
+    private ApplicationVersionValueService applicationVersionValueService;
+    @Autowired
+    private ApplicationVersionMapper applicationVersionMapper;
 
     @Override
-    public Long create(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
+    @Transactional
+    public Long create(Long projectId, ApplicationReleasingVO applicationReleasingVO) {
         List<Long> ids;
-        if (applicationReleasingDTO == null) {
+        if (applicationReleasingVO == null) {
             throw new CommonException("error.app.check");
         }
-        String publishLevel = applicationReleasingDTO.getPublishLevel();
+        String publishLevel = applicationReleasingVO.getPublishLevel();
         if (!ORGANIZATION.equals(publishLevel) && !PROJECTS.equals(publishLevel)) {
             throw new CommonException("error.publishLevel");
         }
-        DevopsAppShareE devopsAppShareE = ApplicationMarketFactory.create();
+        ApplicationShareDTO applicationShareDTO = new ApplicationShareDTO();
         //校验应用和版本
         if (projectId != null) {
-            appShareRepository.baseCheckPub(applicationReleasingDTO.getAppId());
-            List<AppMarketVersionDTO> appVersions = applicationReleasingDTO.getAppVersions();
+            baseCheckPub(applicationReleasingVO.getAppId());
+            List<AppMarketVersionDTO> appVersions = applicationReleasingVO.getAppVersions();
             ids = appVersions.stream().map(AppMarketVersionDTO::getId)
                     .collect(Collectors.toCollection(ArrayList::new));
-            applicationVersionRepository.baseCheckByAppIdAndVersionIds(applicationReleasingDTO.getAppId(), ids);
-            applicationVersionRepository.baseUpdatePublishLevelByIds(ids, 1L);
-            devopsAppShareE.initApplicationEById(applicationReleasingDTO.getAppId());
-            devopsAppShareE.setPublishLevel(applicationReleasingDTO.getPublishLevel());
-            devopsAppShareE.setActive(true);
-            devopsAppShareE.setContributor(applicationReleasingDTO.getContributor());
-            devopsAppShareE.setDescription(applicationReleasingDTO.getDescription());
-            devopsAppShareE.setCategory(applicationReleasingDTO.getCategory());
-            devopsAppShareE.setImgUrl(applicationReleasingDTO.getImgUrl());
-            devopsAppShareE.setFree(applicationReleasingDTO.getFree());
+            applicationVersionService.baseCheckByAppIdAndVersionIds(applicationReleasingVO.getAppId(), ids);
+            applicationVersionService.baseUpdatePublishLevelByIds(ids, 1L);
+            applicationShareDTO.setAppId(applicationReleasingVO.getAppId());
+            applicationShareDTO.setPublishLevel(applicationReleasingVO.getPublishLevel());
+            applicationShareDTO.setActive(true);
+            applicationShareDTO.setContributor(applicationReleasingVO.getContributor());
+            applicationShareDTO.setDescription(applicationReleasingVO.getDescription());
+            applicationShareDTO.setCategory(applicationReleasingVO.getCategory());
+            applicationShareDTO.setImgUrl(applicationReleasingVO.getImgUrl());
+            applicationShareDTO.setFree(applicationReleasingVO.getFree());
         } else {
-            devopsAppShareE.setId(applicationReleasingDTO.getId());
-            devopsAppShareE.setSite(true);
+            applicationShareDTO.setId(applicationReleasingVO.getId());
+            applicationShareDTO.setSite(true);
         }
-        devopsAppShareE = appShareRepository.baseCreateOrUpdate(devopsAppShareE);
-        Long shareId = devopsAppShareE.getId();
-        if (PROJECTS.equals(applicationReleasingDTO.getPublishLevel())) {
-            applicationReleasingDTO.getProjectDTOS().forEach(t -> appShareRecouceRepository.baseCreate(new AppShareResourceE(shareId, t.getId())));
+        applicationShareDTO = baseCreateOrUpdate(applicationShareDTO);
+        Long shareId = applicationShareDTO.getId();
+        if (PROJECTS.equals(applicationReleasingVO.getPublishLevel())) {
+            applicationReleasingVO.getProjectDTOS().forEach(t -> applicationShareResourceService.baseCreate(new ApplicationShareResourceDTO(shareId, t.getId())));
         }
-        return appShareRepository.baseQueryByAppId(applicationReleasingDTO.getAppId());
+        return baseQueryByAppId(applicationReleasingVO.getAppId()).getId();
     }
 
     @Override
-    public PageInfo<ApplicationReleasingDTO> pageByOptions(Long projectId, PageRequest pageRequest,
-                                                           String searchParam) {
-        PageInfo<ApplicationReleasingDTO> applicationMarketEPage = ConvertPageHelper.convertPageInfo(
-                appShareRepository.basePageByProjectId(
-                        projectId, pageRequest, searchParam),
-                ApplicationReleasingDTO.class);
-        List<ApplicationReleasingDTO> appShareEList = applicationMarketEPage.getList();
-        appShareEList.forEach(t -> {
+    public PageInfo<ApplicationReleasingVO> pageByOptions(Long projectId, PageRequest pageRequest,
+                                                          String searchParam) {
+        PageInfo<ApplicationReleasingVO> applicationReleasingVOPageInfo = ConvertUtils.convertPage(
+                basePageByProjectId(projectId, pageRequest, searchParam), ApplicationReleasingVO.class);
+        List<ApplicationReleasingVO> releasingVOPageInfoList = applicationReleasingVOPageInfo.getList();
+        releasingVOPageInfoList.forEach(t -> {
             if (PROJECTS.equals(t.getPublishLevel())) {
-                List<ProjectReqVO> projectDTOS = appShareRecouceRepository.baseListByShareId(t.getId()).stream()
+                List<ProjectReqVO> projectDTOS = applicationShareResourceService.baseListByShareId(t.getId()).stream()
                         .map(appShareResourceE -> {
-                            ProjectVO projectE = iamRepository.queryIamProject(appShareResourceE.getProjectId());
-                            ProjectReqVO projectDTO = new ProjectReqVO();
-                            BeanUtils.copyProperties(projectE, projectDTO);
-                            return projectDTO;
+                            ProjectDTO projectDTO = iamService.queryIamProject(appShareResourceE.getProjectId());
+                            ProjectReqVO projectReqVO = new ProjectReqVO();
+                            BeanUtils.copyProperties(projectDTO, projectReqVO);
+                            return projectReqVO;
                         })
                         .collect(Collectors.toList());
                 t.setProjectDTOS(projectDTOS);
             }
         });
-        applicationMarketEPage.setList(appShareEList);
-        return applicationMarketEPage;
+        applicationReleasingVOPageInfo.setList(releasingVOPageInfoList);
+        return applicationReleasingVOPageInfo;
     }
 
     @Override
-    public PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(Boolean isSite, Boolean isFree, PageRequest pageRequest, String searchParam) {
-        PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.basePageBySite(isSite, isFree, pageRequest, searchParam);
-        return ConvertPageHelper.convertPageInfo(
-                applicationMarketEPage,
-                ApplicationReleasingDTO.class);
+    public PageInfo<ApplicationReleasingVO> listMarketAppsBySite(Boolean isSite, Boolean isFree, PageRequest pageRequest, String searchParam) {
+        PageInfo<ApplicationShareDTO> applicationMarketEPage = basePageBySite(isSite, isFree, pageRequest, searchParam);
+        return ConvertUtils.convertPage(applicationMarketEPage, ApplicationReleasingVO.class);
     }
 
     @Override
-    public ApplicationReleasingDTO getAppDetailByShareId(Long shareId) {
+    public ApplicationReleasingVO getAppDetailByShareId(Long shareId) {
         return queryById(null, shareId);
     }
 
     @Override
-    public List<Long> batchRelease(List<ApplicationReleasingDTO> releasingDTOList) {
+    public List<Long> batchRelease(List<ApplicationReleasingVO> releasingDTOList) {
         return releasingDTOList.stream().map(releasingDTO -> create(null, releasingDTO)).collect(Collectors.toList());
     }
 
     @Override
-    public PageInfo<ApplicationReleasingDTO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds) {
+    public PageInfo<ApplicationReleasingVO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds) {
         try {
             params = params == null || params.isEmpty() ? params : URLDecoder.decode(params, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new CommonException("error.decode.params");
         }
-        PageInfo<DevopsAppShareE> devopsAppShareEPageInfo = appShareRepository.basePageByShareIds(pageRequest, params, shareIds);
-        return ConvertPageHelper.convertPageInfo(devopsAppShareEPageInfo, ApplicationReleasingDTO.class);
+        PageInfo<ApplicationShareDTO> devopsAppShareEPageInfo = basePageByShareIds(pageRequest, params, shareIds);
+        return ConvertUtils.convertPage(devopsAppShareEPageInfo, ApplicationReleasingVO.class);
     }
 
     @Override
     public PageInfo<ApplicationVersionRespVO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params) {
-        PageInfo<ApplicationVersionE> applicationVersionEPageInfo = applicationVersionRepository.listByAppIdAndParamWithPage(appId, true, null, pageRequest, params);
+        PageInfo<ApplicationVersionRespVO> applicationVersionEPageInfo = applicationVersionService.pageByAppIdAndParam(appId, true, null, pageRequest, params);
         if (applicationVersionEPageInfo.getList() == null) {
             return new PageInfo<>();
         }
-        return ConvertPageHelper.convertPageInfo(applicationVersionEPageInfo, ApplicationVersionRespVO.class);
+        return ConvertUtils.convertPage(applicationVersionEPageInfo, ApplicationVersionRespVO.class);
     }
 
     @Override
     public AppVersionAndValueDTO getValuesAndChart(Long versionId) {
         AppVersionAndValueDTO appVersionAndValueDTO = new AppVersionAndValueDTO();
-        String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.baseQueryValue(versionId));
+        String versionValue = FileUtil.checkValueFormat(applicationVersionService.baseQueryValue(versionId));
         ApplicationVersionRemoteDTO versionRemoteDTO = new ApplicationVersionRemoteDTO();
         versionRemoteDTO.setValues(versionValue);
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQuery(versionId);
-        if (applicationVersionE != null) {
-            versionRemoteDTO.setRepository(applicationVersionE.getRepository());
-            versionRemoteDTO.setVersion(applicationVersionE.getVersion());
-            versionRemoteDTO.setImage(applicationVersionE.getImage());
-            versionRemoteDTO.setReadMeValue(applicationVersionReadmeMapper.selectByPrimaryKey(applicationVersionE.getApplicationVersionReadmeV().getId()).getReadme());
-            ApplicationE applicationE = applicationRepository.query(applicationVersionE.getApplicationE().getId());
-            if (applicationE.getHarborConfigE() == null) {
-                appVersionAndValueDTO.setHarbor(devopsProjectConfigRepository.baseQueryByName(null, "harbor_default").getConfig());
-                appVersionAndValueDTO.setChart(devopsProjectConfigRepository.baseQueryByName(null, "chart_default").getConfig());
+        ApplicationVersionDTO applicationVersionDTO = applicationVersionService.baseQuery(versionId);
+        if (applicationVersionDTO != null) {
+            versionRemoteDTO.setRepository(applicationVersionDTO.getRepository());
+            versionRemoteDTO.setVersion(applicationVersionDTO.getVersion());
+            versionRemoteDTO.setImage(applicationVersionDTO.getImage());
+            versionRemoteDTO.setReadMeValue(applicationVersionReadmeMapper.selectByPrimaryKey(applicationVersionDTO.getReadmeValueId()).getReadme());
+            ApplicationDTO applicationDTO = applicationService.baseQuery(applicationVersionDTO.getAppId());
+            if (applicationDTO.getHarborConfigId() == null) {
+                appVersionAndValueDTO.setHarbor(gson.fromJson(devopsProjectConfigService.baseQueryByName(null, "harbor_default").getConfig(), ProjectConfigVO.class));
+                appVersionAndValueDTO.setChart(gson.fromJson(devopsProjectConfigService.baseQueryByName(null, "chart_default").getConfig(), ProjectConfigVO.class));
             } else {
-                appVersionAndValueDTO.setHarbor(devopsProjectConfigRepository.baseQuery(applicationE.getHarborConfigE().getId()).getConfig());
-                appVersionAndValueDTO.setChart(devopsProjectConfigRepository.baseQuery(applicationE.getChartConfigE().getId()).getConfig());
+                appVersionAndValueDTO.setHarbor(gson.fromJson(devopsProjectConfigRepository.baseQuery(applicationDTO.getHarborConfigId()).getConfig(), ProjectConfigVO.class));
+                appVersionAndValueDTO.setChart(gson.fromJson(devopsProjectConfigRepository.baseQuery(applicationDTO.getChartConfigId()).getConfig(), ProjectConfigVO.class));
             }
             appVersionAndValueDTO.setVersionRemoteDTO(versionRemoteDTO);
         }
@@ -254,69 +225,62 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         ApplicationShareDTO applicationShareDTO = new ApplicationShareDTO();
         applicationShareDTO.setId(shareId);
         applicationShareDTO.setFree(isFree);
-        appShareRepository.baseUpdate(applicationShareDTO);
+        baseUpdate(applicationShareDTO);
     }
 
     @Override
-    public PageInfo<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam) {
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        if (projectE != null && projectE.getOrganization() != null) {
-            Long organizationId = projectE.getOrganization().getId();
-            List<ProjectVO> projectEList = iamRepository.listIamProjectByOrgId(organizationId, null, null);
+    public PageInfo<ApplicationReleasingVO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam) {
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        if (projectDTO != null && projectDTO.getOrganizationId() != null) {
+            Long organizationId = projectDTO.getOrganizationId();
+            List<ProjectDTO> projectEList = iamService.listIamProjectByOrgId(organizationId, null, null);
             List<Long> projectIds = new ArrayList<>();
             if (projectEList != null) {
-                projectIds = projectEList.stream().map(ProjectVO::getId).collect(Collectors.toList());
+                projectIds = projectEList.stream().map(ProjectDTO::getId).collect(Collectors.toList());
             }
-            PageInfo<DevopsAppShareE> applicationMarketEPage = appShareRepository.basePageByProjectIds(
-                    projectIds, pageRequest, searchParam);
+            PageInfo<ApplicationShareDTO> applicationMarketEPage = basePageByProjectIds(projectIds, pageRequest, searchParam);
 
-            return ConvertPageHelper.convertPageInfo(
-                    applicationMarketEPage,
-                    ApplicationReleasingDTO.class);
+            return ConvertUtils.convertPage(applicationMarketEPage, ApplicationReleasingVO.class);
         }
         return null;
     }
 
     @Override
-    public ApplicationReleasingDTO queryById(Long projectId, Long appMarketId) {
-        DevopsAppShareE applicationMarketE =
-                appShareRepository.baseQuery(projectId, appMarketId);
-        List<ApplicationShareVersionDTO> versionDOList = appShareRepository
-                .pageByOptions(projectId, appMarketId, true);
+    public ApplicationReleasingVO queryById(Long projectId, Long appMarketId) {
+        ApplicationShareDTO applicationShareDTO = baseQuery(projectId, appMarketId);
+        List<ApplicationShareVersionDTO> versionDOList = baseListByOptions(projectId, appMarketId, true);
         List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
                 .convertList(versionDOList, AppMarketVersionDTO.class);
-        ApplicationReleasingDTO applicationReleasingDTO =
-                ConvertHelper.convert(applicationMarketE, ApplicationReleasingDTO.class);
+        ApplicationReleasingVO applicationReleasingDTO =
+                ConvertHelper.convert(applicationShareDTO, ApplicationReleasingVO.class);
         applicationReleasingDTO.setAppVersions(appMarketVersionDTOList);
 
         return applicationReleasingDTO;
     }
 
     @Override
-    public ApplicationReleasingDTO queryShareApp(Long appMarketId, Long versionId) {
-        DevopsAppShareE applicationMarketE =
-                appShareRepository.baseQuery(null, appMarketId);
-        ApplicationE applicationE = applicationMarketE.getApplicationE();
-        List<ApplicationShareVersionDTO> versionDOList = appShareRepository
-                .pageByOptions(null, appMarketId, true);
+    public ApplicationReleasingVO queryShareApp(Long appMarketId, Long versionId) {
+        ApplicationShareDTO applicationShareDTO = baseQuery(null, appMarketId);
+        ApplicationDTO applicationDTO = applicationService.baseQuery(applicationShareDTO.getId());
+        List<ApplicationShareVersionDTO> versionDOList = baseListByOptions(null, appMarketId, true);
         List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
                 .convertList(versionDOList, AppMarketVersionDTO.class)
                 .stream()
                 .sorted(this::compareAppMarketVersionDTO)
                 .collect(Collectors.toCollection(ArrayList::new));
-        ApplicationReleasingDTO applicationReleasingDTO =
-                ConvertHelper.convert(applicationMarketE, ApplicationReleasingDTO.class);
+        ApplicationReleasingVO applicationReleasingDTO =
+                ConvertHelper.convert(applicationShareDTO, ApplicationReleasingVO.class);
         applicationReleasingDTO.setAppVersions(appMarketVersionDTOList);
 
-        Long applicationId = applicationE.getId();
-        applicationE = applicationRepository.query(applicationId);
+        Long applicationId = applicationDTO.getId();
+        applicationDTO = applicationService.baseQuery(applicationId);
 
         Date latestUpdateDate = appMarketVersionDTOList.isEmpty()
-                ? getLaterDate(applicationE.getLastUpdateDate(), applicationMarketE.getMarketUpdatedDate())
+                ? getLaterDate(applicationDTO.getLastUpdateDate(), applicationShareDTO.getMarketUpdatedDate())
                 : getLatestDate(
                 appMarketVersionDTOList.get(0).getUpdatedDate(),
-                applicationE.getLastUpdateDate(),
-                applicationMarketE.getMarketUpdatedDate());
+                applicationDTO.getLastUpdateDate(),
+                applicationShareDTO.getMarketUpdatedDate());
         applicationReleasingDTO.setLastUpdatedDate(latestUpdateDate);
 
         Boolean versionExist = appMarketVersionDTOList.stream().anyMatch(t -> t.getId().equals(versionId));
@@ -328,67 +292,38 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
                     ? optional.get().getId()
                     : versionId;
         }
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQuery(latestVersionId);
-        String readme = applicationVersionRepository
-                .baseQueryReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
+        ApplicationVersionDTO applicationVersionDTO = applicationVersionService.baseQuery(latestVersionId);
+        String readme = applicationVersionService.baseQueryReadme(applicationVersionDTO.getReadmeValueId());
 
         applicationReleasingDTO.setReadme(readme);
 
         return applicationReleasingDTO;
     }
 
-    private Date getLatestDate(Date a, Date b, Date c) {
-        if (a.after(b)) {
-            return getLaterDate(a, c);
-        } else {
-            return getLaterDate(b, c);
-        }
-    }
-
-    private Date getLaterDate(Date a, Date b) {
-        return a.after(b) ? a : b;
-    }
-
-    private Integer compareAppMarketVersionDTO(AppMarketVersionDTO s, AppMarketVersionDTO t) {
-        if (s.getUpdatedDate().before(t.getUpdatedDate())) {
-            return 1;
-        } else {
-            if (s.getUpdatedDate().after(t.getUpdatedDate())) {
-                return -1;
-            } else {
-                if (s.getCreationDate().before(t.getCreationDate())) {
-                    return 1;
-                } else {
-                    return s.getCreationDate().after(t.getCreationDate()) ? -1 : 0;
-                }
-            }
-        }
-    }
-
     @Override
     public String queryAppVersionReadme(Long appMarketId, Long versionId) {
-        appShareRepository.baseCheckByMarketIdAndVersion(appMarketId, versionId);
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQuery(versionId);
-        return applicationVersionRepository.baseQueryReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
+        baseCheckByShareIdAndVersion(appMarketId, versionId);
+        ApplicationVersionDTO applicationVersionDTO = applicationVersionService.baseQuery(versionId);
+        return applicationVersionService.baseQueryReadme(applicationVersionDTO.getReadmeValueId());
     }
 
     @Override
     public void unpublish(Long projectId, Long appMarketId) {
-        appShareRepository.baseCheckByProjectId(projectId, appMarketId);
-        appShareRepository.baseCheckByDeployed(projectId, appMarketId, null, null);
-        appShareRepository.baseUnsharedApplication(appMarketId);
+        baseCheckByProjectId(projectId, appMarketId);
+        baseCheckByDeployed(projectId, appMarketId, null, null);
+        baseUnsharedApplication(appMarketId);
     }
 
     @Override
     public void unpublish(Long projectId, Long appMarketId, Long versionId) {
-        appShareRepository.baseCheckByProjectId(projectId, appMarketId);
-        appShareRepository.baseCheckByDeployed(projectId, appMarketId, versionId, null);
-        appShareRepository.baseUnsharedApplicationVersion(appMarketId, versionId);
+        baseCheckByProjectId(projectId, appMarketId);
+        baseCheckByDeployed(projectId, appMarketId, versionId, null);
+        baseUnsharedApplicationVersion(appMarketId, versionId);
 
     }
 
     @Override
-    public void update(Long projectId, Long appMarketId, ApplicationReleasingDTO applicationRelease) {
+    public void update(Long projectId, Long appMarketId, ApplicationReleasingVO applicationRelease) {
         if (applicationRelease != null) {
             String publishLevel = applicationRelease.getPublishLevel();
             if (publishLevel != null
@@ -403,14 +338,14 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
                 && !appMarketId.equals(applicationRelease.getId())) {
             throw new CommonException("error.id.notMatch");
         }
-        appShareRepository.baseCheckByProjectId(projectId, appMarketId);
-        ApplicationReleasingDTO applicationReleasingDTO = queryById(projectId, appMarketId);
+        baseCheckByProjectId(projectId, appMarketId);
+        ApplicationReleasingVO applicationReleasingDTO = queryById(projectId, appMarketId);
         if (applicationRelease.getAppId() != null
                 && !applicationReleasingDTO.getAppId().equals(applicationRelease.getAppId())) {
             throw new CommonException("error.app.cannot.change");
         }
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        if (projectE == null || projectE.getOrganization() == null) {
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        if (projectDTO == null || projectDTO.getOrganizationId() == null) {
             throw new CommonException("error.project.query");
         }
         if (applicationRelease.getPublishLevel() != null
@@ -419,48 +354,48 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         }
         ApplicationShareDTO devopsAppMarketDO = ConvertHelper.convert(applicationRelease, ApplicationShareDTO.class);
         if (!ConvertHelper.convert(applicationReleasingDTO, ApplicationShareDTO.class).equals(devopsAppMarketDO)) {
-            appShareRepository.baseUpdate(devopsAppMarketDO);
+            baseUpdate(devopsAppMarketDO);
         }
     }
 
     @Override
     public void update(Long projectId, Long appMarketId, List<AppMarketVersionDTO> versionDTOList) {
-        appShareRepository.baseCheckByProjectId(projectId, appMarketId);
+        baseCheckByProjectId(projectId, appMarketId);
 
-        ApplicationReleasingDTO applicationReleasingDTO = queryById(projectId, appMarketId);
+        ApplicationReleasingVO applicationReleasingDTO = queryById(projectId, appMarketId);
 
         List<Long> ids = versionDTOList.stream()
                 .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
 
-        applicationVersionRepository.baseCheckByAppIdAndVersionIds(applicationReleasingDTO.getAppId(), ids);
-        applicationVersionRepository.baseUpdatePublishLevelByIds(ids, 1L);
+        applicationVersionService.baseCheckByAppIdAndVersionIds(applicationReleasingDTO.getAppId(), ids);
+        applicationVersionService.baseUpdatePublishLevelByIds(ids, 1L);
     }
 
     @Override
     public List<AppMarketVersionDTO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish) {
-        return ConvertHelper.convertList(appShareRepository.pageByOptions(projectId, appMarketId, isPublish),
+        return ConvertHelper.convertList(baseListByOptions(projectId, appMarketId, isPublish),
                 AppMarketVersionDTO.class);
     }
 
     @Override
     public PageInfo<AppMarketVersionDTO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish,
                                                               PageRequest pageRequest, String searchParam) {
-        return ConvertPageHelper.convertPageInfo(
-                appShareRepository.pageByOptions(projectId, appMarketId, isPublish, pageRequest, searchParam),
+        return ConvertUtils.convertPage(
+                basePageByOptions(projectId, appMarketId, isPublish, pageRequest, searchParam),
                 AppMarketVersionDTO.class);
     }
 
     @Override
     public AppMarketTgzDTO upload(Long projectId, MultipartFile file) {
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         String dirName = UUIDTool.genUuid();
         String classPath = String.format(
                 "tmp%s%s%s%s",
                 FILE_SEPARATOR,
-                organization.getCode(),
+                organizationDTO.getCode(),
                 FILE_SEPARATOR,
-                projectE.getCode());
+                projectDTO.getCode());
 
         String destPath = String.format("%s%s%s", classPath, FILE_SEPARATOR, dirName);
         String path = FileUtil.multipartFileToFileWithSuffix(destPath, file, ".zip");
@@ -496,14 +431,14 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
     @Override
     public Boolean importApps(Long projectId, String fileName, Boolean isPublic) {
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         String destPath = String.format(
                 "tmp%s%s%s%s%s%s",
                 FILE_SEPARATOR,
-                organization.getCode(),
+                organizationDTO.getCode(),
                 FILE_SEPARATOR,
-                projectE.getCode(),
+                projectDTO.getCode(),
                 FILE_SEPARATOR,
                 fileName);
         File zipDirectory = new File(destPath);
@@ -528,14 +463,14 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
     @Override
     public void importCancel(Long projectId, String fileName) {
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         String destPath = String.format(
                 "tmp%s%s%s%s%s%s",
                 FILE_SEPARATOR,
-                organization.getCode(),
+                organizationDTO.getCode(),
                 FILE_SEPARATOR,
-                projectE.getCode(),
+                projectDTO.getCode(),
                 FILE_SEPARATOR,
                 fileName);
         File zipDirectory = new File(destPath);
@@ -544,7 +479,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
 
     @Override
-    public PageInfo<ApplicationReleasingDTO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params) {
+    public PageInfo<ApplicationReleasingVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params) {
         DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
@@ -555,7 +490,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         map.put("size", pageRequest.getSize());
         map.put("sort", PageRequestUtil.getOrderByStr(pageRequest));
         map.put("access_token", marketConnectInfoDO.getAccessToken());
-        Response<PageInfo<ApplicationReleasingDTO>> pageInfoResponse = null;
+        Response<PageInfo<ApplicationReleasingVO>> pageInfoResponse = null;
         try {
             map.put("params", URLEncoder.encode(params, "UTF-8"));
             pageInfoResponse = shareClient.getAppShares(map).execute();
@@ -569,7 +504,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public PageInfo<ApplicationVersionRespVO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params) {
+    public PageInfo<ApplicationVersionRespVO> pageVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params) {
         DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
@@ -616,63 +551,6 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         return versionAndValueDTOResponse.body();
     }
 
-    private void analyzeAppFile(List<ApplicationReleasingDTO> appMarketVersionDTOS,
-                                List<File> appFileList) {
-        appFileList.forEach(t -> {
-            String appName = t.getName();
-            File[] appFiles = t.listFiles();
-            if (appFiles != null && !appFileList.isEmpty()) {
-                String appFileName = String.format("%s%s", appName, JSON_FILE);
-                List<File> appMarkets = Arrays.stream(appFiles).parallel()
-                        .filter(k -> k.getName().equals(appFileName))
-                        .collect(Collectors.toCollection(ArrayList::new));
-                if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
-                    File appMarket = appMarkets.get(0);
-                    String appMarketJson = FileUtil.getFileContent(appMarket);
-                    ApplicationReleasingDTO appMarketVersionDTO =
-                            gson.fromJson(appMarketJson, ApplicationReleasingDTO.class);
-                    appMarketVersionDTOS.add(appMarketVersionDTO);
-                }
-            }
-        });
-    }
-
-    private void importAppFile(Long projectId, List<File> appFileList, Boolean isPublic) {
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        String orgCode = organization.getCode();
-        String projectCode = projectE.getCode();
-        appFileList.stream().forEach(t -> {
-            String appName = t.getName();
-            File[] appFiles = t.listFiles();
-            if (appFiles != null && !appFileList.isEmpty()) {
-                String appFileName = String.format("%s%s", appName, JSON_FILE);
-                List<File> appMarkets = Arrays.stream(appFiles).parallel()
-                        .filter(k -> k.getName().equals(appFileName))
-                        .collect(Collectors.toCollection(ArrayList::new));
-                if (appMarkets != null && !appMarkets.isEmpty() && appMarkets.size() == 1) {
-                    File appMarket = appMarkets.get(0);
-                    String appMarketJson = FileUtil.getFileContent(appMarket);
-                    ApplicationReleasingDTO applicationReleasingDTO =
-                            gson.fromJson(appMarketJson, ApplicationReleasingDTO.class);
-                    ApplicationE applicationE = new ApplicationE();
-                    String appCode = applicationReleasingDTO.getCode();
-                    applicationE.setName(applicationReleasingDTO.getName());
-                    applicationE.setIsSkipCheckPermission(true);
-                    applicationE.setType("normal");
-                    Long appId = createOrUpdateApp(applicationE, appCode, projectId);
-                    Boolean isVersionPublish = isPublic != null;
-                    applicationReleasingDTO.getAppVersions().stream()
-                            .forEach(appVersion -> createVersion(
-                                    appVersion, orgCode, projectCode, appCode, appId, appFiles, isVersionPublish
-                            ));
-                    // 发布应用
-                    releaseApp(isPublic, applicationReleasingDTO, appId);
-                }
-            }
-        });
-    }
-
     /**
      * 导出应用市场应用 zip
      *
@@ -682,13 +560,13 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     public void export(List<AppMarketDownloadDTO> appMarkets, String fileName) {
         List<String> images = new ArrayList<>();
         for (AppMarketDownloadDTO appMarketDownloadDTO : appMarkets) {
-            ApplicationReleasingDTO applicationReleasingDTO = queryShareApp(appMarketDownloadDTO.getAppMarketId(), null);
+            ApplicationReleasingVO applicationReleasingDTO = queryShareApp(appMarketDownloadDTO.getAppMarketId(), null);
             String destpath = String.format("charts%s%s",
                     FILE_SEPARATOR,
                     applicationReleasingDTO.getCode());
-            ApplicationE applicationE = applicationRepository.query(applicationReleasingDTO.getAppId());
-            ProjectVO projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
-            OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            ApplicationDTO applicationDTO = applicationService.baseQuery(applicationReleasingDTO.getAppId());
+            ProjectDTO projectDTO = iamService.queryIamProject(applicationDTO.getProjectId());
+            OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
             applicationReleasingDTO.setAppVersions(
                     applicationReleasingDTO.getAppVersions().stream()
                             .filter(t -> appMarketDownloadDTO.getAppVersionIds().contains(t.getId()))
@@ -697,7 +575,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
             String appMarketJson = gson.toJson(applicationReleasingDTO);
             FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode() + JSON_FILE, appMarketJson);
             //下载chart taz包
-            getChart(images, appMarketDownloadDTO, destpath, applicationE, projectE, organization);
+            getChart(images, appMarketDownloadDTO, destpath, applicationDTO, projectDTO, organizationDTO);
             StringBuilder stringBuilder = new StringBuilder();
             for (String image : images) {
                 stringBuilder.append(image);
@@ -714,145 +592,6 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
             FileUtil.deleteDirectory(new File(fileName));
         } catch (IOException e) {
             throw new CommonException(e.getMessage(), e);
-        }
-    }
-
-    private void getChart(List<String> images, AppMarketDownloadDTO appMarketDownloadDTO, String destpath, ApplicationE applicationE, ProjectVO projectE, OrganizationVO organization) {
-        appMarketDownloadDTO.getAppVersionIds().forEach(appVersionId -> {
-
-            ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQuery(appVersionId);
-            images.add(applicationVersionE.getImage());
-            chartUtil.downloadChart(applicationVersionE, organization, projectE, applicationE, destpath);
-        });
-    }
-
-    private void createVersion(AppMarketVersionDTO appVersion,
-                               String organizationCode,
-                               String projectCode,
-                               String appCode,
-                               Long appId,
-                               File[] appFiles,
-                               Boolean isVersionPublish) {
-        ApplicationVersionE applicationVersionE = new ApplicationVersionE();
-        String image = String.format("%s%s%s%s%s%s%s%s%s", harborConfigurationProperties.getBaseUrl(),
-                FILE_SEPARATOR,
-                organizationCode,
-                "-",
-                projectCode,
-                FILE_SEPARATOR,
-                appCode,
-                ":",
-                appVersion.getVersion()
-        );
-        applicationVersionE.setImage(image);
-        helmUrl = helmUrl.endsWith("/") ? helmUrl : helmUrl + "/";
-        applicationVersionE.setRepository(String.format("%s%s%s%s%s",
-                helmUrl,
-                organizationCode,
-                FILE_SEPARATOR,
-                projectCode,
-                FILE_SEPARATOR));
-        applicationVersionE.setVersion(appVersion.getVersion());
-        applicationVersionE.initApplicationEById(appId);
-        String tazName = String.format("%s%s%s%s",
-                appCode,
-                "-",
-                appVersion.getVersion(),
-                ".tgz"
-        );
-        List<File> tgzVersions = Arrays.stream(appFiles).parallel()
-                .filter(k -> k.getName().equals(tazName))
-                .collect(Collectors.toCollection(ArrayList::new));
-        if (!tgzVersions.isEmpty()) {
-            ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
-            try {
-                FileUtil.unTarGZ(tgzVersions.get(0).getAbsolutePath(), appCode);
-                File valueYaml = FileUtil.queryFileFromFiles(new File(appCode), "values.yaml");
-                if (valueYaml == null) {
-                    throw new CommonException("error.version.values.notExist");
-                }
-                applicationVersionValueE.setValue(FileUtil.replaceReturnString(new FileInputStream(valueYaml), null));
-
-                applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
-                        .baseCreate(applicationVersionValueE).getId());
-            } catch (Exception e) {
-                throw new CommonException("error.version.insert");
-            }
-            applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(appCode));
-            ApplicationVersionE version = applicationVersionRepository
-                    .baseQueryByAppIdAndVersion(appId, appVersion.getVersion());
-
-            if (isVersionPublish) {
-                applicationVersionE.setIsPublish(1L);
-            } else {
-                applicationVersionE.setIsPublish(version == null ? null : version.getIsPublish());
-            }
-            if (version == null) {
-                applicationVersionRepository.baseCreate(applicationVersionE);
-            } else {
-                applicationVersionE.setId(version.getId());
-                applicationVersionRepository.baseUpdate(applicationVersionE);
-            }
-            String classPath = String.format("Charts%s%s%s%s",
-                    FILE_SEPARATOR,
-                    organizationCode,
-                    FILE_SEPARATOR,
-                    projectCode);
-            FileUtil.copyFile(tgzVersions.get(0).getAbsolutePath(), classPath);
-            //上传tgz包到chart仓库
-            chartUtil.uploadChart(organizationCode, projectCode, tgzVersions.get(0));
-            FileUtil.deleteDirectory(new File(appCode));
-        }
-    }
-
-
-    private Long createOrUpdateApp(ApplicationE applicationE, String appCode, Long projectId) {
-        applicationE.setCode(appCode);
-        applicationE.initProjectE(projectId);
-        Long appId;
-        Boolean appCodeExist = false;
-        try {
-            applicationRepository.checkCode(applicationE);
-        } catch (Exception e) {
-            logger.info(e.getMessage());
-            appCodeExist = true;
-        }
-        if (!appCodeExist) {
-            applicationE.setActive(true);
-            applicationE.setSynchro(true);
-            applicationE.setToken(GenerateUUID.generateUUID());
-            appId = applicationRepository.create(applicationE).getId();
-        } else {
-            ApplicationE existApplication = applicationRepository.queryByCode(appCode, projectId);
-            appId = existApplication.getId();
-            applicationE.setId(appId);
-            applicationRepository.update(applicationE);
-        }
-        return appId;
-    }
-
-    private Boolean checkAppCanPub(Long appId) {
-        try {
-            return appShareRepository.baseCheckPub(appId);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private void releaseApp(Boolean isPublic,
-                            ApplicationReleasingDTO applicationReleasingDTO, Long appId) {
-        if (isPublic != null) {
-            Boolean canPub = checkAppCanPub(appId);
-            if (canPub) {
-                DevopsAppShareE applicationMarketE = new DevopsAppShareE();
-                applicationMarketE.initApplicationEById(appId);
-                applicationMarketE.setPublishLevel(isPublic ? PROJECTS : ORGANIZATION);
-                applicationMarketE.setActive(true);
-                applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
-                applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
-                applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
-                appShareRepository.baseCreateOrUpdate(applicationMarketE);
-            }
         }
     }
 
@@ -983,14 +722,14 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         }
     }
 
-    public List<ApplicationShareVersionDTO> ListByOptions(Long projectId, Long shareId, Boolean isPublish) {
+    public List<ApplicationShareVersionDTO> baseListByOptions(Long projectId, Long shareId, Boolean isPublish) {
         List<Long> projectIds = getProjectIds(projectId);
         return applicationShareMapper.listAppVersions(projectIds, shareId, isPublish, null, null);
     }
 
 
-    public PageInfo<ApplicationShareVersionDTO> pageByOptions(Long projectId, Long shareId, Boolean isPublish,
-                                                              PageRequest pageRequest, String params) {
+    public PageInfo<ApplicationShareVersionDTO> basePageByOptions(Long projectId, Long shareId, Boolean isPublish,
+                                                                  PageRequest pageRequest, String params) {
         Sort sort = pageRequest.getSort();
         String sortResult = "";
         if (sort != null) {
@@ -1059,8 +798,233 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         return applicationShareDTOPageInfo;
     }
 
-
     public void baseUpdatePublishLevel() {
         applicationShareMapper.updatePublishLevel();
     }
+
+    private Date getLatestDate(Date a, Date b, Date c) {
+        if (a.after(b)) {
+            return getLaterDate(a, c);
+        } else {
+            return getLaterDate(b, c);
+        }
+    }
+
+    private Date getLaterDate(Date a, Date b) {
+        return a.after(b) ? a : b;
+    }
+
+    private Integer compareAppMarketVersionDTO(AppMarketVersionDTO s, AppMarketVersionDTO t) {
+        if (s.getUpdatedDate().before(t.getUpdatedDate())) {
+            return 1;
+        } else {
+            if (s.getUpdatedDate().after(t.getUpdatedDate())) {
+                return -1;
+            } else {
+                if (s.getCreationDate().before(t.getCreationDate())) {
+                    return 1;
+                } else {
+                    return s.getCreationDate().after(t.getCreationDate()) ? -1 : 0;
+                }
+            }
+        }
+    }
+
+    private void analyzeAppFile(List<ApplicationReleasingVO> appMarketVersionDTOS,
+                                List<File> appFileList) {
+        appFileList.forEach(t -> {
+            String appName = t.getName();
+            File[] appFiles = t.listFiles();
+            if (appFiles != null && !appFileList.isEmpty()) {
+                String appFileName = String.format("%s%s", appName, JSON_FILE);
+                List<File> appMarkets = Arrays.stream(appFiles).parallel()
+                        .filter(k -> k.getName().equals(appFileName))
+                        .collect(Collectors.toCollection(ArrayList::new));
+                if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
+                    File appMarket = appMarkets.get(0);
+                    String appMarketJson = FileUtil.getFileContent(appMarket);
+                    ApplicationReleasingVO appMarketVersionDTO =
+                            gson.fromJson(appMarketJson, ApplicationReleasingVO.class);
+                    appMarketVersionDTOS.add(appMarketVersionDTO);
+                }
+            }
+        });
+    }
+
+    private void importAppFile(Long projectId, List<File> appFileList, Boolean isPublic) {
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
+        String orgCode = organizationDTO.getCode();
+        String projectCode = projectDTO.getCode();
+        appFileList.stream().forEach(t -> {
+            String appName = t.getName();
+            File[] appFiles = t.listFiles();
+            if (appFiles != null && !appFileList.isEmpty()) {
+                String appFileName = String.format("%s%s", appName, JSON_FILE);
+                List<File> appMarkets = Arrays.stream(appFiles).parallel()
+                        .filter(k -> k.getName().equals(appFileName))
+                        .collect(Collectors.toCollection(ArrayList::new));
+                if (appMarkets != null && !appMarkets.isEmpty() && appMarkets.size() == 1) {
+                    File appMarket = appMarkets.get(0);
+                    String appMarketJson = FileUtil.getFileContent(appMarket);
+                    ApplicationReleasingVO applicationReleasingDTO =
+                            gson.fromJson(appMarketJson, ApplicationReleasingVO.class);
+                    ApplicationDTO applicationDTO = new ApplicationDTO();
+                    String appCode = applicationReleasingDTO.getCode();
+                    applicationDTO.setName(applicationReleasingDTO.getName());
+                    applicationDTO.setIsSkipCheckPermission(true);
+                    applicationDTO.setType("normal");
+                    Long appId = createOrUpdateApp(applicationDTO, appCode, projectId);
+                    Boolean isVersionPublish = isPublic != null;
+                    applicationReleasingDTO.getAppVersions().stream()
+                            .forEach(appVersion -> createVersion(
+                                    appVersion, orgCode, projectCode, appCode, appId, appFiles, isVersionPublish
+                            ));
+                    // 发布应用
+                    releaseApp(isPublic, applicationReleasingDTO, appId);
+                }
+            }
+        });
+    }
+
+
+    private void getChart(List<String> images, AppMarketDownloadDTO appMarketDownloadDTO, String destpath, ApplicationDTO applicationDTO, ProjectDTO projectDTO, OrganizationDTO organizationDTO) {
+        appMarketDownloadDTO.getAppVersionIds().forEach(appVersionId -> {
+
+            ApplicationVersionDTO applicationVersionDTO = applicationVersionService.baseQuery(appVersionId);
+            images.add(applicationVersionDTO.getImage());
+            chartUtil.downloadChart(applicationVersionDTO, organizationDTO, projectDTO, applicationDTO, destpath);
+        });
+    }
+
+    private void createVersion(AppMarketVersionDTO appVersion,
+                               String organizationCode,
+                               String projectCode,
+                               String appCode,
+                               Long appId,
+                               File[] appFiles,
+                               Boolean isVersionPublish) {
+        ApplicationVersionDTO applicationVersionDTO = new ApplicationVersionDTO();
+        String image = String.format("%s%s%s%s%s%s%s%s%s", harborConfigurationProperties.getBaseUrl(),
+                FILE_SEPARATOR,
+                organizationCode,
+                "-",
+                projectCode,
+                FILE_SEPARATOR,
+                appCode,
+                ":",
+                appVersion.getVersion()
+        );
+        applicationVersionDTO.setImage(image);
+        helmUrl = helmUrl.endsWith("/") ? helmUrl : helmUrl + "/";
+        applicationVersionDTO.setRepository(String.format("%s%s%s%s%s",
+                helmUrl,
+                organizationCode,
+                FILE_SEPARATOR,
+                projectCode,
+                FILE_SEPARATOR));
+        applicationVersionDTO.setVersion(appVersion.getVersion());
+        applicationVersionDTO.setAppId(appId);
+        String tazName = String.format("%s%s%s%s",
+                appCode,
+                "-",
+                appVersion.getVersion(),
+                ".tgz"
+        );
+        List<File> tgzVersions = Arrays.stream(appFiles).parallel()
+                .filter(k -> k.getName().equals(tazName))
+                .collect(Collectors.toCollection(ArrayList::new));
+        if (!tgzVersions.isEmpty()) {
+            ApplicationVersionValueDTO applicationVersionValueDTO = new ApplicationVersionValueDTO();
+            try {
+                FileUtil.unTarGZ(tgzVersions.get(0).getAbsolutePath(), appCode);
+                File valueYaml = FileUtil.queryFileFromFiles(new File(appCode), "values.yaml");
+                if (valueYaml == null) {
+                    throw new CommonException("error.version.values.notExist");
+                }
+                applicationVersionValueDTO.setValue(FileUtil.replaceReturnString(new FileInputStream(valueYaml), null));
+
+                applicationVersionDTO.setValueId(applicationVersionValueService.baseCreate(applicationVersionValueDTO).getId());
+            } catch (Exception e) {
+                throw new CommonException("error.version.insert");
+            }
+            applicationVersionDTO.setReadme(FileUtil.getReadme(appCode));
+            ApplicationVersionDTO version = applicationVersionService.baseQueryByAppIdAndVersion(appId, appVersion.getVersion());
+
+            if (isVersionPublish) {
+                applicationVersionDTO.setIsPublish(1L);
+            } else {
+                applicationVersionDTO.setIsPublish(version == null ? null : version.getIsPublish());
+            }
+            if (version == null) {
+                if (applicationVersionMapper.insert(applicationVersionDTO) != 1) {
+                    throw new CommonException("error.version.insert");
+                }
+            } else {
+                applicationVersionDTO.setId(version.getId());
+                applicationVersionService.baseUpdate(applicationVersionDTO);
+            }
+            String classPath = String.format("Charts%s%s%s%s",
+                    FILE_SEPARATOR,
+                    organizationCode,
+                    FILE_SEPARATOR,
+                    projectCode);
+            FileUtil.copyFile(tgzVersions.get(0).getAbsolutePath(), classPath);
+            //上传tgz包到chart仓库
+            chartUtil.uploadChart(organizationCode, projectCode, tgzVersions.get(0));
+            FileUtil.deleteDirectory(new File(appCode));
+        }
+    }
+
+
+    private Long createOrUpdateApp(ApplicationDTO applicationDTO, String appCode, Long projectId) {
+        applicationDTO.setCode(appCode);
+        applicationDTO.setProjectId(projectId);
+        Long appId;
+        Boolean appCodeExist = false;
+        try {
+            applicationService.baseCheckCode(applicationDTO);
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+            appCodeExist = true;
+        }
+        if (!appCodeExist) {
+            applicationDTO.setActive(true);
+            applicationDTO.setSynchro(true);
+            applicationDTO.setToken(GenerateUUID.generateUUID());
+            appId = applicationService.baseCreate(applicationDTO).getId();
+        } else {
+            ApplicationRepVO existApplication = applicationService.queryByCode(projectId, appCode);
+            appId = existApplication.getId();
+            applicationDTO.setId(appId);
+            applicationService.baseUpdate(applicationDTO);
+        }
+        return appId;
+    }
+
+    private Boolean checkAppCanPub(Long appId) {
+        try {
+            return baseCheckPub(appId);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void releaseApp(Boolean isPublic,
+                            ApplicationReleasingVO applicationReleasingDTO, Long appId) {
+        if (isPublic != null) {
+            Boolean canPub = checkAppCanPub(appId);
+            if (canPub) {
+                ApplicationShareDTO applicationShareDTO = new ApplicationShareDTO();
+                applicationShareDTO.setAppId(appId);
+                applicationShareDTO.setPublishLevel(isPublic ? PROJECTS : ORGANIZATION);
+                applicationShareDTO.setActive(true);
+                applicationShareDTO.setContributor(applicationReleasingDTO.getContributor());
+                applicationShareDTO.setDescription(applicationReleasingDTO.getDescription());
+                applicationShareDTO.setCategory(applicationReleasingDTO.getCategory());
+                baseCreateOrUpdate(applicationShareDTO);
+            }
+        }
+    }
+
 }

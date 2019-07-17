@@ -3,23 +3,11 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.api.vo.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
-<<<<<<< HEAD
-import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
-=======
-import io.choerodon.devops.api.vo.AccessTokenCheckResultDTO;
-import io.choerodon.devops.api.vo.AccessTokenDTO;
-import io.choerodon.devops.api.vo.AppMarketDownloadDTO;
-import io.choerodon.devops.api.vo.AppMarketTgzDTO;
-import io.choerodon.devops.api.vo.AppMarketVersionDTO;
-import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
-import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
-import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.ApplicationShareDTO;
->>>>>>> [IMP] refactor AplicationControler
 
 /**
  * Created by ernst on 2018/5/12.
@@ -33,7 +21,7 @@ public interface ApplicationShareService {
      * @param projectId             项目ID
      * @return integer
      */
-    Long create(Long projectId, ApplicationReleasingDTO applicationReleaseDTO);
+    Long create(Long projectId, ApplicationReleasingVO applicationReleaseDTO);
 
     /**
      * 项目下查询所有发布在应用市场的应用
@@ -43,7 +31,7 @@ public interface ApplicationShareService {
      * @param searchParam 模糊查询参数
      * @return baseList of ApplicationReleasingDTO
      */
-    PageInfo<ApplicationReleasingDTO> pageByOptions(
+    PageInfo<ApplicationReleasingVO> pageByOptions(
             Long projectId,
             PageRequest pageRequest,
             String searchParam);
@@ -55,18 +43,18 @@ public interface ApplicationShareService {
      * @param searchParam 模糊查询参数
      * @return baseList of ApplicationReleasingDTO
      */
-    PageInfo<ApplicationReleasingDTO> listMarketAppsBySite(
+    PageInfo<ApplicationReleasingVO> listMarketAppsBySite(
             Boolean isSite,
             Boolean isFree,
             PageRequest pageRequest,
             String searchParam);
 
-    ApplicationReleasingDTO getAppDetailByShareId(Long shareId);
+    ApplicationReleasingVO getAppDetailByShareId(Long shareId);
 
-    List<Long> batchRelease(List<ApplicationReleasingDTO> releasingDTOList);
+    List<Long> batchRelease(List<ApplicationReleasingVO> releasingDTOList);
 
 
-    PageInfo<ApplicationReleasingDTO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds);
+    PageInfo<ApplicationReleasingVO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds);
 
     PageInfo<ApplicationVersionRespVO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params);
 
@@ -82,9 +70,9 @@ public interface ApplicationShareService {
      * @param searchParam 模糊查询参数
      * @return baseList of ApplicationReleasingDTO
      */
-    PageInfo<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam);
+    PageInfo<ApplicationReleasingVO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam);
 
-    ApplicationReleasingDTO queryById(Long projectId, Long appMarketId);
+    ApplicationReleasingVO queryById(Long projectId, Long appMarketId);
 
     /**
      * 查询单个应用市场的应用
@@ -93,7 +81,7 @@ public interface ApplicationShareService {
      * @param versionId   应用版本ID
      * @return ApplicationReleasingDTO
      */
-    ApplicationReleasingDTO queryShareApp(Long appMarketId, Long versionId);
+    ApplicationReleasingVO queryShareApp(Long appMarketId, Long versionId);
 
 
     String queryAppVersionReadme(Long appMarketId, Long versionId);
@@ -102,7 +90,7 @@ public interface ApplicationShareService {
 
     void unpublish(Long projectId, Long appMarketId, Long versionId);
 
-    void update(Long projectId, Long appMarketId, ApplicationReleasingDTO applicationRelease);
+    void update(Long projectId, Long appMarketId, ApplicationReleasingVO applicationRelease);
 
     void update(Long projectId, Long appMarketId, List<AppMarketVersionDTO> versionDTOList);
 
@@ -124,9 +112,9 @@ public interface ApplicationShareService {
      */
     void export(List<AppMarketDownloadDTO> appMarkets, String fileName);
 
-    PageInfo<ApplicationReleasingDTO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<ApplicationReleasingVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params);
 
-    PageInfo<ApplicationVersionRespVO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params);
+    PageInfo<ApplicationVersionRespVO> pageVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params);
 
     AppVersionAndValueDTO queryConfigByVerionId(Long appId, Long versionId, String accessToken);
 

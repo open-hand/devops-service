@@ -41,10 +41,10 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
  */
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/apps_share")
-public class AppShareController {
+public class ApplicationShareController {
     private ApplicationShareService applicationShareService;
 
-    public AppShareController(ApplicationShareService applicationShareService) {
+    public ApplicationShareController(ApplicationShareService applicationShareService) {
         this.applicationShareService = applicationShareService;
     }
 
@@ -62,7 +62,7 @@ public class AppShareController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody ApplicationReleasingDTO applicationReleaseDTO) {
+            @RequestBody ApplicationReleasingVO applicationReleaseDTO) {
         return Optional.ofNullable(
                 applicationShareService.create(projectId, applicationReleaseDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -81,7 +81,7 @@ public class AppShareController {
     @ApiOperation(value = "项目下分页查询所有发布在应用市场的应用")
     @CustomPageRequest
     @PostMapping(value = "/page_by_options")
-    public ResponseEntity<PageInfo<ApplicationReleasingDTO>> pageByOptions(
+    public ResponseEntity<PageInfo<ApplicationReleasingVO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -107,7 +107,7 @@ public class AppShareController {
     @ApiOperation(value = "查询发布级别为全局或者在本组织下的所有应用市场的应用")
     @CustomPageRequest
     @PostMapping(value = "/page_by_project")
-    public ResponseEntity<PageInfo<ApplicationReleasingDTO>> pageByProjectId(
+    public ResponseEntity<PageInfo<ApplicationReleasingVO>> pageByProjectId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -130,7 +130,7 @@ public class AppShareController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询项目下单个应用市场的应用详情")
     @GetMapping("/{app_share_id}/detail")
-    public ResponseEntity<ApplicationReleasingDTO> queryById(
+    public ResponseEntity<ApplicationReleasingVO> queryById(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
@@ -151,7 +151,7 @@ public class AppShareController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个应用市场的应用")
     @GetMapping("/{app_share_id}")
-    public ResponseEntity<ApplicationReleasingDTO> queryShareApp(
+    public ResponseEntity<ApplicationReleasingVO> queryShareApp(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
@@ -255,7 +255,7 @@ public class AppShareController {
             @ApiParam(value = "发布ID", required = true)
             @PathVariable("app_share_id") Long appShareId,
             @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody(required = true) ApplicationReleasingDTO applicationRelease) {
+            @RequestBody(required = true) ApplicationReleasingVO applicationRelease) {
         applicationShareService.update(projectId, appShareId, applicationRelease);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -376,7 +376,7 @@ public class AppShareController {
     @ApiOperation(value = "项目下查询远程应用")
     @CustomPageRequest
     @PostMapping(value = "/page_remote")
-    public ResponseEntity<PageInfo<ApplicationReleasingDTO>> pageRemoteApps(
+    public ResponseEntity<PageInfo<ApplicationReleasingVO>> pageRemoteApps(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")

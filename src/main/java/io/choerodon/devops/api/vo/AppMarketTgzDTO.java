@@ -10,18 +10,18 @@ import java.util.List;
  * Description:
  */
 public class AppMarketTgzDTO {
-    private List<ApplicationReleasingDTO> appMarketList;
+    private List<ApplicationReleasingVO> appMarketList;
     private String fileCode;
 
     public AppMarketTgzDTO() {
         this.appMarketList = new ArrayList<>();
     }
 
-    public List<ApplicationReleasingDTO> getAppMarketList() {
+    public List<ApplicationReleasingVO> getAppMarketList() {
         return appMarketList;
     }
 
-    public void setAppMarketList(List<ApplicationReleasingDTO> appMarketList) {
+    public void setAppMarketList(List<ApplicationReleasingVO> appMarketList) {
         this.appMarketList = appMarketList;
     }
 

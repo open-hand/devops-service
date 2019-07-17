@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by ernst on 2018/5/12.
  */
-public class ApplicationReleasingDTO {
+public class ApplicationReleasingVO {
 
     private Long id;
     private Long appId;

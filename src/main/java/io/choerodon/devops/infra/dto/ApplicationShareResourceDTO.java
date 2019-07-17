@@ -20,6 +20,11 @@ public class ApplicationShareResourceDTO extends BaseDTO {
     private Long shareId;
     private Long projectId;
 
+    public ApplicationShareResourceDTO(Long shareId, Long projectId) {
+        this.shareId = shareId;
+        this.projectId = projectId;
+    }
+
     public Long getId() {
         return id;
     }

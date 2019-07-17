@@ -101,6 +101,7 @@ import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.ApplicationUserPermissionMapper;
+import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.tool.UUIDTool;
@@ -196,6 +197,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private DevopsProjectConfigService devopsProjectConfigService;
     @Autowired
     private ApplicationShareService applicationShareService;
+
 
     @Override
     @Saga(code = "devops-create-application",

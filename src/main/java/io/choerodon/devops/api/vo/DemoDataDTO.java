@@ -8,7 +8,7 @@ import io.choerodon.devops.infra.dto.DevopsBranchDTO;
  */
 public class DemoDataDTO {
     private ApplicationReqVO applicationInfo;
-    private ApplicationReleasingDTO applicationRelease;
+    private ApplicationReleasingVO applicationRelease;
     private String templateSearchParam;
     private String appVersionSearchParam;
     private DemoTagDTO tagInfo;
@@ -23,11 +23,11 @@ public class DemoDataDTO {
         this.applicationInfo = applicationInfo;
     }
 
-    public ApplicationReleasingDTO getApplicationRelease() {
+    public ApplicationReleasingVO getApplicationRelease() {
         return applicationRelease;
     }
 
-    public void setApplicationRelease(ApplicationReleasingDTO applicationRelease) {
+    public void setApplicationRelease(ApplicationReleasingVO applicationRelease) {
         this.applicationRelease = applicationRelease;
     }
 

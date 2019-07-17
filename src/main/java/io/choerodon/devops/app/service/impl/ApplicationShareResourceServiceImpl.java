@@ -21,7 +21,7 @@ public class ApplicationShareResourceServiceImpl implements ApplicationShareReso
     @Autowired
     private ApplicationShareResourceMapper applicationShareResourceMapper;
 
-
+    @Override
     public void baseCreate(ApplicationShareResourceDTO applicationShareResourceDTO) {
         if (applicationShareResourceMapper.insert(applicationShareResourceDTO) != 1) {
             throw new CommonException("error.insert.app.share.resource");
@@ -35,6 +35,7 @@ public class ApplicationShareResourceServiceImpl implements ApplicationShareReso
         applicationShareResourceMapper.deleteByPrimaryKey(applicationShareResourceDTO);
     }
 
+    @Override
     public List<ApplicationShareResourceDTO> baseListByShareId(Long shareId) {
         ApplicationShareResourceDTO applicationShareResourceDTO = new ApplicationShareResourceDTO();
         applicationShareResourceDTO.setShareId(shareId);

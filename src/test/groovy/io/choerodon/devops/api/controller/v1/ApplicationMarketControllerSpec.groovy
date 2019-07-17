@@ -9,7 +9,7 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.AppMarketDownloadDTO
 import io.choerodon.devops.api.vo.AppMarketTgzDTO
 import io.choerodon.devops.api.vo.AppMarketVersionDTO
-import io.choerodon.devops.api.vo.ApplicationReleasingDTO
+import io.choerodon.devops.api.vo.ApplicationReleasingVO
 import io.choerodon.devops.api.vo.ProjectVO
 import io.choerodon.devops.api.vo.iam.entity.UserAttrE
 <<<<<<< HEAD
@@ -49,7 +49,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(AppShareController)
+@Subject(ApplicationShareController)
 @Stepwise
 class ApplicationMarketControllerSpec extends Specification {
 
@@ -176,7 +176,7 @@ class ApplicationMarketControllerSpec extends Specification {
         applicationVersionMapper.insert(applicationVersionDO)
 
         and: '准备DTO'
-        ApplicationReleasingDTO applicationReleasingDTO = new ApplicationReleasingDTO()
+        ApplicationReleasingVO applicationReleasingDTO = new ApplicationReleasingVO()
         applicationReleasingDTO.setAppId(1L)
         applicationReleasingDTO.setImgUrl("imgUrl")
         applicationReleasingDTO.setCategory("category")
@@ -220,7 +220,7 @@ class ApplicationMarketControllerSpec extends Specification {
 
     def "QueryAppInProject"() {
         when: '查询项目下单个应用市场的应用详情'
-        def dto = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}/detail", ApplicationReleasingDTO.class
+        def dto = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}/detail", ApplicationReleasingVO.class
                 , applicationMarketMapper.selectAll().get(0).getId())
 
         then: '验证返回值'
@@ -229,7 +229,7 @@ class ApplicationMarketControllerSpec extends Specification {
 
     def "QueryApp"() {
         when: '查询项目下单个应用市场的应用详情'
-        def dto = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}", ApplicationReleasingDTO.class,
+        def dto = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}", ApplicationReleasingVO.class,
                 applicationMarketMapper.selectAll().get(0).getId())
 
         then: '验证返回值'
@@ -272,7 +272,7 @@ class ApplicationMarketControllerSpec extends Specification {
     def "Update"() {
         given: '初始化DTO'
         Long appMarketId = applicationMarketMapper.selectAll().get(0).getId()
-        ApplicationReleasingDTO applicationReleasingDTO = new ApplicationReleasingDTO()
+        ApplicationReleasingVO applicationReleasingDTO = new ApplicationReleasingVO()
         applicationReleasingDTO.setId(appMarketId)
         applicationReleasingDTO.setContributor("newContributor")
         applicationReleasingDTO.setPublishLevel("public")

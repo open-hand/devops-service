@@ -8,7 +8,7 @@ import retrofit2.Call;
 
 import io.choerodon.devops.api.vo.AccessTokenCheckResultDTO;
 import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
-import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
+import io.choerodon.devops.api.vo.ApplicationReleasingVO;
 import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
 import io.choerodon.devops.infra.feign.AppShareClient;
 
@@ -20,7 +20,7 @@ import io.choerodon.devops.infra.feign.AppShareClient;
 @Component
 public class AppShareClientFallback implements AppShareClient {
     @Override
-    public Call<PageInfo<ApplicationReleasingDTO>> getAppShares(Map<String, Object> map) {
+    public Call<PageInfo<ApplicationReleasingVO>> getAppShares(Map<String, Object> map) {
         return null;
     }
 

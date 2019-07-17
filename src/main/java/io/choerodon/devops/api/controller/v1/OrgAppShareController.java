@@ -44,7 +44,7 @@ public class OrgAppShareController {
     @ApiOperation(value = "查询所有已发布的应用")
     @CustomPageRequest
     @PostMapping(value = "/listByOptions")
-    public ResponseEntity<PageInfo<ApplicationReleasingDTO>> pageListMarketAppsByProjectId(
+    public ResponseEntity<PageInfo<ApplicationReleasingVO>> pageListMarketAppsByProjectId(
             @ApiParam(value = "发布层级")
             @RequestParam(value = "is_site", required = false) Boolean isSite,
             @ApiParam(value = "是否收费")
@@ -67,7 +67,7 @@ public class OrgAppShareController {
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据shareId获取应用详情")
     @GetMapping(value = "/app_detail")
-    public ResponseEntity<ApplicationReleasingDTO> getAppDetailByShareId(
+    public ResponseEntity<ApplicationReleasingVO> getAppDetailByShareId(
             @ApiParam(value = "shareId")
             @RequestParam(value = "share_id") Long shareId) {
         return Optional.ofNullable(
@@ -104,7 +104,7 @@ public class OrgAppShareController {
     @PostMapping(value = "/batch_release")
     public ResponseEntity<List<Long>> batchRelease(
             @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody List<ApplicationReleasingDTO> releasingDTOList) {
+            @RequestBody List<ApplicationReleasingVO> releasingDTOList) {
         return Optional.ofNullable(
                 applicationShareService.batchRelease(releasingDTOList))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -121,7 +121,7 @@ public class OrgAppShareController {
     @ApiOperation(value = "根据Ids获取应用详情")
     @CustomPageRequest
     @PostMapping(value = "/details")
-    public ResponseEntity<PageInfo<ApplicationReleasingDTO>> getAppsDetail(
+    public ResponseEntity<PageInfo<ApplicationReleasingVO>> getAppsDetail(
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody List<Long> shareIds,
             @ApiParam(value = "分页参数")
