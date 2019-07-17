@@ -16,11 +16,11 @@ public class ApplicationVersionReadmeServiceImpl implements ApplicationVersionRe
     @Autowired
     private ApplicationVersionReadmeMapper applicationVersionReadmeMapper;
 
-    public ApplicationVersionReadmeDTO baseCreate(ApplicationVersionReadmeDTO versionReadmeDO) {
-        if (applicationVersionReadmeMapper.insert(versionReadmeDO) != 1) {
+    public ApplicationVersionReadmeDTO baseCreate(ApplicationVersionReadmeDTO applicationVersionReadmeDTO) {
+        if (applicationVersionReadmeMapper.insert(applicationVersionReadmeDTO) != 1) {
             throw new CommonException("error.insert.version.readme");
         }
-        return versionReadmeDO;
+        return applicationVersionReadmeDTO;
     }
 
 

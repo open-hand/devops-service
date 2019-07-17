@@ -19,13 +19,17 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 >>>>>>> [IMP]重构后端代码
 import io.choerodon.base.domain.PageRequest;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.*;
 =======
 import io.choerodon.core.convertor.ConvertHelper;
+=======
+>>>>>>> [IMP]修改后端代码结构
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
 import io.choerodon.devops.api.vo.*;
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 <<<<<<< HEAD
@@ -37,10 +41,16 @@ import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.infra.dto.ApplicationInstanceOverViewDTO;
 import io.choerodon.devops.infra.dto.ApplicationLatestVersionDTO;
 =======
+=======
+>>>>>>> [IMP]修改后端代码结构
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.valueobject.*;
+import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
+import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
+import io.choerodon.devops.domain.application.valueobject.InstanceValueVO;
+import io.choerodon.devops.domain.application.valueobject.Metadata;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -74,6 +84,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
+    public static final String HARBOR = "harbor";
+    public static final String CHART = "chart";
 
 
     private static Gson gson = new Gson();
@@ -97,8 +109,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private ApplicationInstanceMapper applicationInstanceMapper;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
-    @Autowired
-    private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
@@ -137,6 +147,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private PipelineAppDeployService pipelineAppDeployService;
+    @Autowired
+    private ApplicationVersionValueService applicationVersionValueService;
+    @Autowired
+    private ApplicationVersionReadmeService applicationVersionReadmeService;
+    @Autowired
+    private ResourceFileCheckHandler resourceFileCheckHandler;
 
     @Override
     public AppInstanceInfoVO queryInfoById(Long instanceId) {
@@ -260,6 +276,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return applicationInstanceOverViewVOS;
     }
 
+<<<<<<< HEAD
     private void initInstanceOverView(ApplicationInstanceOverViewVO applicationInstanceOverViewVO, ApplicationInstanceOverViewDTO
             applicationInstanceOverViewDTO,
                                       Long latestVersionId) {
@@ -505,6 +522,9 @@ public PageInfo<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId,PageRe
         envIds,appId,startTime,endTime);
         return getDeployDetailDTOS(deployDOS);
         }
+=======
+
+>>>>>>> [IMP]修改后端代码结构
 
 @Override
 public PageInfo<DeployDetailDTO> pageDeployTimeDetail(Long projectId,PageRequest pageRequest,Long[]appIds,
@@ -626,6 +646,7 @@ public void operationPodCount(String deploymentName,Long envId,Long count){
     }
 >>>>>>> [IMP]重构后端代码
 
+<<<<<<< HEAD
 @Override
 public DeployTimeDTO listDeployTime(Long projectId,Long envId,Long[]appIds,Date
         startTime,Date endTime){
@@ -744,19 +765,139 @@ public InstanceControllerDetailDTO getInstanceResourceDetailJson(Long
         throw new CommonException("error.instance.resource.json.read.failed",instanceId,message);
         }
 =======
+=======
+    @Override
+    public DeployTimeVO listDeployTime(Long projectId, Long envId, Long[] appIds, Date
+            startTime, Date endTime) {
+
+        DeployTimeVO deployTimeVO = new DeployTimeVO();
+
+        if (appIds.length == 0) {
+            return deployTimeVO;
+        }
+
+        List<DeployDTO> deployDTOS = baseListDeployTime(projectId, envId, appIds, startTime, endTime);
+        List<Date> creationDates = deployDTOS.stream().map(DeployDTO::getCreationDate).collect(Collectors.toList());
+
+        //操作时间排序
+        creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder())
+                .collect(Collectors.toList());
+
+        List<DeployAppDTO> deployAppDTOS = new ArrayList<>();
+
+        //以应用为维度分组
+        Map<String, List<DeployDTO>> resultMaps = deployDTOS.stream()
+                .collect(Collectors.groupingBy(DeployDTO::getAppName));
+
+        resultMaps.forEach((key, value) -> {
+            DeployAppDTO deployAppDTO = new DeployAppDTO();
+            List<DeployDetailVO> deployDetailVOS = new ArrayList<>();
+            deployAppDTO.setAppName(key);
+            //给应用下每个实例操作设置时长
+            value.forEach(deployDO -> {
+                DeployDetailVO deployDetailVO = new DeployDetailVO();
+                deployDetailVO.setDeployDate(deployDO.getCreationDate());
+                deployDetailVO.setDeployTime(
+                        getDeployTime(deployDO.getLastUpdateDate().getTime() - deployDO.getCreationDate().getTime()));
+                deployDetailVOS.add(deployDetailVO);
+            });
+            deployAppDTO.setDeployDetailVOS(deployDetailVOS);
+            deployAppDTOS.add(deployAppDTO);
+        });
+        deployTimeVO.setCreationDates(creationDates);
+        deployTimeVO.setDeployAppDTOS(deployAppDTOS);
+        return deployTimeVO;
+    }
+
+
+    @Override
+    public DeployFrequencyVO listDeployFrequency(Long projectId, Long[]
+            envIds, Long appId, Date startTime, Date endTime) {
+        if (envIds.length == 0) {
+            return new DeployFrequencyVO();
+        }
+        List<DeployDTO> deployDTOS = baselistDeployFrequency(projectId, envIds, appId, startTime, endTime);
+
+        //以时间维度分组
+        Map<String, List<DeployDTO>> resultMaps = deployDTOS.stream()
+                .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getCreationDate().getTime()).toString()));
+
+        List<String> creationDates = deployDTOS.stream()
+                .map(deployDTO -> new java.sql.Date(deployDTO.getCreationDate().getTime()).toString())
+                .collect(Collectors.toList());
+        creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder())
+                .collect(Collectors.toList());
+
+
+        List<Long> deployFrequency = new LinkedList<>();
+        List<Long> deploySuccessFrequency = new LinkedList<>();
+        List<Long> deployFailFrequency = new LinkedList<>();
+        creationDates.forEach(date -> {
+            Long[] newDeployFrequency = {0L};
+            Long[] newDeploySuccessFrequency = {0L};
+            Long[] newDeployFailFrequency = {0L};
+            resultMaps.get(date).forEach(deployFrequencyDO -> {
+                newDeployFrequency[0] = newDeployFrequency[0] + 1L;
+                if (deployFrequencyDO.getStatus().equals(CommandStatus.SUCCESS.getStatus())) {
+                    newDeploySuccessFrequency[0] = newDeploySuccessFrequency[0] + 1L;
+                } else {
+                    newDeployFailFrequency[0] = newDeployFailFrequency[0] + 1L;
+                }
+            });
+            deployFrequency.add(newDeployFrequency[0]);
+            deploySuccessFrequency.add(newDeploySuccessFrequency[0]);
+            deployFailFrequency.add(newDeployFailFrequency[0]);
+        });
+        DeployFrequencyVO deployFrequencyVO = new DeployFrequencyVO();
+        deployFrequencyVO.setCreationDates(creationDates);
+        deployFrequencyVO.setDeployFailFrequency(deployFailFrequency);
+        deployFrequencyVO.setDeploySuccessFrequency(deploySuccessFrequency);
+        deployFrequencyVO.setDeployFrequencys(deployFrequency);
+        return deployFrequencyVO;
+    }
+
+    @Override
+    public PageInfo<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds,
+                                                                  Long appId, Date startTime, Date endTime) {
+        if (envIds.length == 0) {
+            return new PageInfo<>();
+        }
+        PageInfo<DeployDTO> deployDTOPageInfo = basePageDeployFrequencyTable(projectId, pageRequest,
+                envIds, appId, startTime, endTime);
+        return getDeployDetailDTOS(deployDTOPageInfo);
+    }
+
+
+    @Override
+    public PageInfo<DeployDetailTableVO> pageDeployTimeTable(Long projectId, PageRequest pageRequest,
+                                                             Long[] appIds, Long envId,
+                                                             Date startTime, Date endTime) {
+        if (appIds.length == 0) {
+            return new PageInfo<>();
+        }
+        PageInfo<DeployDTO> deployDTOS = basePageDeployTimeTable(projectId, pageRequest, envId,
+                appIds, startTime, endTime);
+        return getDeployDetailDTOS(deployDTOS);
+    }
+
+
+>>>>>>> [IMP]修改后端代码结构
     @Override
     public void deployTestApp(ApplicationDeployVO applicationDeployVO) {
-        String versionValue = applicationVersionRepository.baseQueryValue(applicationDeployVO.getAppVersionId());
-        ApplicationE applicationE = applicationRepository.query(applicationDeployVO.getAppId());
 
-        String secretCode = null;
-        secretCode = getSecret(applicationE, secretCode, CHOERODON, null, applicationDeployVO.getEnvironmentId());
+        String versionValue = applicationVersionService.baseQueryValue(applicationDeployVO.getAppVersionId());
+        ApplicationDTO applicationDTO = applicationService.baseQuery(applicationDeployVO.getAppId());
 
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQuery(applicationDeployVO.getAppVersionId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
+        devopsEnvironmentDTO.setCode(CHOERODON);
+        devopsEnvironmentDTO.setClusterId(applicationDeployVO.getEnvironmentId());
+        String secretCode = getSecret(applicationDTO, null, devopsEnvironmentDTO);
+
+        ApplicationVersionDTO applicationVersionDTO = applicationVersionService.baseQuery(applicationDeployVO.getAppVersionId());
         FileUtil.checkYamlFormat(applicationDeployVO.getValues());
         String deployValue = getReplaceResult(versionValue,
                 applicationDeployVO.getValues()).getDeltaYaml().trim();
-        agentCommandService.deployTestApp(applicationE, applicationVersionE, applicationDeployVO.getInstanceName(), secretCode, applicationDeployVO.getEnvironmentId(), deployValue);
+        agentCommandService.deployTestApp(applicationDTO, applicationVersionDTO, applicationDeployVO.getInstanceName(), secretCode, applicationDeployVO.getEnvironmentId(), deployValue);
     }
 
 
@@ -825,6 +966,7 @@ public void getTestAppStatus(Map<Long, List<String>>testReleases){
     }
 >>>>>>> [IMP]重构后端代码
 
+<<<<<<< HEAD
 @Override
 public void operationPodCount(String deploymentName,Long envId,Long
         count){
@@ -843,12 +985,24 @@ public void operationPodCount(String deploymentName,Long envId,Long
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentE,userAttrE);
+=======
+    @Override
+    public void operationPodCount(String deploymentName, Long envId, Long count) {
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+>>>>>>> [IMP]修改后端代码结构
 
         >>>>>>>[IMP]重构后端代码
         //不能减少到0
         if(count==0){
         return;
         }
+<<<<<<< HEAD
         deployService.operatePodCount(deploymentName,devopsEnvironmentE.getCode(),devopsEnvironmentE.getClusterE().getId(),count);
         }
 <<<<<<< HEAD
@@ -877,8 +1031,29 @@ private PageInfo<DeployDetailDTO> getDeployDetailDTOS
         deployDetailDTO.setLastUpdatedName(userE.getRealName());
         }
         deployDetailDTOS.add(deployDetailDTO);
+=======
+        agentCommandService.operatePodCount(deploymentName, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), count);
+    }
+
+
+    private PageInfo<DeployDetailTableVO> getDeployDetailDTOS(PageInfo<DeployDTO> deployDTOPageInfo) {
+
+        PageInfo<DeployDetailTableVO> pageDeployDetailDTOS = ConvertUtils.convertPage(deployDTOPageInfo, DeployDetailTableVO.class);
+
+        List<DeployDetailTableVO> deployDetailTableVOS = new ArrayList<>();
+
+        deployDTOPageInfo.getList().forEach(deployDTO -> {
+            DeployDetailTableVO deployDetailTableVO = ConvertUtils.convertObject(deployDTO, DeployDetailTableVO.class);
+            deployDetailTableVO.setDeployTime(
+                    getDeployTime(deployDTO.getLastUpdateDate().getTime() - deployDTO.getCreationDate().getTime()));
+            if (deployDTO.getCreatedBy() != 0) {
+                IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(deployDTO.getCreatedBy());
+                deployDetailTableVO.setLastUpdatedName(iamUserDTO.getRealName());
+            }
+            deployDetailTableVOS.add(deployDetailTableVO);
+>>>>>>> [IMP]修改后端代码结构
         });
-        pageDeployDetailDTOS.setList(deployDetailDTOS);
+        pageDeployDetailDTOS.setList(deployDetailTableVOS);
         return pageDeployDetailDTOS;
         }
 
@@ -956,12 +1131,19 @@ public List<ErrorLineDTO> formatValue(ReplaceResult
         }
 
 
+<<<<<<< HEAD
 @Override
 <<<<<<<HEAD
 public DevopsEnvPreviewDTO listByEnv(Long projectId,Long envId,String params){
+=======
+    @Override
+    public DevopsEnvPreviewVO listByEnv(Long projectId, Long
+            envId, String params) {
+>>>>>>> [IMP]修改后端代码结构
 
         Map<String, Object> maps=gson.fromJson(params,new TypeToken<Map<String, Object>>(){
         }.getType());
+<<<<<<< HEAD
         List<Long> connectedEnvList=clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList=clusterConnectionHandler.getUpdatedEnvList();
 
@@ -1032,6 +1214,38 @@ public DevopsEnvPreviewDTO listByEnv(Long projectId,Long
         devopsEnvPreviewDTO.setDevopsEnvPreviewAppDTOS(devopsEnvPreviewAppDTOS);
         return devopsEnvPreviewDTO;
         }
+=======
+
+
+        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+
+        List<ApplicationInstanceDTO> applicationInstanceDTOS = applicationInstanceMapper
+                .listApplicationInstance(projectId, envId, null, null, null, searchParamMap, paramMap);
+
+        List<ApplicationInstanceVO> applicationInstanceVOS =
+                ConvertUtils.convertList(applicationInstanceDTOS, ApplicationInstanceVO.class);
+
+        //以app为维度给实例分组
+        Map<Long, List<ApplicationInstanceVO>> resultMaps = applicationInstanceVOS.stream()
+                .collect(Collectors.groupingBy(t -> t.getAppId()));
+        DevopsEnvPreviewVO devopsEnvPreviewVO = new DevopsEnvPreviewVO();
+        List<DevopsEnvPreviewAppVO> devopsEnvPreviewAppVOS = new ArrayList<>();
+        resultMaps.forEach((key, value) -> {
+            DevopsEnvPreviewAppVO devopsEnvPreviewAppVO = new DevopsEnvPreviewAppVO();
+            devopsEnvPreviewAppVO.setAppName(value.get(0).getAppName());
+            devopsEnvPreviewAppVO.setAppCode(value.get(0).getAppCode());
+            devopsEnvPreviewAppVO.setProjectId(value.get(0).getProjectId());
+
+            //设置应用所属的实例
+            devopsEnvPreviewAppVO.setApplicationInstanceVOS(applicationInstanceVOS);
+
+            devopsEnvPreviewAppVOS.add(devopsEnvPreviewAppVO);
+        });
+        devopsEnvPreviewVO.setDevopsEnvPreviewAppVOS(devopsEnvPreviewAppVOS);
+        return devopsEnvPreviewVO;
+    }
+>>>>>>> [IMP]修改后端代码结构
 
         >>>>>>>[IMP]重构后端代码
 
@@ -1419,7 +1633,7 @@ public ApplicationInstanceVO createOrUpdate
 
         String secretCode = null;
         //获取部署实例时授权secret的code
-        secretCode = getSecret(applicationDTO, secretCode, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getClusterId());
+        secretCode = getSecret(applicationDTO, secretCode, devopsEnvironmentDTO);
 
         // 初始化自定义实例名
         String code;
@@ -1654,7 +1868,7 @@ private ApplicationInstanceE restartDeploy(ApplicationDeployDTO applicationDeplo
                     instanceSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
                     instanceSagaPayload.getApplicationDeployVO().getType(),
                     instanceSagaPayload.getGitlabUserId(),
-                    instanceSagaPayload.getApplicationDeployVO().getAppInstanceId(), C7NHELM_RELEASE, null, false, instanceSagaPayload.getDevopsEnvironmentE().getId(), filePath);
+                    instanceSagaPayload.getApplicationDeployVO().getAppInstanceId(), C7NHELM_RELEASE, null, false, instanceSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
         } catch (Exception e) {
             //有异常更新实例以及command的状态
             ApplicationInstanceDTO applicationInstanceDTO = baseQuery(instanceSagaPayload.getApplicationDeployVO().getAppInstanceId());
@@ -1801,6 +2015,7 @@ public ApplicationInstanceVO createOrUpdateByGitOps
         .queryById(applicationDeployDTO.getEnvironmentId());
 =======
     @Override
+<<<<<<< HEAD
     public ApplicationInstanceVO createOrUpdateByGitOps
             (ApplicationDeployVO applicationDeployVO, Long userId) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
@@ -1810,13 +2025,18 @@ public ApplicationInstanceVO createOrUpdateByGitOps
 =======
                 .baseQueryById(applicationDeployVO.getEnvironmentId());
 >>>>>>> [IMP]重构后端代码
+=======
+    public ApplicationInstanceVO createOrUpdateByGitOps(ApplicationDeployVO applicationDeployVO, Long userId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(applicationDeployVO.getEnvironmentId());
+>>>>>>> [IMP]修改后端代码结构
         //校验环境是否连接
-        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
         //校验values
         FileUtil.checkYamlFormat(applicationDeployVO.getValues());
 
         //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
+<<<<<<< HEAD
 <<<<<<< HEAD
         ApplicationInstanceE applicationInstanceE=initApplicationInstanceE(applicationDeployDTO);
         DevopsEnvCommandE devopsEnvCommandE=initDevopsEnvCommandE(applicationDeployDTO);
@@ -1832,12 +2052,18 @@ public ApplicationInstanceVO createOrUpdateByGitOps
         ApplicationInstanceE applicationInstanceE = initApplicationInstanceDTO(applicationDeployVO);
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandDTO(applicationDeployVO);
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueDTO(applicationDeployVO);
+=======
+        ApplicationInstanceDTO applicationInstanceDTO = initApplicationInstanceDTO(applicationDeployVO);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(applicationDeployVO);
+        DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(applicationDeployVO);
+>>>>>>> [IMP]修改后端代码结构
 
         //实例相关对象数据库操作
         if (applicationDeployVO.getType().equals(CREATE)) {
-            applicationInstanceE.setCode(applicationDeployVO.getInstanceName());
-            applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+            applicationInstanceDTO.setCode(applicationDeployVO.getInstanceName());
+            applicationInstanceDTO.setId(baseCreate(applicationInstanceDTO).getId());
         } else {
+<<<<<<< HEAD
             applicationInstanceRepository.update(applicationInstanceE);
 >>>>>>> [IMP]重构后端代码
         }
@@ -1976,6 +2202,17 @@ public void instanceStop(Long instanceId){
         sentInstance(payload,releaseName,HelmType.HELM_RELEASE_STOP.toValue(),
         namespace,devopsEnvCommandE.getId(),envId,devopsEnvironmentE.getClusterE().getId());
         }
+=======
+            baseUpdate(applicationInstanceDTO);
+        }
+        devopsEnvCommandDTO.setCreatedBy(userId);
+        devopsEnvCommandDTO.setObjectId(applicationInstanceDTO.getId());
+        devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
+        applicationInstanceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        baseUpdate(applicationInstanceDTO);
+        return ConvertUtils.convertObject(applicationInstanceDTO, ApplicationInstanceVO.class);
+    }
+>>>>>>> [IMP]修改后端代码结构
 
 @Override
 public void instanceStart(Long instanceId){
@@ -2069,75 +2306,15 @@ public void instanceStart(Long instanceId){
         return ConvertUtils.convertList(baseListByAppIdAndEnvId(projectId, appId, envId), RunningInstanceVO.class);
     }
 
-    @Override
-    public List<RunningInstanceVO> getByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
-        return ConvertHelper.convertList(
-                .baseListByAppIdAndEnvId(projectId, appId, envId),RunningInstanceVO.class);
-    }
 
     @Override
     public void stopInstance(Long instanceId) {
-
-        ApplicationInstanceDTO applicationInstanceDTO = baseQuery(instanceId);
-
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(applicationInstanceDTO.getEnvId());
-
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-
-        //校验环境相关信息
-        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
-
-        if (!applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
-            throw new CommonException("error.instance.not.running");
-        }
-
-        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
-                .baseQueryByObject(ObjectType.INSTANCE.getType(), instanceId);
-        devopsEnvCommandDTO.setCommandType(CommandType.STOP.getType());
-        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
-        devopsEnvCommandDTO.setId(null);
-        devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
-        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATIING.getStatus());
-
-
-        //发送停止实例的command
-        Map<String, String> stopMap = new HashMap<>();
-        stopMap.put(RELEASE_NAME, applicationInstanceDTO.getCode());
-        String payload = gson.toJson(stopMap);
-        instanceCommand(payload, applicationInstanceDTO.getCode(), HelmType.HELM_RELEASE_STOP.toValue(),
-                devopsEnvironmentDTO.getCode(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getClusterId());
+        handleStartOrStopInstance(instanceId, CommandType.STOP.getType());
     }
 
     @Override
     public void startInstance(Long instanceId) {
-        ApplicationInstanceDTO applicationInstanceDTO = baseQuery(instanceId);
-
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(applicationInstanceDTO.getEnvId());
-
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-
-        //校验环境相关信息
-        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
-
-        if (!applicationInstanceDTO.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {
-            throw new CommonException("error.instance.not.stop");
-        }
-
-        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
-                .baseQueryByObject(ObjectType.INSTANCE.getType(), instanceId);
-        devopsEnvCommandDTO.setCommandType(CommandType.RESTART.getType());
-        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
-        devopsEnvCommandDTO.setId(null);
-        devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
-        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATIING.getStatus());
-
-
-        //发送重启实例的command
-        Map<String, String> stopMap = new HashMap<>();
-        stopMap.put(RELEASE_NAME, applicationInstanceDTO.getCode());
-        String payload = gson.toJson(stopMap);
-        instanceCommand(payload, applicationInstanceDTO.getCode(), HelmType.HELM_RELEASE_START.toValue(),
-                devopsEnvironmentDTO.getCode(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getClusterId());
+        handleStartOrStopInstance(instanceId, CommandType.RESTART.getType());
     }
 >>>>>>> [IMP]重构后端代码
 
@@ -2246,7 +2423,7 @@ public void instanceReStart(Long instanceId){
         devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
-        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(),InstanceStatus.OPERATIING.getStatus());
+        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATIING.getStatus());
 
         //获取授权secret
         String secretCode = getSecret(applicationDTO, null, devopsEnvironmentDTO);
@@ -2310,7 +2487,7 @@ public void instanceDelete(Long instanceId){
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 >>>>>>> [IMP]重构后端代码
 
-        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(),InstanceStatus.OPERATIING.getStatus());
+        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATIING.getStatus());
 
 <<<<<<< HEAD
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
@@ -2491,6 +2668,7 @@ public ReplaceResult previewValues(ReplaceResult
                 >>>>>>>[IMP]重构后端代码
                 }
 
+<<<<<<< HEAD
 @Override
 public void instanceDeleteByGitOps(Long instanceId){
         ApplicationInstanceE instanceE=applicationInstanceRepository.selectById(instanceId);
@@ -2502,10 +2680,19 @@ public void instanceDeleteByGitOps(Long instanceId){
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .baseQueryById(instanceE.getDevopsEnvironmentE().getId());
 >>>>>>> [IMP] 重构Repository
+=======
+    @Override
+    public void instanceDeleteByGitOps(Long instanceId) {
+        ApplicationInstanceDTO instanceDTO = baseQuery(instanceId);
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService
+                .baseQueryById(instanceDTO.getEnvId());
+>>>>>>> [IMP]修改后端代码结构
 
         //校验环境是否连接
-        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
+<<<<<<< HEAD
         applicationInstanceRepository.deleteInstanceRelInfo(instanceId);
         applicationInstanceRepository.deleteById(instanceId);
         }
@@ -2528,6 +2715,18 @@ public void checkName(String instanceName,Long
 =======
         applicationInstanceRepository.checkName(instanceName, envId);
         appDeployRepository.baseCheckName(instanceName, envId);
+=======
+        baseDeleteInstanceRelInfo(instanceId);
+        baseDelete(instanceId);
+    }
+
+
+    @Override
+    public void checkName(String code, Long envId) {
+        AppInstanceValidator.checkName(code);
+        baseCheckName(code, envId);
+        pipelineAppDeployService.baseCheckName(code, envId);
+>>>>>>> [IMP]修改后端代码结构
     }
 >>>>>>> [IMP] 重构部分Repository
 
@@ -2634,6 +2833,7 @@ private List<ErrorLineDTO> getErrorLine(String
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         <<<<<<<HEAD
 private void setInstanceConnect(List<ApplicationInstanceVO> applicationInstanceVOS,
         List<Long> connectedEnvList,List<Long> updatedEnvList){
@@ -2686,6 +2886,12 @@ private C7nHelmRelease getC7NHelmRelease(String
         deployVersionId,
         String secretName){
         C7nHelmRelease c7nHelmRelease=new C7nHelmRelease();
+=======
+    private C7nHelmRelease getC7NHelmRelease(String code, String repository, String appCode,
+                                             String version, String deployValue,
+                                             Long deployVersionId, String secretName) {
+        C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
+>>>>>>> [IMP]修改后端代码结构
         c7nHelmRelease.getMetadata().setName(code);
         c7nHelmRelease.getSpec().setRepoUrl(repository);
         c7nHelmRelease.getSpec().setChartName(appCode);
@@ -2694,8 +2900,13 @@ private C7nHelmRelease getC7NHelmRelease(String
         c7nHelmRelease.getSpec().setImagePullSecrets(Arrays.asList(new ImagePullSecret(secretName)));
         }
         c7nHelmRelease.getSpec().setValues(
+<<<<<<< HEAD
         getReplaceResult(applicationVersionRepository.queryValue(deployVersionId),
         deployValue).getDeltaYaml().trim());
+=======
+                getReplaceResult(applicationVersionService.baseQueryValue(deployVersionId),
+                        deployValue).getDeltaYaml().trim());
+>>>>>>> [IMP]修改后端代码结构
         return c7nHelmRelease;
         }
 
@@ -2802,17 +3013,23 @@ public ApplicationInstanceVO deployRemote
     }
 
     @Override
-    public ApplicationInstanceVO deployRemote
-            (ApplicationRemoteDeployDTO appRemoteDeployDTO) {
-        ApplicationE applicationE = createApplication(appRemoteDeployDTO);
-        ApplicationVersionE versionE = createVersion(applicationE, appRemoteDeployDTO.getVersionRemoteDTO());
-        ApplicationDeployVO applicationDeployVO = new ApplicationDeployVO();
-        BeanUtils.copyProperties(appRemoteDeployDTO, applicationDeployVO);
-        applicationDeployVO.setAppId(applicationE.getId());
-        applicationDeployVO.setAppVersionId(versionE.getId());
-        applicationDeployVO.setValues(appRemoteDeployDTO.getVersionRemoteDTO().getValues());
+    @Transactional
+    public ApplicationInstanceVO deployRemoteApp(ApplicationRemoteDeployVO applicationRemoteDeployVO) {
+
+        //创建远程应用
+        ApplicationDTO applicationDTO = createApplication(applicationRemoteDeployVO);
+
+        //创建远程应用版本
+        ApplicationVersionDTO applicationVersionDTO = createVersion(applicationDTO, applicationRemoteDeployVO.getApplicationVersionRemoteVO());
+
+        //初始化部署所需数据
+        ApplicationDeployVO applicationDeployVO = ConvertUtils.convertObject(applicationRemoteDeployVO, ApplicationDeployVO.class);
+        applicationDeployVO.setAppId(applicationDTO.getId());
+        applicationDeployVO.setAppVersionId(applicationVersionDTO.getId());
+        applicationDeployVO.setValues(applicationRemoteDeployVO.getApplicationVersionRemoteVO().getValues());
         return createOrUpdate(applicationDeployVO);
     }
+<<<<<<< HEAD
 >>>>>>> [IMP]重构后端代码
 
 
@@ -2860,6 +3077,49 @@ private ApplicationVersionE createVersion(ApplicationE
         }
         return versionE;
         }
+=======
+
+
+    private ApplicationDTO createApplication(ApplicationRemoteDeployVO applicationRemoteDeployVO) {
+        String code = applicationRemoteDeployVO.getApplicationRemoteVO().getCode();
+        String name = applicationRemoteDeployVO.getApplicationRemoteVO().getName();
+        ApplicationDTO applicationDTO = applicationService.baseQueryByCodeWithNullProject(code);
+        if (applicationDTO == null) {
+            applicationDTO = new ApplicationDTO();
+            DevopsProjectConfigDTO harborConfigDTO = createConfig(HARBOR, applicationRemoteDeployVO.getApplicationRemoteVO().getCode(), applicationRemoteDeployVO.getHarbor());
+            DevopsProjectConfigDTO chartConfigDTO = createConfig(CHART, applicationRemoteDeployVO.getApplicationRemoteVO().getCode(), applicationRemoteDeployVO.getChart());
+            applicationDTO.setType(applicationRemoteDeployVO.getApplicationRemoteVO().getType());
+            applicationDTO.setCode(code);
+            applicationDTO.setName(name);
+            applicationDTO.setActive(true);
+            applicationDTO.setSynchro(true);
+            applicationDTO.setIsSkipCheckPermission(true);
+            applicationDTO.setHarborConfigId(harborConfigDTO.getId());
+            applicationDTO.setChartConfigId(chartConfigDTO.getId());
+            return applicationService.baseCreate(applicationDTO);
+        }
+        return applicationDTO;
+    }
+
+
+    private ApplicationVersionDTO createVersion(ApplicationDTO applicationDTO, ApplicationVersionRemoteVO versionRemoteVO) {
+        ApplicationVersionDTO versionDTO = applicationVersionService.baseQueryByAppIdAndVersion(applicationDTO.getId(), versionRemoteVO.getVersion());
+        if (versionDTO == null) {
+            ApplicationVersionValueDTO versionValueDTO = new ApplicationVersionValueDTO();
+            versionValueDTO.setValue(versionRemoteVO.getValues());
+            versionValueDTO = applicationVersionValueService.baseCreate(versionValueDTO);
+            ApplicationVersionReadmeDTO versionReadmeDTO = new ApplicationVersionReadmeDTO();
+            versionReadmeDTO.setReadme(versionRemoteVO.getReadMeValue());
+            versionReadmeDTO = applicationVersionReadmeService.baseCreate(versionReadmeDTO);
+            versionDTO = new ApplicationVersionDTO();
+            versionDTO.setAppId(applicationDTO.getId());
+            versionDTO.setValueId(versionValueDTO.getId());
+            versionDTO.setReadmeValueId(versionReadmeDTO.getId());
+            return applicationVersionService.baseCreate(versionDTO);
+        }
+        return versionDTO;
+    }
+>>>>>>> [IMP]修改后端代码结构
 
 <<<<<<< HEAD
         <<<<<<<HEAD
@@ -2908,10 +3168,10 @@ private DevopsProjectConfigE createConfig
      * @param projectConfigVO
      * @return
      */
-    private DevopsProjectConfigE createConfig
-    (String type, String code, ProjectConfigVO
+    private DevopsProjectConfigDTO createConfig(String type, String code, ProjectConfigVO
             projectConfigVO) {
         String name = code + "-" + type;
+<<<<<<< HEAD
         DevopsProjectConfigE devopsPrpjectConfigE = devopsProjectConfigRepository.baseQueryByNameWithNullProject(name);
         if (devopsPrpjectConfigE == null) {
             DevopsProjectConfigVO devopsProjectConfigVO = new DevopsProjectConfigVO();
@@ -2961,6 +3221,18 @@ private ApplicationE createApplication(ApplicationRemoteDeployDTO appRemoteDeplo
         }
         return applicationE;
         }
+=======
+        DevopsProjectConfigDTO devopsProjectConfigDTO = devopsProjectConfigService.baseCheckByName(name);
+        if (devopsProjectConfigDTO == null) {
+            devopsProjectConfigDTO = new DevopsProjectConfigDTO();
+            devopsProjectConfigDTO.setConfig(gson.toJson(projectConfigVO));
+            devopsProjectConfigDTO.setName(name);
+            devopsProjectConfigDTO.setType(type);
+            return devopsProjectConfigService.baseCreate(devopsProjectConfigDTO);
+        }
+        return devopsProjectConfigDTO;
+    }
+>>>>>>> [IMP]修改后端代码结构
 
 private ApplicationVersionE createVersion(ApplicationE applicationE,ApplicationVersionRemoteDTO versionRemoteDTO){
         ApplicationVersionE versionE=applicationVersionRepository.queryByAppAndVersion(applicationE.getId(),versionRemoteDTO.getVersion());
@@ -3104,6 +3376,7 @@ public List<DeployDTO> baselistDeployFrequency(Long
         new java.sql.Date(endTime.getTime()));
         }
 
+<<<<<<< HEAD
 public PageInfo<DeployDTO> basePageDeployFrequencyDetail
         (Long projectId,PageRequest pageRequest,Long[]
         envIds,Long appId,
@@ -3123,6 +3396,27 @@ public PageInfo<DeployDTO> basePageDeployTimeDetail
         .listDeployTime(projectId,envId,appIds,new java.sql.Date(startTime.getTime()),
         new java.sql.Date(endTime.getTime())));
         }
+=======
+    public PageInfo<DeployDTO> basePageDeployFrequencyTable
+            (Long projectId, PageRequest pageRequest, Long[]
+                    envIds, Long appId,
+             Date startTime, Date endTime) {
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+                applicationInstanceMapper
+                        .listDeployFrequency(projectId, envIds, appId, new java.sql.Date(startTime.getTime()),
+                                new java.sql.Date(endTime.getTime())));
+    }
+
+    public PageInfo<DeployDTO> basePageDeployTimeTable
+            (Long projectId, PageRequest pageRequest, Long
+                    envId, Long[] appIds,
+             Date startTime, Date endTime) {
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+                applicationInstanceMapper
+                        .listDeployTime(projectId, envId, appIds, new java.sql.Date(startTime.getTime()),
+                                new java.sql.Date(endTime.getTime())));
+    }
+>>>>>>> [IMP]修改后端代码结构
 
 <<<<<<< HEAD
 public List<ApplicationInstanceDTO> baseListByAppId
@@ -3180,5 +3474,114 @@ public void deleteInstanceRelInfo(Long instanceId){
         }
 
 
+<<<<<<< HEAD
         >>>>>>>[IMP]重构后端代码
         }
+=======
+    private void handleStartOrStopInstance(Long instanceId, String type) {
+
+        ApplicationInstanceDTO applicationInstanceDTO = baseQuery(instanceId);
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(applicationInstanceDTO.getEnvId());
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //校验环境相关信息
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
+
+        if (CommandType.RESTART.getType().equals(type)) {
+            if (!applicationInstanceDTO.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {
+                throw new CommonException("error.instance.not.stop");
+            }
+        } else {
+            if (!applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
+                throw new CommonException("error.instance.not.running");
+            }
+        }
+
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
+                .baseQueryByObject(ObjectType.INSTANCE.getType(), instanceId);
+        devopsEnvCommandDTO.setCommandType(type);
+        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        devopsEnvCommandDTO.setId(null);
+        devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATIING.getStatus());
+
+
+        //发送重启或停止实例的command
+        Map<String, String> stopMap = new HashMap<>();
+        stopMap.put(RELEASE_NAME, applicationInstanceDTO.getCode());
+        String payload = gson.toJson(stopMap);
+        String instanceCommandType;
+        if (CommandType.RESTART.getType().equals(type)) {
+            instanceCommandType = HelmType.HELM_RELEASE_START.toValue();
+        } else {
+            instanceCommandType = HelmType.HELM_RELEASE_STOP.toValue();
+        }
+        instanceCommand(payload, applicationInstanceDTO.getCode(), instanceCommandType,
+                devopsEnvironmentDTO.getCode(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getClusterId());
+    }
+
+
+    private void initInstanceOverView(ApplicationInstanceOverViewVO applicationInstanceOverViewVO, ApplicationInstanceOverViewDTO
+            applicationInstanceOverViewDTO,
+                                      Long latestVersionId) {
+        EnvVersionVO envVersionVO = new EnvVersionVO(
+                applicationInstanceOverViewDTO.getVersionId(),
+                applicationInstanceOverViewDTO.getVersion(),
+                applicationInstanceOverViewDTO.getInstanceId(),
+                applicationInstanceOverViewDTO.getInstanceCode(),
+                applicationInstanceOverViewDTO.getInstanceStatus());
+        EnvInstanceVO envInstanceVO = new EnvInstanceVO(applicationInstanceOverViewDTO.getEnvId());
+        if (applicationInstanceOverViewDTO.getVersionId().equals(latestVersionId)) {
+            envVersionVO.setLatest(true);
+        }
+        envInstanceVO.addEnvVersionDTOS(envVersionVO);
+        applicationInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
+        if (applicationInstanceOverViewVO.getLatestVersionId().equals(applicationInstanceOverViewDTO.getVersionId())) {
+            applicationInstanceOverViewVO.appendInstances(new EnvInstancesVO(
+                    applicationInstanceOverViewDTO.getInstanceId(), applicationInstanceOverViewDTO.getInstanceCode(), applicationInstanceOverViewDTO.getInstanceStatus()));
+        }
+    }
+
+
+    private void initInstanceOverViewIfNotExist(ApplicationInstanceOverViewVO applicationInstanceOverViewVO,
+                                                ApplicationInstanceOverViewDTO applicationInstanceOverViewDTO) {
+        EnvInstanceVO envInstanceVO = applicationInstanceOverViewVO.queryLastEnvInstanceVO();
+        if (applicationInstanceOverViewVO.getLatestVersionId().equals(applicationInstanceOverViewDTO.getVersionId())) {
+            applicationInstanceOverViewVO.appendInstances(new EnvInstancesVO(
+                    applicationInstanceOverViewDTO.getInstanceId(), applicationInstanceOverViewDTO.getInstanceCode(), applicationInstanceOverViewDTO.getInstanceStatus()));
+        }
+        if (envInstanceVO.getEnvId().equals(applicationInstanceOverViewDTO.getEnvId())) {
+            EnvVersionVO envVersionVO = envInstanceVO.queryLastEnvVersionVO();
+            if (envVersionVO.getVersion().equals(applicationInstanceOverViewDTO.getVersion())) {
+                envVersionVO.appendInstanceList(
+                        applicationInstanceOverViewDTO.getInstanceId(),
+                        applicationInstanceOverViewDTO.getInstanceCode(),
+                        applicationInstanceOverViewDTO.getInstanceStatus());
+            } else {
+                envInstanceVO.addEnvVersionDTOS(new EnvVersionVO(
+                        applicationInstanceOverViewDTO.getVersionId(),
+                        applicationInstanceOverViewDTO.getVersion(),
+                        applicationInstanceOverViewDTO.getInstanceId(),
+                        applicationInstanceOverViewDTO.getInstanceCode(),
+                        applicationInstanceOverViewDTO.getInstanceStatus()));
+            }
+        } else {
+            EnvVersionVO envVersionVO = new EnvVersionVO(
+                    applicationInstanceOverViewDTO.getVersionId(),
+                    applicationInstanceOverViewDTO.getVersion(),
+                    applicationInstanceOverViewDTO.getInstanceId(),
+                    applicationInstanceOverViewDTO.getInstanceCode(),
+                    applicationInstanceOverViewDTO.getInstanceStatus());
+            envInstanceVO = new EnvInstanceVO(applicationInstanceOverViewDTO.getEnvId());
+            if (applicationInstanceOverViewDTO.getVersionId().equals(applicationInstanceOverViewVO.getLatestVersionId())) {
+                envVersionVO.setLatest(true);
+            }
+            envInstanceVO.addEnvVersionDTOS(envVersionVO);
+            applicationInstanceOverViewVO.appendEnvInstanceVOS(envInstanceVO);
+        }
+    }
+
+}
+>>>>>>> [IMP]修改后端代码结构

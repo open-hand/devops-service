@@ -10,18 +10,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-import retrofit2.Response;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
@@ -42,6 +30,19 @@ import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.tool.UUIDTool;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import retrofit2.Response;
+
+
 
 /**
  * Created by ernst on 2018/5/12.
@@ -199,7 +200,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     public AppVersionAndValueDTO getValuesAndChart(Long versionId) {
         AppVersionAndValueDTO appVersionAndValueDTO = new AppVersionAndValueDTO();
         String versionValue = FileUtil.checkValueFormat(applicationVersionService.baseQueryValue(versionId));
-        ApplicationVersionRemoteDTO versionRemoteDTO = new ApplicationVersionRemoteDTO();
+        ApplicationVersionRemoteVO versionRemoteDTO = new ApplicationVersionRemoteVO();
         versionRemoteDTO.setValues(versionValue);
         ApplicationVersionDTO applicationVersionDTO = applicationVersionService.baseQuery(versionId);
         if (applicationVersionDTO != null) {

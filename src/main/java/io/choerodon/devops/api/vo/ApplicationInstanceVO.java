@@ -16,6 +16,7 @@ public class ApplicationInstanceVO {
     private Long appVersionId;
     private String code;
     private String appName;
+    private String appCode;
     private String appVersion;
     private String envCode;
     private String envName;
@@ -249,5 +250,14 @@ public class ApplicationInstanceVO {
 
     public void setIngressCount(Long ingressCount) {
         this.ingressCount = ingressCount;
+    }
+
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 }

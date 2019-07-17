@@ -596,7 +596,7 @@ public class ApplicationInstanceController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境总览实例查询")
     @PostMapping(value = "/{envId}/listByEnv")
-    public ResponseEntity<DevopsEnvPreviewDTO> listByEnv(
+    public ResponseEntity<DevopsEnvPreviewVO> listByEnv(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "envId", required = true)
@@ -623,7 +623,7 @@ public class ApplicationInstanceController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取部署时长报表")
     @PostMapping(value = "/env_commands/time")
-    public ResponseEntity<DeployTimeDTO> listDeployTime(
+    public ResponseEntity<DeployTimeVO> listDeployTimeReport(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "envId")
@@ -654,7 +654,7 @@ public class ApplicationInstanceController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取部署次数报表")
     @PostMapping(value = "/env_commands/frequency")
-    public ResponseEntity<DeployFrequencyDTO> listDeployFrequency(
+    public ResponseEntity<DeployFrequencyVO> listDeployFrequencyReport(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "appId")
@@ -672,7 +672,7 @@ public class ApplicationInstanceController {
 
 
     /**
-     * 获取部署次数报表table
+     * 分页获取部署次数列表
      *
      * @param projectId 项目id
      * @param envIds    环境id
@@ -684,10 +684,10 @@ public class ApplicationInstanceController {
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取部署次数报表table")
+    @ApiOperation(value = "分页获取部署次数列表")
     @CustomPageRequest
-    @PostMapping(value = "/env_commands/frequencyDetail")
-    public ResponseEntity<PageInfo<DeployDetailDTO>> pageDeployFrequencyDetail(
+    @PostMapping(value = "/env_commands/frequencyTable")
+    public ResponseEntity<PageInfo<DeployDetailTableVO>> pageDeployFrequencyDetailTable(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数") PageRequest pageRequest,
@@ -699,29 +699,29 @@ public class ApplicationInstanceController {
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(applicationInstanceService.pageDeployFrequencyDetail(projectId, pageRequest, envIds, appId, startTime, endTime))
+        return Optional.ofNullable(applicationInstanceService.pageDeployFrequencyTable(projectId, pageRequest, envIds, appId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.frequency.get"));
     }
 
 
     /**
-     * 获取部署时长报表table
+     * 分页获取部署时长列表
      *
      * @param projectId 项目id
      * @param envId     环境id
      * @param appIds    应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
-     * @return List
+     * @return PageInfo
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取部署时长报表table")
+    @ApiOperation(value = "分页获取部署时长列表")
     @CustomPageRequest
-    @PostMapping(value = "/env_commands/timeDetail")
-    public ResponseEntity<PageInfo<DeployDetailDTO>> pageDeployTimeDetail(
+    @PostMapping(value = "/env_commands/timeTable")
+    public ResponseEntity<PageInfo<DeployDetailTableVO>> pageDeployTimeTable(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -734,7 +734,7 @@ public class ApplicationInstanceController {
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(applicationInstanceService.pageDeployTimeDetail(projectId, pageRequest, appIds, envId, startTime, endTime))
+        return Optional.ofNullable(applicationInstanceService.pageDeployTimeTable(projectId, pageRequest, appIds, envId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.time.get"));
     }
@@ -786,40 +786,23 @@ public class ApplicationInstanceController {
     }
 
     /**
-     * 环境和应用下查询实例 自动部署是否可替换状态
+     * 部署远程应用市场应用
      *
-     * @param projectId 项目id
-     * @param appId     应用id
-     * @param envId     环境id
-     * @return baseList of AppInstanceCodeDTO
+     * @param projectId
+     * @param appRemoteDeployDTO
+     * @return
      */
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "环境下某应用运行中或失败的实例")
-    @GetMapping("/getByAppIdAndEnvId")
-    public ResponseEntity<List<RunningInstanceVO>> getByAppIdAndEnvId(
-            @ApiParam(value = "项目 ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境 ID", required = true)
-            @RequestParam Long envId,
-            @ApiParam(value = "应用Id", required = true)
-            @RequestParam Long appId) {
-        return Optional.ofNullable(applicationInstanceService.getByAppIdAndEnvId(projectId, appId, envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_QUERY));
-    }
-
-    @ApiOperation(value = "部署远程应用")
+    @ApiOperation(value = "部署远程应用市场应用")
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @PostMapping(value = "/remote")
-    public ResponseEntity<ApplicationInstanceVO> deployRemote(
+    @PostMapping(value = "/deploy_remote_app")
+    public ResponseEntity<ApplicationInstanceVO> deployRemoteApp(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
-            @RequestBody ApplicationRemoteDeployDTO appRemoteDeployDTO) {
-        return Optional.ofNullable(applicationInstanceService.deployRemote(appRemoteDeployDTO))
+            @RequestBody ApplicationRemoteDeployVO appRemoteDeployDTO) {
+        return Optional.ofNullable(applicationInstanceService.deployRemoteApp(appRemoteDeployDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.remote.deploy"));
     }

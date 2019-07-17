@@ -96,17 +96,6 @@ public interface ApplicationInstanceService {
     List<RunningInstanceVO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 
     /**
-     * 环境下某应用运行中或失败的实例，判断自动部署是否可替换该实例
-     *
-     * @param projectId 项目id
-     * @param appId     应用id
-     * @param envId     环境id
-     * @return baseList of AppInstanceCodeDTO
-     */
-    List<RunningInstanceVO> getByAppIdAndEnvId(Long projectId, Long appId, Long envId);
-
-
-    /**
      * 实例停止
      *
      * @param instanceId 实例id
@@ -167,9 +156,9 @@ public interface ApplicationInstanceService {
      * @param projectId 项目id
      * @param envId     环境Id
      * @param params    搜索参数
-     * @return DevopsEnvPreviewDTO
+     * @return DevopsEnvPreviewVO
      */
-    DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params);
+    DevopsEnvPreviewVO listByEnv(Long projectId, Long envId, String params);
 
     /**
      * 校验实例名唯一性
@@ -205,7 +194,7 @@ public interface ApplicationInstanceService {
      * @param endTime   结束时间
      * @return List
      */
-    DeployTimeDTO listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
+    DeployTimeVO listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
 
     /**
      * 获取部署次数报表
@@ -217,7 +206,7 @@ public interface ApplicationInstanceService {
      * @param endTime   结束时间
      * @return List
      */
-    DeployFrequencyDTO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime);
+    DeployFrequencyVO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime);
 
     /**
      * 获取部署次数报表table
@@ -227,9 +216,9 @@ public interface ApplicationInstanceService {
      * @param appId     应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
-     * @return List
+     * @return Page
      */
-    PageInfo<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime);
+    PageInfo<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime);
 
     /**
      * 获取部署时长报表table
@@ -241,7 +230,7 @@ public interface ApplicationInstanceService {
      * @param endTime   结束时间
      * @return List
      */
-    PageInfo<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime);
+    PageInfo<DeployDetailTableVO> pageDeployTimeTable(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime);
 
     /**
      * 部署自动化测试应用
@@ -307,7 +296,7 @@ public interface ApplicationInstanceService {
      * @param appRemoteDeployDTO
      * @return
      */
-    ApplicationInstanceVO deployRemote(ApplicationRemoteDeployDTO appRemoteDeployDTO);
+    ApplicationInstanceVO deployRemoteApp(ApplicationRemoteDeployVO appRemoteDeployDTO);
 
 
     /**

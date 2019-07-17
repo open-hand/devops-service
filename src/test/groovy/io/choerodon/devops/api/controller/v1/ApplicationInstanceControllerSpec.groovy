@@ -994,10 +994,10 @@ class ApplicationInstanceControllerSpec extends Specification {
         envUtil.getUpdatedEnvList() >> connectedEnvList
 
         when: '环境总览实例查询'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/1/listByEnv", "{\"searchParam\":{},\"param\":\"\"}", DevopsEnvPreviewDTO.class)
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/1/listByEnv", "{\"searchParam\":{},\"param\":\"\"}", DevopsEnvPreviewVO.class)
 
         then: '校验返回值'
-        dto.getDevopsEnvPreviewAppDTOS().get(0)["appName"] == "appName"
+        dto.getDevopsEnvPreviewAppVOS().get(0)["appName"] == "appName"
     }
 
     def "ListDeployTime"() {
@@ -1019,7 +1019,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         String startTime = year + "/" + month + "/" + day
 
         when: '获取部署时长报表'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/time?envId=1&startTime=" + startTime + "&endTime=" + startTime, appIds, DeployTimeDTO.class)
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/time?envId=1&startTime=" + startTime + "&endTime=" + startTime, appIds, DeployTimeVO.class)
 
         then: '校验返回值'
         dto.getDeployAppDTOS().get(0)["appName"] == "appName"
@@ -1038,7 +1038,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         envIds.add(1L)
 
         when: '获取部署次数报表'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/frequency?appId=1&startTime=" + startTime + "&endTime=" + startTime, envIds, DeployFrequencyDTO.class)
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/frequency?appId=1&startTime=" + startTime + "&endTime=" + startTime, envIds, DeployFrequencyVO.class)
 
         then: '校验返回值'
         dto.getCreationDates().size() == 1

@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
-public class DeployTimeDTO {
+public class DeployTimeVO {
 
     private List<Date> creationDates;
     private List<DeployAppDTO> deployAppDTOS;

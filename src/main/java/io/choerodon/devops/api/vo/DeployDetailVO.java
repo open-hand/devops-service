@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
-public class DeployAppDetail {
+public class DeployDetailVO {
 
     private Date deployDate;
     private String deployTime;

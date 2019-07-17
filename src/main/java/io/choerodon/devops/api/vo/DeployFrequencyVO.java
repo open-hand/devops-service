@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-public class DeployFrequencyDTO {
+public class DeployFrequencyVO {
 
 
     private List<String> creationDates;

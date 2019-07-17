@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-public class DevopsEnvPreviewAppDTO {
+public class DevopsEnvPreviewAppVO {
 
     private String appName;
     private String appCode;

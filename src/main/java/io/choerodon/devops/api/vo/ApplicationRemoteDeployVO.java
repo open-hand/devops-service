@@ -5,15 +5,15 @@ package io.choerodon.devops.api.vo;
  * Date:  10:29 2019/7/3
  * Description:
  */
-public class ApplicationRemoteDeployDTO {
+public class ApplicationRemoteDeployVO {
     private Long environmentId;
     private String type;
     private Long appInstanceId;
     private Long commandId;
     private String instanceName;
     private boolean isNotChange;
-    private ApplicationRemoteDTO appRemoteDTO;
-    private ApplicationVersionRemoteDTO versionRemoteDTO;
+    private ApplicationRemoteVO applicationRemoteVO;
+    private ApplicationVersionRemoteVO applicationVersionRemoteVO;
     private ProjectConfigVO harbor;
     private ProjectConfigVO chart;
 
@@ -65,20 +65,20 @@ public class ApplicationRemoteDeployDTO {
         this.environmentId = environmentId;
     }
 
-    public ApplicationRemoteDTO getAppRemoteDTO() {
-        return appRemoteDTO;
+    public ApplicationRemoteVO getApplicationRemoteVO() {
+        return applicationRemoteVO;
     }
 
-    public void setAppRemoteDTO(ApplicationRemoteDTO appRemoteDTO) {
-        this.appRemoteDTO = appRemoteDTO;
+    public void setApplicationRemoteVO(ApplicationRemoteVO applicationRemoteVO) {
+        this.applicationRemoteVO = applicationRemoteVO;
     }
 
-    public ApplicationVersionRemoteDTO getVersionRemoteDTO() {
-        return versionRemoteDTO;
+    public ApplicationVersionRemoteVO getApplicationVersionRemoteVO() {
+        return applicationVersionRemoteVO;
     }
 
-    public void setVersionRemoteDTO(ApplicationVersionRemoteDTO versionRemoteDTO) {
-        this.versionRemoteDTO = versionRemoteDTO;
+    public void setApplicationVersionRemoteVO(ApplicationVersionRemoteVO applicationVersionRemoteVO) {
+        this.applicationVersionRemoteVO = applicationVersionRemoteVO;
     }
 
     public ProjectConfigVO getHarbor() {

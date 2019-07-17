@@ -5,7 +5,7 @@ package io.choerodon.devops.api.vo;
  * Date:  10:43 2019/7/3
  * Description:
  */
-public class ApplicationVersionRemoteDTO {
+public class ApplicationVersionRemoteVO {
     private String values;
     private String image;
     private String readMeValue;

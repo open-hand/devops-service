@@ -6,15 +6,15 @@ package io.choerodon.devops.api.vo;
  * Description:
  */
 public class AppVersionAndValueDTO {
-    private ApplicationVersionRemoteDTO versionRemoteDTO;
+    private ApplicationVersionRemoteVO versionRemoteDTO;
     private ProjectConfigVO harbor;
     private ProjectConfigVO chart;
 
-    public ApplicationVersionRemoteDTO getVersionRemoteDTO() {
+    public ApplicationVersionRemoteVO getVersionRemoteDTO() {
         return versionRemoteDTO;
     }
 
-    public void setVersionRemoteDTO(ApplicationVersionRemoteDTO versionRemoteDTO) {
+    public void setVersionRemoteDTO(ApplicationVersionRemoteVO versionRemoteDTO) {
         this.versionRemoteDTO = versionRemoteDTO;
     }
 

@@ -6,7 +6,7 @@ import java.util.List;
 public class DeployAppDTO {
 
     private String appName;
-    private List<DeployAppDetail> deployAppDetails;
+    private List<DeployDetailVO> deployDetailVOS;
 
     public String getAppName() {
         return appName;
@@ -16,11 +16,11 @@ public class DeployAppDTO {
         this.appName = appName;
     }
 
-    public List<DeployAppDetail> getDeployAppDetails() {
-        return deployAppDetails;
+    public List<DeployDetailVO> getDeployDetailVOS() {
+        return deployDetailVOS;
     }
 
-    public void setDeployAppDetails(List<DeployAppDetail> deployAppDetails) {
-        this.deployAppDetails = deployAppDetails;
+    public void setDeployDetailVOS(List<DeployDetailVO> deployDetailVOS) {
+        this.deployDetailVOS = deployDetailVOS;
     }
 }

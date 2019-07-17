@@ -28,7 +28,7 @@ public interface AgentCommandService {
 
     void initEnv(DevopsEnvironmentE devopsEnvironmentE, Long clusterId);
 
-    void deployTestApp(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, String secretName, Long clusterId, String values);
+    void deployTestApp(ApplicationDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, String secretName, Long clusterId, String values);
 
     void getTestAppStatus(Map<Long, List<String>> testReleases);
 
