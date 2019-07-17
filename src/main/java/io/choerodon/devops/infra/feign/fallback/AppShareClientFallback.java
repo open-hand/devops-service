@@ -9,7 +9,7 @@ import retrofit2.Call;
 import io.choerodon.devops.api.vo.AccessTokenCheckResultDTO;
 import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
 import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
-import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
 import io.choerodon.devops.infra.feign.AppShareClient;
 
 /**
@@ -25,7 +25,7 @@ public class AppShareClientFallback implements AppShareClient {
     }
 
     @Override
-    public Call<PageInfo<ApplicationVersionRepDTO>> listVersionByAppId(Long appId, Map<String, Object> map) {
+    public Call<PageInfo<ApplicationVersionRespVO>> listVersionByAppId(Long appId, Map<String, Object> map) {
         return null;
     }
 

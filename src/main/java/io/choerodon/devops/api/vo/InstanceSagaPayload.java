@@ -1,8 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
@@ -12,13 +9,13 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
  */
 public class InstanceSagaPayload {
 
-    Long projectId;
-    Long gitlabUserId;
-    String secretCode;
-    ApplicationDTO applicationDTO;
-    ApplicationVersionDTO applicationVersionDTO;
-    DevopsEnvironmentDTO devopsEnvironmentDTO;
-    ApplicationDeployVO applicationDeployVO;
+    private Long projectId;
+    private Long gitlabUserId;
+    private String secretCode;
+    private ApplicationDTO applicationDTO;
+    private ApplicationVersionDTO applicationVersionDTO;
+    private DevopsEnvironmentDTO devopsEnvironmentDTO;
+    private ApplicationDeployVO applicationDeployVO;
 
 
     public InstanceSagaPayload() {

@@ -3,17 +3,11 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.api.vo.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.AccessTokenCheckResultDTO;
-import io.choerodon.devops.api.vo.AccessTokenDTO;
-import io.choerodon.devops.api.vo.AppMarketDownloadDTO;
-import io.choerodon.devops.api.vo.AppMarketTgzDTO;
-import io.choerodon.devops.api.vo.AppMarketVersionDTO;
-import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
-import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
-import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
 
 /**
  * Created by ernst on 2018/5/12.
@@ -62,7 +56,7 @@ public interface ApplicationShareService {
 
     PageInfo<ApplicationReleasingDTO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds);
 
-    PageInfo<ApplicationVersionRepDTO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params);
+    PageInfo<ApplicationVersionRespVO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params);
 
     AppVersionAndValueDTO getValuesAndChart(Long versionId);
 
@@ -120,7 +114,7 @@ public interface ApplicationShareService {
 
     PageInfo<ApplicationReleasingDTO> pageListRemoteApps(Long projectId, PageRequest pageRequest, String params);
 
-    PageInfo<ApplicationVersionRepDTO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params);
+    PageInfo<ApplicationVersionRespVO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params);
 
     AppVersionAndValueDTO getConfigInfoByVerionId(Long appId, Long versionId, String accessToken);
 

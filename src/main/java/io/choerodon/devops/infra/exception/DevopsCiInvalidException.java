@@ -7,6 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
+ * 自定义此异常而不是使用{@link io.choerodon.core.exception.CommonException}是因为它不能返回
+ * 200以外的异常码，这个异常是返回给gitlab的
+ *
  * @author zmf
  */
 public class DevopsCiInvalidException extends RuntimeException {
@@ -17,7 +20,7 @@ public class DevopsCiInvalidException extends RuntimeException {
     /**
      * 构造器
      *
-     * @param code    异常code
+     * @param code       异常code
      * @param parameters parameters
      */
     public DevopsCiInvalidException(String code, Object... parameters) {
@@ -52,7 +55,7 @@ public class DevopsCiInvalidException extends RuntimeException {
         return code;
     }
 
-    public String getTrace(){
+    public String getTrace() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);
         this.printStackTrace(ps);
@@ -60,7 +63,7 @@ public class DevopsCiInvalidException extends RuntimeException {
         return new String(baos.toByteArray());
     }
 
-    public Map<String, Object> toMap(){
+    public Map<String, Object> toMap() {
         HashMap<String, Object> map = new LinkedHashMap<>();
         map.put("code", code);
         map.put("message", super.getMessage());

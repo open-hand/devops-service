@@ -49,7 +49,7 @@ import io.choerodon.devops.api.vo.AppMarketVersionDTO;
 import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
 import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
 import io.choerodon.devops.api.vo.ApplicationVersionRemoteDTO;
-import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.ApplicationShareService;
 import io.choerodon.devops.api.vo.iam.entity.AppShareResourceE;
@@ -216,12 +216,12 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public PageInfo<ApplicationVersionRepDTO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params) {
+    public PageInfo<ApplicationVersionRespVO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params) {
         PageInfo<ApplicationVersionE> applicationVersionEPageInfo = applicationVersionRepository.listByAppIdAndParamWithPage(appId, true, null, pageRequest, params);
         if (applicationVersionEPageInfo.getList() == null) {
             return new PageInfo<>();
         }
-        return ConvertPageHelper.convertPageInfo(applicationVersionEPageInfo, ApplicationVersionRepDTO.class);
+        return ConvertPageHelper.convertPageInfo(applicationVersionEPageInfo, ApplicationVersionRespVO.class);
     }
 
     @Override
@@ -569,7 +569,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public PageInfo<ApplicationVersionRepDTO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params) {
+    public PageInfo<ApplicationVersionRespVO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params) {
         DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
@@ -583,7 +583,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
             map.put("params", params);
         }
         map.put("access_token", accessToken);
-        Response<PageInfo<ApplicationVersionRepDTO>> pageInfoResponse = null;
+        Response<PageInfo<ApplicationVersionRespVO>> pageInfoResponse = null;
         try {
             pageInfoResponse = shareClient.listVersionByAppId(appId, map).execute();
             if (!pageInfoResponse.isSuccessful()) {

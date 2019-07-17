@@ -51,10 +51,11 @@ public class PipelineStageServiceImpl implements PipelineStageService {
         pipelineStageMapper.deleteByPrimaryKey(pipelineStageDTO);
     }
 
-    public PipelineStageE baseQueryById(Long stageId) {
+    @Override
+    public PipelineStageDTO baseQueryById(Long stageId) {
         PipelineStageDTO pipelineStageDTO = new PipelineStageDTO();
         pipelineStageDTO.setId(stageId);
-        return ConvertHelper.convert(pipelineStageMapper.selectByPrimaryKey(pipelineStageDTO), PipelineStageE.class);
+        return pipelineStageMapper.selectByPrimaryKey(pipelineStageDTO);
     }
 
 

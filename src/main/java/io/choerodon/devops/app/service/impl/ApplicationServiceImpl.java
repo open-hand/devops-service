@@ -3774,6 +3774,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 >>>>>>> [IMP]重构后端断码
 
+    @Override
     public ApplicationDTO baseQuery(Long applicationId) {
         return applicationMapper.selectByPrimaryKey(applicationId);
     }

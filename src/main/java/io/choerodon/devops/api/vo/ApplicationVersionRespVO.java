@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 
-public class ApplicationVersionRepDTO implements Serializable {
+public class ApplicationVersionRespVO implements Serializable {
 
     private Long id;
     private String version;

@@ -144,7 +144,7 @@ public class OrgAppShareController {
     @ApiOperation(value = "根据应用Id获取已发布版本")
     @CustomPageRequest
     @PostMapping(value = "/list_versions")
-    public ResponseEntity<PageInfo<ApplicationVersionRepDTO>> getVersionsByAppId(
+    public ResponseEntity<PageInfo<ApplicationVersionRespVO>> getVersionsByAppId(
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_id") Long appId,
             @ApiParam(value = "分页参数")

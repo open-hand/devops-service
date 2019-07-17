@@ -3,28 +3,28 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.infra.dto.ApplicationLatestVersionDTO;
-import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
-import io.choerodon.devops.infra.dto.ApplicationVersionReadmeDTO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
+import io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper;
 import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
@@ -35,98 +35,53 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.ApplicationVersionService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationInstanceE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionValueE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabCommitE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
-import io.choerodon.devops.api.vo.iam.entity.PipelineAppDeployE;
-import io.choerodon.devops.api.vo.iam.entity.PipelineE;
-import io.choerodon.devops.api.vo.iam.entity.PipelineTaskE;
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
-import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.PipelineRepository;
-import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
-import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
-
-/**
- * Created by Zenger on 2018/4/3.
- */
 @Service
 public class ApplicationVersionServiceImpl implements ApplicationVersionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServiceImpl.class);
 
-    private static final String DESTPATH = "devops";
-    private static final String STOREPATH = "stores";
+    private static final String DESTINATION_PATH = "devops";
+    private static final String STORE_PATH = "stores";
+
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
+    @Value("${services.helm.url}")
+    private String helmUrl;
+
     @Autowired
-    private ApplicationVersionRepository applicationVersionRepository;
+    private ApplicationService applicationService;
     @Autowired
-    private ApplicationRepository applicationRepository;
+    private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
-    private IamRepository iamRepository;
+    private ApplicationVersionValueService applicationVersionValueService;
     @Autowired
-    private ApplicationVersionValueRepository applicationVersionValueRepository;
+    private ApplicationInstanceService applicationInstanceService;
     @Autowired
-    private ApplicationInstanceRepository applicationInstanceRepository;
+    private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    private UserAttrService userAttrService;
     @Autowired
-    private UserAttrRepository userAttrRepository;
+    private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
-    private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
+    private PipelineAppDeployService pipelineAppDeployService;
     @Autowired
-    private SagaClient sagaClient;
+    private PipelineTaskService pipelineTaskService;
     @Autowired
-    private DevopsProjectConfigRepository devopsProjectConfigRepository;
-    @Autowired
-    private PipelineAppDeployRepository appDeployRepository;
-    @Autowired
-    private PipelineTaskRepository taskRepository;
-    @Autowired
-    private PipelineStageRepository stageRepository;
-    @Autowired
-    private PipelineRepository pipelineRepository;
+    private PipelineStageService pipelineStageService;
     @Autowired
     private ChartUtil chartUtil;
     @Autowired
     private PipelineService pipelineService;
     @Autowired
-    private DevopsProjectRepository devopsProjectRepository;
-    @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
     private ApplicationVersionMapper applicationVersionMapper;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
-    @Autowired
     private ApplicationVersionReadmeMapper applicationVersionReadmeMapper;
+    @Autowired
+    private ApplicationMapper applicationMapper;
+    @Autowired
+    private DevopsProjectConfigMapper devopsProjectConfigMapper;
 
-    @Value("${services.helm.url}")
-    private String helmUrl;
 
     private Gson gson = new Gson();
     private JSON json = new JSON();
@@ -147,32 +102,31 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     private void doCreate(String image, String token, String version, String commit, MultipartFile files) {
-        ApplicationE applicationE = applicationRepository.queryByToken(token);
+        ApplicationDTO applicationDTO = applicationMapper.queryByToken(token);
 
-        ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
-        ApplicationVersionE applicationVersionE = new ApplicationVersionE();
-        ProjectVO projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
-        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        ApplicationVersionE newApplicationVersionE = applicationVersionRepository
-                .baseQueryByAppIdAndVersion(applicationE.getId(), version);
-        applicationVersionE.initApplicationEById(applicationE.getId());
-        applicationVersionE.setImage(image);
-        applicationVersionE.setCommit(commit);
-        applicationVersionE.setVersion(version);
-        if (applicationE.getChartConfigE() != null) {
-            DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.baseQuery(applicationE.getChartConfigE().getId());
-            helmUrl = devopsProjectConfigE.getConfig().getUrl();
+        ApplicationVersionValueDTO applicationVersionValueDTO = new ApplicationVersionValueDTO();
+        ApplicationVersionDTO applicationVersionDTO = new ApplicationVersionDTO();
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
+        OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ApplicationVersionDTO newApplicationVersion = baseQueryByAppIdAndVersion(applicationDTO.getId(), version);
+        applicationVersionDTO.setAppId(applicationDTO.getId());
+        applicationVersionDTO.setImage(image);
+        applicationVersionDTO.setCommit(commit);
+        applicationVersionDTO.setVersion(version);
+        if (applicationDTO.getChartConfigId() != null) {
+            DevopsProjectConfigDTO devopsProjectConfigDTO = devopsProjectConfigMapper.selectByPrimaryKey((applicationDTO.getChartConfigId()));
+            helmUrl = gson.fromJson(devopsProjectConfigDTO.getConfig(), ProjectConfigVO.class).getUrl();
         }
 
-        applicationVersionE.setRepository(helmUrl.endsWith("/") ? helmUrl : helmUrl + "/" + organization.getCode() + "/" + projectE.getCode() + "/");
-        String storeFilePath = STOREPATH + version;
+        applicationVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");
+        String storeFilePath = STORE_PATH + version;
 
-        String destFilePath = DESTPATH + version;
+        String destFilePath = DESTINATION_PATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
-        //上传chart包到chartmusume
-        chartUtil.uploadChart(organization.getCode(), projectE.getCode(), new File(path));
+        //上传chart包到chart museum
+        chartUtil.uploadChart(organization.getCode(), projectDTO.getCode(), new File(path));
 
-        if (newApplicationVersionE != null) {
+        if (newApplicationVersion != null) {
             return;
         }
         FileUtil.unTarGZ(path, destFilePath);
@@ -189,153 +143,164 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         } catch (CommonException e) {
             throw new CommonException("The format of the values.yaml in the chart is invalid!", e);
         }
-        applicationVersionValueE.setValue(values);
+        applicationVersionValueDTO.setValue(values);
         try {
-            applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
-                    .baseCreate(applicationVersionValueE).getId());
+            applicationVersionDTO.setValueId(applicationVersionValueService
+                    .baseCreate(applicationVersionValueDTO).getId());
         } catch (Exception e) {
             throw new CommonException("error.version.insert", e);
         }
-        applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(destFilePath));
-        applicationVersionRepository.baseCreate(applicationVersionE);
+
+        ApplicationVersionReadmeDTO applicationVersionReadmeDTO = new ApplicationVersionReadmeDTO();
+        applicationVersionReadmeDTO.setReadme(FileUtil.getReadme(destFilePath));
+        applicationVersionReadmeMapper.insert(applicationVersionReadmeDTO);
+
+        applicationVersionDTO.setReadmeValueId(applicationVersionReadmeDTO.getId());
+        if (applicationVersionMapper.insert(applicationVersionDTO) != 1) {
+            throw new CommonException("error.version.insert");
+        }
+
         FileUtil.deleteDirectory(new File(destFilePath));
         FileUtil.deleteDirectory(new File(storeFilePath));
         //流水线
-        checkAutoDeploy(applicationVersionE);
+        checkAutoDeploy(applicationVersionDTO);
     }
 
     /**
      * 检测能够触发自动部署
      *
-     * @param versionE
+     * @param applicationVersionDTO 版本
      */
-    public void checkAutoDeploy(ApplicationVersionE versionE) {
-        ApplicationVersionE insertApplicationVersionE = applicationVersionRepository.baseQueryByAppIdAndVersion(versionE.getApplicationE().getId(), versionE.getVersion());
+    private void checkAutoDeploy(ApplicationVersionDTO applicationVersionDTO) {
+        ApplicationVersionDTO insertApplicationVersionDTO = baseQueryByAppIdAndVersion(applicationVersionDTO.getAppId(), applicationVersionDTO.getVersion());
 
-        if (insertApplicationVersionE != null && insertApplicationVersionE.getVersion() != null) {
-            List<PipelineAppDeployE> appDeployEList = appDeployRepository.baseQueryByAppId(insertApplicationVersionE.getApplicationE().getId())
-                    .stream().map(deployE ->
-                            filterAppDeploy(deployE, insertApplicationVersionE.getVersion())
-                    ).collect(Collectors.toList());
-            appDeployEList.removeAll(Collections.singleton(null));
-            if (!appDeployEList.isEmpty()) {
-                List<Long> stageList = appDeployEList.stream()
-                        .map(appDeploy -> taskRepository.baseQueryTaskByAppDeployId(appDeploy.getId()))
+        if (insertApplicationVersionDTO != null && insertApplicationVersionDTO.getVersion() != null) {
+            List<PipelineAppDeployDTO> appDeployDTOList = pipelineAppDeployService.baseQueryByAppId(insertApplicationVersionDTO.getAppId())
+                    .stream()
+                    .filter(deployDTO -> filterAppDeploy(deployDTO, insertApplicationVersionDTO.getVersion()))
+                    .collect(Collectors.toList());
+
+            if (!appDeployDTOList.isEmpty()) {
+                List<Long> stageList = appDeployDTOList.stream()
+                        .map(appDeploy -> pipelineTaskService.baseQueryTaskByAppDeployId(appDeploy.getId()))
                         .filter(Objects::nonNull)
-                        .map(PipelineTaskE::getStageId)
-                        .distinct().collect(Collectors.toList());
+                        .map(PipelineTaskDTO::getStageId)
+                        .distinct()
+                        .collect(Collectors.toList());
+
                 List<Long> pipelineList = stageList.stream()
-                        .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
-                        .distinct().collect(Collectors.toList());
-                List<PipelineE> pipelineES = new ArrayList<>();
+                        .map(stageId -> pipelineStageService.baseQueryById(stageId).getPipelineId())
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                List<DevopsPipelineDTO> devopsPipelineDTOS = new ArrayList<>();
                 pipelineList.forEach(pipelineId -> {
-                    PipelineE pipelineE = pipelineRepository.baseQueryById(pipelineId);
+                    DevopsPipelineDTO pipelineE = pipelineService.baseQueryById(pipelineId);
                     if (pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType())) {
-                        pipelineES.add(pipelineE);
+                        devopsPipelineDTOS.add(pipelineE);
                     }
                 });
 
-                pipelineES.forEach(pipelineE -> {
-                    if (pipelineService.checkDeploy(pipelineE.getProjectId(), pipelineE.getId()).getVersions()) {
-                        LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertApplicationVersionE.getId(), insertApplicationVersionE.getVersion(), pipelineE.getId());
-                        pipelineService.executeAutoDeploy(pipelineE.getId());
+                devopsPipelineDTOS.forEach(pipelineDTO -> {
+                    if (pipelineService.checkDeploy(pipelineDTO.getProjectId(), pipelineDTO.getId()).getVersions()) {
+                        LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertApplicationVersionDTO.getId(), insertApplicationVersionDTO.getVersion(), pipelineDTO.getId());
+                        pipelineService.executeAutoDeploy(pipelineDTO.getId());
                     }
                 });
             }
         }
     }
 
-    private PipelineAppDeployE filterAppDeploy(PipelineAppDeployE deployE, String version) {
-        if (deployE.getTriggerVersion() == null || deployE.getTriggerVersion().isEmpty()) {
-            return deployE;
+    private boolean filterAppDeploy(PipelineAppDeployDTO deployDTO, String version) {
+        if (deployDTO.getTriggerVersion() == null || deployDTO.getTriggerVersion().isEmpty()) {
+            return true;
         } else {
-            List<String> list = Arrays.asList(deployE.getTriggerVersion().split(","));
+            List<String> list = Arrays.asList(deployDTO.getTriggerVersion().split(","));
             Optional<String> branch = list.stream().filter(version::contains).findFirst();
-            if (branch.isPresent() && !branch.get().isEmpty()) {
-                return deployE;
-            }
-            return null;
+            return branch.isPresent() && !branch.get().isEmpty();
         }
     }
 
     @Override
-    public List<ApplicationVersionRepDTO> listByAppId(Long appId, Boolean isPublish) {
-        return ConvertHelper.convertList(
-                applicationVersionRepository.baseListByAppId(appId, isPublish), ApplicationVersionRepDTO.class);
+    public List<ApplicationVersionRespVO> listByAppId(Long appId, Boolean isPublish) {
+        return ConvertUtils.convertList(baseListByAppId(appId, isPublish), ApplicationVersionRespVO.class);
     }
 
     @Override
-    public PageInfo<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam) {
-        return ConvertPageHelper.convertPageInfo(
-                applicationVersionRepository.listByAppIdAndParamWithPage(appId, isPublish, appVersionId, pageRequest, searchParam), ApplicationVersionRepDTO.class);
+    public PageInfo<ApplicationVersionRespVO> pageByAppIdAndParam(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam) {
+        return ConvertUtils.convertPage(
+                basePageByPublished(appId, isPublish, appVersionId, pageRequest, searchParam), ApplicationVersionRespVO.class);
     }
 
     @Override
-    public List<ApplicationVersionRepDTO> listDeployedByAppId(Long projectId, Long appId) {
-        return ConvertHelper.convertList(
-                applicationVersionRepository.baseListAppDeployedVersion(projectId, appId), ApplicationVersionRepDTO.class);
+    public List<ApplicationVersionRespVO> listDeployedByAppId(Long projectId, Long appId) {
+        return ConvertUtils.convertList(
+                baseListAppDeployedVersion(projectId, appId), ApplicationVersionRespVO.class);
     }
 
     @Override
-    public List<ApplicationVersionRepDTO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
-        return ConvertHelper.convertList(
-                applicationVersionRepository.baseListByAppIdAndEnvId(projectId, appId, envId),
-                ApplicationVersionRepDTO.class);
+    public List<ApplicationVersionRespVO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
+        return ConvertUtils.convertList(
+                baseListByAppIdAndEnvId(projectId, appId, envId), ApplicationVersionRespVO.class);
     }
 
     @Override
-    public PageInfo<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String searchParams) {
-        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        Boolean isProjectOwner = iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE);
-        PageInfo<ApplicationVersionE> applicationVersionEPage = applicationVersionRepository.basePageByOptions(
-                projectId, appId, pageRequest, searchParams, isProjectOwner, userAttrE.getIamUserId());
-        return ConvertPageHelper.convertPageInfo(applicationVersionEPage, ApplicationVersionRepDTO.class);
+    public PageInfo<ApplicationVersionRespVO> pageApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String searchParams) {
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        Boolean isProjectOwner = iamServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO);
+        PageInfo<ApplicationVersionDTO> applicationVersionDTOPageInfo = basePageByOptions(
+                projectId, appId, pageRequest, searchParams, isProjectOwner, userAttrDTO.getIamUserId());
+        return ConvertUtils.convertPage(applicationVersionDTOPageInfo, ApplicationVersionRespVO.class);
     }
 
     @Override
-    public List<ApplicationVersionRepDTO> getUpgradeAppVersion(Long projectId, Long appVersionId) {
-        applicationVersionRepository.baseCheckByProjectAndVersionId(projectId, appVersionId);
-        return ConvertHelper.convertList(
-                applicationVersionRepository.baseListUpgradeVersion(appVersionId),
-                ApplicationVersionRepDTO.class);
+    public List<ApplicationVersionRespVO> listUpgradeableAppVersion(Long projectId, Long appVersionId) {
+        baseCheckByProjectAndVersionId(projectId, appVersionId);
+        return ConvertUtils.convertList(
+                baseListUpgradeVersion(appVersionId), ApplicationVersionRespVO.class);
     }
 
     @Override
-    public DeployVersionDTO listDeployVersions(Long appId) {
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQueryNewestVersion(appId);
+    public DeployVersionDTO queryDeployedVersions(Long appId) {
+        ApplicationVersionDTO applicationVersionDTO = baseQueryNewestVersion(appId);
         DeployVersionDTO deployVersionDTO = new DeployVersionDTO();
         List<DeployEnvVersionDTO> deployEnvVersionDTOS = new ArrayList<>();
-        if (applicationVersionE != null) {
-            Map<Long, List<ApplicationInstanceE>> envInstances = applicationInstanceRepository.listByAppId(appId).stream().filter(applicationInstanceE -> applicationInstanceE.getCommandId() != null)
-                    .collect(Collectors.groupingBy(t -> t.getDevopsEnvironmentE().getId()));
+        if (applicationVersionDTO != null) {
+            Map<Long, List<ApplicationInstanceDTO>> envInstances = applicationInstanceService.baseListByAppId(appId)
+                    .stream()
+                    .filter(applicationInstanceDTO -> applicationInstanceDTO.getCommandId() != null)
+                    .collect(Collectors.groupingBy(ApplicationInstanceDTO::getEnvId));
+
             if (!envInstances.isEmpty()) {
                 envInstances.forEach((key, value) -> {
-                    DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(key);
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(key);
                     DeployEnvVersionDTO deployEnvVersionDTO = new DeployEnvVersionDTO();
-                    deployEnvVersionDTO.setEnvName(devopsEnvironmentE.getName());
+                    deployEnvVersionDTO.setEnvName(devopsEnvironmentDTO.getName());
                     List<DeployInstanceVersionDTO> deployInstanceVersionDTOS = new ArrayList<>();
-                    Map<Long, List<ApplicationInstanceE>> versionInstances = value.stream().collect(Collectors.groupingBy(t -> {
-                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(t.getCommandId());
-                        return devopsEnvCommandE.getObjectVersionId();
+                    Map<Long, List<ApplicationInstanceDTO>> versionInstances = value.stream().collect(Collectors.groupingBy(t -> {
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(t.getCommandId());
+                        return devopsEnvCommandDTO.getObjectVersionId();
                     }));
+
                     if (!versionInstances.isEmpty()) {
-                        versionInstances.forEach((newkey, newvalue) -> {
-                            ApplicationVersionE newApplicationVersionE = applicationVersionRepository.baseQuery(newkey);
+                        versionInstances.forEach((newKey, newValue) -> {
+                            ApplicationVersionDTO newApplicationVersionDTO = baseQuery(newKey);
                             DeployInstanceVersionDTO deployInstanceVersionDTO = new DeployInstanceVersionDTO();
-                            deployInstanceVersionDTO.setDeployVersion(newApplicationVersionE.getVersion());
-                            deployInstanceVersionDTO.setInstanceCount(newvalue.size());
-                            if (newApplicationVersionE.getId() < applicationVersionE.getId()) {
+                            deployInstanceVersionDTO.setDeployVersion(newApplicationVersionDTO.getVersion());
+                            deployInstanceVersionDTO.setInstanceCount(newValue.size());
+                            if (newApplicationVersionDTO.getId() < applicationVersionDTO.getId()) {
                                 deployInstanceVersionDTO.setUpdate(true);
                             }
                             deployInstanceVersionDTOS.add(deployInstanceVersionDTO);
                         });
                     }
+
                     deployEnvVersionDTO.setDeployIntanceVersionDTO(deployInstanceVersionDTOS);
                     deployEnvVersionDTOS.add(deployEnvVersionDTO);
                 });
 
-                deployVersionDTO.setLatestVersion(applicationVersionE.getVersion());
+                deployVersionDTO.setLatestVersion(applicationVersionDTO.getVersion());
                 deployVersionDTO.setDeployEnvVersionDTO(deployEnvVersionDTOS);
             }
         }
@@ -344,42 +309,42 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
     @Override
     public String queryVersionValue(Long appVersionId) {
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQuery(appVersionId);
-        ApplicationVersionValueE applicationVersionValueE = applicationVersionValueRepository.baseQuery(applicationVersionE.getApplicationVersionValueE().getId());
-        return applicationVersionValueE.getValue();
+        ApplicationVersionDTO applicationVersionDTO = baseQuery(appVersionId);
+        return applicationVersionValueService.baseQuery(applicationVersionDTO.getValueId()).getValue();
     }
 
     @Override
-    public ApplicationVersionRepDTO queryById(Long appVersionId) {
-        return ConvertHelper.convert(applicationVersionRepository.baseQuery(appVersionId), ApplicationVersionRepDTO.class);
+    public ApplicationVersionRespVO queryById(Long appVersionId) {
+        return ConvertUtils.convertObject(baseQuery(appVersionId), ApplicationVersionRespVO.class);
     }
 
     @Override
-    public List<ApplicationVersionRepDTO> listByAppVersionIds(List<Long> appVersionIds) {
-        return ConvertHelper.convertList(applicationVersionRepository.baseListByAppVersionIds(appVersionIds), ApplicationVersionRepDTO.class);
+    public List<ApplicationVersionRespVO> listByAppVersionIds(List<Long> appVersionIds) {
+        return ConvertUtils.convertList(baseListByAppVersionIds(appVersionIds), ApplicationVersionRespVO.class);
     }
 
     @Override
     public List<ApplicationVersionAndCommitDTO> listByAppIdAndBranch(Long appId, String branch) {
-        List<ApplicationVersionE> applicationVersionES = applicationVersionRepository.baseListByAppIdAndBranch(appId, branch);
-        ApplicationE applicationE = applicationRepository.query(appId);
-        ProjectVO projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
-        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        List<ApplicationVersionDTO> applicationVersionDTOS = baseListByAppIdAndBranch(appId, branch);
+        ApplicationDTO applicationDTO = applicationService.baseQuery(appId);
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
+        OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<ApplicationVersionAndCommitDTO> applicationVersionAndCommitDTOS = new ArrayList<>();
-        applicationVersionES.forEach(applicationVersionE -> {
+
+        applicationVersionDTOS.forEach(applicationVersionDTO -> {
             ApplicationVersionAndCommitDTO applicationVersionAndCommitDTO = new ApplicationVersionAndCommitDTO();
-            DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.baseQueryByShaAndRef(applicationVersionE.getCommit(), branch);
-            UserE userE = iamRepository.queryUserByUserId(devopsGitlabCommitE.getUserId());
-            applicationVersionAndCommitDTO.setAppName(applicationE.getName());
-            applicationVersionAndCommitDTO.setCommit(applicationVersionE.getCommit());
+            DevopsGitlabCommitDTO devopsGitlabCommitE = devopsGitlabCommitService.baseQueryByShaAndRef(applicationVersionDTO.getCommit(), branch);
+            IamUserDTO userE = iamServiceClientOperator.queryUserByUserId(devopsGitlabCommitE.getUserId());
+            applicationVersionAndCommitDTO.setAppName(applicationDTO.getName());
+            applicationVersionAndCommitDTO.setCommit(applicationVersionDTO.getCommit());
             applicationVersionAndCommitDTO.setCommitContent(devopsGitlabCommitE.getCommitContent());
             applicationVersionAndCommitDTO.setCommitUserImage(userE == null ? null : userE.getImageUrl());
             applicationVersionAndCommitDTO.setCommitUserName(userE == null ? null : userE.getRealName());
-            applicationVersionAndCommitDTO.setVersion(applicationVersionE.getVersion());
-            applicationVersionAndCommitDTO.setCreateDate(applicationVersionE.getCreationDate());
+            applicationVersionAndCommitDTO.setVersion(applicationVersionDTO.getVersion());
+            applicationVersionAndCommitDTO.setCreateDate(applicationVersionDTO.getCreationDate());
             applicationVersionAndCommitDTO.setCommitUrl(gitlabUrl + "/"
-                    + organization.getCode() + "-" + projectE.getCode() + "/"
-                    + applicationE.getCode() + ".git");
+                    + organization.getCode() + "-" + projectDTO.getCode() + "/"
+                    + applicationDTO.getCode() + ".git");
             applicationVersionAndCommitDTOS.add(applicationVersionAndCommitDTO);
 
         });
@@ -388,17 +353,17 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
     @Override
     public Boolean queryByPipelineId(Long pipelineId, String branch, Long appId) {
-        return applicationVersionRepository.baseQueryByPipelineId(pipelineId, branch, appId) != null;
+        return applicationVersionMapper.queryByPipelineId(pipelineId, branch, appId) != null;
     }
 
     @Override
     public String queryValueById(Long projectId, Long appId) {
-        return applicationVersionRepository.baseQueryValueByappId(appId);
+        return applicationVersionMapper.queryValueByAppId(appId);
     }
 
     @Override
-    public ApplicationVersionRepDTO queryByAppAndVersion(Long appId, String version) {
-        return ConvertHelper.convert(applicationVersionRepository.baseQueryByAppIdAndVersion(appId, version), ApplicationVersionRepDTO.class);
+    public ApplicationVersionRespVO queryByAppAndVersion(Long appId, String version) {
+        return ConvertUtils.convertObject(baseQueryByAppIdAndVersion(appId, version), ApplicationVersionRespVO.class);
     }
 
 
@@ -411,13 +376,6 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         return applicationVersionMapper.listAppNewestVersion(projectId, projectIds);
     }
 
-    public ApplicationVersionDTO baseCreate(ApplicationVersionDTO applicationVersionDTO) {
-        if (applicationVersionMapper.insert(applicationVersionDTO) != 1) {
-            throw new CommonException("error.version.insert");
-        }
-        //待创建readme
-        return applicationVersionDTO;
-    }
 
     public List<ApplicationVersionDTO> baseListByAppId(Long appId, Boolean isPublish) {
         List<ApplicationVersionDTO> applicationVersionDTOS = applicationVersionMapper.listByAppId(appId, isPublish);
@@ -437,6 +395,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             ApplicationVersionDTO searchDO = applicationVersionMapper.selectByPrimaryKey(versionDO);
             applicationVersionDTOPageInfo.getList().removeIf(v -> v.getId().equals(appVersionId));
             applicationVersionDTOPageInfo.getList().add(0, searchDO);
+        }
+        if (applicationVersionDTOPageInfo.getList().isEmpty()) {
+            return new PageInfo<>(Collections.emptyList());
         }
         return applicationVersionDTOPageInfo;
     }
@@ -489,8 +450,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     public PageInfo<ApplicationVersionDTO> basePageByOptions(Long projectId, Long appId, PageRequest pageRequest,
-                                                            String searchParam, Boolean isProjectOwner,
-                                                            Long userId) {
+                                                             String searchParam, Boolean isProjectOwner,
+                                                             Long userId) {
         Sort sort = pageRequest.getSort();
         String sortResult = "";
         if (sort != null) {
@@ -523,9 +484,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     public List<ApplicationVersionDTO> baseListByPublished(Long applicationId) {
-        List<ApplicationVersionDTO> applicationVersionDTOS = applicationVersionMapper
-                .listByPublished(applicationId);
-        return applicationVersionDTOS;
+        return applicationVersionMapper.listByPublished(applicationId);
     }
 
     public Boolean baseCheckByAppIdAndVersionIds(Long appId, List<Long> appVersionIds) {
@@ -591,16 +550,16 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         return applicationVersionMapper.queryByCommitSha(appId, ref, sha);
     }
 
-    public ApplicationVersionVO baseQueryNewestVersion(Long appId) {
-        return ConvertHelper.convert(applicationVersionMapper.queryNewestVersion(appId), ApplicationVersionVO.class);
+    public ApplicationVersionDTO baseQueryNewestVersion(Long appId) {
+        return applicationVersionMapper.queryNewestVersion(appId);
     }
 
     public List<ApplicationVersionDTO> baseListByAppVersionIds(List<Long> appVersionIds) {
         return applicationVersionMapper.listByAppVersionIds(appVersionIds);
     }
 
-    public List<ApplicationVersionVO> baseListByAppIdAndBranch(Long appId, String branch) {
-        return ConvertHelper.convertList(applicationVersionMapper.listByAppIdAndBranch(appId, branch), ApplicationVersionVO.class);
+    public List<ApplicationVersionDTO> baseListByAppIdAndBranch(Long appId, String branch) {
+        return applicationVersionMapper.listByAppIdAndBranch(appId, branch);
     }
 
     public String baseQueryByPipelineId(Long pipelineId, String branch, Long appId) {
@@ -610,7 +569,6 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     public String baseQueryValueByAppId(Long appId) {
         return applicationVersionMapper.queryValueByAppId(appId);
     }
-
 
 
     public void baseUpdatePublishTime() {

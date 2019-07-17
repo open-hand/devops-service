@@ -30,10 +30,9 @@ import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.app.eventhandler.DemoEnvSetupSagaHandler;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.dto.PipelineDTO;
+import io.choerodon.devops.infra.dto.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.PipelineUserRecordRelDO;
 import io.choerodon.devops.infra.dto.PipelineUserRelDO;
-import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.devops.infra.enums.CommandType;
@@ -322,7 +321,7 @@ public class PipelineServiceImpl implements PipelineService {
         userRecordRelE.setPipelineRecordId(pipelineRecordE.getId());
         userRecordRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
         baseCreatePipelineUserRecordRelationship(userRecordRelE);
-        DevopsPipelineDTO devopsPipelineDTO = createWorkFlowDTO(pipelineRecordE.getId(), pipelineId, pipelineRecordE.getBusinessKey());
+        io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO = createWorkFlowDTO(pipelineRecordE.getId(), pipelineId, pipelineRecordE.getBusinessKey());
         pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
         pipelineRecordRepository.baseUpdate(pipelineRecordE);
         try {
@@ -560,8 +559,8 @@ public class PipelineServiceImpl implements PipelineService {
      * 为此workflow下所有stage创建记录
      */
     @Override
-    public DevopsPipelineDTO createWorkFlowDTO(Long pipelineRecordId, Long pipelineId, String businessKey) {
-        DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
+    public io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO createWorkFlowDTO(Long pipelineRecordId, Long pipelineId, String businessKey) {
+        io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO = new io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO();
         devopsPipelineDTO.setPipelineRecordId(pipelineRecordId);
         devopsPipelineDTO.setBusinessKey(businessKey);
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
@@ -710,11 +709,11 @@ public class PipelineServiceImpl implements PipelineService {
     public void retry(Long projectId, Long pipelineRecordId) {
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.baseQueryById(pipelineRecordId);
         String bpmDefinition = pipelineRecordE.getBpmDefinition();
-        DevopsPipelineDTO pipelineDTO = gson.fromJson(bpmDefinition, DevopsPipelineDTO.class);
+        io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO = gson.fromJson(bpmDefinition, io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO.class);
         String uuid = GenerateUUID.generateUUID();
-        pipelineDTO.setBusinessKey(uuid);
+        devopsPipelineDTO.setBusinessKey(uuid);
         CustomUserDetails details = DetailsHelper.getUserDetails();
-        createWorkFlow(projectId, pipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
+        createWorkFlow(projectId, devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
         //清空之前数据
         pipelineRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
         pipelineRecordE.setBusinessKey(uuid);
@@ -1357,7 +1356,7 @@ public class PipelineServiceImpl implements PipelineService {
         });
     }
 
-    private void createWorkFlow(Long projectId, DevopsPipelineDTO pipelineDTO, String loginName, Long userId, Long orgId) {
+    private void createWorkFlow(Long projectId, io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO, String loginName, Long userId, Long orgId) {
 
         Observable.create((ObservableOnSubscribe<String>) Emitter::onComplete).subscribeOn(Schedulers.io())
                 .subscribe(new Observer<String>() {
@@ -1377,7 +1376,7 @@ public class PipelineServiceImpl implements PipelineService {
                     public void onComplete() {
                         DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId, orgId);
                         try {
-                            createWorkFlow(projectId, pipelineDTO);
+                            createWorkFlow(projectId, devopsPipelineDTO);
                         } catch (Exception e) {
                             throw new CommonException(e);
                         }
@@ -1462,7 +1461,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
 
-    private String createWorkFlow(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
+    private String createWorkFlow(Long projectId, io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO) {
         ResponseEntity<String> responseEntity = workFlowServiceClient.create(projectId, devopsPipelineDTO);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.workflow.create");
@@ -1523,7 +1522,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public PageInfo<PipelineDTO> baseListByOptions(Long projectId, PageRequest pageRequest, String params, Map<String, Object> classifyParam) {
+    public PageInfo<DevopsPipelineDTO> baseListByOptions(Long projectId, PageRequest pageRequest, String params, Map<String, Object> classifyParam) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
@@ -1532,52 +1531,52 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public PipelineDTO baseCreate(Long projectId, PipelineDTO pipelineDTO) {
-        pipelineDTO.setIsEnabled(1);
-        if (pipelineMapper.insert(pipelineDTO) != 1) {
+    public DevopsPipelineDTO baseCreate(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
+        devopsPipelineDTO.setIsEnabled(1);
+        if (pipelineMapper.insert(devopsPipelineDTO) != 1) {
             throw new CommonException("error.insert.pipeline");
         }
-        return pipelineDTO;
+        return devopsPipelineDTO;
     }
 
     @Override
-    public PipelineDTO baseUpdate(Long projectId, PipelineDTO pipelineDTO) {
-        pipelineDTO.setIsEnabled(1);
-        if (pipelineMapper.updateByPrimaryKey(pipelineDTO) != 1) {
+    public DevopsPipelineDTO baseUpdate(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
+        devopsPipelineDTO.setIsEnabled(1);
+        if (pipelineMapper.updateByPrimaryKey(devopsPipelineDTO) != 1) {
             throw new CommonException("error.update.pipeline");
         }
-        return pipelineDTO;
+        return devopsPipelineDTO;
     }
 
     @Override
-    public PipelineDTO baseUpdateWithEnabled(Long pipelineId, Integer isEnabled) {
-        PipelineDTO pipelineDTO = new PipelineDTO();
-        pipelineDTO.setId(pipelineId);
-        pipelineDTO.setIsEnabled(isEnabled);
-        pipelineDTO.setObjectVersionNumber(pipelineMapper.selectByPrimaryKey(pipelineDTO).getObjectVersionNumber());
-        if (pipelineMapper.updateByPrimaryKeySelective(pipelineDTO) != 1) {
+    public DevopsPipelineDTO baseUpdateWithEnabled(Long pipelineId, Integer isEnabled) {
+        DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
+        devopsPipelineDTO.setId(pipelineId);
+        devopsPipelineDTO.setIsEnabled(isEnabled);
+        devopsPipelineDTO.setObjectVersionNumber(pipelineMapper.selectByPrimaryKey(devopsPipelineDTO).getObjectVersionNumber());
+        if (pipelineMapper.updateByPrimaryKeySelective(devopsPipelineDTO) != 1) {
             throw new CommonException("error.update.pipeline.is.enabled");
         }
-        return pipelineDTO;
+        return devopsPipelineDTO;
     }
 
     @Override
-    public PipelineDTO baseQueryById(Long pipelineId) {
-        PipelineDTO pipelineDTO = new PipelineDTO();
-        pipelineDTO.setId(pipelineId);
-        return pipelineMapper.selectByPrimaryKey(pipelineDTO);
+    public DevopsPipelineDTO baseQueryById(Long pipelineId) {
+        DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
+        devopsPipelineDTO.setId(pipelineId);
+        return pipelineMapper.selectByPrimaryKey(devopsPipelineDTO);
     }
 
     @Override
     public void baseDelete(Long pipelineId) {
-        PipelineDTO pipelineDO = new PipelineDTO();
+        DevopsPipelineDTO pipelineDO = new DevopsPipelineDTO();
         pipelineDO.setId(pipelineId);
         pipelineMapper.deleteByPrimaryKey(pipelineDO);
     }
 
     @Override
     public void baseCheckName(Long projectId, String name) {
-        PipelineDTO pipelineDO = new PipelineDTO();
+        DevopsPipelineDTO pipelineDO = new DevopsPipelineDTO();
         pipelineDO.setProjectId(projectId);
         pipelineDO.setName(name);
         if (pipelineMapper.select(pipelineDO).size() > 0) {
@@ -1586,10 +1585,10 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public List<PipelineDTO> baseQueryByProjectId(Long projectId) {
-        PipelineDTO pipelineDTO = new PipelineDTO();
-        pipelineDTO.setProjectId(projectId);
-        return pipelineMapper.select(pipelineDTO);
+    public List<DevopsPipelineDTO> baseQueryByProjectId(Long projectId) {
+        DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
+        devopsPipelineDTO.setProjectId(projectId);
+        return pipelineMapper.select(devopsPipelineDTO);
     }
 }
 

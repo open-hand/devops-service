@@ -9,6 +9,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.domain.application.valueobject.InstanceValueVO;
+import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 
 /**
@@ -313,4 +314,6 @@ public interface ApplicationInstanceService {
      * @param instanceSagaPayload
      */
     void createInstanceBySaga(InstanceSagaPayload instanceSagaPayload);
+
+    List<ApplicationInstanceDTO> baseListByAppId(Long appId);
 }

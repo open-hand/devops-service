@@ -8,6 +8,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletResponse;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.api.vo.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -29,12 +30,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.AppMarketDownloadDTO;
-import io.choerodon.devops.api.vo.AppMarketTgzDTO;
-import io.choerodon.devops.api.vo.AppMarketVersionDTO;
-import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
-import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
-import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
 import io.choerodon.devops.app.service.ApplicationShareService;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.mybatis.annotation.SortDefault;
@@ -397,7 +393,7 @@ public class AppShareController {
     @ApiOperation(value = "项目下查询远程应用版本")
     @CustomPageRequest
     @PostMapping(value = "/remote_list/versions")
-    public ResponseEntity<PageInfo<ApplicationVersionRepDTO>> listVersionByAppId(
+    public ResponseEntity<PageInfo<ApplicationVersionRespVO>> listVersionByAppId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = true)

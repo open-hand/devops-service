@@ -5,9 +5,8 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.ApplicationVersionAndCommitDTO;
-import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
 import io.choerodon.devops.api.vo.DeployVersionDTO;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
 import io.choerodon.devops.infra.dto.ApplicationLatestVersionDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,7 +34,7 @@ public interface ApplicationVersionService {
      * @param isPublish 是否发布
      * @return List
      */
-    List<ApplicationVersionRepDTO> listByAppId(Long appId, Boolean isPublish);
+    List<ApplicationVersionRespVO> listByAppId(Long appId, Boolean isPublish);
 
     /**
      * 根据参数和页数在应用下查询应用所有版本
@@ -47,7 +46,7 @@ public interface ApplicationVersionService {
      * @param searchParam  查询参数
      * @return List
      */
-    PageInfo<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam);
+    PageInfo<ApplicationVersionRespVO> pageByAppIdAndParam(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam);
 
     /**
      * 项目下查询应用所有已部署版本
@@ -56,7 +55,7 @@ public interface ApplicationVersionService {
      * @param appId     应用ID
      * @return List
      */
-    List<ApplicationVersionRepDTO> listDeployedByAppId(Long projectId, Long appId);
+    List<ApplicationVersionRespVO> listDeployedByAppId(Long projectId, Long appId);
 
     /**
      * 查询部署在某个环境的应用版本
@@ -66,7 +65,7 @@ public interface ApplicationVersionService {
      * @param envId     环境Id
      * @return List
      */
-    List<ApplicationVersionRepDTO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+    List<ApplicationVersionRespVO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 
     /**
      * 分页查询某应用下的所有版本
@@ -75,15 +74,14 @@ public interface ApplicationVersionService {
      * @param appId       应用id
      * @param pageRequest 分页参数
      * @param searchParam 模糊搜索参数
-     * @return ApplicationVersionRepDTO
+     * @return ApplicationVersionRespVO
      */
-    PageInfo<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest,
-                                                                   String searchParam);
+    PageInfo<ApplicationVersionRespVO> pageApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String searchParam);
 
     /**
      * 根据应用id查询需要升级的应用版本
      */
-    List<ApplicationVersionRepDTO> getUpgradeAppVersion(Long projectId, Long appVersionId);
+    List<ApplicationVersionRespVO> listUpgradeableAppVersion(Long projectId, Long appVersionId);
 
     /**
      * 项目下查询应用最新的版本和各环境下部署的版本
@@ -91,24 +89,32 @@ public interface ApplicationVersionService {
      * @param appId 应用ID
      * @return DeployVersionDTO
      */
-    DeployVersionDTO listDeployVersions(Long appId);
+    DeployVersionDTO queryDeployedVersions(Long appId);
 
 
     String queryVersionValue(Long appVersionId);
 
-    ApplicationVersionRepDTO queryById(Long appVersionId);
+    ApplicationVersionRespVO queryById(Long appVersionId);
 
-    List<ApplicationVersionRepDTO> listByAppVersionIds(List<Long> appVersionIds);
+    List<ApplicationVersionRespVO> listByAppVersionIds(List<Long> appVersionIds);
 
     List<ApplicationVersionAndCommitDTO> listByAppIdAndBranch(Long appId, String branch);
 
+    /**
+     * 根据pipelineID 查询版本, 判断是否存在
+     *
+     * @param pipelineId pipeline
+     * @param branch     分支
+     * @param appId      应用id
+     * @return
+     */
     Boolean queryByPipelineId(Long pipelineId, String branch, Long appId);
 
     /**
      * 项目下根据应用Id查询value
      *
-     * @param projectId
-     * @param appId
+     * @param projectId 项目id
+     * @param appId     应用id
      * @return
      */
     String queryValueById(Long projectId, Long appId);
@@ -118,15 +124,11 @@ public interface ApplicationVersionService {
      *
      * @param appId   应用Id
      * @param version 版本
-     * @return ApplicationVersionRepDTO
+     * @return ApplicationVersionRespVO
      */
-    ApplicationVersionRepDTO queryByAppAndVersion(Long appId, String version);
-
-    void checkAutoDeploy(ApplicationVersionE versionE);
+    ApplicationVersionRespVO queryByAppAndVersion(Long appId, String version);
 
     List<ApplicationLatestVersionDTO> baseListAppNewestVersion(Long projectId);
-
-    ApplicationVersionDTO baseCreate(ApplicationVersionDTO applicationVersionDTO);
 
     List<ApplicationVersionDTO> baseListByAppId(Long appId, Boolean isPublish);
 

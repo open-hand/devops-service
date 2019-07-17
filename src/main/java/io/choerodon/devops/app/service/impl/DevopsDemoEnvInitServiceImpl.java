@@ -270,7 +270,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      */
     private AppMarketVersionDTO getApplicationVersion(Long projectId, Long applicationId) {
         PageRequest pageRequest = new PageRequest(0, 1);
-        PageInfo<ApplicationVersionRepDTO> versions = applicationVersionService.listApplicationVersionInApp(projectId, applicationId, pageRequest, null);
+        PageInfo<ApplicationVersionRespVO> versions = applicationVersionService.pageApplicationVersionInApp(projectId, applicationId, pageRequest, null);
         if (!versions.getList().isEmpty()) {
             AppMarketVersionDTO appMarketVersionDTO = new AppMarketVersionDTO();
             BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionDTO);

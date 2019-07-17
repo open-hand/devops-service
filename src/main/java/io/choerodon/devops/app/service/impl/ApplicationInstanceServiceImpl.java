@@ -3124,9 +3124,15 @@ public PageInfo<DeployDTO> basePageDeployTimeDetail
         new java.sql.Date(endTime.getTime())));
         }
 
+<<<<<<< HEAD
 public List<ApplicationInstanceDTO> baseListByAppId
         (Long appId){
         ApplicationInstanceDTO applicationInstanceDTO=new ApplicationInstanceDTO();
+=======
+    @Override
+    public List<ApplicationInstanceDTO> baseListByAppId(Long appId) {
+        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+>>>>>>> [REF] refactor ApplicationVersionController
         applicationInstanceDTO.setAppId(appId);
         return applicationInstanceMapper.select(applicationInstanceDTO);
         }

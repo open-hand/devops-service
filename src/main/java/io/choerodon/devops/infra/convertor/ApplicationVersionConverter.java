@@ -1,16 +1,15 @@
 package io.choerodon.devops.infra.convertor;
 
+import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.factory.ApplicationVersionEFactory;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 
 @Component
-public class ApplicationVersionConverter implements ConvertorI<ApplicationVersionE, ApplicationVersionDTO, ApplicationVersionRepDTO> {
+public class ApplicationVersionConverter implements ConvertorI<ApplicationVersionE, ApplicationVersionDTO, ApplicationVersionRespVO> {
 
     @Override
     public ApplicationVersionE doToEntity(ApplicationVersionDTO applicationVersionDTO) {
@@ -35,13 +34,13 @@ public class ApplicationVersionConverter implements ConvertorI<ApplicationVersio
     }
 
     @Override
-    public ApplicationVersionRepDTO entityToDto(ApplicationVersionE entity) {
-        ApplicationVersionRepDTO applicationVersionRepDTO = new ApplicationVersionRepDTO();
-        BeanUtils.copyProperties(entity, applicationVersionRepDTO);
-        applicationVersionRepDTO.setAppId(entity.getApplicationE().getId());
-        applicationVersionRepDTO.setAppCode(entity.getApplicationE().getCode());
-        applicationVersionRepDTO.setAppName(entity.getApplicationE().getName());
-        applicationVersionRepDTO.setAppStatus(entity.getApplicationE().getActive());
-        return applicationVersionRepDTO;
+    public ApplicationVersionRespVO entityToDto(ApplicationVersionE entity) {
+        ApplicationVersionRespVO applicationVersionRespVO = new ApplicationVersionRespVO();
+        BeanUtils.copyProperties(entity, applicationVersionRespVO);
+        applicationVersionRespVO.setAppId(entity.getApplicationE().getId());
+        applicationVersionRespVO.setAppCode(entity.getApplicationE().getCode());
+        applicationVersionRespVO.setAppName(entity.getApplicationE().getName());
+        applicationVersionRespVO.setAppStatus(entity.getApplicationE().getActive());
+        return applicationVersionRespVO;
     }
 }
