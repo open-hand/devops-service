@@ -19,7 +19,7 @@ public interface DevopsEnvFileResourceService {
 
     DevopsEnvFileResourceDTO baseUpdate(DevopsEnvFileResourceDTO devopsEnvFileResourceDTO);
 
-    void baseDelete(Long fileResourceId);
+    void baseDeleteById(Long fileResourceId);
 
     DevopsEnvFileResourceDTO baseQueryByEnvIdAndResourceId(Long envId, Long resourceId, String resourceType);
 

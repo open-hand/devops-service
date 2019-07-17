@@ -2581,7 +2581,7 @@ public void instanceDelete(Long instanceId){
                     devopsEnvFileResourceDTO.getFilePath())) {
                 baseDelete(instanceId);
                 baseDeleteInstanceRelInfo(instanceId);
-                devopsEnvFileResourceService.baseDelete(devopsEnvFileResourceDTO.getId());
+                devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 return;
             }
         }

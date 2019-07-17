@@ -11,6 +11,7 @@ import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.MemberHelper;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
@@ -147,10 +148,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     }
 
     @Override
-    public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrDTO userAttrDTO) {
+    public void checkEnvProject(DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO) {
         DevopsProjectVO devopsProjectE = devopsProjectRepository
-                .queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
-        if (devopsEnvironmentE.getGitlabEnvProjectId() == null) {
+                .queryDevopsProject(devopsEnvironmentDTO.getProjectE().getId());
+        if (devopsEnvironmentDTO.getGitlabEnvProjectId() == null) {
             throw new CommonException("error.env.project.not.exist");
         }
         GitlabMemberE groupMemberE = gitlabGroupMemberRepository
@@ -160,7 +161,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             return;
         }
         GitlabMemberE newGroupMemberE = gitlabProjectRepository.getProjectMember(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (newGroupMemberE == null || (newGroupMemberE.getAccessLevel() != AccessLevel.MASTER.toValue())) {
             throw new CommonException("error.user.not.env.pro.owner");

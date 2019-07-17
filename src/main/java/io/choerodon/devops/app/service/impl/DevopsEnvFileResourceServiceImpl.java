@@ -62,7 +62,7 @@ public class DevopsEnvFileResourceServiceImpl implements DevopsEnvFileResourceSe
     }
 
     @Override
-    public void baseDelete(Long fileResourceId) {
+    public void baseDeleteById(Long fileResourceId) {
         devopsEnvFileResourceMapper.deleteByPrimaryKey(fileResourceId);
     }
 

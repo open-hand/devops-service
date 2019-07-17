@@ -30,6 +30,7 @@ import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.HelmObjectKind;
@@ -423,16 +424,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
 
     @Override
-    public void checkEnv(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
+    public void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO) {
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.baseCheckEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentE.getId());
+        devopsEnvUserPermissionRepository.baseCheckEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentDTO.getId());
 
         //校验环境是否连接
-        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentDTO, userAttrDTO);
     }
 
 

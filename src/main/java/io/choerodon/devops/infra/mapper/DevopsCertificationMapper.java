@@ -15,13 +15,13 @@ import org.apache.ibatis.annotations.Param;
  */
 
 public interface DevopsCertificationMapper extends Mapper<CertificationDTO> {
-    List<CertificationDTO> selectCertification(@Param("projectId") Long projectId,
-                                               @Param("organizationId") Long organizationId,
-                                               @Param("envId") Long envId,
-                                               @Param("searchParam") Map<String, Object> searchParam,
-                                               @Param("param") String param);
+    List<CertificationDTO> queryCertification(@Param("projectId") Long projectId,
+                                              @Param("organizationId") Long organizationId,
+                                              @Param("envId") Long envId,
+                                              @Param("searchParam") Map<String, Object> searchParam,
+                                              @Param("param") String param);
 
-    List<CertificationDTO> getActiveByDomain(@Param("projectId") Long projectId, @Param("clusterId") Long clusterId, @Param("domain") String domain);
+    List<CertificationDTO> queryActiveByDomain(@Param("projectId") Long projectId, @Param("clusterId") Long clusterId, @Param("domain") String domain);
 
     void updateSkipCheckPro(@Param("certId") Long clusterId, @Param("skipCheckPro") Boolean skipCheckPro);
 

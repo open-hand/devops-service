@@ -109,7 +109,7 @@ public class CertificationRepositoryImpl implements CertificationRepository {
         String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         PageInfo<CertificationVO> certificationDTOPage = ConvertPageHelper.convertPageInfo(
                 PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsCertificationMapper
-                        .selectCertification(projectId, organizationId, envId, searchParamMap, param)),
+                        .queryCertification(projectId, organizationId, envId, searchParamMap, param)),
                 CertificationVO.class);
 
         // check if cert is overdue
@@ -131,7 +131,7 @@ public class CertificationRepositoryImpl implements CertificationRepository {
 
     @Override
     public List<CertificationVO> baseGetActiveByDomain(Long projectId, Long clusterId, String domain) {
-        return ConvertHelper.convertList(devopsCertificationMapper.getActiveByDomain(projectId, clusterId, domain),
+        return ConvertHelper.convertList(devopsCertificationMapper.queryActiveByDomain(projectId, clusterId, domain),
                 CertificationVO.class);
     }
 

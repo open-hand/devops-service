@@ -52,7 +52,7 @@ public interface CertificationService {
      */
     CertificationVO queryByName(Long envId, String certName);
 
-    Long createCertCommandE(String type, Long certId, Long userId);
+    Long createCertCommand(String type, Long certId, Long userId);
 
     List<OrgCertificationDTO> listOrgCertInProject(Long projectId);
 
@@ -60,11 +60,11 @@ public interface CertificationService {
 
     CertificationDTO baseQueryById(Long certId);
 
-    CertificationVO baseQueryByEnvAndName(Long envId, String name);
+    CertificationDTO baseQueryByEnvAndName(Long envId, String name);
 
-    PageInfo<CertificationVO> basePage(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<CertificationDTO> basePage(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params);
 
-    List<CertificationVO> baseQueryActiveByDomain(Long projectId, Long clusterId, String domain);
+    List<CertificationDTO> baseQueryActiveByDomain(Long projectId, Long clusterId, String domain);
 
     void baseUpdateStatus(CertificationDTO certificationDTO);
 
@@ -88,9 +88,9 @@ public interface CertificationService {
 
     void baseUpdateSkipProjectPermission(CertificationDTO certificationDTO);
 
-    CertificationVO baseQueryByOrgAndName(Long orgId, String name);
+    CertificationDTO baseQueryByOrgAndName(Long orgId, String name);
 
     List<CertificationDTO> baseListByOrgCertId(Long orgCertId);
 
-    List<CertificationVO> baseListByProject(Long projectId, Long organizationId);
+    List<CertificationDTO> baseListByProject(Long projectId, Long organizationId);
 }
