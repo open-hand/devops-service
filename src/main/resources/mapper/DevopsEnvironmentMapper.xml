@@ -7,10 +7,10 @@
         <result property="name" column="env_name"/>
         <result property="cluster_id" column="clusterId"/>
         <result property="synchronize" column="synchronize"/>
-        <collection property="apps" ofType="io.choerodon.devops.infra.dataobject.DevopsApplicationViewDTO">
+        <collection property="apps" ofType="io.choerodon.devops.infra.dataobject.DevopsApplicationViewDTO" notNullColumn="app_id">
             <id property="id" column="app_id"/>
             <result property="name" column="app_name"/>
-            <collection property="instances" ofType="io.choerodon.devops.infra.dataobject.DevopsAppInstanceViewDTO">
+            <collection property="instances" ofType="io.choerodon.devops.infra.dataobject.DevopsAppInstanceViewDTO" notNullColumn="ins_id">
                 <id property="id" column="ins_id"/>
                 <result property="code" column="ins_code"/>
                 <result property="podRunningCount" column="pod_running_count"/>
