@@ -799,10 +799,6 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         return applicationShareDTOPageInfo;
     }
 
-    public void baseUpdatePublishLevel() {
-        applicationShareMapper.updatePublishLevel();
-    }
-
     private Date getLatestDate(Date a, Date b, Date c) {
         if (a.after(b)) {
             return getLaterDate(a, c);

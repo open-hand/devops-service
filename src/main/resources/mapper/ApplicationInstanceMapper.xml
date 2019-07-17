@@ -84,13 +84,6 @@
         </choose>
     </select>
 
-    <select id="listAllEnvApp" resultType="io.choerodon.devops.api.vo.iam.entity.DevopsEnvApplicationE">
-        SELECT
-        dai.app_id,
-        dai.env_id
-        FROM
-        devops_app_instance dai
-    </select>
 
     <select id="listApplicationInstanceCode" resultType="io.choerodon.devops.infra.dto.ApplicationInstanceDTO">
         SELECT

@@ -57,7 +57,6 @@ public interface ApplicationInstanceService {
      */
     InstanceValueVO queryDeployValue(String type, Long instanceId, Long versionId);
 
-
     /**
      * 部署应用
      *
@@ -305,4 +304,6 @@ public interface ApplicationInstanceService {
     void createInstanceBySaga(InstanceSagaPayload instanceSagaPayload);
 
     List<ApplicationInstanceDTO> baseListByAppId(Long appId);
+
+    List<ApplicationInstanceDTO> baseList();
 }

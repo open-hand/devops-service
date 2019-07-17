@@ -56,6 +56,11 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_CREATE_GITLAB_PROJECT="devops-create-gitlab-project";
 
+    /**
+     * Devops同步应用到iam
+     */
+    public static final String DEVOPS_SYNC_APPLICATION="devops-sync-application";
+
 
 
 

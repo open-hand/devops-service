@@ -3346,7 +3346,12 @@ public List<ApplicationInstanceOverViewDTO> baseListApplicationInstanceOverView
         return applicationInstanceMapper.listApplicationInstanceOverView(projectId,appId,envIds);
         }
 
+<<<<<<< HEAD
 public List<ApplicationInstanceDTO> baseList(){
+=======
+    @Override
+    public List<ApplicationInstanceDTO> baseList() {
+>>>>>>> [IMP] refactor CheckController
         return applicationInstanceMapper.selectAll();
         }
 

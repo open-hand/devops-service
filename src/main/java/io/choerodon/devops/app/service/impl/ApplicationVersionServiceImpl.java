@@ -571,7 +571,4 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
 
-    public void baseUpdatePublishTime() {
-        applicationVersionMapper.updatePublishTime();
-    }
 }
