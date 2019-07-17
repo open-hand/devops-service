@@ -10,6 +10,7 @@ public class DevopsEnvironmentViewVO {
     private Long id;
     private String name;
     private Boolean connect;
+    private Boolean synchronize;
     private List<DevopsApplicationViewVO> apps;
 
     public Long getId() {
@@ -42,5 +43,13 @@ public class DevopsEnvironmentViewVO {
 
     public void setConnect(Boolean connect) {
         this.connect = connect;
+    }
+
+    public Boolean getSynchronize() {
+        return synchronize;
+    }
+
+    public void setSynchronize(Boolean synchronize) {
+        this.synchronize = synchronize;
     }
 }

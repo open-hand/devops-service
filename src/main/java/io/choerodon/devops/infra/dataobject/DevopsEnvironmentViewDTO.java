@@ -9,7 +9,7 @@ public class DevopsEnvironmentViewDTO {
     private Long id;
     private String name;
     private Long clusterId;
-    private Boolean isFailed;
+    private Boolean synchronize;
     private List<DevopsApplicationViewDTO> apps;
 
     public Long getId() {
@@ -36,19 +36,19 @@ public class DevopsEnvironmentViewDTO {
         this.clusterId = clusterId;
     }
 
-    public Boolean getFailed() {
-        return isFailed;
-    }
-
-    public void setFailed(Boolean failed) {
-        isFailed = failed;
-    }
-
     public List<DevopsApplicationViewDTO> getApps() {
         return apps;
     }
 
     public void setApps(List<DevopsApplicationViewDTO> apps) {
         this.apps = apps;
+    }
+
+    public Boolean getSynchronize() {
+        return synchronize;
+    }
+
+    public void setSynchronize(Boolean synchronize) {
+        this.synchronize = synchronize;
     }
 }

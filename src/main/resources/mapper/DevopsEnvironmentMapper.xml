@@ -5,6 +5,8 @@
     <resultMap id="envTree" type="io.choerodon.devops.infra.dataobject.DevopsEnvironmentViewDTO">
         <id property="id" column="env_id"/>
         <result property="name" column="env_name"/>
+        <result property="cluster_id" column="clusterId"/>
+        <result property="synchronize" column="synchronize"/>
         <collection property="apps" ofType="io.choerodon.devops.infra.dataobject.DevopsApplicationViewDTO">
             <id property="id" column="app_id"/>
             <result property="name" column="app_name"/>
@@ -50,6 +52,7 @@
                ins.id         as           ins_id,
                ins.code       as           ins_code,
                env.cluster_id as           cluster_id,
+               env.is_synchro as           synchronize,
                (SELECT count(1)
                 FROM devops_env_pod dp
                 WHERE dp.app_instance_id = ins.id
