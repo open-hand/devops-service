@@ -56,6 +56,7 @@ import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 =======
 >>>>>>> [IMP] refactor AplicationControler
 import io.choerodon.devops.api.vo.sonar.*;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
@@ -200,7 +201,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 
     @Override
-    @Saga(code = "devops-create-application",
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION,
             description = "Devops创建应用", inputSchema = "{}")
     @Transactional
     public ApplicationRepVO create(Long projectId, ApplicationReqVO applicationReqVO) {
@@ -266,7 +267,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    @Saga(code = "devops-app-delete", description = "Devops删除失败应用", inputSchema = "{}")
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_DELETE, description = "Devops删除失败应用", inputSchema = "{}")
     @Transactional
     public void delete(Long projectId, Long appId) {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
@@ -294,7 +295,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("app")
-                        .withSagaCode("devops-app-delete"),
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_DELETE),
                 builder -> builder
                         .withPayloadAndSerialize(appSyncPayload)
                         .withRefId(String.valueOf(appId))
@@ -302,7 +303,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationMapper.deleteByPrimaryKey(appId);
     }
 
-    @Saga(code = "devops-update-gitlab-users",
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
             description = "Devops更新gitlab用户", inputSchema = "{}")
     @Override
     @Transactional
@@ -450,6 +451,21 @@ public class ApplicationServiceImpl implements ApplicationService {
                             .withSourceId(applicationE.getProjectE().getId());
             return true;
         }
+<<<<<<< HEAD
+=======
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("app")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS),
+                builder -> builder
+                        .withPayloadAndSerialize(devOpsUserPayload)
+                        .withRefId(String.valueOf(appId))
+                        .withSourceId(projectId));
+        return true;
+    }
+>>>>>>> [IMP] refactor ApplicationShareController
 
         @Override
         public PageInfo<ApplicationRepVO> pageByOptions (Long projectId, Boolean isActive, Boolean hasVersion,
@@ -479,11 +495,15 @@ public class ApplicationServiceImpl implements ApplicationService {
             Boolean isProjectOwner = iamService.isProjectOwner(userAttrE.getIamUserId(), projectE);
             OrganizationVO organization = iamService.queryOrganizationById(projectE.getOrganization().getId());
 
+<<<<<<< HEAD
             PageInfo<ApplicationE> applicationES = applicationRepository
                     .listCodeRepository(projectId, pageRequest, params, isProjectOwner, userAttrE.getIamUserId());
             String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 =======
     @Saga(code = "devops-sync-app-active",
+=======
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_SYNC_APP_ACTIVE,
+>>>>>>> [IMP] refactor ApplicationShareController
             description = "同步iam应用状态", inputSchema = "{}")
     @Override
     @Transactional
@@ -504,7 +524,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("app")
-                        .withSagaCode("devops-sync-app-active"),
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_SYNC_APP_ACTIVE),
                 builder -> builder
                         .withPayloadAndSerialize(opsAppSyncPayload)
                         .withRefId(String.valueOf(appId))
@@ -2170,7 +2190,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+<<<<<<< HEAD
     @Saga(code = "devops-create-app-fail",
+=======
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
+>>>>>>> [IMP] refactor ApplicationShareController
             description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
     public void setAppErrStatus(String input, Long projectId) {
         GitlabProjectEventDTO gitlabProjectEventDTO = JSONObject.parseObject(input, GitlabProjectEventDTO.class);
@@ -2179,11 +2203,16 @@ public class ApplicationServiceImpl implements ApplicationService {
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("")
+<<<<<<< HEAD
                         .withSagaCode("devops-create-app-fail"),
+=======
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL),
+>>>>>>> [IMP] refactor ApplicationShareController
                 builder -> builder
                         .withPayloadAndSerialize(gitlabProjectEventDTO)
                         .withRefId("")
                         .withSourceId(projectId));
+<<<<<<< HEAD
     }
 
 <<<<<<< HEAD
@@ -2277,6 +2306,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 >>>>>>> [IMP]重构后端断码
         }
         return accessToken;
+=======
+>>>>>>> [IMP] refactor ApplicationShareController
     }
 
 <<<<<<< HEAD
@@ -2666,7 +2697,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    @Saga(code = "devops-import-gitlab-project", description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT, description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     public ApplicationRepVO importApp(Long projectId, ApplicationImportDTO applicationImportDTO) {
         // 获取当前操作的用户的信息
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -2862,7 +2893,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("")
-                        .withSagaCode("devops-import-gitlab-project"),
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT),
                 builder -> builder
                         .withPayloadAndSerialize(devOpsAppImportPayload)
                         .withRefId("")
@@ -2988,7 +3019,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    @Saga(code = "devops-create-gitlab-project",
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT,
             description = "Devops创建gitlab项目", inputSchema = "{}")
     public void createIamApplication(IamAppPayLoad iamAppPayLoad) {
 
@@ -3047,7 +3078,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             .newBuilder()
                             .withLevel(ResourceLevel.PROJECT)
                             .withRefType("")
-                            .withSagaCode("devops-create-gitlab-project"),
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT),
                     builder -> builder
                             .withPayloadAndSerialize(devOpsAppPayload)
                             .withRefId("")
