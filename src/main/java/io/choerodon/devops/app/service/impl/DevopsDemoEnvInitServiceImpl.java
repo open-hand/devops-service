@@ -146,7 +146,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         ApplicationReleasingDTO applicationReleasingDTO = demoDataDTO.getApplicationRelease();
         applicationReleasingDTO.setAppId(applicationRepDTO.getId());
         applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
-        applicationMarketService.release(projectId, applicationReleasingDTO);
+        applicationMarketService.create(projectId, applicationReleasingDTO);
     }
 
     /**

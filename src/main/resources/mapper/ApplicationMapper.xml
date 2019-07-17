@@ -108,6 +108,26 @@
         da.id DESC
     </select>
 
+    <select id="listAll" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
+        SELECT DISTINCT
+        dam.publish_level publishLevel,
+        dam.contributor,
+        dam.description,
+        da.*
+        FROM
+        devops_application da
+        JOIN devops_app_instance dai ON dai.app_id = da.id
+        AND dai.`status` != 'deleted'
+        JOIN devops_env de ON dai.env_id = de.id
+        LEFT JOIN devops_app_share dam ON dam.app_id = da.id
+        WHERE
+        da.is_active
+        AND de.project_id = #{projectId}
+        ORDER BY
+        dam.publish_level ASC,
+        da.id DESC
+    </select>
+
     <sql id="sqlparam">
         <if test='searchParam != null'>
             <if test='searchParam.code != null and searchParam.code.size > 0'>

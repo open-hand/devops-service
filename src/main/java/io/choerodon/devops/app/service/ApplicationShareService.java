@@ -7,7 +7,19 @@ import io.choerodon.devops.api.vo.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.base.domain.PageRequest;
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
+=======
+import io.choerodon.devops.api.vo.AccessTokenCheckResultDTO;
+import io.choerodon.devops.api.vo.AccessTokenDTO;
+import io.choerodon.devops.api.vo.AppMarketDownloadDTO;
+import io.choerodon.devops.api.vo.AppMarketTgzDTO;
+import io.choerodon.devops.api.vo.AppMarketVersionDTO;
+import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
+import io.choerodon.devops.api.vo.ApplicationReleasingDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionRepDTO;
+import io.choerodon.devops.infra.dto.ApplicationShareDTO;
+>>>>>>> [IMP] refactor AplicationControler
 
 /**
  * Created by ernst on 2018/5/12.
@@ -21,7 +33,7 @@ public interface ApplicationShareService {
      * @param projectId             项目ID
      * @return integer
      */
-    Long release(Long projectId, ApplicationReleasingDTO applicationReleaseDTO);
+    Long create(Long projectId, ApplicationReleasingDTO applicationReleaseDTO);
 
     /**
      * 项目下查询所有发布在应用市场的应用
@@ -31,7 +43,7 @@ public interface ApplicationShareService {
      * @param searchParam 模糊查询参数
      * @return baseList of ApplicationReleasingDTO
      */
-    PageInfo<ApplicationReleasingDTO> listMarketAppsByProjectId(
+    PageInfo<ApplicationReleasingDTO> pageByOptions(
             Long projectId,
             PageRequest pageRequest,
             String searchParam);
@@ -72,7 +84,7 @@ public interface ApplicationShareService {
      */
     PageInfo<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam);
 
-    ApplicationReleasingDTO getMarketAppInProject(Long projectId, Long appMarketId);
+    ApplicationReleasingDTO queryById(Long projectId, Long appMarketId);
 
     /**
      * 查询单个应用市场的应用
@@ -81,10 +93,10 @@ public interface ApplicationShareService {
      * @param versionId   应用版本ID
      * @return ApplicationReleasingDTO
      */
-    ApplicationReleasingDTO getMarketApp(Long appMarketId, Long versionId);
+    ApplicationReleasingDTO queryShareApp(Long appMarketId, Long versionId);
 
 
-    String getMarketAppVersionReadme(Long appMarketId, Long versionId);
+    String queryAppVersionReadme(Long appMarketId, Long versionId);
 
     void unpublish(Long projectId, Long appMarketId);
 
@@ -94,16 +106,16 @@ public interface ApplicationShareService {
 
     void update(Long projectId, Long appMarketId, List<AppMarketVersionDTO> versionDTOList);
 
-    List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish);
+    List<AppMarketVersionDTO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish);
 
-    PageInfo<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish,
-                                                 PageRequest pageRequest, String searchParam);
+    PageInfo<AppMarketVersionDTO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish,
+                                                       PageRequest pageRequest, String searchParam);
 
-    AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file);
+    AppMarketTgzDTO upload(Long projectId, MultipartFile file);
 
     Boolean importApps(Long projectId, String fileName, Boolean isPublic);
 
-    void deleteZip(Long projectId, String fileName);
+    void importCancel(Long projectId, String fileName);
 
     /**
      * 导出应用市场应用信息
@@ -112,13 +124,15 @@ public interface ApplicationShareService {
      */
     void export(List<AppMarketDownloadDTO> appMarkets, String fileName);
 
-    PageInfo<ApplicationReleasingDTO> pageListRemoteApps(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<ApplicationReleasingDTO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params);
 
     PageInfo<ApplicationVersionRespVO> listVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params);
 
-    AppVersionAndValueDTO getConfigInfoByVerionId(Long appId, Long versionId, String accessToken);
+    AppVersionAndValueDTO queryConfigByVerionId(Long appId, Long versionId, String accessToken);
 
     AccessTokenCheckResultDTO checkToken(AccessTokenDTO tokenDTO);
 
     void saveToken(AccessTokenDTO tokenDTO);
+
+    ApplicationShareDTO baseQueryByAppId(Long appId);
 }

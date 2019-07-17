@@ -6,6 +6,8 @@ import java.util.Map;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.TagDTO;
 
 /**
@@ -52,8 +54,8 @@ public interface DevopsGitService {
     /**
      * 创建分支
      *
-     * @param projectId       项目ID
-     * @param applicationId   应用ID
+     * @param projectId      项目ID
+     * @param applicationId  应用ID
      * @param devopsBranchVO 分支
      */
     void createBranch(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO);
@@ -82,8 +84,8 @@ public interface DevopsGitService {
     /**
      * 更新分支关联的问题
      *
-     * @param projectId       项目 ID
-     * @param applicationId   应用ID
+     * @param projectId      项目 ID
+     * @param applicationId  应用ID
      * @param devopsBranchVO 分支
      */
     void updateBranch(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO);
@@ -170,4 +172,8 @@ public interface DevopsGitService {
      * @return
      */
     CommitVO getCommit(Integer gitLabProjectId, String commit, Integer userId);
+
+    BranchDTO baseQueryBranch(Integer gitLabProjectId, String branchName);
+
+    DevopsBranchDTO createDevopsBranch(DevopsBranchDTO devopsBranchDTO);
 }

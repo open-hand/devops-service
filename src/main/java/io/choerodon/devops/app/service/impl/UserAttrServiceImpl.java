@@ -81,6 +81,7 @@ public class UserAttrServiceImpl implements UserAttrService {
         return userAttrMapper.listByUserIds(userIds);
     }
 
+    @Override
     public UserAttrDTO baseQueryByGitlabUserId(Long gitlabUserId) {
         UserAttrDTO userAttrDO = new UserAttrDTO();
         userAttrDO.setGitlabUserId(gitlabUserId);

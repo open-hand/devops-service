@@ -28,7 +28,7 @@ import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
-import io.choerodon.devops.infra.dto.gitlab.UserDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -224,7 +224,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
             String accessToken = getToken(gitlabProjectPayload, applicationDir, userAttrDTO);
 
-            UserDTO gitlabUserE = gitlabServiceClientOperator.queryUserById(gitlabProjectPayload.getUserId());
+            GitLabUserDTO gitlabUserE = gitlabServiceClientOperator.queryUserById(gitlabProjectPayload.getUserId());
             repoUrl = applicationTemplateDTO.getRepoUrl();
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
 
@@ -341,6 +341,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         applicationTemplateMapper.deleteByPrimaryKey(appTemplateId);
     }
 
+    @Override
     public ApplicationTemplateDTO baseQuery(Long appTemplateId) {
         return applicationTemplateMapper.selectByPrimaryKey(appTemplateId);
     }
@@ -373,6 +374,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         return applicationTemplateMapper.queryByCode(organizationId, code);
     }
 
+    @Override
     public List<ApplicationTemplateDTO> baseListByOrganizationId(Long organizationId) {
         return applicationTemplateMapper.listByOrganizationId(
                 organizationId, null, null);

@@ -20,6 +20,8 @@ public interface ApplicationMapper extends Mapper<ApplicationDTO> {
                               @Param("param") String param,
                               @Param("index") String index);
 
+    List<ApplicationDTO> listAll(@Param("projectId") Long projectId);
+
     List<ApplicationDTO> listCodeRepository(@Param("projectId") Long projectId,
                                             @Param("searchParam") Map<String, Object> searchParam,
                                             @Param("param") String param,

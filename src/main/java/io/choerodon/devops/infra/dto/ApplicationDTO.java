@@ -37,6 +37,44 @@ public class ApplicationDTO extends BaseDTO {
     private String contributor;
     @Transient
     private String description;
+    @Transient
+    private String repoUrl;
+    @Transient
+    private String sonarUrl;
+    @Transient
+    private String gitlabProjectUrl;
+
+    public String getGitlabProjectUrl() {
+        return gitlabProjectUrl;
+    }
+
+    public void setGitlabProjectUrl(String gitlabProjectUrl) {
+        this.gitlabProjectUrl = gitlabProjectUrl;
+    }
+
+    public String getSonarUrl() {
+        return sonarUrl;
+    }
+
+    public void setSonarUrl(String sonarUrl) {
+        this.sonarUrl = sonarUrl;
+    }
+
+    public Boolean getSkipCheckPermission() {
+        return isSkipCheckPermission;
+    }
+
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        isSkipCheckPermission = skipCheckPermission;
+    }
+
+    public String getRepoUrl() {
+        return repoUrl;
+    }
+
+    public void setRepoUrl(String repoUrl) {
+        this.repoUrl = repoUrl;
+    }
 
     public Long getId() {
         return id;

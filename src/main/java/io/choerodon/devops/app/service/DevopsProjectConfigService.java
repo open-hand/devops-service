@@ -53,7 +53,7 @@ public interface DevopsProjectConfigService {
      */
     ProjectDefaultConfigDTO getProjectDefaultConfig(Long projectId);
 
-    DevopsProjectConfigDTO baseCreate(DevopsProjectConfigDTO devopsProjectConfigDTO)
+    DevopsProjectConfigDTO baseCreate(DevopsProjectConfigDTO devopsProjectConfigDTO);
 
     Boolean baseCheckByName(DevopsProjectConfigDTO devopsProjectConfigDTO);
 
@@ -74,4 +74,5 @@ public interface DevopsProjectConfigService {
     void baseCheckByName(Long projectId, String name);
 
     Boolean baseCheckUsed(Long checkIsUsed);
+
 }

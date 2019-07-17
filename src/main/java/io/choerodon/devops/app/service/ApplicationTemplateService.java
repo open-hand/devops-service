@@ -8,6 +8,7 @@ import io.choerodon.devops.api.vo.ApplicationTemplateRespVO;
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
 import io.choerodon.devops.api.vo.ApplicationTemplateVO;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
+import io.choerodon.devops.infra.dto.ApplicationTemplateDTO;
 
 /**
  * Created by younger on 2018/3/27.
@@ -96,6 +97,8 @@ public interface ApplicationTemplateService {
      */
     Boolean applicationTemplateExist(String uuid);
 
+//    void initMockService(SagaClient sagaClient);
+
     /**
      * 设置应用应用模板创建失败状态
      *
@@ -104,13 +107,9 @@ public interface ApplicationTemplateService {
      */
     void setAppTemplateErrStatus(String gitlabProjectEventDTO, Long organizationId);
 
-//    void initMockService(SagaClient sagaClient);
-
-    /**
-     * 根据模板code查询模板
-     *
-     * @param organizationId 组织id
-     * @param code           模板code
-     */
     ApplicationTemplateRespVO queryByCode(Long organizationId, String code);
+
+    List<ApplicationTemplateDTO> baseListByOrganizationId(Long organizationId);
+
+    ApplicationTemplateDTO baseQuery(Long appTemplateId);
 }

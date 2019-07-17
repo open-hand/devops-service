@@ -5,6 +5,8 @@ import java.util.List;
 
 import feign.FeignException;
 import feign.RetryableException;
+
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.VariableDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -292,7 +294,7 @@ public class GitLabServiceImpl implements GitLabService {
     }
 
     @Override
-    public void addMemberIntoProject(Integer projectId, MemberVO memberDTO) {
+    public void addMemberIntoProject(Integer projectId, MemberDTO memberDTO) {
         try {
             gitlabServiceClient.createProjectMember(projectId, memberDTO);
         } catch (Exception e) {

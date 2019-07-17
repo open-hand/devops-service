@@ -20,11 +20,11 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(value = "gitlab-service", fallback = GitlabServiceClientFallback.class)
 public interface GitlabServiceClient {
     @GetMapping(value = "/v1/users/{userId}")
-    ResponseEntity<UserDTO> queryUserById(
+    ResponseEntity<GitLabUserDTO> queryUserById(
             @PathVariable("userId") Integer userId);
 
     @GetMapping(value = "/v1/users/{username}/details")
-    ResponseEntity<UserDTO> queryUserByUserName(
+    ResponseEntity<GitLabUserDTO> queryUserByUserName(
             @PathVariable("username") String username);
 
     @GetMapping(value = "/v1/groups/{groupId}/members/{userId}")
@@ -48,14 +48,14 @@ public interface GitlabServiceClient {
             @RequestBody @Valid MemberDTO member);
 
     @PostMapping(value = "/v1/users")
-    ResponseEntity<UserDTO> createUser(@RequestParam("password") String password,
-                                       @RequestParam(value = "projectsLimit", required = false) Integer projectsLimit,
-                                       @RequestBody UserReqDTO userReqDTO);
+    ResponseEntity<GitLabUserDTO> createUser(@RequestParam("password") String password,
+                                             @RequestParam(value = "projectsLimit", required = false) Integer projectsLimit,
+                                             @RequestBody GitlabUserReqDTO userReqDTO);
 
     @PutMapping("/v1/users/{userId}")
-    ResponseEntity<UserDTO> updateGitLabUser(@PathVariable("userId") Integer userId,
-                                             @RequestParam(value = "projectsLimit", required = false) Integer projectsLimit,
-                                             @RequestBody UserReqDTO userReqDTO);
+    ResponseEntity<GitLabUserDTO> updateGitLabUser(@PathVariable("userId") Integer userId,
+                                                   @RequestParam(value = "projectsLimit", required = false) Integer projectsLimit,
+                                                   @RequestBody GitlabUserReqDTO userReqDTO);
 
 
     @PutMapping("/v1/projects/{projectId}")

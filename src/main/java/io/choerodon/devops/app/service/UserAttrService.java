@@ -15,20 +15,19 @@ public interface UserAttrService {
     UserAttrVO queryByUserId(Long userId);
 
     /**
-     *
      * @return
      */
     Integer getGitlabUserId();
 
 
     /**
-     *
      * @param gitLabUserId
      * @return
      */
     Long getUserIdByGitlabUserId(Long gitLabUserId);
 
 
+    UserAttrDTO baseQueryByGitlabUserId(Long gitlabUserId);
 
     int baseInsert(UserAttrDTO userAttrDTO);
 

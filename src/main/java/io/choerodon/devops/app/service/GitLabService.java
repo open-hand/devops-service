@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.infra.dto.gitlab.DeployKeyDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.VariableDTO;
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
@@ -69,7 +70,7 @@ public interface GitLabService {
     /**
      * 将成员添加到gitlab项目，应该先检查成员是否存在，否则会报成员已存在的异常
      */
-    void addMemberIntoProject(Integer projectId, MemberVO memberDTO);
+    void addMemberIntoProject(Integer projectId, MemberDTO memberDTO);
 
     void updateMemberIntoProject(Integer projectId, List<MemberVO> list);
 

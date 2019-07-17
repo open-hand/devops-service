@@ -6,10 +6,14 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.GitlabProjectEventDTO;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 =======
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 >>>>>>> [IMP] applicationController重构
+=======
+import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
+>>>>>>> [IMP] refactor AplicationControler
 
 @Component
 public class GitlabProjectEventConvertor implements ConvertorI<GitlabProjectPayload, Object, GitlabProjectEventDTO> {

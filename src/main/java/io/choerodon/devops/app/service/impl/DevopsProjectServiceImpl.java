@@ -20,7 +20,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     @Autowired
     DevopsProjectMapper devopsProjectMapper;
 
-
+    @Override
     public DevopsProjectDTO baseQueryByProjectId(Long projectId) {
         DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(projectId);
         if (devopsProjectDTO == null) {
@@ -32,6 +32,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         return devopsProjectDTO;
     }
 
+    @Override
     public DevopsProjectDTO baseQueryByGitlabAppGroupId(Integer appGroupId) {
         DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
         devopsProjectDTO.setDevopsAppGroupId(TypeUtil.objToLong(appGroupId));

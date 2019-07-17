@@ -22,12 +22,12 @@ import org.springframework.stereotype.Component;
 public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
-    public ResponseEntity<UserDTO> queryUserById(Integer userId) {
+    public ResponseEntity<GitLabUserDTO> queryUserById(Integer userId) {
         throw new CommonException("error.user.get");
     }
 
     @Override
-    public ResponseEntity<UserDTO> queryUserByUserName(String username) {
+    public ResponseEntity<GitLabUserDTO> queryUserByUserName(String username) {
         return new ResponseEntity("error.user.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -52,12 +52,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<UserDTO> createUser(String password, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
+    public ResponseEntity<GitLabUserDTO> createUser(String password, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
         throw new CommonException("error.GitlabUser.creat");
     }
 
     @Override
-    public ResponseEntity<UserDTO> updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
+    public ResponseEntity<GitLabUserDTO> updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserPayload gitlabUserPayload) {
         throw new CommonException("error.GitlabUser.update");
     }
 
@@ -306,7 +306,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<BranchDTO> getBranch(Integer projectId, String branchName) {
+    public ResponseEntity<BranchDTO> queryBranch(Integer projectId, String branchName) {
         throw new CommonException("error.branch.get");
     }
 

@@ -3,7 +3,7 @@ package io.choerodon.devops.infra.dto.gitlab;
 import java.util.Date;
 import java.util.List;
 
-public class UserDTO {
+public class GitLabUserDTO {
 
     private String avatarUrl;
     private String bio;

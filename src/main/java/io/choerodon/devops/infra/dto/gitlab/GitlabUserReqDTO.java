@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Created by Sheep on 2019/7/12.
  */
-public class UserReqDTO {
+public class GitlabUserReqDTO {
 
 
     //Gitlab的用户名

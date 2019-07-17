@@ -26,10 +26,13 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
 import io.choerodon.devops.infra.message.ResourceBundleHandler;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
@@ -136,6 +139,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private DevopsProjectRepository devopsProjectRepository;
     @Autowired
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private DevopsBranchMapper devopsBranchMapper;
 
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -403,6 +410,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Override
     public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
         final Integer gitLabProjectId = pushWebHookDTO.getProjectId();
         Integer gitLabUserId = pushWebHookDTO.getUserId();
@@ -898,5 +906,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             gitUtil.pullBySsh(repoPath);
             gitUtil.checkout(repoPath, commit);
         }
+    }
+
+    @Override
+    public BranchDTO baseQueryBranch(Integer gitLabProjectId, String branchName) {
+        return gitlabServiceClientOperator.queryBranch(gitLabProjectId, branchName);
+    }
+
+    @Override
+    public DevopsBranchDTO createDevopsBranch(DevopsBranchDTO devopsBranchDTO) {
+        devopsBranchDTO.setDeleted(false);
+        if (devopsBranchMapper.insert(devopsBranchDTO) != 1) {
+            throw new CommonException("error.insert.devops.branch");
+        }
+        return devopsBranchDTO;
     }
 }

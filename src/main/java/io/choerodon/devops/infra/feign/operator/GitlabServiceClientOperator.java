@@ -6,13 +6,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import feign.FeignException;
 import feign.RetryableException;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
-import io.choerodon.devops.infra.dto.gitlab.*;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -20,6 +13,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
+import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import io.choerodon.devops.infra.util.GitUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 
 /**
@@ -40,8 +41,8 @@ public class GitlabServiceClientOperator {
     private GitUtil gitUtil;
 
 
-    public UserDTO createUser(String password, Integer projectsLimit, UserReqDTO userReqDTO) {
-        ResponseEntity<UserDTO> userDOResponseEntity;
+    public GitLabUserDTO createUser(String password, Integer projectsLimit, GitlabUserReqDTO userReqDTO) {
+        ResponseEntity<GitLabUserDTO> userDOResponseEntity;
         try {
             userDOResponseEntity = gitlabServiceClient.createUser(
                     password, projectsLimit, userReqDTO);
@@ -52,8 +53,8 @@ public class GitlabServiceClientOperator {
         return userDOResponseEntity.getBody();
     }
 
-    public UserDTO queryUserByUserName(String userName) {
-        ResponseEntity<UserDTO> userDTOResponseEntity;
+    public GitLabUserDTO queryUserByUserName(String userName) {
+        ResponseEntity<GitLabUserDTO> userDTOResponseEntity;
         try {
             userDTOResponseEntity = gitlabServiceClient.queryUserByUserName(userName);
         } catch (FeignException e) {
@@ -62,8 +63,8 @@ public class GitlabServiceClientOperator {
         return userDTOResponseEntity.getBody();
     }
 
-    public UserDTO updateUser(Integer userId, Integer projectsLimit, UserReqDTO userReqDTO) {
-        ResponseEntity<UserDTO> userDTOResponseEntity;
+    public GitLabUserDTO updateUser(Integer userId, Integer projectsLimit, GitlabUserReqDTO userReqDTO) {
+        ResponseEntity<GitLabUserDTO> userDTOResponseEntity;
         try {
             userDTOResponseEntity = gitlabServiceClient.updateGitLabUser(
                     userId, projectsLimit, userReqDTO);
@@ -90,8 +91,8 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public UserDTO queryUserById(Integer userId) {
-        ResponseEntity<UserDTO> userDTOResponseEntity;
+    public GitLabUserDTO queryUserById(Integer userId) {
+        ResponseEntity<GitLabUserDTO> userDTOResponseEntity;
         try {
             userDTOResponseEntity = gitlabServiceClient.queryUserById(userId);
         } catch (FeignException e) {
@@ -832,7 +833,6 @@ public class GitlabServiceClientOperator {
             throw new CommonException(e);
         }
     }
-
 
     public List<MemberDTO> listMemberByProject(Integer projectId) {
         try {

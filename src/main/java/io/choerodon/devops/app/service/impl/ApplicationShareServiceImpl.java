@@ -123,7 +123,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     private IamServiceClientOperator iamServiceClientOperator;
 
     @Override
-    public Long release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
+    public Long create(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
         List<Long> ids;
         if (applicationReleasingDTO == null) {
             throw new CommonException("error.app.check");
@@ -162,8 +162,8 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public PageInfo<ApplicationReleasingDTO> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest,
-                                                                       String searchParam) {
+    public PageInfo<ApplicationReleasingDTO> pageByOptions(Long projectId, PageRequest pageRequest,
+                                                           String searchParam) {
         PageInfo<ApplicationReleasingDTO> applicationMarketEPage = ConvertPageHelper.convertPageInfo(
                 appShareRepository.basePageByProjectId(
                         projectId, pageRequest, searchParam),
@@ -196,12 +196,12 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
     @Override
     public ApplicationReleasingDTO getAppDetailByShareId(Long shareId) {
-        return getMarketAppInProject(null, shareId);
+        return queryById(null, shareId);
     }
 
     @Override
     public List<Long> batchRelease(List<ApplicationReleasingDTO> releasingDTOList) {
-        return releasingDTOList.stream().map(releasingDTO -> release(null, releasingDTO)).collect(Collectors.toList());
+        return releasingDTOList.stream().map(releasingDTO -> create(null, releasingDTO)).collect(Collectors.toList());
     }
 
     @Override
@@ -278,7 +278,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public ApplicationReleasingDTO getMarketAppInProject(Long projectId, Long appMarketId) {
+    public ApplicationReleasingDTO queryById(Long projectId, Long appMarketId) {
         DevopsAppShareE applicationMarketE =
                 appShareRepository.baseQuery(projectId, appMarketId);
         List<ApplicationShareVersionDTO> versionDOList = appShareRepository
@@ -293,7 +293,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public ApplicationReleasingDTO getMarketApp(Long appMarketId, Long versionId) {
+    public ApplicationReleasingDTO queryShareApp(Long appMarketId, Long versionId) {
         DevopsAppShareE applicationMarketE =
                 appShareRepository.baseQuery(null, appMarketId);
         ApplicationE applicationE = applicationMarketE.getApplicationE();
@@ -366,7 +366,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public String getMarketAppVersionReadme(Long appMarketId, Long versionId) {
+    public String queryAppVersionReadme(Long appMarketId, Long versionId) {
         appShareRepository.baseCheckByMarketIdAndVersion(appMarketId, versionId);
         ApplicationVersionE applicationVersionE = applicationVersionRepository.baseQuery(versionId);
         return applicationVersionRepository.baseQueryReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
@@ -404,7 +404,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
             throw new CommonException("error.id.notMatch");
         }
         appShareRepository.baseCheckByProjectId(projectId, appMarketId);
-        ApplicationReleasingDTO applicationReleasingDTO = getMarketAppInProject(projectId, appMarketId);
+        ApplicationReleasingDTO applicationReleasingDTO = queryById(projectId, appMarketId);
         if (applicationRelease.getAppId() != null
                 && !applicationReleasingDTO.getAppId().equals(applicationRelease.getAppId())) {
             throw new CommonException("error.app.cannot.change");
@@ -427,7 +427,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     public void update(Long projectId, Long appMarketId, List<AppMarketVersionDTO> versionDTOList) {
         appShareRepository.baseCheckByProjectId(projectId, appMarketId);
 
-        ApplicationReleasingDTO applicationReleasingDTO = getMarketAppInProject(projectId, appMarketId);
+        ApplicationReleasingDTO applicationReleasingDTO = queryById(projectId, appMarketId);
 
         List<Long> ids = versionDTOList.stream()
                 .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
@@ -437,21 +437,21 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish) {
+    public List<AppMarketVersionDTO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish) {
         return ConvertHelper.convertList(appShareRepository.pageByOptions(projectId, appMarketId, isPublish),
                 AppMarketVersionDTO.class);
     }
 
     @Override
-    public PageInfo<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish,
-                                                        PageRequest pageRequest, String searchParam) {
+    public PageInfo<AppMarketVersionDTO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish,
+                                                              PageRequest pageRequest, String searchParam) {
         return ConvertPageHelper.convertPageInfo(
                 appShareRepository.pageByOptions(projectId, appMarketId, isPublish, pageRequest, searchParam),
                 AppMarketVersionDTO.class);
     }
 
     @Override
-    public AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file) {
+    public AppMarketTgzDTO upload(Long projectId, MultipartFile file) {
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String dirName = UUIDTool.genUuid();
@@ -527,7 +527,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public void deleteZip(Long projectId, String fileName) {
+    public void importCancel(Long projectId, String fileName) {
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String destPath = String.format(
@@ -544,7 +544,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
 
     @Override
-    public PageInfo<ApplicationReleasingDTO> pageListRemoteApps(Long projectId, PageRequest pageRequest, String params) {
+    public PageInfo<ApplicationReleasingDTO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params) {
         DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
@@ -596,7 +596,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public AppVersionAndValueDTO getConfigInfoByVerionId(Long appId, Long versionId, String accessToken) {
+    public AppVersionAndValueDTO queryConfigByVerionId(Long appId, Long versionId, String accessToken) {
         DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
@@ -678,10 +678,11 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
      *
      * @param appMarkets 应用市场应用信息
      */
+    @Override
     public void export(List<AppMarketDownloadDTO> appMarkets, String fileName) {
         List<String> images = new ArrayList<>();
         for (AppMarketDownloadDTO appMarketDownloadDTO : appMarkets) {
-            ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(appMarketDownloadDTO.getAppMarketId(), null);
+            ApplicationReleasingDTO applicationReleasingDTO = queryShareApp(appMarketDownloadDTO.getAppMarketId(), null);
             String destpath = String.format("charts%s%s",
                     FILE_SEPARATOR,
                     applicationReleasingDTO.getCode());
@@ -1025,6 +1026,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
                         finalSearchParam, finalParam));
     }
 
+    @Override
     public ApplicationShareDTO baseQueryByAppId(Long appId) {
         ApplicationShareDTO applicationShareDTO = new ApplicationShareDTO();
         applicationShareDTO.setAppId(appId);

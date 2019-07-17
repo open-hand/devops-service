@@ -340,6 +340,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         return devopsProjectConfigMapper.selectByPrimaryKey(devopsProjectConfigDTO);
     }
 
+    @Override
     public DevopsProjectConfigDTO baseQuery(Long id) {
         return devopsProjectConfigMapper.selectByPrimaryKey(id);
     }
@@ -372,6 +373,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         }
     }
 
+    @Override
     public List<DevopsProjectConfigDTO> baseListByIdAndType(Long projectId, String type) {
         return devopsProjectConfigMapper.listByIdAndType(projectId, type);
     }

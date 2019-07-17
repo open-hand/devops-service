@@ -18,7 +18,7 @@ public class PipelineDTO {
     private String beforeSha;
     private Boolean tag;
     private String yamlErrors;
-    private UserDTO user;
+    private GitLabUserDTO user;
     @JsonProperty(value = "created_at")
     private String createdAt;
     @JsonProperty(value = "updated_at")
@@ -112,11 +112,11 @@ public class PipelineDTO {
         this.yamlErrors = yamlErrors;
     }
 
-    public UserDTO getUser() {
+    public GitLabUserDTO getUser() {
         return user;
     }
 
-    public void setUser(UserDTO user) {
+    public void setUser(GitLabUserDTO user) {
         this.user = user;
     }
 
