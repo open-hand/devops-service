@@ -66,7 +66,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
                     && updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
                 devopsEnvPodVO.setConnect(true);
             }
-
+            //给pod设置containers
             setContainers(devopsEnvPodVO);
             return devopsEnvPodVO;
         }).collect(Collectors.toList()));
@@ -76,6 +76,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     @Override
     public void setContainers(DevopsEnvPodVO devopsEnvPodVO) {
+
+        //解析pod的yaml内容获取container的信息
         String message = devopsEnvResourceService.getResourceDetailByNameAndTypeAndInstanceId(devopsEnvPodVO.getAppInstanceId(), devopsEnvPodVO.getName(), ResourceType.POD);
 
         if (StringUtils.isEmpty(message)) {
