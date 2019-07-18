@@ -5,8 +5,6 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO;
-import io.choerodon.devops.api.vo.DevopsEnvFileVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileE;
 import io.choerodon.devops.infra.dto.DevopsEnvFileDTO;
 
 /**
@@ -16,11 +14,25 @@ import io.choerodon.devops.infra.dto.DevopsEnvFileDTO;
  * Description:
  */
 public interface DevopsEnvFileService {
+
+    /**
+     * 项目下查询环境文件错误列表
+     *
+     * @param envId
+     * @return
+     */
     List<DevopsEnvFileErrorVO> listByEnvId(Long envId);
 
+    /**
+     * 项目下分页查询环境文件错误列表
+     *
+     * @param envId
+     * @param pageRequest
+     * @return
+     */
     PageInfo<DevopsEnvFileErrorVO> pageByEnvId(Long envId, PageRequest pageRequest);
 
-    DevopsEnvFileVO baseCreate(DevopsEnvFileVO devopsEnvFileE);
+    DevopsEnvFileDTO baseCreate(DevopsEnvFileDTO devopsEnvFileDTO);
 
     List<DevopsEnvFileDTO> baseListByEnvId(Long envId);
 

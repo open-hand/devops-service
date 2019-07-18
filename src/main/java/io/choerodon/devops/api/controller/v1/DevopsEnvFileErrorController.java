@@ -34,6 +34,7 @@ import springfox.documentation.annotations.ApiIgnore;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/envs/{env_id}/error_file")
 public class DevopsEnvFileErrorController {
+
     @Autowired
     private DevopsEnvFileService devopsEnvFileService;
 
@@ -44,11 +45,11 @@ public class DevopsEnvFileErrorController {
      * @param envId     环境 ID
      * @return baseList of DevopsEnvFileErrorDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境文件错误列表")
-    @GetMapping(value = "/list")
-    public ResponseEntity<List<DevopsEnvFileErrorVO>> list(
+    @GetMapping(value = "/listByEnv")
+    public ResponseEntity<List<DevopsEnvFileErrorVO>> listByEnvId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
@@ -59,18 +60,18 @@ public class DevopsEnvFileErrorController {
     }
 
     /**
-     * 项目下查询环境文件错误列表
+     * 项目下分页查询环境文件错误列表
      *
      * @param projectId 项目 ID
      * @param envId     环境 ID
      * @return baseList of DevopsEnvFileErrorDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下查询环境文件错误列表")
+    @ApiOperation(value = "项目下分页查询环境文件错误列表")
     @CustomPageRequest
-    @GetMapping(value = "/list_by_page")
-    public ResponseEntity<PageInfo<DevopsEnvFileErrorVO>> page(
+    @GetMapping(value = "/pageByEnv")
+    public ResponseEntity<PageInfo<DevopsEnvFileErrorVO>> pageByEnvId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
