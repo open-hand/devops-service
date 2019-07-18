@@ -3,7 +3,7 @@ package io.choerodon.devops.app.eventhandler
 import com.google.gson.Gson
 import io.choerodon.devops.api.vo.CommitVO
 import io.choerodon.devops.api.vo.PipelineWebHookDTO
-import io.choerodon.devops.api.vo.PushWebHookDTO
+import io.choerodon.devops.api.vo.PushWebHookVO
 import io.choerodon.devops.app.service.*
 import io.choerodon.devops.api.vo.iam.entity.ApplicationE
 import io.choerodon.devops.api.vo.iam.entity.ApplicationTemplateE
@@ -94,7 +94,7 @@ class DevopsSagaHandlerSpec extends Specification {
     def "Gitops"() {
         given: '初始化PushWebHookDTO'
         List<CommitVO> commitDTOList = new ArrayList<>()
-        PushWebHookDTO pushWebHookDTO = new PushWebHookDTO()
+        PushWebHookVO pushWebHookDTO = new PushWebHookVO()
         pushWebHookDTO.setToken("token")
         pushWebHookDTO.setCommits(commitDTOList)
         String data = gson.toJson(pushWebHookDTO)

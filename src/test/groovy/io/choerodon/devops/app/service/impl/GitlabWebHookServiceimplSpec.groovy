@@ -4,7 +4,8 @@ import com.google.gson.Gson
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.PushWebHookDTO
+import io.choerodon.devops.api.vo.PushWebHookVO
+import io.choerodon.devops.api.vo.PushWebHookVO
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.app.service.GitlabWebHookService
 import io.choerodon.devops.api.vo.iam.entity.*
@@ -178,7 +179,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
     CertificationFileDO certificationFileDO = new CertificationFileDO()
 
     @Shared
-    PushWebHookDTO pushWebHookDTO = new PushWebHookDTO()
+    PushWebHookVO pushWebHookDTO = new PushWebHookVO()
 
     @Shared
     DevopsEnvCommitDO devopsEnvCommitDO = new DevopsEnvCommitDO()

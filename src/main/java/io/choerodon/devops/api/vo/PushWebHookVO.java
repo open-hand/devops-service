@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
  * Time: 15:53
  * Description:
  */
-public class PushWebHookDTO {
+public class PushWebHookVO {
     private String objectKind;
     private String eventName;
     private String before;
@@ -112,7 +112,7 @@ public class PushWebHookDTO {
 
     @Override
     public String toString() {
-        return "PushWebHookDTO{"
+        return "PushWebHookVO{"
                 + "objectKind='" + objectKind + '\''
                 + ", eventName='" + eventName + '\''
                 + ", before='" + before + '\''

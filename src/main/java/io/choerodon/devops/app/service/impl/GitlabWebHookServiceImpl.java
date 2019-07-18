@@ -51,13 +51,13 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 devopsMergeRequestRepository.saveDevopsMergeRequest(devopsMergeRequestE);
                 break;
             case "push":
-                PushWebHookDTO pushWebHookDTO = JSONArray.parseObject(body, PushWebHookDTO.class, FastjsonParserConfigProvider.getParserConfig());
+                PushWebHookVO pushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
                 if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info(pushWebHookDTO.toString());
+                    LOGGER.info(pushWebHookVO.toString());
                 }
 
-                devopsGitService.branchSync(pushWebHookDTO, token);
-                devopsGitlabCommitService.create(pushWebHookDTO, token);
+                devopsGitService.branchSync(pushWebHookVO, token);
+                devopsGitlabCommitService.create(pushWebHookVO, token);
                 break;
             case "pipeline":
                 PipelineWebHookDTO pipelineWebHookDTO = JSONArray.parseObject(body, PipelineWebHookDTO.class, FastjsonParserConfigProvider.getParserConfig());
@@ -69,8 +69,8 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 devopsGitlabPipelineService.updateStages(jobWebHookDTO);
                 break;
             case "tag_push":
-                PushWebHookDTO tagPushWebHookDTO = JSONArray.parseObject(body, PushWebHookDTO.class, FastjsonParserConfigProvider.getParserConfig());
-                devopsGitlabCommitService.create(tagPushWebHookDTO, token);
+                PushWebHookVO tagPushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
+                devopsGitlabCommitService.create(tagPushWebHookVO, token);
                 break;
             default:
                 break;
@@ -82,11 +82,11 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
         JsonObject returnData = new JsonParser().parse(body).getAsJsonObject();
         String kind = returnData.get("object_kind").getAsString();
         if ("push".equals(kind)) {
-            PushWebHookDTO pushWebHookDTO = JSONArray.parseObject(body, PushWebHookDTO.class, FastjsonParserConfigProvider.getParserConfig());
+            PushWebHookVO pushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(pushWebHookDTO.toString());
+                LOGGER.debug(pushWebHookVO.toString());
             }
-            devopsGitService.fileResourceSyncSaga(pushWebHookDTO, token);
+            devopsGitService.fileResourceSyncSaga(pushWebHookVO, token);
         }
     }
 }

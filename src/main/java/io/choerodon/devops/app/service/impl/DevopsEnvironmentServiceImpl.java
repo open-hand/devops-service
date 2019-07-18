@@ -547,22 +547,22 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
         CommitDTO commitDO = gitlabProjectRepository.listCommits(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), userAttrE.getGitlabUserId().intValue(), 1, 1).get(0);
-        PushWebHookDTO pushWebHookDTO = new PushWebHookDTO();
-        pushWebHookDTO.setCheckoutSha(commitDO.getId());
-        pushWebHookDTO.setUserId(userAttrE.getGitlabUserId().intValue());
-        pushWebHookDTO.setProjectId(devopsEnvironmentE.getGitlabEnvProjectId().intValue());
+        PushWebHookVO pushWebHookVO = new PushWebHookVO();
+        pushWebHookVO.setCheckoutSha(commitDO.getId());
+        pushWebHookVO.setUserId(userAttrE.getGitlabUserId().intValue());
+        pushWebHookVO.setProjectId(devopsEnvironmentE.getGitlabEnvProjectId().intValue());
         CommitVO commitDTO = new CommitVO();
         commitDTO.setId(commitDO.getId());
         commitDTO.setTimestamp(commitDO.getTimestamp());
-        pushWebHookDTO.setCommits(Arrays.asList(commitDTO));
+        pushWebHookVO.setCommits(Arrays.asList(commitDTO));
 
         //当环境总览第一阶段为空，第一阶段的commit不是最新commit, 第一阶段和第二阶段commit不一致时，可以重新触发gitOps
         if (devopsEnvironmentE.getSagaSyncCommit() == null) {
-            devopsGitService.fileResourceSyncSaga(pushWebHookDTO, devopsEnvironmentE.getToken());
+            devopsGitService.fileResourceSyncSaga(pushWebHookVO, devopsEnvironmentE.getToken());
         } else {
             DevopsEnvCommitVO sagaSyncCommit = devopsEnvCommitRepository.baseQuery(devopsEnvironmentE.getSagaSyncCommit());
             if (!devopsEnvironmentE.getSagaSyncCommit().equals(devopsEnvironmentE.getDevopsSyncCommit()) || !sagaSyncCommit.getCommitSha().equals(commitDO.getId())) {
-                devopsGitService.fileResourceSyncSaga(pushWebHookDTO, devopsEnvironmentE.getToken());
+                devopsGitService.fileResourceSyncSaga(pushWebHookVO, devopsEnvironmentE.getToken());
             }
         }
     }

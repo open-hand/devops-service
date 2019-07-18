@@ -28,6 +28,8 @@ import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
+import io.choerodon.devops.infra.dto.gitlab.CompareResultDTO;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
@@ -365,30 +367,30 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void branchSync(PushWebHookDTO pushWebHookDTO, String token) {
+    public void branchSync(PushWebHookVO pushWebHookVO, String token) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
 
-        if (NO_COMMIT_SHA.equals(pushWebHookDTO.getBefore())) {
-            createBranchSync(pushWebHookDTO, applicationE.getId());
-        } else if (NO_COMMIT_SHA.equals(pushWebHookDTO.getAfter())) {
-            deleteBranchSync(pushWebHookDTO, applicationE.getId());
+        if (NO_COMMIT_SHA.equals(pushWebHookVO.getBefore())) {
+            createBranchSync(pushWebHookVO, applicationE.getId());
+        } else if (NO_COMMIT_SHA.equals(pushWebHookVO.getAfter())) {
+            deleteBranchSync(pushWebHookVO, applicationE.getId());
         } else {
-            commitBranchSync(pushWebHookDTO, applicationE.getId());
+            commitBranchSync(pushWebHookVO, applicationE.getId());
         }
     }
 
     @Override
-    @Saga(code = "devops-sync-gitops", description = "devops同步gitops库相关操作", inputSchemaClass = PushWebHookDTO.class)
-    public void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token) {
-        LOGGER.info(String.format("````````````````````````````` %s", pushWebHookDTO.getCheckoutSha()));
-        pushWebHookDTO.setToken(token);
+    @Saga(code = "devops-sync-gitops", description = "devops同步gitops库相关操作", inputSchemaClass = PushWebHookVO.class)
+    public void fileResourceSyncSaga(PushWebHookVO pushWebHookVO, String token) {
+        LOGGER.info(String.format("````````````````````````````` %s", pushWebHookVO.getCheckoutSha()));
+        pushWebHookVO.setToken(token);
         String input;
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryByToken(pushWebHookDTO.getToken());
-        pushWebHookDTO.getCommits().forEach(commitDTO -> {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryByToken(pushWebHookVO.getToken());
+        pushWebHookVO.getCommits().forEach(commitDTO -> {
             DevopsEnvCommitVO devopsEnvCommitE = new DevopsEnvCommitVO();
             devopsEnvCommitE.setEnvId(devopsEnvironmentE.getId());
             devopsEnvCommitE.setCommitSha(commitDTO.getId());
-            devopsEnvCommitE.setCommitUser(TypeUtil.objToLong(pushWebHookDTO.getUserId()));
+            devopsEnvCommitE.setCommitUser(TypeUtil.objToLong(pushWebHookVO.getUserId()));
             devopsEnvCommitE.setCommitDate(commitDTO.getTimestamp());
             if (devopsEnvCommitRepository
                     .baseQueryByEnvIdAndCommit(devopsEnvironmentE.getId(), commitDTO.getId()) == null) {
@@ -396,12 +398,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
         });
         DevopsEnvCommitVO devopsEnvCommitE = devopsEnvCommitRepository
-                .baseQueryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookDTO.getCheckoutSha());
+                .baseQueryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookVO.getCheckoutSha());
         devopsEnvironmentE.setSagaSyncCommit(devopsEnvCommitE.getId());
         devopsEnvironmentRepository.baseUpdateSagaSyncEnvCommit(devopsEnvironmentE);
-        LOGGER.info(String.format("update devopsCommit successfully: %s", pushWebHookDTO.getCheckoutSha()));
+        LOGGER.info(String.format("update devopsCommit successfully: %s", pushWebHookVO.getCheckoutSha()));
         try {
-            input = objectMapper.writeValueAsString(pushWebHookDTO);
+            input = objectMapper.writeValueAsString(pushWebHookVO);
             sagaClient.startSaga("devops-sync-gitops",
                     new StartInstanceDTO(input, "env", devopsEnvironmentE.getId().toString()));
         } catch (JsonProcessingException e) {
@@ -411,9 +413,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
-        final Integer gitLabProjectId = pushWebHookDTO.getProjectId();
-        Integer gitLabUserId = pushWebHookDTO.getUserId();
+    public void fileResourceSync(PushWebHookVO pushWebHookVO) {
+        final Integer gitLabProjectId = pushWebHookVO.getProjectId();
+        Integer gitLabUserId = pushWebHookVO.getUserId();
         Long userId = userAttrRepository.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(gitLabUserId));
         if (userId == null) {
             gitLabUserId = 1;
@@ -424,7 +426,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Set<DevopsEnvFileResourceVO> beforeSync = new HashSet<>();
         Set<DevopsEnvFileResourceVO> beforeSyncDelete = new HashSet<>();
         //根据token查出环境
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryByToken(pushWebHookDTO.getToken());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryByToken(pushWebHookVO.getToken());
         DevopsEnvCommitVO devopsEnvCommitE = devopsEnvCommitRepository.baseQuery(devopsEnvironmentE.getSagaSyncCommit());
         boolean tagNotExist;
         Map<String, String> objectPath;
@@ -450,7 +452,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
             LOGGER.info("更新gitops库成功");
             //查询devops-sync tag是否存在，存在则比较tag和最新commit的diff，不存在则识别gitops库下所有文件为新增文件
-            tagNotExist = getDevopsSyncTag(pushWebHookDTO);
+            tagNotExist = getDevopsSyncTag(pushWebHookVO);
 
             if (tagNotExist) {
                 operationFiles.addAll(FileUtil.getFilesPath(path));
@@ -513,7 +515,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             handleFiles(operationFiles, deletedFiles, devopsEnvironmentE, devopsEnvCommitE, path);
 
             //删除tag
-            handleTag(pushWebHookDTO, gitLabProjectId, gitLabUserId, devopsEnvCommitE, tagNotExist);
+            handleTag(pushWebHookVO, gitLabProjectId, gitLabUserId, devopsEnvCommitE, tagNotExist);
 
             devopsEnvironmentE.setDevopsSyncCommit(devopsEnvCommitE.getId());
             //更新环境 解释commit
@@ -589,7 +591,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-    private void handleTag(PushWebHookDTO pushWebHookDTO, Integer gitLabProjectId, Integer gitLabUserId,
+    private void handleTag(PushWebHookVO pushWebHookVO, Integer gitLabProjectId, Integer gitLabUserId,
                            DevopsEnvCommitVO devopsEnvCommitE, Boolean tagNotExist) {
         if (tagNotExist) {
             devopsGitRepository.createTag(
@@ -599,7 +601,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             try {
                 devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, gitLabUserId);
             } catch (CommonException e) {
-                if (getDevopsSyncTag(pushWebHookDTO)) {
+                if (getDevopsSyncTag(pushWebHookVO)) {
                     devopsGitRepository.createTag(
                             gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha(),
                             "", "", gitLabUserId);
@@ -608,7 +610,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 }
             }
             //创建新tag
-            if (getDevopsSyncTag(pushWebHookDTO)) {
+            if (getDevopsSyncTag(pushWebHookVO)) {
                 devopsGitRepository.createTag(
                         gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha(),
                         "", "", gitLabUserId);
@@ -805,17 +807,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         return devopsCustomizeResourceE;
     }
 
-    private void commitBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
+    private void commitBranchSync(PushWebHookVO pushWebHookVO, Long appId) {
         try {
-            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
+            String branchName = pushWebHookVO.getRef().replaceFirst(REF_HEADS, "");
             DevopsBranchE branchE = devopsGitRepository.queryByAppAndBranchName(appId, branchName);
             if (branchE == null) {
                 createBranchSync(pushWebHookDTO, appId);
             }
 
-            String lastCommit = pushWebHookDTO.getAfter();
+            String lastCommit = pushWebHookVO.getAfter();
             Optional<CommitVO> lastCommitOptional
-                    = pushWebHookDTO.getCommits().stream().filter(t -> lastCommit.equals(t.getId())).findFirst();
+                    = pushWebHookVO.getCommits().stream().filter(t -> lastCommit.equals(t.getId())).findFirst();
             CommitVO lastCommitDTO = new CommitVO();
             if (lastCommitOptional.isPresent()) {
                 lastCommitDTO = lastCommitOptional.get();
@@ -823,7 +825,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             branchE.setLastCommit(lastCommit);
             branchE.setLastCommitDate(lastCommitDTO.getTimestamp());
             branchE.setLastCommitMsg(lastCommitDTO.getMessage());
-            branchE.setLastCommitUser(pushWebHookDTO.getUserId().longValue());
+            branchE.setLastCommitUser(pushWebHookVO.getUserId().longValue());
             devopsGitRepository.updateBranchLastCommit(branchE);
         } catch (Exception e) {
             LOGGER.info("error.update.branch");
@@ -831,25 +833,25 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     }
 
-    private void deleteBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
+    private void deleteBranchSync(PushWebHookVO pushWebHookVO, Long appId) {
         try {
-            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
+            String branchName = pushWebHookVO.getRef().replaceFirst(REF_HEADS, "");
             devopsGitRepository.deleteDevopsBranch(appId, branchName);
         } catch (Exception e) {
             LOGGER.info("error.devops.branch.delete");
         }
     }
 
-    private void createBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
+    private void createBranchSync(PushWebHookVO pushWebHookVO, Long appId) {
         try {
-            String lastCommit = pushWebHookDTO.getAfter();
-            Long userId = pushWebHookDTO.getUserId().longValue();
+            String lastCommit = pushWebHookVO.getAfter();
+            Long userId = pushWebHookVO.getUserId().longValue();
 
             CommitDTO commitDTO = devopsGitRepository.getCommit(
-                    pushWebHookDTO.getProjectId(),
+                    pushWebHookVO.getProjectId(),
                     lastCommit,
                     userId.intValue());
-            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
+            String branchName = pushWebHookVO.getRef().replaceFirst(REF_HEADS, "");
             boolean branchExist = devopsGitRepository.queryByAppAndBranchName(appId, branchName) != null;
             if (!branchExist) {
                 DevopsBranchE devopsBranchE = new DevopsBranchE();
@@ -888,8 +890,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         return devopsEnvFileErrorE;
     }
 
-    private boolean getDevopsSyncTag(PushWebHookDTO pushWebHookDTO) {
-        return devopsGitRepository.getGitLabTags(pushWebHookDTO.getProjectId(), pushWebHookDTO.getUserId())
+    private boolean getDevopsSyncTag(PushWebHookVO pushWebHookVO) {
+        return devopsGitRepository.getGitLabTags(pushWebHookVO.getProjectId(), pushWebHookVO.getUserId())
                 .stream().noneMatch(tagDO -> tagDO.getName().equals(GitUtil.DEV_OPS_SYNC_TAG));
 
     }
@@ -906,6 +908,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             gitUtil.pullBySsh(repoPath);
             gitUtil.checkout(repoPath, commit);
         }
+    }
+
+    @Override
+    public CommitDTO getCommit(Integer gitLabProjectId, String commit, Integer userId) {
+        CommitDTO commitE = new CommitDTO();
+        BeanUtils.copyProperties(
+                gitlabServiceClient.getCommit(gitLabProjectId, commit, userId).getBody(),
+                commitE);
+        return commitE;
     }
 
     @Override

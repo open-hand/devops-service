@@ -10,7 +10,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.CommitFormRecordDTO;
+import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabCommitE;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
@@ -59,10 +59,10 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public PageInfo<CommitFormRecordDTO> basePageByOptions(Long projectId, List<Long> appId,
-                                                           PageRequest pageRequest, Map<Long, UserE> userMap,
-                                                           Date startDate, Date endDate) {
-        List<CommitFormRecordDTO> commitFormRecordDTOList = new ArrayList<>();
+    public PageInfo<CommitFormRecordVO> basePageByOptions(Long projectId, List<Long> appId,
+                                                          PageRequest pageRequest, Map<Long, UserE> userMap,
+                                                          Date startDate, Date endDate) {
+        List<CommitFormRecordVO> commitFormRecordVOList = new ArrayList<>();
 
         PageInfo<DevopsGitlabCommitDTO> devopsGitlabCommitDOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(),
                 PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
@@ -72,19 +72,19 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
             Long userId = e.getUserId();
             UserE user = userMap.get(userId);
             if (user != null) {
-                CommitFormRecordDTO commitFormRecordDTO = new CommitFormRecordDTO(userId, user.getImageUrl(),
+                CommitFormRecordVO commitFormRecordVO = new CommitFormRecordVO(userId, user.getImageUrl(),
                         user.getRealName() + " " + user.getLoginName()
                         , e);
-                commitFormRecordDTOList.add(commitFormRecordDTO);
+                commitFormRecordVOList.add(commitFormRecordVO);
             } else {
-                CommitFormRecordDTO commitFormRecordDTO = new CommitFormRecordDTO(null, null,
+                CommitFormRecordVO commitFormRecordVO = new CommitFormRecordVO(null, null,
                         null, e);
-                commitFormRecordDTOList.add(commitFormRecordDTO);
+                commitFormRecordVOList.add(commitFormRecordVO);
             }
         });
-        PageInfo<CommitFormRecordDTO> commitFormRecordDTOPagee = new PageInfo<>();
+        PageInfo<CommitFormRecordVO> commitFormRecordDTOPagee = new PageInfo<>();
         BeanUtils.copyProperties(devopsGitlabCommitDOPage, commitFormRecordDTOPagee);
-        commitFormRecordDTOPagee.setList(commitFormRecordDTOList);
+        commitFormRecordDTOPagee.setList(commitFormRecordVOList);
 
         return commitFormRecordDTOPagee;
     }

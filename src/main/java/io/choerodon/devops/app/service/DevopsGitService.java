@@ -8,6 +8,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.TagDTO;
 
 /**
@@ -142,21 +143,21 @@ public interface DevopsGitService {
     Boolean checkTag(Long projectId, Long applicationId, String tagName);
 
     /**
-     * @param pushWebHookDTO
+     * @param pushWebHookVO
      * @param token
      */
-    void branchSync(PushWebHookDTO pushWebHookDTO, String token);
+    void branchSync(PushWebHookVO pushWebHookVO, String token);
 
     /**
-     * @param pushWebHookDTO
+     * @param pushWebHookVO
      */
-    void fileResourceSync(PushWebHookDTO pushWebHookDTO);
+    void fileResourceSync(PushWebHookVO pushWebHookVO);
 
     /**
-     * @param pushWebHookDTO
+     * @param pushWebHookVO
      * @param token
      */
-    void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token);
+    void fileResourceSyncSaga(PushWebHookVO pushWebHookVO, String token);
 
     /**
      * @param branchSagaDTO
@@ -171,7 +172,7 @@ public interface DevopsGitService {
      * @param userId
      * @return
      */
-    CommitVO getCommit(Integer gitLabProjectId, String commit, Integer userId);
+    CommitDTO getCommit(Integer gitLabProjectId, String commit, Integer userId);
 
     BranchDTO baseQueryBranch(Integer gitLabProjectId, String branchName);
 

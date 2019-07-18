@@ -9,7 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.CommitFormRecordDTO;
+import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -55,7 +55,7 @@ public class DevopsGitlabCommitController {
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
             @RequestParam(value = "end_date") Date endDate) {
-        return Optional.ofNullable(devopsGitlabCommitService.getCommits(projectId, appIds, startDate, endDate))
+        return Optional.ofNullable(devopsGitlabCommitService.queryCommits(projectId, appIds, startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.commits.get"));
     }
@@ -73,7 +73,7 @@ public class DevopsGitlabCommitController {
     @CustomPageRequest
     @ApiOperation(value = "获取应用下的代码提交历史记录")
     @PostMapping("/record")
-    public ResponseEntity<PageInfo<CommitFormRecordDTO>> getRecordCommits(
+    public ResponseEntity<PageInfo<CommitFormRecordVO>> getRecordCommits(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ids", required = true)
@@ -84,7 +84,7 @@ public class DevopsGitlabCommitController {
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
             @RequestParam(value = "end_date") Date endDate) {
-        return Optional.ofNullable(devopsGitlabCommitService.getRecordCommits(projectId, appIds, pageRequest,
+        return Optional.ofNullable(devopsGitlabCommitService.pageRecordCommits(projectId, appIds, pageRequest,
                 startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.record.commit.get"));

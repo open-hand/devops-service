@@ -10,7 +10,7 @@ import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
  * Time: 17:18
  * Description:
  */
-public class CommitFormRecordDTO {
+public class CommitFormRecordVO {
     private Long userId;
     private Long appId;
     private String imgUrl;
@@ -21,12 +21,12 @@ public class CommitFormRecordDTO {
     private String appName;
     private String url;
 
-    public CommitFormRecordDTO() {
+    public CommitFormRecordVO() {
     }
 
-    public CommitFormRecordDTO(Long userId, String imgUrl,
-                               String userName,
-                               DevopsGitlabCommitDTO devopsGitlabCommitDO) {
+    public CommitFormRecordVO(Long userId, String imgUrl,
+                              String userName,
+                              DevopsGitlabCommitDTO devopsGitlabCommitDO) {
         this.userId = userId;
         this.appId = devopsGitlabCommitDO.getAppId();
         this.imgUrl = imgUrl;

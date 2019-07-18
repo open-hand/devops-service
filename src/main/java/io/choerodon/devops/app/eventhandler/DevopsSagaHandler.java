@@ -129,13 +129,13 @@ public class DevopsSagaHandler {
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitops(String data) {
-        PushWebHookDTO pushWebHookDTO = null;
+        PushWebHookVO pushWebHookVO = null;
         try {
-            pushWebHookDTO = objectMapper.readValue(data, PushWebHookDTO.class);
+            pushWebHookVO = objectMapper.readValue(data, PushWebHookVO.class);
         } catch (IOException e) {
             LOGGER.info(e.getMessage());
         }
-        devopsGitService.fileResourceSync(pushWebHookDTO);
+        devopsGitService.fileResourceSync(pushWebHookVO);
         return data;
     }
 
