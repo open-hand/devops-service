@@ -3502,9 +3502,14 @@ public void deleteByEnvId(Long envId){
         applicationInstanceMapper.delete(applicationInstanceDTO);
         }
 
+<<<<<<< HEAD
 public List<ApplicationInstanceDTO> baseListByValueId
         (Long valueId){
         ApplicationInstanceDTO applicationInstanceDTO=new ApplicationInstanceDTO();
+=======
+    public List<ApplicationInstanceDTO> baseListByValueId(Long valueId) {
+        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+>>>>>>> [IMP]修改后端代码结构
         applicationInstanceDTO.setValueId(valueId);
         return applicationInstanceMapper.select(applicationInstanceDTO);
         }

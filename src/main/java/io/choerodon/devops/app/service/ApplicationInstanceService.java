@@ -284,7 +284,7 @@ public interface ApplicationInstanceService {
      * 获取预览 Value
      *
      * @param instanceValueVO yaml
-     * @param appVersionId  版本Id
+     * @param appVersionId    版本Id
      * @return InstanceValueVO
      */
     InstanceValueVO queryPreviewValues(InstanceValueVO instanceValueVO, Long appVersionId);
@@ -306,4 +306,6 @@ public interface ApplicationInstanceService {
     List<ApplicationInstanceDTO> baseListByAppId(Long appId);
 
     List<ApplicationInstanceDTO> baseList();
+
+    List<ApplicationInstanceDTO> baseListByValueId(Long valueId);
 }

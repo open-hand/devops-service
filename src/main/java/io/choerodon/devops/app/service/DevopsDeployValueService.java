@@ -14,18 +14,70 @@ import java.util.List;
  * Description:
  */
 public interface DevopsDeployValueService {
-    DevopsDeployValueVO createOrUpdate(Long projectId, DevopsDeployValueVO pipelineValueDTO);
 
+    /**
+     * 项目下创建流水线配置
+     *
+     * @param projectId
+     * @param devopsDeployValueVO
+     * @return
+     */
+    DevopsDeployValueVO createOrUpdate(Long projectId, DevopsDeployValueVO devopsDeployValueVO);
+
+    /**
+     * 项目下删除配置
+     *
+     * @param projectId
+     * @param valueId
+     */
     void delete(Long projectId, Long valueId);
 
-    PageInfo<DevopsDeployValueVO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params);
+    /**
+     * 项目下获取部署配置
+     *
+     * @param projectId
+     * @param appId
+     * @param envId
+     * @param pageRequest
+     * @param params
+     * @return
+     */
+    PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params);
 
-    DevopsDeployValueVO queryById(Long pipelineId, Long valueId);
+    /**
+     * 项目下查询配置详情
+     *
+     * @param pipelineId
+     * @param valueId
+     * @return
+     */
+    DevopsDeployValueVO query(Long pipelineId, Long valueId);
 
+    /**
+     * 名称校验
+     *
+     * @param projectId
+     * @param name
+     */
     void checkName(Long projectId, String name);
 
-    List<DevopsDeployValueVO> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+    /**
+     * 根据应用Id和环境Id获取配置
+     *
+     * @param projectId
+     * @param appId
+     * @param envId
+     * @return
+     */
+    List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appId, Long envId);
 
+    /**
+     * 检测能否删除
+     *
+     * @param projectId
+     * @param valueId
+     * @return
+     */
     Boolean checkDelete(Long projectId, Long valueId);
 
     PageInfo<DevopsDeployValueDTO> basePageByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params);
