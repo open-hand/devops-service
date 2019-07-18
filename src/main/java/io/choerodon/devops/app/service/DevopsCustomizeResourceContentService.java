@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentVO;
+import io.choerodon.devops.infra.dto.DevopsCustomizeResourceContentDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -8,11 +8,11 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentVO;
  * Description:
  */
 public interface DevopsCustomizeResourceContentService {
-    DevopsCustomizeResourceContentVO baseCreate(DevopsCustomizeResourceContentVO devopsCustomizeResourceContentVO);
+    DevopsCustomizeResourceContentDTO baseCreate(DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentVO);
 
-    DevopsCustomizeResourceContentVO baseQuery(Long contentId);
+    DevopsCustomizeResourceContentDTO baseQuery(Long contentId);
 
-    void baseUpdate(DevopsCustomizeResourceContentVO devopsCustomizeResourceContentVO);
+    void baseUpdate(DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentVO);
 
     void baseDelete(Long contentId);
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
+import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
 
 /**
  * Created by Sheep on 2019/6/26.
@@ -12,21 +13,21 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
 public interface DevopsCustomizeResourceRepository {
 
 
-    DevopsCustomizeResourceE baseCreate(DevopsCustomizeResourceE devopsCustomizeResourceE);
+    DevopsCustomizeResourceDTO baseCreate(DevopsCustomizeResourceDTO devopsCustomizeResourceDTO);
 
-    DevopsCustomizeResourceE baseQuery(Long resourceId);
+    DevopsCustomizeResourceDTO baseQuery(Long resourceId);
 
-    void baseUpdate(DevopsCustomizeResourceE devopsCustomizeResourceE);
+    void baseUpdate(DevopsCustomizeResourceDTO devopsCustomizeResourceDTO);
 
     void baseDelete(Long resourceId);
 
-    List<DevopsCustomizeResourceE> listByEnvAndFilePath(Long envId, String filePath);
+    List<DevopsCustomizeResourceDTO> listByEnvAndFilePath(Long envId, String filePath);
 
-    DevopsCustomizeResourceE queryByEnvIdAndKindAndName(Long envId, String kind, String name);
+    DevopsCustomizeResourceDTO queryByEnvIdAndKindAndName(Long envId, String kind, String name);
 
-    DevopsCustomizeResourceE queryDetail(Long resourceId);
+    DevopsCustomizeResourceDTO queryDetail(Long resourceId);
 
-    PageInfo<DevopsCustomizeResourceE> pageDevopsCustomizeResourceE(Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsCustomizeResourceDTO> pageDevopsCustomizeResourceE(Long envId, PageRequest pageRequest, String params);
 
     void checkExist(Long envId, String kind, String name);
 }

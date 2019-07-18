@@ -18,42 +18,42 @@ public interface DevopsCustomizeResourceService {
 
     /**
      *
-     * @param projectId
-     * @param devopsCustomizeResourceReqDTO
-     * @param contentFile
+     * @param projectId 项目id
+     * @param devopsCustomizeResourceReqDTO 相关信息
+     * @param contentFile 内容文件
      */
     void createOrUpdateResource(Long projectId, DevopsCustomizeResourceReqDTO devopsCustomizeResourceReqDTO, MultipartFile contentFile);
 
 
     /**
-     * @param type
-     * @param devopsCustomizeResourceE
+     * @param type 资源类型
+     * @param devopsCustomizeResourceE 资源信息
      */
     void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceE devopsCustomizeResourceE, Long userId, Long envId);
 
 
     /**
-     * @param resourceId
+     * @param resourceId 资源id
      */
     void deleteResource(Long resourceId);
 
 
     /**
-     * @param resourceId
+     * @param resourceId 资源id
      */
     void deleteResourceByGitOps(Long resourceId);
 
     /**
-     * @param resourceId
+     * @param resourceId 资源id
      * @return
      */
     DevopsCustomizeResourceVO getDevopsCustomizeResourceDetail(Long resourceId);
 
     /**
-     * @param envId
-     * @param pageRequest
-     * @param params
-     * @return
+     * @param envId 环境id
+     * @param pageRequest 分页参数
+     * @param params 查询参数
+     * @return 分页后资源
      */
     PageInfo<DevopsCustomizeResourceVO> pageResources(Long envId, PageRequest pageRequest, String params);
 

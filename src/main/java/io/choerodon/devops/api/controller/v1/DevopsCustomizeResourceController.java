@@ -31,14 +31,14 @@ import springfox.documentation.annotations.ApiIgnore;
 public class DevopsCustomizeResourceController {
 
     @Autowired
-    DevopsCustomizeResourceService devopsCustomizeResourceService;
+    private DevopsCustomizeResourceService devopsCustomizeResourceService;
 
     /**
      * 创建其他k8s资源
      *
-     * @param projectId
-     * @param contentFile
-     * @return
+     * @param projectId 项目id
+     * @param contentFile 内容文件
+     * @return 201状态码
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
@@ -54,9 +54,9 @@ public class DevopsCustomizeResourceController {
     /**
      * 删除其他k8s资源
      *
-     * @param projectId
-     * @param resourceId
-     * @return
+     * @param projectId 项目id
+     * @param resourceId 资源的id
+     * @return 204
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
@@ -71,9 +71,9 @@ public class DevopsCustomizeResourceController {
     /**
      * 获取资源详情
      *
-     * @param projectId
-     * @param resourceId
-     * @return
+     * @param projectId 项目id
+     * @param resourceId 资源id
+     * @return 资源
      */
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,

@@ -6,6 +6,12 @@ import java.util.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,17 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqDTO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
-import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ObjectType;
@@ -49,30 +48,26 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     public static final String KIND = "kind";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     private static Gson gson = new Gson();
-    private List<String> RESOURCETYPE = Arrays.asList(ResourceType.SERVICE.getType(), ResourceType.INGRESS.getType(), ResourceType.CONFIGMAP.getType(), ResourceType.SECRET.getType(), ResourceType.C7NHELMRELEASE.getType(), ResourceType.CERTIFICATE.getType());
+    private List<String> RESOURCE_TYPE = Arrays.asList(ResourceType.SERVICE.getType(), ResourceType.INGRESS.getType(), ResourceType.CONFIGMAP.getType(), ResourceType.SECRET.getType(), ResourceType.C7NHELMRELEASE.getType(), ResourceType.CERTIFICATE.getType());
 
     @Autowired
     private DevopsCustomizeResourceMapper devopsCustomizeResourceMapper;
     @Autowired
-    private IamRepository iamRepository;
+    private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    private DevopsCustomizeResourceContentService devopsCustomizeResourceContentService;
     @Autowired
-    private DevopsCustomizeResourceRepository devopsCustomizeResourceRepository;
-    @Autowired
-    private DevopsCustomizeResourceContentRepository devopsCustomizeResourceContentRepository;
-    @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
-    private UserAttrRepository userAttrRepository;
+    private UserAttrService userAttrService;
     @Autowired
-    private GitlabRepository gitlabRepository;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -82,17 +77,17 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
         String resourceFilePath = String.format("custom-%s.yaml", GenerateUUID.generateUUID().substring(0, 5));
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsCustomizeResourceReqDTO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceReqDTO.getEnvId());
 
-        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
 
         //校验环境相关信息
-        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
 
-        String path = String.format("tmp%s%s%s%s%sresource", FILE_SEPARATOR, projectE.getCode(), FILE_SEPARATOR, devopsEnvironmentE.getCode(), FILE_SEPARATOR);
+        String path = String.format("tmp%s%s%s%s%sresource", FILE_SEPARATOR, projectDTO.getCode(), FILE_SEPARATOR, devopsEnvironmentDTO.getCode(), FILE_SEPARATOR);
 
         if (contentFile != null) {
             content = FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, contentFile)));
@@ -125,28 +120,28 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                 datas.put(METADATA, metadata);
                 objects.add(datas);
 
-                HandleCoustomizeResource(projectId, devopsCustomizeResourceReqDTO.getEnvId(), FileUtil.getYaml().dump(datas), kind.toString(), name, devopsCustomizeResourceReqDTO.getType(), devopsCustomizeResourceReqDTO.getResourceId(), resourceFilePath, null);
+                handleCustomResource(projectId, devopsCustomizeResourceReqDTO.getEnvId(), FileUtil.getYaml().dump(datas), kind.toString(), name, devopsCustomizeResourceReqDTO.getType(), devopsCustomizeResourceReqDTO.getResourceId(), resourceFilePath, null);
 
             }
         } catch (Exception e) {
             throw e;
         }
         if (devopsCustomizeResourceReqDTO.getType().equals(CREATE)) {
-            gitlabRepository.createFile(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), resourceFilePath, FileUtil.getYaml().dumpAll(objects.iterator()),
-                    "ADD FILE", TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            gitlabServiceClientOperator.createFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), resourceFilePath, FileUtil.getYaml().dumpAll(objects.iterator()),
+                    "ADD FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         } else {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+            String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
 
-            DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository.baseQuery(devopsCustomizeResourceReqDTO.getResourceId());
-            if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
-                    devopsCustomizeResourceE.getFilePath())) {
+            DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = baseQuery(devopsCustomizeResourceReqDTO.getResourceId());
+            if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+                    devopsCustomizeResourceDTO.getFilePath())) {
                 throw new CommonException("error.fileResource.not.exist");
             }
             //获取更新内容
             ResourceConvertToYamlHandler resourceConvertToYamlHandler = new ResourceConvertToYamlHandler();
-            String updateContent = resourceConvertToYamlHandler.getUpdateContent(objects.get(0), false, null, devopsCustomizeResourceE.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.UPDATE.getType());
-            gitlabRepository.updateFile(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceE.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            String updateContent = resourceConvertToYamlHandler.getUpdateContent(objects.get(0), false, null, devopsCustomizeResourceDTO.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.UPDATE.getType());
+            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
 
     }
@@ -154,183 +149,184 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     @Override
     public void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceE devopsCustomizeResourceE, Long envId, Long userId) {
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsCustomizeResourceE.getEnvId());
-        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceE.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
-        HandleCoustomizeResource(devopsCustomizeResourceE.getProjectId(), devopsCustomizeResourceE.getEnvId(), devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getContent(), devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName(), type, devopsCustomizeResourceE.getId(), devopsCustomizeResourceE.getFilePath(), userId);
+        handleCustomResource(devopsCustomizeResourceE.getProjectId(), devopsCustomizeResourceE.getEnvId(), devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getContent(), devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName(), type, devopsCustomizeResourceE.getId(), devopsCustomizeResourceE.getFilePath(), userId);
     }
 
 
     @Override
     public void deleteResource(Long resourceId) {
 
-        DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository.baseQuery(resourceId);
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = baseQuery(resourceId);
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsCustomizeResourceE.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceDTO.getEnvId());
 
-        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
-        devopsEnvironmentService.checkEnv(devopsEnvironmentE, userAttrE);
+        devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
-        HandleCoustomizeResource(null, null, null, null, null, DELETE, resourceId, null, null);
+        handleCustomResource(null, null, null, null, null, DELETE, resourceId, null, null);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentE.getProjectE().getId(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getEnvIdRsa());
+        String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
 
         //判断gitops库里面是否有该文件，没有文件直接删除对象
-        if (!gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
-                devopsCustomizeResourceE.getFilePath())) {
-            devopsCustomizeResourceRepository.baseDelete(resourceId);
-            devopsCustomizeResourceContentRepository.baseDelete(devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getId());
-            DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                    .baseQueryByEnvIdAndResourceId(devopsEnvironmentE.getId(), resourceId, ObjectType.CUSTOM.getType());
-            if (devopsEnvFileResourceE != null) {
-                devopsEnvFileResourceRepository.baseDelete(devopsEnvFileResourceE.getId());
+        if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
+                devopsCustomizeResourceDTO.getFilePath())) {
+            baseDelete(resourceId);
+            devopsCustomizeResourceContentService.baseDelete(devopsCustomizeResourceDTO.getContentId());
+            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                    .baseQueryByEnvIdAndResourceId(devopsEnvironmentDTO.getId(), resourceId, ObjectType.CUSTOM.getType());
+            if (devopsEnvFileResourceDTO != null) {
+                devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
             }
             return;
         }
 
-        List<DevopsCustomizeResourceE> devopsCustomizeResourceES = devopsCustomizeResourceRepository.listByEnvAndFilePath(devopsEnvironmentE.getId(), devopsCustomizeResourceE.getFilePath());
+        List<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOS = listByEnvAndFilePath(devopsEnvironmentDTO.getId(), devopsCustomizeResourceDTO.getFilePath());
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
-        if (devopsCustomizeResourceES.size() == 1) {
-            if (devopsCustomizeResourceES.get(0).getId().equals(resourceId)) {
-                gitlabRepository.deleteFile(
-                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                        devopsCustomizeResourceE.getFilePath(),
+        if (devopsCustomizeResourceDTOS.size() == 1) {
+            if (devopsCustomizeResourceDTOS.get(0).getId().equals(resourceId)) {
+                gitlabServiceClientOperator.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
+                        devopsCustomizeResourceDTO.getFilePath(),
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             } else {
-                devopsCustomizeResourceRepository.baseDelete(resourceId);
-                devopsCustomizeResourceContentRepository.baseDelete(devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getId());
+                baseDelete(resourceId);
+                devopsCustomizeResourceContentService.baseDelete(devopsCustomizeResourceDTO.getContentId());
             }
         } else {
             //获取更新内容
-            DevopsCustomizeResourceContentVO devopsCustomizeResourceContentE = devopsCustomizeResourceContentRepository.baseQuery(devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getId());
+            DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDTO = devopsCustomizeResourceContentService.baseQuery(devopsCustomizeResourceDTO.getContentId());
             ResourceConvertToYamlHandler resourceConvertToYamlHandler = new ResourceConvertToYamlHandler();
-            String updateContent = resourceConvertToYamlHandler.getUpdateContent(FileUtil.getYaml().load(devopsCustomizeResourceContentE.getContent()), false, null, devopsCustomizeResourceE.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.DELETE.getType());
-            gitlabRepository.updateFile(devopsEnvironmentE.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceE.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            String updateContent = resourceConvertToYamlHandler.getUpdateContent(FileUtil.getYaml().load(devopsCustomizeResourceContentDTO.getContent()), false, null, devopsCustomizeResourceDTO.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.DELETE.getType());
+            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
     }
 
 
     @Override
     public DevopsCustomizeResourceVO getDevopsCustomizeResourceDetail(Long resourceId) {
-        DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository.queryDetail(resourceId);
-        return ConvertHelper.convert(devopsCustomizeResourceE, DevopsCustomizeResourceVO.class);
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = queryDetail(resourceId);
+        return ConvertUtils.convertObject(devopsCustomizeResourceDTO, DevopsCustomizeResourceVO.class);
     }
 
 
     @Override
     public PageInfo<DevopsCustomizeResourceVO> pageResources(Long envId, PageRequest pageRequest, String params) {
-        PageInfo<DevopsCustomizeResourceE> devopsCustomizeResourceEPageInfo = devopsCustomizeResourceRepository.pageDevopsCustomizeResourceE(envId, pageRequest, params);
+        PageInfo<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOPageInfo = pageDevopsCustomizeResourceE(envId, pageRequest, params);
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
-        PageInfo<DevopsCustomizeResourceVO> devopsCustomizeResourceDTOPageInfo = ConvertPageHelper.convertPageInfo(devopsCustomizeResourceEPageInfo, DevopsCustomizeResourceVO.class);
-        devopsCustomizeResourceDTOPageInfo.getList().forEach(devopsCustomizeResourceDTO -> {
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(envId);
-            if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
-                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
+        PageInfo<DevopsCustomizeResourceVO> devopsCustomizeResourceVOPageInfo = ConvertUtils.convertPage(devopsCustomizeResourceDTOPageInfo, DevopsCustomizeResourceVO.class);
+        devopsCustomizeResourceVOPageInfo.getList().forEach(devopsCustomizeResourceDTO -> {
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+            if (connectedEnvList.contains(devopsEnvironmentDTO.getClusterId())
+                    && updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
                 devopsCustomizeResourceDTO.setEnvStatus(true);
             }
         });
-        return devopsCustomizeResourceDTOPageInfo;
+        return devopsCustomizeResourceVOPageInfo;
     }
 
 
     @Override
     public void deleteResourceByGitOps(Long resourceId) {
 
-        DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository.baseQuery(resourceId);
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = baseQuery(resourceId);
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsCustomizeResourceE.getEnvId());
-        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceDTO.getEnvId());
+        clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
-        devopsEnvCommandRepository.baseListByObject(ObjectType.CUSTOM.getType(), resourceId).forEach(devopsEnvCommandE -> devopsEnvCommandRepository.baseDeleteByEnvCommandId(devopsEnvCommandE));
-        devopsCustomizeResourceRepository.baseDelete(resourceId);
-        devopsCustomizeResourceContentRepository.baseDelete(devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getId());
+        devopsEnvCommandService.baseListByObject(ObjectType.CUSTOM.getType(), resourceId).forEach(devopsEnvCommandE -> devopsEnvCommandService.baseDeleteByEnvCommandId(devopsEnvCommandE));
+        baseDelete(resourceId);
+        devopsCustomizeResourceContentService.baseDelete(devopsCustomizeResourceDTO.getContentId());
     }
 
 
-    private void HandleCoustomizeResource(Long projectId, Long envId, String content, String kind, String name, String type, Long resourceId, String filePath, Long userId) {
+    private void handleCustomResource(Long projectId, Long envId, String content, String kind, String name, String type, Long resourceId, String filePath, Long userId) {
 
         if (CREATE.equals(type)) {
 
             //校验新增的类型是否已存在
-            devopsCustomizeResourceRepository.checkExist(envId, kind, name);
+            checkExist(envId, kind, name);
 
             //创建自定义资源的yaml文件内容
-            DevopsCustomizeResourceContentVO devopsCustomizeResourceContentE = new DevopsCustomizeResourceContentVO();
+            DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentE = new DevopsCustomizeResourceContentDTO();
             devopsCustomizeResourceContentE.setContent(content);
 
             //自定义资源关联command
-            DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(type, userId);
-            devopsEnvCommandE = devopsEnvCommandRepository.create(devopsEnvCommandE);
+            DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(type, userId);
+            devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
             //创建自定义资源
-            DevopsCustomizeResourceE devopsCustomizeResourceE = new DevopsCustomizeResourceE(projectId, envId, devopsCustomizeResourceContentRepository.baseCreate(devopsCustomizeResourceContentE).getId(), devopsEnvCommandE.getId(), kind, name, filePath, userId);
-            devopsCustomizeResourceE = devopsCustomizeResourceRepository.baseCreate(devopsCustomizeResourceE);
+            DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = new DevopsCustomizeResourceDTO(projectId, envId, devopsCustomizeResourceContentService.baseCreate(devopsCustomizeResourceContentE).getId(), devopsEnvCommandDTO.getId(), kind, name, filePath, userId);
 
-            devopsEnvCommandE.setObjectId(devopsCustomizeResourceE.getId());
-            devopsEnvCommandRepository.update(devopsEnvCommandE);
+            devopsCustomizeResourceDTO = baseCreate(devopsCustomizeResourceDTO);
+
+            devopsEnvCommandDTO.setObjectId(devopsCustomizeResourceDTO.getId());
+            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
         } else if (UPDATE.equals(type)) {
-            DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository.baseQuery(resourceId);
-            devopsCustomizeResourceE.setLastUpdateBy(userId);
-            if (!kind.equals(devopsCustomizeResourceE.getK8sKind())) {
+            DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = baseQuery(resourceId);
+            devopsCustomizeResourceDTO.setLastUpdatedBy(userId);
+            if (!kind.equals(devopsCustomizeResourceDTO.getK8sKind())) {
                 throw new CommonException("error.custom.resource.kind.modify");
             }
-            if (!name.equals(devopsCustomizeResourceE.getName())) {
+            if (!name.equals(devopsCustomizeResourceDTO.getName())) {
                 throw new CommonException("error.custom.resource.name.modify");
             }
 
             //更新自定义资源的yaml文件内容
-            DevopsCustomizeResourceContentVO devopsCustomizeResourceContentE = devopsCustomizeResourceContentRepository.baseQuery(devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getId());
-            devopsCustomizeResourceContentE.setContent(content);
-            devopsCustomizeResourceContentRepository.baseUpdate(devopsCustomizeResourceContentE);
+            DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDTO = devopsCustomizeResourceContentService.baseQuery(devopsCustomizeResourceDTO.getContentId());
+            devopsCustomizeResourceContentDTO.setContent(content);
+            devopsCustomizeResourceContentService.baseUpdate(devopsCustomizeResourceContentDTO);
 
             //自定义资源关联command
-            DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(type, userId);
-            devopsEnvCommandE.setObjectId(devopsCustomizeResourceE.getId());
-            devopsEnvCommandE = devopsEnvCommandRepository.create(devopsEnvCommandE);
+            DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(type, userId);
+            devopsEnvCommandDTO.setObjectId(devopsCustomizeResourceDTO.getId());
+            devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
 
             //更新自定义资源关联的最新command
-            devopsCustomizeResourceE.setDevopsEnvCommandE(new DevopsEnvCommandVO(devopsEnvCommandE.getId()));
-            devopsCustomizeResourceRepository.baseUpdate(devopsCustomizeResourceE);
+            devopsCustomizeResourceDTO.setCommandId(devopsEnvCommandDTO.getId());
+            baseUpdate(devopsCustomizeResourceDTO);
 
         } else {
-            DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository.baseQuery(resourceId);
+            DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = baseQuery(resourceId);
 
             //自定义资源关联command
-            DevopsEnvCommandVO devopsEnvCommandE = initDevopsEnvCommandE(DELETE, userId);
-            devopsEnvCommandE.setObjectId(resourceId);
-            devopsEnvCommandE = devopsEnvCommandRepository.create(devopsEnvCommandE);
+            DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(DELETE, userId);
+            devopsEnvCommandDTO.setObjectId(resourceId);
+            devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
             //更新自定义资源关联的最新command
-            devopsCustomizeResourceE.setDevopsEnvCommandE(new DevopsEnvCommandVO(devopsEnvCommandE.getId()));
-            devopsCustomizeResourceRepository.baseUpdate(devopsCustomizeResourceE);
+            devopsCustomizeResourceDTO.setCommandId(devopsEnvCommandDTO.getId());
+            baseUpdate(devopsCustomizeResourceDTO);
         }
     }
 
 
-    private DevopsEnvCommandVO initDevopsEnvCommandE(String type, Long userId) {
-        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
+    private DevopsEnvCommandDTO initDevopsEnvCommandDTO(String type, Long userId) {
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
         switch (type) {
             case CREATE:
-                devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+                devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
                 break;
             case UPDATE:
-                devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+                devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
                 break;
             default:
-                devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+                devopsEnvCommandDTO.setCommandType(CommandType.DELETE.getType());
                 break;
         }
-        devopsEnvCommandE.setCreatedBy(userId);
-        devopsEnvCommandE.setObject(ObjectType.CUSTOM.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
-        return devopsEnvCommandE;
+        devopsEnvCommandDTO.setCreatedBy(userId);
+        devopsEnvCommandDTO.setObject(ObjectType.CUSTOM.getType());
+        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        return devopsEnvCommandDTO;
     }
 
 
@@ -339,7 +335,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             throw new CommonException("custom.resource.kind.not.found");
         }
         //禁止创建平台已有的资源
-        if (RESOURCETYPE.contains(kind.toString())) {
+        if (RESOURCE_TYPE.contains(kind.toString())) {
             throw new CommonException("error.kind.is.forbidden");
         }
         if (metadata == null) {

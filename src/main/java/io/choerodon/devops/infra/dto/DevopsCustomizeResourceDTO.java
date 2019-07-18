@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
+import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentVO;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -32,6 +34,20 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
     @Transient
     private String resourceContent;
 
+    public DevopsCustomizeResourceDTO() {
+    }
+
+
+    public DevopsCustomizeResourceDTO(Long projectId, Long envId, Long contentId, Long commandId, String k8sKind, String name, String filePath, Long createBy) {
+        this.projectId = projectId;
+        this.envId = envId;
+        this.contentId = contentId;
+        this.commandId = commandId;
+        this.k8sKind = k8sKind;
+        this.name = name;
+        this.filePath = filePath;
+        super.setCreatedBy(createBy);
+    }
 
     public Long getId() {
         return Id;
