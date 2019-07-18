@@ -6,7 +6,7 @@ import org.apache.commons.lang.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsServiceReqDTO;
-import io.choerodon.devops.api.vo.iam.entity.PortMapE;
+import io.choerodon.devops.infra.dto.PortMapDTO;
 
 /**
  * Created by Zenger on 2018/4/26.
@@ -46,7 +46,7 @@ public class DevopsServiceValidator {
         }
     }
 
-    private static void checkPorts(PortMapE port) {
+    private static void checkPorts(PortMapDTO port) {
         if (!checkPort(port.getPort())) {
             throw new CommonException("error.port.illegal");
         }

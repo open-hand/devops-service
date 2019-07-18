@@ -6,36 +6,30 @@ import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.kubernetes.client.models.V1beta1HTTPIngressPath;
 import io.kubernetes.client.models.V1beta1Ingress;
 
-/**
- * Creator: Runge
- * Date: 2018/4/20
- * Time: 16:01
- * Description:
- */
 public interface DevopsIngressService {
 
     /**
      * 项目下创建域名
      *
      * @param devopsIngressVO 域名参数
-     * @param projectId        项目Id
+     * @param projectId       项目Id
      */
-    void addIngress(DevopsIngressVO devopsIngressVO, Long projectId);
+    void createIngress(DevopsIngressVO devopsIngressVO, Long projectId);
 
     /**
      * 项目下创建域名,GitOps
      *
      * @param devopsIngressVO 域名参数
-     * @param projectId        项目Id
+     * @param projectId       项目Id
      */
-    void addIngressByGitOps(DevopsIngressVO devopsIngressVO, Long projectId, Long userId);
+    void createIngressByGitOps(DevopsIngressVO devopsIngressVO, Long projectId, Long userId);
 
     /**
      * 项目下更新域名
      *
-     * @param id               域名Id
+     * @param id              域名Id
      * @param devopsIngressVO 域名参数
-     * @param projectId        项目Id
+     * @param projectId       项目Id
      */
     void updateIngress(Long id, DevopsIngressVO devopsIngressVO, Long projectId);
 
@@ -43,9 +37,9 @@ public interface DevopsIngressService {
     /**
      * 项目下更新域名,GitOps
      *
-     * @param id               域名Id
+     * @param id              域名Id
      * @param devopsIngressVO 域名参数
-     * @param projectId        项目Id
+     * @param projectId       项目Id
      */
     void updateIngressByGitOps(Long id, DevopsIngressVO devopsIngressVO, Long projectId, Long userId);
 
@@ -57,7 +51,7 @@ public interface DevopsIngressService {
      * @param ingressId 域名Id
      * @return DevopsIngressVO
      */
-    DevopsIngressVO getIngress(Long projectId, Long ingressId);
+    DevopsIngressVO queryIngress(Long projectId, Long ingressId);
 
     /**
      * 项目下删除域名
@@ -93,25 +87,25 @@ public interface DevopsIngressService {
      */
     Boolean checkDomainAndPath(Long envId, String domain, String path, Long id);
 
-    /**
-     * 项目下创建域名
-     *
-     * @param host     主机
-     * @param name     域名名称
-     * @param certName 证书名称
-     * @return V1beta1Ingress
-     */
-    V1beta1Ingress initV1beta1Ingress(String host, String name, String certName);
-
-
-    /**
-     * 项目下创建path
-     *
-     * @param hostPath  主机path
-     * @param serviceName 网络name
-     * @return V1beta1HTTPIngressPath
-     */
-    V1beta1HTTPIngressPath createPath(String hostPath, String serviceName, Long port);
+//    /**
+//     * 项目下创建域名
+//     *
+//     * @param host     主机
+//     * @param name     域名名称
+//     * @param certName 证书名称
+//     * @return V1beta1Ingress
+//     */
+//    V1beta1Ingress initV1beta1Ingress(String host, String name, String certName);
+//
+//
+//    /**
+//     * 项目下创建path
+//     *
+//     * @param hostPath    主机path
+//     * @param serviceName 网络name
+//     * @return V1beta1HTTPIngressPath
+//     */
+//    V1beta1HTTPIngressPath createPath(String hostPath, String serviceName, Long port);
 
 
     /**
@@ -122,5 +116,5 @@ public interface DevopsIngressService {
      * @param params      模糊查询参数
      * @return Page
      */
-    PageInfo<DevopsIngressVO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
 }

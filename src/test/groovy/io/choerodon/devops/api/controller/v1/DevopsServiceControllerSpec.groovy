@@ -8,7 +8,7 @@ import io.choerodon.devops.api.vo.DevopsServiceReqDTO
 import io.choerodon.devops.api.vo.DevopsServiceVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
-import io.choerodon.devops.api.vo.iam.entity.PortMapE
+import io.choerodon.devops.infra.dto.PortMapDTO
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
@@ -202,8 +202,8 @@ class DevopsServiceControllerSpec extends Specification {
 
     def "Create"() {
         given:
-        List<PortMapE> portMapES = new ArrayList<>()
-        PortMapE portMapE = new PortMapE()
+        List<PortMapDTO> portMapES = new ArrayList<>()
+        PortMapDTO portMapE = new PortMapDTO()
         portMapE.setPort(7777L)
         portMapE.setNodePort(9999L)
         portMapE.setTargetPort("8888")
@@ -229,8 +229,8 @@ class DevopsServiceControllerSpec extends Specification {
 
     def "Update"() {
         given: 'mock envUtil'
-        List<PortMapE> portMapES = new ArrayList<>()
-        PortMapE portMapE = new PortMapE()
+        List<PortMapDTO> portMapES = new ArrayList<>()
+        PortMapDTO portMapE = new PortMapDTO()
         portMapE.setPort(7777L)
         portMapE.setNodePort(9999L)
         portMapE.setTargetPort("8888")

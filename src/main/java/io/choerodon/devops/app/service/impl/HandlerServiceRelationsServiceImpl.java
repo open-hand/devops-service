@@ -11,6 +11,7 @@ import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.infra.dto.PortMapDTO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
@@ -200,9 +201,9 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         devopsServiceReqDTO.setEnvId(envId);
 
 
-        List<PortMapE> portMapList = v1Service.getSpec().getPorts().stream()
+        List<PortMapDTO> portMapList = v1Service.getSpec().getPorts().stream()
                 .map(t -> {
-                    PortMapE portMap = new PortMapE();
+                    PortMapDTO portMap = new PortMapDTO();
                     portMap.setName(t.getName());
                     if (t.getNodePort() != null) {
                         portMap.setNodePort(t.getNodePort().longValue());
@@ -245,7 +246,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     }
 
     private Boolean checkIsNotChange(DevopsServiceE devopsServiceE, DevopsServiceReqDTO devopsServiceReqDTO) {
-        List<PortMapE> oldPort = devopsServiceE.getPorts();
+        List<PortMapDTO> oldPort = devopsServiceE.getPorts();
         //查询网络对应的实例
         List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                 devopsServiceInstanceRepository.baseListByServiceId(devopsServiceE.getId());

@@ -5,9 +5,13 @@ import java.util.Map;
 
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.EndPointPortDTO;
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.PortMapE;
 <<<<<<< HEAD
 <<<<<<< HEAD
+=======
+import io.choerodon.devops.infra.dto.PortMapDTO;
+>>>>>>> [REF] finish refactoring DevopsIngressController.
 import io.choerodon.devops.infra.dto.ServiceInstanceDO;
 
 
@@ -28,7 +32,7 @@ public class DevopsServiceV {
     private String name;
     private String externalIp;
     private String loadBalanceIp;
-    private List<PortMapE> ports;
+    private List<PortMapDTO> ports;
     private String status;
     private Long envId;
     private String type;
@@ -134,11 +138,11 @@ public class DevopsServiceV {
         this.namespace = namespace;
     }
 
-    public List<PortMapE> getPorts() {
+    public List<PortMapDTO> getPorts() {
         return ports;
     }
 
-    public void setPorts(List<PortMapE> ports) {
+    public void setPorts(List<PortMapDTO> ports) {
         this.ports = ports;
     }
 

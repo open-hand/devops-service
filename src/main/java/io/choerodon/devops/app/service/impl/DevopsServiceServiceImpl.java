@@ -10,6 +10,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
+import io.choerodon.devops.infra.dto.PortMapDTO;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
@@ -341,7 +342,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                 devopsServiceInstanceRepository.baseListByServiceId(devopsServiceE.getId());
         //验证网络是否需要更新
-        List<PortMapE> oldPort = devopsServiceE.getPorts();
+        List<PortMapDTO> oldPort = devopsServiceE.getPorts();
         boolean isUpdate = false;
         if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null && devopsServiceReqDTO.getAppInstance() != null) {
             isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
@@ -771,13 +772,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         final Integer[] serialNumber = {0};
         devopsServiceReqDTO.setPorts(devopsServiceReqDTO.getPorts().stream()
                 .map(t -> {
-                    PortMapE portMapE = new PortMapE();
-                    portMapE.setNodePort(t.getNodePort());
-                    portMapE.setPort(t.getPort());
-                    portMapE.setTargetPort(t.getTargetPort());
-                    portMapE.setName(t.getName() == null ? "http" + ++serialNumber[0] : t.getName());
-                    portMapE.setProtocol(t.getProtocol() == null ? "TCP" : t.getProtocol());
-                    return portMapE;
+                    PortMapDTO portMapDTO = new PortMapDTO();
+                    portMapDTO.setNodePort(t.getNodePort());
+                    portMapDTO.setPort(t.getPort());
+                    portMapDTO.setTargetPort(t.getTargetPort());
+                    portMapDTO.setName(t.getName() == null ? "http" + ++serialNumber[0] : t.getName());
+                    portMapDTO.setProtocol(t.getProtocol() == null ? "TCP" : t.getProtocol());
+                    return portMapDTO;
                 })
                 .collect(Collectors.toList()));
     }

@@ -116,7 +116,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                                             devopsIngressRepository.baseCheckPath(envId, devopsIngressVO.getDomain(), t.getPath(), null))) {
                                 throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
                             }
-                            devopsIngressService.addIngressByGitOps(devopsIngressVO, projectId, userId);
+                            devopsIngressService.createIngressByGitOps(devopsIngressVO, projectId, userId);
                             devopsIngressE = devopsIngressRepository
                                     .baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                         }

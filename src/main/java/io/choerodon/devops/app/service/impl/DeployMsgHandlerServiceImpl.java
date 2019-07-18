@@ -22,6 +22,7 @@ import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
+import io.choerodon.devops.infra.dto.PortMapDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.mapper.ApplicationShareMapper;
 import io.choerodon.devops.infra.util.*;
@@ -440,13 +441,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     !v1Service.getStatus().getLoadBalancer().getIngress().isEmpty()) {
 
                 devopsServiceE.setLoadBalanceIp(v1Service.getStatus().getLoadBalancer().getIngress().get(0).getIp());
-                List<PortMapE> portMapES = getPortMapES(v1Service);
-                devopsServiceE.setPorts(portMapES);
+                List<PortMapDTO> portMapDTOS = getPortMapES(v1Service);
+                devopsServiceE.setPorts(portMapDTOS);
                 devopsServiceRepository.baseUpdate(devopsServiceE);
             }
             if (devopsServiceE.getType().equals("NodePort") && v1Service.getSpec().getPorts() != null) {
-                List<PortMapE> portMapES = getPortMapES(v1Service);
-                devopsServiceE.setPorts(portMapES);
+                List<PortMapDTO> portMapDTOS = getPortMapES(v1Service);
+                devopsServiceE.setPorts(portMapDTOS);
                 devopsServiceRepository.baseUpdate(devopsServiceE);
 
             }
@@ -487,15 +488,15 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
     }
 
-    private List<PortMapE> getPortMapES(V1Service v1Service) {
+    private List<PortMapDTO> getPortMapES(V1Service v1Service) {
         return v1Service.getSpec().getPorts().stream().map(v1ServicePort -> {
-            PortMapE portMapE = new PortMapE();
-            portMapE.setPort(TypeUtil.objToLong(v1ServicePort.getPort()));
-            portMapE.setTargetPort(TypeUtil.objToString(v1ServicePort.getTargetPort()));
-            portMapE.setNodePort(TypeUtil.objToLong(v1ServicePort.getNodePort()));
-            portMapE.setProtocol(v1ServicePort.getProtocol());
-            portMapE.setName(v1ServicePort.getName());
-            return portMapE;
+            PortMapDTO portMapDTO = new PortMapDTO();
+            portMapDTO.setPort(TypeUtil.objToLong(v1ServicePort.getPort()));
+            portMapDTO.setTargetPort(TypeUtil.objToString(v1ServicePort.getTargetPort()));
+            portMapDTO.setNodePort(TypeUtil.objToLong(v1ServicePort.getNodePort()));
+            portMapDTO.setProtocol(v1ServicePort.getProtocol());
+            portMapDTO.setName(v1ServicePort.getName());
+            return portMapDTO;
         }).collect(Collectors.toList());
     }
 
@@ -1077,7 +1078,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
                 devopsServiceE.setPorts(gson.fromJson(
                         gson.toJson(v1Service.getSpec().getPorts()),
-                        new TypeToken<ArrayList<PortMapE>>() {
+                        new TypeToken<ArrayList<PortMapDTO>>() {
                         }.getType()));
                 if (v1Service.getSpec().getExternalIPs() != null) {
                     devopsServiceE.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));

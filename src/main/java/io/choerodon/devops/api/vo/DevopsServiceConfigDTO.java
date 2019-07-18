@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.PortMapE;
+import io.choerodon.devops.infra.dto.PortMapDTO;
 
 /**
  * Creator: Runge
@@ -12,7 +12,7 @@ import io.choerodon.devops.api.vo.iam.entity.PortMapE;
  */
 public class DevopsServiceConfigDTO {
     private List<String> externalIps;
-    private List<PortMapE> ports;
+    private List<PortMapDTO> ports;
 
     public List<String> getExternalIps() {
         return externalIps;
@@ -22,11 +22,11 @@ public class DevopsServiceConfigDTO {
         this.externalIps = externalIps;
     }
 
-    public List<PortMapE> getPorts() {
+    public List<PortMapDTO> getPorts() {
         return ports;
     }
 
-    public void setPorts(List<PortMapE> ports) {
+    public void setPorts(List<PortMapDTO> ports) {
         this.ports = ports;
     }
 }

@@ -18,6 +18,7 @@ import io.choerodon.devops.infra.common.util.enums.CommandStatus
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.dto.PortMapDTO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
@@ -346,7 +347,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsServiceE.setName("svc" + code)
         devopsServiceE.setEnvId(devopsEnvironmentE.getId())
         devopsServiceE.setAppId(1L)
-        devopsServiceE.setPorts(new ArrayList<PortMapE>())
+        devopsServiceE.setPorts(new ArrayList<PortMapDTO>())
         devopsServiceE = devopsServiceRepository.baseCreate(devopsServiceE)
 
         DevopsEnvCommandVO devopsEnvCommandE1 = new DevopsEnvCommandVO()
@@ -554,7 +555,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         DevopsServiceE devopsServiceE = new DevopsServiceE()
         devopsServiceE.setName("svcgitopsC")
         devopsServiceE.setEnvId(devopsEnvironmentE.getId())
-        devopsServiceE.setPorts(new ArrayList<PortMapE>())
+        devopsServiceE.setPorts(new ArrayList<PortMapDTO>())
 
         DevopsIngressE devopsIngressE = new DevopsIngressE()
         devopsIngressE.setName("inggitopsC")

@@ -13,6 +13,7 @@ import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,11 +29,8 @@ import springfox.documentation.annotations.ApiIgnore;
 @RequestMapping(value = "/v1/projects/{project_id}/ingress")
 public class DevopsIngressController {
 
+    @Autowired
     private DevopsIngressService devopsIngressService;
-
-    public DevopsIngressController(DevopsIngressService devopsIngressService) {
-        this.devopsIngressService = devopsIngressService;
-    }
 
 
     /**
@@ -51,7 +49,7 @@ public class DevopsIngressController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
             @RequestBody DevopsIngressVO devopsIngressVO) {
-        devopsIngressService.addIngress(devopsIngressVO, projectId);
+        devopsIngressService.createIngress(devopsIngressVO, projectId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -96,7 +94,7 @@ public class DevopsIngressController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
             @PathVariable Long id) {
-        return Optional.ofNullable(devopsIngressService.getIngress(projectId, id))
+        return Optional.ofNullable(devopsIngressService.queryIngress(projectId, id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.IngressName.query"));
     }
@@ -163,7 +161,7 @@ public class DevopsIngressController {
             @RequestParam String domain,
             @ApiParam(value = "路径", required = true)
             @RequestParam String path,
-            @ApiParam(value = "ingress ID", required = false)
+            @ApiParam(value = "ingress ID")
             @RequestParam(value = "id", required = false) Long id) {
         return Optional.ofNullable(devopsIngressService.checkDomainAndPath(envId, domain, path, id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -185,17 +183,17 @@ public class DevopsIngressController {
                     InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "环境总览域名查询")
-    @PostMapping(value = "/{envId}/listByEnv")
-    public ResponseEntity<PageInfo<DevopsIngressVO>> listByEnv(
+    @PostMapping(value = "/{env_id}/page_by_env")
+    public ResponseEntity<PageInfo<DevopsIngressVO>> pageByEnv(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
             @ApiParam(value = "分页参数") PageRequest pageRequest,
-            @ApiParam(value = "envId", required = true)
-            @PathVariable(value = "envId") Long envId,
+            @ApiParam(value = "env_id", required = true)
+            @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsIngressService.listByEnv(projectId, envId, pageRequest, params))
+        return Optional.ofNullable(devopsIngressService.pageByEnv(projectId, envId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appInstance.query"));
     }

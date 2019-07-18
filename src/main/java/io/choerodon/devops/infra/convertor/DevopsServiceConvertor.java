@@ -7,6 +7,7 @@ import com.google.gson.reflect.TypeToken;
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE;
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.PortMapE;
 <<<<<<< HEAD
 <<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsServiceConvertor.java
@@ -15,6 +16,9 @@ import io.choerodon.devops.infra.dto.DevopsServiceDO;
 import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
 >>>>>>> [IMP] 修改AppControler重构:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsServiceConvertor.java
 =======
+=======
+import io.choerodon.devops.infra.dto.PortMapDTO;
+>>>>>>> [REF] finish refactoring DevopsIngressController.
 <<<<<<< HEAD:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsServiceConvertor.java
 import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
 =======
@@ -44,7 +48,7 @@ public class DevopsServiceConvertor implements ConvertorI<DevopsServiceE, Devops
     public DevopsServiceE doToEntity(DevopsServiceDTO dataObject) {
         DevopsServiceE devopsServiceE = new DevopsServiceE();
         BeanUtils.copyProperties(dataObject, devopsServiceE);
-        devopsServiceE.setPorts(gson.fromJson(dataObject.getPorts(), new TypeToken<ArrayList<PortMapE>>() {
+        devopsServiceE.setPorts(gson.fromJson(dataObject.getPorts(), new TypeToken<ArrayList<PortMapDTO>>() {
         }.getType()));
         return devopsServiceE;
     }

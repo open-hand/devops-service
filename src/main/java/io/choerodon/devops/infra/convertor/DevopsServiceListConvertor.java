@@ -15,7 +15,7 @@ import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.DevopsServiceConfigDTO;
 import io.choerodon.devops.api.vo.DevopsServiceTargetDTO;
 import io.choerodon.devops.api.vo.EndPointPortDTO;
-import io.choerodon.devops.api.vo.iam.entity.PortMapE;
+import io.choerodon.devops.infra.dto.PortMapDTO;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
 
@@ -53,7 +53,7 @@ public class DevopsServiceListConvertor implements ConvertorI<DevopsServiceV, De
     public DevopsServiceV doToEntity(DevopsServiceQueryDTO dataObject) {
         DevopsServiceV devopsServiceV = new DevopsServiceV();
         BeanUtils.copyProperties(dataObject, devopsServiceV);
-        devopsServiceV.setPorts(gson.fromJson(dataObject.getPorts(), new TypeToken<ArrayList<PortMapE>>() {
+        devopsServiceV.setPorts(gson.fromJson(dataObject.getPorts(), new TypeToken<ArrayList<PortMapDTO>>() {
         }.getType()));
         if (dataObject.getEndPoints() != null) {
             devopsServiceV.setEndPoinits(gson.fromJson(dataObject.getEndPoints(), new TypeToken<Map<String, List<EndPointPortDTO>>>() {
