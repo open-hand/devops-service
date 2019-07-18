@@ -173,7 +173,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     }
 
     @Override
-    public PageInfo<ClusterNodeInfoDTO> pageQueryClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest) {
+    public PageInfo<ClusterNodeInfoDTO> pageClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest) {
         long start = (long) (pageRequest.getPage() - 1) * (long) pageRequest.getSize();
         long stop = start + (long) pageRequest.getSize() - 1;
         String redisKey = getRedisClusterKey(clusterId, organizationId);
@@ -199,7 +199,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     }
 
     @Override
-    public ClusterNodeInfoDTO getNodeInfo(Long organizationId, Long clusterId, String nodeName) {
+    public ClusterNodeInfoDTO queryNodeInfo(Long organizationId, Long clusterId, String nodeName) {
         if (StringUtils.isEmpty(nodeName)) {
             return null;
         }

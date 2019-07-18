@@ -45,7 +45,7 @@ public interface ClusterNodeInfoService {
      * @param pageRequest    the page parameters
      * @return a page of nodes
      */
-    PageInfo<ClusterNodeInfoDTO> pageQueryClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest);
+    PageInfo<ClusterNodeInfoDTO> pageClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest);
 
     /**
      * get cluster node information by cluster id and node name
@@ -57,5 +57,5 @@ public interface ClusterNodeInfoService {
      * @param nodeName       the node name
      * @return the node information
      */
-    ClusterNodeInfoDTO getNodeInfo(Long organizationId, Long clusterId, String nodeName);
+    ClusterNodeInfoDTO queryNodeInfo(Long organizationId, Long clusterId, String nodeName);
 }

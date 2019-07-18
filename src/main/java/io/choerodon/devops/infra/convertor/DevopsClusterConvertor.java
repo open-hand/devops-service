@@ -4,7 +4,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.DevopsClusterReqDTO;
+import io.choerodon.devops.api.vo.DevopsClusterReqVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsClusterE;
 <<<<<<< HEAD
 <<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsClusterConvertor.java
@@ -18,7 +18,7 @@ import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 
 
 @Component
-public class DevopsClusterConvertor implements ConvertorI<DevopsClusterE, DevopsClusterDTO, DevopsClusterReqDTO> {
+public class DevopsClusterConvertor implements ConvertorI<DevopsClusterE, DevopsClusterDTO, DevopsClusterReqVO> {
 
     @Override
     public DevopsClusterE doToEntity(DevopsClusterDTO devopsClusterDTO) {
@@ -35,9 +35,9 @@ public class DevopsClusterConvertor implements ConvertorI<DevopsClusterE, Devops
     }
 
     @Override
-    public DevopsClusterE dtoToEntity(DevopsClusterReqDTO devopsClusterReqDTO) {
+    public DevopsClusterE dtoToEntity(DevopsClusterReqVO devopsClusterReqVO) {
         DevopsClusterE devopsClusterE = new DevopsClusterE();
-        BeanUtils.copyProperties(devopsClusterReqDTO, devopsClusterE);
+        BeanUtils.copyProperties(devopsClusterReqVO, devopsClusterE);
         return devopsClusterE;
     }
 

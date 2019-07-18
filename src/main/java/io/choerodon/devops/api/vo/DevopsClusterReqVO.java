@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-public class DevopsClusterReqDTO {
+public class DevopsClusterReqVO {
 
     private String name;
     private String code;

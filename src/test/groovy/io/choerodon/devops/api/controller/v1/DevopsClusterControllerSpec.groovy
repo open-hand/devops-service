@@ -8,8 +8,8 @@ import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.ClusterNodeInfoDTO
-import io.choerodon.devops.api.vo.DevopsClusterRepDTO
-import io.choerodon.devops.api.vo.DevopsClusterReqDTO
+import io.choerodon.devops.api.vo.DevopsClusterRepVO
+import io.choerodon.devops.api.vo.DevopsClusterReqVO
 import io.choerodon.devops.app.service.impl.ClusterNodeInfoServiceImpl
 
 import io.choerodon.devops.infra.common.util.EnvUtil
@@ -175,7 +175,7 @@ class DevopsClusterControllerSpec extends Specification {
     def "Create"() {
         given: '初始化DTO'
         isToInit = false
-        DevopsClusterReqDTO devopsClusterReqDTO = new DevopsClusterReqDTO()
+        DevopsClusterReqVO devopsClusterReqDTO = new DevopsClusterReqVO()
         List<Long> projectIds = new ArrayList<>()
         projectIds.add(1L)
         devopsClusterReqDTO.setCode("cluster")
@@ -197,7 +197,7 @@ class DevopsClusterControllerSpec extends Specification {
         searchCondition.setName("cluster")
         ID = devopsClusterMapper.selectOne(searchCondition).getId()
 
-        DevopsClusterReqDTO devopsClusterReqDTO = new DevopsClusterReqDTO()
+        DevopsClusterReqVO devopsClusterReqDTO = new DevopsClusterReqVO()
         List<Long> projectIds = new ArrayList<>()
         projectIds.add(2L)
         devopsClusterReqDTO.setCode("cluster")
@@ -216,7 +216,7 @@ class DevopsClusterControllerSpec extends Specification {
 
     def "Query"() {
         when: '查询单个集群信息'
-        def dto = restTemplate.getForObject(MAPPING + "/" + ID, DevopsClusterRepDTO.class, 1L)
+        def dto = restTemplate.getForObject(MAPPING + "/" + ID, DevopsClusterRepVO.class, 1L)
 
         then: '校验返回值'
         dto["name"] == "updateCluster"

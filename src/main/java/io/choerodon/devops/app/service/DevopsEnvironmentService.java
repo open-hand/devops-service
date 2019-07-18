@@ -166,7 +166,7 @@ public interface DevopsEnvironmentService {
      * @param projectId 项目id
      * @return List
      */
-    List<DevopsClusterRepDTO> listDevopsCluster(Long projectId);
+    List<DevopsClusterRepVO> listDevopsCluster(Long projectId);
 
     /**
      * 设置环境状态为错误

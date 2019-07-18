@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-public class DevopsClusterRepDTO {
+public class DevopsClusterRepVO {
 
     private Long id;
     private String name;
@@ -10,6 +10,9 @@ public class DevopsClusterRepDTO {
     private Boolean upgrade;
     private String upgradeMessage;
     private String description;
+    private String token;
+    private String choerodonId;
+    private Long createBy;
 
     public Long getId() {
         return id;
@@ -76,4 +79,28 @@ public class DevopsClusterRepDTO {
         this.upgradeMessage = upgradeMessage;
     }
 
+
+    public Long getCreateBy() {
+        return createBy;
+    }
+
+    public void setCreateBy(Long createBy) {
+        this.createBy = createBy;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getChoerodonId() {
+        return choerodonId;
+    }
+
+    public void setChoerodonId(String choerodonId) {
+        this.choerodonId = choerodonId;
+    }
 }

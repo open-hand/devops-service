@@ -8,7 +8,6 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.CheckAuditDTO;
-import io.choerodon.devops.api.vo.IamUserDTO;
 import io.choerodon.devops.api.vo.PipelineCheckDeployDTO;
 import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.api.vo.PipelineRecordVO;

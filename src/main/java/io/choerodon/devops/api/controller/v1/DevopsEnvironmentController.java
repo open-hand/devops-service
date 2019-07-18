@@ -398,7 +398,7 @@ public class DevopsEnvironmentController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询集群信息")
     @GetMapping(value = "/clusters")
-    public ResponseEntity<List<DevopsClusterRepDTO>> listDevopsClusters(
+    public ResponseEntity<List<DevopsClusterRepVO>> listDevopsClusters(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listDevopsCluster(projectId))

@@ -123,7 +123,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
         String destFilePath = DESTINATION_PATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
-        //上传chart包到chart museum
+        //上传chart包到chartmuseum
         chartUtil.uploadChart(organization.getCode(), projectDTO.getCode(), new File(path));
 
         if (newApplicationVersion != null) {
@@ -156,9 +156,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         applicationVersionReadmeMapper.insert(applicationVersionReadmeDTO);
 
         applicationVersionDTO.setReadmeValueId(applicationVersionReadmeDTO.getId());
-        if (applicationVersionMapper.insert(applicationVersionDTO) != 1) {
-            throw new CommonException("error.version.insert");
-        }
+        baseCreate(applicationVersionDTO);
 
         FileUtil.deleteDirectory(new File(destFilePath));
         FileUtil.deleteDirectory(new File(storeFilePath));
@@ -366,6 +364,13 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         return ConvertUtils.convertObject(baseQueryByAppIdAndVersion(appId, version), ApplicationVersionRespVO.class);
     }
 
+    @Override
+    public ApplicationVersionDTO baseCreate(ApplicationVersionDTO applicationVersionDTO) {
+        if (applicationVersionMapper.insert(applicationVersionDTO) != 1) {
+            throw new CommonException("error.version.insert");
+        }
+        return applicationVersionDTO;
+    }
 
     @Override
     public List<ApplicationLatestVersionDTO> baseListAppNewestVersion(Long projectId) {

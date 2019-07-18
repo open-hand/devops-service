@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.dto.DevopsClusterProPermissionDTO;
 public interface DevopsClusterProPermissionService {
     void baseInsertPermission(DevopsClusterProPermissionDTO devopsClusterProPermissionDTO);
 
-    List<DevopsClusterProPermissionE> baseListByClusterId(Long clusterId);
+    List<DevopsClusterProPermissionDTO> baseListByClusterId(Long clusterId);
 
     void baseDeletePermission(DevopsClusterProPermissionDTO devopsClusterProPermissionDTO);
 

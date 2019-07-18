@@ -7,30 +7,98 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentPodDTO;
 
 public interface DevopsClusterService {
 
-    String createCluster(Long organizationId, DevopsClusterReqDTO devopsClusterReqDTO);
+    /**
+     * 创建证书
+     *
+     * @param organizationId
+     * @param devopsClusterReqVO
+     * @return
+     */
+    String createCluster(Long organizationId, DevopsClusterReqVO devopsClusterReqVO);
 
-    void updateCluster(Long clusterId, DevopsClusterReqDTO devopsClusterReqDTO);
+    /**
+     * 更新集群
+     *
+     * @param clusterId
+     * @param devopsClusterReqVO
+     */
+    void updateCluster(Long clusterId, DevopsClusterReqVO devopsClusterReqVO);
 
+    /**
+     * 校验集群名唯一性
+     *
+     * @param organizationId
+     * @param name
+     */
     void checkName(Long organizationId, String name);
 
-    PageInfo<ProjectReqVO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest, String[] params);
+    /**
+     * 分页查询项目列表
+     *
+     * @param organizationId
+     * @param clusterId
+     * @param pageRequest
+     * @param params
+     * @return
+     */
+    PageInfo<ProjectReqVO> pageProjects(Long organizationId, Long clusterId, PageRequest pageRequest, String[] params);
 
     String queryShell(Long clusterId);
 
+    /**
+     * 校验集群编码唯一性
+     *
+     * @param organizationId
+     * @param code
+     */
     void checkCode(Long organizationId, String code);
 
-    PageInfo<ClusterWithNodesDTO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
+    /**
+     * 集群列表查询
+     *
+     * @param organizationId
+     * @param doPage
+     * @param pageRequest
+     * @param params
+     * @return
+     */
+    PageInfo<ClusterWithNodesVO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
 
+    /**
+     * 查询集群下已有权限的项目列表
+     *
+     * @param organizationId
+     * @param clusterId
+     * @return
+     */
     List<ProjectReqVO> listClusterProjects(Long organizationId, Long clusterId);
 
+    /**
+     * 删除集群
+     *
+     * @param clusterId
+     */
     void deleteCluster(Long clusterId);
 
-    DevopsClusterRepDTO getCluster(Long clusterId);
+    /**
+     * 查询单个集群信息
+     *
+     * @param clusterId
+     */
+    DevopsClusterRepVO query(Long clusterId);
 
-    Boolean IsClusterRelatedEnvs(Long clusterId);
+    /**
+     * 查询集群下是否关联已连接环境
+     *
+     * @param clusterId
+     * @return
+     */
+    Boolean checkConnectEnvs(Long clusterId);
 
     /**
      * 分页查询节点下的Pod
@@ -40,7 +108,7 @@ public interface DevopsClusterService {
      * @param searchParam 查询参数
      * @return pods
      */
-    PageInfo<DevopsClusterPodVO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsClusterPodVO> pagePodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 
 
     /**
@@ -50,7 +118,7 @@ public interface DevopsClusterService {
      * @param code      the cluster code
      * @return the node information
      */
-    DevopsClusterRepDTO queryByCode(Long organizationId, String code);
+    DevopsClusterRepVO queryByCode(Long organizationId, String code);
 
 
     DevopsClusterDTO baseCreateCluster(DevopsClusterDTO devopsClusterDTO);
@@ -81,7 +149,7 @@ public interface DevopsClusterService {
      * @param searchParam 查询参数
      * @return pods
      */
-    PageInfo<DevopsEnvPodE> basePageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsEnvPodDTO> basePageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 
     DevopsClusterDTO baseQueryByCode(Long organizationId, String code);
 

@@ -7,7 +7,7 @@ import com.github.pagehelper.PageInfo;
  *
  * @author zmf
  */
-public class ClusterWithNodesDTO extends DevopsClusterRepDTO {
+public class ClusterWithNodesVO extends DevopsClusterRepVO {
     private PageInfo<ClusterNodeInfoDTO> nodes;
 
     public PageInfo<ClusterNodeInfoDTO> getNodes() {
