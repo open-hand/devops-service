@@ -53,11 +53,11 @@ public class DaemonSetVO {
         this.age = age;
     }
 
-    public List<DevopsEnvironmentPodVO> getDevopsEnvPodDTOS() {
+    public List<DevopsEnvPodVO> getDevopsEnvPodDTOS() {
         return devopsEnvPodDTOS;
     }
 
-    public void setDevopsEnvPodDTOS(List<DevopsEnvironmentPodVO> devopsEnvPodDTOS) {
+    public void setDevopsEnvPodDTOS(List<DevopsEnvPodVO> devopsEnvPodDTOS) {
         this.devopsEnvPodDTOS = devopsEnvPodDTOS;
     }
 }

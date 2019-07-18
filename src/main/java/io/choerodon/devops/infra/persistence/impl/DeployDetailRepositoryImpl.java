@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import org.springframework.stereotype.Component;
 
@@ -9,6 +10,11 @@ import io.choerodon.devops.domain.application.repository.DeployDetailRepository;
 <<<<<<< HEAD
 =======
 >>>>>>> [IMP] 重构Repository
+=======
+import org.springframework.stereotype.Component;
+
+import io.choerodon.devops.domain.application.repository.DeployDetailRepository;
+>>>>>>> [IMP]修改后端代码结构
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
 
 /**

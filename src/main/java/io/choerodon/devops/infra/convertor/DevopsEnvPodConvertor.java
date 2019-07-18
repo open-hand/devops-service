@@ -11,6 +11,7 @@ import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 =======
 >>>>>>> [IMP]重构后端代码
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
+<<<<<<< HEAD
 import org.springframework.beans.BeanUtils;
 
 <<<<<<< HEAD:src/main/java/io/choerodon/devops/domain/application/convertor/DevopsEnvPodConvertor.java
@@ -18,6 +19,8 @@ import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO;
 =======
 >>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a:src/main/java/io/choerodon/devops/infra/convertor/DevopsEnvPodConvertor.java
 >>>>>>> [IMP] 重构Repository
+=======
+>>>>>>> [IMP]修改后端代码结构
 
 /**
  * Created by Zenger on 2018/4/2.

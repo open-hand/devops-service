@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.app.service.DeployDetailService;
+import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

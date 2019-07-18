@@ -14,8 +14,8 @@ public class DeploymentVO {
     private Long available;
     private String age;
     private List<Integer> ports;
-    private Map<String,String> labels;
-    private List<DevopsEnvPodVO> devopsEnvPodDTOS;
+    private Map<String, String> labels;
+    private List<DevopsEnvPodVO> devopsEnvPodVOS;
 
     public String getName() {
         return name;
@@ -81,11 +81,11 @@ public class DeploymentVO {
         this.labels = labels;
     }
 
-    public List<DevopsEnvPodVO> getDevopsEnvPodDTOS() {
-        return devopsEnvPodDTOS;
+    public List<DevopsEnvPodVO> getDevopsEnvPodVOS() {
+        return devopsEnvPodVOS;
     }
 
-    public void setDevopsEnvPodDTOS(List<DevopsEnvPodVO> devopsEnvPodDTOS) {
-        this.devopsEnvPodDTOS = devopsEnvPodDTOS;
+    public void setDevopsEnvPodVOS(List<DevopsEnvPodVO> devopsEnvPodVOS) {
+        this.devopsEnvPodVOS = devopsEnvPodVOS;
     }
 }

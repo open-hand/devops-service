@@ -10,17 +10,18 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.devops.api.vo.ContainerDTO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
-import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvResourceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.K8sUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.JSON;
@@ -36,46 +37,46 @@ import org.springframework.util.StringUtils;
  */
 @Service
 public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
+
     private static JSON json = new JSON();
     private final Logger logger = LoggerFactory.getLogger(DevopsEnvPodServiceImpl.class);
-    private final ClusterConnectionHandler clusterConnectionHandler;
-    private final DevopsEnvPodRepository devopsEnvPodRepository;
-    private final DevopsEnvironmentRepository devopsEnvironmentRepository;
-    private final DevopsEnvResourceRepository devopsEnvResourceRepository;
+
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper;
 
-    @Autowired
-    public DevopsEnvPodServiceImpl(ClusterConnectionHandler clusterConnectionHandler, DevopsEnvPodRepository devopsEnvPodRepository, DevopsEnvironmentRepository devopsEnvironmentRepository, DevopsEnvResourceRepository devopsEnvResourceRepository) {
-        this.clusterConnectionHandler = clusterConnectionHandler;
-        this.devopsEnvPodRepository = devopsEnvPodRepository;
-        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
-        this.devopsEnvResourceRepository = devopsEnvResourceRepository;
-    }
-
 
     @Override
-    public PageInfo<DevopsEnvPodVO> listAppPod(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam) {
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
-        PageInfo<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.basePageByIds(projectId, envId, appId, instanceId, pageRequest, searchParam);
-        devopsEnvPodEPage.getList().forEach(devopsEnvPodE -> {
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.baseQueryById(devopsEnvPodE.getEnvId());
-            devopsEnvPodE.setClusterId(devopsEnvironmentE.getClusterE().getId());
-            if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
-                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
-                devopsEnvPodE.setConnect(true);
+        PageInfo<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageByIds(projectId, envId, appId, instanceId, pageRequest, searchParam);
+        PageInfo<DevopsEnvPodVO> devopsEnvPodVOPageInfo = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsEnvPodVO.class);
+
+        devopsEnvPodVOPageInfo.setList(devopsEnvPodDTOPageInfo.getList().stream().map(devopsEnvPodDTO -> {
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsEnvPodDTO.getEnvId());
+            DevopsEnvPodVO devopsEnvPodVO = ConvertUtils.convertObject(devopsEnvPodDTO, DevopsEnvPodVO.class);
+            devopsEnvPodVO.setClusterId(devopsEnvironmentDTO.getClusterId());
+            if (connectedEnvList.contains(devopsEnvironmentDTO.getClusterId())
+                    && updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
+                devopsEnvPodVO.setConnect(true);
             }
 
-            setContainers(devopsEnvPodE);
-        });
+            setContainers(devopsEnvPodVO);
+            return devopsEnvPodVO;
+        }).collect(Collectors.toList()));
 
-        return ConvertPageHelper.convertPageInfo(devopsEnvPodEPage, DevopsEnvPodVO.class);
+        return devopsEnvPodVOPageInfo;
     }
 
     @Override
-    public void setContainers(DevopsEnvPodDTO devopsEnvPodDTO) {
-        String message = devopsEnvResourceRepository.getResourceDetailByNameAndTypeAndInstanceId(devopsEnvPodDTO.getAppInstanceId(), devopsEnvPodDTO.getName(), ResourceType.POD);
+    public void setContainers(DevopsEnvPodVO devopsEnvPodVO) {
+        String message = devopsEnvResourceService.getResourceDetailByNameAndTypeAndInstanceId(devopsEnvPodVO.getAppInstanceId(), devopsEnvPodVO.getName(), ResourceType.POD);
 
         if (StringUtils.isEmpty(message)) {
             return;
@@ -102,9 +103,9 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             if (!ArrayUtil.isEmpty(containsByStatus.get(Boolean.TRUE))) {
                 result.addAll(containsByStatus.get(Boolean.TRUE));
             }
-            devopsEnvPodDTO.setContainers(result);
+            devopsEnvPodVO.setContainers(result);
         } catch (Exception e) {
-            logger.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodDTO.getName());
+            logger.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());
         }
     }
 

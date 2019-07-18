@@ -1277,7 +1277,7 @@ public DevopsEnvResourceDTO listResourcesInHelmRelease(Long
     public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {
 
         // 获取相关的pod
-        List<DevopsEnvironmentPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(instanceId), DevopsEnvironmentPodVO.class);
+        List<DevopsEnvPodVO> devopsEnvPodDTOS = ConvertUtils.convertList(devopsEnvPodService.baseListByInstanceId(instanceId), DevopsEnvPodVO.class);
 
         DevopsEnvResourceVO devopsEnvResourceVO = devopsEnvResourceService
                 .listResourcesInHelmRelease(instanceId);
@@ -1317,7 +1317,7 @@ public DevopsEnvResourceDTO listResourcesInHelmRelease(Long
 =======
         devopsEnvResourceVO.setDeploymentVOS(devopsEnvResourceVO.getDeploymentVOS()
                 .stream()
-                .peek(deploymentVO -> deploymentVO.setDevopsEnvironmentPodVOS(filterPodsAssociated(devopsEnvPodDTOS, deploymentVO.getName())))
+                .peek(deploymentVO -> deploymentVO.setDevopsEnvPodVOS(filterPodsAssociated(devopsEnvPodDTOS, deploymentVO.getName())))
                 .collect(Collectors.toList())
         );
 
@@ -1335,7 +1335,7 @@ public DevopsEnvResourceDTO listResourcesInHelmRelease(Long
         devopsEnvResourceVO.setStatefulSetVOS(
                 devopsEnvResourceVO.getStatefulSetVOS()
                         .stream()
-                        .peek(statefulSetVO -> statefulSetVO.setDevopsEnvironmentPodVOS(
+                        .peek(statefulSetVO -> statefulSetVO.setDevopsEnvPodVOS(
                                 filterPodsAssociatedWithStatefulSet(devopsEnvPodDTOS, statefulSetVO.getName()))
                         )
                         .collect(Collectors.toList())
@@ -3897,7 +3897,7 @@ public void deleteInstanceRelInfo(Long instanceId){
      * @param daemonSetName    the name of daemonSet
      * @return the pods
      */
-    private List<DevopsEnvironmentPodVO> filterPodsAssociatedWithDaemonSet(List<DevopsEnvironmentPodVO> devopsEnvPodDTOS, String daemonSetName) {
+    private List<DevopsEnvPodVO> filterPodsAssociatedWithDaemonSet(List<DevopsEnvPodVO> devopsEnvPodDTOS, String daemonSetName) {
         return devopsEnvPodDTOS
                 .stream()
                 .filter(
@@ -3913,7 +3913,7 @@ public void deleteInstanceRelInfo(Long instanceId){
      * @param statefulSetName  the name of statefulSet
      * @return the pods
      */
-    private List<DevopsEnvironmentPodVO> filterPodsAssociatedWithStatefulSet(List<DevopsEnvironmentPodVO> devopsEnvPodDTOS, String statefulSetName) {
+    private List<DevopsEnvPodVO> filterPodsAssociatedWithStatefulSet(List<DevopsEnvPodVO> devopsEnvPodDTOS, String statefulSetName) {
         // statefulSet名称逻辑和daemonSet一致
         return filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS, statefulSetName);
     }
@@ -3955,7 +3955,7 @@ public void deleteInstanceRelInfo(Long instanceId){
      * @param deploymentName   the name of deployment
      * @return the pods
      */
-    private List<DevopsEnvironmentPodVO> filterPodsAssociated(List<DevopsEnvironmentPodVO> devopsEnvPodDTOS, String deploymentName) {
+    private List<DevopsEnvPodVO> filterPodsAssociated(List<DevopsEnvPodVO> devopsEnvPodDTOS, String deploymentName) {
         return devopsEnvPodDTOS.stream().filter(devopsEnvPodDTO -> {
                     String podName = devopsEnvPodDTO.getName();
                     String controllerNameFromPod = podName.substring(0,
