@@ -6,7 +6,7 @@ import java.util.Map;
  * @author lizongwei
  * @date 2019/7/2
  */
-public class DevopsEnvLabelDTO {
+public class DevopsEnvLabelVO {
 
     private String resourceName;
 

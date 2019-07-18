@@ -56,33 +56,33 @@ public class DevopsEnvApplicationController {
      * @param envId 环境id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询环境下的所有应用")
-    @GetMapping("/all")
-    public ResponseEntity<List<ApplicationRepVO>> queryAppByEnvId(
+    @GetMapping("/list_by_env")
+    public ResponseEntity<List<ApplicationRepVO>> listAppByEnvId(
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvApplicationService.queryAppByEnvId(envId))
+        return Optional.ofNullable(devopsEnvApplicationService.listAppByEnvId(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.app.query"));
     }
 
     /**
-     * 查询应用在环境下的所有labels
+     * 查询应用在环境下的所有label
      *
      * @param envId 环境id
      * @param appId 应用id
      * @return List
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询应用在环境下的所有labels")
-    @GetMapping("/label")
-    public ResponseEntity<List<DevopsEnvLabelDTO>> queryLabelByAppEnvId(
+    @ApiOperation(value = "查询应用在环境下的所有label")
+    @GetMapping("/list_label")
+    public ResponseEntity<List<DevopsEnvLabelVO>> listLabelByAppAndEnvId(
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "应用id", required = true)
             @RequestParam(value = "app_id") Long appId) {
-        return Optional.ofNullable(devopsEnvApplicationService.queryLabelByAppEnvId(envId, appId))
+        return Optional.ofNullable(devopsEnvApplicationService.listLabelByAppAndEnvId(envId, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.app.label.query"));
     }
@@ -97,13 +97,13 @@ public class DevopsEnvApplicationController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询应用在环境下的所有port")
-    @GetMapping("/port")
-    public ResponseEntity<List<DevopsEnvPortDTO>> queryPortByAppEnvId(
+    @GetMapping("/list_port")
+    public ResponseEntity<List<DevopsEnvPortDTO>> listPortByAppAndEnvId(
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "应用id", required = true)
             @RequestParam(value = "app_id") Long appId) {
-        return Optional.ofNullable(devopsEnvApplicationService.queryPortByAppEnvId(envId, appId))
+        return Optional.ofNullable(devopsEnvApplicationService.listPortByAppAndEnvId(envId, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.app.port.query"));
     }

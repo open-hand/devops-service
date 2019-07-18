@@ -7,6 +7,14 @@ public class DevopsEnvApplicationDTO {
     private Long appId;
     private Long envId;
 
+    public DevopsEnvApplicationDTO() {
+    }
+
+    public DevopsEnvApplicationDTO(Long appId, Long envId) {
+        this.appId = appId;
+        this.envId = envId;
+    }
+
     public Long getAppId() {
         return appId;
     }

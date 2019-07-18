@@ -4,6 +4,7 @@ import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsDeployValueE;
 <<<<<<< HEAD
+<<<<<<< HEAD
 <<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsDeployValueConvertor.java
 import io.choerodon.devops.infra.dto.DevopsDeployValueDO;
 =======
@@ -16,8 +17,12 @@ import io.choerodon.devops.infra.dataobject.DevopsDeployValueDO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 >>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a:src/main/java/io/choerodon/devops/infra/convertor/DevopsDeployValueConvertor.java
 >>>>>>> [IMP] 修改repository重构
+=======
+import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
+>>>>>>> [IMP]修改后端服务结构
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
+
 
 
 /**

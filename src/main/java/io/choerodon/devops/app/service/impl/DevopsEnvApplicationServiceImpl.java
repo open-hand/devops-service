@@ -6,13 +6,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageVO;
+import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
-import io.choerodon.devops.domain.application.repository.DevopsEnvApplicationRepostitory;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
@@ -30,76 +31,72 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     private JSON json = new JSON();
 
     @Autowired
-    private DevopsEnvApplicationRepostitory devopsEnvApplicationRepostitory;
-
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    private ApplicationService applicationService;
 
     @Autowired
     private DevopsEnvApplicationMapper devopsEnvApplicationMapper;
 
     @Autowired
-    DevopsEnvApplicationMapper devopsEnvApplicationMapper;
+    private DevopsEnvApplicationMapper devopsEnvApplicationMapper;
 
     @Override
     public List<DevopsEnvApplicationVO> batchCreate(DevopsEnvApplicationCreationVO devopsEnvApplicationCreationVO) {
         return Stream.of(devopsEnvApplicationCreationVO.getAppIds())
                 .map(appId -> new DevopsEnvApplicationDTO(devopsEnvApplicationCreationVO.getEnvId(), appId))
-                .peek(e -> devopsEnvApplicationMapper.insertIgnore(ConvertHelper.convert(e, DevopsEnvApplicationDO.class)))
-                .map(e -> ConvertHelper.convert(e, DevopsEnvApplicationDTO.class))
+                .peek(e -> devopsEnvApplicationMapper.insertIgnore(e))
+                .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ApplicationRepVO> queryAppByEnvId(Long envId) {
-        List<Long> appIds = devopsEnvApplicationRepostitory.baseListAppByEnvId(envId);
-        List<ApplicationRepVO> repDTOS = new ArrayList<>();
+    public List<ApplicationRepVO> listAppByEnvId(Long envId) {
+        List<Long> appIds = baseListAppByEnvId(envId);
+        List<ApplicationRepVO> applicationRepVOS = new ArrayList<>();
         appIds.forEach(v ->
-                repDTOS.add(ConvertHelper.convert(applicationRepository.query(v), ApplicationRepVO.class))
+                applicationRepVOS.add(ConvertUtils.convertObject(applicationService.baseQuery(v), ApplicationRepVO.class))
         );
-        return repDTOS;
+        return applicationRepVOS;
     }
 
     @Override
-    public List<DevopsEnvLabelDTO> queryLabelByAppEnvId(Long envId, Long appId) {
-        List<DevopsEnvMessageVO> messageES = devopsEnvApplicationRepostitory.baseListResourceByEnvAndApp(envId, appId);
-        List<DevopsEnvLabelDTO> labelDTOS = new ArrayList<>();
-        messageES.forEach(v -> {
-            DevopsEnvLabelDTO labelDTO = new DevopsEnvLabelDTO();
-            labelDTO.setResourceName(v.getResourceName());
+    public List<DevopsEnvLabelVO> listLabelByAppAndEnvId(Long envId, Long appId) {
+        List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
+        List<DevopsEnvLabelVO> devopsEnvLabelVOS = new ArrayList<>();
+        devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
+            DevopsEnvLabelVO devopsEnvLabelVO = new DevopsEnvLabelVO();
+            devopsEnvLabelVO.setResourceName(devopsEnvMessageVO.getResourceName());
             V1beta2Deployment v1beta2Deployment = json.deserialize(
-                    v.getDetail(), V1beta2Deployment.class);
-            labelDTO.setLabels(v1beta2Deployment.getSpec().getSelector().getMatchLabels());
-            labelDTOS.add(labelDTO);
+                    devopsEnvMessageVO.getDetail(), V1beta2Deployment.class);
+            devopsEnvLabelVO.setLabels(v1beta2Deployment.getSpec().getSelector().getMatchLabels());
+            devopsEnvLabelVOS.add(devopsEnvLabelVO);
         });
-        return labelDTOS;
+        return devopsEnvLabelVOS;
     }
 
     @Override
-    public List<DevopsEnvPortDTO> queryPortByAppEnvId(Long envId, Long appId) {
-        List<DevopsEnvMessageVO> messageES = devopsEnvApplicationRepostitory.baseListResourceByEnvAndApp(envId, appId);
-        List<DevopsEnvPortDTO> portDTOS = new ArrayList<>();
-        messageES.forEach(v -> {
+    public List<DevopsEnvPortDTO> listPortByAppAndEnvId(Long envId, Long appId) {
+        List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
+        List<DevopsEnvPortDTO> devopsEnvPortDTOS = new ArrayList<>();
+        devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
             V1beta2Deployment v1beta2Deployment = json.deserialize(
-                    v.getDetail(), V1beta2Deployment.class);
+                    devopsEnvMessageVO.getDetail(), V1beta2Deployment.class);
             List<V1Container> containers = v1beta2Deployment.getSpec().getTemplate().getSpec().getContainers();
             for (V1Container container : containers) {
                 List<V1ContainerPort> ports = container.getPorts();
 
                 Optional.ofNullable(ports).ifPresent(portList -> {
                     for (V1ContainerPort port : portList) {
-                        DevopsEnvPortDTO portDTO = new DevopsEnvPortDTO();
-                        portDTO.setResourceName(v.getResourceName());
-                        portDTO.setPortName(port.getName());
-                        portDTO.setPortValue(port.getContainerPort());
-                        portDTOS.add(portDTO);
+                        DevopsEnvPortDTO devopsEnvPortDTO = new DevopsEnvPortDTO();
+                        devopsEnvPortDTO.setResourceName(devopsEnvMessageVO.getResourceName());
+                        devopsEnvPortDTO.setPortName(port.getName());
+                        devopsEnvPortDTO.setPortValue(port.getContainerPort());
+                        devopsEnvPortDTOS.add(devopsEnvPortDTO);
                     }
                 });
             }
         });
-        return portDTOS;
+        return devopsEnvPortDTOS;
     }
-
 
     @Override
     public DevopsEnvApplicationDTO baseCreate(DevopsEnvApplicationDTO devopsEnvApplicationDTO) {

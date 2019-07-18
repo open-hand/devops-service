@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
+import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
+import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 
@@ -12,7 +14,7 @@ public interface DevopsEnvApplicationMapper extends Mapper<DevopsEnvApplicationD
      * @param devopsEnvApplicationDO 环境应用关联关系
      * @return 影响的记录数目
      */
-    void insertIgnore(DevopsEnvApplicationDO devopsEnvApplicationDO);
+    void insertIgnore(DevopsEnvApplicationDTO devopsEnvApplicationDO);
 
     /**
      * 通过环境Id查询所有应用Id
