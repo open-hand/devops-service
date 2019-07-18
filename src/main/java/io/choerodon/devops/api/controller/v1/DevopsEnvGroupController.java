@@ -33,19 +33,19 @@ public class DevopsEnvGroupController {
     /**
      * 项目下创建环境组
      *
-     * @param projectId          项目id
-     * @param devopsEnvGroupName 环境组名称
-     * @return ApplicationTemplateDTO
+     * @param projectId 项目id
+     * @param name      环境组名称
+     * @return DevopsEnvGroupVO
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境组")
     @PostMapping
     public ResponseEntity<DevopsEnvGroupVO> create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组信息", required = true)
-            @RequestParam String devopsEnvGroupName) {
-        return Optional.ofNullable(devopsEnvGroupService.create(devopsEnvGroupName, projectId))
+            @RequestParam String name) {
+        return Optional.ofNullable(devopsEnvGroupService.create(name, projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.group.create"));
     }
@@ -54,19 +54,19 @@ public class DevopsEnvGroupController {
     /**
      * 项目下更新环境组
      *
-     * @param projectId         项目id
-     * @param devopsEnvGroupDTO 环境组信息
-     * @return ApplicationTemplateDTO
+     * @param projectId        项目id
+     * @param devopsEnvGroupVO 环境组信息
+     * @return DevopsEnvGroupVO
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新环境组")
     @PutMapping
     public ResponseEntity<DevopsEnvGroupVO> update(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组信息", required = true)
-            @RequestBody DevopsEnvGroupVO devopsEnvGroupDTO) {
-        return Optional.ofNullable(devopsEnvGroupService.update(devopsEnvGroupDTO, projectId))
+            @RequestBody DevopsEnvGroupVO devopsEnvGroupVO) {
+        return Optional.ofNullable(devopsEnvGroupService.update(devopsEnvGroupVO, projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.group.update"));
     }
@@ -76,11 +76,11 @@ public class DevopsEnvGroupController {
      * 项目下查询环境组
      *
      * @param projectId 项目id
-     * @return DevopsEnvGroupDTO
+     * @return DevopsEnvGroupVO
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境组")
-    @GetMapping
+    @GetMapping("/listByProject")
     public ResponseEntity<List<DevopsEnvGroupVO>> listByProject(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
@@ -95,7 +95,7 @@ public class DevopsEnvGroupController {
      * @param projectId 项目id
      * @return boolean
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验环境组名唯一性")
     @GetMapping(value = "/checkName")
     public ResponseEntity<Boolean> checkName(
@@ -103,7 +103,7 @@ public class DevopsEnvGroupController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组名", required = true)
             @RequestParam String name) {
-        return Optional.ofNullable(devopsEnvGroupService.checkUniqueInProject(name, projectId))
+        return Optional.ofNullable(devopsEnvGroupService.checkName(name, projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.group.get"));
     }
@@ -116,7 +116,7 @@ public class DevopsEnvGroupController {
      * @param groupId   实例id
      * @return responseEntity
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境组删除")
     @DeleteMapping(value = "/{groupId}")
     public ResponseEntity delete(

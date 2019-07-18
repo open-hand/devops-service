@@ -5,19 +5,16 @@ import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.validator.DevopsEnvGroupValidator;
 import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvGroupE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.app.service.DevopsEnvGroupService;
-import io.choerodon.devops.domain.application.repository.DevopsEnvGroupRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Creator: Runge
@@ -29,72 +26,68 @@ import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper;
 public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
 
     @Autowired
-    private DevopsEnvGroupRepository devopsEnvGroupRepository;
-    @Autowired
     private DevopsEnvGroupValidator devopsEnvGroupValidator;
     @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DevopsEnvGroupMapper devopsEnvGroupMapper;
 
     @Override
     public DevopsEnvGroupVO create(String name, Long projectId) {
         devopsEnvGroupValidator.checkNameUnique(null, name, projectId);
-        DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
-        devopsEnvGroupE.setName(name);
-        devopsEnvGroupE.initProject(projectId);
-        devopsEnvGroupE = devopsEnvGroupRepository.baseCreate(devopsEnvGroupE);
-        return ConvertHelper.convert(devopsEnvGroupE, DevopsEnvGroupVO.class);
+        DevopsEnvGroupDTO devopsEnvGroupDTO = new DevopsEnvGroupDTO();
+        devopsEnvGroupDTO.setName(name);
+        devopsEnvGroupDTO.setProjectId(projectId);
+        devopsEnvGroupDTO = baseCreate(devopsEnvGroupDTO);
+        return ConvertUtils.convertObject(devopsEnvGroupDTO, DevopsEnvGroupVO.class);
     }
 
     @Override
-    public DevopsEnvGroupVO update(DevopsEnvGroupVO devopsEnvGroupDTO, Long projectId) {
-        devopsEnvGroupValidator.checkNameUnique(devopsEnvGroupDTO.getId(), devopsEnvGroupDTO.getName(), projectId);
-        DevopsEnvGroupE devopsEnvGroupE = ConvertHelper.convert(devopsEnvGroupDTO, DevopsEnvGroupE.class);
-        devopsEnvGroupE.initProject(projectId);
-        devopsEnvGroupE = devopsEnvGroupRepository.baseUpdate(devopsEnvGroupE);
-        return ConvertHelper.convert(devopsEnvGroupE, DevopsEnvGroupVO.class);
+    public DevopsEnvGroupVO update(DevopsEnvGroupVO devopsEnvGroupVO, Long projectId) {
+        devopsEnvGroupValidator.checkNameUnique(devopsEnvGroupVO.getId(), devopsEnvGroupVO.getName(), projectId);
+        DevopsEnvGroupDTO devopsEnvGroupDTO = ConvertUtils.convertObject(devopsEnvGroupVO, DevopsEnvGroupDTO.class);
+        devopsEnvGroupDTO.setProjectId(projectId);
+        devopsEnvGroupDTO = baseUpdate(devopsEnvGroupDTO);
+        return ConvertUtils.convertObject(devopsEnvGroupDTO, DevopsEnvGroupVO.class);
     }
 
 
     @Override
     public List<DevopsEnvGroupVO> listByProject(Long projectId) {
-        return ConvertHelper.convertList(
-                devopsEnvGroupRepository.baseListByProjectId(projectId).stream()
-                        .sorted(Comparator.comparing(DevopsEnvGroupE::getSequence)).collect(Collectors.toList()),
+        return ConvertUtils.convertList(baseListByProjectId(projectId).stream()
+                        .sorted(Comparator.comparing(DevopsEnvGroupDTO::getSequence)).collect(Collectors.toList()),
                 DevopsEnvGroupVO.class);
     }
 
     @Override
-    public Boolean checkUniqueInProject(String name, Long projectId) {
-        return devopsEnvGroupRepository.baseCheckUniqueInProject(name, projectId);
+    public Boolean checkName(String name, Long projectId) {
+        return baseCheckUniqueInProject(name, projectId);
     }
 
     @Override
     public void delete(Long id) {
-        DevopsEnvGroupE devopsEnvGroupE = devopsEnvGroupRepository.baseQuery(id);
-        devopsEnvGroupRepository.baseDelete(id);
+        DevopsEnvGroupDTO devopsEnvGroupDTO = baseQuery(id);
+        baseDelete(id);
         //删除环境组，将原环境组内所有环境放到默认组内，环境sequence在默认组环境递增
-        List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.baseListByProjectIdAndActive(devopsEnvGroupE.getProjectE().getId(), true);
+        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListByProjectIdAndActive(devopsEnvGroupDTO.getProjectId(), true);
 
-        List<DevopsEnvironmentE> defaultDevopsEnvironmentES = devopsEnvironmentES.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getDevopsEnvGroupId() == null).collect(Collectors.toList());
+        List<DevopsEnvironmentDTO> defaultDevopsEnvironmentDTOS = devopsEnvironmentDTOS.stream().filter(devopsEnvironmentDTO -> devopsEnvironmentDTO.getDevopsEnvGroupId() == null).collect(Collectors.toList());
         Long sequence = 1L;
-        if (!defaultDevopsEnvironmentES.isEmpty()) {
-            LongSummaryStatistics stats = devopsEnvironmentES
+        if (!defaultDevopsEnvironmentDTOS.isEmpty()) {
+            LongSummaryStatistics stats = devopsEnvironmentDTOS
                     .stream()
-                    .mapToLong(DevopsEnvironmentE::getSequence)
+                    .mapToLong(DevopsEnvironmentDTO::getSequence)
                     .summaryStatistics();
             sequence = stats.getMax() + 1;
         }
-        List<DevopsEnvironmentE> deletes = devopsEnvironmentES.stream().filter(devopsEnvironmentE -> id.equals(devopsEnvironmentE.getDevopsEnvGroupId())).collect(Collectors.toList());
-        for (DevopsEnvironmentE devopsEnvironmentE : deletes) {
-            devopsEnvironmentE.setDevopsEnvGroupId(null);
-            devopsEnvironmentE.setSequence(sequence);
-            devopsEnvironmentRepository.baseUpdate(devopsEnvironmentE);
+        List<DevopsEnvironmentDTO> deletes = devopsEnvironmentDTOS.stream().filter(devopsEnvironmentDTO -> id.equals(devopsEnvironmentDTO.getDevopsEnvGroupId())).collect(Collectors.toList());
+        for (DevopsEnvironmentDTO devopsEnvironmentDTO : deletes) {
+            devopsEnvironmentDTO.setDevopsEnvGroupId(null);
+            devopsEnvironmentDTO.setSequence(sequence);
+            devopsEnvironmentService.baseUpdate(devopsEnvironmentDTO);
             sequence++;
         }
     }
-
 
     @Override
     public DevopsEnvGroupDTO baseCreate(DevopsEnvGroupDTO devopsEnvGroupDTO) {
