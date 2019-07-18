@@ -794,8 +794,8 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public List<CommitStatuseDTO> listCommitStatus(Integer projectId, String sha, Integer useId) {
-        ResponseEntity<List<CommitStatuseDTO>> commitStatuse;
+    public List<CommitStatusDTO> listCommitStatus(Integer projectId, String sha, Integer useId) {
+        ResponseEntity<List<CommitStatusDTO>> commitStatuse;
         try {
             commitStatuse = gitlabServiceClient.listCommitStatus(projectId, sha, useId);
         } catch (FeignException e) {

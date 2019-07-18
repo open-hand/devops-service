@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.eventhandler;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_CREATE_GITLAB_TEMPLATE_PROJECT;
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_PIPELINE;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_SET_APPLICATION_TEMPLATE_ERROR;
 
 import java.io.IOException;
@@ -279,7 +280,7 @@ public class DevopsSagaHandler {
      */
     @SagaTask(code = "devopsGitlabPipeline",
             description = "gitlab-pipeline",
-            sagaCode = "devops-gitlab-pipeline",
+            sagaCode = DEVOPS_GITLAB_PIPELINE,
             maxRetryCount = 3,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)

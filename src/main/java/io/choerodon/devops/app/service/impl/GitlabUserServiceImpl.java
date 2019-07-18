@@ -95,7 +95,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     }
 
     @Override
-    public Boolean checkEmailIsExist(String email) {
+    public Boolean doesEmailExists(String email) {
         return gitlabServiceClientOperator.checkEmail(email);
     }
 

@@ -5,9 +5,11 @@ import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvPodContainerLogVO;
+import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.app.service.DevopsEnvPodContainerService;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,12 +33,11 @@ public class DevopsEnvPodContainerServiceImpl implements DevopsEnvPodContainerSe
         if (devopsEnvPodDTO == null) {
             throw new CommonException("error.pod.notExist");
         }
-        devopsEnvPodService.setContainers(devopsEnvPodDTO);
-        List<DevopsEnvPodContainerLogVO> devopsEnvPodContainerLogVOS = devopsEnvPodDTO.getContainers()
+        DevopsEnvPodVO devopsEnvPodVO = ConvertUtils.convertObject(devopsEnvPodDTO, DevopsEnvPodVO.class);
+        devopsEnvPodService.setContainers(devopsEnvPodVO);
+        return devopsEnvPodVO.getContainers()
                 .stream()
                 .map(containerDTO -> new DevopsEnvPodContainerLogVO(devopsEnvPodDTO.getName(), containerDTO.getName()))
                 .collect(Collectors.toList());
-
-        return devopsEnvPodContainerLogVOS;
     }
 }

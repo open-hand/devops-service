@@ -174,7 +174,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<CommitStatuseDTO>> getCommitStatus(Integer projectId, String sha, Integer userId) {
+    public ResponseEntity<List<CommitStatusDTO>> getCommitStatus(Integer projectId, String sha, Integer userId) {
         return new ResponseEntity("error.commitStatus.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

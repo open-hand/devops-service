@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.util;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,6 +30,9 @@ public class ConvertUtils {
      * @return destination object
      */
     public static <S, D> D convertObject(S source, Class<D> destinationClass) {
+        if (source == null) {
+            return null;
+        }
         try {
             D destination = destinationClass.newInstance();
             BeanUtils.copyProperties(source, destination);
@@ -48,9 +52,14 @@ public class ConvertUtils {
      * @return destination page
      */
     public static <S, D> PageInfo<D> convertPage(PageInfo<S> source, Function<S, D> converter) {
+        if (source == null) {
+            return null;
+        }
         PageInfo<D> destination = new PageInfo<>();
         BeanUtils.copyProperties(source, destination, "list");
-        destination.setList(source.getList().stream().map(converter).collect(Collectors.toList()));
+        if (source.getList() != null) {
+            destination.setList(source.getList().stream().map(converter).collect(Collectors.toList()));
+        }
         return destination;
     }
 
@@ -68,7 +77,9 @@ public class ConvertUtils {
         }
         PageInfo<D> destination = new PageInfo<>();
         BeanUtils.copyProperties(source, destination, "list");
-        destination.setList(source.getList().stream().map(s -> convertObject(s, destinationClass)).collect(Collectors.toList()));
+        if (source.getList() != null) {
+            destination.setList(source.getList().stream().map(s -> convertObject(s, destinationClass)).collect(Collectors.toList()));
+        }
         return destination;
     }
 
@@ -81,6 +92,12 @@ public class ConvertUtils {
      * @return destination page
      */
     public static <S, D> List<D> convertList(List<S> source, Class<D> destinationClass) {
+        if (source == null) {
+            return null;
+        }
+        if (source.isEmpty()) {
+            return new ArrayList<>();
+        }
         return source.stream().map(s -> convertObject(s, destinationClass)).collect(Collectors.toList());
     }
 
@@ -94,6 +111,12 @@ public class ConvertUtils {
      * @return destination page
      */
     public static <S, D> List<D> convertList(List<S> source, Function<S, D> converter) {
+        if (source == null) {
+            return null;
+        }
+        if (source.isEmpty()) {
+            return new ArrayList<>();
+        }
         return source.stream().map(converter).collect(Collectors.toList());
     }
 }

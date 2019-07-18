@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.dto.gitlab;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class CommitStatuseDTO {
+public class CommitStatusDTO {
     private String status;
     @JsonProperty(value = "created_at")
     private String createdAt;

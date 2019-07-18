@@ -8,7 +8,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.CommitFormUserDTO;
@@ -261,9 +260,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     @Override
     public void baseUpdate(DevopsGitlabCommitDTO devopsGitlabCommitDTO) {
         DevopsGitlabCommitDTO oldDevopsGitlabCommitDO = devopsGitlabCommitMapper.selectByPrimaryKey(devopsGitlabCommitDTO.getId());
-        DevopsGitlabCommitDTO newDevopsGitlabCommitDO = ConvertHelper.convert(devopsGitlabCommitDTO, DevopsGitlabCommitDTO.class);
-        newDevopsGitlabCommitDO.setObjectVersionNumber(oldDevopsGitlabCommitDO.getObjectVersionNumber());
-        if (devopsGitlabCommitMapper.updateByPrimaryKeySelective(newDevopsGitlabCommitDO) != 1) {
+        devopsGitlabCommitDTO.setObjectVersionNumber(oldDevopsGitlabCommitDO.getObjectVersionNumber());
+        if (devopsGitlabCommitMapper.updateByPrimaryKeySelective(devopsGitlabCommitDTO) != 1) {
             throw new CommonException("error.gitlab.commit.update");
         }
     }

@@ -61,8 +61,10 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_SYNC_APPLICATION="devops-sync-application";
 
-
-
+    /**
+     * gitlab pipeline创建到数据库
+     */
+    public static final String DEVOPS_GITLAB_PIPELINE = "devops-gitlab-pipeline";
 
 
 
