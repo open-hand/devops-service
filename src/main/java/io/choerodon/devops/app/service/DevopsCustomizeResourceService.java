@@ -47,7 +47,7 @@ public interface DevopsCustomizeResourceService {
      * @param resourceId 资源id
      * @return
      */
-    DevopsCustomizeResourceVO getDevopsCustomizeResourceDetail(Long resourceId);
+    DevopsCustomizeResourceVO queryDevopsCustomizeResourceDetail(Long resourceId);
 
     /**
      * @param envId 环境id

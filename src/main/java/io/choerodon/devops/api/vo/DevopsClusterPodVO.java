@@ -6,13 +6,13 @@ import java.util.List;
  * @author zmf
  */
 public class DevopsClusterPodVO extends DevopsEnvPodVO {
-    private List<DevopsEnvPodContainerLogDTO> containersForLogs;
+    private List<DevopsEnvPodContainerLogVO> containersForLogs;
 
-    public List<DevopsEnvPodContainerLogDTO> getContainersForLogs() {
+    public List<DevopsEnvPodContainerLogVO> getContainersForLogs() {
         return containersForLogs;
     }
 
-    public void setContainersForLogs(List<DevopsEnvPodContainerLogDTO> containersForLogs) {
+    public void setContainersForLogs(List<DevopsEnvPodContainerLogVO> containersForLogs) {
         this.containersForLogs = containersForLogs;
     }
 }

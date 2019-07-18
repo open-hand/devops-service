@@ -4,11 +4,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsEnvPodContainerLogDTO;
+import io.choerodon.devops.api.vo.DevopsEnvPodContainerLogVO;
 import io.choerodon.devops.app.service.DevopsEnvPodContainerService;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
-import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
+import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,24 +21,22 @@ import org.springframework.stereotype.Component;
 public class DevopsEnvPodContainerServiceImpl implements DevopsEnvPodContainerService {
 
     @Autowired
-    private DevopsEnvPodRepository podRepository;
-    @Autowired
     private DevopsEnvPodService devopsEnvPodService;
 
 
     @Override
-    public List<DevopsEnvPodContainerLogDTO> logByPodId(Long podId) {
+    public List<DevopsEnvPodContainerLogVO> logByPodId(Long podId) {
 
-        DevopsEnvPodE devopsEnvPodE = podRepository.baseQueryById(podId);
-        if (devopsEnvPodE == null) {
+        DevopsEnvPodDTO devopsEnvPodDTO = devopsEnvPodService.baseQueryById(podId);
+        if (devopsEnvPodDTO == null) {
             throw new CommonException("error.pod.notExist");
         }
-        devopsEnvPodService.setContainers(devopsEnvPodE);
-        List<DevopsEnvPodContainerLogDTO> devopsEnvPodContainerLogDTOS = devopsEnvPodE.getContainers().stream().map(containerDTO -> {
-            DevopsEnvPodContainerLogDTO devopsEnvPodContainerLogDTO = new DevopsEnvPodContainerLogDTO(devopsEnvPodE.getName(), containerDTO.getName());
-            return devopsEnvPodContainerLogDTO;
-        }).collect(Collectors.toList());
+        devopsEnvPodService.setContainers(devopsEnvPodDTO);
+        List<DevopsEnvPodContainerLogVO> devopsEnvPodContainerLogVOS = devopsEnvPodDTO.getContainers()
+                .stream()
+                .map(containerDTO -> new DevopsEnvPodContainerLogVO(devopsEnvPodDTO.getName(), containerDTO.getName()))
+                .collect(Collectors.toList());
 
-        return devopsEnvPodContainerLogDTOS;
+        return devopsEnvPodContainerLogVOS;
     }
 }

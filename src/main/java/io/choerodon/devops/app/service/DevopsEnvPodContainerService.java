@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.DevopsEnvPodContainerLogDTO;
+import io.choerodon.devops.api.vo.DevopsEnvPodContainerLogVO;
 
 /**
  * Creator: Runge
@@ -16,8 +16,8 @@ public interface DevopsEnvPodContainerService {
      * 获取日志信息 By Pod
      *
      * @param podId pod ID
-     * @return DevopsEnvPodContainerLogDTO
+     * @return DevopsEnvPodContainerLogVO
      */
-    List<DevopsEnvPodContainerLogDTO> logByPodId(Long podId);
+    List<DevopsEnvPodContainerLogVO> logByPodId(Long podId);
 
 }

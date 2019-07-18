@@ -211,7 +211,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
 
     @Override
-    public DevopsCustomizeResourceVO getDevopsCustomizeResourceDetail(Long resourceId) {
+    public DevopsCustomizeResourceVO queryDevopsCustomizeResourceDetail(Long resourceId) {
         DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = queryDetail(resourceId);
         return ConvertUtils.convertObject(devopsCustomizeResourceDTO, DevopsCustomizeResourceVO.class);
     }

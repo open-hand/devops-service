@@ -393,7 +393,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsEnvPodDTO.setContainersForLogs(
                 pod.getContainers()
                         .stream()
-                        .map(container -> new DevopsEnvPodContainerLogDTO(pod.getName(), container.getName()))
+                        .map(container -> new DevopsEnvPodContainerLogVO(pod.getName(), container.getName()))
                         .collect(Collectors.toList())
         );
         return devopsEnvPodDTO;

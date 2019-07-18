@@ -8,18 +8,18 @@ import java.util.UUID;
  * Time: 16:23
  * Description:
  */
-public class DevopsEnvPodContainerLogDTO {
+public class DevopsEnvPodContainerLogVO {
     private String podName;
     private String containerName;
     private String logId;
 
-    public DevopsEnvPodContainerLogDTO() {
+    public DevopsEnvPodContainerLogVO() {
     }
 
     /**
      * 覆写构造方法
      */
-    public DevopsEnvPodContainerLogDTO(String podName, String containerName) {
+    public DevopsEnvPodContainerLogVO(String podName, String containerName) {
 
         this.podName = podName;
         this.containerName = containerName;
