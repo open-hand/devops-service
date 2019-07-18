@@ -2,14 +2,13 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
-import io.choerodon.core.convertor.ConvertHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.iam.entity.DevopsAppResourceE;
 import io.choerodon.devops.app.service.DevopsApplicationResourceService;
 import io.choerodon.devops.infra.dto.DevopsApplicationResourceDTO;
 import io.choerodon.devops.infra.mapper.DevopsApplicationResourceMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * @author zmf
@@ -20,9 +19,8 @@ public class DevopsApplicationResourceServiceImpl implements DevopsApplicationRe
     DevopsApplicationResourceMapper resourceMapper;
 
     @Override
-    public void baseCreate(DevopsAppResourceE devopsAppResourceE) {
-        DevopsApplicationResourceDTO resourceDO = ConvertHelper.convert(devopsAppResourceE, DevopsApplicationResourceDTO.class);
-        if (resourceMapper.insert(resourceDO) != 1) {
+    public void baseCreate(DevopsApplicationResourceDTO devopsApplicationResourceDTO) {
+        if (resourceMapper.insert(devopsApplicationResourceDTO) != 1) {
             throw new CommonException("error.insert.app.resource");
         }
     }
@@ -44,10 +42,10 @@ public class DevopsApplicationResourceServiceImpl implements DevopsApplicationRe
     }
 
     @Override
-    public List<DevopsAppResourceE> baseQueryByApplicationAndType(Long appId, String type) {
+    public List<DevopsApplicationResourceDTO> baseQueryByApplicationAndType(Long appId, String type) {
         DevopsApplicationResourceDTO resourceDO = new DevopsApplicationResourceDTO();
         resourceDO.setAppId(appId);
         resourceDO.setResourceType(type);
-        return ConvertHelper.convertList(resourceMapper.select(resourceDO), DevopsAppResourceE.class);
+        return resourceMapper.select(resourceDO);
     }
 }

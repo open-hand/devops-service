@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
 
+import java.util.List;
 import javax.persistence.*;
 
 import io.choerodon.mybatis.entity.BaseDTO;
@@ -24,6 +25,16 @@ public class DevopsConfigMapDTO extends BaseDTO {
     private String commandType;
     @Transient
     private String commandStatus;
+    @Transient
+    private List<String> key;
+
+    public List<String> getKey() {
+        return key;
+    }
+
+    public void setKey(List<String> key) {
+        this.key = key;
+    }
 
     public Long getId() {
         return id;
