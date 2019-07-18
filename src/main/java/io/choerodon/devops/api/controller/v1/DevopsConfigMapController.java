@@ -62,7 +62,7 @@ public class DevopsConfigMapController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "配置映射删除")
-    @DeleteMapping(value = "/{configMap_id}/delete")
+    @DeleteMapping(value = "/{configMap_id}")
     public ResponseEntity delete(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -130,8 +130,8 @@ public class DevopsConfigMapController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境配置映射查询")
     @CustomPageRequest
-    @PostMapping(value = "/listByEnv")
-    public ResponseEntity<PageInfo<DevopsConfigMapRepDTO>> listByEnv(
+    @PostMapping(value = "/page_by_options")
+    public ResponseEntity<PageInfo<DevopsConfigMapRepDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id")
@@ -143,7 +143,7 @@ public class DevopsConfigMapController {
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsConfigMapService.listByEnv(projectId, envId, pageRequest, searchParam, appId))
+        return Optional.ofNullable(devopsConfigMapService.pageByOptions(projectId, envId, pageRequest, searchParam, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.configMap.query"));
     }

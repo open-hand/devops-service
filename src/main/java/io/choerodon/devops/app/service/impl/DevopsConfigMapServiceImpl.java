@@ -43,29 +43,15 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
 
     @Autowired
-    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
-    @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
-    @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private UserAttrRepository userAttrRepository;
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
-    private DevopsConfigMapRepository devopsConfigMapRepository;
-    @Autowired
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
-    @Autowired
-    private GitlabRepository gitlabRepository;
-    @Autowired
     private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private DevopsApplicationResourceRepository appResourceRepository;
     @Autowired
     private DevopsConfigMapMapper devopsConfigMapMapper;
 
@@ -155,7 +141,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
     @Override
-    public PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam,Long appId) {
+    public PageInfo<DevopsConfigMapRepDTO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String searchParam, Long appId) {
         PageInfo<DevopsConfigMapE> devopsConfigMapES = devopsConfigMapRepository.basePageByEnv(
                 envId, pageRequest, searchParam,appId);
         devopsConfigMapES.getList().forEach(devopsConfigMapE -> {

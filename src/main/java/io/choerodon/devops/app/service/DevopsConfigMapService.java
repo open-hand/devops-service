@@ -23,7 +23,7 @@ public interface DevopsConfigMapService {
 
     DevopsConfigMapRepDTO query(Long configMapId);
 
-    PageInfo<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam,Long appId);
+    PageInfo<DevopsConfigMapRepDTO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String searchParam, Long appId);
 
     DevopsConfigMapDTO baseQueryByEnvIdAndName(Long envId, String name);
 
