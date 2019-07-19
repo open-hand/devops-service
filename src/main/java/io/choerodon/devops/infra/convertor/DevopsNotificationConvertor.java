@@ -32,14 +32,7 @@ import io.choerodon.devops.infra.dataobject.DevopsNotificationDO;
 public class DevopsNotificationConvertor implements ConvertorI<DevopsNotificationE, DevopsNotificationDTO, DevopsNotificationVO> {
 
 
-    @Override
-    public DevopsNotificationE dtoToEntity(DevopsNotificationVO notificationDTO) {
-        DevopsNotificationE notificationE = new DevopsNotificationE();
-        BeanUtils.copyProperties(notificationDTO, notificationE);
-        notificationE.setNotifyType(notificationDTO.getNotifyType().stream().collect(Collectors.joining(",")));
-        notificationE.setNotifyTriggerEvent(notificationDTO.getNotifyTriggerEvent().stream().collect(Collectors.joining(",")));
-        return notificationE;
-    }
+
 
     @Override
     public DevopsNotificationDTO entityToDo(DevopsNotificationE entity) {
@@ -55,21 +48,5 @@ public class DevopsNotificationConvertor implements ConvertorI<DevopsNotificatio
         return notificationE;
     }
 
-    @Override
-    public DevopsNotificationVO entityToDto(DevopsNotificationE entity) {
-        DevopsNotificationVO notificationDTO = new DevopsNotificationVO();
-        BeanUtils.copyProperties(entity, notificationDTO);
-        if (entity.getNotifyType() != null && !entity.getNotifyType().isEmpty()) {
-            notificationDTO.setNotifyType(Arrays.asList(entity.getNotifyType().split(",")));
-        } else {
-            notificationDTO.setNotifyType(new ArrayList<>());
-        }
 
-        if (entity.getNotifyTriggerEvent() != null && !entity.getNotifyTriggerEvent().isEmpty()) {
-            notificationDTO.setNotifyTriggerEvent(Arrays.asList(entity.getNotifyTriggerEvent().split(",")));
-        } else {
-            notificationDTO.setNotifyTriggerEvent(new ArrayList<>());
-        }
-        return notificationDTO;
-    }
 }

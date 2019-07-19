@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by Sheep on 2019/5/15.
  */
-public class ResourceCheckDTO {
+public class ResourceCheckVO {
 
     private String method;
 

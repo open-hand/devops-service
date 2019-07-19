@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.SecretRepDTO;
 import io.choerodon.devops.api.vo.SecretReqDTO;
+import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 
 /**
  * Created by n!Ck
@@ -79,4 +80,9 @@ public interface DevopsSecretService {
      * @param name  密钥名
      */
     void checkName(Long envId, String name);
+
+
+    DevopsSecretDTO baseQuery(Long secretId);
+
+
 }

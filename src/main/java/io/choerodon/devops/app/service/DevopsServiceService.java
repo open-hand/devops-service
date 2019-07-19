@@ -6,6 +6,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsServiceReqDTO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
+import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -125,4 +126,8 @@ public interface DevopsServiceService {
      * @return Page of DevopsServiceVO
      */
     PageInfo<DevopsServiceVO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest, Long appId);
+
+
+    DevopsServiceDTO baseQuery(Long id);
+
 }

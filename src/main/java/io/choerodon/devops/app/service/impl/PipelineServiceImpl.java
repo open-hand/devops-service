@@ -836,11 +836,11 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params) {
-        NotifyDTO notifyDTO = new NotifyDTO();
-        notifyDTO.setTargetUsers(users);
-        notifyDTO.setSourceId(pipelineRecordId);
-        notifyDTO.setCode(type);
-        notifyDTO.setCustomizedSendingTypes(Collections.singletonList("siteMessage"));
+        NotifyVO notifyVO = new NotifyVO();
+        notifyVO.setTargetUsers(users);
+        notifyVO.setSourceId(pipelineRecordId);
+        notifyVO.setCode(type);
+        notifyVO.setCustomizedSendingTypes(Collections.singletonList("siteMessage"));
         PipelineRecordE recordE = pipelineRecordRepository.baseQueryById(pipelineRecordId);
         params.put("pipelineId", recordE.getPipelineId().toString());
         params.put("pipelineName", recordE.getPipelineName());
@@ -849,8 +849,8 @@ public class PipelineServiceImpl implements PipelineService {
         ProjectVO projectE = iamRepository.queryIamProject(recordE.getProjectId());
         params.put("projectName", projectE.getName());
         params.put("organizationId", projectE.getOrganization().getId().toString());
-        notifyDTO.setParams(params);
-        notifyClient.sendMessage(notifyDTO);
+        notifyVO.setParams(params);
+        notifyClient.sendMessage(notifyVO);
     }
 
     private void sendFailedSiteMessage(Long pipelineRecordId, Long userId) {

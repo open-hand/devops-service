@@ -623,7 +623,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressMapper.updateByPrimaryKeySelective(devopsIngressDTO);
     }
 
-    public PageInfo<DevopsIngressVO> baseQueryIngressDTO(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsIngressVO> basePageIngressDTO(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params) {
         List<DevopsIngressVO> devopsIngressVOS = new ArrayList<>();
 
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {

@@ -10,7 +10,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsNotificationVO;
-import io.choerodon.devops.api.vo.ResourceCheckDTO;
+import io.choerodon.devops.api.vo.ResourceCheckVO;
 import io.choerodon.devops.app.service.DevopsNotificationService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -35,19 +35,19 @@ public class DevopsNotificationController {
     /**
      * 项目下创建通知
      *
-     * @param projectId       项目id
-     * @param notificationDTO 通知信息
+     * @param projectId            项目id
+     * @param devopsNotificationVO 通知信息
      * @return ResponseEntity
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建通知")
     @PostMapping
     public ResponseEntity<DevopsNotificationVO> create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "通知信息", required = true)
-            @RequestBody DevopsNotificationVO notificationDTO) {
-        return Optional.ofNullable(notificationService.create(projectId, notificationDTO))
+            @RequestBody DevopsNotificationVO devopsNotificationVO) {
+        return Optional.ofNullable(notificationService.create(projectId, devopsNotificationVO))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.notification.create"));
     }
@@ -55,19 +55,19 @@ public class DevopsNotificationController {
     /**
      * 项目下更新通知
      *
-     * @param projectId       项目id
-     * @param notificationDTO 通知信息
+     * @param projectId            项目id
+     * @param devopsNotificationVO 通知信息
      * @return ResponseEntity
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新通知")
     @PutMapping
     public ResponseEntity<DevopsNotificationVO> update(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "通知信息", required = true)
-            @RequestBody DevopsNotificationVO notificationDTO) {
-        return Optional.ofNullable(notificationService.update(projectId, notificationDTO))
+            @RequestBody DevopsNotificationVO devopsNotificationVO) {
+        return Optional.ofNullable(notificationService.update(projectId, devopsNotificationVO))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.notification.update"));
     }
@@ -80,7 +80,7 @@ public class DevopsNotificationController {
      * @param notificationId 通知Id
      * @return ResponseEntity
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除通知")
     @DeleteMapping(value = "/{notification_id}")
     public ResponseEntity delete(
@@ -93,13 +93,13 @@ public class DevopsNotificationController {
     }
 
     /**
-     * 项目下通知详情
+     * 项目下获取通知详情
      *
      * @param projectId      项目id
      * @param notificationId 通知Id
      * @return ResponseEntity
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下获取通知详情")
     @GetMapping(value = "/{notification_id}")
     public ResponseEntity<DevopsNotificationVO> queryById(
@@ -113,7 +113,7 @@ public class DevopsNotificationController {
     }
 
     /**
-     * 通知列表
+     * 分页查询通知列表
      *
      * @param projectId
      * @param envId
@@ -121,11 +121,11 @@ public class DevopsNotificationController {
      * @param params
      * @return
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "通知列表")
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "分页查询通知列表")
     @CustomPageRequest
-    @PostMapping(value = "/list")
-    public ResponseEntity<PageInfo<DevopsNotificationVO>> listByOptions(
+    @PostMapping(value = "/page_by_options")
+    public ResponseEntity<PageInfo<DevopsNotificationVO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id", required = false)
@@ -134,7 +134,7 @@ public class DevopsNotificationController {
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody String params) {
-        return Optional.ofNullable(notificationService.listByOptions(projectId, envId, params, pageRequest))
+        return Optional.ofNullable(notificationService.pageByOptions(projectId, envId, params, pageRequest))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.notification.list"));
     }
@@ -148,7 +148,7 @@ public class DevopsNotificationController {
      * @param envId     通知Id
      * @return ResponseEntity
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下校验通知")
     @GetMapping(value = "/check")
     public ResponseEntity<Set<String>> check(
@@ -162,25 +162,24 @@ public class DevopsNotificationController {
     }
 
 
-
     /**
      * 校验删除对象是否需要发送验证码
      *
      * @param projectId  项目id
-     * @param envId  环境id
-     * @param objectType  资源对象类型
+     * @param envId      环境id
+     * @param objectType 资源对象类型
      * @return
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/check_delete_resource")
-    public ResponseEntity<ResourceCheckDTO> checkDeleteResource(
+    public ResponseEntity<ResourceCheckVO> checkDeleteResource(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id")
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "资源对象类型")
-            @RequestParam String objectType) {
+            @RequestParam(value = "object_type") String objectType) {
         return Optional.ofNullable(notificationService.checkResourceDelete(envId, objectType))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.check.resource.delete"));
@@ -190,14 +189,14 @@ public class DevopsNotificationController {
     /**
      * 发送验证码
      *
-     * @param projectId  项目Id
-     * @param envId   环境Id
-     * @param objectId  对象Id
-     * @param notificationId  通知Id
-     * @param objectType  对象类型
+     * @param projectId      项目Id
+     * @param envId          环境Id
+     * @param objectId       对象Id
+     * @param notificationId 通知Id
+     * @param objectType     对象类型
      * @return
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/send_message")
     public void sendMessage(
@@ -210,23 +209,22 @@ public class DevopsNotificationController {
             @ApiParam(value = "通知Id")
             @RequestParam(value = "notification_id") Long notificationId,
             @ApiParam(value = "资源对象类型")
-            @RequestParam String objectType) {
+            @RequestParam(value = "object_type") String objectType) {
         notificationService.sendMessage(envId, notificationId, objectId, objectType);
     }
-
 
 
     /**
      * 校验验证码
      *
      * @param projectId  项目Id
-     * @param envId   环境Id
-     * @param objectId  对象Id
-     * @param captcha  验证码
-     * @param objectType  对象类型
+     * @param envId      环境Id
+     * @param objectId   对象Id
+     * @param captcha    验证码
+     * @param objectType 对象类型
      * @return
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @GetMapping(value = "/validate_captcha")
     public void validateCaptcha(
@@ -240,6 +238,6 @@ public class DevopsNotificationController {
             @RequestParam String captcha,
             @ApiParam(value = "资源对象类型")
             @RequestParam String objectType) {
-        notificationService.validateCaptcha(envId, objectId,objectType,captcha);
+        notificationService.validateCaptcha(envId, objectId, objectType, captcha);
     }
 }

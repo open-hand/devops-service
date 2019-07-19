@@ -308,4 +308,7 @@ public interface ApplicationInstanceService {
     List<ApplicationInstanceDTO> baseList();
 
     List<ApplicationInstanceDTO> baseListByValueId(Long valueId);
+
+    ApplicationInstanceDTO baseQuery(Long id);
+
 }
