@@ -63,7 +63,7 @@ public interface DevopsSecretService {
      * @param params      查询参数
      * @return Page
      */
-    PageInfo<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params, Long appId);
+    PageInfo<SecretRepDTO> pageByOption(Long envId, PageRequest pageRequest, String params, Long appId);
 
     /**
      * 根据密钥id查询密钥

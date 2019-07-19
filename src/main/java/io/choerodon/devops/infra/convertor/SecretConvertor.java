@@ -54,9 +54,7 @@ public class SecretConvertor implements ConvertorI<DevopsSecretE, DevopsSecretDT
     public DevopsSecretE doToEntity(DevopsSecretDTO devopsSecretDTO) {
         DevopsSecretE devopsSecretE = new DevopsSecretE();
         BeanUtils.copyProperties(devopsSecretDTO, devopsSecretE);
-        Map<String, String> secretMaps = gson
-                .fromJson(devopsSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
-                }.getType());
+        Map<String, String> secretMaps = gson.fromJson(devopsSecretDTO.getValue(), new TypeToken<Map<String, String>>() {}.getType());
         devopsSecretE.setValue(secretMaps);
         return devopsSecretE;
     }

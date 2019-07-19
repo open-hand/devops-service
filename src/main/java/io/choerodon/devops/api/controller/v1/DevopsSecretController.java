@@ -93,8 +93,8 @@ public class DevopsSecretController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "分页查询secret")
-    @PostMapping("/list_by_option")
-    public ResponseEntity<PageInfo<SecretRepDTO>> listByOption(
+    @PostMapping("/page_by_option")
+    public ResponseEntity<PageInfo<SecretRepDTO>> pageByOption(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id")
@@ -105,7 +105,7 @@ public class DevopsSecretController {
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsSecretService.listByOption(envId, pageRequest, params, appId))
+        return Optional.ofNullable(devopsSecretService.pageByOption(envId, pageRequest, params, appId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.list"));
     }

@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Map;
 import javax.persistence.*;
 
 import io.choerodon.mybatis.entity.BaseDTO;
@@ -27,6 +28,16 @@ public class DevopsSecretDTO extends BaseDTO {
     private String status;
     @Transient
     private String commandType;
+    @Transient
+    private Map<String, String> valueMap;
+
+    public Map<String, String> getValueMap() {
+        return valueMap;
+    }
+
+    public void setValueMap(Map<String, String> valueMap) {
+        this.valueMap = valueMap;
+    }
 
     public DevopsSecretDTO() {
     }
