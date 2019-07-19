@@ -2,6 +2,26 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.ApplicationInstanceMapper">
+    <select id="queryInfoById" resultType="io.choerodon.devops.infra.dataobject.AppInstanceInfoDTO">
+        SELECT ins.id,
+               ins.code,
+               ins.status,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.app_instance_id = ins.id) pod_count,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.app_instance_id = ins.id
+                  AND dp.`status` = 'Running'
+                  AND dp.is_ready = TRUE) pod_running_count,
+               ins.app_id,
+               ins.app_version_id,
+               version.version as          version_name
+        FROM devops_app_instance ins
+                 LEFT JOIN devops_app_version version ON ins.app_version_id = version.id
+        WHERE ins.id = #{instanceId};
+    </select>
+
     <select id="listApplicationInstance" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
         SELECT
         dai.id id,

@@ -40,6 +40,29 @@ public class ApplicationInstanceController {
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
 
+
+    /**
+     * 根据实例id获取实例信息
+     *
+     * @param projectId     项目id
+     * @param appInstanceId 实例id
+     * @return 实例信息
+     */
+    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据实例id获取实例信息")
+    @GetMapping(value = "/{app_instance_id}")
+    public ResponseEntity<AppInstanceInfoVO> queryInstanceInformationById(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable(value = "app_instance_id") Long appInstanceId) {
+        return Optional.ofNullable(applicationInstanceService.queryInfoById(appInstanceId))
+                .map(info -> new ResponseEntity<>(info,HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.query.instance.by.id"));
+    }
+
+
     /**
      * 分页查询应用部署
      *

@@ -139,6 +139,17 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
 
     @Override
+    public AppInstanceInfoVO queryInfoById(Long instanceId) {
+        AppInstanceInfoDTO appInstanceInfoDTO = applicationInstanceMapper.queryInfoById(instanceId);
+        if (appInstanceInfoDTO == null) {
+            return null;
+        }
+        AppInstanceInfoVO appInstanceInfoVO = new AppInstanceInfoVO();
+        BeanUtils.copyProperties(appInstanceInfoDTO, appInstanceInfoVO);
+        return appInstanceInfoVO;
+    }
+
+    @Override
     public PageInfo<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                                          Long envId, Long versionId, Long appId, Long instanceId, String params) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList();
