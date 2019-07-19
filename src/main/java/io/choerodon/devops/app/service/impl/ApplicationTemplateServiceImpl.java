@@ -21,13 +21,14 @@ import io.choerodon.devops.api.validator.ApplicationTemplateValidator;
 import io.choerodon.devops.api.vo.ApplicationTemplateRespVO;
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
 import io.choerodon.devops.api.vo.ApplicationTemplateVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
+import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -76,8 +77,6 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     @Autowired
     private IamService iamService;
     @Autowired
-    private GitLabService gitLabService;
-    @Autowired
     private GitUtil gitUtil;
     @Autowired
     private UserAttrService userAttrService;
@@ -108,17 +107,17 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         applicationTemplateDTO.setSynchro(false);
         applicationTemplateDTO.setFailed(false);
 
-        DevopsProjectVO devopsProjectVO = gitLabService.queryGroupByName(
+        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(
                 organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        if (devopsProjectVO == null) {
-            DevopsProjectVO devopsProjectVONew = new DevopsProjectVO();
-            devopsProjectVONew.initName(organization.getCode() + "_" + TEMPLATE);
-            devopsProjectVONew.initPath(organization.getCode() + "_" + TEMPLATE);
-            devopsProjectVONew.initVisibility(Visibility.PUBLIC);
-            gitlabGroupId = TypeUtil.objToInteger(gitLabService.createGroup(
-                    devopsProjectVONew, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())).getDevopsAppGroupId());
+        if (groupDTO == null) {
+            GroupDTO groupDTONew = new GroupDTO();
+            groupDTONew.setName(organization.getCode() + "_" + TEMPLATE);
+            groupDTONew.setPath(organization.getCode() + "_" + TEMPLATE);
+            groupDTONew.setVisibility(Visibility.PUBLIC);
+            gitlabGroupId = TypeUtil.objToInteger(gitlabServiceClientOperator.createGroup(
+                    groupDTONew, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())).getId());
         } else {
-            gitlabGroupId = TypeUtil.objToInteger(devopsProjectVO.getDevopsAppGroupId());
+            gitlabGroupId = groupDTO.getId();
         }
 
         baseCreate(applicationTemplateDTO);
@@ -155,7 +154,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         ApplicationTemplateDTO applicationTemplateDTO = applicationTemplateMapper.selectByPrimaryKey(appTemplateId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (applicationTemplateDTO.getGitlabProjectId() != null) {
-            gitLabService.deleteProject(
+            gitlabServiceClientOperator.deleteProjectById(
                     TypeUtil.objToInteger(applicationTemplateDTO.getGitlabProjectId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
@@ -199,10 +198,10 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         ApplicationTemplateDTO applicationTemplateDTO = applicationTemplateMapper.queryByCode(
                 gitlabProjectPayload.getOrganizationId(), gitlabProjectPayload.getPath());
         OrganizationDTO organization = iamService.queryOrganizationById(gitlabProjectPayload.getOrganizationId());
-        GitlabProjectDTO gitlabProjectDTO = gitLabService.getProjectByName(organization.getCode() + "_template", applicationTemplateDTO.getCode(), gitlabProjectPayload.getUserId());
+        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(organization.getCode() + "_template", applicationTemplateDTO.getCode(), gitlabProjectPayload.getUserId());
 
         if (gitlabProjectDTO.getId() == null) {
-            gitlabProjectDTO = gitLabService.createProject(gitlabProjectPayload.getGroupId(),
+            gitlabProjectDTO = gitlabServiceClientOperator.createProject(gitlabProjectPayload.getGroupId(),
                     gitlabProjectPayload.getPath(), gitlabProjectPayload.getUserId(), true);
         }
 
@@ -237,8 +236,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                         accessToken);
             }
         } else {
-            if (!gitLabService.getFile(gitlabProjectDTO.getId(), MASTER, README)) {
-                gitLabService.createFile(gitlabProjectDTO.getId(),
+            if (!gitlabServiceClientOperator.getFile(gitlabProjectDTO.getId(), MASTER, README)) {
+                gitlabServiceClientOperator.createFile(gitlabProjectDTO.getId(),
                         README, README_CONTENT, "ADD README",
                         gitlabProjectPayload.getUserId());
             }
@@ -251,7 +250,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     private String getToken(GitlabProjectPayload gitlabProjectPayload, String applicationDir, UserAttrDTO userAttrDTO) {
         String accessToken = userAttrDTO.getGitlabToken();
         if (accessToken == null) {
-            accessToken = gitLabService.createToken(gitlabProjectPayload.getGitlabProjectId(),
+            accessToken = gitlabServiceClientOperator.createProjectToken(gitlabProjectPayload.getGitlabProjectId(),
                     applicationDir, gitlabProjectPayload.getUserId());
             userAttrDTO.setGitlabToken(accessToken);
             userAttrService.baseUpdate(userAttrDTO);

@@ -9,9 +9,14 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.domain.application.valueobject.Payload;
+import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.HelmType;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GitUtil;
@@ -45,7 +50,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private CommandSender commandSender;
 
     @Autowired
-    private IamRepository iamRepository;
+    private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
@@ -64,9 +69,9 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
 
     @Override
-    public void sendCommand(DevopsEnvironmentE devopsEnvironmentE) {
+    public void sendCommand(DevopsEnvironmentDTO devopsEnvironmentDTO) {
         Msg msg = new Msg();
-        msg.setKey("cluster:" + devopsEnvironmentE.getClusterE().getId() + ".env:" + devopsEnvironmentE.getCode() + ".envId:" + devopsEnvironmentE.getId());
+        msg.setKey("cluster:" + devopsEnvironmentDTO.getClusterId() + ".env:" + devopsEnvironmentDTO.getCode() + ".envId:" + devopsEnvironmentDTO.getId());
         msg.setType("git_ops_sync");
         msg.setPayload("");
         commandSender.sendMsg(msg);
@@ -74,23 +79,23 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
 
     @Override
-    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, DevopsEnvironmentE devopsEnvironmentE, String values, Long commandId, String secretCode) {
+    public void deploy(ApplicationDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values, Long commandId, String secretCode) {
         Msg msg = new Msg();
         List<ImagePullSecret> imagePullSecrets = null;
         if (secretCode != null) {
             imagePullSecrets = Arrays.asList(new ImagePullSecret(secretCode));
         }
         Payload payload = new Payload(
-                devopsEnvironmentE.getCode(),
-                applicationVersionE.getRepository(),
-                applicationE.getCode(),
-                applicationVersionE.getVersion(),
+                devopsEnvironmentDTO.getCode(),
+                applicationVersionDTO.getRepository(),
+                applicationDTO.getCode(),
+                applicationVersionDTO.getVersion(),
                 values, releaseName, imagePullSecrets);
 
         msg.setKey(String.format("cluster:%d.env:%s.envId:%d.release:%s",
-                devopsEnvironmentE.getClusterE().getId(),
-                devopsEnvironmentE.getCode(),
-                devopsEnvironmentE.getId(),
+                devopsEnvironmentDTO.getClusterId(),
+                devopsEnvironmentDTO.getCode(),
+                devopsEnvironmentDTO.getId(),
                 releaseName));
 
         msg.setType(HelmType.HELM_RELEASE_PRE_UPGRADE.toValue());
@@ -208,18 +213,18 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void initEnv(DevopsEnvironmentE devopsEnvironmentE, Long clusterId) {
+    public void initEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, Long clusterId) {
         GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(clusterId);
         List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
-        ProjectVO projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
 
         GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
-        gitEnvConfigDTO.setEnvId(devopsEnvironmentE.getId());
-        gitEnvConfigDTO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
+        gitEnvConfigDTO.setEnvId(devopsEnvironmentDTO.getId());
+        gitEnvConfigDTO.setGitRsaKey(devopsEnvironmentDTO.getEnvIdRsa());
         gitEnvConfigDTO.setGitUrl(repoUrl);
-        gitEnvConfigDTO.setNamespace(devopsEnvironmentE.getCode());
+        gitEnvConfigDTO.setNamespace(devopsEnvironmentDTO.getCode());
         gitEnvConfigDTOS.add(gitEnvConfigDTO);
         gitConfigDTO.setEnvs(gitEnvConfigDTOS);
         gitConfigDTO.setGitHost(gitlabSshUrl);
@@ -236,14 +241,14 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void deployTestApp(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, String secretName, Long clusterId, String values) {
+    public void deployTestApp(ApplicationDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, String secretName, Long clusterId, String values) {
         Msg msg = new Msg();
         List<ImagePullSecret> imagePullSecrets = Arrays.asList(new ImagePullSecret(secretName));
         Payload payload = new Payload(
                 null,
-                applicationVersionE.getRepository(),
-                applicationE.getCode(),
-                applicationVersionE.getVersion(),
+                applicationVersionDTO.getRepository(),
+                applicationDTO.getCode(),
+                applicationVersionDTO.getVersion(),
                 values, releaseName, imagePullSecrets);
         msg.setKey(String.format(KEY_FORMAT, clusterId, releaseName));
         msg.setType(HelmType.EXECUTE_TEST.toValue());
