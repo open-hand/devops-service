@@ -26,12 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectPipelineController {
 
     @Autowired
-    GitlabProjectRepository gitlabRepository;
     private ProjectPipelineService projectPipelineService;
 
-    public ProjectPipelineController(ProjectPipelineService projectPipelineService) {
-        this.projectPipelineService = projectPipelineService;
-    }
 
     /**
      * Retry jobs in a pipeline
@@ -43,14 +39,14 @@ public class ProjectPipelineController {
      */
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "Retry jobs in a pipeline")
-    @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipelineId}/retry")
+    @PostMapping(value = "/gitlab_projects/{gitlab_project_id}/pipelines/{pipeline_id}/retry")
     public ResponseEntity<Boolean> retry(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
-            @PathVariable Long gitlabProjectId,
+            @PathVariable("gitlab_project_id") Long gitlabProjectId,
             @ApiParam(value = "流水线ID", required = true)
-            @PathVariable Long pipelineId) {
+            @PathVariable("pipeline_id") Long pipelineId) {
         return Optional.ofNullable(projectPipelineService.retry(gitlabProjectId, pipelineId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.retry"));
@@ -76,6 +72,6 @@ public class ProjectPipelineController {
             @PathVariable Long pipelineId) {
         return Optional.ofNullable(projectPipelineService.cancel(gitlabProjectId, pipelineId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.retry"));
+                .orElseThrow(() -> new CommonException("error.pipeline.cancel"));
     }
 }
