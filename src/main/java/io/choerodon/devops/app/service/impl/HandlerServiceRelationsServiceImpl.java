@@ -5,13 +5,13 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsServiceReqDTO;
+import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.EndPointPortDTO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.infra.dto.PortMapDTO;
+import io.choerodon.devops.infra.dto.PortMapVO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
@@ -100,14 +100,14 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                 .baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
                         checkServiceName(v1Service);
                         //初始化网络参数,更新网络和网络关联关系
-                        DevopsServiceReqDTO devopsServiceReqDTO = getDevopsServiceDTO(
+                        DevopsServiceReqVO devopsServiceReqVO = getDevopsServiceDTO(
                                 v1Service,
                                 v1Endpoints,
                                 envId);
-                        Boolean isNotChange = checkIsNotChange(devopsServiceE, devopsServiceReqDTO);
+                        Boolean isNotChange = checkIsNotChange(devopsServiceE, devopsServiceReqVO);
                         DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
                         if (!isNotChange) {
-                            devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceE.getId(), devopsServiceReqDTO, userId);
+                            devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceE.getId(), devopsServiceReqVO, userId);
                             DevopsServiceE newDevopsServiceE = devopsServiceRepository
                                     .baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
                             devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsServiceE.getCommandId());
@@ -141,16 +141,16 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         checkServiceName(v1Service);
                         DevopsServiceE devopsServiceE = devopsServiceRepository
                                 .baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
-                        DevopsServiceReqDTO devopsServiceReqDTO;
+                        DevopsServiceReqVO devopsServiceReqVO;
                         //初始化网络参数,创建时判断网络是否存在，存在则直接创建文件对象关联关系
                         if (devopsServiceE == null) {
-                            devopsServiceReqDTO = getDevopsServiceDTO(
+                            devopsServiceReqVO = getDevopsServiceDTO(
                                     v1Service,
                                     v1Endpoints,
                                     envId);
-                            devopsServiceService.insertDevopsServiceByGitOps(projectId, devopsServiceReqDTO, userId);
+                            devopsServiceService.insertDevopsServiceByGitOps(projectId, devopsServiceReqVO, userId);
                             devopsServiceE = devopsServiceRepository.baseQueryByNameAndEnvId(
-                                    devopsServiceReqDTO.getName(), envId);
+                                    devopsServiceReqVO.getName(), envId);
                         }
                         DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
 
@@ -170,12 +170,12 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     }
 
 
-    private DevopsServiceReqDTO getDevopsServiceDTO(V1Service v1Service,
-                                                    List<V1Endpoints> v1Endpoints,
-                                                    Long envId) {
-        DevopsServiceReqDTO devopsServiceReqDTO = new DevopsServiceReqDTO();
+    private DevopsServiceReqVO getDevopsServiceDTO(V1Service v1Service,
+                                                   List<V1Endpoints> v1Endpoints,
+                                                   Long envId) {
+        DevopsServiceReqVO devopsServiceReqVO = new DevopsServiceReqVO();
         if (v1Service.getSpec().getExternalIPs() != null) {
-            devopsServiceReqDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
+            devopsServiceReqVO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
         }
         Map<String, List<EndPointPortDTO>> endPoints = new HashMap<>();
         v1Endpoints.stream().filter(v1Endpoints1 -> v1Endpoints1.getMetadata().getName().equals(v1Service.getMetadata().getName())).forEach(v1Endpoints1 -> {
@@ -193,17 +193,17 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 endPointPortDTO.setPort(v1EndpointPort.getPort());
                 return endPointPortDTO;
             }).collect(Collectors.toList()));
-            devopsServiceReqDTO.setEndPoints(endPoints);
+            devopsServiceReqVO.setEndPoints(endPoints);
         });
 
-        devopsServiceReqDTO.setName(v1Service.getMetadata().getName());
-        devopsServiceReqDTO.setType(v1Service.getSpec().getType());
-        devopsServiceReqDTO.setEnvId(envId);
+        devopsServiceReqVO.setName(v1Service.getMetadata().getName());
+        devopsServiceReqVO.setType(v1Service.getSpec().getType());
+        devopsServiceReqVO.setEnvId(envId);
 
 
-        List<PortMapDTO> portMapList = v1Service.getSpec().getPorts().stream()
+        List<PortMapVO> portMapList = v1Service.getSpec().getPorts().stream()
                 .map(t -> {
-                    PortMapDTO portMap = new PortMapDTO();
+                    PortMapVO portMap = new PortMapVO();
                     portMap.setName(t.getName());
                     if (t.getNodePort() != null) {
                         portMap.setNodePort(t.getNodePort().longValue());
@@ -213,7 +213,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                     portMap.setTargetPort(TypeUtil.objToString(t.getTargetPort()));
                     return portMap;
                 }).collect(Collectors.toList());
-        devopsServiceReqDTO.setPorts(portMapList);
+        devopsServiceReqVO.setPorts(portMapList);
 
         if (v1Service.getMetadata().getAnnotations() != null) {
             String instancesCode = v1Service.getMetadata().getAnnotations()
@@ -222,17 +222,17 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 List<String> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel().map(t -> {
                     ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(t, envId);
                     if (applicationInstanceE != null) {
-                        devopsServiceReqDTO.setAppId(applicationInstanceE.getApplicationE().getId());
+                        devopsServiceReqVO.setAppId(applicationInstanceE.getApplicationE().getId());
                     }
                     return t;
                 }).collect(Collectors.toList());
-                devopsServiceReqDTO.setAppInstance(instanceIdList);
+                devopsServiceReqVO.setAppInstance(instanceIdList);
             }
         }
         if (v1Service.getSpec().getSelector() != null) {
-            devopsServiceReqDTO.setLabel(v1Service.getSpec().getSelector());
+            devopsServiceReqVO.setLabel(v1Service.getSpec().getSelector());
         }
-        return devopsServiceReqDTO;
+        return devopsServiceReqVO;
     }
 
 
@@ -245,14 +245,14 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         }
     }
 
-    private Boolean checkIsNotChange(DevopsServiceE devopsServiceE, DevopsServiceReqDTO devopsServiceReqDTO) {
-        List<PortMapDTO> oldPort = devopsServiceE.getPorts();
+    private Boolean checkIsNotChange(DevopsServiceE devopsServiceE, DevopsServiceReqVO devopsServiceReqVO) {
+        List<PortMapVO> oldPort = devopsServiceE.getPorts();
         //查询网络对应的实例
         List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                 devopsServiceInstanceRepository.baseListByServiceId(devopsServiceE.getId());
         Boolean isUpdate = false;
-        if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null && devopsServiceReqDTO.getAppInstance() != null) {
-            List<String> newInstanceCode = devopsServiceReqDTO.getAppInstance();
+        if (devopsServiceReqVO.getAppId() != null && devopsServiceE.getAppId() != null && devopsServiceReqVO.getAppInstance() != null) {
+            List<String> newInstanceCode = devopsServiceReqVO.getAppInstance();
             List<String> oldInstanceCode = devopsServiceInstanceEList.stream().map(DevopsServiceAppInstanceE::getCode).collect(Collectors.toList());
             for (String instanceCode : newInstanceCode) {
                 if (!oldInstanceCode.contains(instanceCode)) {
@@ -261,33 +261,33 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
             }
         }
 
-        if (devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() == null) {
-            if (devopsServiceReqDTO.getLabel() != null && devopsServiceE.getLabels() != null) {
-                if (!gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels())) {
+        if (devopsServiceReqVO.getAppId() == null && devopsServiceE.getAppId() == null) {
+            if (devopsServiceReqVO.getLabel() != null && devopsServiceE.getLabels() != null) {
+                if (!gson.toJson(devopsServiceReqVO.getLabel()).equals(devopsServiceE.getLabels())) {
                     isUpdate = true;
                 }
-            } else if (devopsServiceReqDTO.getEndPoints() != null && devopsServiceE.getEndPoints() != null) {
-                if (!gson.toJson(devopsServiceReqDTO.getEndPoints()).equals(devopsServiceE.getEndPoints())) {
+            } else if (devopsServiceReqVO.getEndPoints() != null && devopsServiceE.getEndPoints() != null) {
+                if (!gson.toJson(devopsServiceReqVO.getEndPoints()).equals(devopsServiceE.getEndPoints())) {
                     isUpdate = true;
                 }
             } else {
                 isUpdate = true;
             }
         }
-        if ((devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() != null) || (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() == null)) {
+        if ((devopsServiceReqVO.getAppId() == null && devopsServiceE.getAppId() != null) || (devopsServiceReqVO.getAppId() != null && devopsServiceE.getAppId() == null)) {
             isUpdate = true;
         }
         return !isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
-                .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
-                && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE);
+                .equals(devopsServiceReqVO.getPorts().stream().sorted().collect(Collectors.toList()))
+                && !isUpdateExternalIp(devopsServiceReqVO, devopsServiceE);
     }
 
-    private Boolean isUpdateExternalIp(DevopsServiceReqDTO devopsServiceReqDTO, DevopsServiceE devopsServiceE) {
-        return !((StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
+    private Boolean isUpdateExternalIp(DevopsServiceReqVO devopsServiceReqVO, DevopsServiceE devopsServiceE) {
+        return !((StringUtils.isEmpty(devopsServiceReqVO.getExternalIp())
                 && StringUtils.isEmpty(devopsServiceE.getExternalIp()))
-                || (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
+                || (!StringUtils.isEmpty(devopsServiceReqVO.getExternalIp())
                 && !StringUtils.isEmpty(devopsServiceE.getExternalIp())
-                && devopsServiceReqDTO.getExternalIp().equals(devopsServiceE.getExternalIp())));
+                && devopsServiceReqVO.getExternalIp().equals(devopsServiceE.getExternalIp())));
     }
 
     private DevopsEnvCommandVO createDevopsEnvCommandE(String type) {

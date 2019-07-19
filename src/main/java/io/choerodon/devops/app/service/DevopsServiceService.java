@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.DevopsServiceReqDTO;
+import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 
@@ -17,40 +17,40 @@ public interface DevopsServiceService {
      * 部署网络
      *
      * @param projectId           项目id
-     * @param devopsServiceReqDTO 部署网络参数
+     * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
-    Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO);
+    Boolean create(Long projectId, DevopsServiceReqVO devopsServiceReqVO);
 
 
     /**
      * 部署网络,GitOps
      *
      * @param projectId           项目id
-     * @param devopsServiceReqDTO 部署网络参数
+     * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
-    Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Long userId);
+    Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqVO devopsServiceReqVO, Long userId);
 
     /**
      * 更新网络
      *
      * @param projectId           项目id
      * @param id                  网络Id
-     * @param devopsServiceReqDTO 部署网络参数
+     * @param devopsServiceReqVO 部署网络参数
      * @return boolean
      */
-    Boolean updateDevopsService(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO);
+    Boolean update(Long projectId, Long id, DevopsServiceReqVO devopsServiceReqVO);
 
     /**
      * 更新网络
      *
      * @param projectId           项目id
      * @param id                  网络Id
-     * @param devopsServiceReqDTO 部署网络参数
+     * @param devopsServiceReqVO 部署网络参数
      * @return boolean
      */
-    Boolean updateDevopsServiceByGitOps(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO, Long userId);
+    Boolean updateDevopsServiceByGitOps(Long projectId, Long id, DevopsServiceReqVO devopsServiceReqVO, Long userId);
 
 
     /**
@@ -58,7 +58,7 @@ public interface DevopsServiceService {
      *
      * @param id 网络ID
      */
-    void deleteDevopsService(Long id);
+    void delete(Long id);
 
 
     /**
@@ -84,7 +84,7 @@ public interface DevopsServiceService {
      * @param envId 参数
      * @return List of DevopsServiceVO
      */
-    List<DevopsServiceVO> listDevopsService(Long envId);
+    List<DevopsServiceVO> listByEnvId(Long envId);
 
     /**
      * 查询单个网络
@@ -104,7 +104,7 @@ public interface DevopsServiceService {
      * @param searchParam 查询参数
      * @return Page of DevopsServiceVO
      */
-    PageInfo<DevopsServiceVO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsServiceVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
 
 
     /**
@@ -125,7 +125,7 @@ public interface DevopsServiceService {
      * @param appId       应用id
      * @return Page of DevopsServiceVO
      */
-    PageInfo<DevopsServiceVO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest, Long appId);
+    PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appId);
 
 
     DevopsServiceDTO baseQuery(Long id);

@@ -7,12 +7,12 @@ import java.util.Map;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.devops.infra.dto.PortMapDTO;
+import io.choerodon.devops.infra.dto.PortMapVO;
 
 /**
  * Created by Zenger on 2018/4/13.
  */
-public class DevopsServiceReqDTO {
+public class DevopsServiceReqVO {
 
     @NotNull
     private Long envId;
@@ -24,7 +24,7 @@ public class DevopsServiceReqDTO {
     @NotNull
     private String type;
     @NotNull
-    private List<PortMapDTO> ports;
+    private List<PortMapVO> ports;
 
     private Map<String, List<EndPointPortDTO>> endPoints;
 
@@ -73,11 +73,11 @@ public class DevopsServiceReqDTO {
         this.appInstance = appInstance;
     }
 
-    public List<PortMapDTO> getPorts() {
+    public List<PortMapVO> getPorts() {
         return ports;
     }
 
-    public void setPorts(List<PortMapDTO> ports) {
+    public void setPorts(List<PortMapVO> ports) {
         this.ports = ports;
     }
 

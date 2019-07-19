@@ -8,7 +8,7 @@ import java.util.Objects;
  * Time: 11:04
  * Description:
  */
-public class PortMapDTO implements Comparable<PortMapDTO> {
+public class PortMapVO implements Comparable<PortMapVO> {
     private String name;
     private Long port;
     private Long nodePort;
@@ -60,14 +60,14 @@ public class PortMapDTO implements Comparable<PortMapDTO> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof PortMapDTO)) {
+        if (!(o instanceof PortMapVO)) {
             return false;
         }
-        PortMapDTO portMapDTO = (PortMapDTO) o;
-        return Objects.equals(getPort(), portMapDTO.getPort())
-                && Objects.equals(getNodePort(), portMapDTO.getNodePort())
-                && Objects.equals(getProtocol(), portMapDTO.getProtocol())
-                && Objects.equals(getTargetPort(), portMapDTO.getTargetPort());
+        PortMapVO portMapVO = (PortMapVO) o;
+        return Objects.equals(getPort(), portMapVO.getPort())
+                && Objects.equals(getNodePort(), portMapVO.getNodePort())
+                && Objects.equals(getProtocol(), portMapVO.getProtocol())
+                && Objects.equals(getTargetPort(), portMapVO.getTargetPort());
     }
 
     @Override
@@ -76,7 +76,7 @@ public class PortMapDTO implements Comparable<PortMapDTO> {
     }
 
     @Override
-    public int compareTo(PortMapDTO o) {
+    public int compareTo(PortMapVO o) {
         Integer portCompare = port.compareTo(o.port);
         if (portCompare != 0) {
             return portCompare;

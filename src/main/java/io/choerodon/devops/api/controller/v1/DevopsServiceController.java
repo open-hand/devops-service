@@ -12,12 +12,13 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
-import io.choerodon.devops.api.vo.DevopsServiceReqDTO;
+import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,11 +32,9 @@ import springfox.documentation.annotations.ApiIgnore;
 public class DevopsServiceController {
 
     public static final String ERROR_APP_K8S_SERVICE_QUERY = "error.app.k8s.service.query";
-    private DevopsServiceService devopsServiceService;
 
-    public DevopsServiceController(DevopsServiceService devopsServiceService) {
-        this.devopsServiceService = devopsServiceService;
-    }
+    @Autowired
+    private DevopsServiceService devopsServiceService;
 
     /**
      * 检查网络唯一性
@@ -48,7 +47,7 @@ public class DevopsServiceController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查网络唯一性")
-    @GetMapping(value = "/check")
+    @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -65,7 +64,7 @@ public class DevopsServiceController {
      * 部署网络
      *
      * @param projectId           项目id
-     * @param devopsServiceReqDTO 部署网络参数
+     * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
@@ -75,9 +74,9 @@ public class DevopsServiceController {
     public ResponseEntity<Boolean> create(@ApiParam(value = "项目ID", required = true)
                                           @PathVariable(value = "project_id") Long projectId,
                                           @ApiParam(value = "部署网络参数", required = true)
-                                          @RequestBody @Valid DevopsServiceReqDTO devopsServiceReqDTO) {
+                                          @RequestBody @Valid DevopsServiceReqVO devopsServiceReqVO) {
         return Optional.ofNullable(
-                devopsServiceService.insertDevopsService(projectId, devopsServiceReqDTO))
+                devopsServiceService.create(projectId, devopsServiceReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
                 .orElseThrow(() -> new CommonException("error.service.deploy"));
     }
@@ -87,7 +86,7 @@ public class DevopsServiceController {
      *
      * @param projectId           项目id
      * @param id                  网络ID
-     * @param devopsServiceReqDTO 部署网络参数
+     * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER,
@@ -99,9 +98,9 @@ public class DevopsServiceController {
                                           @ApiParam(value = "网络ID", required = true)
                                           @PathVariable Long id,
                                           @ApiParam(value = "部署网络参数", required = true)
-                                          @RequestBody DevopsServiceReqDTO devopsServiceReqDTO) {
+                                          @RequestBody DevopsServiceReqVO devopsServiceReqVO) {
         return Optional.ofNullable(
-                devopsServiceService.updateDevopsService(projectId, id, devopsServiceReqDTO))
+                devopsServiceService.update(projectId, id, devopsServiceReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
                 .orElseThrow(() -> new CommonException("error.app.k8s.service.update"));
     }
@@ -121,13 +120,13 @@ public class DevopsServiceController {
                                  @PathVariable(value = "project_id") Long projectId,
                                  @ApiParam(value = "网络ID", required = true)
                                  @PathVariable Long id) {
-        devopsServiceService.deleteDevopsService(id);
+        devopsServiceService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 
     /**
-     * 分页查询网络列表
+     * 根据环境查询网络列表
      *
      * @param projectId 项目id
      * @param envId     参数
@@ -137,13 +136,13 @@ public class DevopsServiceController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境查询网络列表")
-    @GetMapping
+    @GetMapping("/list_by_env")
     public ResponseEntity<List<DevopsServiceVO>> listByEnvId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID", required = true)
-            @RequestParam Long envId) {
-        return Optional.ofNullable(devopsServiceService.listDevopsService(envId))
+            @RequestParam(value = "env_id") Long envId) {
+        return Optional.ofNullable(devopsServiceService.listByEnvId(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.k8s.service.env.query"));
     }
@@ -195,7 +194,7 @@ public class DevopsServiceController {
     }
 
     /**
-     * 环境总览网络查询
+     * 环境总览分页查询网络
      *
      * @param projectId   项目id
      * @param envId       环境id
@@ -206,20 +205,20 @@ public class DevopsServiceController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "环境总览网络查询")
+    @ApiOperation(value = "环境总览分页查询网络")
     @CustomPageRequest
-    @PostMapping(value = "/{envId}/listByEnv")
-    public ResponseEntity<PageInfo<DevopsServiceVO>> listByEnv(
+    @PostMapping(value = "/{env_id}/page_by_nev")
+    public ResponseEntity<PageInfo<DevopsServiceVO>> pageByEnv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "envId") Long envId,
+            @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsServiceService.listByEnv(projectId, envId, pageRequest, searchParam))
+        return Optional.ofNullable(devopsServiceService.pageByEnv(projectId, envId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
     }
@@ -238,8 +237,8 @@ public class DevopsServiceController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询实例下关联的网络域名（不包含chart）")
     @CustomPageRequest
-    @PostMapping(value = "/listByInstance")
-    public ResponseEntity<PageInfo<DevopsServiceVO>> listByInstance(
+    @PostMapping(value = "/page_by_instance")
+    public ResponseEntity<PageInfo<DevopsServiceVO>> pageByInstance(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例id")
@@ -249,7 +248,7 @@ public class DevopsServiceController {
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(devopsServiceService.listByInstanceId(projectId, instanceId, pageRequest,appId))
+        return Optional.ofNullable(devopsServiceService.pageByInstance(projectId, instanceId, pageRequest, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
     }

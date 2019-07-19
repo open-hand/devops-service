@@ -8,6 +8,7 @@ import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.PortMapE;
 <<<<<<< HEAD
 <<<<<<< HEAD:src/main/java/io/choerodon/devops/infra/convertor/DevopsServiceConvertor.java
@@ -25,6 +26,10 @@ import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 >>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a:src/main/java/io/choerodon/devops/infra/convertor/DevopsServiceConvertor.java
 >>>>>>> [IMP]重构后端断码
+=======
+import io.choerodon.devops.infra.dto.DevopsServiceDTO;
+import io.choerodon.devops.infra.dto.PortMapVO;
+>>>>>>> [IMP]修复后端结构
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +53,7 @@ public class DevopsServiceConvertor implements ConvertorI<DevopsServiceE, Devops
     public DevopsServiceE doToEntity(DevopsServiceDTO dataObject) {
         DevopsServiceE devopsServiceE = new DevopsServiceE();
         BeanUtils.copyProperties(dataObject, devopsServiceE);
-        devopsServiceE.setPorts(gson.fromJson(dataObject.getPorts(), new TypeToken<ArrayList<PortMapDTO>>() {
+        devopsServiceE.setPorts(gson.fromJson(dataObject.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
         }.getType()));
         return devopsServiceE;
     }
@@ -56,7 +61,7 @@ public class DevopsServiceConvertor implements ConvertorI<DevopsServiceE, Devops
     @Override
     public DevopsServiceVO entityToDto(DevopsServiceE devopsServiceE) {
         DevopsServiceVO devopsServiceVO = new DevopsServiceVO();
-        BeanUtils.copyProperties(devopsServiceE, devopsServiceVO);
+        BeanUtils.copyProperties(devopsServiceVO, devopsServiceVO);
         return devopsServiceVO;
     }
 }

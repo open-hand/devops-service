@@ -124,7 +124,7 @@ public interface DevopsIngressService {
 
     DevopsIngressDTO baseQueryIngressDTO(Long ingressId);
 
-    PageInfo<DevopsIngressVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsIngressVO> basePageByOptions(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params);
 
     List<DevopsIngressDTO> baseListByEnvId(Long envId);
 

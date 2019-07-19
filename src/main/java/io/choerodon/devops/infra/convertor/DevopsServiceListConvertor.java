@@ -12,10 +12,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.DevopsServiceConfigDTO;
+import io.choerodon.devops.api.vo.DevopsServiceConfigVO;
 import io.choerodon.devops.api.vo.DevopsServiceTargetDTO;
 import io.choerodon.devops.api.vo.EndPointPortDTO;
-import io.choerodon.devops.infra.dto.PortMapDTO;
+import io.choerodon.devops.infra.dto.PortMapVO;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
 
@@ -32,13 +32,13 @@ public class DevopsServiceListConvertor implements ConvertorI<DevopsServiceV, De
         DevopsServiceVO devopsServiceVO = new DevopsServiceVO();
         BeanUtils.copyProperties(entity, devopsServiceVO);
 
-        DevopsServiceConfigDTO devopsServiceConfigDTO = new DevopsServiceConfigDTO();
-        devopsServiceConfigDTO.setPorts(entity.getPorts());
+        DevopsServiceConfigVO devopsServiceConfigVO = new DevopsServiceConfigVO();
+        devopsServiceConfigVO.setPorts(entity.getPorts());
         if (entity.getExternalIp() != null) {
-            devopsServiceConfigDTO.setExternalIps(new ArrayList<>(
+            devopsServiceConfigVO.setExternalIps(new ArrayList<>(
                     Arrays.asList(entity.getExternalIp().split(","))));
         }
-        devopsServiceVO.setConfig(devopsServiceConfigDTO);
+        devopsServiceVO.setConfig(devopsServiceConfigVO);
 
         DevopsServiceTargetDTO devopsServiceTargetDTO = new DevopsServiceTargetDTO();
         devopsServiceTargetDTO.setAppInstance(entity.getAppInstance());
@@ -53,7 +53,7 @@ public class DevopsServiceListConvertor implements ConvertorI<DevopsServiceV, De
     public DevopsServiceV doToEntity(DevopsServiceQueryDTO dataObject) {
         DevopsServiceV devopsServiceV = new DevopsServiceV();
         BeanUtils.copyProperties(dataObject, devopsServiceV);
-        devopsServiceV.setPorts(gson.fromJson(dataObject.getPorts(), new TypeToken<ArrayList<PortMapDTO>>() {
+        devopsServiceV.setPorts(gson.fromJson(dataObject.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
         }.getType()));
         if (dataObject.getEndPoints() != null) {
             devopsServiceV.setEndPoinits(gson.fromJson(dataObject.getEndPoints(), new TypeToken<Map<String, List<EndPointPortDTO>>>() {

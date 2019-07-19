@@ -5,8 +5,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsServiceReqDTO;
-import io.choerodon.devops.infra.dto.PortMapDTO;
+import io.choerodon.devops.api.vo.DevopsServiceReqVO;
+import io.choerodon.devops.infra.dto.PortMapVO;
 
 /**
  * Created by Zenger on 2018/4/26.
@@ -30,11 +30,11 @@ public class DevopsServiceValidator {
     /**
      * 参数校验
      */
-    public static void checkService(DevopsServiceReqDTO devopsServiceReqDTO) {
-        devopsServiceReqDTO.getPorts().forEach(DevopsServiceValidator::checkPorts);
-        checkName(devopsServiceReqDTO.getName());
-        if (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
-                && !Pattern.matches(EXTERNAL_IP_PATTERN, devopsServiceReqDTO.getExternalIp())) {
+    public static void checkService(DevopsServiceReqVO devopsServiceReqVO) {
+        devopsServiceReqVO.getPorts().forEach(DevopsServiceValidator::checkPorts);
+        checkName(devopsServiceReqVO.getName());
+        if (!StringUtils.isEmpty(devopsServiceReqVO.getExternalIp())
+                && !Pattern.matches(EXTERNAL_IP_PATTERN, devopsServiceReqVO.getExternalIp())) {
             throw new CommonException("error.externalIp.notMatch");
 
         }
@@ -46,7 +46,7 @@ public class DevopsServiceValidator {
         }
     }
 
-    private static void checkPorts(PortMapDTO port) {
+    private static void checkPorts(PortMapVO port) {
         if (!checkPort(port.getPort())) {
             throw new CommonException("error.port.illegal");
         }

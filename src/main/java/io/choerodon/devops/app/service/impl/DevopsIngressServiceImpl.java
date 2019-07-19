@@ -102,7 +102,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         // 校验port是否属于该网络
         devopsIngressVO.getPathList().forEach(devopsIngressPathDTO -> {
             DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsIngressPathDTO.getServiceId());
-            if (dealWithPorts(devopsServiceDTO.getPorts()).stream().map(PortMapDTO::getPort).noneMatch(port -> port.equals(devopsIngressPathDTO.getServicePort()))) {
+            if (dealWithPorts(devopsServiceDTO.getPorts()).stream().map(PortMapVO::getPort).noneMatch(port -> port.equals(devopsIngressPathDTO.getServicePort()))) {
                 throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
             }
         });
@@ -206,7 +206,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressVO.getPathList().forEach(devopsIngressPathDTO -> {
             DevopsServiceDTO devopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsIngressPathDTO.getServiceId());
             if (dealWithPorts(devopsServiceDTO.getPorts()).stream()
-                    .map(PortMapDTO::getPort).noneMatch(port -> port.equals(devopsIngressPathDTO.getServicePort()))) {
+                    .map(PortMapVO::getPort).noneMatch(port -> port.equals(devopsIngressPathDTO.getServicePort()))) {
                 throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
             }
         });
@@ -250,8 +250,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
      * @param ports 数据库中的port字段
      * @return 反序列化的数据
      */
-    private List<PortMapDTO> dealWithPorts(String ports) {
-        return gson.fromJson(ports, new TypeToken<ArrayList<PortMapDTO>>() {
+    private List<PortMapVO> dealWithPorts(String ports) {
+        return gson.fromJson(ports, new TypeToken<ArrayList<PortMapVO>>() {
         }.getType());
     }
 
@@ -294,7 +294,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
 
     public PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String params) {
-        PageInfo<DevopsIngressVO> devopsIngressDTOS = baseQueryIngressDTO(projectId, envId, null, pageRequest, params);
+        PageInfo<DevopsIngressVO> devopsIngressDTOS = basePageByOptions(projectId, envId, null, pageRequest, params);
 
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         devopsIngressDTOS.getList().forEach(devopsIngressDTO -> {
@@ -624,7 +624,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressMapper.updateByPrimaryKeySelective(devopsIngressDTO);
     }
 
-    public PageInfo<DevopsIngressVO> basePageIngressDTO(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsIngressVO> basePageByOptions(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params) {
         List<DevopsIngressVO> devopsIngressVOS = new ArrayList<>();
 
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
@@ -693,7 +693,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     private void setIngressDTOCert(Long certId, DevopsIngressVO devopsIngressVO) {
         if (certId != null) {
-            devopsIngressVO.setCertId(certId);
+
             CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
             if (certificationDTO != null) {
                 devopsIngressVO.setCertName(certificationDTO.getName());
