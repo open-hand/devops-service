@@ -39,25 +39,6 @@ public class DevopsProjectConfigConvertor implements ConvertorI<DevopsProjectCon
     private static final Gson gson = new Gson();
 
     @Override
-    public DevopsProjectConfigE doToEntity(DevopsProjectConfigDTO devopsProjectConfigDTO) {
-        DevopsProjectConfigE devopsProjectConfigE = new DevopsProjectConfigE();
-        BeanUtils.copyProperties(devopsProjectConfigDTO, devopsProjectConfigE);
-        ProjectConfigVO configDTO = gson.fromJson(devopsProjectConfigDTO.getConfig(), ProjectConfigVO.class);
-        devopsProjectConfigE.setConfig(configDTO);
-        return devopsProjectConfigE;
-    }
-
-    @Override
-    public DevopsProjectConfigDTO entityToDo(DevopsProjectConfigE devopsProjectConfigE) {
-        DevopsProjectConfigDTO devopsProjectConfigDTO = new DevopsProjectConfigDTO();
-        BeanUtils.copyProperties(devopsProjectConfigE, devopsProjectConfigDTO);
-        String configJson = gson.toJson(devopsProjectConfigE.getConfig());
-        devopsProjectConfigDTO.setConfig(configJson);
-        return devopsProjectConfigDTO;
-    }
-
-
-    @Override
     public DevopsProjectConfigE dtoToEntity(DevopsProjectConfigVO devopsProjectConfigVO) {
         DevopsProjectConfigE devopsProjectConfigE = new DevopsProjectConfigE();
         BeanUtils.copyProperties(devopsProjectConfigVO, devopsProjectConfigE);

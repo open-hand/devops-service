@@ -10,7 +10,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
-import io.choerodon.devops.api.vo.ProjectDefaultConfigDTO;
+import io.choerodon.devops.api.vo.ProjectDefaultConfigVO;
 import io.choerodon.devops.app.service.DevopsProjectConfigService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -35,12 +35,12 @@ public class DevopsProjectConfigController {
     /**
      * 项目下创建配置
      *
-     * @param projectId              项目id
+     * @param projectId             项目id
      * @param devopsProjectConfigVO 配置信息
      * @return ResponseEntity<DevopsProjectConfigVO>
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下创建配置映射")
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下创建配置")
     @PostMapping
     public ResponseEntity<DevopsProjectConfigVO> create(
             @ApiParam(value = "项目ID", required = true)
@@ -58,7 +58,7 @@ public class DevopsProjectConfigController {
      * @param projectId 项目id
      * @param name      配置name
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建配置校验名称是否存在")
     @GetMapping(value = "/check_name")
     public ResponseEntity checkName(
@@ -73,11 +73,11 @@ public class DevopsProjectConfigController {
     /**
      * 项目下更新配置信息
      *
-     * @param projectId              项目id
+     * @param projectId             项目id
      * @param devopsProjectConfigVO 配置信息
      * @return ResponseEntity<DevopsProjectConfigVO>
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新配置信息")
     @PutMapping
     public ResponseEntity<DevopsProjectConfigVO> update(
@@ -85,7 +85,7 @@ public class DevopsProjectConfigController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置信息", required = true)
             @RequestBody DevopsProjectConfigVO devopsProjectConfigVO) {
-        return Optional.ofNullable(devopsProjectConfigService.updateByPrimaryKeySelective(projectId, devopsProjectConfigVO))
+        return Optional.ofNullable(devopsProjectConfigService.update(projectId, devopsProjectConfigVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.update"));
     }
@@ -97,10 +97,10 @@ public class DevopsProjectConfigController {
      * @param projectConfigId 配置id
      * @return ResponseEntity
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除配置")
     @DeleteMapping("/{project_config_id}")
-    public ResponseEntity deleteByProjectConfigId(
+    public ResponseEntity delete(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置id", required = true)
@@ -117,7 +117,7 @@ public class DevopsProjectConfigController {
      * @param param       param过滤参数
      * @return Page
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下分页查询配置")
     @CustomPageRequest
     @PostMapping("/list_by_options")
@@ -129,7 +129,7 @@ public class DevopsProjectConfigController {
             @ApiParam(value = "过滤参数")
             @RequestBody(required = false) String param) {
         return Optional.ofNullable(
-                devopsProjectConfigService.listByOptions(projectId, pageRequest, param))
+                devopsProjectConfigService.pageByOptions(projectId, pageRequest, param))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.list.by.options.get"));
     }
@@ -141,38 +141,38 @@ public class DevopsProjectConfigController {
      * @param projectConfigId 配置id
      * @return ResponseEntity<DevopsProjectConfigVO>
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下根据配置Id查询配置")
     @GetMapping("/{project_config_id}")
-    public ResponseEntity<DevopsProjectConfigVO> queryByPrimaryKey(
+    public ResponseEntity<DevopsProjectConfigVO> queryById(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置Id", required = true)
             @PathVariable(value = "project_config_id") Long projectConfigId) {
         return Optional.ofNullable(
-                devopsProjectConfigService.queryByPrimaryKey(projectConfigId))
+                devopsProjectConfigService.queryById(projectConfigId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.get"));
     }
 
     /**
-     * 根据项目Id和类型查询配置
+     * 项目下根据类型查询配置
      *
      * @param projectId 项目id
      * @param type      配置类型
      * @return
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下根据类型查询配置")
     @CustomPageRequest
-    @GetMapping("/type")
-    public ResponseEntity<List<DevopsProjectConfigVO>> queryByIdAndType(
+    @GetMapping("/list_by_type")
+    public ResponseEntity<List<DevopsProjectConfigVO>> listByIdAndType(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置类型", required = true)
             @RequestParam(value = "type") String type) {
         return Optional.ofNullable(
-                devopsProjectConfigService.queryByIdAndType(projectId, type))
+                devopsProjectConfigService.listByIdAndType(projectId, type))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.get.type"));
     }
@@ -183,7 +183,7 @@ public class DevopsProjectConfigController {
      * @param projectId 项目id
      * @return
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据配置Id检测该配置是否被使用")
     @CustomPageRequest
     @GetMapping("/{project_config_id}/check")
@@ -199,39 +199,38 @@ public class DevopsProjectConfigController {
     }
 
 
-
     /**
      * 设置项目对应harbor仓库为私有或者公有
      *
-     * @param projectId 项目id
-     * @param harborPrivate  是否私有
+     * @param projectId     项目id
+     * @param harborPrivate 是否私有
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "设置项目对应harbor仓库为私有或者公有")
-    @GetMapping("/enableProject")
-    public ResponseEntity enableProject(
+    @GetMapping("/operate_harbor_project")
+    public ResponseEntity operateHarborProject(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
-            @RequestParam boolean  harborPrivate) {
-        devopsProjectConfigService.setHarborProjectIsPrivate(projectId,harborPrivate);
+            @RequestParam(value = "harbor_private") Boolean harborPrivate) {
+        devopsProjectConfigService.operateHarborProject(projectId, harborPrivate);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     /**
-     * 设置项目对应harbor仓库为私有或者公有
+     * 获取项目默认的配置
      *
      * @param projectId 项目id
      * @return ProjectDefaultConfigDTO
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "设置项目对应harbor仓库为私有或者公有")
-    @GetMapping("/defaultConfig")
-    public ResponseEntity<ProjectDefaultConfigDTO> getProjectDefaultConfig(
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "获取项目默认的配置")
+    @GetMapping("/default_config")
+    public ResponseEntity<ProjectDefaultConfigVO> queryProjectDefaultConfig(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(
-                devopsProjectConfigService.getProjectDefaultConfig(projectId))
+                devopsProjectConfigService.queryProjectDefaultConfig(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.get"));
     }

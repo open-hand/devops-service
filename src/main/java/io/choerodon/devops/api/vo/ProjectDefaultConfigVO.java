@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by Sheep on 2019/5/5.
  */
-public class ProjectDefaultConfigDTO {
+public class ProjectDefaultConfigVO {
 
     private String harborConfigName;
     private String chartConfigName;

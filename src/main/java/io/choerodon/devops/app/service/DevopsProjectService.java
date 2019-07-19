@@ -11,4 +11,6 @@ public interface DevopsProjectService {
     DevopsProjectDTO baseQueryByProjectId(Long projectId);
 
     DevopsProjectDTO baseQueryByGitlabEnvGroupId(Integer envGroupId);
+
+    void baseUpdate(DevopsProjectDTO devopsProjectDTO);
 }
