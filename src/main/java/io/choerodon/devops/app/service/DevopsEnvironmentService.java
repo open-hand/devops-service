@@ -22,7 +22,7 @@ public interface DevopsEnvironmentService {
      * @param devopsEnviromentDTO 环境信息
      * @return String
      */
-    void create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO);
+    void create(Long projectId, DevopsEnviromentVO devopsEnviromentDTO);
 
     /**
      * 项目下环境流水线查询环境
@@ -31,7 +31,7 @@ public interface DevopsEnvironmentService {
      * @param active    是否可用
      * @return List
      */
-    List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active);
+    List<DevopsEnvGroupEnvsVO> listDevopsEnvGroupEnvs(Long projectId, Boolean active);
 
     /**
      * 项目下查询环境
@@ -40,7 +40,7 @@ public interface DevopsEnvironmentService {
      * @param active    是否可用
      * @return List
      */
-    List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active);
+    List<DevopsEnviromentRepVO> listByProjectIdAndActive(Long projectId, Boolean active);
 
     /**
      * 项目下查询环境
@@ -48,7 +48,7 @@ public interface DevopsEnvironmentService {
      * @param projectId 项目id
      * @return List
      */
-    List<DevopsEnviromentRepDTO> listDeployed(Long projectId);
+    List<DevopsEnviromentRepVO> listDeployed(Long projectId);
 
     /**
      * 实例视图查询项目下环境及其应用及实例
@@ -66,7 +66,7 @@ public interface DevopsEnvironmentService {
      * @param projectId     项目id
      * @return Boolean
      */
-    Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active);
+    Boolean updateActive(Long projectId, Long environmentId, Boolean active);
 
     /**
      * 项目下查询单个环境
@@ -74,7 +74,7 @@ public interface DevopsEnvironmentService {
      * @param environmentId 环境id
      * @return DevopsEnvironmentUpdateDTO
      */
-    DevopsEnvironmentUpdateDTO query(Long environmentId);
+    DevopsEnvironmentUpdateVO query(Long environmentId);
 
     /**
      * 项目下查询单个环境及其相关信息
@@ -91,7 +91,7 @@ public interface DevopsEnvironmentService {
      * @param projectId                  项目Id
      * @return DevopsEnvironmentUpdateDTO
      */
-    DevopsEnvironmentUpdateDTO update(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO, Long projectId);
+    DevopsEnvironmentUpdateVO update(DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO, Long projectId);
 
     /**
      * 项目下环境流水线排序
@@ -99,7 +99,7 @@ public interface DevopsEnvironmentService {
      * @param environmentIds 环境列表
      * @return List
      */
-    DevopsEnvGroupEnvsDTO sort(Long[] environmentIds);
+    DevopsEnvGroupEnvsVO sort(Long[] environmentIds);
 
     /**
      * 创建环境校验编码是否存在
@@ -115,7 +115,7 @@ public interface DevopsEnvironmentService {
      * @param projectId 项目id
      * @return List
      */
-    List<DevopsEnviromentRepDTO> listByProjectId(Long projectId, Long appId);
+    List<DevopsEnviromentRepVO> listByProjectId(Long projectId, Long appId);
 
     /**
      * 创建环境saga事件
@@ -124,7 +124,7 @@ public interface DevopsEnvironmentService {
      */
     void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload);
 
-    EnvSyncStatusDTO queryEnvSyncStatus(Long projectId, Long envId);
+    EnvSyncStatusVO queryEnvSyncStatus(Long projectId, Long envId);
 
     /**
      * 分页查询项目下用户权限
@@ -181,7 +181,7 @@ public interface DevopsEnvironmentService {
      * @param code
      * @return
      */
-    DevopsEnviromentRepDTO queryByCode(Long clusterId, String code);
+    DevopsEnviromentRepVO queryByCode(Long clusterId, String code);
 
     /**
      * @param sagaClient
@@ -201,12 +201,6 @@ public interface DevopsEnvironmentService {
      */
     void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO);
 
-    /**
-     *
-     * @param projectId
-     * @return
-     */
-    List<DevopsEnvironmentVO> queryByProjectFromBase(Long projectId);
 
     DevopsEnvironmentDTO baseCreate(DevopsEnvironmentDTO devopsEnvironmentDTO);
 

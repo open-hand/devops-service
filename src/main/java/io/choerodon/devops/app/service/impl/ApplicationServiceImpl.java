@@ -62,6 +62,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.AppUserPermissionDTO;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 import io.choerodon.devops.infra.dataobject.UserAttrDTO;
@@ -84,6 +85,8 @@ import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 =======
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO;
+=======
+>>>>>>> [IMP] 修改environment Controller
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
 >>>>>>> [IMP] refactor AplicationControler
@@ -102,7 +105,6 @@ import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.ApplicationUserPermissionMapper;
-import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.tool.UUIDTool;
@@ -165,8 +167,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private ApplicationUserPermissionMapper applicationUserPermissionMapper;
     @Autowired
-    private SagaClient sagaClient;
-    @Autowired
     private TransactionalProducer producer;
     @Autowired
     private UserAttrService userAttrService;
@@ -177,8 +177,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
-    private GitLabService gitLabService;
-    @Autowired
     private GitlabUserService gitlabUserService;
     @Autowired
     private ApplicationTemplateService applicationTemplateService;
@@ -186,8 +184,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsProjectService devopsProjectService;
-    @Autowired
-    private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
@@ -948,12 +944,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                 devopsProjectDTO.getIamProjectId());
         ProjectDTO projectDTO = iamService.queryIamProject(devopsProjectDTO.getIamProjectId());
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
-        GitlabProjectDTO gitlabProjectDO = gitLabService
-                .getProjectByName(organizationDTO.getCode() + "-" + projectDTO.getCode(), applicationDTO.getCode(),
+        GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator
+                .queryProjectByName(organizationDTO.getCode() + "-" + projectDTO.getCode(), applicationDTO.getCode(),
                         gitlabProjectPayload.getUserId());
         Integer gitlabProjectId = gitlabProjectDO.getId();
         if (gitlabProjectId == null) {
-            gitlabProjectDO = gitLabService.createProject(gitlabProjectPayload.getGroupId(),
+            gitlabProjectDO = gitlabServiceClientOperator.createProject(gitlabProjectPayload.getGroupId(),
                     gitlabProjectPayload.getPath(),
                     gitlabProjectPayload.getUserId(), false);
         }
@@ -1018,9 +1014,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                 //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
                 if (!branchDTO.getProtected()) {
                     try {
+<<<<<<< HEAD
 >>>>>>> [IMP]重构后端断码
                         gitLabService.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
 >>>>>>> [IMP] 修改AppControler重构
+=======
+                        gitlabServiceClientOperator.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
+>>>>>>> [IMP] 修改environment Controller
                                 AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
                                 gitlabProjectPayload.getUserId());
                     } catch (CommonException e) {
@@ -1098,7 +1098,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 >>>>>>> [IMP]重构后端断码
             } else {
                 if (!branchDTO.getProtected()) {
-                    gitLabService.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
+                    gitlabServiceClientOperator.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
                             AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
                             gitlabProjectPayload.getUserId());
                 }
@@ -1445,11 +1445,11 @@ public class ApplicationServiceImpl implements ApplicationService {
                 devopsProjectDTO.getIamProjectId());
         ProjectDTO projectDTO = iamService.queryIamProject(devopsProjectDTO.getIamProjectId());
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
-        GitlabProjectDTO gitlabProjectDO = gitLabService
-                .getProjectByName(organizationDTO.getCode() + "-" + projectDTO.getCode(), applicationDTO.getCode(),
+        GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator
+                .queryProjectByName(organizationDTO.getCode() + "-" + projectDTO.getCode(), applicationDTO.getCode(),
                         devOpsAppImportPayload.getUserId());
         if (gitlabProjectDO.getId() == null) {
-            gitlabProjectDO = gitLabService.createProject(devOpsAppImportPayload.getGroupId(),
+            gitlabProjectDO = gitlabServiceClientOperator.createProject(devOpsAppImportPayload.getGroupId(),
                     devOpsAppImportPayload.getPath(),
                     devOpsAppImportPayload.getUserId(), false);
         }
@@ -1900,7 +1900,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         if (branchName.equals(MASTER)) {
                             if (!branchDTO.getProtected()) {
                                 try {
-                                    gitLabService.createProtectBranch(devOpsAppImportPayload.getGitlabProjectId(), MASTER, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppImportPayload.getUserId());
+                                    gitlabServiceClientOperator.createProtectBranch(devOpsAppImportPayload.getGitlabProjectId(), MASTER, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppImportPayload.getUserId());
                                 } catch (CommonException e) {
                                     if (!gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), MASTER).getProtected()) {
                                         throw new CommonException(e);
@@ -1911,7 +1911,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     } else {
                         if (branchName.equals(MASTER)) {
                             if (!branchDTO.getProtected()) {
-                                gitLabService.createProtectBranch(devOpsAppImportPayload.getGitlabProjectId(), MASTER,
+                                gitlabServiceClientOperator.createProtectBranch(devOpsAppImportPayload.getGitlabProjectId(), MASTER,
                                         AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
                                         devOpsAppImportPayload.getUserId());
 >>>>>>> [IMP]重构后端断码
@@ -3100,7 +3100,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public void deleteIamApplication(IamAppPayLoad iamAppPayLoad) {
         ApplicationDTO applicationDTO = baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
         if (applicationDTO.getGitlabProjectId() != null) {
-            gitLabService.deleteProject(applicationDTO.getGitlabProjectId(), 1);
+            gitlabServiceClientOperator.deleteProjectById(applicationDTO.getGitlabProjectId(), 1);
         }
         baseDelete(applicationDTO.getId());
     }
@@ -4382,7 +4382,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private String getToken(DevOpsAppPayload gitlabProjectPayload, String applicationDir, UserAttrDTO userAttrDTO) {
         String accessToken = userAttrDTO.getGitlabToken();
         if (accessToken == null) {
-            accessToken = gitLabService.createToken(gitlabProjectPayload.getGitlabProjectId(),
+            accessToken = gitlabServiceClientOperator.createProjectToken(gitlabProjectPayload.getGitlabProjectId(),
                     applicationDir, gitlabProjectPayload.getUserId());
             userAttrDTO.setGitlabToken(accessToken);
             userAttrService.baseUpdate(userAttrDTO);
@@ -4447,10 +4447,10 @@ public class ApplicationServiceImpl implements ApplicationService {
      * @return the application token that is stored in gitlab variables
      */
     private String getApplicationToken(Integer projectId, Integer userId) {
-        List<VariableDTO> variables = gitLabService.getVariable(projectId, userId);
+        List<VariableDTO> variables = gitlabServiceClientOperator.listVariable(projectId, userId);
         if (variables.isEmpty()) {
             String token = GenerateUUID.generateUUID();
-            gitLabService.addVariable(projectId, "Token", token, false, userId);
+            gitlabServiceClientOperator.createVariable(projectId, "Token", token, false, userId);
             return token;
         } else {
             return variables.get(0).getValue();
@@ -4475,7 +4475,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                     MemberDTO projectMemberDTO = gitlabGroupMemberService.queryByUserId(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
                     if (projectMemberDTO == null || projectMemberDTO.getUserId() == null) {
-                        gitLabService.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
+                        gitlabServiceClientOperator.createProjectMember(devOpsAppPayload.getGitlabProjectId(),
                                 new MemberDTO(TypeUtil.objToInteger(e), 30, ""));
                     }
                 });
@@ -4499,7 +4499,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(gitlabUserId));
         if (gitlabMemberDTO == null || gitlabMemberDTO.getUserId() == null) {
-            gitLabService.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
+            gitlabServiceClientOperator.createProjectMember(devOpsAppPayload.getGitlabProjectId(),
                     new MemberDTO(TypeUtil.objToInteger(gitlabUserId), 30, ""));
         }
     }
@@ -4538,9 +4538,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
         uri += "devops/webhook";
         projectHookDTO.setUrl(uri);
-        List<ProjectHookDTO> projectHookDTOS = gitLabService.getHooks(projectId, userId);
+        List<ProjectHookDTO> projectHookDTOS = gitlabServiceClientOperator.listProjectHook(projectId, userId);
         if (projectHookDTOS.isEmpty()) {
-            applicationDTO.setHookId(TypeUtil.objToLong(gitLabService.createWebHook(
+            applicationDTO.setHookId(TypeUtil.objToLong(gitlabServiceClientOperator.createWebHook(
                     projectId, userId, projectHookDTO)
                     .getId()));
         } else {

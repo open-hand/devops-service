@@ -23,8 +23,17 @@ import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO
 import io.choerodon.devops.infra.common.util.TypeUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.common.util.enums.PipelineStatus
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.*
+=======
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
+import io.choerodon.devops.infra.dataobject.UserAttrDTO
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
+
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
+import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
+>>>>>>> [IMP] 修改environment Controller
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.dto.iam.IamUserDTO

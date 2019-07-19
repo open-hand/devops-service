@@ -26,7 +26,7 @@ public interface AgentCommandService {
 
     void deleteEnv(Long envId, String code, Long clusterId);
 
-    void initEnv(DevopsEnvironmentE devopsEnvironmentE, Long clusterId);
+    void initEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, Long clusterId);
 
     void deployTestApp(ApplicationDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, String secretName, Long clusterId, String values);
 

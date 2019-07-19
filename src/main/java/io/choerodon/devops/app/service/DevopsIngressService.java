@@ -1,11 +1,13 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
-import io.kubernetes.client.models.V1beta1HTTPIngressPath;
-import io.kubernetes.client.models.V1beta1Ingress;
+
 
 public interface DevopsIngressService {
 
@@ -121,4 +123,10 @@ public interface DevopsIngressService {
 
 
     DevopsIngressDTO baseQueryIngressDTO(Long ingressId);
+
+    PageInfo<DevopsIngressVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String params);
+
+    List<DevopsIngressDTO> baseListByEnvId(Long envId);
+
+    void deleteIngressAndIngressPathByEnvId(Long envId);
 }

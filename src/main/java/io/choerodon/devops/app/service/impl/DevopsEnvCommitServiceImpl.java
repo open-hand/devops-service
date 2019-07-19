@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsEnvCommitService;
@@ -14,6 +15,7 @@ import io.choerodon.devops.infra.mapper.DevopsEnvCommitMapper;
  * Date:  10:56 2019/7/12
  * Description:
  */
+@Service
 public class DevopsEnvCommitServiceImpl implements DevopsEnvCommitService {
     @Autowired
     private DevopsEnvCommitMapper devopsEnvCommitMapper;

@@ -25,8 +25,16 @@ import io.choerodon.devops.infra.dto.gitlab.VariableDTO
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.*
+=======
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
+import io.choerodon.devops.infra.dataobject.UserAttrDTO
+
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
+import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDTO
+>>>>>>> [IMP] 修改environment Controller
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient

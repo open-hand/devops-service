@@ -46,7 +46,6 @@ import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO
 =======
 
 
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO
 =======
 >>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
 >>>>>>> [IMP]修改后端结构
@@ -333,7 +332,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO2)
 
         and: '设置DTO类'
-        DevopsEnviromentDTO devopsEnviromentDTO = new DevopsEnviromentDTO()
+        DevopsEnviromentVO devopsEnviromentDTO = new DevopsEnviromentVO()
         devopsEnviromentDTO.setClusterId(1L)
         devopsEnviromentDTO.setCode("testCodeChange")
         devopsEnviromentDTO.setName("testNameChange")
@@ -466,7 +465,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     def "Query"() {
         when: '项目下查询单个环境'
-        DevopsEnvironmentUpdateDTO dto = restTemplate.getForObject("/v1/projects/1/envs/1", DevopsEnvironmentUpdateDTO.class)
+        DevopsEnvironmentUpdateVO dto = restTemplate.getForObject("/v1/projects/1/envs/1", DevopsEnvironmentUpdateVO.class)
 
         then: '返回值'
         dto["code"] == "testCodeEnv"
@@ -476,14 +475,14 @@ class DevopsEnvironmentControllerSpec extends Specification {
         given: '初始化环境更新DTO对象'
         def envs = devopsEnvironmentMapper.selectAll()
         def envId = envs.get(envs.size() - 1).getId()
-        DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO = new DevopsEnvironmentUpdateDTO()
+        DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO = new DevopsEnvironmentUpdateVO()
         devopsEnvironmentUpdateDTO.setId(envId)
         devopsEnvironmentUpdateDTO.setClusterId(1L)
         devopsEnvironmentUpdateDTO.setDevopsEnvGroupId(2L)
         devopsEnvironmentUpdateDTO.setName("testNameChange1222")
 
         when: '项目下更新环境'
-        restTemplate.put("/v1/projects/1/envs", devopsEnvironmentUpdateDTO, DevopsEnvironmentUpdateDTO.class)
+        restTemplate.put("/v1/projects/1/envs", devopsEnvironmentUpdateDTO, DevopsEnvironmentUpdateVO.class)
 
         then: '返回值'
         devopsEnvironmentMapper.selectByPrimaryKey(envId).getName() == "testNameChange1222"
@@ -568,7 +567,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvironmentMapper.updateSagaSyncEnvCommit(1L,1L)
 
         when: '查询环境同步状态'
-        def envSyncStatusDTO = restTemplate.getForObject("/v1/projects/1/envs/1/status", EnvSyncStatusDTO.class)
+        def envSyncStatusDTO = restTemplate.getForObject("/v1/projects/1/envs/1/status", EnvSyncStatusVO.class)
 
         then: '返回值'
         envSyncStatusDTO.getAgentSyncCommit().equals("testCommitSha")

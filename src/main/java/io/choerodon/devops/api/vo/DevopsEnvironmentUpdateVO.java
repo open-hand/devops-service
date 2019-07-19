@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by younger on 2018/4/9.
  */
-public class DevopsEnvironmentUpdateDTO {
+public class DevopsEnvironmentUpdateVO {
     private Long id;
     private String name;
     private String description;

@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-public class EnvSyncStatusDTO {
+public class EnvSyncStatusVO {
 
     private String devopsSyncCommit;
     private String agentSyncCommit;

@@ -3364,10 +3364,14 @@ public void baseUpdate(ApplicationInstanceDTO
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 public List<ApplicationInstanceDTO> baseListByEnvId
         (Long envId){
         ApplicationInstanceDTO applicationInstanceDTO=new ApplicationInstanceDTO();
 =======
+=======
+    @Override
+>>>>>>> [IMP] 修改environment Controller
     public List<ApplicationInstanceDTO> baseListByEnvId(Long envId) {
         ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
 >>>>>>> [IMP]修改后端结构
@@ -3496,17 +3500,27 @@ public List<ApplicationInstanceDTO> baseListByAppId
         return applicationInstanceMapper.select(applicationInstanceDTO);
         }
 
+<<<<<<< HEAD
 public void deleteByEnvId(Long envId){
         ApplicationInstanceDTO applicationInstanceDTO=new ApplicationInstanceDTO();
+=======
+    @Override
+    public void deleteByEnvId(Long envId) {
+        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+>>>>>>> [IMP] 修改environment Controller
         applicationInstanceDTO.setEnvId(envId);
         applicationInstanceMapper.delete(applicationInstanceDTO);
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 public List<ApplicationInstanceDTO> baseListByValueId
         (Long valueId){
         ApplicationInstanceDTO applicationInstanceDTO=new ApplicationInstanceDTO();
 =======
+=======
+    @Override
+>>>>>>> [IMP] 修改environment Controller
     public List<ApplicationInstanceDTO> baseListByValueId(Long valueId) {
         ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
 >>>>>>> [IMP]修改后端代码结构

@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by younger on 2018/4/9.
  */
-public class DevopsEnviromentDTO {
+public class DevopsEnviromentVO {
 
     private Long projectId;
     private String name;

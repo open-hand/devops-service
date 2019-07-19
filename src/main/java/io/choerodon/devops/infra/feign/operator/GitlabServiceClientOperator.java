@@ -14,7 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -125,7 +127,7 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public void addProjectVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
+    public void createVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
         gitlabServiceClient.addProjectVariable(gitlabProjectId, key, value, protecteds, userId);
     }
 
@@ -762,6 +764,4 @@ public class GitlabServiceClientOperator {
             throw new CommonException(e);
         }
     }
-
-
 }

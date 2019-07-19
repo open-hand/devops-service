@@ -2,10 +2,10 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-public class DevopsEnvGroupEnvsDTO {
+public class DevopsEnvGroupEnvsVO {
     private Long devopsEnvGroupId;
     private String devopsEnvGroupName;
-    private List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOs;
+    private List<DevopsEnviromentRepVO> devopsEnviromentRepDTOs;
 
     public Long getDevopsEnvGroupId() {
         return devopsEnvGroupId;
@@ -23,11 +23,11 @@ public class DevopsEnvGroupEnvsDTO {
         this.devopsEnvGroupName = devopsEnvGroupName;
     }
 
-    public List<DevopsEnviromentRepDTO> getDevopsEnviromentRepDTOs() {
+    public List<DevopsEnviromentRepVO> getDevopsEnviromentRepDTOs() {
         return devopsEnviromentRepDTOs;
     }
 
-    public void setDevopsEnviromentRepDTOs(List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOs) {
+    public void setDevopsEnviromentRepDTOs(List<DevopsEnviromentRepVO> devopsEnviromentRepDTOs) {
         this.devopsEnviromentRepDTOs = devopsEnviromentRepDTOs;
     }
 }

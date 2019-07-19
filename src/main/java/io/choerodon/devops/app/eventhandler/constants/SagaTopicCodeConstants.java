@@ -57,9 +57,15 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_CREATE_GITLAB_PROJECT="devops-create-gitlab-project";
 
     /**
-     * Devops同步应用到iam
+     * 创建环境
      */
-    public static final String DEVOPS_SYNC_APPLICATION="devops-sync-application";
+    public static final String DEVOPS_CREATE_ENV="devops-create-env";
+
+    /**
+     * devops创建环境失败(devops set env status create err)
+     */
+    public static final String DEVOPS_SET_ENV_ERR="devops-set-env-err";
+
 
     /**
      * gitlab pipeline创建到数据库

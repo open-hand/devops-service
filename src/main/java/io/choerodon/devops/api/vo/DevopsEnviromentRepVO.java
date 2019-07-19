@@ -4,7 +4,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by younger on 2018/4/9.
  */
-public class DevopsEnviromentRepDTO {
+public class DevopsEnviromentRepVO {
     private Long id;
     private String name;
     private String description;

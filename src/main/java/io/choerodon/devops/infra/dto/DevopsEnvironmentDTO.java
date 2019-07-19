@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
@@ -33,6 +30,26 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private Long agentSyncCommit;
     private Boolean isSynchro;
     private Boolean isFailed;
+    @Transient
+    private Boolean connected;
+    @Transient
+    private Boolean permission;
+
+    public Boolean getPermission() {
+        return permission;
+    }
+
+    public void setPermission(Boolean permission) {
+        this.permission = permission;
+    }
+
+    public Boolean getConnected() {
+        return connected;
+    }
+
+    public void setConnected(Boolean connected) {
+        this.connected = connected;
+    }
 
     public Long getId() {
         return id;

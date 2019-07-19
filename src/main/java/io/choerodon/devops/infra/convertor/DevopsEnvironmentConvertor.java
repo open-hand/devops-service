@@ -4,7 +4,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.DevopsEnviromentDTO;
+import io.choerodon.devops.api.vo.DevopsEnviromentVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
@@ -13,7 +13,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
  * Created by younger on 2018/4/9.
  */
 @Component
-public class DevopsEnvironmentConvertor implements ConvertorI<DevopsEnvironmentE, DevopsEnvironmentDTO, DevopsEnviromentDTO> {
+public class DevopsEnvironmentConvertor implements ConvertorI<DevopsEnvironmentE, DevopsEnvironmentDTO, DevopsEnviromentVO> {
 
     @Override
     public DevopsEnvironmentE doToEntity(DevopsEnvironmentDTO devopsEnvironmentDO) {
@@ -39,7 +39,7 @@ public class DevopsEnvironmentConvertor implements ConvertorI<DevopsEnvironmentE
 
 
     @Override
-    public DevopsEnvironmentE dtoToEntity(DevopsEnviromentDTO devopsEnviromentDTO) {
+    public DevopsEnvironmentE dtoToEntity(DevopsEnviromentVO devopsEnviromentDTO) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
         devopsEnvironmentE.initProjectE(devopsEnviromentDTO.getProjectId());
         devopsEnvironmentE.initDevopsClusterEById(devopsEnviromentDTO.getClusterId());

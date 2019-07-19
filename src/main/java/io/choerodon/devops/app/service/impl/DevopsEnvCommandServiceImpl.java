@@ -99,6 +99,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
         return devopsEnvCommandMapper.select(devopsEnvCommandDO);
     }
 
+    @Override
     public void baseDeleteByEnvCommandId(DevopsEnvCommandDTO devopsEnvCommandDTO) {
         if (devopsEnvCommandDTO.getValueId() != null) {
             devopsEnvCommandValueService.baseDeleteById(devopsEnvCommandDTO.getValueId());

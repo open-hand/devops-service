@@ -11,6 +11,14 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.exception.CommonException;
@@ -31,13 +39,6 @@ import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class DevopsIngressServiceImpl implements DevopsIngressService {
@@ -766,6 +767,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsIngressPathMapper.select(devopsIngressPathDTO);
     }
 
+    @Override
     public List<DevopsIngressDTO> baseListByEnvId(Long envId) {
         DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
         devopsIngressDTO.setEnvId(envId);
@@ -802,6 +804,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressVO.addDevopsIngressPathDTO(devopsIngressPathVO);
     }
 
+    @Override
     public void deleteIngressAndIngressPathByEnvId(Long envId) {
         DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
         devopsIngressDTO.setEnvId(envId);
