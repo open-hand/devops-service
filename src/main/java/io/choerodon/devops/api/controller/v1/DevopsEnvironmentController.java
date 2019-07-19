@@ -73,7 +73,8 @@ public class DevopsEnvironmentController {
      * @param projectId 项目id
      * @return 实例视图树形目录所需的数据
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "实例视图查询环境及其下应用及实例")
     @GetMapping(value = "/ins_tree_menu")
     public ResponseEntity<List<DevopsEnvironmentViewVO>> listEnvTree(

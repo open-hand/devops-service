@@ -37,7 +37,6 @@ import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.common.util.enums.HelmObjectKind;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentViewDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
@@ -289,20 +288,23 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnvironmentViewVO> listEnvTree(Long projectId) {
-        List<Long> connectedClusterList = envUtil.getConnectedEnvList();
         List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
 
-        return environmentMapper.listEnvTree(projectId).stream().map(e -> {
+        List<DevopsEnvironmentViewVO> connectedEnvs = new ArrayList<>();
+        List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
+        List<DevopsEnvironmentViewVO> unSynchronizedEnvs = new ArrayList<>();
+
+        environmentMapper.listEnvTree(projectId).forEach(e -> {
             // 将DTO层对象转为VO
             DevopsEnvironmentViewVO vo = new DevopsEnvironmentViewVO();
             BeanUtils.copyProperties(e, vo, "apps");
-            vo.setConnect(connectedClusterList.contains(e.getClusterId()) && upgradeClusterList.contains(e.getClusterId()));
+            boolean connected = upgradeClusterList.contains(e.getClusterId());
+            vo.setConnect(connected);
             vo.setApps(e.getApps().stream().map(app -> {
 
                 DevopsApplicationViewVO appVO = new DevopsApplicationViewVO();
                 BeanUtils.copyProperties(app, appVO, "instances");
-                // 判空是因为查出来的数据可能有podCount但是没有id，因为podCount的SQL计算方式
-                appVO.setInstances(app.getInstances().stream().filter(ins -> Objects.nonNull(ins.getId())).map(ins -> {
+                appVO.setInstances(app.getInstances().stream().map(ins -> {
                   DevopsAppInstanceViewVO insVO = new DevopsAppInstanceViewVO();
                   BeanUtils.copyProperties(ins, insVO);
                   return insVO;
@@ -311,8 +313,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 return appVO;
             }).collect(Collectors.toList()));
 
-            return vo;
-        }).collect(Collectors.toList());
+            if (connected) {
+                connectedEnvs.add(vo);
+            } else {
+                if (vo.getSynchronize()) {
+                    unConnectedEnvs.add(vo);
+                } else {
+                    unSynchronizedEnvs.add(vo);
+                }
+            }
+        });
+
+        // 为了将环境按照状态排序: 连接（运行中） > 未连接 > 处理中（未同步完成的）
+        connectedEnvs.addAll(unConnectedEnvs);
+        connectedEnvs.addAll(unSynchronizedEnvs);
+        return connectedEnvs;
     }
 
     @Override
