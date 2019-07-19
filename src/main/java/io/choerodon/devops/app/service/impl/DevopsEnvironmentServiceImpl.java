@@ -292,6 +292,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         List<DevopsEnvironmentViewVO> connectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
+        List<DevopsEnvironmentViewVO> unSynchronizedEnvs = new ArrayList<>();
 
         environmentMapper.listEnvTree(projectId).forEach(e -> {
             // 将DTO层对象转为VO
@@ -315,12 +316,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             if (connected) {
                 connectedEnvs.add(vo);
             } else {
-                unConnectedEnvs.add(vo);
+                if (vo.getSynchronize()) {
+                    unConnectedEnvs.add(vo);
+                } else {
+                    unSynchronizedEnvs.add(vo);
+                }
             }
         });
 
-        // 为了将连接的环境放在未连接的之前
+        // 为了将环境按照状态排序: 连接（运行中） > 未连接 > 处理中（未同步完成的）
         connectedEnvs.addAll(unConnectedEnvs);
+        connectedEnvs.addAll(unSynchronizedEnvs);
         return connectedEnvs;
     }
 
