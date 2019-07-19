@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentViewDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -32,4 +33,11 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDO> {
      * @return 树形目录
      */
     List<DevopsEnvironmentViewDTO> listEnvTree(@Param("projectId") Long projectId);
+
+    /**
+     * 查询单个环境及其集群信息
+     * @param envId 环境id
+     * @return 环境及其集群信息
+     */
+    DevopsEnvironmentInfoDTO queryInfoById(@Param("envId") Long envId);
 }

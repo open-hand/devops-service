@@ -170,6 +170,28 @@ public class DevopsEnvironmentController {
                 .orElseThrow(() -> new CommonException("error.environment.query"));
     }
 
+
+    /**
+     * 项目下查询单个环境
+     *
+     * @param projectId     项目id
+     * @param environmentId 环境id
+     * @return 单个环境信息及其集群和GitOps处理情况
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "实例视图查询单个环境信息")
+    @GetMapping("/{environment_id}/info")
+    public ResponseEntity<DevopsEnvironmentInfoVO> queryEnvInfo(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @PathVariable(value = "environment_id") Long environmentId) {
+        return Optional.ofNullable(devopsEnvironmentService.queryInfoById(environmentId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.environment.query"));
+    }
+
     /**
      * 项目下更新环境
      *

@@ -76,6 +76,14 @@ public interface DevopsEnvironmentService {
     DevopsEnvironmentUpdateDTO query(Long environmentId);
 
     /**
+     * 项目下查询单个环境及其相关信息
+     *
+     * @param environmentId 环境id
+     * @return 环境及其相关信息
+     */
+    DevopsEnvironmentInfoVO queryInfoById(Long environmentId);
+
+    /**
      * 项目下更新环境
      *
      * @param devopsEnvironmentUpdateDTO 环境信息

@@ -19,6 +19,18 @@
         </collection>
     </resultMap>
 
+    <resultMap id="queryInfoByIdResultMap" type="io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="synchronize" column="synchronize"/>
+        <result property="clusterId" column="cluster_id"/>
+        <result property="clusterName" column="cluster_name"/>
+        <result property="sagaSyncCommit" column="saga_sync_commit"/>
+        <result property="devopsSyncCommit" column="devops_sync_commit"/>
+        <result property="agentSyncCommit" column="agent_sync_commit"/>
+    </resultMap>
+
     <update id="updateDevopsEnvGroupId" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
         UPDATE devops_env de set de.devops_env_group_id = null where de.id = #{envId}
     </update>
@@ -74,5 +86,21 @@
           AND env.is_active = TRUE
           AND env.is_failed = FALSE
           AND (app.is_active = TRUE OR app.is_active is NULL);
+    </select>
+
+    <select id="queryInfoById" resultMap="queryInfoByIdResultMap">
+        SELECT
+               env.id,
+               env.code,
+               env.name,
+               env.is_synchro as synchronize,
+               env.saga_sync_commit,
+               env.devops_sync_commit,
+               env.agent_sync_commit,
+               env.cluster_id,
+               cluster.name as cluster_name
+        FROM devops_env env
+        LEFT JOIN devops_cluster cluster ON env.cluster_id = cluster.id
+        WHERE env.id = #{envId};
     </select>
 </mapper>

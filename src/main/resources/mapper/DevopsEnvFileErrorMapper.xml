@@ -38,4 +38,10 @@
             </foreach>
         </if>
     </select>
+
+    <select id="queryErrorFileCountByEnvId" resultType="long">
+        SELECT COUNT(1)
+        FROM devops_env_file_error err
+        WHERE err.env_id = #{envId};
+    </select>
 </mapper>
