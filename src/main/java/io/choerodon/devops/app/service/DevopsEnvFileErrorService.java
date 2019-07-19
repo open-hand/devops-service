@@ -14,13 +14,13 @@ import io.choerodon.devops.infra.dto.DevopsEnvFileErrorDTO;
  * Description:
  */
 public interface DevopsEnvFileErrorService {
-    DevopsEnvFileErrorDTO baseCreateOrUpdate(DevopsEnvFileErrorVO devopsEnvFileErrorVO);
+    DevopsEnvFileErrorDTO baseCreateOrUpdate(DevopsEnvFileErrorDTO devopsEnvFileErrorDTO);
 
     List<DevopsEnvFileErrorDTO> baseListByEnvId(Long envId);
 
     PageInfo<DevopsEnvFileErrorDTO> basePageByEnvId(Long envId, PageRequest pageRequest);
 
-    void baseDelete(DevopsEnvFileErrorVO devopsEnvFileErrorVO);
+    void baseDelete(DevopsEnvFileErrorDTO devopsEnvFileErrorDTO);
 
     DevopsEnvFileErrorDTO baseQueryByEnvIdAndFilePath(Long envId, String filePath);
 

@@ -198,6 +198,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private DevopsProjectConfigService devopsProjectConfigService;
     @Autowired
     private ApplicationShareService applicationShareService;
+    @Autowired
+    private DevopsBranchService devopsBranchService;
 
 
     @Override
@@ -4044,6 +4046,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationMapper.updateHarborConfig(projectId, newConfigId, oldConfigId, harborPrivate);
     }
 
+    @Override
     public String getGitlabUrl(Long projectId, Long appId) {
         ApplicationDTO applicationDTO = baseQuery(appId);
         if (applicationDTO.getGitlabProjectId() != null) {
@@ -4355,7 +4358,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devopsBranchDTO.setLastCommitMsg(commitDTO.getMessage());
         devopsBranchDTO.setLastCommitDate(commitDTO.getCommittedDate());
         devopsBranchDTO.setLastCommit(commitDTO.getId());
-        devopsGitService.createDevopsBranch(devopsBranchDTO);
+        devopsBranchService.baseCreate(devopsBranchDTO);
     }
 
     private void replaceParams(ApplicationDTO applicationDTO,

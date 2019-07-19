@@ -324,6 +324,17 @@ public interface ApplicationService {
      */
     SonarTableDTO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime);
 
+
+    /**
+     * 或者gitlab地址
+     *
+     * @param projectId
+     * @param appId
+     * @return
+     */
+    String getGitlabUrl(Long projectId, Long appId);
+
+
     void baseCheckApp(Long projectId, Long appId);
 
     int baseUpdate(ApplicationDTO applicationDTO);

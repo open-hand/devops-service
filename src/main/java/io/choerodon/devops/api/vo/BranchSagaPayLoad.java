@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by Sheep on 2019/7/4.
  */
-public class BranchSagaDTO {
+public class BranchSagaPayLoad {
 
     private Long gitlabProjectId;
     private Long devopsBranchId;
@@ -11,11 +11,11 @@ public class BranchSagaDTO {
     private String originBranch;
 
 
-    public BranchSagaDTO() {
+    public BranchSagaPayLoad() {
     }
 
 
-    public BranchSagaDTO(Long gitlabProjectId, Long devopsBranchId, String branchName, String originBranch) {
+    public BranchSagaPayLoad(Long gitlabProjectId, Long devopsBranchId, String branchName, String originBranch) {
         this.gitlabProjectId = gitlabProjectId;
         this.devopsBranchId = devopsBranchId;
         this.branchName = branchName;

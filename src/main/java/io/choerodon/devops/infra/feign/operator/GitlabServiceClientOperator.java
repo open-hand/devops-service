@@ -567,7 +567,7 @@ public class GitlabServiceClientOperator {
         return index;
     }
 
-    public List<TagDTO> pageTag(Integer projectId, Integer userId) {
+    public List<TagDTO> listTag(Integer projectId, Integer userId) {
         ResponseEntity<List<TagDTO>> tagResponseEntity;
         try {
             tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
@@ -595,95 +595,6 @@ public class GitlabServiceClientOperator {
             throw new CommonException("error.diffs.get", e);
         }
     }
-
-//
-//    @Override
-//    public Map<String, Object> getMergeRequestList(Long projectId, Integer gitLabProjectId,
-//                                                   String state,
-//                                                   PageRequest pageRequest) {
-//        List<DevopsMergeRequestE> allMergeRequest = devopsMergeRequestRepository
-//                .getByGitlabProjectId(gitLabProjectId);
-//        final int[] count = {0, 0, 0};
-//        if (allMergeRequest != null && !allMergeRequest.isEmpty()) {
-//            allMergeRequest.forEach(devopsMergeRequestE -> {
-//                if ("merged".equals(devopsMergeRequestE.getState())) {
-//                    count[0]++;
-//                } else if ("opened".equals(devopsMergeRequestE.getState())) {
-//                    count[1]++;
-//                } else if ("closed".equals(devopsMergeRequestE.getState())) {
-//                    count[2]++;
-//                }
-//            });
-//        }
-//        PageInfo<DevopsMergeRequestE> page = devopsMergeRequestRepository
-//                .getByGitlabProjectId(gitLabProjectId, pageRequest);
-//        if (StringUtil.isNotEmpty(state)) {
-//            page = devopsMergeRequestRepository
-//                    .getMergeRequestList(gitLabProjectId, state, pageRequest);
-//        }
-//        List<io.choerodon.devops.api.vo.MergeRequestDTO> pageContent = new ArrayList<>();
-//        List<DevopsMergeRequestE> content = page.getList();
-//        if (content != null && !content.isEmpty()) {
-//            content.forEach(devopsMergeRequestE -> {
-//                io.choerodon.devops.api.vo.MergeRequestDTO mergeRequestDTO = devopsMergeRequestToMergeRequest(
-//                        devopsMergeRequestE);
-//                pageContent.add(mergeRequestDTO);
-//            });
-//        }
-//        int total = count[0] + count[1] + count[2];
-//        PageInfo<io.choerodon.devops.api.vo.MergeRequestDTO> pageResult = new PageInfo<>();
-//        BeanUtils.copyProperties(page, pageResult);
-//        pageResult.setList(pageContent);
-//        Map<String, Object> result = new HashMap<>();
-//        result.put("mergeCount", count[0]);
-//        result.put("openCount", count[1]);
-//        result.put("closeCount", count[2]);
-//        result.put("totalCount", total);
-//        result.put("pageResult", pageResult);
-//        return result;
-//    }
-//
-//    private io.choerodon.devops.api.vo.MergeRequestDTO devopsMergeRequestToMergeRequest(DevopsMergeRequestE devopsMergeRequestE) {
-//        io.choerodon.devops.api.vo.MergeRequestDTO mergeRequestDTO = new io.choerodon.devops.api.vo.MergeRequestDTO();
-//        BeanUtils.copyProperties(devopsMergeRequestE, mergeRequestDTO);
-//        mergeRequestDTO.setProjectId(devopsMergeRequestE.getProjectId().intValue());
-//        mergeRequestDTO.setId(devopsMergeRequestE.getId().intValue());
-//        mergeRequestDTO.setIid(devopsMergeRequestE.getGitlabMergeRequestId().intValue());
-//        Long authorUserId = devopsGitRepository
-//                .getUserIdByGitlabUserId(devopsMergeRequestE.getAuthorId());
-//        Long assigneeId = devopsGitRepository
-//                .getUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId());
-//        Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
-//        Integer gitlabUserId = devopsGitRepository.getGitlabUserId();
-//        List<CommitDTO> commitDTOS = new ArrayList<>();
-//        try {
-//            commitDTOS = gitlabServiceClient.listCommits(
-//                    devopsMergeRequestE.getProjectId().intValue(),
-//                    gitlabMergeRequestId.intValue(), gitlabUserId).getBody();
-//            mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDTOS, CommitDTO.class));
-//        } catch (FeignException e) {
-//            LOGGER.info(e.getMessage());
-//        }
-//        UserE authorUser = iamRepository.queryUserByUserId(authorUserId);
-//        if (authorUser != null) {
-//            AuthorDTO authorDTO = new AuthorDTO();
-//            authorDTO.setUsername(authorUser.getLoginName());
-//            authorDTO.setName(authorUser.getRealName());
-//            authorDTO.setId(authorUser.getId() == null ? null : authorUser.getId().intValue());
-//            authorDTO.setWebUrl(authorUser.getImageUrl());
-//            mergeRequestDTO.setAuthor(authorDTO);
-//        }
-//        UserE assigneeUser = iamRepository.queryUserByUserId(assigneeId);
-//        if (assigneeUser != null) {
-//            AssigneeDTO assigneeDTO = new AssigneeDTO();
-//            assigneeDTO.setUsername(assigneeUser.getLoginName());
-//            assigneeDTO.setName(assigneeUser.getRealName());
-//            assigneeDTO.setId(assigneeId.intValue());
-//            assigneeDTO.setWebUrl(assigneeUser.getImageUrl());
-//            mergeRequestDTO.setAssignee(assigneeDTO);
-//        }
-//        return mergeRequestDTO;
-//    }
 
 
     private Integer sortTag(TagDTO a, TagDTO b) {
@@ -809,6 +720,16 @@ public class GitlabServiceClientOperator {
         try {
             List<CommitDTO> commitDTOS = new LinkedList<>();
             commitDTOS.addAll(gitlabServiceClient.listCommits(projectId, page, size, userId).getBody());
+            return commitDTOS;
+        } catch (FeignException e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+    }
+
+    public List<CommitDTO> listCommits(Integer projectId, Integer mergeRequestId,Integer userId) {
+        try {
+            List<CommitDTO> commitDTOS = new LinkedList<>();
+            commitDTOS.addAll(gitlabServiceClient.listCommits(projectId, mergeRequestId, userId).getBody());
             return commitDTOS;
         } catch (FeignException e) {
             throw new CommonException(e.getMessage(), e);

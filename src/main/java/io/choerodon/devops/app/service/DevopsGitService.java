@@ -1,15 +1,12 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
-import io.choerodon.devops.infra.dto.gitlab.TagDTO;
+
 
 /**
  * Creator: Runge
@@ -20,13 +17,17 @@ import io.choerodon.devops.infra.dto.gitlab.TagDTO;
 public interface DevopsGitService {
 
     /**
+     * 获取工程下地址
+     *
      * @param projectId
      * @param appId
      * @return
      */
-    String getUrl(Long projectId, Long appId);
+    String queryUrl(Long projectId, Long appId);
 
     /**
+     * 创建标签
+     *
      * @param projectId
      * @param appId
      * @param tag
@@ -37,15 +38,19 @@ public interface DevopsGitService {
     void createTag(Long projectId, Long appId, String tag, String ref, String msg, String releaseNotes);
 
     /**
+     * 更新标签
+     *
      * @param projectId
      * @param appId
      * @param tag
      * @param releaseNotes
      * @return
      */
-    TagDTO updateTagRelease(Long projectId, Long appId, String tag, String releaseNotes);
+    TagVO updateTag(Long projectId, Long appId, String tag, String releaseNotes);
 
     /**
+     * 删除标签
+     *
      * @param projectId
      * @param appId
      * @param tag
@@ -70,7 +75,7 @@ public interface DevopsGitService {
      * @param params        search param
      * @return Page
      */
-    PageInfo<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params);
+    PageInfo<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageRequest, Long applicationId, String params);
 
     /**
      * 查询单个分支
@@ -89,7 +94,7 @@ public interface DevopsGitService {
      * @param applicationId  应用ID
      * @param devopsBranchVO 分支
      */
-    void updateBranch(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO);
+    void updateBranchIssue(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO);
 
     /**
      * 删除分支
@@ -106,18 +111,22 @@ public interface DevopsGitService {
      * @param applicationId 应用id
      * @param branchName    分支名
      */
-    void checkName(Long projectId, Long applicationId, String branchName);
+    void checkBranchName(Long projectId, Long applicationId, String branchName);
 
     /**
+     * 查看所有合并请求
+     *
      * @param projectId
-     * @param aplicationId
+     * @param applicationId
      * @param state
      * @param pageRequest
      * @return
      */
-    Map<String, Object> getMergeRequestList(Long projectId, Long aplicationId, String state, PageRequest pageRequest);
+    MergeRequestTotalVO listMergeRequest(Long projectId, Long applicationId, String state, PageRequest pageRequest);
 
     /**
+     * 分页获取标签列表
+     *
      * @param projectId
      * @param applicationId
      * @param params
@@ -125,16 +134,20 @@ public interface DevopsGitService {
      * @param size
      * @return
      */
-    PageInfo<TagVO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size);
+    PageInfo<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size);
 
     /**
+     * 获取标签列表
+     *
      * @param projectId
      * @param applicationId
      * @return
      */
-    List<io.choerodon.devops.infra.dto.gitlab.TagDTO> getTags(Long projectId, Long applicationId);
+    List<TagVO> listTags(Long projectId, Long applicationId);
 
     /**
+     * 检查标签
+     *
      * @param projectId
      * @param applicationId
      * @param tagName
@@ -162,19 +175,9 @@ public interface DevopsGitService {
     /**
      * @param branchSagaDTO
      */
-    void createBranchBySaga(BranchSagaDTO branchSagaDTO);
+    void createBranchBySaga(BranchSagaPayLoad branchSagaDTO);
 
-    /**
-     * 获取Commit
-     *
-     * @param gitLabProjectId
-     * @param commit
-     * @param userId
-     * @return
-     */
-    CommitDTO getCommit(Integer gitLabProjectId, String commit, Integer userId);
 
     BranchDTO baseQueryBranch(Integer gitLabProjectId, String branchName);
 
-    DevopsBranchDTO createDevopsBranch(DevopsBranchDTO devopsBranchDTO);
 }

@@ -16,7 +16,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
  * Created by younger on 2018/4/18.
  */
 public interface AgentCommandService {
-    void sendCommand(DevopsEnvironmentE devopsEnvironmentE);
+    void sendCommand(DevopsEnvironmentDTO devopsEnvironmentDTO);
 
     void deploy(ApplicationDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO,
                 String releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values,

@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * GitLabDTO 合并请求
  */
-public class MergeRequestDTO {
+public class MergeRequestVO {
 
     private AssigneeDTO assignee;
     private AuthorDTO author;
@@ -27,8 +27,8 @@ public class MergeRequestDTO {
 
     private List<CommitVO> commits;
 
-    public static Boolean isValid(MergeRequestDTO mergeRequestDTO) {
-        return (mergeRequestDTO != null && mergeRequestDTO.getId() != null);
+    public static Boolean isValid(MergeRequestVO mergeRequestVO) {
+        return (mergeRequestVO != null && mergeRequestVO.getId() != null);
     }
 
     public AssigneeDTO getAssignee() {

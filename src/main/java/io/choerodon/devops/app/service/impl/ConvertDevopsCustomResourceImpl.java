@@ -6,6 +6,7 @@ import java.util.Map;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
+import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
@@ -16,7 +17,7 @@ import io.choerodon.devops.infra.enums.ResourceType;
 /**
  * Created by Sheep on 2019/7/1.
  */
-public class ConvertDevopsCustomResourceImpl extends ConvertK8sObjectService<DevopsCustomizeResourceE> {
+public class ConvertDevopsCustomResourceImpl extends ConvertK8sObjectService<DevopsCustomizeResourceDTO> {
 
     private DevopsCustomizeResourceRepository devopsCustomizeResourceRepository;
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;

@@ -28,6 +28,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 @Service
 public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService {
 
@@ -101,7 +102,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public DevopsGitlabCommitVO queryCommits(Long projectId, String appIds, Date startDate, Date endDate) {
+    public DevopsGitlabCommitVO queryCommits(Long projectId, String appIds, Date startDate, Date
+            endDate) {
 
         List<Long> appIdsMap = gson.fromJson(appIds, new TypeToken<List<Long>>() {
         }.getType());
@@ -130,7 +132,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public PageInfo<CommitFormRecordVO> pageRecordCommits(Long projectId, String appIds, PageRequest pageRequest,
+    public PageInfo<CommitFormRecordVO> pageRecordCommits(Long projectId, String appIds, PageRequest
+            pageRequest,
                                                           Date startDate, Date endDate) {
 
         List<Long> appIdsMap = gson.fromJson(appIds, new TypeToken<List<Long>>() {
@@ -155,8 +158,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         return userEList.stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u, (u1, u2) -> u1));
     }
 
-    private List<CommitFormUserDTO> getCommitFormUserDTOList(List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS,
-                                                             Map<Long, IamUserDTO> userMap) {
+    private List<CommitFormUserDTO> getCommitFormUserDTOList
+            (List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS,
+             Map<Long, IamUserDTO> userMap) {
         List<CommitFormUserDTO> commitFormUserDTOS = new ArrayList<>();
         // 遍历list，key为userid，value为list
         Map<Long, List<DevopsGitlabCommitDTO>> map = new HashMap<>();
@@ -188,7 +192,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         return commitFormUserDTOS;
     }
 
-    private PageInfo<CommitFormRecordVO> getCommitFormRecordDTOS(Long projectId, List<Long> appId, PageRequest pageRequest,
+    private PageInfo<CommitFormRecordVO> getCommitFormRecordDTOS(Long
+                                                                         projectId, List<Long> appId, PageRequest pageRequest,
                                                                  Map<Long, IamUserDTO> userMap, Date startDate, Date endDate) {
         return devopsGitlabCommitService.basePageByOptions(projectId, appId, pageRequest, userMap, startDate, endDate);
     }
@@ -218,7 +223,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public List<DevopsGitlabCommitDTO> baseListByOptions(Long projectId, List<Long> appIds, Date startDate, Date endDate) {
+    public List<DevopsGitlabCommitDTO> baseListByOptions(Long projectId, List<Long> appIds, Date
+            startDate, Date endDate) {
         List<DevopsGitlabCommitDTO> devopsGitlabCommitDOList = devopsGitlabCommitMapper
                 .listCommits(projectId, appIds, new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime()));
         if (devopsGitlabCommitDOList == null || devopsGitlabCommitDOList.isEmpty()) {
@@ -267,7 +273,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public List<DevopsGitlabCommitDTO> baseListByAppIdAndBranch(Long appId, String branch, Date startDate) {
+    public List<DevopsGitlabCommitDTO> baseListByAppIdAndBranch(Long appId, String branch, Date
+            startDate) {
         return devopsGitlabCommitMapper.queryByAppIdAndBranch(appId, branch, startDate == null ? null : new java.sql.Date(startDate.getTime()));
     }
 

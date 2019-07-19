@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 import io.choerodon.mybatis.entity.BaseDTO;
@@ -43,6 +40,18 @@ public class DevopsMergeRequestDTO extends BaseDTO {
     private Date createdAt;
 
     private Date updatedAt;
+
+    @Transient
+    private Long total;
+
+    @Transient
+    private Long merged;
+
+    @Transient
+    private Long closed;
+
+    @Transient
+    private Long opened;
 
     public DevopsMergeRequestDTO() {
     }
@@ -146,5 +155,38 @@ public class DevopsMergeRequestDTO extends BaseDTO {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+
+    public Long getTotal() {
+        return total;
+    }
+
+    public void setTotal(Long total) {
+        this.total = total;
+    }
+
+    public Long getMerged() {
+        return merged;
+    }
+
+    public void setMerged(Long merged) {
+        this.merged = merged;
+    }
+
+    public Long getClosed() {
+        return closed;
+    }
+
+    public void setClosed(Long closed) {
+        this.closed = closed;
+    }
+
+    public Long getOpened() {
+        return opened;
+    }
+
+    public void setOpened(Long opened) {
+        this.opened = opened;
     }
 }

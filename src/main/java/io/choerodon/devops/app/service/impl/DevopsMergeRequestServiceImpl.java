@@ -83,6 +83,10 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         }
     }
 
+    @Override
+    public DevopsMergeRequestDTO baseCountMergeRequest(Integer gitlabProjectId) {
+        return devopsMergeRequestMapper.countMergeRequest(gitlabProjectId);
+    }
 
 
 }

@@ -66,6 +66,20 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_GITLAB_PIPELINE = "devops-gitlab-pipeline";
 
+    /**
+     * 创建分支
+     *
+     */
+    public static final String DEVOPS_CREATE_BRANCH = "devops-create-branch";
+
+    /**
+     * 处理GitOps
+     */
+    public static final String DEVOPS_SYNC_GITOPS = "devops-sync-gitops";
+
+
+
+
 
 
 }

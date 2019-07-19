@@ -341,7 +341,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateBranch(String data) {
-        BranchSagaDTO branchSagaDTO = gson.fromJson(data, BranchSagaDTO.class);
+        BranchSagaPayLoad branchSagaDTO = gson.fromJson(data, BranchSagaPayLoad.class);
         devopsGitService.createBranchBySaga(branchSagaDTO);
         return data;
     }

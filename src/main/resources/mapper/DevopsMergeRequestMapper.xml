@@ -33,6 +33,20 @@
         ORDER by id desc
     </select>
 
+
+
+    <select id="countMergeRequest" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
+     SELECT
+	count(id) total,
+	count( CASE WHEN dmr.state = 'merged' THEN 'merged' END ) merged,
+	count( CASE WHEN dmr.state = 'closed' THEN 'closed' END ) closed,
+	count( CASE WHEN dmr.state = 'opened' THEN 'opened' END ) opened
+    FROM
+	devops_merge_request dmr
+	where dmr.project_id = #{projectId}
+    </select>
+
+
 </mapper>
 
 
