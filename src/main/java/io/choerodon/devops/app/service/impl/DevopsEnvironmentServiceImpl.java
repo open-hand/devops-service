@@ -35,10 +35,13 @@ import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
+import io.choerodon.devops.infra.common.util.enums.EnvironmentGitopsStatus;
 import io.choerodon.devops.infra.common.util.enums.HelmObjectKind;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
+import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,6 +127,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsEnvironmentMapper environmentMapper;
+    @Autowired
+    private DevopsEnvFileErrorMapper devopsEnvFileErrorMapper;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
@@ -305,9 +310,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 DevopsApplicationViewVO appVO = new DevopsApplicationViewVO();
                 BeanUtils.copyProperties(app, appVO, "instances");
                 appVO.setInstances(app.getInstances().stream().map(ins -> {
-                  DevopsAppInstanceViewVO insVO = new DevopsAppInstanceViewVO();
-                  BeanUtils.copyProperties(ins, insVO);
-                  return insVO;
+                    DevopsAppInstanceViewVO insVO = new DevopsAppInstanceViewVO();
+                    BeanUtils.copyProperties(ins, insVO);
+                    return insVO;
                 }).collect(Collectors.toList()));
 
                 return appVO;
@@ -387,6 +392,32 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public DevopsEnvironmentUpdateDTO query(Long environmentId) {
         return ConvertHelper.convert(devopsEnviromentRepository
                 .queryById(environmentId), DevopsEnvironmentUpdateDTO.class);
+    }
+
+    @Override
+    public DevopsEnvironmentInfoVO queryInfoById(Long environmentId) {
+        DevopsEnvironmentInfoDTO envInfo = environmentMapper.queryInfoById(environmentId);
+        if (envInfo == null) {
+            return null;
+        }
+
+        DevopsEnvironmentInfoVO vo = new DevopsEnvironmentInfoVO();
+        BeanUtils.copyProperties(envInfo, vo);
+
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
+        vo.setConnect(upgradeClusterList.contains(envInfo.getClusterId()));
+
+        if (envInfo.getAgentSyncCommit().equals(envInfo.getSagaSyncCommit()) &&
+                envInfo.getAgentSyncCommit().equals(envInfo.getDevopsSyncCommit())) {
+            vo.setGitopsStatus(EnvironmentGitopsStatus.FINISHED.getValue());
+        } else {
+            if (devopsEnvFileErrorMapper.queryErrorFileCountByEnvId(environmentId) > 0) {
+                vo.setGitopsStatus(EnvironmentGitopsStatus.FAILED.getValue());
+            } else {
+                vo.setGitopsStatus(EnvironmentGitopsStatus.PROCESSING.getValue());
+            }
+        }
+        return vo;
     }
 
 
