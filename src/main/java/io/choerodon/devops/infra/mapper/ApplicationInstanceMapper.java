@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
+import io.choerodon.devops.infra.dataobject.AppInstanceInfoDTO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
@@ -16,6 +17,8 @@ import org.apache.ibatis.annotations.Param;
  * Created by Zenger on 2018/4/15.
  */
 public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDO> {
+
+    AppInstanceInfoDTO queryInfoById(@Param("instanceId") Long instanceId);
 
     List<ApplicationInstanceDO> listApplicationInstance(@Param("projectId") Long projectId,
                                                         @Param("envId") Long envId,

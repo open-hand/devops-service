@@ -14,6 +14,12 @@ import io.choerodon.devops.infra.common.util.enums.ResourceType;
  * Created by Zenger on 2018/4/12.
  */
 public interface ApplicationInstanceService {
+    /**
+     * 根据实例id查询实例信息
+     * @param instanceId 实例id
+     * @return 实例信息
+     */
+    AppInstanceInfoVO queryInfoById(Long instanceId);
 
     /**
      * 分页查询应用部署
