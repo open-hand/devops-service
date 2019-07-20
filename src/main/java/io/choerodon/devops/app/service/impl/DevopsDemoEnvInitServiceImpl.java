@@ -239,6 +239,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param gitlabProjectId gitlab project id
      */
     private void newCommit(Integer gitlabProjectId) {
+        System.out.println("-------------"  +   gitlabProjectId + "" + gitlabUserId + "" + demoDataDTO.getBranchInfo().getBranchName());
         gitlabRepository.createFile(gitlabProjectId, "newFile" + UUID.randomUUID().toString().replaceAll("-", ""), "a new commit.", "[ADD] a new file", gitlabUserId, demoDataDTO.getBranchInfo().getBranchName());
     }
 
