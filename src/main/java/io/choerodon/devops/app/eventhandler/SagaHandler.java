@@ -8,14 +8,17 @@ import com.google.gson.reflect.TypeToken;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
 import io.choerodon.devops.api.vo.GitlabUserRequestDTO;
+import io.choerodon.devops.api.vo.GitlabUserVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
@@ -31,37 +34,18 @@ public class SagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
 
+    @Autowired
     private GitlabGroupService gitlabGroupService;
+    @Autowired
     private HarborService harborService;
+    @Autowired
     private OrganizationService organizationService;
+    @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
     private GitlabUserService gitlabUserService;
+    @Autowired
     private ApplicationService applicationService;
-    private ApplicationRepository applicationRepository;
-    private DevopsEnvironmentRepository devopsEnviromentRepository;
-    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
-
-
-    public SagaHandler(GitlabGroupService gitlabGroupService,
-                       HarborService harborService,
-                       OrganizationService organizationService,
-                       GitlabGroupMemberService gitlabGroupMemberService,
-                       GitlabUserService gitlabUserService,
-                       ApplicationService applicationService,
-                       DevopsEnvironmentRepository devopsEnviromentRepository,
-                       DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository,
-                       ApplicationRepository applicationRepository) {
-        this.gitlabGroupService = gitlabGroupService;
-        this.harborService = harborService;
-        this.organizationService = organizationService;
-        this.gitlabGroupMemberService = gitlabGroupMemberService;
-        this.gitlabUserService = gitlabUserService;
-        this.applicationService = applicationService;
-        this.devopsEnviromentRepository = devopsEnviromentRepository;
-        this.devopsEnvUserPermissionRepository = devopsEnvUserPermissionRepository;
-        this.applicationRepository = applicationRepository;
-
-    }
 
 
     private void loggerInfo(Object o) {
@@ -69,9 +53,9 @@ public class SagaHandler {
     }
 
 
-    @SagaTask(code = "devopsCreateGitLabGroup",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_GROUP,
             description = "devops 创建 GitLab Group",
-            sagaCode = "iam-create-project",
+            sagaCode = SagaTopicCodeConstants.IAM_CREATE_PROJECT,
             maxRetryCount = 3,
             seq = 1)
     public String handleGitlabGroupEvent(String msg) {
@@ -86,9 +70,9 @@ public class SagaHandler {
     /**
      * 创建组事件
      */
-    @SagaTask(code = "devopsCreateGitOpsGroup",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITOPS_GROUP,
             description = "devops 创建 GitOps Group",
-            sagaCode = "iam-create-project",
+            sagaCode = SagaTopicCodeConstants.IAM_CREATE_PROJECT,
             maxRetryCount = 3,
             seq = 1)
     public String handleGitOpsGroupEvent(String msg) {
@@ -101,9 +85,9 @@ public class SagaHandler {
     }
 
 
-    @SagaTask(code = "devopsUpdateGitLabGroup",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITLAB_GROUP,
             description = "devops  更新 GitLab Group",
-            sagaCode = "iam-update-project",
+            sagaCode = SagaTopicCodeConstants.IAM_UPDATE_PROJECT,
             maxRetryCount = 3,
             seq = 1)
     public String handleUpdateGitlabGroupEvent(String msg) {
@@ -115,9 +99,9 @@ public class SagaHandler {
         return msg;
     }
 
-    @SagaTask(code = "devopsUpdateGitOpsGroup",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITOPS_GROUP,
             description = "devops  更新 GitOps Group",
-            sagaCode = "iam-update-project",
+            sagaCode = SagaTopicCodeConstants.IAM_UPDATE_PROJECT,
             maxRetryCount = 3,
             seq = 1)
     public String handleUpdateGitOpsGroupEvent(String msg) {
@@ -132,9 +116,9 @@ public class SagaHandler {
     /**
      * 创建harbor项目事件
      */
-    @SagaTask(code = "devopsCreateHarbor",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_HARBOR,
             description = "devops 创建 Harbor",
-            sagaCode = "iam-create-project",
+            sagaCode = SagaTopicCodeConstants.IAM_CREATE_PROJECT,
             maxRetryCount = 3,
             seq = 5)
     public String handleHarborEvent(String msg) {
@@ -151,9 +135,9 @@ public class SagaHandler {
     /**
      * 创建组织事件
      */
-    @SagaTask(code = "devopsCreateOrganization",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_ORGANIZATION,
             description = "创建组织事件",
-            sagaCode = "org-create-organization",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_ORGANIZATION,
             maxRetryCount = 3,
             seq = 1)
     public String handleOrganizationCreateEvent(String payload) {
@@ -167,9 +151,9 @@ public class SagaHandler {
     /**
      * Iam创建应用事件
      */
-    @SagaTask(code = "iamCreateApplication",
+    @SagaTask(code = SagaTaskCodeConstants.IAM_CREATE_APPLICATION,
             description = "Iam创建应用事件",
-            sagaCode = "iam-create-application",
+            sagaCode = SagaTopicCodeConstants.IAM_CREATE_APPLICATION,
             maxRetryCount = 3,
             seq = 1)
     public String handleIamCreateApplication(String payload) {
@@ -183,9 +167,9 @@ public class SagaHandler {
     /**
      * GitOps 事件处理
      */
-    @SagaTask(code = "IamDeleteApplication",
+    @SagaTask(code = SagaTaskCodeConstants.IAM_DELETE_APPLICATION,
             description = "iam delete application ",
-            sagaCode = "iam-delete-application",
+            sagaCode = SagaTopicCodeConstants.IAM_DELETE_APPLICATION,
             maxRetryCount = 3,
             seq = 1)
     public String deleteApp(String payload) {
@@ -199,9 +183,9 @@ public class SagaHandler {
     /**
      * Iam更新应用事件
      */
-    @SagaTask(code = "iamCreateApplication",
+    @SagaTask(code = SagaTaskCodeConstants.IAM_UPDATE_APPLICATION,
             description = "Iam更新应用事件",
-            sagaCode = "iam-update-application",
+            sagaCode = SagaTopicCodeConstants.IAM_UPDATE_APPLICATION,
             maxRetryCount = 3,
             seq = 1)
     public String handleIamUpdateApplication(String payload) {
@@ -214,41 +198,42 @@ public class SagaHandler {
     /**
      * Iam启用应用事件
      */
-    @SagaTask(code = "iamEnableApplication",
+    @SagaTask(code = SagaTaskCodeConstants.IAM_ENABLE_APPLICATION,
             description = "Iam启用应用事件",
-            sagaCode = "iam-enable-application",
+            sagaCode = SagaTopicCodeConstants.IAM_ENABLE_APPLICATION,
             maxRetryCount = 3,
             seq = 1)
     public String handleIamEnableApplication(String payload) {
         IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
         loggerInfo(iamAppPayLoad);
-        ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
-        applicationService.active(applicationE.getId(), true);
+        ApplicationDTO applicationDTO = applicationService.baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        applicationService.updateActive(applicationDTO.getId(), true);
         return payload;
     }
 
     /**
      * Iam停用应用事件
      */
-    @SagaTask(code = "iamDisableApplication",
+    @SagaTask(code = SagaTaskCodeConstants.IAM_DISABLE_APPLICATION,
             description = "Iam停用应用事件",
-            sagaCode = "iam-disable-application",
+            sagaCode = SagaTopicCodeConstants.IAM_DISABLE_APPLICATION,
             maxRetryCount = 3,
             seq = 1)
     public String handleIamDisableApplication(String payload) {
         IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
         loggerInfo(iamAppPayLoad);
-        ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
-        applicationService.active(applicationE.getId(), false);
+        ApplicationDTO applicationDTO = applicationService.baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        applicationService.updateActive(applicationDTO.getId(), false);
         return payload;
     }
 
     /**
      * 角色同步事件
      */
-    @SagaTask(code = "devopsUpdateMemberRole", description = "角色同步事件",
-            sagaCode = "iam-update-memberRole", maxRetryCount = 3,
-            seq = 1)
+    @SagaTask(code = SagaTaskCodeConstants.IAM_UPDATE_MEMBER_ROLE,
+            description = "角色同步事件",
+            sagaCode = SagaTopicCodeConstants.IAM_UPDATE_MEMBER_ROLE,
+            maxRetryCount = 3, seq = 1)
     public List<GitlabGroupMemberDTO> handleGitlabGroupMemberEvent(String payload) {
         List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList = gson.fromJson(payload,
                 new TypeToken<List<GitlabGroupMemberDTO>>() {
@@ -261,9 +246,10 @@ public class SagaHandler {
     /**
      * 删除角色同步事件
      */
-    @SagaTask(code = "devopsDeleteMemberRole", description = "删除角色同步事件",
-            sagaCode = "iam-delete-memberRole", maxRetryCount = 3,
-            seq = 1)
+    @SagaTask(code = SagaTaskCodeConstants.IAM_DELETE_MEMBER_ROLE,
+            description = "删除角色同步事件",
+            sagaCode = SagaTopicCodeConstants.IAM_DELETE_MEMBER_ROLE,
+            maxRetryCount = 3, seq = 1)
     public List<GitlabGroupMemberDTO> handleDeleteMemberRoleEvent(String payload) {
         List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList = gson.fromJson(payload,
                 new TypeToken<List<GitlabGroupMemberDTO>>() {
@@ -283,11 +269,12 @@ public class SagaHandler {
     /**
      * 用户创建事件
      */
-    @SagaTask(code = "devopsCreateUser", description = "用户创建事件",
-            sagaCode = "iam-create-user", maxRetryCount = 5,
-            seq = 1)
-    public List<GitlabUserDTO> handleCreateUserEvent(String payload) {
-        List<GitlabUserDTO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserDTO>>() {
+    @SagaTask(code = SagaTaskCodeConstants.IAM_CREATE_USER,
+            description = "用户创建事件",
+            sagaCode = SagaTopicCodeConstants.IAM_CREATE_USER,
+            maxRetryCount = 5, seq = 1)
+    public List<GitlabUserVO> handleCreateUserEvent(String payload) {
+        List<GitlabUserVO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserVO>>() {
         }.getType());
         loggerInfo(gitlabUserDTO);
         gitlabUserDTO.forEach(t -> {
@@ -312,20 +299,21 @@ public class SagaHandler {
     /**
      * 用户更新事件
      */
-    @SagaTask(code = "devopsUpdateUser", description = "用户更新事件",
-            sagaCode = "iam-update-user", maxRetryCount = 3,
-            seq = 1)
+    @SagaTask(code = SagaTaskCodeConstants.IAM_UPDATE_USER,
+            description = "用户更新事件",
+            sagaCode = SagaTopicCodeConstants.IAM_UPDATE_USER,
+            maxRetryCount = 3, seq = 1)
     public String handleUpdateUserEvent(String payload) {
-        GitlabUserDTO gitlabUserDTO = gson.fromJson(payload, GitlabUserDTO.class);
-        loggerInfo(gitlabUserDTO);
+        GitlabUserVO gitlabUserVO = gson.fromJson(payload, GitlabUserVO.class);
+        loggerInfo(gitlabUserVO);
 
         GitlabUserRequestDTO gitlabUserReqDTO = new GitlabUserRequestDTO();
         gitlabUserReqDTO.setProvider("oauth2_generic");
-        gitlabUserReqDTO.setExternUid(gitlabUserDTO.getId());
+        gitlabUserReqDTO.setExternUid(gitlabUserVO.getId());
         gitlabUserReqDTO.setSkipConfirmation(true);
-        gitlabUserReqDTO.setUsername(gitlabUserDTO.getUsername());
-        gitlabUserReqDTO.setEmail(gitlabUserDTO.getEmail());
-        gitlabUserReqDTO.setName(gitlabUserDTO.getName());
+        gitlabUserReqDTO.setUsername(gitlabUserVO.getUsername());
+        gitlabUserReqDTO.setEmail(gitlabUserVO.getEmail());
+        gitlabUserReqDTO.setName(gitlabUserVO.getName());
         gitlabUserReqDTO.setCanCreateGroup(true);
         gitlabUserReqDTO.setProjectsLimit(100);
 
@@ -336,28 +324,30 @@ public class SagaHandler {
     /**
      * 用户启用事件
      */
-    @SagaTask(code = "devopsEnableUser", description = "用户启用事件",
-            sagaCode = "iam-enable-user", maxRetryCount = 3,
-            seq = 1)
+    @SagaTask(code = SagaTaskCodeConstants.IAM_ENABLE_USER,
+            description = "用户启用事件",
+            sagaCode = SagaTopicCodeConstants.IAM_ENABLE_USER,
+            maxRetryCount = 3, seq = 1)
     public String handleIsEnabledUserEvent(String payload) {
-        GitlabUserDTO gitlabUserDTO = gson.fromJson(payload, GitlabUserDTO.class);
-        loggerInfo(gitlabUserDTO);
+        GitlabUserVO gitlabUserVO = gson.fromJson(payload, GitlabUserVO.class);
+        loggerInfo(gitlabUserVO);
 
-        gitlabUserService.isEnabledGitlabUser(TypeUtil.objToInteger(gitlabUserDTO.getId()));
+        gitlabUserService.isEnabledGitlabUser(TypeUtil.objToInteger(gitlabUserVO.getId()));
         return payload;
     }
 
     /**
      * 用户禁用事件
      */
-    @SagaTask(code = "devopsDisableUser", description = "用户禁用事件",
-            sagaCode = "iam-disable-user", maxRetryCount = 3,
-            seq = 1)
+    @SagaTask(code = SagaTaskCodeConstants.IAM_DISABLE_USER,
+            description = "用户禁用事件",
+            sagaCode = SagaTopicCodeConstants.IAM_DISABLE_USER,
+            maxRetryCount = 3, seq = 1)
     public String handleDisEnabledUserEvent(String payload) {
-        GitlabUserDTO gitlabUserDTO = gson.fromJson(payload, GitlabUserDTO.class);
-        loggerInfo(gitlabUserDTO);
+        GitlabUserVO gitlabUserVO = gson.fromJson(payload, GitlabUserVO.class);
+        loggerInfo(gitlabUserVO);
 
-        gitlabUserService.disEnabledGitlabUser(TypeUtil.objToInteger(gitlabUserDTO.getId()));
+        gitlabUserService.disEnabledGitlabUser(TypeUtil.objToInteger(gitlabUserVO.getId()));
         return payload;
     }
 

@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE;
 import static java.util.Comparator.comparing;
 
 import java.util.*;
@@ -334,7 +335,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    @Saga(code = "devops-pipeline-auto-deploy-instance",
+    @Saga(code = DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE,
             description = "创建流水线自动部署实例", inputSchema = "{}")
     public void autoDeploy(Long stageRecordId, Long taskRecordId) {
         LOGGER.info("autoDeploy:stageRecordId: {} taskId: {}", stageRecordId, taskRecordId);
@@ -366,7 +367,7 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             }
             String input = gson.toJson(applicationDeployVO);
-            sagaClient.startSaga("devops-pipeline-auto-deploy-instance", new StartInstanceDTO(input, "env", taskRecordDTO.getEnvId().toString(), ResourceLevel.PROJECT.value(), taskRecordDTO.getProjectId()));
+            sagaClient.startSaga(DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE, new StartInstanceDTO(input, "env", taskRecordDTO.getEnvId().toString(), ResourceLevel.PROJECT.value(), taskRecordDTO.getProjectId()));
         } catch (Exception e) {
             sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId().longValue());
             PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);

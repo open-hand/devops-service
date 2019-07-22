@@ -109,7 +109,11 @@ public interface ApplicationTemplateService {
 
     ApplicationTemplateRespVO queryByCode(Long organizationId, String code);
 
+    ApplicationTemplateDTO baseQueryByCode(Long organizationId, String code);
+
     List<ApplicationTemplateDTO> baseListByOrganizationId(Long organizationId);
 
     ApplicationTemplateDTO baseQuery(Long appTemplateId);
+
+    ApplicationTemplateDTO baseUpdate(ApplicationTemplateDTO applicationTemplateDTO);
 }

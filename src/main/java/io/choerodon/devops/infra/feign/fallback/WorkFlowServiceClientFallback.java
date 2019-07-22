@@ -19,12 +19,12 @@ public class WorkFlowServiceClientFallback implements WorkFlowServiceClient {
     }
 
     @Override
-    public ResponseEntity<Boolean> approveUserTask(Long projectId, String business_key) {
+    public ResponseEntity<Boolean> approveUserTask(Long projectId, String businessKey) {
         throw new CommonException("error.workflow.approve");
     }
 
     @Override
-    public ResponseEntity stopInstance(Long projectId, String business_key) {
+    public ResponseEntity stopInstance(Long projectId, String businessKey) {
         throw new CommonException("error.workflow.stop");
     }
 }

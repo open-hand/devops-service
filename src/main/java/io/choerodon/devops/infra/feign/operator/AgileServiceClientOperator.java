@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component;
 public class AgileServiceClientOperator {
 
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AgileServiceClientOperator.class);
-
     @Autowired
     private AgileServiceClient agileServiceClient;
 

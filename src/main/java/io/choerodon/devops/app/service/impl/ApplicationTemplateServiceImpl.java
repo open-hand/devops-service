@@ -323,6 +323,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         return applicationTemplateDTO;
     }
 
+    @Override
     public ApplicationTemplateDTO baseUpdate(ApplicationTemplateDTO applicationTemplateDTO) {
         if (applicationTemplateDTO.getObjectVersionNumber() == null) {
             ApplicationTemplateDTO oldApplicationTemplateDTO = applicationTemplateMapper.selectByPrimaryKey(
@@ -368,6 +369,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         return applicationTemplateDTOPageInfo;
     }
 
+    @Override
     public ApplicationTemplateDTO baseQueryByCode(Long organizationId, String code) {
         return applicationTemplateMapper.queryByCode(organizationId, code);
     }

@@ -3,8 +3,6 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
@@ -16,7 +14,7 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
     private Long projectId;
     private Long envId;
     private Long contentId;
@@ -50,11 +48,11 @@ public class DevopsCustomizeResourceDTO extends BaseDTO {
     }
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 
     public Long getProjectId() {

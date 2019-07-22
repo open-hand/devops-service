@@ -1,8 +1,6 @@
 package io.choerodon.devops.app.eventhandler;
 
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_CREATE_GITLAB_TEMPLATE_PROJECT;
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_PIPELINE;
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_SET_APPLICATION_TEMPLATE_ERROR;
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -14,18 +12,19 @@ import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.api.vo.iam.entity.*;
+import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,29 +59,23 @@ public class DevopsSagaHandler {
     @Autowired
     private DevopsGitlabPipelineService devopsGitlabPipelineService;
     @Autowired
-    private ApplicationRepository applicationRepository;
-    @Autowired
-    private ApplicationTemplateRepository applicationTemplateRepository;
-    @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    @Autowired
     private ApplicationInstanceService applicationInstanceService;
     @Autowired
-    private PipelineTaskRecordRepository taskRecordRepository;
+    private PipelineTaskRecordService taskRecordRepository;
     @Autowired
-    private PipelineStageRecordRepository stageRecordRepository;
+    private PipelineStageRecordService pipelineStageRecordService;
     @Autowired
     private PipelineService pipelineService;
     @Autowired
-    private PipelineRecordRepository pipelineRecordRepository;
+    private PipelineRecordService pipelineRecordService;
 
 
     /**
      * devops创建环境
      */
-    @SagaTask(code = "devopsCreateEnv",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_ENV,
             description = "devops创建环境",
-            sagaCode = "devops-create-env",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_ENV,
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateEnv(String data) {
@@ -93,11 +86,11 @@ public class DevopsSagaHandler {
             devopsEnvironmentService.setEnvErrStatus(data, gitlabProjectPayload.getIamProjectId());
             throw e;
         }
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService
                 .baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
-        if (devopsEnvironmentE.getFailed() != null && devopsEnvironmentE.getFailed()) {
-            devopsEnvironmentE.initFailed(false);
-            devopsEnvironmentRepository.baseUpdate(devopsEnvironmentE);
+        if (devopsEnvironmentDTO.getFailed() != null && devopsEnvironmentDTO.getFailed()) {
+            devopsEnvironmentDTO.setFailed(false);
+            devopsEnvironmentService.baseUpdate(devopsEnvironmentDTO);
         }
         return data;
     }
@@ -105,26 +98,26 @@ public class DevopsSagaHandler {
     /**
      * 环境创建失败
      */
-    @SagaTask(code = "devopsCreateEnvError",
-            description = "set  DevOps app status error",
-            sagaCode = "devops-set-env-err",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_ENV_ERROR,
+            description = "环境创建失败",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_SET_ENV_ERR,
             maxRetryCount = 3,
             seq = 1)
     public String setEnvErr(String data) {
         GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService
                 .baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
-        devopsEnvironmentE.initFailed(true);
-        devopsEnvironmentRepository.baseUpdate(devopsEnvironmentE);
+        devopsEnvironmentDTO.setFailed(true);
+        devopsEnvironmentService.baseUpdate(devopsEnvironmentDTO);
         return data;
     }
 
     /**
      * GitOps 事件处理
      */
-    @SagaTask(code = "devopsGitOps",
-            description = "gitops",
-            sagaCode = "devops-sync-gitops",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GIT_OPS,
+            description = "gitops事件处理",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS,
             concurrentLimitNum = 1,
             maxRetryCount = 3,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
@@ -141,11 +134,11 @@ public class DevopsSagaHandler {
     }
 
     /**
-     * GitOps 事件处理
+     * 创建gitlab项目
      */
-    @SagaTask(code = "devopsOperationGitlabProject",
-            description = "devops create GitLab project",
-            sagaCode = "devops-create-gitlab-project",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_OPERATE_GITLAB_PROJECT,
+            description = "创建gitlab项目",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT,
             maxRetryCount = 3,
             seq = 1)
     public String createApp(String data) {
@@ -164,9 +157,9 @@ public class DevopsSagaHandler {
     /**
      * GitOps 事件处理
      */
-    @SagaTask(code = "devopsCreateGitlabProject",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT,
             description = "Devops从外部代码平台导入到gitlab项目",
-            sagaCode = "devops-import-gitlab-project",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
             maxRetryCount = 3,
             seq = 1)
     public String importApp(String data) {
@@ -178,10 +171,10 @@ public class DevopsSagaHandler {
                 applicationService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
                 throw e;
             }
-            ApplicationE applicationE = applicationRepository.query(devOpsAppImportPayload.getAppId());
-            if (applicationE.getFailed() != null && applicationE.getFailed()) {
-                applicationE.setFailed(false);
-                if (1 != applicationRepository.update(applicationE)) {
+            ApplicationDTO applicationDTO = applicationService.baseQuery(devOpsAppImportPayload.getAppId());
+            if (applicationDTO.getFailed() != null && applicationDTO.getFailed()) {
+                applicationDTO.setFailed(false);
+                if (1 != applicationService.baseUpdate(applicationDTO)) {
                     LOGGER.error("update application set create success status error");
                 }
             }
@@ -194,9 +187,9 @@ public class DevopsSagaHandler {
     /**
      * GitOps 用户权限分配处理
      */
-    @SagaTask(code = "devopsUpdateGitlabUsers",
-            description = "devops update gitlab users",
-            sagaCode = "devops-update-gitlab-users",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
+            description = "GitOps 用户权限分配处理",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
             maxRetryCount = 3,
             seq = 1)
     public String updateGitlabUser(String data) {
@@ -216,43 +209,43 @@ public class DevopsSagaHandler {
     /**
      * GitOps 应用创建失败处理
      */
-    @SagaTask(code = "devopsCreateGitlabProjectErr",
-            description = "set  DevOps app status error",
-            sagaCode = "devops-create-app-fail",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT_ERROR,
+            description = "GitOps 应用创建失败处理",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
             maxRetryCount = 3,
             seq = 1)
     public String setAppErr(String data) {
         DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
-        ApplicationE applicationE = applicationRepository.query(devOpsAppPayload.getAppId());
-        applicationE.setFailed(true);
-        if (1 != applicationRepository.update(applicationE)) {
-            LOGGER.error("update application {} set create failed status error", applicationE.getCode());
+        ApplicationDTO applicationDTO = applicationService.baseQuery(devOpsAppPayload.getAppId());
+        applicationDTO.setFailed(true);
+        if (1 != applicationService.baseUpdate(applicationDTO)) {
+            LOGGER.error("update application {} set create failed status error", applicationDTO.getCode());
         }
         return data;
     }
 
     /**
-     * GitOps 应用模板创建失败处理
+     * GitOps应用模板创建失败处理
      */
-    @SagaTask(code = "devopsCreateGitlabProjectTemplateErr",
-            description = "set  DevOps app template status error",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT_TEMPLATE_ERROR,
+            description = "GitOps应用模板创建失败处理",
             sagaCode = DEVOPS_SET_APPLICATION_TEMPLATE_ERROR,
             maxRetryCount = 3,
             seq = 1)
     public String setAppTemplateErr(String data) {
         DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
-        ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.baseQueryByCode(
+        ApplicationTemplateDTO applicationTemplateDTO = applicationTemplateService.baseQueryByCode(
                 devOpsAppPayload.getOrganizationId(), devOpsAppPayload.getPath());
-        applicationTemplateE.setFailed(true);
-        applicationTemplateRepository.baseUpdate(applicationTemplateE);
+        applicationTemplateDTO.setFailed(true);
+        applicationTemplateService.baseUpdate(applicationTemplateDTO);
         return data;
     }
 
     /**
-     * GitOps 模板事件处理
+     * 模板事件处理
      */
-    @SagaTask(code = "devopsOperationGitlabTemplateProject",
-            description = "devops create GitLab template project",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_OPERATION_GITLAB_TEMPLATE_PROJECT,
+            description = "模板事件处理",
             sagaCode = DEVOPS_CREATE_GITLAB_TEMPLATE_PROJECT,
             maxRetryCount = 3,
             seq = 1)
@@ -265,21 +258,21 @@ public class DevopsSagaHandler {
                 applicationTemplateService.setAppTemplateErrStatus(data, gitlabProjectEventDTO.getOrganizationId());
                 throw e;
             }
-            ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.baseQueryByCode(
+            ApplicationTemplateDTO applicationTemplateDTO = applicationTemplateService.baseQueryByCode(
                     gitlabProjectEventDTO.getOrganizationId(), gitlabProjectEventDTO.getPath());
-            if (applicationTemplateE.getFailed() != null && applicationTemplateE.getFailed()) {
-                applicationTemplateE.setFailed(false);
-                applicationTemplateRepository.baseUpdate(applicationTemplateE);
+            if (applicationTemplateDTO.getFailed() != null && applicationTemplateDTO.getFailed()) {
+                applicationTemplateDTO.setFailed(false);
+                applicationTemplateService.baseUpdate(applicationTemplateDTO);
             }
         }
         return data;
     }
 
     /**
-     * GitOps 事件处理
+     * gitlab pipeline事件
      */
-    @SagaTask(code = "devopsGitlabPipeline",
-            description = "gitlab-pipeline",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_PIPELINE,
+            description = "gitlab pipeline事件",
             sagaCode = DEVOPS_GITLAB_PIPELINE,
             maxRetryCount = 3,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
@@ -295,9 +288,12 @@ public class DevopsSagaHandler {
         return data;
     }
 
-    @SagaTask(code = "devops-pipeline-create-instance",
-            description = "devops pipeline instance",
-            sagaCode = "devops-pipeline-auto-deploy-instance",
+    /**
+     * 创建流水线自动部署实例
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PIPELINE_CREATE_INSTANCE,
+            description = "创建流水线自动部署实例",
+            sagaCode = DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             maxRetryCount = 3,
             seq = 1)
@@ -305,24 +301,26 @@ public class DevopsSagaHandler {
         ApplicationDeployVO applicationDeployVO = gson.fromJson(data, ApplicationDeployVO.class);
         Long taskRecordId = applicationDeployVO.getRecordId();
         Long stageRecordId = taskRecordRepository.baseQueryRecordById(taskRecordId).getStageRecordId();
-        PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
-        PipelineTaskRecordE taskRecordE = taskRecordRepository.baseQueryRecordById(taskRecordId);
-        Long pipelineRecordId = stageRecordE.getPipelineRecordId();
+        PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
+        PipelineTaskRecordDTO taskRecordDTO = taskRecordRepository.baseQueryRecordById(taskRecordId);
+        Long pipelineRecordId = stageRecordDTO.getPipelineRecordId();
         try {
             ApplicationInstanceVO applicationInstanceVO = applicationInstanceService.createOrUpdate(applicationDeployVO);
-            if (!pipelineRecordRepository.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordE.getIsParallel() == 1) {
-                if(!taskRecordE.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
-                    PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceVO.getId(), WorkFlowStatus.SUCCESS.toString());
-                    pipelineTaskRecordE.setId(applicationDeployVO.getRecordId());
-                    taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordE);
+            if (!pipelineRecordService.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordDTO.getIsParallel() == 1) {
+                if (!taskRecordDTO.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
+                    PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
+                    pipelineTaskRecordDTO.setInstanceId(applicationInstanceVO.getId());
+                    pipelineTaskRecordDTO.setStatus(WorkFlowStatus.SUCCESS.toString());
+                    pipelineTaskRecordDTO.setId(applicationDeployVO.getRecordId());
+                    taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
                     LOGGER.info("create pipeline auto deploy instance success");
                 }
             }
         } catch (Exception e) {
-            PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
-            pipelineTaskRecordE.setId(applicationDeployVO.getRecordId());
-            pipelineTaskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
-            taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordE);
+            PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
+            pipelineTaskRecordDTO.setId(applicationDeployVO.getRecordId());
+            pipelineTaskRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
+            taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
             pipelineService.updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), e.getMessage());
             NoticeSendDTO.User user = new NoticeSendDTO.User();
             user.setEmail(GitUserNameUtil.getEmail());
@@ -335,9 +333,9 @@ public class DevopsSagaHandler {
     /**
      * devops创建分支
      */
-    @SagaTask(code = "devopsCreateBranch",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_BRANCH,
             description = "devops创建分支",
-            sagaCode = "devops-create-branch",
+            sagaCode = DEVOPS_CREATE_BRANCH,
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateBranch(String data) {
@@ -350,9 +348,9 @@ public class DevopsSagaHandler {
     /**
      * devops创建实例
      */
-    @SagaTask(code = "devopsCreateInstance",
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_INSTANCE,
             description = "devops创建实例",
-            sagaCode = "devops-create-instance",
+            sagaCode = DEVOPS_CREATE_INSTANCE,
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateInstance(String data) {
