@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.dto.ApplicationRepDTO;
-import io.choerodon.devops.api.dto.DevopsEnvApplicationDTO;
-import io.choerodon.devops.api.dto.DevopsEnvLabelDTO;
-import io.choerodon.devops.api.dto.DevopsEnvPortDTO;
+import io.choerodon.devops.api.dto.*;
 
 import java.util.List;
 
@@ -12,7 +9,7 @@ import java.util.List;
  * @date 2019/7/1
  */
 public interface DevopsEnvApplicationService {
-    DevopsEnvApplicationDTO create(DevopsEnvApplicationDTO devopsEnvApplicationDTO);
+    List<DevopsEnvApplicationDTO> batchCreate(DevopsEnvApplicationCreationDTO devopsEnvApplicationCreationDTO);
 
     List<ApplicationRepDTO> queryAppByEnvId(Long envId);
 

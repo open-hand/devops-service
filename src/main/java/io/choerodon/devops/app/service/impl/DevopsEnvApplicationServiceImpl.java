@@ -1,26 +1,26 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.dto.ApplicationRepDTO;
-import io.choerodon.devops.api.dto.DevopsEnvApplicationDTO;
-import io.choerodon.devops.api.dto.DevopsEnvLabelDTO;
-import io.choerodon.devops.api.dto.DevopsEnvPortDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvMessageE;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvApplicationRepostitory;
+import io.choerodon.devops.infra.dataobject.DevopsEnvApplicationDO;
+import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * @author lizongwei
@@ -29,21 +29,24 @@ import java.util.Optional;
 @Service
 public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationService {
 
-    private static JSON json = new JSON();
+    private JSON json = new JSON();
 
     @Autowired
-    DevopsEnvApplicationRepostitory devopsEnvApplicationRepostitory;
+    private DevopsEnvApplicationRepostitory devopsEnvApplicationRepostitory;
 
     @Autowired
-    ApplicationRepository applicationRepository;
+    private ApplicationRepository applicationRepository;
 
     @Autowired
-    ApplicationInstanceRepository applicationInstanceRepository;
+    private DevopsEnvApplicationMapper devopsEnvApplicationMapper;
 
     @Override
-    public DevopsEnvApplicationDTO create(DevopsEnvApplicationDTO devopsEnvApplicationDTO) {
-        return ConvertHelper.convert(devopsEnvApplicationRepostitory.create(
-                ConvertHelper.convert(devopsEnvApplicationDTO, DevopsEnvApplicationE.class)), DevopsEnvApplicationDTO.class);
+    public List<DevopsEnvApplicationDTO> batchCreate(DevopsEnvApplicationCreationDTO devopsEnvApplicationCreationDTO) {
+        return Stream.of(devopsEnvApplicationCreationDTO.getAppIds())
+                .map(appId -> new DevopsEnvApplicationE(devopsEnvApplicationCreationDTO.getEnvId(), appId))
+                .peek(e -> devopsEnvApplicationMapper.insertIgnore(ConvertHelper.convert(e, DevopsEnvApplicationDO.class)))
+                .map(e -> ConvertHelper.convert(e, DevopsEnvApplicationDTO.class))
+                .collect(Collectors.toList());
     }
 
     @Override

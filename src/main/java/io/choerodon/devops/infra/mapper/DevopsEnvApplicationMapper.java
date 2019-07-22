@@ -14,7 +14,7 @@ public interface DevopsEnvApplicationMapper extends Mapper<DevopsEnvApplicationD
      * @param devopsEnvApplicationDO 环境应用关联关系
      * @return 影响的记录数目
      */
-    int insertIgnore(DevopsEnvApplicationDO devopsEnvApplicationDO);
+    void insertIgnore(DevopsEnvApplicationDO devopsEnvApplicationDO);
 
     /**
      * 通过环境Id查询所有应用Id
