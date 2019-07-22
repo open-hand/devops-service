@@ -30,10 +30,12 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     private DevopsMergeRequestMapper devopsMergeRequestMapper;
 
 
+    @Override
     public List<DevopsMergeRequestVO> baseListBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
         return devopsMergeRequestMapper.listBySourceBranch(gitLabProjectId.intValue(),sourceBranchName);
     }
 
+    @Override
     public DevopsMergeRequestDTO baseQueryByAppIdAndMergeRequestId(Long projectId, Long gitlabMergeRequestId) {
         DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
         devopsMergeRequestDTO.setProjectId(projectId);
@@ -42,6 +44,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
                 .selectOne(devopsMergeRequestDTO);
     }
 
+    @Override
     public PageInfo<DevopsMergeRequestDTO> basePageByOptions(Integer gitlabProjectId, String state, PageRequest pageRequest) {
         DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
         devopsMergeRequestDTO.setProjectId(gitlabProjectId.longValue());
@@ -51,6 +54,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         return devopsMergeRequestDTOPageInfo;
     }
 
+    @Override
     public List<DevopsMergeRequestDTO> baseQueryByGitlabProjectId(Integer gitlabProjectId) {
         DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
         devopsMergeRequestDTO.setProjectId(gitlabProjectId.longValue());
@@ -59,10 +63,12 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         return devopsMergeRequestDTOS;
     }
 
+    @Override
     public Integer baseUpdate(DevopsMergeRequestDTO devopsMergeRequestDTO) {
         return devopsMergeRequestMapper.updateByPrimaryKey(devopsMergeRequestDTO);
     }
 
+    @Override
     public void baseCreate(DevopsMergeRequestDTO devopsMergeRequestDTO) {
         Long projectId = devopsMergeRequestDTO.getProjectId();
         Long gitlabMergeRequestId = devopsMergeRequestDTO.getGitlabMergeRequestId();

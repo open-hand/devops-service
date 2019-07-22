@@ -8,14 +8,15 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvUserPermissionVO;
-import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
-import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.BeanUtils;
@@ -35,13 +36,9 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     @Autowired
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
     @Autowired
-    private IamServiceClientOperator iamServiceClientOperator;
+    private IamService iamService;
     @Autowired
-    private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
-    @Autowired
-    private IamRepository iamRepository;
-    @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    private DevopsEnvironmentService devopsEnvironmentService;
 
 
     @Override
@@ -81,7 +78,7 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     @Transactional
     public void updateEnvUserPermission(Long envId, List<Long> addUsersList, List<Long> deleteUsersList) {
         // 待添加的用户列表
-        List<User> addIamUsers = iamRepository.listUsersByIds(addUsersList);
+        List<IamUserDTO> addIamUsers = iamService.listUsersByIds(addUsersList);
         addIamUsers.forEach(e -> devopsEnvUserPermissionMapper
                 .insert(new DevopsEnvUserPermissionDTO(e.getLoginName(), e.getId(), e.getRealName(), envId, true)));
         // 待删除的用户列表
@@ -102,10 +99,10 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
 
     @Override
     public void checkEnvDeployPermission(Long userId, Long envId) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        ProjectVO projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        ProjectDTO projectDTO = iamService.queryIamProject(devopsEnvironmentDTO.getProjectId());
         //判断当前用户是否是项目所有者，如果是，直接跳过校验，如果不是，校验环境权限
-        if (!iamRepository.isProjectOwner(userId, projectE)) {
+        if (!iamService.isProjectOwner(userId, projectDTO)) {
             DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO();
             devopsEnvUserPermissionDO.setIamUserId(userId);
             devopsEnvUserPermissionDO.setEnvId(envId);
@@ -137,7 +134,7 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
 
     @Override
     public List<DevopsEnvUserPermissionDTO> baseListByEnvId(Long envId) {
-        return devopsEnvUserPermissionMapper.listAllUserPermission(envId);
+        return devopsEnvUserPermissionMapper.listByEnvId(envId);
     }
 
     @Override
@@ -149,7 +146,7 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     @Transactional
     public void baseUpdate(Long envId, List<Long> addUsersList, List<Long> deleteUsersList) {
         // 待添加的用户列表
-        List<UserE> addIamUsers = iamRepository.listUsersByIds(addUsersList);
+        List<IamUserDTO> addIamUsers = iamService.listUsersByIds(addUsersList);
         addIamUsers.forEach(e -> devopsEnvUserPermissionMapper
                 .insert(new DevopsEnvUserPermissionDTO(e.getLoginName(), e.getId(), e.getRealName(), envId, true)));
         // 待删除的用户列表
@@ -170,10 +167,10 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
 
     @Override
     public void baseCheckEnvDeployPermission(Long userId, Long envId) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        ProjectVO projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        ProjectDTO projectDTO = iamService.queryIamProject(devopsEnvironmentDTO.getProjectId());
         //判断当前用户是否是项目所有者，如果是，直接跳过校验，如果不是，校验环境权限
-        if (!iamRepository.isProjectOwner(userId, projectE)) {
+        if (!iamService.isProjectOwner(userId, projectDTO)) {
             DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO();
             devopsEnvUserPermissionDO.setIamUserId(userId);
             devopsEnvUserPermissionDO.setEnvId(envId);

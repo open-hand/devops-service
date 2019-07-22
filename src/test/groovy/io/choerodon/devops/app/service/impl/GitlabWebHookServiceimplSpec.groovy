@@ -7,7 +7,7 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.PushWebHookVO
 import io.choerodon.devops.api.vo.PushWebHookVO
 import io.choerodon.devops.app.service.DevopsGitService
-import io.choerodon.devops.app.service.GitlabWebHookService
+
 import io.choerodon.devops.api.vo.iam.entity.*
 
 import io.choerodon.devops.domain.application.repository.*

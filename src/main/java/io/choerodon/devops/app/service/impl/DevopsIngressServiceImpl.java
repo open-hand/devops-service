@@ -43,24 +43,20 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Component
 public class DevopsIngressServiceImpl implements DevopsIngressService {
 
-    private static final String DOMAIN_NAME_EXIST_ERROR = "error.domain.name.exist";
     public static final String ERROR_DOMAIN_PATH_EXIST = "error.domain.path.exist";
     public static final String INGRESS = "Ingress";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     public static final String DELETE = "delete";
-
+    private static final String DOMAIN_NAME_EXIST_ERROR = "error.domain.name.exist";
     private static final String PATH_ERROR = "error.path.empty";
     private static final String PATH_DUPLICATED = "error.path.duplicated";
     private static final String ERROR_SERVICE_NOT_CONTAIN_PORT = "error.service.notContain.port";
     private static final String CERT_NOT_ACTIVE = "error.cert.notActive";
     private static final String INGRESS_NOT_EXIST = "ingress.not.exist";
-
+    private static final Gson gson = new Gson();
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
-
-    private static final Gson gson = new Gson();
-
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
@@ -687,6 +683,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return null;
     }
 
+    @Override
     public DevopsIngressDTO baseQueryIngressDTO(Long ingressId) {
         return devopsIngressMapper.selectByPrimaryKey(ingressId);
     }
@@ -719,6 +716,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return ingress.getId();
     }
 
+    @Override
     public List<String> baseListNameByServiceId(Long serviceId) {
         return devopsIngressMapper.listIngressNameByServiceId(serviceId);
     }

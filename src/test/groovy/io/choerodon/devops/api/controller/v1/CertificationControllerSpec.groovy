@@ -4,7 +4,7 @@ import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.service.DevopsEnvironmentService
-import io.choerodon.devops.app.service.GitlabGroupMemberService
+
 import io.choerodon.devops.app.service.impl.CertificationServiceImpl
 
 

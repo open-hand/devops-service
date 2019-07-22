@@ -22,6 +22,7 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     @Autowired
     private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
 
+    @Override
     public DevopsRegistrySecretDTO baseCreate(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
         if (devopsRegistrySecretMapper.insert(devopsRegistrySecretDTO) != 1) {
             throw new CommonException("error.registry.secret.create.error");
@@ -29,10 +30,12 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
         return devopsRegistrySecretDTO;
     }
 
+    @Override
     public DevopsRegistrySecretDTO baseQuery(Long devopsRegistrySecretId) {
         return devopsRegistrySecretMapper.selectByPrimaryKey(devopsRegistrySecretId);
     }
 
+    @Override
     public DevopsRegistrySecretDTO baseUpdate(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
         DevopsRegistrySecretDTO beforeDevopsRegistrySecretDTO = devopsRegistrySecretMapper.selectByPrimaryKey(devopsRegistrySecretDTO.getId());
         devopsRegistrySecretDTO.setObjectVersionNumber(beforeDevopsRegistrySecretDTO.getObjectVersionNumber());
@@ -42,6 +45,7 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
         return beforeDevopsRegistrySecretDTO;
     }
 
+    @Override
     public DevopsRegistrySecretDTO baseQueryByEnvAndId(String namespace, Long configId) {
         DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
         devopsRegistrySecretDTO.setConfigId(configId);
@@ -49,23 +53,19 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
         return devopsRegistrySecretMapper.selectOne(devopsRegistrySecretDTO);
     }
 
+    @Override
     public List<DevopsRegistrySecretDTO> baseListByConfig(Long configId) {
         DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
         devopsRegistrySecretDTO.setConfigId(configId);
         return devopsRegistrySecretMapper.select(devopsRegistrySecretDTO);
     }
 
+    @Override
     public DevopsRegistrySecretDTO baseQueryByEnvAndName(Long envId, String name) {
         DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
         devopsRegistrySecretDTO.setSecretCode(name);
         devopsRegistrySecretDTO.setEnvId(envId);
         return devopsRegistrySecretMapper.selectOne(devopsRegistrySecretDTO);
     }
-
-
-
-
-
-
 
 }

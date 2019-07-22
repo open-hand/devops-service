@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.vo.GitlabUserRequestDTO;
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.app.service.GitlabUserService;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabUserReqDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -26,7 +26,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     @Autowired
     private GitlabConfigurationProperties gitlabConfigurationProperties;
     @Autowired
-    private UserAttrRepository userAttrRepository;
+    private UserAttrService userAttrService;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
 
@@ -42,13 +42,13 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                     gitlabConfigurationProperties.getProjectLimit(),
                     ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
         }
-        UserAttrE userAttrE = userAttrRepository.baseQueryByGitlabUserId(gitLabUserDTO.getId().longValue());
-        if (userAttrE == null) {
-            userAttrE = new UserAttrE();
-            userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
-            userAttrE.setGitlabUserId(gitLabUserDTO.getId().longValue());
-            userAttrE.setGitlabUserName(gitLabUserDTO.getUsername());
-            userAttrRepository.baseInsert(userAttrE);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(gitLabUserDTO.getId().longValue());
+        if (userAttrDTO == null) {
+            userAttrDTO = new UserAttrDTO();
+            userAttrDTO.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
+            userAttrDTO.setGitlabUserId(gitLabUserDTO.getId().longValue());
+            userAttrDTO.setGitlabUserName(gitLabUserDTO.getUsername());
+            userAttrService.baseInsert(userAttrDTO);
         }
     }
 
@@ -56,9 +56,9 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     public void updateGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
 
         checkGitlabUser(gitlabUserReqDTO);
-        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
-        if (userAttrE != null) {
-            gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
+        if (userAttrDTO != null) {
+            gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
                     gitlabConfigurationProperties.getProjectLimit(),
                     ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
         }
@@ -66,17 +66,17 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void isEnabledGitlabUser(Integer userId) {
-        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(userId));
-        if (userAttrE != null) {
-            gitlabServiceClientOperator.enableUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(userId));
+        if (userAttrDTO != null) {
+            gitlabServiceClientOperator.enableUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
     }
 
     @Override
     public void disEnabledGitlabUser(Integer userId) {
-        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(userId));
-        if (userAttrE != null) {
-            gitlabServiceClientOperator.disableUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(userId));
+        if (userAttrDTO != null) {
+            gitlabServiceClientOperator.disableUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
     }
 

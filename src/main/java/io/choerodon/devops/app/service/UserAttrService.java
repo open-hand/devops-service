@@ -37,8 +37,6 @@ public interface UserAttrService {
 
     List<UserAttrDTO> baseListByUserIds(List<Long> userIds);
 
-    UserAttrDTO baseQueryByGitlabUserId(Long gitlabUserId);
-
     void baseUpdate(UserAttrDTO userAttrDTO);
 
     List<UserAttrDTO> baseList();

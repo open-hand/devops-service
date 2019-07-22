@@ -21,7 +21,4 @@ public interface DevopsRegistrySecretService {
 
      DevopsRegistrySecretDTO baseQueryByEnvAndName(Long envId, String name);
 
-
-
-
 }

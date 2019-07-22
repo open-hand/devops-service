@@ -8,7 +8,6 @@ import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.asgard.saga.consumer.MockHttpServletRequest;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.devops.app.service.DevopsDemoEnvInitService;
-import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.app.service.OrganizationService;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.eventhandler.payload.OrganizationEventPayload;

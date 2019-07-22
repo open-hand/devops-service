@@ -10,6 +10,7 @@ import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
 import io.choerodon.devops.api.vo.GitlabUserRequestDTO;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;

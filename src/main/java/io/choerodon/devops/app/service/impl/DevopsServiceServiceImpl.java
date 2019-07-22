@@ -524,6 +524,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return devopsServiceMapper.selectDeployedEnv();
     }
 
+    @Override
     public DevopsServiceDTO baseQueryByNameAndEnvId(String name, Long envId) {
         DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
         devopsServiceDTO.setName(name);

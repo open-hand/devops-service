@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
@@ -16,6 +17,7 @@ import io.choerodon.devops.infra.mapper.DevopsEnvCommandLogMapper;
  * Date:  14:49 2019/7/12
  * Description:
  */
+@Service
 public class DevopsEnvCommandLogServiceImpl implements DevopsEnvCommandLogService {
     @Autowired
     private DevopsEnvCommandLogMapper devopsEnvCommandLogMapper;

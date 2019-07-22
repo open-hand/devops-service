@@ -8,6 +8,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.EndPointPortDTO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.api.vo.iam.entity.*;
@@ -43,7 +44,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
-    private ApplicationInstanceRepository applicationInstanceRepository;
+    private ApplicationInstanceService applicationInstanceService;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
@@ -220,7 +221,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                     .get("choerodon.io/network-service-instances");
             if (instancesCode != null) {
                 List<String> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel().map(t -> {
-                    ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(t, envId);
+                    ApplicationInstanceE applicationInstanceE = applicationInstanceService.selectByCode(t, envId);
                     if (applicationInstanceE != null) {
                         devopsServiceReqVO.setAppId(applicationInstanceE.getApplicationE().getId());
                     }

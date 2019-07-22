@@ -90,26 +90,6 @@ public interface DevopsIngressService {
      */
     Boolean checkDomainAndPath(Long envId, String domain, String path, Long id);
 
-//    /**
-//     * 项目下创建域名
-//     *
-//     * @param host     主机
-//     * @param name     域名名称
-//     * @param certName 证书名称
-//     * @return V1beta1Ingress
-//     */
-//    V1beta1Ingress initV1beta1Ingress(String host, String name, String certName);
-//
-//
-//    /**
-//     * 项目下创建path
-//     *
-//     * @param hostPath    主机path
-//     * @param serviceName 网络name
-//     * @return V1beta1HTTPIngressPath
-//     */
-//    V1beta1HTTPIngressPath createPath(String hostPath, String serviceName, Long port);
-
 
     /**
      * 环境总览域名查询
@@ -129,4 +109,6 @@ public interface DevopsIngressService {
     List<DevopsIngressDTO> baseListByEnvId(Long envId);
 
     void deleteIngressAndIngressPathByEnvId(Long envId);
+
+    List<String> baseListNameByServiceId(Long serviceId);
 }

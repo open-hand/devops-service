@@ -24,6 +24,9 @@ public class MemberDTO {
         this.accessLevel = accessLevel;
     }
 
+    public MemberDTO() {
+    }
+
     public Integer getUserId() {
         return userId;
     }

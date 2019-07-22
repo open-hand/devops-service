@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import io.swagger.annotations.ApiParam;
+import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsEnvResourceDetailService;
@@ -12,6 +13,7 @@ import io.choerodon.devops.infra.mapper.DevopsEnvResourceDetailMapper;
  * Date:  10:15 2019/7/15
  * Description:
  */
+@Service
 public class DevopsEnvResourceDetailServiceImpl implements DevopsEnvResourceDetailService {
     @ApiParam
     private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper;

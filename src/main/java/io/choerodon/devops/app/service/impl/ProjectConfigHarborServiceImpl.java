@@ -4,10 +4,12 @@ import java.io.IOException;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ProjectConfigVO;
-import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.app.service.ProjectConfigHarborService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.harbor.Project;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import org.slf4j.Logger;
@@ -27,7 +29,7 @@ public class ProjectConfigHarborServiceImpl implements ProjectConfigHarborServic
     private static final Logger LOGGER = LoggerFactory.getLogger(ProjectConfigHarborServiceImpl.class);
 
     @Autowired
-    IamRepository iamRepository;
+    IamService iamService;
 
     //创建harbor仓库
     @Override
@@ -39,9 +41,10 @@ public class ProjectConfigHarborServiceImpl implements ProjectConfigHarborServic
             HarborClient harborClient = retrofit.create(HarborClient.class);
             Response<Void> result = null;
 
-            ProjectVO projectE = iamRepository.queryIamProject(projectId);
+            ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+            OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
             result = harborClient.insertProject(new Project(
-                    projectE.getOrganization().getCode() + "-" + projectE.getCode(), 1)).execute();
+                    organizationDTO.getCode() + "-" + projectDTO.getCode(), 1)).execute();
 
             if (result.raw().code() != 201) {
                 throw new CommonException(result.errorBody().string());

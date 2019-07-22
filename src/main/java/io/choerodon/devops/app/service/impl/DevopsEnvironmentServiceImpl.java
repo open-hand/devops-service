@@ -89,10 +89,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private AgentCommandService agentCommandService;
     @Autowired
-    private DevopsGitService devopsGitService;
-    @Autowired
-    private GitlabGroupMemberService gitlabGroupMemberService;
-    @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private IamService iamService;
@@ -147,7 +143,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 查询创建应用所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-        MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
+        MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (memberDTO == null || memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
