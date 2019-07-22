@@ -184,19 +184,19 @@ public interface GitlabServiceClient {
                                                               @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines")
-    ResponseEntity<List<PipelineDTO>> listPipeline(@PathVariable("projectId") Integer projectId,
-                                                   @RequestParam("userId") Integer userId);
+    ResponseEntity<List<GitlabPipelineDTO>> listPipeline(@PathVariable("projectId") Integer projectId,
+                                                         @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/page")
-    ResponseEntity<List<PipelineDTO>> pagePipeline(@PathVariable("projectId") Integer projectId,
-                                                   @RequestParam("page") Integer page,
-                                                   @RequestParam("size") Integer size,
-                                                   @RequestParam("userId") Integer userId);
+    ResponseEntity<List<GitlabPipelineDTO>> pagePipeline(@PathVariable("projectId") Integer projectId,
+                                                         @RequestParam("page") Integer page,
+                                                         @RequestParam("size") Integer size,
+                                                         @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}")
-    ResponseEntity<PipelineDTO> queryPipeline(@PathVariable("projectId") Integer projectId,
-                                              @PathVariable("pipelineId") Integer pipelineId,
-                                              @RequestParam("userId") Integer userId);
+    ResponseEntity<GitlabPipelineDTO> queryPipeline(@PathVariable("projectId") Integer projectId,
+                                                    @PathVariable("pipelineId") Integer pipelineId,
+                                                    @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits")
     ResponseEntity<CommitDTO> queryCommit(@PathVariable("projectId") Integer projectId,
@@ -250,13 +250,13 @@ public interface GitlabServiceClient {
                                                @RequestParam(value = "userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/retry")
-    ResponseEntity<PipelineDTO> retryPipeline(
+    ResponseEntity<GitlabPipelineDTO> retryPipeline(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("pipelineId") Integer pipelineId,
             @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/cancel")
-    ResponseEntity<PipelineDTO> cancelPipeline(
+    ResponseEntity<GitlabPipelineDTO> cancelPipeline(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("pipelineId") Integer pipelineId,
             @RequestParam("userId") Integer userId);

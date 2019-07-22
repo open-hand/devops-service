@@ -33,7 +33,7 @@ public class DevopsUserController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据用户Id查询gitlab用户Id")
     @GetMapping("/{user_id}")
-    public ResponseEntity<UserAttrVO> createOrUpdate(
+    public ResponseEntity<UserAttrVO> queryByUserId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "用户id", required = true)

@@ -7,16 +7,20 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CustomMergeRequestVO;
 import io.choerodon.devops.api.vo.DevopsBranchVO;
 import io.choerodon.devops.api.vo.IssueDTO;
-import io.choerodon.devops.app.service.IssueService;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabCommitE;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.api.vo.iam.entity.DevopsMergeRequestE;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
+import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.mapper.ApplicationMapper;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,35 +35,32 @@ import org.springframework.stereotype.Service;
 public class IssueServiceImpl implements IssueService {
 
     @Autowired
-    private DevopsBranchRepository devopsBranchRepository;
-
+    private DevopsBranchService devopsBranchService;
     @Autowired
-    private DevopsGitRepository devopsGitRepository;
-
+    private DevopsGitService devopsGitService;
     @Autowired
-    private ApplicationRepository applicationRepository;
-
+    private ApplicationService applicationService;
     @Autowired
-    private DevopsMergeRequestRepository devopsMergeRequestRepository;
-
+    private DevopsMergeRequestService devopsMergeRequestService;
     @Autowired
-    private IamRepository iamRepository;
-
+    private IamService iamService;
     @Autowired
-    private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
+    private DevopsGitlabCommitService devopsGitlabCommitService;
+    @Autowired
+    private ApplicationMapper applicationMapper;
 
 
     @Override
     public IssueDTO countCommitAndMergeRequest(Long issueId) {
         List<DevopsBranchVO> devopsBranchVOS = getBranchsByIssueId(issueId);
-        List<DevopsGitlabCommitE> commitDTOS = new ArrayList<>();
+        List<DevopsGitlabCommitDTO> devopsGitlabCommitVOS = new ArrayList<>();
         List<CustomMergeRequestVO> customMergeRequestVOS = new ArrayList<>();
         devopsBranchVOS.forEach(devopsBranchDTO -> {
-            commitDTOS.addAll(devopsBranchDTO.getCommits());
+            devopsGitlabCommitVOS.addAll(devopsBranchDTO.getCommits());
             customMergeRequestVOS.addAll(devopsBranchDTO.getMergeRequests());
         });
-        Optional<DevopsGitlabCommitE> devopsGitlabCommitE = commitDTOS.stream().max(
-                Comparator.comparing(DevopsGitlabCommitE::getCommitDate));
+        Optional<DevopsGitlabCommitDTO> devopsGitlabCommitE = devopsGitlabCommitVOS.stream().max(
+                Comparator.comparing(DevopsGitlabCommitDTO::getCommitDate));
         Optional<CustomMergeRequestVO> customMergeRequestDTO = customMergeRequestVOS.stream().max(
                 Comparator.comparing(CustomMergeRequestVO::getUpdatedAt)
         );
@@ -73,10 +74,10 @@ public class IssueServiceImpl implements IssueService {
             }
         }
         issueDTO.setBranchCount(devopsBranchVOS.size());
-        issueDTO.setTotalCommit(commitDTOS.size());
+        issueDTO.setTotalCommit(devopsGitlabCommitVOS.size());
         issueDTO.setTotalMergeRequest(customMergeRequestVOS.size());
-        devopsGitlabCommitE.ifPresent(commitDTO1 ->
-                issueDTO.setCommitUpdateTime(commitDTO1.getCommitDate()));
+        devopsGitlabCommitE.ifPresent(gitlabCommitDTO ->
+                issueDTO.setCommitUpdateTime(gitlabCommitDTO.getCommitDate()));
         customMergeRequestDTO.ifPresent(customMergeRequestVO1 ->
                 issueDTO.setMergeRequestUpdateTime(customMergeRequestVO1.getUpdatedAt()));
         return issueDTO;
@@ -84,21 +85,21 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     public List<DevopsBranchVO> getBranchsByIssueId(Long issueId) {
-        List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchRepository.baseQueryDevopsBranchesByIssueId(issueId);
+        List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchService.baseListDevopsBranchesByIssueId(issueId);
         List<DevopsBranchVO> devopsBranchVOS = new ArrayList<>();
         devopsBranchDTOS.forEach(devopsBranchDO -> {
-            Integer gitLabProjectId = devopsGitRepository.getGitLabId(devopsBranchDO.getAppId());
+            Integer gitLabProjectId = getGitLabId(devopsBranchDO.getAppId());
 
-            List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.baseListByAppIdAndBranch(devopsBranchDO.getAppId(), devopsBranchDO.getBranchName(), devopsBranchDO.getCheckoutDate());
+            List<DevopsGitlabCommitDTO> devopsGitlabCommitES = devopsGitlabCommitService.baseListByAppIdAndBranch(devopsBranchDO.getAppId(), devopsBranchDO.getBranchName(), devopsBranchDO.getCheckoutDate());
 
             devopsGitlabCommitES = devopsGitlabCommitES.stream().filter(devopsGitlabCommitE ->
                     !devopsGitlabCommitE.getCommitSha().equals(devopsBranchDO.getCheckoutCommit()))
                     .collect(Collectors.toList());
             DevopsBranchVO devopsBranchVO = ConvertHelper.convert(devopsBranchDO, DevopsBranchVO.class);
             devopsBranchVO.setCommits(devopsGitlabCommitES);
-            ApplicationE app = applicationRepository.query(devopsBranchDO.getAppId());
-            devopsBranchVO.setAppName(app.getName());
-            List<DevopsMergeRequestE> mergeRequests = devopsMergeRequestRepository.baseQueryBySourceBranch(
+            ApplicationDTO applicationDTO = applicationService.baseQuery(devopsBranchDO.getAppId());
+            devopsBranchVO.setAppName(applicationDTO.getName());
+            List<DevopsMergeRequestDTO> mergeRequests = devopsMergeRequestService.baseListBySourceBranch(
                     devopsBranchDO.getBranchName(), (long) gitLabProjectId);
             devopsBranchVO.setMergeRequests(addAuthorNameAndAssigneeName(
                     mergeRequests, devopsBranchDO.getAppId()));
@@ -107,24 +108,19 @@ public class IssueServiceImpl implements IssueService {
         return devopsBranchVOS;
     }
 
-    private List<CustomMergeRequestVO> addAuthorNameAndAssigneeName(List<DevopsMergeRequestE> devopsMergeRequestES,
+    private List<CustomMergeRequestVO> addAuthorNameAndAssigneeName(List<DevopsMergeRequestDTO> devopsMergeRequestDTOS,
                                                                     Long applicationId) {
         List<CustomMergeRequestVO> mergeRequests = new ArrayList<>();
-
-
         List<Long> authorIds = new ArrayList<>();
         List<Long> assigneeIds = new ArrayList<>();
-        devopsMergeRequestES.stream().forEach(devopsMergeRequestE -> {
+        devopsMergeRequestDTOS.stream().forEach(devopsMergeRequestE -> {
             authorIds.add(devopsMergeRequestE.getAuthorId());
             assigneeIds.add(devopsMergeRequestE.getAssigneeId());
         });
+        List<IamUserDTO> authors = iamService.listUsersByIds(authorIds);
+        List<IamUserDTO> assignees = iamService.listUsersByIds(assigneeIds);
 
-
-        List<UserE> authors = iamRepository.listUsersByIds(authorIds);
-        List<UserE> assignees = iamRepository.listUsersByIds(assigneeIds);
-
-
-        devopsMergeRequestES.forEach(devopsMergeRequestE -> {
+        devopsMergeRequestDTOS.forEach(devopsMergeRequestE -> {
             Long authorId = devopsMergeRequestE.getAuthorId();
             Long assigneeId = devopsMergeRequestE.getAssigneeId();
             CustomMergeRequestVO customMergeRequestVO = new CustomMergeRequestVO();
@@ -148,15 +144,24 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     public List<CustomMergeRequestVO> getMergeRequestsByIssueId(Long issueId) {
-        List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchRepository.baseGetDevopsBranchesByIssueId(issueId);
+        List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchService.baseListDevopsBranchesByIssueId(issueId);
         List<CustomMergeRequestVO> mergeRequests = new ArrayList<>();
         devopsBranchDTOS.forEach(devopsBranchDO -> {
-            Integer gitLabProjectId = devopsGitRepository.getGitLabId(devopsBranchDO.getAppId());
-            List<DevopsMergeRequestE> devopsMergeRequestES = devopsMergeRequestRepository.baseQueryBySourceBranch(
+            Integer gitLabProjectId = getGitLabId(devopsBranchDO.getAppId());
+            List<DevopsMergeRequestDTO> devopsMergeRequestDTOS = devopsMergeRequestService.baseListBySourceBranch(
                     devopsBranchDO.getBranchName(), (long) gitLabProjectId);
             mergeRequests.addAll(addAuthorNameAndAssigneeName(
-                    devopsMergeRequestES, devopsBranchDO.getAppId()));
+                    devopsMergeRequestDTOS, devopsBranchDO.getAppId()));
         });
         return mergeRequests;
+    }
+
+    private Integer getGitLabId(Long applicationId) {
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(applicationId);
+        if (applicationDO != null) {
+            return applicationDO.getGitlabProjectId();
+        } else {
+            throw new CommonException("error.application.select");
+        }
     }
 }

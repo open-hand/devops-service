@@ -1,17 +1,43 @@
-package io.choerodon.devops.api.vo;
+package io.choerodon.devops.infra.dto;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
- * Date:  15:37 2019/4/12
+ * Date:  19:41 2019/4/3
  * Description:
  */
-public class PipelineUserRecordRelDTO {
+@Table(name = "devops_pipeline_user_record_rel")
+public class PipelineUserRecordRelationshipDTO extends BaseDTO {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private Long userId;
     private Long pipelineRecordId;
     private Long stageRecordId;
     private Long taskRecordId;
-    private String type;
-    private Boolean isApprove;
+
+    public PipelineUserRecordRelationshipDTO() {
+    }
+
+    public PipelineUserRecordRelationshipDTO(Long pipelineRecordId, Long stageRecordId, Long taskRecordId) {
+        this.pipelineRecordId = pipelineRecordId;
+        this.stageRecordId = stageRecordId;
+        this.taskRecordId = taskRecordId;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Long getUserId() {
         return userId;
@@ -43,21 +69,5 @@ public class PipelineUserRecordRelDTO {
 
     public void setTaskRecordId(Long taskRecordId) {
         this.taskRecordId = taskRecordId;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Boolean getIsApprove() {
-        return isApprove;
-    }
-
-    public void setIsApprove(Boolean isApprove) {
-        this.isApprove = isApprove;
     }
 }

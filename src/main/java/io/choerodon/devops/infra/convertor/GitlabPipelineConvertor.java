@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabPipelineE;
-import io.choerodon.devops.infra.dto.gitlab.PipelineDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitlabPipelineDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -21,10 +21,10 @@ import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO;
  * Created by Zenger on 2018/4/3.
  */
 @Component
-public class GitlabPipelineConvertor implements ConvertorI<GitlabPipelineE, PipelineDTO, Object> {
+public class GitlabPipelineConvertor implements ConvertorI<GitlabPipelineE, GitlabPipelineDTO, Object> {
 
     @Override
-    public GitlabPipelineE doToEntity(PipelineDTO pipelineDTO) {
+    public GitlabPipelineE doToEntity(GitlabPipelineDTO pipelineDTO) {
         GitlabPipelineE gitlabPipelineE = new GitlabPipelineE();
         BeanUtils.copyProperties(pipelineDTO, gitlabPipelineE);
         if (pipelineDTO.getUser() != null) {

@@ -3099,6 +3099,7 @@ private ApplicationVersionE createVersion(ApplicationE
 =======
 
 
+    @Override
     public ApplicationInstanceDTO baseQueryByCodeAndEnv(String code, Long envId) {
         ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
         applicationInstanceDTO.setCode(code);
@@ -3404,9 +3405,13 @@ public List<ApplicationInstanceDTO> baseList(){
         }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 public String baseQueryValueByInstanceId(Long
         instanceId){
 =======
+=======
+    @Override
+>>>>>>> [IMP] refactor PipelineController
     public String baseQueryValueByInstanceId(Long instanceId) {
 >>>>>>> [IMP]修改后端结构
         return applicationInstanceMapper.queryByInstanceId(instanceId);

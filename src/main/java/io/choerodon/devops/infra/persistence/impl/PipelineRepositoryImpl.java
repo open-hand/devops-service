@@ -7,7 +7,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.infra.dto.DevopsPipelineDTO;
+import io.choerodon.devops.infra.dto.PipelineDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,14 +36,14 @@ public class PipelineRepositoryImpl implements PipelineRepository {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-        PageInfo<DevopsPipelineDTO> pipelineDOS = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () ->
+        PageInfo<PipelineDTO> pipelineDOS = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(),PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo( () ->
                 pipelineMapper.listByOptions(projectId, searchParamMap, paramMap, PageRequestUtil.checkSortIsEmpty(pageRequest), classifyParam));
         return ConvertPageHelper.convertPageInfo(pipelineDOS, PipelineE.class);
     }
 
     @Override
     public PipelineE baseCreate(Long projectId, PipelineE pipelineE) {
-        DevopsPipelineDTO pipelineDO = ConvertHelper.convert(pipelineE, DevopsPipelineDTO.class);
+        PipelineDTO pipelineDO = ConvertHelper.convert(pipelineE, PipelineDTO.class);
         pipelineDO.setIsEnabled(1);
         if (pipelineMapper.insert(pipelineDO) != 1) {
             throw new CommonException("error.insert.pipeline");
@@ -53,7 +53,7 @@ public class PipelineRepositoryImpl implements PipelineRepository {
 
     @Override
     public PipelineE baseUpdate(Long projectId, PipelineE pipelineE) {
-        DevopsPipelineDTO pipelineDO = ConvertHelper.convert(pipelineE, DevopsPipelineDTO.class);
+        PipelineDTO pipelineDO = ConvertHelper.convert(pipelineE, PipelineDTO.class);
         pipelineDO.setIsEnabled(1);
         if (pipelineMapper.updateByPrimaryKey(pipelineDO) != 1) {
             throw new CommonException("error.update.pipeline");
@@ -63,7 +63,7 @@ public class PipelineRepositoryImpl implements PipelineRepository {
 
     @Override
     public PipelineE baseUpdateWithEnabled(Long pipelineId, Integer isEnabled) {
-        DevopsPipelineDTO pipelineDO = new DevopsPipelineDTO();
+        PipelineDTO pipelineDO = new PipelineDTO();
         pipelineDO.setId(pipelineId);
         pipelineDO.setIsEnabled(isEnabled);
         pipelineDO.setObjectVersionNumber(pipelineMapper.selectByPrimaryKey(pipelineDO).getObjectVersionNumber());
@@ -75,21 +75,21 @@ public class PipelineRepositoryImpl implements PipelineRepository {
 
     @Override
     public PipelineE baseQueryById(Long pipelineId) {
-        DevopsPipelineDTO pipelineDO = new DevopsPipelineDTO();
+        PipelineDTO pipelineDO = new PipelineDTO();
         pipelineDO.setId(pipelineId);
         return ConvertHelper.convert(pipelineMapper.selectByPrimaryKey(pipelineDO), PipelineE.class);
     }
 
     @Override
     public void baseDelete(Long pipelineId) {
-        DevopsPipelineDTO pipelineDO = new DevopsPipelineDTO();
+        PipelineDTO pipelineDO = new PipelineDTO();
         pipelineDO.setId(pipelineId);
         pipelineMapper.deleteByPrimaryKey(pipelineDO);
     }
 
     @Override
     public void baseCheckName(Long projectId, String name) {
-        DevopsPipelineDTO pipelineDO = new DevopsPipelineDTO();
+        PipelineDTO pipelineDO = new PipelineDTO();
         pipelineDO.setProjectId(projectId);
         pipelineDO.setName(name);
         if (pipelineMapper.select(pipelineDO).size() > 0) {
@@ -99,7 +99,7 @@ public class PipelineRepositoryImpl implements PipelineRepository {
 
     @Override
     public List<PipelineE> baseQueryByProjectId(Long projectId) {
-        DevopsPipelineDTO pipelineDO = new DevopsPipelineDTO();
+        PipelineDTO pipelineDO = new PipelineDTO();
         pipelineDO.setProjectId(projectId);
         return ConvertHelper.convertList(pipelineMapper.select(pipelineDO), PipelineE.class);
     }

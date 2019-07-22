@@ -1,22 +1,22 @@
-package io.choerodon.devops.infra.persistence.impl;
+package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
+import io.choerodon.devops.app.service.PipelineUserRelationshipService;
 import io.choerodon.devops.infra.dto.PipelineUserRelationshipDTO;
 import io.choerodon.devops.infra.mapper.PipelineUserRelMapper;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
- * Date:  17:10 2019/4/8
+ * Date:  16:54 2019/7/19
  * Description:
  */
-@Component
-public class PipelineUserRelRepositoryImpl implements PipelineUserRelRepository {
+@Service
+public class PipelineUserRelationshipServiceImpl implements PipelineUserRelationshipService {
     @Autowired
     private PipelineUserRelMapper userRelMapper;
 

@@ -28,6 +28,17 @@ public class PipelineRecordDTO extends BaseDTO {
     private String auditUser;
     private String errorInfo;
 
+    public PipelineRecordDTO(Long pipelineId, String triggerType, Long projectId, String status, String pipelineName) {
+        this.pipelineId = pipelineId;
+        this.triggerType = triggerType;
+        this.projectId = projectId;
+        this.status = status;
+        this.pipelineName = pipelineName;
+    }
+    public PipelineRecordDTO(){
+    }
+
+
     public String getErrorInfo() {
         return errorInfo;
     }

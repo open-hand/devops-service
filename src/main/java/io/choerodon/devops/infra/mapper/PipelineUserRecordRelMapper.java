@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.PipelineUserRecordRelDO;
+import io.choerodon.devops.infra.dto.PipelineUserRecordRelationshipDTO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**
@@ -8,5 +8,5 @@ import io.choerodon.mybatis.common.Mapper;
  * Date:  17:27 2019/4/9
  * Description:
  */
-public interface PipelineUserRecordRelMapper extends Mapper<PipelineUserRecordRelDO> {
+public interface PipelineUserRecordRelMapper extends Mapper<PipelineUserRecordRelationshipDTO> {
 }

@@ -16,7 +16,7 @@ import org.apache.commons.lang.StringUtils;
  * Created by Sheep on 2019/7/11.
  */
 public interface DevopsBranchService {
-    List<DevopsBranchDTO> baseQueryDevopsBranchesByIssueId(Long issueId);
+    List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId);
 
     DevopsBranchDTO baseQueryByAppAndBranchName(Long appId, String branchName);
 

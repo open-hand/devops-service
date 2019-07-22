@@ -3,33 +3,32 @@ package io.choerodon.devops.app.service.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.choerodon.devops.infra.util.FastjsonParserConfigProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.app.service.DevopsGitlabCommitService;
-import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
-import io.choerodon.devops.app.service.GitlabWebHookService;
-import io.choerodon.devops.api.vo.iam.entity.DevopsMergeRequestE;
-import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository;
+import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
+import io.choerodon.devops.api.vo.JobWebHookDTO;
+import io.choerodon.devops.api.vo.PipelineWebHookDTO;
+import io.choerodon.devops.api.vo.PushWebHookVO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
+import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.FastjsonParserConfigProvider;
 
 @Service
 public class GitlabWebHookServiceImpl implements GitlabWebHookService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabWebHookServiceImpl.class);
 
-    private DevopsMergeRequestRepository devopsMergeRequestRepository;
+    private DevopsMergeRequestService devopsMergeRequestService;
     private DevopsGitService devopsGitService;
     private DevopsGitlabCommitService devopsGitlabCommitService;
     private DevopsGitlabPipelineService devopsGitlabPipelineService;
 
-    public GitlabWebHookServiceImpl(DevopsMergeRequestRepository devopsMergeRequestRepository, DevopsGitService devopsGitService, DevopsGitlabCommitService devopsGitlabCommitService,
+    public GitlabWebHookServiceImpl(DevopsMergeRequestService devopsMergeRequestService, DevopsGitService devopsGitService, DevopsGitlabCommitService devopsGitlabCommitService,
                                     DevopsGitlabPipelineService devopsGitlabPipelineService) {
-        this.devopsMergeRequestRepository = devopsMergeRequestRepository;
+        this.devopsMergeRequestService = devopsMergeRequestService;
         this.devopsGitService = devopsGitService;
         this.devopsGitlabPipelineService = devopsGitlabPipelineService;
         this.devopsGitlabCommitService = devopsGitlabCommitService;
@@ -42,13 +41,12 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
         switch (kind) {
             case "merge_request":
                 DevopsMergeRequestVO devopsMergeRequestVO = JSONArray.parseObject(body, DevopsMergeRequestVO.class, FastjsonParserConfigProvider.getParserConfig());
-                DevopsMergeRequestE devopsMergeRequestE = ConvertHelper.convert(devopsMergeRequestVO,
-                        DevopsMergeRequestE.class);
+                DevopsMergeRequestDTO devopsMergeRequestDTO = ConvertUtils.convertObject(devopsMergeRequestVO, DevopsMergeRequestDTO.class);
                 if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info(devopsMergeRequestE.toString());
+                    LOGGER.info(devopsMergeRequestDTO.toString());
                 }
 
-                devopsMergeRequestRepository.saveDevopsMergeRequest(devopsMergeRequestE);
+                devopsMergeRequestService.baseCreate(devopsMergeRequestDTO);
                 break;
             case "push":
                 PushWebHookVO pushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());

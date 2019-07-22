@@ -1,10 +1,8 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabCommitE;
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 
 public class DevopsBranchVO {
 
@@ -13,7 +11,7 @@ public class DevopsBranchVO {
     private String originBranch;
     private Long issueId;
     private String branchName;
-    private List<DevopsGitlabCommitE> commits;
+    private List<DevopsGitlabCommitDTO> commits;
     private List<CustomMergeRequestVO> mergeRequests;
 
     public String getOriginBranch() {
@@ -56,11 +54,11 @@ public class DevopsBranchVO {
         this.appName = appName;
     }
 
-    public List<DevopsGitlabCommitE> getCommits() {
+    public List<DevopsGitlabCommitDTO> getCommits() {
         return commits;
     }
 
-    public void setCommits(List<DevopsGitlabCommitE> commits) {
+    public void setCommits(List<DevopsGitlabCommitDTO> commits) {
         this.commits = commits;
     }
 

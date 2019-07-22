@@ -47,7 +47,7 @@ public class OrgCertificationController {
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
-        devopsOrgCertificationService.insert(organizationId, key, cert, orgCertificationDTO);
+        devopsOrgCertificationService.create(organizationId, key, cert, orgCertificationDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -59,7 +59,7 @@ public class OrgCertificationController {
      */
     @Permission(type= ResourceType.ORGANIZATION,roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "更新证书下的项目")
-    @PutMapping("/{certId}")
+    @PutMapping()
     public ResponseEntity update(
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
@@ -84,8 +84,8 @@ public class OrgCertificationController {
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable(value = "cert_id") Long certId) {
-        return Optional.ofNullable(devopsOrgCertificationService.getCert(certId))
+            @PathVariable Long certId) {
+        return Optional.ofNullable(devopsOrgCertificationService.queryCert(certId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cert.query"));
     }
@@ -127,7 +127,7 @@ public class OrgCertificationController {
             @RequestParam(required = false) Long certId,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody String[] params) {
-        return Optional.ofNullable(devopsOrgCertificationService.listProjects(organizationId, certId, pageRequest, params))
+        return Optional.ofNullable(devopsOrgCertificationService.pageProjects(organizationId, certId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }
@@ -164,7 +164,7 @@ public class OrgCertificationController {
     @ApiOperation(value = "组织证书列表查询")
     @CustomPageRequest
     @PostMapping("/page_cert")
-    public ResponseEntity<PageInfo<OrgCertificationDTO>> listOrgCert(
+    public ResponseEntity<PageInfo<OrgCertificationDTO>> pageOrgCert(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "分页参数")

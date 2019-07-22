@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  21:04 2019/4/9

@@ -26,16 +26,10 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.CheckAuditDTO;
-import io.choerodon.devops.api.vo.PipelineCheckDeployDTO;
-import io.choerodon.devops.api.vo.PipelineVO;
-import io.choerodon.devops.api.vo.PipelineRecordVO;
-import io.choerodon.devops.api.vo.PipelineRecordListDTO;
-import io.choerodon.devops.api.vo.PipelineRecordReqDTO;
-import io.choerodon.devops.api.vo.PipelineReqDTO;
-import io.choerodon.devops.api.vo.PipelineUserRecordRelDTO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.PipelineService;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -140,7 +134,7 @@ public class PipelineController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询流水线详情")
-    @GetMapping(value = "/{pipeline_id}/detail")
+    @GetMapping(value = "/{pipeline_id}")
     public ResponseEntity<PipelineReqDTO> queryById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -162,8 +156,8 @@ public class PipelineController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下获取流水线")
     @CustomPageRequest
-    @PostMapping("/list_by_options")
-    public ResponseEntity<PageInfo<PipelineVO>> listByOptions(
+    @PostMapping("/page_by_options")
+    public ResponseEntity<PageInfo<PipelineVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "创建者", required = false)
@@ -176,7 +170,7 @@ public class PipelineController {
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(pipelineService.listByOptions(projectId, creator, executor, envIds, pageRequest, params))
+        return Optional.ofNullable(pipelineService.pageByOptions(projectId, creator, executor, envIds, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.list"));
     }
@@ -192,8 +186,8 @@ public class PipelineController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下获取流水线记录")
     @CustomPageRequest
-    @PostMapping("/list_record")
-    public ResponseEntity<PageInfo<PipelineRecordVO>> listRecords(
+    @PostMapping("/page_record")
+    public ResponseEntity<PageInfo<PipelineRecordVO>> pageRecords(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = false)
@@ -242,11 +236,11 @@ public class PipelineController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "人工审核")
     @PostMapping("/audit")
-    public ResponseEntity<List<IamUserDTO>> audit(
+    public ResponseEntity<List<PipelineUserVO>> audit(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PipelineUserRelDTO", required = true)
-            @RequestBody PipelineUserRecordRelDTO userRecordRelDTO) {
+            @RequestBody PipelineUserRecordRelationshipVO userRecordRelDTO) {
         return Optional.ofNullable(pipelineService.audit(projectId, userRecordRelDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.audit"));
@@ -266,7 +260,7 @@ public class PipelineController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PipelineUserRelDTO", required = true)
-            @RequestBody PipelineUserRecordRelDTO userRecordRelDTO) {
+            @RequestBody PipelineUserRecordRelationshipVO userRecordRelDTO) {
         return Optional.ofNullable(pipelineService.checkAudit(projectId, userRecordRelDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.audit.check"));
@@ -340,7 +334,7 @@ public class PipelineController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "流水线所有记录")
-    @GetMapping(value = "/{pipeline_id}/list")
+    @GetMapping(value = "/{pipeline_id}/list_record")
     public ResponseEntity<List<PipelineRecordListDTO>> queryByPipelineId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -376,7 +370,7 @@ public class PipelineController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取所有流水线")
-    @GetMapping(value = "/all_pipeline")
+    @GetMapping(value = "/list_all")
     public ResponseEntity<List<PipelineVO>> listPipelineDTO(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
@@ -393,11 +387,11 @@ public class PipelineController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取所有项目成员和项目所有者")
-    @GetMapping(value = "/all_users")
+    @GetMapping(value = "/list_users")
     public ResponseEntity<List<UserVO>> getAllUsers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(pipelineService.getAllUsers(projectId))
+        return Optional.ofNullable(pipelineService.listAllUsers(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.users.all.list"));
     }

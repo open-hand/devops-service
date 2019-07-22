@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface DevopsOrgCertificationService {
 
-    void insert(Long organizationId, MultipartFile key, MultipartFile cert, OrgCertificationDTO orgCertificationDTO);
+    void create(Long organizationId, MultipartFile key, MultipartFile cert, OrgCertificationDTO orgCertificationDTO);
 
     void update(Long certId, OrgCertificationDTO orgCertificationDTO);
 
@@ -20,12 +20,12 @@ public interface DevopsOrgCertificationService {
 
     void deleteCert(Long certId);
 
-    PageInfo<ProjectReqVO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
+    PageInfo<ProjectReqVO> pageProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
                                         String[] params);
 
     PageInfo<OrgCertificationDTO> pageCerts(Long organizationId, PageRequest pageRequest,
                                         String params);
 
-    OrgCertificationDTO getCert(Long certId);
+    OrgCertificationDTO queryCert(Long certId);
 
 }

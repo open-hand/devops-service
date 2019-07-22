@@ -17,7 +17,7 @@ public class PipelineStageRecordVO {
     private String executionTime;
     private Long stageId;
     private List<PipelineTaskRecordVO> taskRecordDTOS;
-    private List<IamUserDTO> userDTOS;
+    private List<PipelineUserVO> userDTOS;
     private Boolean index;
 
     public Boolean getIndex() {
@@ -28,11 +28,11 @@ public class PipelineStageRecordVO {
         this.index = index;
     }
 
-    public List<IamUserDTO> getUserDTOS() {
+    public List<PipelineUserVO> getUserDTOS() {
         return userDTOS;
     }
 
-    public void setUserDTOS(List<IamUserDTO> userDTOS) {
+    public void setUserDTOS(List<PipelineUserVO> userDTOS) {
         this.userDTOS = userDTOS;
     }
 

@@ -1,16 +1,15 @@
-package io.choerodon.devops.domain.application.repository;
+package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.PipelineUserRecordRelE;
 import io.choerodon.devops.infra.dto.PipelineUserRecordRelationshipDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
- * Date:  17:24 2019/4/9
+ * Date:  17:02 2019/7/19
  * Description:
  */
-public interface PipelineUserRelRecordRepository {
+public interface PipelineUserRecordRelationshipService {
     PipelineUserRecordRelationshipDTO baseCreate(PipelineUserRecordRelationshipDTO pipelineUserRecordRelationshipDTO);
 
     List<PipelineUserRecordRelationshipDTO> baseListByOptions(Long pipelineRecordId, Long stageRecordId, Long taskRecordId);

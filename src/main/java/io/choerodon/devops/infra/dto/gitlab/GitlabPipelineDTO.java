@@ -9,7 +9,7 @@ import io.choerodon.devops.infra.enums.PipelineStatus;
 /**
  * Created by Zenger on 2018/1/10.
  */
-public class PipelineDTO {
+public class GitlabPipelineDTO {
 
     private Integer id;
     private PipelineStatus status;

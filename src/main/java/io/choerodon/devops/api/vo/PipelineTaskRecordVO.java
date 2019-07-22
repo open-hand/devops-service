@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  11:34 2019/4/14
@@ -23,7 +25,7 @@ public class PipelineTaskRecordVO {
     private String instanceStatus;
     private Long instanceId;
     private Boolean envPermission;
-    private List<IamUserDTO> userDTOList;
+    private List<PipelineUserVO> userDTOList;
 
     public Boolean getEnvPermission() {
         return envPermission;
@@ -57,11 +59,11 @@ public class PipelineTaskRecordVO {
         this.instanceId = instanceId;
     }
 
-    public List<IamUserDTO> getUserDTOList() {
+    public List<PipelineUserVO> getUserDTOList() {
         return userDTOList;
     }
 
-    public void setUserDTOList(List<IamUserDTO> userDTOList) {
+    public void setUserDTOList(List<PipelineUserVO> userDTOList) {
         this.userDTOList = userDTOList;
     }
 

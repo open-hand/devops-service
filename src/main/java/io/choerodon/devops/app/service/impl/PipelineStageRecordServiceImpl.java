@@ -21,6 +21,7 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     @Autowired
     private PipelineStageRecordMapper pipelineStageRecordMapper;
 
+    @Override
     public PipelineStageRecordDTO baseCreateOrUpdate(PipelineStageRecordDTO pipelineStageRecordDTO) {
         if (pipelineStageRecordDTO.getId() == null) {
             if (pipelineStageRecordMapper.insert(pipelineStageRecordDTO) != 1) {
@@ -35,6 +36,7 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
         return pipelineStageRecordDTO;
     }
 
+    @Override
     public List<PipelineStageRecordDTO> baseListByRecordAndStageId(Long pipelineRecordId, Long stageId) {
         PipelineStageRecordDTO pipelineStageRecordDTO = new PipelineStageRecordDTO();
         pipelineStageRecordDTO.setPipelineRecordId(pipelineRecordId);
@@ -42,12 +44,14 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
         return pipelineStageRecordMapper.select(pipelineStageRecordDTO);
     }
 
+    @Override
     public PipelineStageRecordDTO baseQueryById(Long recordId) {
         PipelineStageRecordDTO pipelineStageRecordDTO = new PipelineStageRecordDTO();
         pipelineStageRecordDTO.setId(recordId);
         return pipelineStageRecordMapper.selectByPrimaryKey(pipelineStageRecordDTO);
     }
 
+    @Override
     public PipelineStageRecordDTO baseUpdate(PipelineStageRecordDTO pipelineStageRecordDTO) {
         if (pipelineStageRecordMapper.updateByPrimaryKey(pipelineStageRecordDTO) != 1) {
             throw new CommonException("error.update.pipeline.stage.record");

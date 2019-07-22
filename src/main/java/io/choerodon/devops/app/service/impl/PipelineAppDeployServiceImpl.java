@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.PipelineAppDeployService;
@@ -14,6 +15,7 @@ import io.choerodon.devops.infra.mapper.PipelineAppDeployMapper;
  * Date:  15:05 2019/7/15
  * Description:
  */
+@Service
 public class PipelineAppDeployServiceImpl implements PipelineAppDeployService {
     @Autowired
     private PipelineAppDeployMapper appDeployMapper;

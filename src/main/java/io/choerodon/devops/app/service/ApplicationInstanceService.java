@@ -315,4 +315,6 @@ public interface ApplicationInstanceService {
     void deleteByEnvId(Long envId);
 
     ApplicationInstanceDTO baseQueryByCodeAndEnv(String code, Long envId);
+
+    String baseQueryValueByInstanceId(Long instanceId);
 }

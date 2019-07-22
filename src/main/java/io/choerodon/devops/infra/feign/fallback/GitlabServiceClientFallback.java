@@ -116,17 +116,17 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<PipelineDTO>> listPipeline(Integer projectId, Integer userId) {
+    public ResponseEntity<List<GitlabPipelineDTO>> listPipeline(Integer projectId, Integer userId) {
         return new ResponseEntity("error.pipeline.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<List<PipelineDTO>> pagePipeline(Integer projectId, Integer page, Integer size, Integer userId) {
+    public ResponseEntity<List<GitlabPipelineDTO>> pagePipeline(Integer projectId, Integer page, Integer size, Integer userId) {
         return new ResponseEntity("error.pipelines.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<PipelineDTO> queryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<GitlabPipelineDTO> queryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
         throw new CommonException("error.pipelines.select");
     }
 
@@ -251,12 +251,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<PipelineDTO> retry(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<GitlabPipelineDTO> retry(Integer projectId, Integer pipelineId, Integer userId) {
         return new ResponseEntity("error.pipeline.retry", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity<PipelineDTO> cancel(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<GitlabPipelineDTO> cancel(Integer projectId, Integer pipelineId, Integer userId) {
         return new ResponseEntity("error.pipeline.cancelPipeline", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

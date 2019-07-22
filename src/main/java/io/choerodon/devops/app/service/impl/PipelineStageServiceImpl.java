@@ -2,14 +2,13 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
-import io.choerodon.core.convertor.ConvertHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.iam.entity.PipelineStageE;
 import io.choerodon.devops.app.service.PipelineStageService;
 import io.choerodon.devops.infra.dto.PipelineStageDTO;
 import io.choerodon.devops.infra.mapper.PipelineStageMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Created by Sheep on 2019/7/15.
@@ -23,7 +22,7 @@ public class PipelineStageServiceImpl implements PipelineStageService {
     private PipelineStageMapper pipelineStageMapper;
 
 
-
+    @Override
     public PipelineStageDTO baseCreate(PipelineStageDTO pipelineStageDTO) {
 
         if (pipelineStageMapper.insert(pipelineStageDTO) != 1) {
@@ -32,6 +31,7 @@ public class PipelineStageServiceImpl implements PipelineStageService {
         return pipelineStageDTO;
     }
 
+    @Override
     public PipelineStageDTO baseUpdate(PipelineStageDTO pipelineStageDTO) {
         if (pipelineStageMapper.updateByPrimaryKey(pipelineStageDTO) != 1) {
             throw new CommonException("error.update.pipeline.stage");
@@ -39,12 +39,14 @@ public class PipelineStageServiceImpl implements PipelineStageService {
         return pipelineStageDTO;
     }
 
+    @Override
     public List<PipelineStageDTO> baseListByPipelineId(Long pipelineId) {
         PipelineStageDTO pipelineStageDTO = new PipelineStageDTO();
         pipelineStageDTO.setPipelineId(pipelineId);
         return pipelineStageMapper.select(pipelineStageDTO);
     }
 
+    @Override
     public void baseDelete(Long stageId) {
         PipelineStageDTO pipelineStageDTO = new PipelineStageDTO();
         pipelineStageDTO.setId(stageId);
@@ -57,7 +59,6 @@ public class PipelineStageServiceImpl implements PipelineStageService {
         pipelineStageDTO.setId(stageId);
         return pipelineStageMapper.selectByPrimaryKey(pipelineStageDTO);
     }
-
 
 
 }

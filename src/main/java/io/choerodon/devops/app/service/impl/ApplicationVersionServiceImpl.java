@@ -191,9 +191,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                         .distinct()
                         .collect(Collectors.toList());
 
-                List<DevopsPipelineDTO> devopsPipelineDTOS = new ArrayList<>();
+                List<PipelineDTO> devopsPipelineDTOS = new ArrayList<>();
                 pipelineList.forEach(pipelineId -> {
-                    DevopsPipelineDTO pipelineE = pipelineService.baseQueryById(pipelineId);
+                    PipelineDTO pipelineE = pipelineService.baseQueryById(pipelineId);
                     if (pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType())) {
                         devopsPipelineDTOS.add(pipelineE);
                     }

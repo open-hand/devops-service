@@ -14,9 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -631,8 +629,8 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public List<PipelineDTO> listPipeline(Integer projectId, Integer userId) {
-        ResponseEntity<List<PipelineDTO>> responseEntity;
+    public List<GitlabPipelineDTO> listPipeline(Integer projectId, Integer userId) {
+        ResponseEntity<List<GitlabPipelineDTO>> responseEntity;
         try {
             responseEntity = gitlabServiceClient.listPipeline(projectId, userId);
         } catch (FeignException e) {
@@ -642,8 +640,8 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public List<PipelineDTO> pagePipeline(Integer projectId, Integer page, Integer size, Integer userId) {
-        ResponseEntity<List<PipelineDTO>> responseEntity;
+    public List<GitlabPipelineDTO> pagePipeline(Integer projectId, Integer page, Integer size, Integer userId) {
+        ResponseEntity<List<GitlabPipelineDTO>> responseEntity;
         try {
             responseEntity =
                     gitlabServiceClient.pagePipeline(projectId, page, size, userId);
@@ -654,8 +652,8 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public PipelineDTO queryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
-        ResponseEntity<PipelineDTO> responseEntity;
+    public GitlabPipelineDTO queryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+        ResponseEntity<GitlabPipelineDTO> responseEntity;
         try {
             responseEntity = gitlabServiceClient.queryPipeline(projectId, pipelineId, userId);
         } catch (FeignException e) {

@@ -7,6 +7,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
@@ -21,6 +22,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
  * Date:  15:12 2019/7/15
  * Description:
  */
+@Service
 public class PipelineRecordServiceImpl implements PipelineRecordService {
     private static final Gson gson = new Gson();
 

@@ -1,16 +1,35 @@
-package io.choerodon.devops.api.vo;
+package io.choerodon.devops.infra.dto;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import io.choerodon.mybatis.entity.BaseDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
- * Date:  16:30 2019/4/8
+ * Date:  19:43 2019/4/3
  * Description:
  */
-public class PipelineUserRelDTO {
+@Table(name = "devops_pipeline_user_rel")
+public class PipelineUserRelationshipDTO extends BaseDTO {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
     private Long pipelineId;
     private Long stageId;
     private Long taskId;
+
+    public PipelineUserRelationshipDTO(Long pipelineId, Long stageId, Long taskId) {
+        this.pipelineId = pipelineId;
+        this.stageId = stageId;
+        this.taskId = taskId;
+    }
+
+    public PipelineUserRelationshipDTO() {
+    }
 
     public Long getId() {
         return id;

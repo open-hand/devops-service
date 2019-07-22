@@ -7,17 +7,9 @@ import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.devops.api.vo.CheckAuditDTO;
-import io.choerodon.devops.api.vo.PipelineCheckDeployDTO;
-import io.choerodon.devops.api.vo.PipelineVO;
-import io.choerodon.devops.api.vo.PipelineRecordVO;
-import io.choerodon.devops.api.vo.PipelineRecordListDTO;
-import io.choerodon.devops.api.vo.PipelineRecordReqDTO;
-import io.choerodon.devops.api.vo.PipelineReqDTO;
-import io.choerodon.devops.api.vo.PipelineUserRecordRelDTO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserVO;
-import io.choerodon.devops.infra.dto.DevopsPipelineDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.PipelineDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -43,7 +35,7 @@ public interface PipelineService {
 
     void autoDeploy(Long stageRecordId, Long taskId);
 
-    List<IamUserDTO> audit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
+    List<PipelineUserVO> audit(Long projectId, PipelineUserRecordRelationshipVO userRecordRelDTO);
 
     PipelineCheckDeployDTO checkDeploy(Long projectId, Long pipelineId);
 
@@ -63,11 +55,11 @@ public interface PipelineService {
 
     List<PipelineVO> listPipelineDTO(Long projectId);
 
-    List<UserVO> getAllUsers(Long projectId);
+    List<UserVO> listAllUsers(Long projectId);
 
     void updateStatus(Long pipelineRecordId, Long stageRecordId, String status, String errorInfo);
 
-    CheckAuditDTO checkAudit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
+    CheckAuditDTO checkAudit(Long projectId, PipelineUserRecordRelationshipVO userRecordRelDTO);
 
     void executeAutoDeploy(Long pipelineId);
 
@@ -75,19 +67,19 @@ public interface PipelineService {
 
     void sendSiteMessage(Long pipelineRecordId, String type, List<NoticeSendDTO.User> users, Map<String, Object> params);
 
-    PageInfo<DevopsPipelineDTO> baseListByOptions(Long projectId, PageRequest pageRequest, String params, Map<String, Object> classifyParam);
+    PageInfo<PipelineDTO> baseListByOptions(Long projectId, PageRequest pageRequest, String params, Map<String, Object> classifyParam);
 
-    DevopsPipelineDTO baseCreate(Long projectId, DevopsPipelineDTO devopsPipelineDTO);
+    PipelineDTO baseCreate(Long projectId, PipelineDTO devopsPipelineDTO);
 
-    DevopsPipelineDTO baseUpdate(Long projectId, DevopsPipelineDTO devopsPipelineDTO);
+    PipelineDTO baseUpdate(Long projectId, PipelineDTO devopsPipelineDTO);
 
-    DevopsPipelineDTO baseUpdateWithEnabled(Long pipelineId, Integer isEnabled);
+    PipelineDTO baseUpdateWithEnabled(Long pipelineId, Integer isEnabled);
 
-    DevopsPipelineDTO baseQueryById(Long pipelineId);
+    PipelineDTO baseQueryById(Long pipelineId);
 
     void baseDelete(Long pipelineId);
 
     void baseCheckName(Long projectId, String name);
 
-    List<DevopsPipelineDTO> baseQueryByProjectId(Long projectId);
+    List<PipelineDTO> baseQueryByProjectId(Long projectId);
 }

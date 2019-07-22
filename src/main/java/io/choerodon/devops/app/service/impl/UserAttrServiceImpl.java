@@ -19,29 +19,25 @@ import org.springframework.stereotype.Service;
 public class UserAttrServiceImpl implements UserAttrService {
 
     @Autowired
-    private UserAttrRepository userAttrRepository;
-    @Autowired
-    private SagaConsumerClient sagaConsumerClient;
-    @Autowired
     private UserAttrMapper userAttrMapper;
 
     @Override
     public UserAttrVO queryByUserId(Long userId) {
-        return ConvertHelper.convert(userAttrRepository.baseQueryById(userId), UserAttrVO.class);
+        return ConvertHelper.convert(baseQueryById(userId), UserAttrVO.class);
     }
 
 
     @Override
     public Integer getGitlabUserId() {
-        UserAttrE userAttrE = userAttrRepository.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
+        UserAttrDTO userAttrDTO = baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        return TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
     }
 
 
     @Override
     public Long getUserIdByGitlabUserId(Long gitLabUserId) {
         try {
-            return userAttrRepository.baseQueryUserIdByGitlabUserId(gitLabUserId);
+            return baseQueryUserIdByGitlabUserId(gitLabUserId);
         } catch (Exception e) {
             return null;
         }
@@ -60,16 +56,16 @@ public class UserAttrServiceImpl implements UserAttrService {
 
     @Override
     public Long baseQueryUserIdByGitlabUserId(Long gitLabUserId) {
-        UserAttrDTO userAttrDO = new UserAttrDTO();
-        userAttrDO.setGitlabUserId(gitLabUserId);
+        UserAttrDTO userAttrDTO = new UserAttrDTO();
+        userAttrDTO.setGitlabUserId(gitLabUserId);
         if (gitLabUserId == null) {
             return null;
         }
-        userAttrDO = userAttrMapper.selectOne(userAttrDO);
-        if (userAttrDO == null) {
+        userAttrDTO = userAttrMapper.selectOne(userAttrDTO);
+        if (userAttrDTO == null) {
             return null;
         } else {
-            return userAttrDO.getIamUserId();
+            return userAttrDTO.getIamUserId();
         }
     }
 
@@ -83,17 +79,17 @@ public class UserAttrServiceImpl implements UserAttrService {
 
     @Override
     public UserAttrDTO baseQueryByGitlabUserId(Long gitlabUserId) {
-        UserAttrDTO userAttrDO = new UserAttrDTO();
-        userAttrDO.setGitlabUserId(gitlabUserId);
-        return userAttrMapper.selectOne(userAttrDO);
+        UserAttrDTO userAttrDTO = new UserAttrDTO();
+        userAttrDTO.setGitlabUserId(gitlabUserId);
+        return userAttrMapper.selectOne(userAttrDTO);
     }
 
     @Override
     public void baseUpdate(UserAttrDTO userAttrDTO) {
-        UserAttrDTO userAttrDO = userAttrMapper.selectByPrimaryKey(userAttrDTO.getIamUserId());
-        userAttrDO.setGitlabToken(userAttrDTO.getGitlabToken());
-        userAttrDO.setGitlabUserName(userAttrDTO.getGitlabUserName());
-        userAttrMapper.updateByPrimaryKey(userAttrDO);
+        UserAttrDTO newUserAttrDTO = userAttrMapper.selectByPrimaryKey(userAttrDTO.getIamUserId());
+        newUserAttrDTO.setGitlabToken(userAttrDTO.getGitlabToken());
+        newUserAttrDTO.setGitlabUserName(userAttrDTO.getGitlabUserName());
+        userAttrMapper.updateByPrimaryKey(newUserAttrDTO);
     }
 
     @Override
@@ -103,9 +99,9 @@ public class UserAttrServiceImpl implements UserAttrService {
 
     @Override
     public UserAttrDTO baseQueryByGitlabUserName(String gitlabUserName) {
-        UserAttrDTO userAttrDO = new UserAttrDTO();
-        userAttrDO.setGitlabUserName(gitlabUserName);
-        return userAttrMapper.selectOne(userAttrDO);
+        UserAttrDTO userAttrDTO = new UserAttrDTO();
+        userAttrDTO.setGitlabUserName(gitlabUserName);
+        return userAttrMapper.selectOne(userAttrDTO);
     }
 
 }

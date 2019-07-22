@@ -13,7 +13,7 @@ import io.choerodon.devops.infra.dataobject.PipelineDO;
 <<<<<<< HEAD:src/main/java/io/choerodon/devops/domain/application/convertor/PipelineConvertor.java
 import io.choerodon.devops.infra.dataobject.PipelineDO;
 =======
-import io.choerodon.devops.infra.dto.DevopsPipelineDTO;
+import io.choerodon.devops.infra.dto.PipelineDTO;
 >>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a:src/main/java/io/choerodon/devops/infra/convertor/PipelineConvertor.java
 >>>>>>> [IMP] 重构部分Repository
 import org.springframework.beans.BeanUtils;
@@ -26,17 +26,17 @@ import org.springframework.stereotype.Component;
  * Description:
  */
 @Component
-public class PipelineConvertor implements ConvertorI<PipelineE, DevopsPipelineDTO, PipelineVO> {
+public class PipelineConvertor implements ConvertorI<PipelineE, PipelineDTO, PipelineVO> {
     @Override
-    public PipelineE doToEntity(DevopsPipelineDTO pipelineDO) {
+    public PipelineE doToEntity(PipelineDTO pipelineDO) {
         PipelineE pipelineE = new PipelineE();
         BeanUtils.copyProperties(pipelineDO, pipelineE);
         return pipelineE;
     }
 
     @Override
-    public DevopsPipelineDTO entityToDo(PipelineE pipelineE) {
-        DevopsPipelineDTO pipelineDO = new DevopsPipelineDTO();
+    public PipelineDTO entityToDo(PipelineE pipelineE) {
+        PipelineDTO pipelineDO = new PipelineDTO();
         BeanUtils.copyProperties(pipelineE, pipelineDO);
         return pipelineDO;
     }

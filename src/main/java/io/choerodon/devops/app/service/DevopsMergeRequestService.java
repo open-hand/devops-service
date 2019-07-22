@@ -12,7 +12,7 @@ import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
  */
 public interface DevopsMergeRequestService {
 
-    List<DevopsMergeRequestVO> baseListBySourceBranch(String sourceBranchName, Long gitLabProjectId);
+    List<DevopsMergeRequestDTO> baseListBySourceBranch(String sourceBranchName, Long gitLabProjectId);
 
     DevopsMergeRequestDTO baseQueryByAppIdAndMergeRequestId(Long projectId, Long gitlabMergeRequestId);
 
