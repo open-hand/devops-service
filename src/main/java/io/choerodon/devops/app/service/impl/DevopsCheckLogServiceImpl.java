@@ -35,18 +35,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-upgrade", false));
-    private static io.kubernetes.client.JSON json = new io.kubernetes.client.JSON();
-    @Value("${services.sonarqube.url:}")
-    private String sonarqubeUrl;
-    @Value("${services.sonarqube.username:}")
-    private String userName;
-    @Value("${services.sonarqube.password:}")
-    private String password;
-    private Gson gson = new Gson();
-    @Value("${services.gateway.url}")
-    private String gatewayUrl;
-    @Value("${services.helm.url}")
-    private String helmUrl;
 
     @Autowired
     private ApplicationVersionMapper applicationVersionMapper;
@@ -86,7 +74,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsCheckLogDTO.setBeginCheckDate(new Date());
             if ("0.19.0".equals(version)) {
                 syncEnvAppRelevance(logs);
-//                syncClusters(logs);
                 syncAppShare();
             } else {
                 LOGGER.info("version not matched");

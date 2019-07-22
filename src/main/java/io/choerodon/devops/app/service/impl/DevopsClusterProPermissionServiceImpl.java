@@ -27,10 +27,10 @@ public class DevopsClusterProPermissionServiceImpl implements DevopsClusterProPe
     }
 
     @Override
-    public List<DevopsClusterProPermissionE> baseListByClusterId(Long clusterId) {
+    public List<DevopsClusterProPermissionDTO> baseListByClusterId(Long clusterId) {
         DevopsClusterProPermissionDTO devopsClusterProPermissionDTO = new DevopsClusterProPermissionDTO();
         devopsClusterProPermissionDTO.setClusterId(clusterId);
-        return ConvertHelper.convertList(devopsClusterProPermissionMapper.select(devopsClusterProPermissionDTO), DevopsClusterProPermissionE.class);
+        return devopsClusterProPermissionMapper.select(devopsClusterProPermissionDTO);
     }
 
     @Override

@@ -11,6 +11,7 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandLogVO;
 import io.choerodon.devops.app.service.DevopsEnvCommandLogService;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandLogDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandLogMapper;
+import org.springframework.stereotype.Service;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

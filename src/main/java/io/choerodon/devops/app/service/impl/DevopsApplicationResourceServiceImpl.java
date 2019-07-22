@@ -16,7 +16,7 @@ import io.choerodon.devops.infra.mapper.DevopsApplicationResourceMapper;
 @Service
 public class DevopsApplicationResourceServiceImpl implements DevopsApplicationResourceService {
     @Autowired
-    DevopsApplicationResourceMapper resourceMapper;
+    private DevopsApplicationResourceMapper resourceMapper;
 
     @Override
     public void baseCreate(DevopsApplicationResourceDTO devopsApplicationResourceDTO) {

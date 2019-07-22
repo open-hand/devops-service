@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 public class DevopsCustomizeResourceContentServiceImpl implements DevopsCustomizeResourceContentService {
 
     @Autowired
-    DevopsCustomizeResourceContentMapper devopsCustomizeResourceContentMapper;
+    private DevopsCustomizeResourceContentMapper devopsCustomizeResourceContentMapper;
 
     @Override
     public DevopsCustomizeResourceContentDTO baseCreate(DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDTO) {

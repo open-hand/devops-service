@@ -11,10 +11,10 @@ import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 public interface DevopsClusterService {
 
     /**
-     * 创建证书
+     * 创建集群
      *
-     * @param organizationId
-     * @param devopsClusterReqVO
+     * @param organizationId 组织id
+     * @param devopsClusterReqVO 集群信息
      * @return
      */
     String createCluster(Long organizationId, DevopsClusterReqVO devopsClusterReqVO);
@@ -22,27 +22,27 @@ public interface DevopsClusterService {
     /**
      * 更新集群
      *
-     * @param clusterId
-     * @param devopsClusterReqVO
+     * @param clusterId 集群id
+     * @param devopsClusterReqVO 集群信息
      */
     void updateCluster(Long clusterId, DevopsClusterReqVO devopsClusterReqVO);
 
     /**
      * 校验集群名唯一性
      *
-     * @param organizationId
-     * @param name
+     * @param organizationId 组织id
+     * @param name 集群名称
      */
     void checkName(Long organizationId, String name);
 
     /**
      * 分页查询项目列表
      *
-     * @param organizationId
-     * @param clusterId
-     * @param pageRequest
-     * @param params
-     * @return
+     * @param organizationId 组织id
+     * @param clusterId 集群id
+     * @param pageRequest 分页参数
+     * @param params 查询参数
+     * @return 项目信息
      */
     PageInfo<ProjectReqVO> pageProjects(Long organizationId, Long clusterId, PageRequest pageRequest, String[] params);
 
@@ -51,49 +51,49 @@ public interface DevopsClusterService {
     /**
      * 校验集群编码唯一性
      *
-     * @param organizationId
-     * @param code
+     * @param organizationId 组织id
+     * @param code 集群code
      */
     void checkCode(Long organizationId, String code);
 
     /**
      * 集群列表查询
      *
-     * @param organizationId
-     * @param doPage
-     * @param pageRequest
-     * @param params
-     * @return
+     * @param organizationId 组织id
+     * @param doPage 是否分页
+     * @param pageRequest 分页参数
+     * @param params 查询参数
+     * @return 集群列表
      */
     PageInfo<ClusterWithNodesVO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
 
     /**
      * 查询集群下已有权限的项目列表
      *
-     * @param organizationId
-     * @param clusterId
-     * @return
+     * @param organizationId 组织id
+     * @param clusterId 集群id
+     * @return 项目
      */
     List<ProjectReqVO> listClusterProjects(Long organizationId, Long clusterId);
 
     /**
      * 删除集群
      *
-     * @param clusterId
+     * @param clusterId 集群id
      */
     void deleteCluster(Long clusterId);
 
     /**
      * 查询单个集群信息
      *
-     * @param clusterId
+     * @param clusterId 集群id
      */
     DevopsClusterRepVO query(Long clusterId);
 
     /**
      * 查询集群下是否关联已连接环境
      *
-     * @param clusterId
+     * @param clusterId 集群id
      * @return
      */
     Boolean checkConnectEnvs(Long clusterId);

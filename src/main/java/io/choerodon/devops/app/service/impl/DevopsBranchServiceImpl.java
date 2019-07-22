@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class DevopsBranchServiceImpl implements DevopsBranchService {
 
-    private static final JSON json = new JSON();
+    private JSON json = new JSON();
 
 
     @Autowired
