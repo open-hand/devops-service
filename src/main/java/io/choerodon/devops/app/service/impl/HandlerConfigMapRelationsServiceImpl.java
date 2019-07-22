@@ -10,14 +10,15 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsConfigMapVO;
 import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
+import io.choerodon.devops.app.service.DevopsEnvCommandService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.api.vo.iam.entity.DevopsConfigMapE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
+import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.domain.application.repository.DevopsConfigMapRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
 import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -34,11 +35,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
     private Gson gson = new Gson();
 
     @Autowired
-    private DevopsConfigMapRepository devopsConfigMapRepository;
-    @Autowired
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
-    @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
     private DevopsConfigMapService devopsConfigMapService;
     @Autowired
@@ -50,14 +47,14 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
         List<String> beforeConfigMaps = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(CONFIG_MAP))
                 .map(devopsEnvFileResourceE -> {
-                    DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository
+                    DevopsConfigMapDTO devopsConfigMapDTO = devopsConfigMapService
                             .baseQueryById(devopsEnvFileResourceE.getResourceId());
-                    if (devopsConfigMapE == null) {
-                        devopsEnvFileResourceRepository
+                    if (devopsConfigMapDTO == null) {
+                        devopsEnvFileResourceService
                                 .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), CONFIG_MAP);
                         return null;
                     }
-                    return devopsConfigMapE.getName();
+                    return devopsConfigMapDTO.getName();
                 }).collect(Collectors.toList());
 
         //比较已存在configMap和新增要处理的configMap,获取新增configMap，更新configMap，删除configMap
@@ -78,11 +75,11 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
         updateConfigMap(objectPath, envId, updateConfigMaps, path, userId);
         //删除configMap,和文件对象关联关系
         beforeConfigMaps.forEach(configMapName -> {
-            DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.baseQueryByEnvIdAndName(envId, configMapName);
-            if (devopsConfigMapE != null) {
-                devopsConfigMapService.deleteByGitOps(devopsConfigMapE.getId());
-                devopsEnvFileResourceRepository
-                        .baseDeleteByEnvIdAndResourceId(envId, devopsConfigMapE.getId(), CONFIG_MAP);
+            DevopsConfigMapDTO devopsConfigMapDTO = devopsConfigMapService.baseQueryByEnvIdAndName(envId, configMapName);
+            if (devopsConfigMapDTO != null) {
+                devopsConfigMapService.deleteByGitOps(devopsConfigMapDTO.getId());
+                devopsEnvFileResourceService
+                        .baseDeleteByEnvIdAndResourceId(envId, devopsConfigMapDTO.getId(), CONFIG_MAP);
             }
         });
     }
@@ -94,28 +91,28 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                     String filePath = "";
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(configMap.hashCode()));
-                        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository
+                        DevopsConfigMapDTO devopsConfigMapE = devopsConfigMapService
                                 .baseQueryByEnvIdAndName(envId, configMap.getMetadata().getName());
                         //初始化configMap对象参数,更新configMap并更新文件对象关联关系
                         DevopsConfigMapVO devopsConfigMapVO = getDevospConfigMapDTO(
                                 configMap,
                                 envId, "update");
-                        Boolean isNotChange = devopsConfigMapVO.getValue().equals(gson.fromJson(devopsConfigMapRepository.baseQueryById(devopsConfigMapE.getId()).getValue(), Map.class));
-                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsConfigMapE.getDevopsEnvCommandE().getId());
+                        Boolean isNotChange = devopsConfigMapVO.getValue().equals(gson.fromJson(devopsConfigMapService.baseQueryById(devopsConfigMapE.getId()).getValue(), Map.class));
+                        DevopsEnvCommandDTO devopsEnvCommandE = devopsEnvCommandService.baseQuery(devopsConfigMapE.getEnvId());
                         devopsConfigMapVO.setId(devopsConfigMapE.getId());
                         if (!isNotChange) {
                             devopsConfigMapService.createOrUpdateByGitOps(devopsConfigMapVO, userId);
-                            DevopsConfigMapE newDevopsConfigMapE = devopsConfigMapRepository
+                            DevopsConfigMapDTO newDevopsConfigMapE = devopsConfigMapService
                                     .baseQueryByEnvIdAndName(envId, configMap.getMetadata().getName());
-                            devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsConfigMapE.getDevopsEnvCommandE().getId());
+                            devopsEnvCommandE = devopsEnvCommandService.baseQuery(newDevopsConfigMapE.getEnvId());
                         }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                        devopsEnvCommandService.baseUpdate(devopsEnvCommandE);
+                        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                                 .baseQueryByEnvIdAndResourceId(envId, devopsConfigMapE.getId(), configMap.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
-                                devopsEnvFileResourceE,
+                                devopsEnvFileResourceDTO,
                                 configMap.hashCode(), devopsConfigMapE.getId(), configMap.getKind());
 
                     } catch (CommonException e) {
@@ -134,25 +131,25 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                     String filePath = "";
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(configMap.hashCode()));
-                        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository
+                        DevopsConfigMapDTO devopsConfigMapDTO = devopsConfigMapService
                                 .baseQueryByEnvIdAndName(envId, configMap.getMetadata().getName());
                         DevopsConfigMapVO devopsConfigMapVO = new DevopsConfigMapVO();
 
                         DevopsConfigMapRepDTO devopsConfigMapRepDTO = new DevopsConfigMapRepDTO();
                         //初始化configMap参数,创建时判断configMap是否存在，存在则直接创建文件对象关联关系
-                        if (devopsConfigMapE == null) {
+                        if (devopsConfigMapDTO == null) {
                             devopsConfigMapVO = getDevospConfigMapDTO(
                                     configMap,
                                     envId,
                                     "create");
                             devopsConfigMapRepDTO = devopsConfigMapService.createOrUpdateByGitOps(devopsConfigMapVO, userId);
                         } else {
-                            devopsConfigMapRepDTO.setId(devopsConfigMapE.getId());
-                            devopsConfigMapRepDTO.setCommandId(devopsConfigMapE.getDevopsEnvCommandE().getId());
+                            devopsConfigMapRepDTO.setId(devopsConfigMapDTO.getId());
+                            devopsConfigMapRepDTO.setCommandId(devopsConfigMapDTO.getCommandId());
                         }
-                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsConfigMapRepDTO.getCommandId());
-                        devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandRepository.update(devopsEnvCommandE);
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsConfigMapRepDTO.getCommandId());
+                        devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
 
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, configMap.hashCode(), devopsConfigMapRepDTO.getId(),
                                 configMap.getKind());

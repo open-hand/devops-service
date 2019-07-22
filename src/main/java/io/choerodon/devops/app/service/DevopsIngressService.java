@@ -102,7 +102,7 @@ public interface DevopsIngressService {
     PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
 
 
-    DevopsIngressDTO baseQueryIngressDTO(Long ingressId);
+    DevopsIngressDTO baseQuery(Long ingressId);
 
     PageInfo<DevopsIngressVO> basePageByOptions(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params);
 
@@ -111,4 +111,8 @@ public interface DevopsIngressService {
     void deleteIngressAndIngressPathByEnvId(Long envId);
 
     List<String> baseListNameByServiceId(Long serviceId);
+
+    DevopsIngressDTO baseCheckByEnvAndName(Long envId, String name);
+
+    Boolean baseCheckPath(Long envId, String domain, String path, Long id);
 }

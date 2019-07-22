@@ -37,6 +37,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -189,7 +190,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         // 校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
-        DevopsIngressDTO oldDevopsIngressDTO = baseQueryIngressDTO(id);
+        DevopsIngressDTO oldDevopsIngressDTO = baseQuery(id);
         if (oldDevopsIngressDTO.getCertId() != null && devopsIngressVO.getCertId() == null) {
             deleteCert = true;
         }
@@ -216,7 +217,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         }
 
         // 判断ingress有没有修改，没有修改直接返回
-        DevopsIngressVO ingressDTO = baseQueryIngressVO(id);
+        DevopsIngressVO ingressDTO = ConvertUtils.convertObject(baseQuery(id), DevopsIngressVO.class);
         if (devopsIngressVO.equals(ingressDTO)) {
             return;
         }
@@ -259,7 +260,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
         // 判断ingress有没有修改，没有修改直接返回
-        DevopsIngressVO ingressDTO = baseQueryIngressVO(id);
+        DevopsIngressVO ingressDTO = ConvertUtils.convertObject(baseQuery(id), DevopsIngressVO.class);
         if (devopsIngressVO.equals(ingressDTO)) {
             return;
         }
@@ -284,7 +285,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     @Override
     public DevopsIngressVO queryIngress(Long projectId, Long ingressId) {
-        return baseQueryIngressVO(ingressId);
+        return ConvertUtils.convertObject(baseQuery(ingressId), DevopsIngressVO.class);
     }
 
     @Override
@@ -306,7 +307,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteIngress(Long ingressId) {
 
-        DevopsIngressDTO ingressDO = baseQueryIngressDTO(ingressId);
+        DevopsIngressDTO ingressDO = baseQuery(ingressId);
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(ingressDO.getEnvId()
         );
@@ -320,7 +321,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 更新ingress
         devopsEnvCommandDTO.setObjectId(ingressId);
-        DevopsIngressDTO devopsIngressDTO = baseQueryIngressDTO(ingressId);
+        DevopsIngressDTO devopsIngressDTO = baseQuery(ingressId);
         devopsIngressDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         devopsIngressDTO.setStatus(IngressStatus.OPERATING.getStatus());
         baseUpdateIngress(devopsIngressDTO);
@@ -390,7 +391,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     @Override
     public void deleteIngressByGitOps(Long ingressId) {
-        DevopsIngressDTO devopsIngressDTO = baseQueryIngressDTO(ingressId);
+        DevopsIngressDTO devopsIngressDTO = baseQuery(ingressId);
 
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
@@ -620,6 +621,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressMapper.updateByPrimaryKeySelective(devopsIngressDTO);
     }
 
+    @Override
     public PageInfo<DevopsIngressVO> basePageByOptions(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params) {
         List<DevopsIngressVO> devopsIngressVOS = new ArrayList<>();
 
@@ -665,26 +667,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return ingressVOPageInfo;
     }
 
-
-    public DevopsIngressVO baseQueryIngressVO(Long ingressId) {
-        DevopsIngressDTO devopsIngressDO = devopsIngressMapper.selectByPrimaryKey(ingressId);
-        if (devopsIngressDO != null) {
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDO.getEnvId());
-            DevopsIngressVO devopsIngressDTO = new DevopsIngressVO(
-                    ingressId, devopsIngressDO.getDomain(), devopsIngressDO.getName(), devopsEnvironmentDTO.getId(),
-                    devopsIngressDO.getUsable(), devopsEnvironmentDTO.getName());
-            DevopsIngressPathDTO devopsIngressPathDO = new DevopsIngressPathDTO(ingressId);
-            devopsIngressPathMapper.select(devopsIngressPathDO).forEach(e -> getDevopsIngressDTO(devopsIngressDTO, e));
-            devopsIngressDTO.setStatus(devopsIngressDO.getStatus());
-            setIngressDTOCert(devopsIngressDO.getCertId(), devopsIngressDTO);
-            return devopsIngressDTO;
-        }
-
-        return null;
-    }
-
     @Override
-    public DevopsIngressDTO baseQueryIngressDTO(Long ingressId) {
+    public DevopsIngressDTO baseQuery(Long ingressId) {
         return devopsIngressMapper.selectByPrimaryKey(ingressId);
     }
 
@@ -727,10 +711,12 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsIngressMapper.select(devopsIngressDTO).isEmpty();
     }
 
+    @Override
     public Boolean baseCheckPath(Long envId, String domain, String path, Long id) {
         return !devopsIngressPathMapper.checkDomainAndPath(envId, domain, path, id);
     }
 
+    @Override
     public DevopsIngressDTO baseCheckByEnvAndName(Long envId, String name) {
         DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
         devopsIngressDTO.setEnvId(envId);

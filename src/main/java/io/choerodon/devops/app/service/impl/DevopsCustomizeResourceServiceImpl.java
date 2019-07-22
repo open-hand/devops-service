@@ -147,12 +147,12 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     }
 
     @Override
-    public void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceE devopsCustomizeResourceE, Long envId, Long userId) {
+    public void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceDTO devopsCustomizeResourceDTO, Long envId, Long userId) {
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceE.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceDTO.getEnvId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
-        handleCustomResource(devopsCustomizeResourceE.getProjectId(), devopsCustomizeResourceE.getEnvId(), devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getContent(), devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName(), type, devopsCustomizeResourceE.getId(), devopsCustomizeResourceE.getFilePath(), userId);
+        handleCustomResource(devopsCustomizeResourceDTO.getProjectId(), devopsCustomizeResourceDTO.getEnvId(), devopsCustomizeResourceDTO.getResourceContent(), devopsCustomizeResourceDTO.getK8sKind(), devopsCustomizeResourceDTO.getName(), type, devopsCustomizeResourceDTO.getId(), devopsCustomizeResourceDTO.getFilePath(), userId);
     }
 
 

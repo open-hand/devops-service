@@ -10,7 +10,7 @@ public interface DevopsEnvFileResourceService {
 
     void updateOrCreateFileResource(Map<String, String> objectPath,
                                     Long envId,
-                                    DevopsEnvFileResourceVO devopsEnvFileResourceE,
+                                    DevopsEnvFileResourceDTO devopsEnvFileResourceDTO,
                                     Integer i, Long id, String kind);
 
     DevopsEnvFileResourceDTO baseCreate(DevopsEnvFileResourceDTO devopsEnvFileResourceDTO);

@@ -390,7 +390,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 code = devopsServiceDTO.getName();
                 break;
             case INGRESS:
-                DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseQueryIngressDTO(objectId);
+                DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseQuery(objectId);
                 code = devopsIngressDTO.getName();
                 break;
             case CERTIFICATE:

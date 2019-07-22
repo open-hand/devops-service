@@ -6,12 +6,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
 import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceContentVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
+import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceContentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsCustomizeResourceRepository;
@@ -50,17 +52,17 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync, List<DevopsCustomizeResourceE> devopsCustomizeResourceES, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
-        List<DevopsCustomizeResourceE> beforeDevopsCustomResource = beforeSync.stream()
-                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(ResourceType.CUSTOM.getType()))
+        List<DevopsCustomizeResourceDTO> beforeDevopsCustomResource = beforeSync.stream()
+                .filter(devopsEnvFileResourceVO -> devopsEnvFileResourceVO.getResourceType().equals(ResourceType.CUSTOM.getType()))
                 .map(devopsEnvFileResourceE -> {
-                    DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository
+                    DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceRepository
                             .baseQuery(devopsEnvFileResourceE.getResourceId());
-                    if (devopsCustomizeResourceE == null) {
+                    if (devopsCustomizeResourceDTO == null) {
                         devopsEnvFileResourceRepository
                                 .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), ResourceType.CUSTOM.getType());
                         return null;
                     }
-                    return devopsCustomizeResourceE;
+                    return devopsCustomizeResourceDTO;
                 }).collect(Collectors.toList());
 
         //比较已存在实例和新增要处理的configMap,获取新增configMap，更新configMap，删除configMap
@@ -81,11 +83,11 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
         updateDevopsCustomResource(objectPath, projectId, envId, updateDevopsCustomizeResourceE, path, userId);
         //删除configMap,和文件对象关联关系
         beforeDevopsCustomResource.forEach(devopsCustomizeResourceE -> {
-            DevopsCustomizeResourceE oldDevopsCustomizeResourceE = devopsCustomizeResourceRepository.queryByEnvIdAndKindAndName(envId, devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName());
-            if (oldDevopsCustomizeResourceE != null) {
-                devopsCustomizeResourceService.deleteResourceByGitOps(oldDevopsCustomizeResourceE.getId());
+            DevopsCustomizeResourceDTO oldDevopsCustomizeResourceDTO = devopsCustomizeResourceRepository.queryByEnvIdAndKindAndName(envId, devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName());
+            if (oldDevopsCustomizeResourceDTO != null) {
+                devopsCustomizeResourceService.deleteResourceByGitOps(oldDevopsCustomizeResourceDTO.getId());
                 devopsEnvFileResourceRepository
-                        .baseDeleteByEnvIdAndResourceId(envId, oldDevopsCustomizeResourceE.getId(), ResourceType.CUSTOM.getType());
+                        .baseDeleteByEnvIdAndResourceId(envId, oldDevopsCustomizeResourceDTO.getId(), ResourceType.CUSTOM.getType());
             }
         });
     }
@@ -97,33 +99,33 @@ public class HandlerCustomResourceServiceImpl implements HandlerObjectFileRelati
                     String filePath = "";
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(devopsCustomizeResourceE.hashCode()));
-                        DevopsCustomizeResourceE oldDevopsCustomizeResourceE = devopsCustomizeResourceRepository
+                        DevopsCustomizeResourceDTO oldDevopsCustomizeResourceDTO = devopsCustomizeResourceRepository
                                 .queryByEnvIdAndKindAndName(envId, devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName());
 
                         //判断自定义资源是否发生了改变
-                        DevopsCustomizeResourceContentVO devopsCustomizeResourceContentE = devopsCustomizeResourceContentRepository.baseQuery(oldDevopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getId());
+                        DevopsCustomizeResourceContentVO devopsCustomizeResourceContentE = devopsCustomizeResourceContentRepository.baseQuery(oldDevopsCustomizeResourceDTO.getContentId());
                         Boolean isNotChange = devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getContent().equals(devopsCustomizeResourceContentE.getContent());
-                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(oldDevopsCustomizeResourceE.getDevopsEnvCommandE().getId());
+                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.baseQuery(oldDevopsCustomizeResourceDTO.getEnvId());
 
                         //发生改变走处理改变自定义资源的逻辑
                         if (!isNotChange) {
-                            oldDevopsCustomizeResourceE.setProjectId(projectId);
-                            oldDevopsCustomizeResourceE.setDevopsCustomizeResourceContentE(new DevopsCustomizeResourceContentVO(oldDevopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getId(), devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getContent()));
-                            devopsCustomizeResourceService.createOrUpdateResourceByGitOps(UPDATE, oldDevopsCustomizeResourceE, userId, envId);
-                            DevopsCustomizeResourceE newDevopsCustomizeResourceE = devopsCustomizeResourceRepository
+                            oldDevopsCustomizeResourceDTO.setProjectId(projectId);
+                            oldDevopsCustomizeResourceDTO.setCommandId(new DevopsCustomizeResourceContentVO(oldDevopsCustomizeResourceDTO.getContentId(), devopsCustomizeResourceE.getDevopsCustomizeResourceContentE().getContent()).getId());
+                            devopsCustomizeResourceService.createOrUpdateResourceByGitOps(UPDATE, oldDevopsCustomizeResourceDTO, userId, envId);
+                            DevopsCustomizeResourceDTO newDevopsCustomizeResourceDTO = devopsCustomizeResourceRepository
                                     .queryByEnvIdAndKindAndName(envId, devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName());
-                            devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsCustomizeResourceE.getDevopsEnvCommandE().getId());
+                            devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsCustomizeResourceDTO.getDevopsEnvCommandE().getId());
                         }
 
                         //没发生改变,更新commit记录，更新文件对应关系记录
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
                         DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                                .baseQueryByEnvIdAndResourceId(envId, oldDevopsCustomizeResourceE.getId(), ResourceType.CUSTOM.getType());
+                                .baseQueryByEnvIdAndResourceId(envId, oldDevopsCustomizeResourceDTO.getId(), ResourceType.CUSTOM.getType());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceE,
-                                devopsCustomizeResourceE.hashCode(), oldDevopsCustomizeResourceE.getId(), ResourceType.CUSTOM.getType());
+                                devopsCustomizeResourceE.hashCode(), oldDevopsCustomizeResourceDTO.getId(), ResourceType.CUSTOM.getType());
 
                     } catch (CommonException e) {
                         String errorCode = "";

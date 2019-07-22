@@ -6,11 +6,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -19,27 +16,27 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class DevopsEnvFileResourceServiceImpl implements DevopsEnvFileResourceService {
 
     @Autowired
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper;
 
     @Override
     public void updateOrCreateFileResource(Map<String, String> objectPath,
                                            Long envId,
-                                           DevopsEnvFileResourceVO devopsEnvFileResourceE,
+                                           DevopsEnvFileResourceDTO devopsEnvFileResourceDTO,
                                            Integer i, Long id, String kind) {
-        if (devopsEnvFileResourceE != null) {
-            devopsEnvFileResourceE.setFilePath(objectPath.get(
+        if (devopsEnvFileResourceDTO != null) {
+            devopsEnvFileResourceDTO.setFilePath(objectPath.get(
                     TypeUtil.objToString(i)));
-            devopsEnvFileResourceRepository.baseUpdate(devopsEnvFileResourceE);
+            devopsEnvFileResourceService.baseUpdate(devopsEnvFileResourceDTO);
         } else {
-            devopsEnvFileResourceE = new DevopsEnvFileResourceVO();
-            devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-            devopsEnvFileResourceE.setFilePath(objectPath.get(
+            devopsEnvFileResourceDTO = new DevopsEnvFileResourceDTO();
+            devopsEnvFileResourceDTO.setEnvId(envId);
+            devopsEnvFileResourceDTO.setFilePath(objectPath.get(
                     TypeUtil.objToString(i)));
-            devopsEnvFileResourceE.setResourceId(id);
-            devopsEnvFileResourceE.setResourceType(kind);
-            devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE);
+            devopsEnvFileResourceDTO.setResourceId(id);
+            devopsEnvFileResourceDTO.setResourceType(kind);
+            devopsEnvFileResourceService.baseCreate(devopsEnvFileResourceDTO);
         }
     }
 

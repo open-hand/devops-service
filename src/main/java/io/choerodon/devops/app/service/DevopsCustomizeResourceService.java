@@ -27,9 +27,9 @@ public interface DevopsCustomizeResourceService {
 
     /**
      * @param type 资源类型
-     * @param devopsCustomizeResourceE 资源信息
+     * @param devopsCustomizeResourceDTO 资源信息
      */
-    void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceE devopsCustomizeResourceE, Long userId, Long envId);
+    void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceDTO devopsCustomizeResourceDTO, Long userId, Long envId);
 
 
     /**

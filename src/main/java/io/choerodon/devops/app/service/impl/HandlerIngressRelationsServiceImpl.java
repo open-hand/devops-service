@@ -6,26 +6,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsIngressPathVO;
-import io.choerodon.devops.api.validator.DevopsIngressValidator;
-import io.choerodon.devops.api.vo.DevopsIngressVO;
-import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.app.service.DevopsIngressService;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsIngressE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
-import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.GitOpsObjectError;
-import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.dto.DevopsIngressDTO;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1beta1HTTPIngressPath;
@@ -34,6 +16,21 @@ import io.kubernetes.client.models.V1beta1IngressBackend;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.validator.DevopsIngressValidator;
+import io.choerodon.devops.api.vo.DevopsIngressPathVO;
+import io.choerodon.devops.api.vo.DevopsIngressVO;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.GitUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
+
 @Service
 public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
 
@@ -41,30 +38,28 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
     private static final String CREATE = "create";
     private static final String GIT_SUFFIX = "/.git";
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
-    @Autowired
-    private DevopsIngressRepository devopsIngressRepository;
+    private Gson gson = new Gson();
     @Autowired
     private DevopsIngressService devopsIngressService;
     @Autowired
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
-    @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsServiceRepository devopsServiceRepository;
+    private DevopsServiceService devopsServiceService;
     @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    private DevopsEnvCommandService devopsEnvCommandService;
+
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeIngress = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(INGRESS))
                 .map(devopsEnvFileResourceE -> {
-                    DevopsIngressDTO devopsIngressDTO = devopsIngressRepository
-                            .basePageByOptions(devopsEnvFileResourceE.getResourceId());
+                    DevopsIngressDTO devopsIngressDTO = devopsIngressService
+                            .baseQuery(devopsEnvFileResourceE.getResourceId());
                     if (devopsIngressDTO == null) {
-                        devopsEnvFileResourceRepository
+                        devopsEnvFileResourceService
                                 .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), INGRESS);
                         return null;
                     }
@@ -83,10 +78,10 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         });
         //删除ingress,删除文件对象关联关系
         beforeIngress.stream().forEach(ingressName -> {
-            DevopsIngressE devopsIngressE = devopsIngressRepository.baseCheckByEnvAndName(envId, ingressName);
-            if (devopsIngressE != null) {
-                devopsIngressService.deleteIngressByGitOps(devopsIngressE.getId());
-                devopsEnvFileResourceRepository.baseDeleteByEnvIdAndResourceId(envId, devopsIngressE.getId(), INGRESS);
+            DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseCheckByEnvAndName(envId, ingressName);
+            if (devopsIngressDTO != null) {
+                devopsIngressService.deleteIngressByGitOps(devopsIngressDTO.getId());
+                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsIngressDTO.getId(), INGRESS);
             }
         });
         //新增ingress
@@ -103,29 +98,29 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
 
                         checkIngressAppVersion(v1beta1Ingress);
-                        DevopsIngressE devopsIngressE = devopsIngressRepository
+                        DevopsIngressDTO devopsIngressDTO = devopsIngressService
                                 .baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                         DevopsIngressVO devopsIngressVO;
                         //初始化ingress对象参数,存在ingress则直接创建文件对象关联关系
-                        if (devopsIngressE == null) {
+                        if (devopsIngressDTO == null) {
                             devopsIngressVO = getDevopsIngressDTO(
                                     v1beta1Ingress,
                                     envId, filePath);
                             if (!devopsIngressVO.getPathList().stream()
                                     .allMatch(t ->
-                                            devopsIngressRepository.baseCheckPath(envId, devopsIngressVO.getDomain(), t.getPath(), null))) {
+                                            devopsIngressService.baseCheckPath(envId, devopsIngressVO.getDomain(), t.getPath(), null))) {
                                 throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
                             }
                             devopsIngressService.createIngressByGitOps(devopsIngressVO, projectId, userId);
-                            devopsIngressE = devopsIngressRepository
+                            devopsIngressDTO = devopsIngressService
                                     .baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                         }
-                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsIngressDTO.getCommandId());
 
-                        devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandRepository.update(devopsEnvCommandE);
+                        devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
 
-                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, v1beta1Ingress.hashCode(), devopsIngressE.getId(),
+                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, v1beta1Ingress.hashCode(), devopsIngressDTO.getId(),
                                 v1beta1Ingress.getKind());
                     } catch (CommonException e) {
                         String errorCode = "";
@@ -144,39 +139,38 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                     try {
                         Boolean isNotChange = false;
                         filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
-                        DevopsIngressE devopsIngressE = devopsIngressRepository
+                        DevopsIngressDTO devopsIngressDTO = devopsIngressService
                                 .baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                         checkIngressAppVersion(v1beta1Ingress);
                         //初始化ingress对象参数,更新ingress并更新文件对象关联关系
                         DevopsIngressVO devopsIngressVO = getDevopsIngressDTO(
                                 v1beta1Ingress,
                                 envId, filePath);
-                        DevopsIngressVO ingressDTO = devopsIngressRepository.basePageByOptions(projectId, devopsIngressE.getId());
+                        DevopsIngressVO ingressDTO = devopsIngressService.queryIngress(projectId, devopsIngressDTO.getId());
                         if (devopsIngressVO.equals(ingressDTO)) {
                             isNotChange = true;
                         }
                         if (!devopsIngressVO.getPathList().stream()
                                 .allMatch(t ->
-                                        devopsIngressRepository.baseCheckPath(envId, devopsIngressVO.getDomain(),
-                                                t.getPath(), devopsIngressE.getId()))) {
+                                        devopsIngressService.baseCheckPath(envId, devopsIngressVO.getDomain(),
+                                                t.getPath(), devopsIngressDTO.getId()))) {
                             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
                         }
-                        DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsIngressDTO.getCommandId());
                         if (!isNotChange) {
-                            devopsIngressService.updateIngressByGitOps(devopsIngressE.getId(), devopsIngressVO, projectId, userId);
-                            DevopsIngressE newdevopsIngressE = devopsIngressRepository
-                                    .baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
-                            devopsEnvCommandE = devopsEnvCommandRepository.query(newdevopsIngressE.getCommandId());
+                            devopsIngressService.updateIngressByGitOps(devopsIngressDTO.getId(), devopsIngressVO, projectId, userId);
+                            DevopsIngressDTO newdevopsIngressDTO = devopsIngressService.baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
+                            devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(newdevopsIngressDTO.getCommandId());
                         }
 
-                        devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                                .baseQueryByEnvIdAndResourceId(envId, devopsIngressE.getId(), v1beta1Ingress.getKind());
+                        devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                        DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                                .baseQueryByEnvIdAndResourceId(envId, devopsIngressDTO.getId(), v1beta1Ingress.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
-                                devopsEnvFileResourceE,
-                                v1beta1Ingress.hashCode(), devopsIngressE.getId(), v1beta1Ingress.getKind());
+                                devopsEnvFileResourceDTO,
+                                v1beta1Ingress.hashCode(), devopsIngressDTO.getId(), v1beta1Ingress.getKind());
 
                     } catch (CommonException e) {
                         String errorCode = "";
@@ -223,37 +217,39 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             }
             V1beta1IngressBackend backend = v1beta1HTTPIngressPath.getBackend();
             String serviceName = backend.getServiceName();
-            DevopsServiceE devopsServiceE = devopsServiceRepository.baseQueryByNameAndEnvId(
+            DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
                     serviceName, envId);
             Long servicePort = null;
             IntOrString backendServicePort = backend.getServicePort();
             if (backendServicePort.isInteger() || pattern.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
                 servicePort = TypeUtil.objToLong(backendServicePort);
             } else {
-                if (devopsServiceE != null) {
-                    servicePort = devopsServiceE.getPorts().get(0).getPort();
+                if (devopsServiceDTO != null) {
+                    List<PortMapVO> listPorts = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
+                    }.getType());
+                    servicePort = listPorts.get(0).getPort();
                 }
             }
             DevopsIngressPathVO devopsIngressPathVO = new DevopsIngressPathVO();
             devopsIngressPathVO.setPath(path);
             devopsIngressPathVO.setServicePort(servicePort);
             devopsIngressPathVO.setServiceName(serviceName);
-            devopsIngressPathVO.setServiceId(devopsServiceE == null ? null : devopsServiceE.getId());
+            devopsIngressPathVO.setServiceId(devopsServiceDTO == null ? null : devopsServiceDTO.getId());
             devopsIngressPathVOS.add(devopsIngressPathVO);
         }
         devopsIngressVO.setPathList(devopsIngressPathVOS);
         return devopsIngressVO;
     }
 
-    private DevopsEnvCommandVO createDevopsEnvCommandE(String type) {
-        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
+    private DevopsEnvCommandDTO createDevopsEnvCommandE(String type) {
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
         if (type.equals(CREATE)) {
-            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+            devopsEnvCommandDTO.setCommandType(CommandType.CREATE.getType());
         } else {
-            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+            devopsEnvCommandDTO.setCommandType(CommandType.UPDATE.getType());
         }
-        devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
-        return devopsEnvCommandRepository.create(devopsEnvCommandE);
+        devopsEnvCommandDTO.setObject(ObjectType.INGRESS.getType());
+        devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        return devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
     }
 }
