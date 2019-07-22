@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResourceE;
+import io.choerodon.devops.api.vo.iam.entity.DevopsCustomizeResource;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
@@ -29,9 +29,9 @@ public class ConvertDevopsCustomResourceImpl extends ConvertK8sObjectService<Dev
 
 
     @Override
-    public void checkIfExist(List<DevopsCustomizeResourceE> devopsCustomizeResourceES, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, DevopsCustomizeResourceE devopsCustomizeResourceE) {
+    public void checkIfExist(List<DevopsCustomizeResource> devopsCustomizeResourceES, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, DevopsCustomizeResource devopsCustomizeResourceE) {
         String filePath = objectPath.get(TypeUtil.objToString(devopsCustomizeResourceE.hashCode()));
-        DevopsCustomizeResourceE oldDevopsCustomizeResourceE = devopsCustomizeResourceRepository.queryByEnvIdAndKindAndName(envId, devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName());
+        DevopsCustomizeResource oldDevopsCustomizeResourceE = devopsCustomizeResourceRepository.queryByEnvIdAndKindAndName(envId, devopsCustomizeResourceE.getK8sKind(), devopsCustomizeResourceE.getName());
         if (oldDevopsCustomizeResourceE != null
                 && beforeSyncDelete.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(ResourceType.CUSTOM.getType()))
@@ -49,7 +49,7 @@ public class ConvertDevopsCustomResourceImpl extends ConvertK8sObjectService<Dev
     }
 
     @Override
-    public void checkParameters(DevopsCustomizeResourceE devopsCustomizeResourceE, Map<String, String> objectPath) {
+    public void checkParameters(DevopsCustomizeResource devopsCustomizeResourceE, Map<String, String> objectPath) {
         String filePath = objectPath.get(TypeUtil.objToString(devopsCustomizeResourceE.hashCode()));
 
 

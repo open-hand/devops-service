@@ -858,7 +858,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private void syncCustom(Long envId, List<DevopsEnvFileErrorE> envFileErrorFiles, ResourceCommit resourceCommit,
                             String[] objects) {
         DevopsEnvFileResourceVO devopsEnvFileResourceE;
-        DevopsCustomizeResourceE devopsCustomizeResourceE = devopsCustomizeResourceRepository.queryByEnvIdAndKindAndName(envId, objects[0], objects[1]);
+        DevopsCustomizeResource devopsCustomizeResourceE = devopsCustomizeResourceRepository.queryByEnvIdAndKindAndName(envId, objects[0], objects[1]);
         devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .baseQueryByEnvIdAndResourceId(envId, devopsCustomizeResourceE.getId(), ObjectType.CUSTOM.getType());
         updateEnvCommandStatus(resourceCommit, devopsCustomizeResourceE.getDevopsEnvCommandE().getId(), devopsEnvFileResourceE,

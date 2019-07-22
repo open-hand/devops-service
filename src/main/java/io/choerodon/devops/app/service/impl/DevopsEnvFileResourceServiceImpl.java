@@ -15,6 +15,8 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class DevopsEnvFileResourceServiceImpl implements DevopsEnvFileResourceService {
 
     @Autowired
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
+    @Autowired
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper;
 
     @Override
@@ -25,7 +27,7 @@ public class DevopsEnvFileResourceServiceImpl implements DevopsEnvFileResourceSe
         if (devopsEnvFileResourceDTO != null) {
             devopsEnvFileResourceDTO.setFilePath(objectPath.get(
                     TypeUtil.objToString(i)));
-            baseUpdate(devopsEnvFileResourceDTO);
+            devopsEnvFileResourceService.baseUpdate(devopsEnvFileResourceDTO);
         } else {
             devopsEnvFileResourceDTO = new DevopsEnvFileResourceDTO();
             devopsEnvFileResourceDTO.setEnvId(envId);
@@ -33,7 +35,7 @@ public class DevopsEnvFileResourceServiceImpl implements DevopsEnvFileResourceSe
                     TypeUtil.objToString(i)));
             devopsEnvFileResourceDTO.setResourceId(id);
             devopsEnvFileResourceDTO.setResourceType(kind);
-            baseCreate(devopsEnvFileResourceDTO);
+            devopsEnvFileResourceService.baseCreate(devopsEnvFileResourceDTO);
         }
     }
 
