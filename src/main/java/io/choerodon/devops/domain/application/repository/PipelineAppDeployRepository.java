@@ -2,8 +2,6 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.PipelineAppDeployE;
-
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  10:11 2019/4/4

@@ -6,10 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
-import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;

@@ -4,10 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.api.vo.ProjectConfigVO;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationVersionE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsClusterE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;

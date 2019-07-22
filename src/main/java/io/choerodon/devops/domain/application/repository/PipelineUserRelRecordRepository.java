@@ -2,7 +2,6 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.PipelineUserRecordRelE;
 import io.choerodon.devops.infra.dto.PipelineUserRecordRelationshipDTO;
 
 /**

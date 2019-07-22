@@ -68,7 +68,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
         // 关联资源
         devopsEnvResourceDTOS.forEach(envResourceDTO -> {
-                    DevopsEnvResourceDetailDTO envResourceDetailDTO = devopsEnvResourceDetailService.baesQueryByMessageId(envResourceDTO.getResourceDetailId()));
+                    DevopsEnvResourceDetailDTO envResourceDetailDTO = devopsEnvResourceDetailService.baesQueryByMessageId(envResourceDTO.getResourceDetailId());
                     if (isReleaseGenerated(envResourceDetailDTO.getMessage())) {
                         dealWithResource(envResourceDetailDTO, envResourceDTO, devopsEnvResourceDTO, applicationInstanceDTO.getEnvId());
                     }

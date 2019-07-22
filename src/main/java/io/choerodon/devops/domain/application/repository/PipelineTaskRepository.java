@@ -1,7 +1,5 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.api.vo.iam.entity.PipelineTaskE;
-
 import java.util.List;
 
 /**

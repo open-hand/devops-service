@@ -3,11 +3,9 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.choerodon.asgard.saga.feign.SagaConsumerClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.app.service.UserAttrService;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;

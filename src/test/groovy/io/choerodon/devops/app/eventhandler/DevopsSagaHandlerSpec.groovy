@@ -5,9 +5,8 @@ import io.choerodon.devops.api.vo.CommitVO
 import io.choerodon.devops.api.vo.PipelineWebHookDTO
 import io.choerodon.devops.api.vo.PushWebHookVO
 import io.choerodon.devops.app.service.*
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE
-import io.choerodon.devops.api.vo.iam.entity.ApplicationTemplateE
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE
+
+
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload
 import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload

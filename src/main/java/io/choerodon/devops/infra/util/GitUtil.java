@@ -13,12 +13,12 @@ import com.jcraft.jsch.Session;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitConfigDTO;
 import io.choerodon.devops.api.vo.GitEnvConfigDTO;
-import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -52,16 +52,12 @@ public class GitUtil {
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
-
-    private String classPath;
-    private String sshKey;
-
-
     @Autowired
     DevopsEnvironmentRepository devopsEnvironmentRepository;
     @Autowired
-    IamRepository iamRepository;
-
+    IamService iamService;
+    private String classPath;
+    private String sshKey;
     @Value("${template.url}")
     private String repoUrl;
     @Value("${template.version}")
@@ -490,14 +486,14 @@ public class GitUtil {
 
 
     public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
         String path = String.format("gitops/%s/%s/%s",
-                organization.getCode(), projectE.getCode(), envCode);
+                organizationDTO.getCode(), projectDTO.getCode(), envCode);
         //生成环境git仓库ssh地址
-        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(),
-                projectE.getCode(), envCode);
+        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(),
+                projectDTO.getCode(), envCode);
 
         File file = new File(path);
         this.setSshKey(envRsa);
@@ -513,9 +509,9 @@ public class GitUtil {
         GitConfigDTO gitConfigDTO = new GitConfigDTO();
         List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
         devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
-            ProjectVO projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-            OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-            String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+            ProjectDTO projectDTO = iamService.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+            OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
+            String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentE.getCode());
 
             GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
             gitEnvConfigDTO.setEnvId(devopsEnvironmentE.getId());

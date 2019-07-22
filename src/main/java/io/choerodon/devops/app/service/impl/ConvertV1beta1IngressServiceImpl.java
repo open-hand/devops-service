@@ -9,7 +9,6 @@ import io.kubernetes.client.models.V1beta1IngressRule;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsIngressE;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;

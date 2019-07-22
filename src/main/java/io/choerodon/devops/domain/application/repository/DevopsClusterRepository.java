@@ -4,8 +4,6 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.iam.entity.DevopsClusterE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvPodE;
 
 public interface DevopsClusterRepository {
 

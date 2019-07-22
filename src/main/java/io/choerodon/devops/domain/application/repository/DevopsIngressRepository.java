@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.DevopsIngressE;
 <<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.DevopsIngressPathE;
@@ -17,6 +18,8 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 >>>>>>> [IMP] 修改AppControler重构
 
 =======
+=======
+>>>>>>> [IMP] refactor validator
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
 import io.choerodon.devops.infra.dto.DevopsIngressPathDTO;
 

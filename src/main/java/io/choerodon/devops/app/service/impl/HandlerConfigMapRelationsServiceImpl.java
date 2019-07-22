@@ -12,8 +12,6 @@ import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.devops.app.service.DevopsEnvCommandService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.api.vo.iam.entity.DevopsConfigMapE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;

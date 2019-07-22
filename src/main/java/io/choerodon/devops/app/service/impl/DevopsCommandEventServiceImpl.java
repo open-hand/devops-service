@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsCommandEventE;
 import io.choerodon.devops.app.service.DevopsCommandEventService;
 import io.choerodon.devops.infra.dto.DevopsCommandEventDTO;
 import io.choerodon.devops.infra.mapper.DevopsCommandEventMapper;

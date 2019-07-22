@@ -5,8 +5,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**

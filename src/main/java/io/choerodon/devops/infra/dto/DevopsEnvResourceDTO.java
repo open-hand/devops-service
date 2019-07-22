@@ -2,8 +2,6 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.mybatis.entity.BaseDTO;
 
 /**

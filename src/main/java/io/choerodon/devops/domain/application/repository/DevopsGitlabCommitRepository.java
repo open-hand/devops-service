@@ -7,7 +7,6 @@ import java.util.Map;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsGitlabCommitE;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 
 public interface DevopsGitlabCommitRepository {

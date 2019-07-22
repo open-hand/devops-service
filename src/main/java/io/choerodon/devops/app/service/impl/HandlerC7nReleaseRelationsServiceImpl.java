@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ApplicationDeployVO;
 import io.choerodon.devops.api.vo.ApplicationInstanceVO;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;

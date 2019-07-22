@@ -5,16 +5,17 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.vo.iam.*;
-import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
+import io.choerodon.devops.api.vo.iam.RoleDTO;
+import io.choerodon.devops.api.vo.iam.RoleSearchDTO;
+import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
-import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
+import io.choerodon.devops.infra.dto.iam.IamAppDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,7 +84,7 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<PageInfo<UserVO>> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, Long roleId,
+    public ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, Long roleId,
                                                                                    Long sourceId,
                                                                                    Boolean doPage,
                                                                                    RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
@@ -92,7 +93,7 @@ public class IamServiceClientFallback implements IamServiceClient {
 
     @Override
     public ResponseEntity<PageInfo<UserWithRoleDTO>> queryUserByProjectId(Long projectId, int page, int size,
-                                                                      Boolean doPage, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+                                                                          Boolean doPage, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         throw new CommonException("error.user.get.byProjectId");
     }
 
@@ -107,34 +108,35 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<IamAppPayLoad> createIamApplication(Long organizationId, IamAppPayLoad iamAppPayLoad) {
+    public ResponseEntity<IamAppDTO> createIamApplication(Long organizationId, @Valid IamAppDTO appDTO) {
         throw new CommonException("error.iam.app.create");
     }
 
     @Override
-    public ResponseEntity<IamAppPayLoad> updateIamApplication(Long organizationId, Long id, IamAppPayLoad iamAppPayLoad) {
+    public ResponseEntity<IamAppDTO> updateIamApplication(Long organizationId, Long id, @Valid IamAppDTO appDTO) {
         throw new CommonException("error.iam.app.update");
     }
 
     @Override
-    public ResponseEntity<IamAppPayLoad> disableIamApplication(Long organizationId, Long id) {
+    public ResponseEntity<IamAppDTO> disableIamApplication(Long organizationId, Long id) {
         throw new CommonException("error.iam.app.disable");
     }
 
     @Override
-    public ResponseEntity<IamAppPayLoad> enableIamApplication(Long organizationId, Long id) {
+    public ResponseEntity<IamAppDTO> enableIamApplication(Long organizationId, Long id) {
         throw new CommonException("error.iam.app.enabled");
     }
 
     @Override
-    public ResponseEntity<PageInfo<IamAppPayLoad>> getIamApplication(Long organizationId, String code) {
+    public ResponseEntity<PageInfo<IamAppDTO>> getIamApplication(Long organizationId, String code) {
         throw new CommonException("error.iam.app.get");
     }
 
     @Override
-    public ResponseEntity<ProjectReqVO> createProject(Long organizationId, @Valid ProjectCreateDTO projectCreateDTO) {
+    public ResponseEntity<ProjectDTO> createProject(Long organizationId, @Valid ProjectDTO projectDTO) {
         throw new CommonException("error.iam.project.create");
     }
+
 
     @Override
     public ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(int page, int size) {

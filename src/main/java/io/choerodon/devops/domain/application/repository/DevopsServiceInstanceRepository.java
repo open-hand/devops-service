@@ -2,7 +2,6 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsServiceAppInstanceE;
 import io.choerodon.devops.infra.dto.DevopsServiceAppInstanceDTO;
 
 /**

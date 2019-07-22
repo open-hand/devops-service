@@ -6,14 +6,15 @@ import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.iam.entity.ApplicationE;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.app.service.IamService;
+import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
@@ -24,20 +25,20 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionService {
 
-    private ApplicationRepository applicationRepository;
-    private IamRepository iamRepository;
-    private UserAttrRepository userAttrRepository;
-    private GitlabProjectRepository gitlabProjectRepository;
+    private ApplicationService applicationService;
+    private IamService iamService;
+    private UserAttrService userAttrService;
     private DevopsProjectRepository devopsProjectRepository;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     public UpdateAppUserPermissionServiceImpl() {
-        this.applicationRepository = ApplicationContextHelper.getSpringFactory().getBean(ApplicationRepository.class);
-        this.iamRepository = ApplicationContextHelper.getSpringFactory().getBean(IamRepository.class);
-        this.userAttrRepository = ApplicationContextHelper.getSpringFactory().getBean(UserAttrRepository.class);
-        this.gitlabProjectRepository = ApplicationContextHelper.getSpringFactory()
-                .getBean(GitlabProjectRepository.class);
+        this.applicationService = ApplicationContextHelper.getSpringFactory().getBean(ApplicationService.class);
+        this.iamService = ApplicationContextHelper.getSpringFactory().getBean(IamService.class);
+        this.userAttrService = ApplicationContextHelper.getSpringFactory().getBean(UserAttrService.class);
         this.devopsProjectRepository = ApplicationContextHelper.getSpringFactory()
                 .getBean(DevopsProjectRepository.class);
+        this.gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory()
+                .getBean(GitlabServiceClientOperator.class);
     }
 
     @Override
@@ -48,10 +49,10 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
         List<Integer> deleteGitlabUserIds;
         List<Integer> updateGitlabUserIds;
 
-        ApplicationE applicationE = applicationRepository.query(appId);
-        Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
-        DevopsProjectVO devopsProjectE = devopsProjectRepository.baseQueryByProjectId(applicationE.getProjectE().getId());
-        Integer gitlabGroupId = devopsProjectE.getDevopsAppGroupId().intValue();
+        ApplicationDTO applicationDTO = applicationService.baseQuery(appId);
+        Integer gitlabProjectId = applicationDTO.getGitlabProjectId();
+        DevopsProjectDTO devopsProjectDTO = devopsProjectRepository.baseQueryByProjectId(applicationDTO.getProjectId());
+        Integer gitlabGroupId = devopsProjectDTO.getDevopsAppGroupId().intValue();
 
         // 如果之前对应的gitlab project同步失败时，不进行后续操作
         if (gitlabProjectId == null) {
@@ -61,7 +62,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
         switch (option) {
             // 原来跳过，现在不跳过，需要更新权限表，而且需要去掉原来gitlab中的权限
             case 1:
-                updateGitlabUserIds = userAttrRepository.baseListByUserIds(userIds)
+                updateGitlabUserIds = userAttrService.baseListByUserIds(userIds)
                         .stream().map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
                 // 获取项目下所有项目成员的gitlabUserIds，过滤掉项目所有者
                 allMemberGitlabIdsWithoutOwner = getAllGitlabMemberWithoutOwner(projectId);
@@ -80,18 +81,18 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
                 allMemberGitlabIdsWithoutOwner = getAllGitlabMemberWithoutOwner(projectId);
 
                 addGitlabUserIds = allMemberGitlabIdsWithoutOwner.stream()
-                        .filter(e -> !gitlabProjectRepository.getAllMemberByProjectId(gitlabProjectId).stream()
-                                .map(GitlabMemberE::getId).collect(Collectors.toList()).contains(e))
+                        .filter(e -> !gitlabServiceClientOperator.listMemberByProject(gitlabProjectId).stream()
+                                .map(MemberDTO::getUserId).collect(Collectors.toList()).contains(e))
                         .collect(Collectors.toList());
 
-                super.updateGitlabUserPermission("app", gitlabGroupId,gitlabProjectId, addGitlabUserIds, new ArrayList<>());
+                super.updateGitlabUserPermission("app", gitlabGroupId, gitlabProjectId, addGitlabUserIds, new ArrayList<>());
                 return true;
             // 原来不跳过，现在也不跳过，需要更新权限表
             case 3:
-                updateGitlabUserIds = userAttrRepository.baseListByUserIds(userIds).stream()
+                updateGitlabUserIds = userAttrService.baseListByUserIds(userIds).stream()
                         .map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
-                List<Integer> currentGitlabUserIds = gitlabProjectRepository.getAllMemberByProjectId(gitlabProjectId)
-                        .stream().map(GitlabMemberE::getId).collect(Collectors.toList());
+                List<Integer> currentGitlabUserIds = gitlabServiceClientOperator.listMemberByProject(gitlabProjectId)
+                        .stream().map(MemberDTO::getUserId).collect(Collectors.toList());
 
                 addGitlabUserIds = new ArrayList<>(updateGitlabUserIds);
                 addGitlabUserIds.removeAll(currentGitlabUserIds);
@@ -99,7 +100,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
                 deleteGitlabUserIds = new ArrayList<>(currentGitlabUserIds);
                 deleteGitlabUserIds.removeAll(updateGitlabUserIds);
 
-                super.updateGitlabUserPermission("app",gitlabGroupId, gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
+                super.updateGitlabUserPermission("app", gitlabGroupId, gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
                 return true;
             default:
                 return true;
@@ -108,8 +109,8 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
 
     // 获取iam项目下所有的项目成员的gitlabUserId，过滤掉项目所有者
     private List<Integer> getAllGitlabMemberWithoutOwner(Long projectId) {
-        return userAttrRepository.baseListByUserIds(iamRepository.getAllMemberIdsWithoutOwner(projectId)).stream()
-                .map(UserAttrE::getGitlabUserId).collect(Collectors.toList()).stream()
+        return userAttrService.baseListByUserIds(iamService.getAllMemberIdsWithoutOwner(projectId)).stream()
+                .map(UserAttrDTO::getGitlabUserId).collect(Collectors.toList()).stream()
                 .map(TypeUtil::objToInteger).collect(Collectors.toList());
     }
 }

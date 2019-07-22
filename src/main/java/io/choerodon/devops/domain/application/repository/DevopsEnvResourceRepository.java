@@ -2,8 +2,6 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvResourceE;
-import io.choerodon.devops.infra.dto.DevopsEnvResourceDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 
 /**

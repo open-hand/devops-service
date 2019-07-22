@@ -6,7 +6,7 @@ import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsProjectConfigVO
 import io.choerodon.devops.api.vo.ProjectConfigVO
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectConfigE
+
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository
 import io.choerodon.devops.infra.feign.HarborClient
 import org.mockito.Mockito

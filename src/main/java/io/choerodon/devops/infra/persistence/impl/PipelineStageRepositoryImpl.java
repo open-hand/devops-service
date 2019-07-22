@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.iam.entity.PipelineStageE;
 import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
 import io.choerodon.devops.infra.dto.PipelineStageDTO;
 import io.choerodon.devops.infra.mapper.PipelineStageMapper;

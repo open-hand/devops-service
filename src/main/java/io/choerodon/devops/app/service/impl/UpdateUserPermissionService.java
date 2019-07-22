@@ -4,6 +4,8 @@ import java.util.List;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 
@@ -14,15 +16,11 @@ import io.choerodon.devops.infra.util.TypeUtil;
  * Description:
  */
 public abstract class UpdateUserPermissionService {
-    private GitlabProjectRepository gitlabProjectRepository;
-    private GitlabRepository gitlabRepository;
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository;
 
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
     protected UpdateUserPermissionService() {
-        this.gitlabProjectRepository = ApplicationContextHelper.getSpringFactory()
-                .getBean(GitlabProjectRepository.class);
-        this.gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
-        this.gitlabGroupMemberRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabGroupMemberRepository.class);
+        this.gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory()
+                .getBean(GitlabServiceClientOperator.class);
     }
 
     public abstract Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option);
@@ -30,9 +28,9 @@ public abstract class UpdateUserPermissionService {
     protected void updateGitlabUserPermission(String type, Integer gitlabGroupId, Integer gitlabProjectId, List<Integer> addGitlabUserIds,
                                               List<Integer> deleteGitlabUserIds) {
         addGitlabUserIds.forEach(e -> {
-            GitlabMemberE gitlabGroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(gitlabGroupId, TypeUtil.objToInteger(e));
-            if (gitlabGroupMemberE != null) {
-                gitlabGroupMemberRepository.deleteMember(gitlabGroupId, TypeUtil.objToInteger(e));
+            MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));
+            if (memberDTO != null) {
+                gitlabServiceClientOperator.deleteGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));
             }
             addGitlabMember(type, TypeUtil.objToInteger(gitlabProjectId), e);
         });
@@ -40,23 +38,23 @@ public abstract class UpdateUserPermissionService {
     }
 
     private void addGitlabMember(String type, Integer gitlabProjectId, Integer userId) {
-        GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectId, userId);
-        if (gitlabMemberE != null && gitlabMemberE.getId() == null) {
-            MemberVO memberDTO = null;
+        MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(gitlabProjectId, userId);
+        if (projectMember != null && projectMember.getUserId() == null) {
+            MemberDTO memberDTO = null;
             if (type.equals("env")) {
-                memberDTO = new MemberVO(userId, 40, "");
+                memberDTO = new MemberDTO(userId, 40, "");
             } else {
-                memberDTO = new MemberVO(userId, 30, "");
+                memberDTO = new MemberDTO(userId, 30, "");
             }
-            gitlabRepository.addMemberIntoProject(gitlabProjectId, memberDTO);
+            gitlabServiceClientOperator.createProjectMember(gitlabProjectId, memberDTO);
         }
     }
 
     private void deleteGitlabMember(Integer gitlabProjectId, Integer userId) {
-        GitlabMemberE gitlabMemberE = gitlabProjectRepository
+        MemberDTO projectMember = gitlabServiceClientOperator
                 .getProjectMember(gitlabProjectId, userId);
-        if (gitlabMemberE.getId() != null) {
-            gitlabRepository.removeMemberFromProject(gitlabProjectId, userId);
+        if (projectMember.getUserId() != null) {
+            gitlabServiceClientOperator.deleteProjectMember(gitlabProjectId, userId);
         }
     }
 }

@@ -132,4 +132,6 @@ public interface DevopsServiceService {
 
     DevopsServiceDTO baseQueryByNameAndEnvId(String name, Long envId);
 
+    Boolean baseCheckServiceByEnv(Long envId);
+
 }

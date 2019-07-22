@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.dataobject.UserAttrDTO;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;

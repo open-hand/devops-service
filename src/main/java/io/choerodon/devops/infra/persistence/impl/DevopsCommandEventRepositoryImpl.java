@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.List;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.vo.iam.entity.DevopsCommandEventE;
 import io.choerodon.devops.domain.application.repository.DevopsCommandEventRepository;
 import io.choerodon.devops.infra.dto.DevopsCommandEventDTO;
 import io.choerodon.devops.infra.mapper.DevopsCommandEventMapper;

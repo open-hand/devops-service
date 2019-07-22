@@ -9,7 +9,7 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsBranchVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE
+
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE
 import io.choerodon.devops.domain.application.repository.*
 

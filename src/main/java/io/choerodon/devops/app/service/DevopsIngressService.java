@@ -115,4 +115,6 @@ public interface DevopsIngressService {
     DevopsIngressDTO baseCheckByEnvAndName(Long envId, String name);
 
     Boolean baseCheckPath(Long envId, String domain, String path, Long id);
+
+    Boolean baseCheckByEnv(Long envId);
 }

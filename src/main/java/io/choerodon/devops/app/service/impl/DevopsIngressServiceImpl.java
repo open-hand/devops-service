@@ -770,6 +770,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressPathMapper.delete(devopsIngressPathDTO);
     }
 
+    @Override
     public Boolean baseCheckByEnv(Long envId) {
         return devopsIngressMapper.checkEnvHasIngress(envId);
     }

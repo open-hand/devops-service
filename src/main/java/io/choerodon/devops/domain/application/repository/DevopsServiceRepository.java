@@ -6,8 +6,6 @@ import java.util.List;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsServiceE;
-import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 
 /**

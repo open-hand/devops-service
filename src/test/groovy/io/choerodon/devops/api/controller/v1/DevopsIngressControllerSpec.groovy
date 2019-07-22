@@ -8,7 +8,7 @@ import io.choerodon.devops.api.vo.DevopsIngressPathVO
 import io.choerodon.devops.api.vo.DevopsIngressVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE
+
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
