@@ -1,7 +1,8 @@
 package io.choerodon.devops.app.service;
 
-import com.github.pagehelper.PageInfo;
+import java.util.List;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.SecretRepDTO;
 import io.choerodon.devops.api.vo.SecretReqDTO;
@@ -83,6 +84,20 @@ public interface DevopsSecretService {
 
 
     DevopsSecretDTO baseQuery(Long secretId);
+
+    DevopsSecretDTO baseCreate(DevopsSecretDTO devopsSecretDTO);
+
+    void baseUpdate(DevopsSecretDTO devopsSecretDTO);
+
+    void baseDelete(Long secretId);
+
+    void baseCheckName(String name, Long envId);
+
+    DevopsSecretDTO baseQueryByEnvIdAndName(Long envId, String name);
+
+    PageInfo<DevopsSecretDTO> basePageByOption(Long envId, PageRequest pageRequest, String params, Long appId);
+
+    List<DevopsSecretDTO> baseListByEnv(Long envId);
 
 
     DevopsSecretDTO baseQueryByEnvIdAndName(Long envId, String name);

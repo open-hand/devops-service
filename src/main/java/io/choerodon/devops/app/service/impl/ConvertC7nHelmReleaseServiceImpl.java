@@ -4,21 +4,25 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.TypeUtil;
+
+
 
 public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7nHelmRelease> {
 
-    private ApplicationInstanceRepository applicationInstanceRepository;
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private ApplicationInstanceService applicationInstanceService;
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertC7nHelmReleaseServiceImpl() {
-        this.applicationInstanceRepository = ApplicationContextHelper.getSpringFactory().getBean(ApplicationInstanceRepository.class);
-        this.devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
+        this.applicationInstanceService = ApplicationContextHelper.getSpringFactory().getBean(ApplicationInstanceService.class);
+        this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }
 
     @Override
@@ -51,20 +55,20 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
     }
 
     @Override
-    public void checkIfExist(List<C7nHelmRelease> c7nHelmReleases, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, C7nHelmRelease c7nHelmRelease) {
+    public void checkIfExist(List<C7nHelmRelease> c7nHelmReleases, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, C7nHelmRelease c7nHelmRelease) {
         String filePath = objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode()));
         String instanceCode = c7nHelmRelease.getMetadata().getName();
-        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(instanceCode, envId);
-        if (applicationInstanceE != null) {
-            Long instanceId = applicationInstanceE.getId();
+        ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.baseQueryByCodeAndEnv(instanceCode, envId);
+        if (applicationInstanceDTO != null) {
+            Long instanceId = applicationInstanceDTO.getId();
             if (beforeSyncDelete.stream()
-                    .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType()
+                    .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType()
                             .equals(c7nHelmRelease.getKind()))
-                    .noneMatch(devopsEnvFileResourceE ->
-                            devopsEnvFileResourceE.getResourceId()
+                    .noneMatch(devopsEnvFileResourceDTO ->
+                            devopsEnvFileResourceDTO.getResourceId()
                                     .equals(instanceId))) {
-                DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository.baseQueryByEnvIdAndResourceId(envId, instanceId, c7nHelmRelease.getKind());
-                if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())))) {
+                DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(envId, instanceId, c7nHelmRelease.getKind());
+                if (devopsEnvFileResourceDTO != null && !devopsEnvFileResourceDTO.getFilePath().equals(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())))) {
                     throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, instanceCode);
                 }
             }

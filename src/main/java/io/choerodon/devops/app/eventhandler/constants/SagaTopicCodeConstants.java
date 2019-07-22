@@ -84,6 +84,22 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_SYNC_GITOPS = "devops-sync-gitops";
 
 
+    /**
+     * 测试应用Pod升级
+     */
+    public static final String TEST_POD_UPDATE_SAGA = "test-pod-update-saga";
+
+    /**
+     * 测试Job日志
+     */
+    public static final String TEST_JOB_LOG_SAGA = "test-job-log-saga";
+
+    /**
+     * 测试应用Release状态
+     */
+    public static final String TEST_STATUS_SAGA = "test-status-saga";
+
+
 
 
 

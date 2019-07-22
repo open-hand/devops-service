@@ -7,6 +7,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -16,7 +17,7 @@ public interface DevopsServiceService {
     /**
      * 部署网络
      *
-     * @param projectId           项目id
+     * @param projectId          项目id
      * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
@@ -26,7 +27,7 @@ public interface DevopsServiceService {
     /**
      * 部署网络,GitOps
      *
-     * @param projectId           项目id
+     * @param projectId          项目id
      * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
@@ -35,8 +36,8 @@ public interface DevopsServiceService {
     /**
      * 更新网络
      *
-     * @param projectId           项目id
-     * @param id                  网络Id
+     * @param projectId          项目id
+     * @param id                 网络Id
      * @param devopsServiceReqVO 部署网络参数
      * @return boolean
      */
@@ -45,8 +46,8 @@ public interface DevopsServiceService {
     /**
      * 更新网络
      *
-     * @param projectId           项目id
-     * @param id                  网络Id
+     * @param projectId          项目id
+     * @param id                 网络Id
      * @param devopsServiceReqVO 部署网络参数
      * @return boolean
      */
@@ -130,8 +131,36 @@ public interface DevopsServiceService {
 
     DevopsServiceDTO baseQuery(Long id);
 
+    Boolean baseCheckName(Long envId, String name);
+
+    PageInfo<DevopsServiceQueryDTO> basePageByOptions(Long projectId, Long envId, Long instanceId, PageRequest pageRequest,
+                                                      String searchParam, Long appId);
+
+    List<DevopsServiceQueryDTO> baseListRunningService(Long envId);
+
+    List<DevopsServiceDTO> baseListByEnvId(Long envId);
+
+    DevopsServiceQueryDTO baseQueryById(Long id);
+
+    DevopsServiceDTO baseCreate(DevopsServiceDTO devopsServiceDTO);
+
+    void baseDelete(Long id);
+
+    void baseUpdate(DevopsServiceDTO devopsServiceDTO);
+
+    void baseUpdateLables(Long id);
+
+    void baseUpdateEndPoint(Long id);
+
+    List<Long> baseListEnvByRunningService();
+
     DevopsServiceDTO baseQueryByNameAndEnvId(String name, Long envId);
 
     Boolean baseCheckServiceByEnv(Long envId);
+
+
+    List<DevopsServiceDTO> baseList();
+
+    void baseDeleteServiceAndInstanceByEnvId(Long envId);
 
 }

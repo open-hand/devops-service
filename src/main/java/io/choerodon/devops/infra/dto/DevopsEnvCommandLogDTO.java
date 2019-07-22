@@ -9,7 +9,7 @@ import javax.persistence.Table;
  * Created by younger on 2018/4/24.
  */
 @Table(name = "devops_env_command_log")
-public class DevopsEnvCommandLogDO {
+public class DevopsEnvCommandLogDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

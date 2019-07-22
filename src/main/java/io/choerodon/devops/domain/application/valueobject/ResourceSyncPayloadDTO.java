@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.valueobject;
 
-public class ResourceSyncPayload {
+public class ResourceSyncPayloadDTO {
     private String resourceType;
     private String[] resources;
 

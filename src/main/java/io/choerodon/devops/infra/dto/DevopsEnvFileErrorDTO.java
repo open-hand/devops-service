@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
@@ -18,6 +15,9 @@ public class DevopsEnvFileErrorDTO extends BaseDTO {
     private String commit;
     private String error;
 
+
+    @Transient
+    private String resource;
 
 
     public Long getId() {
@@ -60,4 +60,11 @@ public class DevopsEnvFileErrorDTO extends BaseDTO {
         this.error = error;
     }
 
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
 }

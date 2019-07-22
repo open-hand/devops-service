@@ -57,7 +57,7 @@
         ) t
     </select>
 
-    <select id="listDevopsService" resultType="io.choerodon.devops.infra.dto.DevopsServiceQueryDTO">
+    <select id="listRunningService" resultType="io.choerodon.devops.infra.dto.DevopsServiceQueryDTO">
         SELECT
         ds.id,
         ds.`name`,

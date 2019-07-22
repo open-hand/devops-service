@@ -3,11 +3,10 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.ApplicationShareDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Created by ernst on 2018/5/12.
@@ -123,4 +122,7 @@ public interface ApplicationShareService {
     void saveToken(AccessTokenDTO tokenDTO);
 
     ApplicationShareDTO baseQueryByAppId(Long appId);
+
+    int baseCountByAppId(Long appId);
+
 }

@@ -2,7 +2,7 @@ package io.choerodon.devops.domain.application.valueobject;
 
 import java.util.List;
 
-public class UpgradeCluster {
+public class UpgradeClusterVO {
 
     private String token;
     private String platformCode;

@@ -5,8 +5,8 @@ import java.util.Map;
 
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
-import org.apache.ibatis.annotations.Param;
 import io.choerodon.mybatis.common.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 
 /**
@@ -23,7 +23,7 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
             @Param("sort") String sort,
             @Param("appId") Long appId);
 
-    List<DevopsServiceQueryDTO> listByEnvId(@Param("envId") Long envId);
+    List<DevopsServiceQueryDTO> listRunningService(@Param("envId") Long envId);
 
     List<Long> selectDeployedEnv();
 

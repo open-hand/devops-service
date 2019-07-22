@@ -3,36 +3,37 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.devops.app.service.DevopsConfigMapService;
+import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
+import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
+import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.models.V1ConfigMap;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.domain.application.repository.DevopsConfigMapRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.GitOpsObjectError;
 
 public class ConvertV1ConfigMapServiceImpl extends ConvertK8sObjectService<V1ConfigMap> {
 
-    private DevopsConfigMapRepository devopsConfigMapRepository;
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private DevopsConfigMapService devopsConfigMapService;
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertV1ConfigMapServiceImpl() {
-        this.devopsConfigMapRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsConfigMapRepository.class);
-        this.devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
+        this.devopsConfigMapService = ApplicationContextHelper.getSpringFactory().getBean(DevopsConfigMapService.class);
+        this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }
 
     @Override
-    public void checkIfExist(List<V1ConfigMap> v1ConfigMaps, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, V1ConfigMap v1ConfigMap) {
+    public void checkIfExist(List<V1ConfigMap> v1ConfigMaps, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, V1ConfigMap v1ConfigMap) {
         String filePath = objectPath.get(TypeUtil.objToString(v1ConfigMap.hashCode()));
-        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.baseQueryByEnvIdAndName(envId, v1ConfigMap.getMetadata().getName());
-        if (devopsConfigMapE != null &&
+        DevopsConfigMapDTO devopsConfigMapDTO = devopsConfigMapService.baseQueryByEnvIdAndName(envId, v1ConfigMap.getMetadata().getName());
+        if (devopsConfigMapDTO != null &&
                 beforeSyncDelete.stream()
-                        .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(v1ConfigMap.getKind()))
-                        .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsConfigMapE.getId()))) {
-            DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository.baseQueryByEnvIdAndResourceId(envId, devopsConfigMapE.getId(), v1ConfigMap.getKind());
-            if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(v1ConfigMap.hashCode())))) {
+                        .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType().equals(v1ConfigMap.getKind()))
+                        .noneMatch(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceId().equals(devopsConfigMapDTO.getId()))) {
+            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(envId, devopsConfigMapDTO.getId(), v1ConfigMap.getKind());
+            if (devopsEnvFileResourceDTO != null && !devopsEnvFileResourceDTO.getFilePath().equals(objectPath.get(TypeUtil.objToString(v1ConfigMap.hashCode())))) {
                 throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1ConfigMap.getMetadata().getName());
             }
         }

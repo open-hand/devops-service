@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.valueobject;
 
-public class ResourceCommit {
+public class ResourceCommitVO {
 
     private String resourceId;
     private String file;

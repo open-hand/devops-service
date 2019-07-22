@@ -119,7 +119,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public List<DevopsServiceVO> listByEnvId(Long envId) {
-        return ConvertUtils.convertList(baseListByEnvId(envId), this::queryDtoToVo);
+        return ConvertUtils.convertList(baseListRunningService(envId), this::queryDtoToVo);
     }
 
     @Override
@@ -474,9 +474,16 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return key.equals("id") || key.equals("name") || key.equals("status");
     }
 
-    public List<DevopsServiceQueryDTO> baseListByEnvId(Long envId) {
-        List<DevopsServiceQueryDTO> devopsServiceQueryDTOList = devopsServiceMapper.listByEnvId(envId);
+    public List<DevopsServiceQueryDTO> baseListRunningService(Long envId) {
+        List<DevopsServiceQueryDTO> devopsServiceQueryDTOList = devopsServiceMapper.listRunningService(envId);
         return devopsServiceQueryDTOList;
+    }
+
+    @Override
+    public List<DevopsServiceDTO> baseListByEnvId(Long envId) {
+        DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
+        devopsServiceDTO.setEnvId(envId);
+        return devopsServiceMapper.select(devopsServiceDTO);
     }
 
     public DevopsServiceQueryDTO baseQueryById(Long id) {

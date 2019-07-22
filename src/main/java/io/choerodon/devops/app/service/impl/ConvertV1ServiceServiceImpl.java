@@ -3,37 +3,38 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
+import io.choerodon.devops.app.service.DevopsServiceService;
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
+import io.choerodon.devops.infra.dto.DevopsServiceDTO;
+import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1ServicePort;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.GitOpsObjectError;
 
 public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Service> {
 
-    private DevopsServiceRepository devopsServiceRepository;
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private DevopsServiceService devopsServiceService;
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertV1ServiceServiceImpl() {
-        this.devopsServiceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsServiceRepository.class);
-        this.devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
+        this.devopsServiceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsServiceService.class);
+        this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }
 
     @Override
-    public void checkIfExist(List<V1Service> v1Services, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, V1Service v1Service) {
+    public void checkIfExist(List<V1Service> v1Services, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, V1Service v1Service) {
         String filePath = objectPath.get(TypeUtil.objToString(v1Service.hashCode()));
-        DevopsServiceE devopsServiceE = devopsServiceRepository.baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
-        if (devopsServiceE != null &&
+        DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
+        if (devopsServiceDTO != null &&
                 beforeSyncDelete.stream()
-                        .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(v1Service.getKind()))
-                        .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsServiceE.getId()))) {
-            DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository.baseQueryByEnvIdAndResourceId(envId, devopsServiceE.getId(), v1Service.getKind());
-            if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(v1Service.hashCode())))) {
+                        .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType().equals(v1Service.getKind()))
+                        .noneMatch(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceId().equals(devopsServiceDTO.getId()))) {
+            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(envId, devopsServiceDTO.getId(), v1Service.getKind());
+            if (devopsEnvFileResourceDTO != null && !devopsEnvFileResourceDTO.getFilePath().equals(objectPath.get(TypeUtil.objToString(v1Service.hashCode())))) {
                 throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1Service.getMetadata().getName());
             }
         }

@@ -3,7 +3,7 @@ package io.choerodon.devops.domain.application.valueobject;
 import java.util.List;
 
 
-public class GitOpsSync {
+public class GitOpsSyncDTO {
     private List<String> resourceIDs;
     private String type;
     private GitOpsMetaData metadata;

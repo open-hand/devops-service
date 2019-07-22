@@ -1,15 +1,11 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Lists;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
@@ -17,10 +13,13 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
-import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
+import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -115,7 +114,7 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
 
     @Override
     public List<DevopsServiceV> baseListByEnvId(Long envId) {
-        List<DevopsServiceQueryDTO> devopsServiceQueryDTOList = devopsServiceMapper.listByEnvId(envId);
+        List<DevopsServiceQueryDTO> devopsServiceQueryDTOList = devopsServiceMapper.listRunningService(envId);
         return ConvertHelper.convertList(devopsServiceQueryDTOList, DevopsServiceV.class);
     }
 

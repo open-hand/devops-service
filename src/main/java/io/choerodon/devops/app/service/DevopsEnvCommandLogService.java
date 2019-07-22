@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandLogVO;
+import io.choerodon.devops.infra.dto.DevopsEnvCommandLogDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -10,11 +10,11 @@ import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandLogVO;
  * Description:
  */
 public interface DevopsEnvCommandLogService {
-    DevopsEnvCommandLogVO baseCreate(DevopsEnvCommandLogVO devopsEnvCommandLogE);
+    DevopsEnvCommandLogDTO baseCreate(DevopsEnvCommandLogDTO devopsEnvCommandLogDTO);
 
-    DevopsEnvCommandLogVO baseQuery(Long logId);
+    DevopsEnvCommandLogDTO baseQuery(Long logId);
 
-    List<DevopsEnvCommandLogVO> baseListByDeployId(Long deployId);
+    List<DevopsEnvCommandLogDTO> baseListByDeployId(Long deployId);
 
     void baseDeleteByInstanceId(Long instanceId);
 

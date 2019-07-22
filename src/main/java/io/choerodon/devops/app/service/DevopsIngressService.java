@@ -3,10 +3,10 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
+import io.choerodon.devops.infra.dto.DevopsIngressPathDTO;
 
 
 public interface DevopsIngressService {
@@ -110,11 +110,34 @@ public interface DevopsIngressService {
 
     void deleteIngressAndIngressPathByEnvId(Long envId);
 
+    void baseDelete(Long ingressId);
+
+    Long baseUpdateStatus(Long envId, String name, String status);
+
     List<String> baseListNameByServiceId(Long serviceId);
 
-    DevopsIngressDTO baseCheckByEnvAndName(Long envId, String name);
+    Boolean baseCheckName(Long envId, String name);
 
     Boolean baseCheckPath(Long envId, String domain, String path, Long id);
 
+    DevopsIngressDTO baseCheckByEnvAndName(Long envId, String name);
+
+    DevopsIngressDTO baseCreateIngress(DevopsIngressDTO devopsIngressDTO);
+
+    void baseCreatePath(DevopsIngressPathDTO devopsIngressPathDTO);
+
+    List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceName(Long envId, String serviceName);
+
+    List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceId(Long envId, Long serviceId);
+
+    List<DevopsIngressPathDTO> baseListPathByIngressId(Long ingressId);
+
+    void baseUpdateIngressPath(DevopsIngressPathDTO devopsIngressPathDTO);
+
+    void baseDeletePathByIngressId(Long ingressId);
+
     Boolean baseCheckByEnv(Long envId);
+
+    List<DevopsIngressDTO> baseList();
+
 }

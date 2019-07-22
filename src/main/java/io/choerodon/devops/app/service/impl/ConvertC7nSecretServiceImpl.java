@@ -4,13 +4,15 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsSecretRepository;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
+import io.choerodon.devops.app.service.DevopsSecretService;
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
+import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.models.V1Secret;
+
 
 /**
  * Created by n!Ck
@@ -20,13 +22,13 @@ import io.kubernetes.client.models.V1Secret;
  */
 public class ConvertC7nSecretServiceImpl extends ConvertK8sObjectService<V1Secret> {
 
-    private DevopsSecretRepository devopsSecretRepository;
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private DevopsSecretService devopsSecretService;
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertC7nSecretServiceImpl() {
-        this.devopsSecretRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsSecretRepository.class);
-        this.devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory()
-                .getBean(DevopsEnvFileResourceRepository.class);
+        this.devopsSecretService = ApplicationContextHelper.getSpringFactory().getBean(DevopsSecretService.class);
+        this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory()
+                .getBean(DevopsEnvFileResourceService.class);
     }
 
     @Override
@@ -51,20 +53,20 @@ public class ConvertC7nSecretServiceImpl extends ConvertK8sObjectService<V1Secre
     }
 
     @Override
-    public void checkIfExist(List<V1Secret> c7nSecrets, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete,
+    public void checkIfExist(List<V1Secret> c7nSecrets, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete,
                              Map<String, String> objectPath, V1Secret v1Secret) {
         String filePath = objectPath.get(TypeUtil.objToString(v1Secret.hashCode()));
         String secretName = v1Secret.getMetadata().getName();
-        DevopsSecretE devopsSecretE = devopsSecretRepository.baseQueryByEnvIdAndName(envId, secretName);
-        if (devopsSecretE != null) {
-            Long secretId = devopsSecretE.getId();
+        DevopsSecretDTO devopsSecretDTO = devopsSecretService.baseQueryByEnvIdAndName(envId, secretName);
+        if (devopsSecretDTO != null) {
+            Long secretId = devopsSecretDTO.getId();
             if (beforeSyncDelete.stream()
-                    .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType()
+                    .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType()
                             .equals(v1Secret.getKind()))
-                    .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(secretId))) {
-                DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                    .noneMatch(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceId().equals(secretId))) {
+                DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
                         .baseQueryByEnvIdAndResourceId(envId, secretId, v1Secret.getKind());
-                if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath()
+                if (devopsEnvFileResourceDTO != null && !devopsEnvFileResourceDTO.getFilePath()
                         .equals(objectPath.get(TypeUtil.objToString(v1Secret.hashCode())))) {
                     throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, secretName);
                 }

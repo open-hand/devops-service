@@ -23,12 +23,18 @@ public class DeployDetailServiceImpl implements DeployDetailService {
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper;
 
+
+    @Override
+    public List<DevopsEnvPodVO> getPods(Long instanceId) {
+        return null;
+    }
+
     @Override
     public List<DevopsEnvPodVO> baseQueryPods(Long instanceId) {
         return devopsEnvPodMapper.select(new DevopsEnvPodDTO(instanceId)).stream().map(pod -> {
-            DevopsEnvPodVO vo = new DevopsEnvPodVO();
-            BeanUtils.copyProperties(pod, vo);
-            return vo;
+            DevopsEnvPodVO devopsEnvPodVO = new DevopsEnvPodVO();
+            BeanUtils.copyProperties(pod, devopsEnvPodVO);
+            return devopsEnvPodVO;
         }).collect(Collectors.toList());
     }
 }

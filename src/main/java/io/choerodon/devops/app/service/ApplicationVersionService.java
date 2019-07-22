@@ -177,7 +177,5 @@ public interface ApplicationVersionService {
 
     String baseQueryValueByAppId(Long appId);
 
-    void baseUpdatePublishTime();
-
     ApplicationVersionDTO baseCreate(ApplicationVersionDTO applicationVersionDTO);
 }

@@ -773,6 +773,11 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         return applicationShareMapper.selectOne(applicationShareDTO);
     }
 
+    @Override
+    public int baseCountByAppId(Long appId) {
+        return applicationShareMapper.countByAppId(appId);
+    }
+
     public void baseCheckByShareIdAndVersion(Long shareId, Long versionId) {
         if (!applicationShareMapper.checkByShareIdAndVersion(shareId, versionId)) {
             throw new CommonException("error.version.notMatch");

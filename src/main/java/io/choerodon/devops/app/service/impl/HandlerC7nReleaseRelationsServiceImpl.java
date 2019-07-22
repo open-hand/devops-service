@@ -8,10 +8,12 @@ import java.util.stream.Collectors;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ApplicationDeployVO;
 import io.choerodon.devops.api.vo.ApplicationInstanceVO;
+import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.InstanceValueVO;
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -23,6 +25,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.models.V1Endpoints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 
 @Service
@@ -37,7 +40,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
-    private DeployMsgHandlerService deployMsgHandlerService;
+    private AgentMsgHandlerService agentMsgHandlerService;
     @Autowired
     private ApplicationVersionService applicationVersionService;
     @Autowired
@@ -187,17 +190,19 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                                         Long projectId, Long envId, String filePath, String type) {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        List<ApplicationE> applications = deployMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
+
+        List<ApplicationDTO> applications = agentMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
+
         if (applications.isEmpty()) {
             throw new GitOpsExplainException("app.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartName());
         }
         ApplicationVersionDTO applicationVersionDTO = null;
-        ApplicationE applicationE = null;
-        for (ApplicationE application : applications) {
+        ApplicationDTO applicationDTO = null;
+        for (ApplicationDTO application : applications) {
             applicationVersionDTO = applicationVersionService
                     .baseQueryByAppIdAndVersion(application.getId(), c7nHelmRelease.getSpec().getChartVersion());
             if (applicationVersionDTO != null) {
-                applicationE = application;
+                applicationDTO = application;
                 break;
             }
         }
@@ -211,7 +216,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         applicationDeployVO.setEnvironmentId(envId);
         applicationDeployVO.setType(type);
         applicationDeployVO.setValues(applicationInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
-        applicationDeployVO.setAppId(applicationE.getId());
+        applicationDeployVO.setAppId(applicationDTO.getId());
         applicationDeployVO.setAppVersionId(applicationVersionDTO.getId());
         applicationDeployVO.setInstanceName(c7nHelmRelease.getMetadata().getName());
         if (type.equals("update")) {

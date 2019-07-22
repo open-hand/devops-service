@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.valueobject;
 
-public class Command {
+public class CommandVO {
 
     private Long id;
     private String resourceType;

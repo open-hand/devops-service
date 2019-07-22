@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.gitops;
 
-import io.choerodon.devops.app.service.DeployMsgHandlerService;
+import io.choerodon.devops.app.service.AgentMsgHandlerService;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.HelmType;
 import io.choerodon.devops.infra.enums.InstanceStatus;
@@ -21,11 +21,11 @@ public class AgentMessageHandler extends AbstractAgentMsgHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentMessageHandler.class);
 
-    private DeployMsgHandlerService deployMsgHandlerService;
+    private AgentMsgHandlerService agentMsgHandlerService;
 
     @Autowired
-    public AgentMessageHandler(DeployMsgHandlerService deployMsgHandlerService) {
-        this.deployMsgHandlerService = deployMsgHandlerService;
+    public AgentMessageHandler(AgentMsgHandlerService agentMsgHandlerService) {
+        this.agentMsgHandlerService = agentMsgHandlerService;
     }
 
     @Override
@@ -40,17 +40,17 @@ public class AgentMessageHandler extends AbstractAgentMsgHandler {
         msg.setDispatch(false);
         switch (helmType) {
             case HELM_RELEASE_PRE_INSTALL:
-                deployMsgHandlerService.handlerPreInstall(
+                agentMsgHandlerService.handlerPreInstall(
                         msg.getKey(),
                         msg.getPayload(),
                         TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_INSTALL_RELEASE:
-                deployMsgHandlerService.handlerReleaseInstall(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.handlerReleaseInstall(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_RELEASE_UPGRADE:
-                deployMsgHandlerService.handlerReleaseUpgrade(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
-                deployMsgHandlerService.updateInstanceStatus(
+                agentMsgHandlerService.handlerReleaseUpgrade(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.updateInstanceStatus(
                         msg.getKey(),
                         KeyParseTool.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getClusterId()),
@@ -61,7 +61,7 @@ public class AgentMessageHandler extends AbstractAgentMsgHandler {
             case HELM_RELEASE_ROLLBACK:
                 break;
             case HELM_RELEASE_START:
-                deployMsgHandlerService.updateInstanceStatus(
+                agentMsgHandlerService.updateInstanceStatus(
                         msg.getKey(),
                         KeyParseTool.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getClusterId()),
@@ -70,7 +70,7 @@ public class AgentMessageHandler extends AbstractAgentMsgHandler {
                         "");
                 break;
             case HELM_RELEASE_STOP:
-                deployMsgHandlerService.updateInstanceStatus(
+                agentMsgHandlerService.updateInstanceStatus(
                         msg.getKey(),
                         KeyParseTool.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getClusterId()),
@@ -79,113 +79,113 @@ public class AgentMessageHandler extends AbstractAgentMsgHandler {
                         "");
                 break;
             case HELM_RELEASE_PRE_UPGRADE:
-                deployMsgHandlerService.helmReleasePreUpgrade(
+                agentMsgHandlerService.helmReleasePreUpgrade(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case NETWORK_SERVICE:
-                deployMsgHandlerService.handlerServiceCreateMessage(
+                agentMsgHandlerService.handlerServiceCreateMessage(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case NETWORK_INGRESS:
-                deployMsgHandlerService.handlerDomainCreateMessage(
+                agentMsgHandlerService.handlerDomainCreateMessage(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case NETWORK_INGRESS_DELETE:
                 break;
             case RESOURCE_UPDATE:
-                deployMsgHandlerService.resourceUpdate(
+                agentMsgHandlerService.resourceUpdate(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case RESOURCE_DELETE:
-                deployMsgHandlerService.resourceDelete(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.resourceDelete(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_RELEASE_HOOK_LOGS:
-                deployMsgHandlerService.helmReleaseHookLogs(
+                agentMsgHandlerService.helmReleaseHookLogs(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_RELEASE_DELETE_FAILED:
-                deployMsgHandlerService.helmReleaseDeleteFail(
+                agentMsgHandlerService.helmReleaseDeleteFail(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_RELEASE_INSTALL_FAILED:
-                deployMsgHandlerService.helmReleaseInstallFail(
+                agentMsgHandlerService.helmReleaseInstallFail(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_RELEASE_START_FAILED:
-                deployMsgHandlerService.helmReleaseStartFail(
+                agentMsgHandlerService.helmReleaseStartFail(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_RELEASE_STOP_FAILED:
-                deployMsgHandlerService.helmReleaeStopFail(
+                agentMsgHandlerService.helmReleaeStopFail(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_RELEASE_ROLLBACK_FAILED:
-                deployMsgHandlerService.helmReleaseRollBackFail(msg.getKey(), msg.getPayload());
+                agentMsgHandlerService.helmReleaseRollBackFail(msg.getKey(), msg.getPayload());
                 break;
             case HELM_RELEASE_UPGRADE_FAILED:
-                deployMsgHandlerService.helmReleaseUpgradeFail(
+                agentMsgHandlerService.helmReleaseUpgradeFail(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case COMMAND_NOT_SEND:
-                deployMsgHandlerService.commandNotSend(msg.getCommandId(), msg.getPayload());
+                agentMsgHandlerService.commandNotSend(msg.getCommandId(), msg.getPayload());
                 break;
             case RESOURCE_SYNC:
-                deployMsgHandlerService.resourceSync(
+                agentMsgHandlerService.resourceSync(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case JOB_EVENT:
-                deployMsgHandlerService.jobEvent(msg.getPayload());
+                agentMsgHandlerService.jobEvent(msg.getPayload());
                 break;
             case RELEASE_POD_EVENT:
-                deployMsgHandlerService.releasePodEvent(
+                agentMsgHandlerService.releasePodEvent(
                         msg.getPayload());
                 break;
             case GIT_OPS_SYNC_EVENT:
-                deployMsgHandlerService.gitOpsSyncEvent(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.gitOpsSyncEvent(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case STATUS_SYNC_EVENT:
-                deployMsgHandlerService.gitOpsCommandSyncEvent(msg.getKey(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.gitOpsCommandSyncEvent(msg.getKey(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case CERT_ISSUED:
-                deployMsgHandlerService.certIssued(
+                agentMsgHandlerService.certIssued(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case CERT_FAILED:
-                deployMsgHandlerService.certFailed(
+                agentMsgHandlerService.certFailed(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case STATUS_SYNC:
-                deployMsgHandlerService.gitOpsCommandSyncEventResult(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.gitOpsCommandSyncEventResult(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case NAMESPACE_UPDATE:
-                deployMsgHandlerService.updateNamespaces(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.updateNamespaces(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case UPGRADE_CLUSTER:
-                deployMsgHandlerService.upgradeCluster(msg.getKey(), msg.getPayload());
+                agentMsgHandlerService.upgradeCluster(msg.getKey(), msg.getPayload());
                 break;
             case TEST_POD_UPDATE:
-                deployMsgHandlerService.testPodUpdate(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.testPodUpdate(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case TEST_JOB_LOG:
-                deployMsgHandlerService.testJobLog(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.testJobLog(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case TEST_STATUS_RESPONSE:
-                deployMsgHandlerService.getTestAppStatus(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.getTestAppStatus(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case CERT_MANAGER_INFO:
-                deployMsgHandlerService.getCertManagerInfo(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.getCertManagerInfo(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case NODE_SYNC:
-                deployMsgHandlerService.handleNodeSync(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.handleNodeSync(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case CONFIG_UPDATE:
-                deployMsgHandlerService.handleConfigUpdate(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.handleConfigUpdate(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case OPERATE_DOCKER_REGISTRY_SECRET_FAILED:
-                deployMsgHandlerService.operateDockerRegistrySecretResp(msg.getKey(), "failed", TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.operateDockerRegistrySecretResp(msg.getKey(), "failed", TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case OPERATE_DOCKER_REGISTRY_SECRET:
-                deployMsgHandlerService.operateDockerRegistrySecretResp(msg.getKey(), "success", TypeUtil.objToLong(msg.getClusterId()));
+                agentMsgHandlerService.operateDockerRegistrySecretResp(msg.getKey(), "success", TypeUtil.objToLong(msg.getClusterId()));
                 break;
             default:
                 break;

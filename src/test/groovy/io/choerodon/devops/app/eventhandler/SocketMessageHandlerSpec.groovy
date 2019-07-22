@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.eventhandler
 
-import io.choerodon.devops.app.service.DeployMsgHandlerService
+import io.choerodon.devops.app.service.AgentMsgHandlerService
 import io.choerodon.devops.infra.common.util.enums.HelmType
 import io.choerodon.devops.infra.gitops.AgentMessageHandler
 import io.choerodon.websocket.Msg
@@ -29,7 +29,7 @@ class SocketMessageHandlerSpec extends Specification {
     @Qualifier("mockSocketMsgDispatcher")
     private SocketMsgDispatcher socketMsgDispatcher
 
-    private DeployMsgHandlerService deployMsgHandlerService = PowerMockito.mock(DeployMsgHandlerService)
+    private AgentMsgHandlerService deployMsgHandlerService = PowerMockito.mock(AgentMsgHandlerService)
 
     private AgentMessageHandler socketMessageHandler = new AgentMessageHandler(deployMsgHandlerService)
 

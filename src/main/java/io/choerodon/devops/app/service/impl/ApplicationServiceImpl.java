@@ -16,29 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.convertor.ConvertHelper;
@@ -108,6 +86,26 @@ import io.choerodon.devops.infra.mapper.ApplicationUserPermissionMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.tool.UUIDTool;
+import io.kubernetes.client.JSON;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 /**
  * Created by younger on 2018/3/28.
@@ -276,11 +274,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(appId);
         if (applicationDTO.getGitlabProjectId() != null) {
             Integer gitlabProjectId = applicationDTO.getGitlabProjectId();
-            GitlabProjectDTO gitlabProjectDO = gitLabService.getProjectById(gitlabProjectId);
-            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);
+            if (gitlabProjectDTO != null && gitlabProjectDTO.getId() != null) {
                 UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
                 Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
-                gitLabService.deleteProject(gitlabProjectId, gitlabUserId);
+                gitlabServiceClientOperator.deleteProjectById(gitlabProjectId, gitlabUserId);
             }
         }
         //删除iam应用

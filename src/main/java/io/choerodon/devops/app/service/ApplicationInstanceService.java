@@ -9,6 +9,11 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.domain.application.valueobject.InstanceValueVO;
 import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
+<<<<<<< HEAD
+=======
+import io.choerodon.devops.infra.dto.ApplicationInstanceOverViewDTO;
+import io.choerodon.devops.infra.dto.DeployDTO;
+>>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.infra.enums.ResourceType;
 
 /**
@@ -316,5 +321,39 @@ public interface ApplicationInstanceService {
 
     ApplicationInstanceDTO baseQueryByCodeAndEnv(String code, Long envId);
 
+    ApplicationInstanceDTO baseCreate(ApplicationInstanceDTO applicationInstanceDTO);
+
+    List<ApplicationInstanceDTO> baseListByOptions(Long projectId, Long appId, Long appVersionId, Long envId);
+
+    List<ApplicationInstanceDTO> baseListByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+
+    int baseCountByOptions(Long envId, Long appId, String appInstanceCode);
+
+    String baseQueryValueByEnvIdAndAppId(Long envId, Long appId);
+
+    void baseUpdate(ApplicationInstanceDTO applicationInstanceDTO);
+
+    List<ApplicationInstanceOverViewDTO> baseListApplicationInstanceOverView(Long projectId, Long appId, List<Long> envIds);
+
     String baseQueryValueByInstanceId(Long instanceId);
+
+    void baseDelete(Long id);
+
+    List<DeployDTO> baseListDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
+
+    List<DeployDTO> baselistDeployFrequency(Long projectId, Long[] envIds, Long appId,
+                                            Date startTime, Date endTime);
+
+    PageInfo<DeployDTO> basePageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId,
+                                                     Date startTime, Date endTime);
+
+    PageInfo<DeployDTO> basePageDeployTimeTable(Long projectId, PageRequest pageRequest, Long envId, Long[] appIds,
+                                                Date startTime, Date endTime);
+
+    void baseCheckName(String instanceName, Long envId);
+
+    String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
+
+    void baseDeleteInstanceRelInfo(Long instanceId);
+
 }

@@ -6,23 +6,25 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.domain.application.repository.CertificationRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
+import io.choerodon.devops.app.service.CertificationService;
+import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.dto.CertificationDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.TypeUtil;
+
 
 public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<C7nCertification> {
 
-    private CertificationRepository certificationRepository;
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private CertificationService certificationService;
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertC7nCertificationServiceImpl() {
-        this.certificationRepository = ApplicationContextHelper.getSpringFactory().getBean(CertificationRepository.class);
-        this.devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
+        this.certificationService = ApplicationContextHelper.getSpringFactory().getBean(CertificationService.class);
+        this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }
 
     @Override
@@ -37,21 +39,21 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
 
     @Override
     public void checkIfExist(List<C7nCertification> c7nCertifications, Long envId,
-                             List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, C7nCertification c7nCertification) {
+                             List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, C7nCertification c7nCertification) {
         String filePath = objectPath.get(TypeUtil.objToString(c7nCertification.hashCode()));
         String certName = c7nCertification.getMetadata().getName();
-        CertificationE certificationE = certificationRepository.baseQueryByEnvAndName(envId, certName);
-        if (certificationE != null) {
-            Long certId = certificationE.getId();
+        CertificationDTO certificationDTO = certificationService.baseQueryByEnvAndName(envId, certName);
+        if (certificationDTO != null) {
+            Long certId = certificationDTO.getId();
             if (beforeSyncDelete.stream()
-                    .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType()
+                    .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType()
                             .equals(c7nCertification.getKind()))
                     .noneMatch(devopsEnvFileResourceE ->
                             devopsEnvFileResourceE.getResourceId()
                                     .equals(certId))) {
-                DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                        .baseQueryByEnvIdAndResourceId(envId, certificationE.getId(), c7nCertification.getKind());
-                if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath()
+                DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                        .baseQueryByEnvIdAndResourceId(envId, certificationDTO.getId(), c7nCertification.getKind());
+                if (devopsEnvFileResourceDTO != null && !devopsEnvFileResourceDTO.getFilePath()
                         .equals(objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())))) {
                     throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + certName, filePath);
                 }

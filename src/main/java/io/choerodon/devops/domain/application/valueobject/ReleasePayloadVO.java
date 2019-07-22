@@ -1,7 +1,7 @@
 package io.choerodon.devops.domain.application.valueobject;
 
 
-public class ReleasePayload {
+public class ReleasePayloadVO {
 
     private String name;
     private Long revision;

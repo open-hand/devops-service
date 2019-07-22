@@ -3,38 +3,39 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
+import io.choerodon.devops.app.service.DevopsIngressService;
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
+import io.choerodon.devops.infra.dto.DevopsIngressDTO;
+import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.models.V1beta1HTTPIngressPath;
 import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.models.V1beta1IngressRule;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.GitOpsObjectError;
 
 public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1beta1Ingress> {
 
-    private DevopsIngressRepository devopsIngressRepository;
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private DevopsIngressService devopsIngressService;
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertV1beta1IngressServiceImpl() {
-        this.devopsIngressRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsIngressRepository.class);
-        this.devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
+        this.devopsIngressService = ApplicationContextHelper.getSpringFactory().getBean(DevopsIngressService.class);
+        this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }
 
     @Override
-    public void checkIfExist(List<V1beta1Ingress> v1beta1Ingresses, Long envId, List<DevopsEnvFileResourceVO> beforeSyncDelete, Map<String, String> objectPath, V1beta1Ingress v1beta1Ingress) {
+    public void checkIfExist(List<V1beta1Ingress> v1beta1Ingresses, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, V1beta1Ingress v1beta1Ingress) {
         String filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
-        DevopsIngressE devopsIngressE = devopsIngressRepository.baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
-        if (devopsIngressE != null
+        DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
+        if (devopsIngressDTO != null
                 && beforeSyncDelete.stream()
-                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(v1beta1Ingress.getKind()))
-                .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsIngressE.getId()))) {
-            DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository.baseQueryByEnvIdAndResourceId(envId, devopsIngressE.getId(), v1beta1Ingress.getKind());
-            if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())))) {
+                .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType().equals(v1beta1Ingress.getKind()))
+                .noneMatch(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceId().equals(devopsIngressDTO.getId()))) {
+            DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(envId, devopsIngressDTO.getId(), v1beta1Ingress.getKind());
+            if (devopsEnvFileResourceDTO != null && !devopsEnvFileResourceDTO.getFilePath().equals(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())))) {
                 throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1beta1Ingress.getMetadata().getName());
             }
         }

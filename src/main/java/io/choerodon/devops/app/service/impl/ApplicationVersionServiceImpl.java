@@ -575,5 +575,4 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         return applicationVersionMapper.queryValueByAppId(appId);
     }
 
-
 }
