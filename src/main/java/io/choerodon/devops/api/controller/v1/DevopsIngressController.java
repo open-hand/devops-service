@@ -89,7 +89,7 @@ public class DevopsIngressController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询域名")
     @GetMapping(value = "/{id}")
-    public ResponseEntity<DevopsIngressVO> queryDomainId(
+    public ResponseEntity<DevopsIngressVO> queryIngress(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
@@ -133,7 +133,7 @@ public class DevopsIngressController {
             @ApiParam(value = "域名名称", required = true)
             @RequestParam String name,
             @ApiParam(value = "域名名称", required = true)
-            @RequestParam Long envId) {
+            @RequestParam(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsIngressService.checkName(envId, name))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.ingress.check"));
@@ -156,7 +156,7 @@ public class DevopsIngressController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @RequestParam Long envId,
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "域名", required = true)
             @RequestParam String domain,
             @ApiParam(value = "路径", required = true)

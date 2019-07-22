@@ -79,12 +79,12 @@ public class OrgCertificationController {
      */
     @Permission(type= ResourceType.ORGANIZATION,roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询单个证书信息")
-    @GetMapping("/{certId}")
+    @GetMapping("/{cert_id}")
     public ResponseEntity<OrgCertificationDTO> query(
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable Long certId) {
+            @PathVariable(value = "cert_id") Long certId) {
         return Optional.ofNullable(devopsOrgCertificationService.getCert(certId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cert.query"));
@@ -141,12 +141,12 @@ public class OrgCertificationController {
     @Permission(type= ResourceType.ORGANIZATION,
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询已有权限的项目列表")
-    @GetMapping("/list_cert_projects/{certId}")
+    @GetMapping("/list_cert_projects/{cert_id}")
     public ResponseEntity<List<ProjectReqVO>> listCertProjects(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable Long certId) {
+            @PathVariable(value = "cert_id") Long certId) {
         return Optional.ofNullable(devopsOrgCertificationService.listCertProjects(certId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
@@ -187,12 +187,12 @@ public class OrgCertificationController {
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "删除证书")
     @CustomPageRequest
-    @DeleteMapping("/{certId}")
+    @DeleteMapping("/{cert_id}")
     public ResponseEntity<String> deleteOrgCert(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable Long certId) {
+            @PathVariable(value = "cert_Id") Long certId) {
         devopsOrgCertificationService.deleteCert(certId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

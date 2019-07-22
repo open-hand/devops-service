@@ -279,7 +279,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public PageInfo<DevopsGitlabPipelineVO> pagePipelines(Long appId, String branch, PageRequest pageRequest, Date startTime, Date endTime) {
+    public PageInfo<DevopsGitlabPipelineVO> pageByOptions(Long appId, String branch, PageRequest pageRequest, Date startTime, Date endTime) {
         if (appId == null) {
             return new PageInfo<>();
         }

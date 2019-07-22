@@ -360,7 +360,7 @@ public class ApplicationShareController {
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody List<AppMarketDownloadDTO> appMarkets,
             @ApiParam(value = "导出包名字")
-            @RequestParam(value = "fileName", required = false) String fileName,
+            @RequestParam(value = "file_name", required = false) String fileName,
             HttpServletResponse res) {
         applicationShareService.export(appMarkets, fileName);
         FileUtil.downloadFile(res, fileName + ".zip");

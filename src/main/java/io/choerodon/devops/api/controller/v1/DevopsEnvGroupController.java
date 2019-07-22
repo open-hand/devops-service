@@ -80,7 +80,7 @@ public class DevopsEnvGroupController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境组")
-    @GetMapping("/listByProject")
+    @GetMapping("/list_by_project")
     public ResponseEntity<List<DevopsEnvGroupVO>> listByProject(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
@@ -118,12 +118,12 @@ public class DevopsEnvGroupController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境组删除")
-    @DeleteMapping(value = "/{groupId}")
+    @DeleteMapping(value = "/{group_id}")
     public ResponseEntity delete(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组ID", required = true)
-            @PathVariable Long groupId) {
+            @PathVariable(value = "group_id") Long groupId) {
         devopsEnvGroupService.delete(groupId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

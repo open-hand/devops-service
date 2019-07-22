@@ -97,8 +97,8 @@ public class CertificationController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询")
     @CustomPageRequest
-    @PostMapping("/list_by_options")
-    public ResponseEntity<PageInfo<CertificationVO>> listByOptions(
+    @PostMapping("/page_by_options")
+    public ResponseEntity<PageInfo<CertificationVO>> pageByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID")

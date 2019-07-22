@@ -52,7 +52,7 @@ public class DevopsServiceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID", required = true)
-            @RequestParam Long envId,
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "网络名", required = true)
             @RequestParam String name) {
         return Optional.ofNullable(devopsServiceService.checkName(envId, name))
@@ -185,7 +185,7 @@ public class DevopsServiceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境Id", required = true)
-            @RequestParam Long envId,
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "网络名", required = true)
             @RequestParam String name) {
         return Optional.ofNullable(devopsServiceService.queryByName(envId,name))
@@ -207,7 +207,7 @@ public class DevopsServiceController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境总览分页查询网络")
     @CustomPageRequest
-    @PostMapping(value = "/{env_id}/page_by_nev")
+    @PostMapping(value = "/{env_id}/page_by_env")
     public ResponseEntity<PageInfo<DevopsServiceVO>> pageByEnv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,

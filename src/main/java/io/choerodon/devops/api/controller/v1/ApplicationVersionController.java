@@ -64,7 +64,7 @@ public class ApplicationVersionController {
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "应用Id，选填的用于进行筛选记录的字段")
-            @RequestParam(required = false) Long appId,
+            @RequestParam(value = "app_id", required = false) Long appId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(applicationVersionService.pageApplicationVersionInApp(
@@ -289,9 +289,9 @@ public class ApplicationVersionController {
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "持续集成Id", required = true)
-            @RequestParam Long pipelineId,
+            @RequestParam(value = "pipeline_id") Long pipelineId,
             @ApiParam(value = "应用Id", required = true)
-            @RequestParam Long appId,
+            @RequestParam(value = "app_id") Long appId,
             @ApiParam(value = "分支", required = true)
             @RequestParam String branch) {
         return Optional.ofNullable(applicationVersionService.queryByPipelineId(pipelineId, branch, appId))
@@ -338,7 +338,7 @@ public class ApplicationVersionController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = true)
-            @RequestParam Long appId,
+            @RequestParam(value = "app_id") Long appId,
             @ApiParam(value = "版本号", required = true)
             @RequestParam String version) {
         return Optional.ofNullable(applicationVersionService.queryByAppAndVersion(appId, version))

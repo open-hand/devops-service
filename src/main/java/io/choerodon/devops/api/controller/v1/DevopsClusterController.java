@@ -23,7 +23,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @RequestMapping(value = "/v1/organizations/{organization_id}/clusters")
-public class DevopsClusterController {
+public class    DevopsClusterController {
     private static final String ERROR_CLUSTER_QUERY = "error.cluster.query";
 
     @Autowired
@@ -77,12 +77,12 @@ public class DevopsClusterController {
      */
     @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询单个集群信息")
-    @GetMapping("/{clusterId}")
+    @GetMapping("/{cluster_id}")
     public ResponseEntity<DevopsClusterRepVO> query(
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable Long clusterId) {
+            @PathVariable(value = "cluster_id") Long clusterId) {
         return Optional.ofNullable(devopsClusterService.query(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
@@ -175,12 +175,12 @@ public class DevopsClusterController {
     @Permission(type= ResourceType.ORGANIZATION,
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询集群下已有权限的项目列表")
-    @GetMapping("/list_cluster_projects/{clusterId}")
+    @GetMapping("/list_cluster_projects/{cluster_id}")
     public ResponseEntity<List<ProjectReqVO>> listClusterProjects(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable Long clusterId) {
+            @PathVariable(value = "cluster_id") Long clusterId) {
         return Optional.ofNullable(devopsClusterService.listClusterProjects(organizationId, clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
@@ -198,12 +198,12 @@ public class DevopsClusterController {
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询shell脚本")
     @CustomPageRequest
-    @GetMapping("/query_shell/{clusterId}")
+    @GetMapping("/query_shell/{cluster_id}")
     public ResponseEntity<String> queryShell(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id", required = true)
-            @PathVariable Long clusterId) {
+            @PathVariable(value = "cluster_id") Long clusterId) {
         return Optional.ofNullable(devopsClusterService.queryShell(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
@@ -245,12 +245,12 @@ public class DevopsClusterController {
     @Permission(type= ResourceType.ORGANIZATION,
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "删除集群")
-    @DeleteMapping("/{clusterId}")
+    @DeleteMapping("/{cluster_id}")
     public void deleteCluster(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable Long clusterId) {
+            @PathVariable(value = "cluster_id") Long clusterId) {
         devopsClusterService.deleteCluster(clusterId);
     }
 
@@ -264,12 +264,12 @@ public class DevopsClusterController {
     @Permission(type= ResourceType.ORGANIZATION,
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询集群下是否关联已连接环境")
-    @GetMapping("/{clusterId}/check_connect_envs")
+    @GetMapping("/{cluster_id}/check_connect_envs")
     public ResponseEntity<Boolean> checkConnectEnvs(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable Long clusterId) {
+            @PathVariable(value = "cluster_id") Long clusterId) {
         return Optional.ofNullable(devopsClusterService.checkConnectEnvs(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.connect.env.query"));

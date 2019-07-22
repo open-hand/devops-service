@@ -5,12 +5,12 @@ package io.choerodon.devops.api.vo;
  * Date:  16:05 2019/5/8
  * Description:
  */
-public class SonarInfoDTO {
+public class SonarInfoVO {
     private String userName;
     private String password;
     private String url;
 
-    public SonarInfoDTO(String userName, String password, String url) {
+    public SonarInfoVO(String userName, String password, String url) {
         this.userName = userName;
         this.password = password;
         this.url = url;

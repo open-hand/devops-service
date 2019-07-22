@@ -102,8 +102,8 @@ public class DevopsGitlabPipelineController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页获取pipeline")
     @CustomPageRequest
-    @GetMapping(value = "/page")
-    public ResponseEntity<PageInfo<DevopsGitlabPipelineVO>> pagePipeline(
+    @GetMapping(value = "/page_by_options")
+    public ResponseEntity<PageInfo<DevopsGitlabPipelineVO>> pageByOptions(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -116,7 +116,7 @@ public class DevopsGitlabPipelineController {
             @RequestParam(value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
             @RequestParam(value = "end_time") Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.pagePipelines(appId, branch, pageRequest, startTime, endTime))
+        return Optional.ofNullable(devopsGitlabPipelineService.pageByOptions(appId, branch, pageRequest, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
     }

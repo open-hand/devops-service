@@ -168,7 +168,7 @@ public class DevopsDeployValueController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据应用Id和环境Id获取配置")
-    @GetMapping("/listByEnvAndApp")
+    @GetMapping("/list_by_env_and_app")
     public ResponseEntity<List<DevopsDeployValueVO>> listByEnvAndApp(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,

@@ -76,7 +76,7 @@ public class DevopsConfigMapController {
      * 校验配置映射名唯一性
      *
      * @param projectId     项目id
-     * @param configMapName 配置映射名
+     * @param name 配置映射名
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
@@ -88,8 +88,8 @@ public class DevopsConfigMapController {
             @ApiParam(value = "环境ID", required = true)
             @RequestParam Long envId,
             @ApiParam(value = "实例ID", required = true)
-            @RequestParam String configMapName) {
-        devopsConfigMapService.checkName(envId, configMapName);
+            @RequestParam String name) {
+        devopsConfigMapService.checkName(envId, name);
     }
 
 

@@ -17,6 +17,7 @@ import io.choerodon.devops.api.vo.PipelineReqDTO;
 import io.choerodon.devops.api.vo.PipelineUserRecordRelDTO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.DevopsPipelineDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -24,7 +25,7 @@ import io.choerodon.devops.infra.dto.DevopsPipelineDTO;
  * Description:
  */
 public interface PipelineService {
-    PageInfo<PipelineVO> listByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params);
+    PageInfo<PipelineVO> pageByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params);
 
     PageInfo<PipelineRecordVO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed);
 

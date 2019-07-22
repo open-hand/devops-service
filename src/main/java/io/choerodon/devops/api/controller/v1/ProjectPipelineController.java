@@ -62,14 +62,14 @@ public class ProjectPipelineController {
      */
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "Cancel jobs in a pipeline")
-    @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipelineId}/cancel")
+    @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipeline_id}/cancel")
     public ResponseEntity<Boolean> cancel(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable Long gitlabProjectId,
             @ApiParam(value = "流水线ID", required = true)
-            @PathVariable Long pipelineId) {
+            @PathVariable(value = "pipeline_id") Long pipelineId) {
         return Optional.ofNullable(projectPipelineService.cancel(gitlabProjectId, pipelineId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.cancel"));

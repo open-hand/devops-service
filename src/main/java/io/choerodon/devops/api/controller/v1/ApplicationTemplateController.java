@@ -84,12 +84,12 @@ public class ApplicationTemplateController {
      */
     @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下删除应用模板")
-    @DeleteMapping(value = "/{appTemplateId}")
+    @DeleteMapping(value = "/{app_template_id}")
     public ResponseEntity delete(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
-            @PathVariable Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         applicationTemplateService.delete(appTemplateId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -103,12 +103,12 @@ public class ApplicationTemplateController {
      */
     @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR, InitRoleCode.ORGANIZATION_MEMBER})
     @ApiOperation(value = "组织下查询单个应用模板")
-    @GetMapping(value = "/{appTemplateId}")
+    @GetMapping(value = "/{app_template_id}")
     public ResponseEntity<ApplicationTemplateRespVO> queryByAppTemplateId(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
-            @PathVariable Long appTemplateId) {
+            @PathVariable(value = "app_template_id") Long appTemplateId) {
         return Optional.ofNullable(applicationTemplateService.queryByTemplateId(appTemplateId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_GET));

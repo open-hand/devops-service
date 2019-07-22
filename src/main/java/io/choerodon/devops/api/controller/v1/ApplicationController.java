@@ -104,12 +104,12 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询单个应用信息")
-    @GetMapping("/{applicationId}")
+    @GetMapping("/{application_id}")
     public ResponseEntity<ApplicationRepVO> query(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable Long applicationId) {
+            @PathVariable(value = "application_id") Long applicationId) {
         return Optional.ofNullable(applicationService.query(projectId, applicationId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.query"));
@@ -145,12 +145,12 @@ public class ApplicationController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下启用停用应用信息")
-    @PutMapping("/{applicationId}")
+    @PutMapping("/{application_id}")
     public ResponseEntity<Boolean> updateActive(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable Long applicationId,
+            @PathVariable(value = "application_id") Long applicationId,
             @ApiParam(value = "启用停用", required = true)
             @RequestParam Boolean active) {
         return Optional.ofNullable(applicationService.updateActive(applicationId, active))
@@ -167,12 +167,12 @@ public class ApplicationController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除创建失败应用")
-    @DeleteMapping("/{applicationId}")
+    @DeleteMapping("/{application_id}")
     public ResponseEntity delete(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable Long applicationId) {
+            @PathVariable(value = "application_id") Long applicationId) {
         applicationService.delete(projectId, applicationId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
@@ -420,7 +420,7 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的应用")
     @CustomPageRequest
-    @PostMapping(value = "/page_unpublish")
+    @PostMapping(value = "/page_unPublish")
     public ResponseEntity<PageInfo<ApplicationReqVO>> pageByActiveAndPubAndVersion(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,

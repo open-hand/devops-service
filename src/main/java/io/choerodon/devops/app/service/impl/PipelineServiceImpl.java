@@ -123,7 +123,7 @@ public class PipelineServiceImpl implements PipelineService {
 
 
     @Override
-    public PageInfo<PipelineVO> listByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params) {
+    public PageInfo<PipelineVO> pageByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params) {
         ProjectVO projectE = iamRepository.queryIamProject(projectId);
         Map<String, Object> classifyParam = new HashMap<>();
         classifyParam.put("creator", creator);

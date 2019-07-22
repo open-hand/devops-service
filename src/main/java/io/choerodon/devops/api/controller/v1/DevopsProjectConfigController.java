@@ -120,7 +120,7 @@ public class DevopsProjectConfigController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下分页查询配置")
     @CustomPageRequest
-    @PostMapping("/list_by_options")
+    @PostMapping("/page_by_options")
     public ResponseEntity<PageInfo<DevopsProjectConfigVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,

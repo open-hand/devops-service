@@ -278,7 +278,7 @@ public class DevopsGitController {
             @ApiParam(value = "应用id", required = true)
             @PathVariable(value = "application_id") Long applicationId,
             @ApiParam(value = "分支名", required = true)
-            @RequestParam(value = "branchName") String branchName) {
+            @RequestParam(value = "branch_name") String branchName) {
         return Optional.ofNullable(devopsGitService.queryBranch(projectId, applicationId, branchName))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.branch.get"));

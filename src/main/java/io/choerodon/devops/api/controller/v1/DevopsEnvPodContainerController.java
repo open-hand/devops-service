@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Description:
  */
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/app_pod/{podId}/containers")
+@RequestMapping(value = "/v1/projects/{project_id}/app_pod/{pod_id}/containers")
 public class DevopsEnvPodContainerController {
     @Autowired
     private DevopsEnvPodContainerService containerService;
@@ -47,7 +47,7 @@ public class DevopsEnvPodContainerController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pod ID", required = true)
-            @PathVariable Long podId) {
+            @PathVariable(value = "pod_id") Long podId) {
         return Optional.ofNullable(containerService.logByPodId(podId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.pod.get"));
@@ -69,7 +69,7 @@ public class DevopsEnvPodContainerController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pod ID", required = true)
-            @PathVariable Long podId) {
+            @PathVariable(value = "pod_id") Long podId) {
         return Optional.ofNullable(containerService.logByPodId(podId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.shell.get"));

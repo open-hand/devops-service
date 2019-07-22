@@ -103,12 +103,12 @@ public class DevopsCustomizeResourceController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "其他K8S资源分页查询")
     @CustomPageRequest
-    @PostMapping(value = "/{envId}/pageByEnv")
+    @PostMapping(value = "/{env_id}/page_by_env")
     public ResponseEntity<PageInfo<DevopsCustomizeResourceVO>> pageByEnv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "envId") Long envId,
+            @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
