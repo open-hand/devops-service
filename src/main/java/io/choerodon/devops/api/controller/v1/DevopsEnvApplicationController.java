@@ -4,10 +4,8 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.ApplicationRepDTO;
-import io.choerodon.devops.api.dto.DevopsEnvApplicationDTO;
-import io.choerodon.devops.api.dto.DevopsEnvLabelDTO;
-import io.choerodon.devops.api.dto.DevopsEnvPortDTO;
+import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.validator.EnvironmentApplicationValidator;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -28,21 +26,26 @@ import java.util.Optional;
 public class DevopsEnvApplicationController {
 
     @Autowired
-    DevopsEnvApplicationService devopsEnvApplicationService;
+    private DevopsEnvApplicationService devopsEnvApplicationService;
+
+    @Autowired
+    private EnvironmentApplicationValidator validator;
 
     /**
      * 创建环境下的应用关联
      *
-     * @param devopsEnvApplicationDTO 应用信息
+     * @param devopsEnvApplicationCreationDTO 环境和应用的关联关系
      * @return ApplicationRepDTO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建环境下的应用关联")
-    @PostMapping
-    public ResponseEntity<DevopsEnvApplicationDTO> create(
+    @PostMapping("/batch_create")
+    public ResponseEntity<List<DevopsEnvApplicationDTO>> batch_create(
             @ApiParam(value = "关联信息", required = true)
-            @RequestBody DevopsEnvApplicationDTO devopsEnvApplicationDTO) {
-        return Optional.ofNullable(devopsEnvApplicationService.create(devopsEnvApplicationDTO))
+            @RequestBody DevopsEnvApplicationCreationDTO devopsEnvApplicationCreationDTO) {
+        validator.checkEnvIdExist(devopsEnvApplicationCreationDTO.getEnvId());
+        validator.checkAppIdsExist(devopsEnvApplicationCreationDTO.getAppIds());
+        return Optional.ofNullable(devopsEnvApplicationService.batchCreate(devopsEnvApplicationCreationDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.app.create"));
     }
@@ -53,7 +56,7 @@ public class DevopsEnvApplicationController {
      * @param envId 环境id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询环境下关联的所有应用")
     @GetMapping
     public ResponseEntity<List<ApplicationRepDTO>> queryAppByEnvId(
@@ -71,7 +74,7 @@ public class DevopsEnvApplicationController {
      * @param appId 应用id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询应用在环境下的所有labels")
     @GetMapping("/label")
     public ResponseEntity<List<DevopsEnvLabelDTO>> queryLabelByAppEnvId(
@@ -92,7 +95,7 @@ public class DevopsEnvApplicationController {
      * @param appId 应用id
      * @return List
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询应用在环境下的所有port")
     @GetMapping("/port")
     public ResponseEntity<List<DevopsEnvPortDTO>> queryPortByAppEnvId(
