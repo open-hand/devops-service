@@ -6,7 +6,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper;
@@ -15,8 +14,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class DevopsEnvFileResourceServiceImpl implements DevopsEnvFileResourceService {
 
-    @Autowired
-    private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper;
 
@@ -28,7 +25,7 @@ public class DevopsEnvFileResourceServiceImpl implements DevopsEnvFileResourceSe
         if (devopsEnvFileResourceDTO != null) {
             devopsEnvFileResourceDTO.setFilePath(objectPath.get(
                     TypeUtil.objToString(i)));
-            devopsEnvFileResourceService.baseUpdate(devopsEnvFileResourceDTO);
+            baseUpdate(devopsEnvFileResourceDTO);
         } else {
             devopsEnvFileResourceDTO = new DevopsEnvFileResourceDTO();
             devopsEnvFileResourceDTO.setEnvId(envId);
@@ -36,7 +33,7 @@ public class DevopsEnvFileResourceServiceImpl implements DevopsEnvFileResourceSe
                     TypeUtil.objToString(i)));
             devopsEnvFileResourceDTO.setResourceId(id);
             devopsEnvFileResourceDTO.setResourceType(kind);
-            devopsEnvFileResourceService.baseCreate(devopsEnvFileResourceDTO);
+            baseCreate(devopsEnvFileResourceDTO);
         }
     }
 

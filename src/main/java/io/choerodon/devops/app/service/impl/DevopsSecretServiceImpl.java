@@ -364,6 +364,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         return devopsSecretMapper.selectById(secretId);
     }
 
+    @Override
     public DevopsSecretDTO baseQueryByEnvIdAndName(Long envId, String name) {
         DevopsSecretDTO devopsSecretDTO = new DevopsSecretDTO();
         devopsSecretDTO.setEnvId(envId);

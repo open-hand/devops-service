@@ -9,23 +9,19 @@ import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.SecretReqDTO;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
+import io.choerodon.devops.api.vo.SecretReqDTO;
+import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
+import io.choerodon.devops.app.service.DevopsEnvCommandService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsSecretService;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsSecretE;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsSecretRepository;
 import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
+import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
+import io.choerodon.devops.infra.dto.DevopsSecretDTO;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.ObjectType;
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1Secret;
 import org.slf4j.Logger;
@@ -51,24 +47,13 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
     private static final String SECRET = "Secret";
     private static final String GIT_SUFFIX = "/.git";
 
-    private final DevopsSecretRepository devopsSecretRepository;
-    private final DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
-    private final DevopsEnvCommandRepository devopsEnvCommandRepository;
-    private final DevopsSecretService devopsSecretService;
-    private final DevopsEnvFileResourceService devopsEnvFileResourceService;
-
     @Autowired
-    public HandlerC7nSecretServiceImpl(DevopsSecretRepository devopsSecretRepository,
-                                       DevopsEnvFileResourceRepository devopsEnvFileResourceRepository,
-                                       DevopsEnvCommandRepository devopsEnvCommandRepository,
-                                       DevopsSecretService devopsSecretService,
-                                       DevopsEnvFileResourceService devopsEnvFileResourceService) {
-        this.devopsSecretRepository = devopsSecretRepository;
-        this.devopsEnvFileResourceRepository = devopsEnvFileResourceRepository;
-        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
-        this.devopsSecretService = devopsSecretService;
-        this.devopsEnvFileResourceService = devopsEnvFileResourceService;
-    }
+    private DevopsEnvCommandService devopsEnvCommandService;
+    @Autowired
+    private DevopsSecretService devopsSecretService;
+    @Autowired
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
+
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync,
@@ -76,14 +61,14 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         List<String> beforSecret = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(SECRET))
                 .map(devopsEnvFileResourceE -> {
-                    DevopsSecretE devopsSecretE = devopsSecretRepository
+                    DevopsSecretDTO devopsSecretDTO = devopsSecretService
                             .baseQuery(devopsEnvFileResourceE.getResourceId());
-                    if (devopsSecretE == null) {
-                        devopsEnvFileResourceRepository
+                    if (devopsSecretDTO == null) {
+                        devopsEnvFileResourceService
                                 .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), SECRET);
                         return null;
                     }
-                    return devopsSecretE.getName();
+                    return devopsSecretDTO.getName();
                 }).collect(Collectors.toList());
         // 比较已存在的秘钥和新增要处理的秘钥,获取新增秘钥，更新秘钥，删除秘钥
         List<V1Secret> addC7nSecret = new ArrayList<>();
@@ -98,10 +83,10 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         });
         //删除secret,删除文件对象关联关系
         beforSecret.forEach(secretName -> {
-            DevopsSecretE devopsSecretE = devopsSecretRepository.baseQueryByEnvIdAndName(envId, secretName);
-            if (devopsSecretE != null) {
-                devopsSecretService.deleteSecretByGitOps(devopsSecretE.getId());
-                devopsEnvFileResourceRepository.baseDeleteByEnvIdAndResourceId(envId, devopsSecretE.getId(), SECRET);
+            DevopsSecretDTO devopsSecretDTO = devopsSecretService.baseQueryByEnvIdAndName(envId, secretName);
+            if (devopsSecretDTO != null) {
+                devopsSecretService.deleteSecretByGitOps(devopsSecretDTO.getId());
+                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsSecretDTO.getId(), SECRET);
             }
         });
 
@@ -119,22 +104,22 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 filePath = objectPath.get(TypeUtil.objToString(c7nSecret.hashCode()));
 
                 checkSecretName(c7nSecret);
-                DevopsSecretE devopsSecretE = devopsSecretRepository
+                DevopsSecretDTO devopsSecretDTO = devopsSecretService
                         .baseQueryByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
                 SecretReqDTO secretReqDTO;
                 // 初始化secret对象参数，存在secret则直接创建文件对象关联关系
-                if (devopsSecretE == null) {
+                if (devopsSecretDTO == null) {
                     secretReqDTO = getSecretReqDTO(c7nSecret, envId, CREATE);
                     devopsSecretService.addSecretByGitOps(secretReqDTO, userId);
-                    devopsSecretE = devopsSecretRepository.baseQueryByEnvIdAndName(envId, secretReqDTO.getName());
+                    devopsSecretDTO = devopsSecretService.baseQueryByEnvIdAndName(envId, secretReqDTO.getName());
                 }
-                DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository
-                        .query(devopsSecretE.getCommandId());
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
+                        .baseQuery(devopsSecretDTO.getCommandId());
 
-                devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                devopsEnvCommandRepository.update(devopsEnvCommandE);
+                devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
 
-                devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, c7nSecret.hashCode(), devopsSecretE.getId(),
+                devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, c7nSecret.hashCode(), devopsSecretDTO.getId(),
                         c7nSecret.getKind());
             } catch (CommonException e) {
                 String errorCode = "";
@@ -154,31 +139,31 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
             try {
                 boolean isNotChange = false;
                 filePath = objectPath.get(TypeUtil.objToString(c7nSecret.hashCode()));
-                DevopsSecretE devopsSecretE = devopsSecretRepository
+                DevopsSecretDTO devopsSecretDTO = devopsSecretService
                         .baseQueryByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
                 checkSecretName(c7nSecret);
                 // 初始化secret对象参数,更新secret并更新文件对象关联关系
                 SecretReqDTO secretReqDTO = getSecretReqDTO(c7nSecret, envId, "update");
-                secretReqDTO.setId(devopsSecretE.getId());
-                if (secretReqDTO.equals(ConvertHelper.convert(devopsSecretE, SecretReqDTO.class))) {
+                secretReqDTO.setId(devopsSecretDTO.getId());
+                if (secretReqDTO.equals(ConvertHelper.convert(devopsSecretDTO, SecretReqDTO.class))) {
                     isNotChange = true;
                 }
 
-                DevopsEnvCommandVO devopsEnvCommandE = devopsEnvCommandRepository.query(devopsSecretE.getCommandId());
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsSecretDTO.getCommandId());
                 if (!isNotChange) {
                     devopsSecretService
-                            .updateDevopsSecretByGitOps(projectId, devopsSecretE.getId(), secretReqDTO, userId);
-                    DevopsSecretE newSecretE = devopsSecretRepository
+                            .updateDevopsSecretByGitOps(projectId, devopsSecretDTO.getId(), secretReqDTO, userId);
+                    DevopsSecretDTO newSecretDTO = devopsSecretService
                             .baseQueryByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
-                    devopsEnvCommandE = devopsEnvCommandRepository.query(newSecretE.getCommandId());
+                    devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(newSecretDTO.getCommandId());
                 }
 
-                devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                devopsEnvCommandRepository.update(devopsEnvCommandE);
-                DevopsEnvFileResourceVO devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                        .baseQueryByEnvIdAndResourceId(envId, devopsSecretE.getId(), c7nSecret.getKind());
-                devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, devopsEnvFileResourceE,
-                        c7nSecret.hashCode(), devopsSecretE.getId(), c7nSecret.getKind());
+                devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+                DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
+                        .baseQueryByEnvIdAndResourceId(envId, devopsSecretDTO.getId(), c7nSecret.getKind());
+                devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, devopsEnvFileResourceDTO,
+                        c7nSecret.hashCode(), devopsSecretDTO.getId(), c7nSecret.getKind());
             } catch (CommonException e) {
                 String errorCode = "";
                 if (e instanceof GitOpsExplainException) {
@@ -205,31 +190,19 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         secretReqDTO.setType(type);
         secretReqDTO.setEnvId(envId);
         //等待界面支持secret类型之后在区分开
-        if(c7nSecret.getType().equals("kubernetes.io/dockerconfigjson")) {
-            Map<String,String> map =  new HashMap<>();
-            c7nSecret.getData().forEach((key,value)-> {
+        if (c7nSecret.getType().equals("kubernetes.io/dockerconfigjson")) {
+            Map<String, String> map = new HashMap<>();
+            c7nSecret.getData().forEach((key, value) -> {
                 try {
-                    map.put(key,new String(value,"utf-8"));
+                    map.put(key, new String(value, "utf-8"));
                     secretReqDTO.setValue(map);
                 } catch (UnsupportedEncodingException e) {
                     logger.info(e.getMessage());
                 }
             });
-        }else {
+        } else {
             secretReqDTO.setValue(c7nSecret.getStringData());
         }
         return secretReqDTO;
-    }
-
-    private DevopsEnvCommandVO createDevopsEnvCommandE(String type) {
-        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO();
-        if (type.equals(CREATE)) {
-            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-        } else {
-            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-        }
-        devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
-        return devopsEnvCommandRepository.create(devopsEnvCommandE);
     }
 }

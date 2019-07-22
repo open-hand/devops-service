@@ -85,4 +85,5 @@ public interface DevopsSecretService {
     DevopsSecretDTO baseQuery(Long secretId);
 
 
+    DevopsSecretDTO baseQueryByEnvIdAndName(Long envId, String name);
 }
