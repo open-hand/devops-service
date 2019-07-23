@@ -761,7 +761,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
         Long ownerId = iamRepository.queryRoleIdByCode(PROJECT_OWNER);
         List<Long> allOwnerUsers = iamRepository
-                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), roleAssignmentSearchDTO, ownerId, projectId, false)
+                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchDTO, ownerId, projectId, false)
                 .getList().stream().map(UserDTO::getId).collect(Collectors.toList());
         List<DevopsEnvUserPermissionDTO> dtoList = devopsEnvUserPermissionRepository.listALlUserPermission(envId);
         if (allOwnerUsers.isEmpty()) {
