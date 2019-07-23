@@ -210,17 +210,21 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         devopsBranchECreate.setLastCommitDate(checkoutDate);
                         devopsBranchECreate.setLastCommit(checkoutSha);
                         devopsBranchECreate.setLastCommitMsg(commitE.getMessage());
-                        Long commitUserId = null;
-                        if (commitE.getCommitterName().equals("root")) {
-                            UserAttrE userAttrE = userAttrRepository.queryByGitlabUserName("admin");
+                        Long commitUserId;
+                        UserAttrE userAttrE;
+                        if (("root").equals(commitE.getCommitterName())) {
+                            userAttrE = userAttrRepository.queryByGitlabUserName("admin");
                             if (userAttrE == null) {
                                 userAttrE = userAttrRepository.queryByGitlabUserName("admin1");
                             }
-                            commitUserId = userAttrE.getGitlabUserId();
+                        } else {
+                            userAttrE = userAttrRepository.queryByGitlabUserName(commitE.getCommitterName());
                         }
+                        commitUserId = userAttrE != null ? userAttrE.getGitlabUserId() : null;
                         devopsBranchECreate.setLastCommitUser(commitUserId);
                         devopsGitRepository.updateBranch(devopsBranchECreate);
                     } catch (Exception e) {
+                        LOGGER.info(e.getStackTrace().toString());
                         DevopsBranchE devopsBranchECreate = devopsGitRepository.qureyBranchById(devopsBranchId);
                         devopsBranchECreate.setStatus(CommandStatus.FAILED.getStatus());
                         devopsBranchECreate.setErrorMessage(e.getMessage());
