@@ -206,12 +206,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void createBranchBySaga(BranchSagaDTO branchSagaDTO) {
+        BranchDO branchDO = null;
         try {
-            BranchDO branchDO = devopsGitRepository.createBranch(
-                    TypeUtil.objToInteger(branchSagaDTO.getGitlabProjectId()),
-                    branchSagaDTO.getBranchName(),
-                    branchSagaDTO.getOriginBranch(),
-                    getGitlabUserId());
+            branchDO = devopsGitRepository.getBranch(TypeUtil.objToInteger(branchSagaDTO.getGitlabProjectId()), branchSagaDTO.getBranchName());
+            if (branchDO.getName() == null) {
+                branchDO = devopsGitRepository.createBranch(
+                        TypeUtil.objToInteger(branchSagaDTO.getGitlabProjectId()),
+                        branchSagaDTO.getBranchName(),
+                        branchSagaDTO.getOriginBranch(),
+                        getGitlabUserId());
+            }
             if (branchDO.getCommit() == null) {
                 throw new CommonException("error.branch.exist");
             }
