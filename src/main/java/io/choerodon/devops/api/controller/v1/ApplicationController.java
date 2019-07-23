@@ -256,7 +256,7 @@ public class ApplicationController {
     @ApiOperation(value = "项目下分页查询应用 应用分享使用")
     @CustomPageRequest
     @PostMapping("/list_by_options/app_market")
-    public ResponseEntity<PageInfo<ApplicationRepDTO>> pageByOptions(
+    public ResponseEntity<PageInfo<ApplicationRepDTO>> pageByOptionsMarket(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用是否启用")
