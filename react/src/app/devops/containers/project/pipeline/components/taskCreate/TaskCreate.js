@@ -84,8 +84,11 @@ export default class TaskCreate extends Component {
       callback();
       return;
     }
+
+    const { envId } = this.state;
+
     if (p.test(value)) {
-      PipelineCreateStore.checkInstanceName(id, value)
+      PipelineCreateStore.checkInstanceName(id, value, envId)
         .then(data => {
           if (data && data.failed) {
             callback(formatMessage({ id: 'checkNameExist' }));
@@ -669,7 +672,7 @@ export default class TaskCreate extends Component {
             className="c7n-pipeline-radio"
           >
             <Radio
-              disabled={instanceId && selectEnvId  === envId && appId === applicationId}
+              disabled={instanceId && selectEnvId === envId && appId === applicationId}
               value={MODE_TYPE_NEW}
             >
               <FormattedMessage id="pipeline.task.instance.create" />

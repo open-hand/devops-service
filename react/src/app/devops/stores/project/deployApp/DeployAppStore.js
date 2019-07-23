@@ -179,7 +179,7 @@ class DeployAppStore {
    * @param param 搜索内容
    * @param initId 搜索结果中必须包含的版本的id
    */
-  async loadVersions(
+  loadVersions(
     {
       projectId,
       appId,
@@ -189,9 +189,11 @@ class DeployAppStore {
       initId = '',
     },
   ) {
-    return await axios.get(
-      `/devops/v1/projects/${projectId}/app_versions/list_by_app/${appId}?is_publish=${isPublish
-      || ''}&page=${page}&app_version_id=${initId}&version=${param}&size=15`,
+
+    return axios.get(
+      `/devops/v1/projects/${projectId}/app_versions/list_by_app/${appId}?is_publish=${isPublish ||
+      ''}&page=${page}&app_version_id=${initId}&version=${param}&size=15`,
+
     );
   }
 
@@ -207,12 +209,6 @@ class DeployAppStore {
       this.setInstances(response);
     }
     this.setIstLoading(false);
-  }
-
-  async checkIstName(projectId, value) {
-    return await axios.get(
-      `/devops/v1/projects/${projectId}/app_instances/check_name?instance_name=${value}`,
-    );
   }
 
   async loadValuesList(projectId, appId, envId) {
@@ -282,21 +278,27 @@ class DeployAppStore {
     this.setValueLoading(false);
   }
 
-  async submitDeployment(projectId, data) {
-    return await axios
+  checkIstName(projectId, value, envId) {
+    return axios.get(
+      `/devops/v1/projects/${projectId}/app_instances/check_name?instance_name=${value}&env_id=${envId}`,
+    );
+  }
+
+  submitDeployment(projectId, data) {
+    return axios
       .post(`/devops/v1/projects/${projectId}/app_instances`, JSON.stringify(data));
   }
 
-  async changeConfig(projectId, data) {
-    return await axios.post(`/devops/v1/projects/${projectId}/pipeline_value`, JSON.stringify(data));
+  changeConfig(projectId, data) {
+    return axios.post(`/devops/v1/projects/${projectId}/pipeline_value`, JSON.stringify(data));
   }
 
-  async queryAppDetail(projectId, appId) {
-    return await axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/detail`);
+  queryAppDetail(projectId, appId) {
+    return axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/detail`);
   }
 
-  async queryVersionDetail(projectId, appId, version) {
-    return await axios.get(`/devops/v1/projects/${projectId}/app_versions/query_by_version?appId=${appId}&version=${version}`);
+  queryVersionDetail(projectId, appId, version) {
+    return axios.get(`/devops/v1/projects/${projectId}/app_versions/query_by_version?appId=${appId}&version=${version}`);
   }
 }
 

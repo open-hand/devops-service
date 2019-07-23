@@ -410,6 +410,10 @@ public class PipelineServiceImpl implements PipelineService {
             sagaClient.startSaga("devops-pipeline-auto-deploy-instance", new StartInstanceDTO(input, "env", taskRecordE.getEnvId().toString(), ResourceLevel.PROJECT.value(), taskRecordE.getProjectId()));
         } catch (Exception e) {
             sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId().longValue());
+            PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
+            Long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordE.getExecutionTime());
+            stageRecordE.setExecutionTime(time.toString());
+            stageRecordRepository.update(stageRecordE);
             setPipelineFailed(pipelineRecordId, stageRecordId, taskRecordE, e.getMessage());
             throw new CommonException("error.create.pipeline.auto.deploy.instance", e);
         }
@@ -1110,6 +1114,9 @@ public class PipelineServiceImpl implements PipelineService {
         if (taskE.getAppDeployId() != null) {
             PipelineAppDeployE appDeployE = appDeployRepository.queryById(taskE.getAppDeployId());
             BeanUtils.copyProperties(appDeployE, taskRecordE);
+            if (appDeployE.getInstanceName() == null) {
+                taskRecordE.setInstanceName(applicationInstanceRepository.selectById(appDeployE.getInstanceId()).getCode());
+            }
             taskRecordE.setInstanceId(null);
             taskRecordE.setValueId(appDeployE.getValueId());
         }

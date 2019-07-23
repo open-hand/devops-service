@@ -206,9 +206,9 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                         MemberUser memberUser = new MemberUser();
                         memberUser.setUsername(username);
                         projectMember.setMemberUser(memberUser);
-                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), new ProjectMember()).execute();
+                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
                     }
-                    if (result.raw().code() != 200) {
+                    if (result.raw().code() != 201) {
                         throw new CommonException(result.errorBody().string());
                     }
                 }
@@ -226,7 +226,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
             devopsProjectE.setHarborProjectIsPrivate(true);
             devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDO.class));
 
-            
+
             //新增项目harbor配置
             DevopsProjectConfigDTO devopsProjectConfigDTO = new DevopsProjectConfigDTO();
             devopsProjectConfigDTO.setName("project_harbor_default");
@@ -258,18 +258,22 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                     if (result.raw().code() != 200) {
                         throw new CommonException(result.errorBody().toString());
                     }
-                    Response<List<User>> users = harborClient.listUser(String.format("user%s%s", organization.getId(), projectId)).execute();
-                    if (users.raw().code() != 200) {
-                        throw new CommonException(users.errorBody().string());
-                    }
                     Response<SystemInfo> systemInfoResponse = harborClient.getSystemInfo().execute();
                     if (systemInfoResponse.raw().code() != 200) {
                         throw new CommonException(systemInfoResponse.errorBody().string());
                     }
                     if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
+                        Response<List<User>> users = harborClient.listUser(String.format("user%s%s", organization.getId(), projectId)).execute();
+                        if (users.raw().code() != 200) {
+                            throw new CommonException(users.errorBody().string());
+                        }
                         harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue()).execute();
                     } else {
-                        harborClient.deleteMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue()).execute();
+                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format("user%s%s", organization.getId(), projectId)).execute();
+                        if (projectMembers.raw().code() != 200) {
+                            throw new CommonException(projectMembers.errorBody().string());
+                        }
+                        harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMembers.body().get(0).getId().intValue()).execute();
                     }
                     DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByName(projectId, "project_harbor_default");
                     DevopsProjectConfigE newDevopsProjectConfigE = devopsProjectConfigRepository.queryByName(null, "harbor_default");
@@ -292,6 +296,9 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     public ProjectDefaultConfigDTO getProjectDefaultConfig(Long projectId) {
         ProjectDefaultConfigDTO projectDefaultConfigDTO = new ProjectDefaultConfigDTO();
         DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
+        if (devopsProjectE.getHarborProjectIsPrivate() == null) {
+            devopsProjectE.setHarborProjectIsPrivate(false);
+        }
         projectDefaultConfigDTO.setHarborIsPrivate(devopsProjectE.getHarborProjectIsPrivate());
         List<DevopsProjectConfigE> harborConfigs = devopsProjectConfigRepository.queryByIdAndType(projectId, HARBOR);
         Optional<DevopsProjectConfigE> devopsConfigE = harborConfigs.stream().filter(devopsProjectConfigE -> devopsProjectConfigE.getName().equals("project_harbor_default")).findFirst();

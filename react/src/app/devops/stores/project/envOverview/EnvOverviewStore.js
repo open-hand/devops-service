@@ -226,7 +226,8 @@ class EnvOverviewStore {
                   envId: this.tpEnvId,
                   appId: getAppId,
                   instanceId: defaultIst,
-                }, time).catch((err) => {
+                }, time).catch(err => {
+
                   InstancesStore.changeLoading(false);
                 });
                 break;
@@ -373,11 +374,12 @@ class EnvOverviewStore {
     })
     .catch((error) => {
       this.setSync(null);
-      Choerodon.prompt(error);
-    });
+        Choerodon.prompt(error);
+      });
 
-  retry = (projectId, envId) => axios
-    .get(`/devops/v1/projects/${projectId}/envs/${envId}/retry`);
+  retry = (projectId, envId) =>
+    axios
+      .get(`/devops/v1/projects/${projectId}/envs/${envId}/retry`);
 }
 
 const envOverviewStore = new EnvOverviewStore();

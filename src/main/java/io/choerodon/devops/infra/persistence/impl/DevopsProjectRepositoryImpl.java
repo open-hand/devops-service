@@ -1,14 +1,13 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by younger on 2018/3/29.
@@ -59,6 +58,10 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
             devopsProjectMapper.insert(devopsProjectDO);
         } else {
             devopsProjectDO.setObjectVersionNumber(oldDevopsProjectDO.getObjectVersionNumber());
+            if (oldDevopsProjectDO.getObjectVersionNumber() == null) {
+                devopsProjectMapper.updateObJectVersionNumber(devopsProjectDO.getIamProjectId());
+                devopsProjectDO.setObjectVersionNumber(1L);
+            }
             devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDO);
         }
     }

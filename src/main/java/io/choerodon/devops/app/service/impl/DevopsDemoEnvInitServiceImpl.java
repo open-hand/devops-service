@@ -1,11 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
@@ -30,6 +30,7 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
+import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,6 +82,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private DevopsSagaHandler devopsSagaHandler;
     @Autowired
     private GitlabRepository gitlabRepository;
+    @Autowired
+    private DevopsGitRepository devopsGitRepository;
 
     private Gson gson = new Gson();
 
@@ -116,11 +119,14 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         Integer gitlabProjectId = applicationRepository.query(applicationRepDTO.getId()).getGitlabProjectE().getId();
 
 //        2. 创建分支
-        DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
-        devopsBranchDTO.setAppId(applicationRepDTO.getId());
-        devopsBranchDTO.setBranchName(demoDataDTO.getBranchInfo().getBranchName());
-        devopsBranchDTO.setOriginBranch(demoDataDTO.getBranchInfo().getOriginBranch());
-        devopsGitService.createBranch(projectId, applicationRepDTO.getId(), devopsBranchDTO);
+        BranchDO branchDO = devopsGitRepository.getBranch(gitlabProjectId, demoDataDTO.getBranchInfo().getBranchName());
+        if (branchDO.getName() == null) {
+            devopsGitRepository.createBranch(
+                    gitlabProjectId,
+                    demoDataDTO.getBranchInfo().getBranchName(),
+                    demoDataDTO.getBranchInfo().getOriginBranch(),
+                    gitlabUserId);
+        }
 
 //        3. 提交代码
         newCommit(gitlabProjectId);
@@ -184,8 +190,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devOpsAppPayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
 
         //设置仓库Id
-        List<DevopsProjectConfigDTO> configDTOS1 = projectConfigService.queryByIdAndType(null,"harbor");
-        List<DevopsProjectConfigDTO> configDTOS2 = projectConfigService.queryByIdAndType(null,"chart");
+        List<DevopsProjectConfigDTO> configDTOS1 = projectConfigService.queryByIdAndType(null, "harbor");
+        List<DevopsProjectConfigDTO> configDTOS2 = projectConfigService.queryByIdAndType(null, "chart");
         applicationE.initHarborConfig(configDTOS1.get(0).getId());
         applicationE.initChartConfig(configDTOS2.get(0).getId());
 

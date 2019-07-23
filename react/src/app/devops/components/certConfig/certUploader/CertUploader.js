@@ -69,6 +69,8 @@ export default class CertUploader extends PureComponent {
       const { file: { name }, fileList } = value;
       if (!fileList.length) {
         callback(formatMessage({ id: `ctf.${type}.required` }));
+      } else if(fileList.length > 1) {
+        callback(formatMessage({ id: 'file.type.multiple' }));
       } else if (!name.endsWith(`.${type}`)) {
         callback(formatMessage({ id: 'file.type.error' }));
       } else {
@@ -126,6 +128,7 @@ export default class CertUploader extends PureComponent {
             <Upload
               {...uploadProps}
               disabled={crtDisabled}
+              onChange={this.fileChange}
               beforeUpload={file => this.beforeUpload(file, 'crt')}
               onRemove={this.removeCert}
             >

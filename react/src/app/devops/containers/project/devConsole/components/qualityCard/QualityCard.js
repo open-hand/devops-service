@@ -59,8 +59,7 @@ export default class StageTitle extends Component {
           <Icon type="quality" />
           <FormattedMessage id="codeQuality.content.title" />
           <span
-            className="codeQuality-title-date"
-          >{formatMessage({ id: 'codeQuality.analysis' })}：{date.split('+')[0].replace(/T/g, ' ')}</span>
+            className="codeQuality-title-date">{formatMessage({ id: 'codeQuality.analysis' })}：{date.split('+')[0].replace(/T/g, ' ')}</span>
         </div>
         <Spin spinning={getLoading}>
           <div className="c7n-card-codeQuality-content">

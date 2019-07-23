@@ -620,6 +620,7 @@ const zhCN = {
   'file.uploaded.failed': '上传失败！',
   'file.uploaded.success': '上传成功！',
   'file.type.error': '文件类型错误！',
+  'file.type.multiple': '请上传单个文件！',
 
   // ist
   ist_stop: '停止中',
@@ -1643,7 +1644,7 @@ const zhCN = {
   'configMap.keyRepeat': '存在重复键，请检查输入。',
   'configMap.mode.kv': '编辑 YAML',
   'configMap.mode.yaml': '编辑键值对',
-  'configMap.yaml.error': '内容不符合规则。',
+  'configMap.yaml.error': '内容不符合规则（检查是否使用了 Tab 键缩进）。',
 
   // 密文
   'secret.head': '密文',

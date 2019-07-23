@@ -2,9 +2,8 @@ import React, { Component, Fragment } from 'react';
 import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { Icon } from 'choerodon-ui';
-import JsYaml from 'js-yaml';
-import YAML from 'yamljs';
 import classnames from 'classnames';
+import { checkFormat, changedValue } from './utils';
 import 'codemirror/addon/merge/merge.css';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/addon/lint/lint.css';
@@ -19,52 +18,12 @@ import './merge';
 const HAS_ERROR = true;
 const NO_ERROR = false;
 
-/**
- * YAML 格式校验
- * @param values
- * @returns {Array}
- */
-function parse(values) {
-  const result = [];
-
-  try {
-    JsYaml.load(values);
-  } catch (e) {
-    result.push(e);
-  }
-
-  return result;
-}
-
-/**
- * 有意义的值的改动检测
- * @param old
- * @param value
- * @param callback
- * @returns {boolean}
- */
-function changedValue(old, value, callback) {
-  let hasChanged = true;
-  try {
-    const oldValue = YAML.parse(old || '');
-    const newValue = YAML.parse(value);
-    // 实际值变动检测
-    if (JSON.stringify(oldValue) === JSON.stringify(newValue)) {
-      hasChanged = false;
-    }
-  } catch (e) {
-    callback(HAS_ERROR);
-    throw new Error(`格式错误：${e}`);
-  }
-  return hasChanged;
-}
-
-class YamlEditor extends Component {
+@injectIntl
+export default class YamlEditor extends Component {
   static propTypes = {
     value: PropTypes.string.isRequired,
     readOnly: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
     originValue: PropTypes.string,
-    options: PropTypes.object,
     handleEnableNext: PropTypes.func,
     onValueChange: PropTypes.func,
     modeChange: PropTypes.bool,
@@ -74,7 +33,7 @@ class YamlEditor extends Component {
     readOnly: true,
     originValue: '',
     modeChange: true,
-    handleEnableNext: enable => {
+    handleEnableNext: () => {
     },
     onValueChange: () => {
     },
@@ -105,7 +64,7 @@ class YamlEditor extends Component {
     onValueChange(value);
   }
 
-  onChange = value => {
+  onChange = (value) => {
     const { onValueChange, originValue, handleEnableNext } = this.props;
     const hasError = this.checkYamlFormat(value);
     let changed = false;
@@ -128,7 +87,7 @@ class YamlEditor extends Component {
 
     let errorTip = NO_ERROR;
     // yaml 格式校验结果
-    const formatResult = parse(values);
+    const formatResult = checkFormat(values);
     if (formatResult && formatResult.length) {
       errorTip = HAS_ERROR;
       handleEnableNext(HAS_ERROR);
@@ -167,7 +126,7 @@ class YamlEditor extends Component {
             value={value}
             originValue={originValue}
             onChange={this.onChange}
-            ref={instance => {
+            ref={(instance) => {
               this.yamlEditor = instance;
             }}
           />
@@ -184,5 +143,3 @@ class YamlEditor extends Component {
     );
   }
 }
-
-export default injectIntl(YamlEditor);

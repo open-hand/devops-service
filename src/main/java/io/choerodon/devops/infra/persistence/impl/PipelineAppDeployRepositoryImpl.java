@@ -11,6 +11,7 @@ import io.choerodon.devops.infra.mapper.PipelineAppDeployMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  10:12 2019/4/4
@@ -61,7 +62,8 @@ public class PipelineAppDeployRepositoryImpl implements PipelineAppDeployReposit
         PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
         appDeployDO.setInstanceName(name);
         appDeployDO.setEnvId(envId);
-        if (appDeployMapper.selectOne(appDeployDO) == null) {
+
+        if (appDeployMapper.select(appDeployDO).size() > 0) {
             throw new CommonException("error.app.instance.name.already.exist");
         }
     }

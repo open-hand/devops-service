@@ -1,18 +1,20 @@
-import React, { Component, Fragment } from "react";
-import { FormattedMessage, injectIntl } from "react-intl";
-import { observer } from "mobx-react";
-import { withRouter } from "react-router-dom";
-import _ from "lodash";
-import TimeAgo from "timeago-react";
-import { stores, Content } from "@choerodon/boot";
-import { Tooltip, Button, Modal, Collapse, Spin } from "choerodon-ui";
-import { formatDate } from "../../../../../utils/index";
-import DeploymentStore from "../../../../../stores/project/instances/DeploymentStore";
-import InstancesStore from "../../../../../stores/project/instances/InstancesStore";
-import SimpleTable from "./SimpleTable";
-import PodCircle from "./PodCircle";
 
-import "./index.scss";
+import React, { Component, Fragment } from 'react';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { observer } from 'mobx-react';
+import { withRouter } from 'react-router-dom';
+import _ from 'lodash';
+import TimeAgo from 'timeago-react';
+import { stores, Content } from '@choerodon/boot';
+import { Tooltip, Button, Modal, Collapse, Spin } from 'choerodon-ui';
+import { formatDate } from '../../../../../utils/index';
+import DeploymentStore from '../../../../../stores/project/instances/DeploymentStore';
+import InstancesStore from '../../../../../stores/project/instances/InstancesStore';
+import SimpleTable from './SimpleTable';
+import PodCircle from './PodCircle';
+
+import './index.scss';
+
 
 
 const { AppState } = stores;
