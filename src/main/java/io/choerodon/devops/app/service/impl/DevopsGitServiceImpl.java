@@ -807,6 +807,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         try {
             String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
             DevopsBranchE branchE = devopsGitRepository.queryByAppAndBranchName(appId, branchName);
+            if (branchE == null) {
+                createBranchSync(pushWebHookDTO, appId);
+            }
+
             String lastCommit = pushWebHookDTO.getAfter();
             Optional<CommitDTO> lastCommitOptional
                     = pushWebHookDTO.getCommits().stream().filter(t -> lastCommit.equals(t.getId())).findFirst();
@@ -850,15 +854,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchE.setUserId(userId);
                 devopsBranchE.initApplicationE(appId);
 
-                devopsBranchE.setCheckoutDate(commitE.getCommittedDate());
+                devopsBranchE.setCheckoutDate(commitE == null ? null : commitE.getCommittedDate());
                 devopsBranchE.setCheckoutCommit(lastCommit);
                 devopsBranchE.setBranchName(branchName);
 
                 devopsBranchE.setLastCommitUser(userId);
                 devopsBranchE.setLastCommit(lastCommit);
-                devopsBranchE.setLastCommitMsg(commitE.getMessage());
+                devopsBranchE.setLastCommitMsg(commitE == null ? null : commitE.getMessage());
 
-                devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
+                devopsBranchE.setLastCommitDate(commitE == null ? null : commitE.getCommittedDate());
                 devopsGitRepository.createDevopsBranch(devopsBranchE);
 
 
