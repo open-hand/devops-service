@@ -8,12 +8,9 @@ import java.util.stream.Collectors;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ApplicationDeployVO;
 import io.choerodon.devops.api.vo.ApplicationInstanceVO;
-import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.InstanceValueVO;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -49,7 +46,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     private DevopsServiceInstanceService devopsServiceInstanceService;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync, List<C7nHelmRelease> c7nHelmReleases, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<C7nHelmRelease> c7nHelmReleases, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeC7nRelease = beforeSync.stream()
                 .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType().equals(C7N_HELM_RELEASE))
                 .map(devopsEnvFileResourceDTO -> {

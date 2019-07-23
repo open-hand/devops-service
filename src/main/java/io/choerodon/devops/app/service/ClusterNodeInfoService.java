@@ -2,8 +2,8 @@ package io.choerodon.devops.app.service;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.AgentNodeInfoDTO;
-import io.choerodon.devops.api.vo.ClusterNodeInfoDTO;
+import io.choerodon.devops.api.vo.AgentNodeInfoVO;
+import io.choerodon.devops.api.vo.ClusterNodeInfoVO;
 
 import java.util.List;
 
@@ -33,9 +33,9 @@ public interface ClusterNodeInfoService {
      * The previous value will be discarded.
      *
      * @param redisClusterKey        the key
-     * @param agentNodeInfoDTOS the information of nodes.
+     * @param agentNodeInfoVOS the information of nodes.
      */
-    void setValueForKey(String redisClusterKey, List<AgentNodeInfoDTO> agentNodeInfoDTOS);
+    void setValueForKey(String redisClusterKey, List<AgentNodeInfoVO> agentNodeInfoVOS);
 
     /**
      * page query the node information of the cluster
@@ -45,7 +45,7 @@ public interface ClusterNodeInfoService {
      * @param pageRequest    the page parameters
      * @return a page of nodes
      */
-    PageInfo<ClusterNodeInfoDTO> pageClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest);
+    PageInfo<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest);
 
     /**
      * get cluster node information by cluster id and node name
@@ -57,5 +57,5 @@ public interface ClusterNodeInfoService {
      * @param nodeName       the node name
      * @return the node information
      */
-    ClusterNodeInfoDTO queryNodeInfo(Long organizationId, Long clusterId, String nodeName);
+    ClusterNodeInfoVO queryNodeInfo(Long organizationId, Long clusterId, String nodeName);
 }

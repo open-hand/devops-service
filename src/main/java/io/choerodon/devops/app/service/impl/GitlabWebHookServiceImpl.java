@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
-import io.choerodon.devops.api.vo.JobWebHookDTO;
-import io.choerodon.devops.api.vo.PipelineWebHookDTO;
+import io.choerodon.devops.api.vo.JobWebHookVO;
+import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
@@ -58,13 +58,13 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 devopsGitlabCommitService.create(pushWebHookVO, token);
                 break;
             case "pipeline":
-                PipelineWebHookDTO pipelineWebHookDTO = JSONArray.parseObject(body, PipelineWebHookDTO.class, FastjsonParserConfigProvider.getParserConfig());
+                PipelineWebHookVO pipelineWebHookVO = JSONArray.parseObject(body, PipelineWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
 
-                devopsGitlabPipelineService.create(pipelineWebHookDTO, token);
+                devopsGitlabPipelineService.create(pipelineWebHookVO, token);
                 break;
             case "build":
-                JobWebHookDTO jobWebHookDTO = JSONArray.parseObject(body, JobWebHookDTO.class, FastjsonParserConfigProvider.getParserConfig());
-                devopsGitlabPipelineService.updateStages(jobWebHookDTO);
+                JobWebHookVO jobWebHookVO = JSONArray.parseObject(body, JobWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
+                devopsGitlabPipelineService.updateStages(jobWebHookVO);
                 break;
             case "tag_push":
                 PushWebHookVO tagPushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());

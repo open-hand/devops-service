@@ -2191,6 +2191,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
 <<<<<<< HEAD
+<<<<<<< HEAD
     @Saga(code = "devops-create-app-fail",
 =======
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
@@ -2198,11 +2199,18 @@ public class ApplicationServiceImpl implements ApplicationService {
             description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
     public void setAppErrStatus(String input, Long projectId) {
         GitlabProjectEventDTO gitlabProjectEventDTO = JSONObject.parseObject(input, GitlabProjectEventDTO.class);
+=======
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
+            description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
+    public void setAppErrStatus(String input, Long projectId) {
+        GitlabProjectEventVO gitlabProjectEventVO = JSONObject.parseObject(input, GitlabProjectEventVO.class);
+>>>>>>> [REF] refactor original DTO to VO
         producer.applyAndReturn(
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
                         .withRefType("")
+<<<<<<< HEAD
 <<<<<<< HEAD
                         .withSagaCode("devops-create-app-fail"),
 =======
@@ -2308,6 +2316,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         return accessToken;
 =======
 >>>>>>> [IMP] refactor ApplicationShareController
+=======
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL),
+                builder -> builder
+                        .withPayloadAndSerialize(gitlabProjectEventVO)
+                        .withRefId("")
+                        .withSourceId(projectId));
+>>>>>>> [REF] refactor original DTO to VO
     }
 
 <<<<<<< HEAD
@@ -2637,34 +2652,34 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status, Long appId) {
-        List<ApplicationCodeDTO> applicationCodeDTOS = ConvertHelper
+    public List<ApplicationCodeVO> listByEnvId(Long projectId, Long envId, String status, Long appId) {
+        List<ApplicationCodeVO> applicationCodeVOS = ConvertHelper
                 .convertList(baseListByEnvId(projectId, envId, status),
-                        ApplicationCodeDTO.class);
+                        ApplicationCodeVO.class);
         if (appId != null) {
             ApplicationDTO applicationDTO = baseQuery(appId);
-            ApplicationCodeDTO applicationCodeDTO = new ApplicationCodeDTO();
-            BeanUtils.copyProperties(applicationDTO, applicationCodeDTO);
+            ApplicationCodeVO applicationCodeVO = new ApplicationCodeVO();
+            BeanUtils.copyProperties(applicationDTO, applicationCodeVO);
             ApplicationShareDTO applicationShareDTO = applicationShareService.baseQueryByAppId(appId);
             if (applicationShareDTO != null) {
-                applicationCodeDTO.setPublishLevel(applicationShareDTO.getPublishLevel());
-                applicationCodeDTO.setContributor(applicationShareDTO.getContributor());
-                applicationCodeDTO.setDescription(applicationShareDTO.getDescription());
+                applicationCodeVO.setPublishLevel(applicationShareDTO.getPublishLevel());
+                applicationCodeVO.setContributor(applicationShareDTO.getContributor());
+                applicationCodeVO.setDescription(applicationShareDTO.getDescription());
             }
-            for (int i = 0; i < applicationCodeDTOS.size(); i++) {
-                if (applicationCodeDTOS.get(i).getId().equals(applicationDTO.getId())) {
-                    applicationCodeDTOS.remove(applicationCodeDTOS.get(i));
+            for (int i = 0; i < applicationCodeVOS.size(); i++) {
+                if (applicationCodeVOS.get(i).getId().equals(applicationDTO.getId())) {
+                    applicationCodeVOS.remove(applicationCodeVOS.get(i));
                 }
             }
-            applicationCodeDTOS.add(0, applicationCodeDTO);
+            applicationCodeVOS.add(0, applicationCodeVO);
         }
-        return applicationCodeDTOS;
+        return applicationCodeVOS;
     }
 
     @Override
-    public PageInfo<ApplicationCodeDTO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
+    public PageInfo<ApplicationCodeVO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
         return ConvertUtils.convertPage(basePageByEnvId(projectId, envId, appId, pageRequest),
-                ApplicationCodeDTO.class);
+                ApplicationCodeVO.class);
     }
 
     @Override
@@ -2675,13 +2690,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 >>>>>>> [IMP]重构后端断码
 
     @Override
-    public List<AppUserPermissionRepDTO> listAllUserPermission(Long appId) {
+    public List<AppUserPermissionRespVO> listAllUserPermission(Long appId) {
         List<Long> userIds = applicationUserPermissionService.baseListByAppId(appId).stream().map(ApplicationUserPermissionDTO::getIamUserId)
                 .collect(Collectors.toList());
         List<IamUserDTO> userEList = iamService.listUsersByIds(userIds);
-        List<AppUserPermissionRepDTO> resultList = new ArrayList<>();
+        List<AppUserPermissionRespVO> resultList = new ArrayList<>();
         userEList.forEach(
-                e -> resultList.add(new AppUserPermissionRepDTO(e.getId(), e.getLoginName(), e.getRealName())));
+                e -> resultList.add(new AppUserPermissionRespVO(e.getId(), e.getLoginName(), e.getRealName())));
         return resultList;
     }
 
@@ -2698,30 +2713,30 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT, description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
-    public ApplicationRepVO importApp(Long projectId, ApplicationImportDTO applicationImportDTO) {
+    public ApplicationRepVO importApp(Long projectId, ApplicationImportVO applicationImportVO) {
         // 获取当前操作的用户的信息
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         // 校验application信息的格式
-        ApplicationValidator.checkApplication(applicationImportDTO);
+        ApplicationValidator.checkApplication(applicationImportVO);
 
         // 校验名称唯一性
-        baseCheckName(projectId, applicationImportDTO.getName());
+        baseCheckName(projectId, applicationImportVO.getName());
 
         // 校验code唯一性
         ApplicationDTO applicationDTO = new ApplicationDTO();
         applicationDTO.setProjectId(projectId);
-        applicationDTO.setCode(applicationImportDTO.getCode());
+        applicationDTO.setCode(applicationImportVO.getCode());
         baseCheckCode(applicationDTO);
 
         // 校验repository（和token） 地址是否有效
-        GitPlatformType gitPlatformType = GitPlatformType.from(applicationImportDTO.getPlatformType());
-        checkRepositoryUrlAndToken(gitPlatformType, applicationImportDTO.getRepositoryUrl(), applicationImportDTO.getAccessToken());
+        GitPlatformType gitPlatformType = GitPlatformType.from(applicationImportVO.getPlatformType());
+        checkRepositoryUrlAndToken(gitPlatformType, applicationImportVO.getRepositoryUrl(), applicationImportVO.getAccessToken());
 
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
 
-        applicationDTO = fromImportDtoToEntity(applicationImportDTO);
+        applicationDTO = fromImportDtoToEntity(applicationImportVO);
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -2774,10 +2789,16 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationDTO.setProjectId(projectId);
         applicationDTO.setActive(true);
         applicationDTO.setSynchro(false);
+<<<<<<< HEAD
         applicationDTO.setIsSkipCheckPermission(applicationImportDTO.getIsSkipCheckPermission());
         applicationDTO.setHarborConfigId(applicationImportDTO.getHarborConfigId());
         applicationDTO.setChartConfigId(applicationImportDTO.getChartConfigId());
 >>>>>>> [IMP] refactor AplicationControler
+=======
+        applicationDTO.setIsSkipCheckPermission(applicationImportVO.getIsSkipCheckPermission());
+        applicationDTO.setHarborConfigId(applicationImportVO.getHarborConfigId());
+        applicationDTO.setChartConfigId(applicationImportVO.getChartConfigId());
+>>>>>>> [REF] refactor original DTO to VO
 
         // 查询创建应用所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(applicationDTO.getProjectId());
@@ -2809,9 +2830,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         IamAppDTO iamAppDTO = new IamAppDTO();
         iamAppDTO.setApplicationCategory(APPLICATION);
-        iamAppDTO.setApplicationType(applicationImportDTO.getType());
-        iamAppDTO.setCode(applicationImportDTO.getCode());
-        iamAppDTO.setName(applicationImportDTO.getName());
+        iamAppDTO.setApplicationType(applicationImportVO.getType());
+        iamAppDTO.setCode(applicationImportVO.getCode());
+        iamAppDTO.setName(applicationImportVO.getName());
         iamAppDTO.setEnabled(true);
         iamAppDTO.setOrganizationId(organizationDTO.getId());
         iamAppDTO.setProjectId(projectId);
@@ -2822,22 +2843,22 @@ public class ApplicationServiceImpl implements ApplicationService {
         // 创建saga payload
         DevOpsAppImportPayload devOpsAppImportPayload = new DevOpsAppImportPayload();
         devOpsAppImportPayload.setType(APPLICATION);
-        devOpsAppImportPayload.setPath(applicationImportDTO.getCode());
+        devOpsAppImportPayload.setPath(applicationImportVO.getCode());
         devOpsAppImportPayload.setOrganizationId(organizationDTO.getId());
         devOpsAppImportPayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         devOpsAppImportPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
-        devOpsAppImportPayload.setUserIds(applicationImportDTO.getUserIds());
-        devOpsAppImportPayload.setSkipCheckPermission(applicationImportDTO.getIsSkipCheckPermission());
+        devOpsAppImportPayload.setUserIds(applicationImportVO.getUserIds());
+        devOpsAppImportPayload.setSkipCheckPermission(applicationImportVO.getIsSkipCheckPermission());
         devOpsAppImportPayload.setAppId(appId);
         devOpsAppImportPayload.setIamProjectId(projectId);
         devOpsAppImportPayload.setPlatformType(gitPlatformType);
-        devOpsAppImportPayload.setRepositoryUrl(applicationImportDTO.getRepositoryUrl());
-        devOpsAppImportPayload.setAccessToken(applicationImportDTO.getAccessToken());
+        devOpsAppImportPayload.setRepositoryUrl(applicationImportVO.getRepositoryUrl());
+        devOpsAppImportPayload.setAccessToken(applicationImportVO.getAccessToken());
         devOpsAppImportPayload.setGitlabUserId(userAttrDTO.getGitlabUserId());
 
         // 如果不跳过权限检查
-        List<Long> userIds = applicationImportDTO.getUserIds();
-        if (!applicationImportDTO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
+        List<Long> userIds = applicationImportVO.getUserIds();
+        if (!applicationImportVO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
             userIds.forEach(e -> applicationUserPermissionService.baseCreate(e, appId));
         }
 
@@ -3258,14 +3279,14 @@ public class ApplicationServiceImpl implements ApplicationService {
 =======
 >>>>>>> [IMP] refactor AplicationControler
     @Override
-    public SonarContentsDTO getSonarContent(Long projectId, Long appId) {
+    public SonarContentsVO getSonarContent(Long projectId, Long appId) {
 
         //没有使用sonarqube直接返回空对象
         if (sonarqubeUrl.equals("")) {
-            return new SonarContentsDTO();
+            return new SonarContentsVO();
         }
-        SonarContentsDTO sonarContentsDTO = new SonarContentsDTO();
-        List<SonarContentDTO> sonarContentDTOS = new ArrayList<>();
+        SonarContentsVO sonarContentsVO = new SonarContentsVO();
+        List<SonarContentVO> sonarContentVOS = new ArrayList<>();
         ApplicationDTO applicationDTO = baseQuery(appId);
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         OrganizationDTO organization = iamService.queryOrganizationById(projectDTO.getOrganizationId());
@@ -3287,7 +3308,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             Response<SonarComponent> sonarComponentResponse = sonarClient.getSonarComponet(queryContentMap).execute();
             if (sonarComponentResponse.raw().code() != 200) {
                 if (sonarComponentResponse.raw().code() == 404) {
-                    return new SonarContentsDTO();
+                    return new SonarContentsVO();
                 }
                 if (sonarComponentResponse.raw().code() == 401) {
                     throw new CommonException("error.sonarqube.user");
@@ -3295,12 +3316,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                 throw new CommonException(sonarComponentResponse.errorBody().string());
             }
             if (sonarComponentResponse.body() == null) {
-                return new SonarContentsDTO();
+                return new SonarContentsVO();
             }
             if (sonarComponentResponse.body().getPeriods() != null && sonarComponentResponse.body().getPeriods().size() > 0) {
-                sonarContentsDTO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
-                sonarContentsDTO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
-                sonarContentsDTO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
+                sonarContentsVO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
+                sonarContentsVO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
+                sonarContentsVO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
             } else {
                 Map<String, String> analyseMap = new HashMap<>();
                 analyseMap.put("project", key);
@@ -3309,7 +3330,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 //查询上一次的分析时间
                 Response<SonarAnalyses> sonarAnalyses = sonarClient.getAnalyses(analyseMap).execute();
                 if (sonarAnalyses.raw().code() == 200 && sonarAnalyses.body().getAnalyses() != null && sonarAnalyses.body().getAnalyses().size() > 0) {
-                    sonarContentsDTO.setDate(sonarAnalyses.body().getAnalyses().get(0).getDate());
+                    sonarContentsVO.setDate(sonarAnalyses.body().getAnalyses().get(0).getDate());
                 }
             }
 
@@ -3318,7 +3339,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 SonarQubeType sonarQubeType = SonarQubeType.forValue(String.valueOf(measure.getMetric()));
                 switch (sonarQubeType) {
                     case BUGS:
-                        SonarContentDTO bug = new SonarContentDTO();
+                        SonarContentVO bug = new SonarContentVO();
                         bug.setKey(measure.getMetric());
                         bug.setValue(measure.getValue() == null ? "0" : measure.getValue());
                         bug.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=BUG", sonarqubeUrl, key));
@@ -3333,10 +3354,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                         } catch (IOException e) {
                             throw new CommonException(e);
                         }
-                        sonarContentDTOS.add(bug);
+                        sonarContentVOS.add(bug);
                         break;
                     case VULNERABILITIES:
-                        SonarContentDTO vulnerabilities = new SonarContentDTO();
+                        SonarContentVO vulnerabilities = new SonarContentVO();
                         vulnerabilities.setKey(measure.getMetric());
                         vulnerabilities.setValue(measure.getValue() == null ? "0" : measure.getValue());
                         vulnerabilities.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=VULNERABILITY", sonarqubeUrl, key));
@@ -3373,10 +3394,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                         } catch (IOException e) {
                             throw new CommonException(e);
                         }
-                        sonarContentDTOS.add(vulnerabilities);
+                        sonarContentVOS.add(vulnerabilities);
                         break;
                     case NEW_BUGS:
-                        SonarContentDTO newBug = new SonarContentDTO();
+                        SonarContentVO newBug = new SonarContentVO();
                         newBug.setKey(measure.getMetric());
                         newBug.setValue(measure.getValue() == null ? "0" : measure.getValue());
                         newBug.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=BUG", sonarqubeUrl, key));
@@ -3393,10 +3414,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                         } catch (IOException e) {
                             throw new CommonException(e);
                         }
-                        sonarContentDTOS.add(newBug);
+                        sonarContentVOS.add(newBug);
                         break;
                     case NEW_VULNERABILITIES:
-                        SonarContentDTO newVulnerabilities = new SonarContentDTO();
+                        SonarContentVO newVulnerabilities = new SonarContentVO();
                         newVulnerabilities.setKey(measure.getMetric());
                         newVulnerabilities.setValue(measure.getPeriods().get(0).getValue());
                         newVulnerabilities.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=VULNERABILITY", sonarqubeUrl, key));
@@ -3411,10 +3432,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                         } catch (IOException e) {
                             throw new CommonException(e);
                         }
-                        sonarContentDTOS.add(newVulnerabilities);
+                        sonarContentVOS.add(newVulnerabilities);
                         break;
                     case SQALE_INDEX:
-                        SonarContentDTO debt = new SonarContentDTO();
+                        SonarContentVO debt = new SonarContentVO();
                         debt.setKey(measure.getMetric());
                         debt.setValue(measure.getValue() == null ? "0" : measure.getValue());
                         double day = measure.getValue() == null ? 0 : TypeUtil.objTodouble(measure.getValue()) / 480;
@@ -3427,10 +3448,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                             debt.setValue(String.format("%s%s", Math.round(TypeUtil.objTodouble(measure.getValue() == null ? 0 : measure.getValue())), measure.getValue() == null ? "" : "min"));
                         }
                         debt.setUrl(String.format("%sproject/issues?facetMode=effort&id=%s&resolved=false&types=CODE_SMELL", sonarqubeUrl, key));
-                        sonarContentDTOS.add(debt);
+                        sonarContentVOS.add(debt);
                         break;
                     case CODE_SMELLS:
-                        SonarContentDTO codeSmells = new SonarContentDTO();
+                        SonarContentVO codeSmells = new SonarContentVO();
                         codeSmells.setKey(measure.getMetric());
                         double result = measure.getValue() == null ? 0 : TypeUtil.objToLong(measure.getValue()) / 1000;
                         if (result > 0) {
@@ -3444,10 +3465,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                             codeSmells.setValue(measure.getValue() == null ? "0" : measure.getValue());
                         }
                         codeSmells.setUrl(String.format("%sproject/issues?id=%s&resolved=false&types=CODE_SMELL", sonarqubeUrl, key));
-                        sonarContentDTOS.add(codeSmells);
+                        sonarContentVOS.add(codeSmells);
                         break;
                     case NEW_TECHNICAL_DEBT:
-                        SonarContentDTO newDebt = new SonarContentDTO();
+                        SonarContentVO newDebt = new SonarContentVO();
                         newDebt.setKey(measure.getMetric());
                         double newDay = TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) / 480;
                         double newHour = TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) / 60;
@@ -3459,10 +3480,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                             newDebt.setValue(String.format("%s%s", measure.getPeriods().get(0).getValue(), measure.getPeriods().get(0).getValue().equals("0") ? "" : "min"));
                         }
                         newDebt.setUrl(String.format("%sproject/issues?facetMode=effort&id=%s&resolved=false&sinceLeakPeriod=true&types=CODE_SMELL", sonarqubeUrl, key));
-                        sonarContentDTOS.add(newDebt);
+                        sonarContentVOS.add(newDebt);
                         break;
                     case NEW_CODE_SMELLS:
-                        SonarContentDTO newCodeSmells = new SonarContentDTO();
+                        SonarContentVO newCodeSmells = new SonarContentVO();
                         newCodeSmells.setKey(measure.getMetric());
                         double newResult = TypeUtil.objToLong(measure.getPeriods().get(0).getValue()) / 1000;
                         if (newResult > 0) {
@@ -3476,25 +3497,25 @@ public class ApplicationServiceImpl implements ApplicationService {
                             newCodeSmells.setValue(measure.getPeriods().get(0).getValue());
                         }
                         newCodeSmells.setUrl(String.format("%sproject/issues?id=%s&resolved=false&sinceLeakPeriod=true&types=CODE_SMELL", sonarqubeUrl, key));
-                        sonarContentDTOS.add(newCodeSmells);
+                        sonarContentVOS.add(newCodeSmells);
                         break;
                     case COVERAGE:
-                        SonarContentDTO coverage = new SonarContentDTO();
+                        SonarContentVO coverage = new SonarContentVO();
                         coverage.setKey(measure.getMetric());
                         coverage.setValue(measure.getValue() == null ? "0" : measure.getValue());
                         coverage.setUrl(String.format("%scomponent_measures?id=%s&metric=coverage", sonarqubeUrl, key));
-                        sonarContentDTOS.add(coverage);
+                        sonarContentVOS.add(coverage);
                         break;
                     case NEW_COVERAGE:
-                        SonarContentDTO newCoverage = new SonarContentDTO();
+                        SonarContentVO newCoverage = new SonarContentVO();
                         newCoverage.setKey(measure.getMetric());
                         BigDecimal codeSmellDecimal = new BigDecimal(measure.getPeriods().get(0).getValue());
                         newCoverage.setValue(String.format("%s", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
                         newCoverage.setUrl(String.format("%scomponent_measures?id=%s&metric=new_coverage", sonarqubeUrl, key));
-                        sonarContentDTOS.add(newCoverage);
+                        sonarContentVOS.add(newCoverage);
                         break;
                     case DUPLICATED_LINES_DENSITY:
-                        SonarContentDTO duplicated = new SonarContentDTO();
+                        SonarContentVO duplicated = new SonarContentVO();
                         duplicated.setKey(measure.getMetric());
                         duplicated.setValue(measure.getValue() == null ? "0" : measure.getValue());
                         duplicated.setUrl(String.format("%scomponent_measures?id=%s&metric=duplicated_lines_density", sonarqubeUrl, key));
@@ -3507,17 +3528,17 @@ public class ApplicationServiceImpl implements ApplicationService {
                         } else {
                             duplicated.setRate("D");
                         }
-                        sonarContentDTOS.add(duplicated);
+                        sonarContentVOS.add(duplicated);
                         break;
                     case DUPLICATED_BLOCKS:
-                        SonarContentDTO duplicatedBlocks = new SonarContentDTO();
+                        SonarContentVO duplicatedBlocks = new SonarContentVO();
                         duplicatedBlocks.setKey(measure.getMetric());
                         duplicatedBlocks.setValue(measure.getValue() == null ? "0" : measure.getValue());
                         duplicatedBlocks.setUrl(String.format("%scomponent_measures?id=%s&metric=duplicated_blocks", sonarqubeUrl, key));
-                        sonarContentDTOS.add(duplicatedBlocks);
+                        sonarContentVOS.add(duplicatedBlocks);
                         break;
                     case NEW_DUPLICATED_LINES_DENSITY:
-                        SonarContentDTO newDuplicated = new SonarContentDTO();
+                        SonarContentVO newDuplicated = new SonarContentVO();
                         newDuplicated.setKey(measure.getMetric());
                         if (TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) == 0) {
                             newDuplicated.setValue("0");
@@ -3526,10 +3547,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                             newDuplicated.setValue(TypeUtil.objToString(b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
                         }
                         newDuplicated.setUrl(String.format("%scomponent_measures?id=%s&metric=new_duplicated_lines_density", sonarqubeUrl, key));
-                        sonarContentDTOS.add(newDuplicated);
+                        sonarContentVOS.add(newDuplicated);
                         break;
                     case NCLOC:
-                        SonarContentDTO ncloc = new SonarContentDTO();
+                        SonarContentVO ncloc = new SonarContentVO();
                         ncloc.setKey(measure.getMetric());
                         double nclocResult = TypeUtil.objTodouble(measure.getValue()) / 1000;
                         if (nclocResult >= 0) {
@@ -3579,46 +3600,46 @@ public class ApplicationServiceImpl implements ApplicationService {
                         } else {
                             ncloc.setRate("XL");
                         }
-                        sonarContentDTOS.add(ncloc);
+                        sonarContentVOS.add(ncloc);
                         break;
                     case TESTS:
-                        SonarContentDTO test = new SonarContentDTO();
+                        SonarContentVO test = new SonarContentVO();
                         test.setKey(measure.getMetric());
                         test.setValue(measure.getValue() == null ? "0" : measure.getValue());
                         test.setUrl(String.format("%scomponent_measures?id=%s&metric=tests", sonarqubeUrl, key));
-                        sonarContentDTOS.add(test);
+                        sonarContentVOS.add(test);
                         break;
                     case NCLOC_LANGUAGE_DISTRIBUTION:
-                        SonarContentDTO nclocLanguage = new SonarContentDTO();
+                        SonarContentVO nclocLanguage = new SonarContentVO();
                         nclocLanguage.setKey(measure.getMetric());
                         nclocLanguage.setValue(measure.getValue());
-                        sonarContentDTOS.add(nclocLanguage);
+                        sonarContentVOS.add(nclocLanguage);
                         break;
                     case QUALITY_GATE_DETAILS:
                         Quality quality = gson.fromJson(measure.getValue(), Quality.class);
-                        sonarContentsDTO.setStatus(quality.getLevel());
+                        sonarContentsVO.setStatus(quality.getLevel());
                         break;
                     default:
                         break;
                 }
             });
-            sonarContentsDTO.setSonarContents(sonarContentDTOS);
+            sonarContentsVO.setSonarContents(sonarContentVOS);
         } catch (IOException e) {
             throw new CommonException(e);
         }
-        return sonarContentsDTO;
+        return sonarContentsVO;
     }
 
     @Override
-    public SonarTableDTO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime) {
+    public SonarTableVO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime) {
         if (sonarqubeUrl.equals("")) {
-            return new SonarTableDTO();
+            return new SonarTableVO();
         }
         Calendar c = Calendar.getInstance();
         c.setTime(endTime);
         c.add(Calendar.DAY_OF_MONTH, 1);
         Date tomorrow = c.getTime();
-        SonarTableDTO sonarTableDTO = new SonarTableDTO();
+        SonarTableVO sonarTableVO = new SonarTableVO();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
         ApplicationDTO applicationDTO = baseQuery(appId);
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
@@ -3635,7 +3656,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
                 if (sonarTablesResponse.raw().code() != 200) {
                     if (sonarTablesResponse.raw().code() == 404) {
-                        return new SonarTableDTO();
+                        return new SonarTableVO();
                     }
                     if (sonarTablesResponse.raw().code() == 401) {
                         throw new CommonException("error.sonarqube.user");
@@ -3654,8 +3675,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                             bugs.add(sonarHistroy.getValue());
                             dates.add(sonarHistroy.getDate());
                         });
-                        sonarTableDTO.setDates(dates);
-                        sonarTableDTO.setBugs(bugs);
+                        sonarTableVO.setDates(dates);
+                        sonarTableVO.setBugs(bugs);
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.CODE_SMELLS.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
@@ -3663,7 +3684,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         ).forEach(sonarHistroy -> {
                             codeSmells.add(sonarHistroy.getValue());
                         });
-                        sonarTableDTO.setCodeSmells(codeSmells);
+                        sonarTableVO.setCodeSmells(codeSmells);
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.VULNERABILITIES.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
@@ -3671,6 +3692,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         ).forEach(sonarHistroy -> {
                             vulnerabilities.add(sonarHistroy.getValue());
                         });
+<<<<<<< HEAD
                         sonarTableDTO.setVulnerabilities(vulnerabilities);
 <<<<<<< HEAD
 >>>>>>> [IMP] 修改AppControler重构
@@ -3678,6 +3700,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 >>>>>>> [IMP]重构后端代码
 =======
 >>>>>>> [IMP]重构后端断码
+=======
+                        sonarTableVO.setVulnerabilities(vulnerabilities);
+>>>>>>> [REF] refactor original DTO to VO
                     }
                 });
             } catch (IOException e) {
@@ -3690,7 +3715,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
                 if (sonarTablesResponse.raw().code() != 200) {
                     if (sonarTablesResponse.raw().code() == 404) {
-                        return new SonarTableDTO();
+                        return new SonarTableVO();
                     }
                     throw new CommonException(sonarTablesResponse.errorBody().string());
                 }
@@ -3706,7 +3731,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         ).forEach(sonarHistroy -> {
                             coverage.add(sonarHistroy.getValue());
                         });
-                        sonarTableDTO.setCoverage(coverage);
+                        sonarTableVO.setCoverage(coverage);
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.LINES_TO_COVER.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
@@ -3715,8 +3740,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                             linesToCover.add(sonarHistroy.getValue());
                             dates.add(sonarHistroy.getDate());
                         });
-                        sonarTableDTO.setDates(dates);
-                        sonarTableDTO.setLinesToCover(linesToCover);
+                        sonarTableVO.setDates(dates);
+                        sonarTableVO.setLinesToCover(linesToCover);
                     }
 
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.UNCOVERED_LINES.getType())) {
@@ -3730,7 +3755,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 for (int i = 0; i < linesToCover.size(); i++) {
                     coverLines.add(TypeUtil.objToString(TypeUtil.objToLong(linesToCover.get(i)) - TypeUtil.objToLong(unCoverLines.get(i))));
                 }
-                sonarTableDTO.setCoverLines(coverLines);
+                sonarTableVO.setCoverLines(coverLines);
             } catch (IOException e) {
                 throw new CommonException(e);
             }
@@ -3741,7 +3766,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 Response<SonarTables> sonarTablesResponse = sonarClient.getSonarTables(queryMap).execute();
                 if (sonarTablesResponse.raw().code() != 200) {
                     if (sonarTablesResponse.raw().code() == 404) {
-                        return new SonarTableDTO();
+                        return new SonarTableVO();
                     }
                     throw new CommonException(sonarTablesResponse.errorBody().string());
                 }
@@ -3757,8 +3782,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                             nclocs.add(sonarHistroy.getValue());
                             dates.add(sonarHistroy.getDate());
                         });
-                        sonarTableDTO.setNclocs(nclocs);
-                        sonarTableDTO.setDates(dates);
+                        sonarTableVO.setNclocs(nclocs);
+                        sonarTableVO.setDates(dates);
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
@@ -3766,7 +3791,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         ).forEach(sonarHistroy ->
                                 duplicatedLines.add(sonarHistroy.getValue())
                         );
-                        sonarTableDTO.setDuplicatedLines(duplicatedLines);
+                        sonarTableVO.setDuplicatedLines(duplicatedLines);
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.DUPLICATED_LINES_DENSITY.getType())) {
                         sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
@@ -3774,14 +3799,14 @@ public class ApplicationServiceImpl implements ApplicationService {
                         ).forEach(sonarHistroy -> {
                             duplicatedLinesRate.add(sonarHistroy.getValue());
                         });
-                        sonarTableDTO.setDuplicatedLinesRate(duplicatedLinesRate);
+                        sonarTableVO.setDuplicatedLinesRate(duplicatedLinesRate);
                     }
                 });
             } catch (IOException e) {
                 throw new CommonException(e);
             }
         }
-        return sonarTableDTO;
+        return sonarTableVO;
     }
 
 <<<<<<< HEAD
@@ -4076,6 +4101,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 >>>>>>> [IMP]重构后端代码
@@ -4103,20 +4129,29 @@ public class ApplicationServiceImpl implements ApplicationService {
                     if (sonarContentDTO.getRate().equals("A")) {
                         sonarContentDTO.setRate("B");
 >>>>>>> [IMP]重构后端断码
+=======
+    private void getRate(SonarContentVO sonarContentVO, List<Facet> facets) {
+        sonarContentVO.setRate("A");
+        facets.stream().filter(facet -> facet.getProperty().equals(SEVERITIES)).forEach(facet -> {
+            facet.getValues().stream().forEach(value -> {
+                if (value.getVal().equals(Rate.MINOR.getRate()) && value.getCount() >= 1) {
+                    if (sonarContentVO.getRate().equals("A")) {
+                        sonarContentVO.setRate("B");
+>>>>>>> [REF] refactor original DTO to VO
                     }
                 }
                 if (value.getVal().equals(Rate.MAJOR.getRate()) && value.getCount() >= 1) {
-                    if (!sonarContentDTO.getRate().equals("D") && !sonarContentDTO.getRate().equals("E")) {
-                        sonarContentDTO.setRate("C");
+                    if (!sonarContentVO.getRate().equals("D") && !sonarContentVO.getRate().equals("E")) {
+                        sonarContentVO.setRate("C");
                     }
                 }
                 if (value.getVal().equals(Rate.CRITICAL.getRate()) && value.getCount() >= 1) {
-                    if (!sonarContentDTO.getRate().equals("E")) {
-                        sonarContentDTO.setRate("D");
+                    if (!sonarContentVO.getRate().equals("E")) {
+                        sonarContentVO.setRate("D");
                     }
                 }
                 if (value.getVal().equals(Rate.BLOCKER.getRate()) && value.getCount() >= 1) {
-                    sonarContentDTO.setRate("E");
+                    sonarContentVO.setRate("E");
                 }
             });
 <<<<<<< HEAD
@@ -4315,15 +4350,15 @@ public class ApplicationServiceImpl implements ApplicationService {
         return applicationMapper.listAll(projectId);
     }
 
-    private ApplicationDTO fromImportDtoToEntity(ApplicationImportDTO applicationImportDTO) {
+    private ApplicationDTO fromImportDtoToEntity(ApplicationImportVO applicationImportVO) {
         ApplicationDTO applicationDTO = new ApplicationDTO();
-        applicationDTO.setProjectId(applicationImportDTO.getProjectId());
-        BeanUtils.copyProperties(applicationImportDTO, applicationDTO);
-        if (applicationImportDTO.getApplicationTemplateId() != null) {
-            applicationDTO.setAppTemplateId(applicationImportDTO.getApplicationTemplateId());
+        applicationDTO.setProjectId(applicationImportVO.getProjectId());
+        BeanUtils.copyProperties(applicationImportVO, applicationDTO);
+        if (applicationImportVO.getApplicationTemplateId() != null) {
+            applicationDTO.setAppTemplateId(applicationImportVO.getApplicationTemplateId());
         }
-        applicationDTO.setHarborConfigId(applicationImportDTO.getHarborConfigId());
-        applicationDTO.setChartConfigId(applicationImportDTO.getChartConfigId());
+        applicationDTO.setHarborConfigId(applicationImportVO.getHarborConfigId());
+        applicationDTO.setChartConfigId(applicationImportVO.getChartConfigId());
         return applicationDTO;
     }
 

@@ -10,15 +10,15 @@ import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO;
 
 public interface DevopsGitlabPipelineService {
 
-    void create(PipelineWebHookDTO pipelineWebHookDTO, String token);
+    void create(PipelineWebHookVO pipelineWebHookVO, String token);
 
-    void updateStages(JobWebHookDTO jobWebHookDTO);
+    void updateStages(JobWebHookVO jobWebHookVO);
 
-    PipelineTimeDTO getPipelineTime(Long appId, Date startTime, Date endTime);
+    PipelineTimeVO getPipelineTime(Long appId, Date startTime, Date endTime);
 
-    PipelineFrequencyDTO getPipelineFrequency(Long appId, Date startTime, Date endTime);
+    PipelineFrequencyVO getPipelineFrequency(Long appId, Date startTime, Date endTime);
 
-    void handleCreate(PipelineWebHookDTO pipelineWebHookDTO);
+    void handleCreate(PipelineWebHookVO pipelineWebHookVO);
 
     PageInfo<DevopsGitlabPipelineVO> pageByOptions(Long appId, String branch, PageRequest pageRequest, Date startTime, Date endTime);
 

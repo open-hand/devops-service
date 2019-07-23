@@ -10,7 +10,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
-import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqDTO;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
 import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -45,9 +45,9 @@ public class DevopsCustomizeResourceController {
     @ApiOperation(value = "创建其他k8s资源")
     @PostMapping
     public ResponseEntity createResource(@PathVariable(value = "project_id") Long projectId,
-                                         @ModelAttribute DevopsCustomizeResourceReqDTO devopsCustomizeResourceReqDTO,
+                                         @ModelAttribute DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO,
                                          @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
-        devopsCustomizeResourceService.createOrUpdateResource(projectId, devopsCustomizeResourceReqDTO, contentFile);
+        devopsCustomizeResourceService.createOrUpdateResource(projectId, devopsCustomizeResourceReqVO, contentFile);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 

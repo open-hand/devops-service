@@ -112,8 +112,8 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         //校验应用和版本
         if (projectId != null) {
             baseCheckPub(applicationReleasingVO.getAppId());
-            List<AppMarketVersionDTO> appVersions = applicationReleasingVO.getAppVersions();
-            ids = appVersions.stream().map(AppMarketVersionDTO::getId)
+            List<AppMarketVersionVO> appVersions = applicationReleasingVO.getAppVersions();
+            ids = appVersions.stream().map(AppMarketVersionVO::getId)
                     .collect(Collectors.toCollection(ArrayList::new));
             applicationVersionService.baseCheckByAppIdAndVersionIds(applicationReleasingVO.getAppId(), ids);
             applicationVersionService.baseUpdatePublishLevelByIds(ids, 1L);
@@ -197,8 +197,8 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public AppVersionAndValueDTO getValuesAndChart(Long versionId) {
-        AppVersionAndValueDTO appVersionAndValueDTO = new AppVersionAndValueDTO();
+    public AppVersionAndValueVO getValuesAndChart(Long versionId) {
+        AppVersionAndValueVO appVersionAndValueVO = new AppVersionAndValueVO();
         String versionValue = FileUtil.checkValueFormat(applicationVersionService.baseQueryValue(versionId));
         ApplicationVersionRemoteVO versionRemoteDTO = new ApplicationVersionRemoteVO();
         versionRemoteDTO.setValues(versionValue);
@@ -210,15 +210,15 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
             versionRemoteDTO.setReadMeValue(applicationVersionReadmeMapper.selectByPrimaryKey(applicationVersionDTO.getReadmeValueId()).getReadme());
             ApplicationDTO applicationDTO = applicationService.baseQuery(applicationVersionDTO.getAppId());
             if (applicationDTO.getHarborConfigId() == null) {
-                appVersionAndValueDTO.setHarbor(gson.fromJson(devopsProjectConfigService.baseQueryByName(null, "harbor_default").getConfig(), ProjectConfigVO.class));
-                appVersionAndValueDTO.setChart(gson.fromJson(devopsProjectConfigService.baseQueryByName(null, "chart_default").getConfig(), ProjectConfigVO.class));
+                appVersionAndValueVO.setHarbor(gson.fromJson(devopsProjectConfigService.baseQueryByName(null, "harbor_default").getConfig(), ProjectConfigVO.class));
+                appVersionAndValueVO.setChart(gson.fromJson(devopsProjectConfigService.baseQueryByName(null, "chart_default").getConfig(), ProjectConfigVO.class));
             } else {
-                appVersionAndValueDTO.setHarbor(gson.fromJson(devopsProjectConfigRepository.baseQuery(applicationDTO.getHarborConfigId()).getConfig(), ProjectConfigVO.class));
-                appVersionAndValueDTO.setChart(gson.fromJson(devopsProjectConfigRepository.baseQuery(applicationDTO.getChartConfigId()).getConfig(), ProjectConfigVO.class));
+                appVersionAndValueVO.setHarbor(gson.fromJson(devopsProjectConfigRepository.baseQuery(applicationDTO.getHarborConfigId()).getConfig(), ProjectConfigVO.class));
+                appVersionAndValueVO.setChart(gson.fromJson(devopsProjectConfigRepository.baseQuery(applicationDTO.getChartConfigId()).getConfig(), ProjectConfigVO.class));
             }
-            appVersionAndValueDTO.setVersionRemoteDTO(versionRemoteDTO);
+            appVersionAndValueVO.setVersionRemoteDTO(versionRemoteDTO);
         }
-        return appVersionAndValueDTO;
+        return appVersionAndValueVO;
     }
 
     @Override
@@ -250,11 +250,11 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     public ApplicationReleasingVO queryById(Long projectId, Long appMarketId) {
         ApplicationShareDTO applicationShareDTO = baseQuery(projectId, appMarketId);
         List<ApplicationShareVersionDTO> versionDOList = baseListByOptions(projectId, appMarketId, true);
-        List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
-                .convertList(versionDOList, AppMarketVersionDTO.class);
+        List<AppMarketVersionVO> appMarketVersionVOList = ConvertHelper
+                .convertList(versionDOList, AppMarketVersionVO.class);
         ApplicationReleasingVO applicationReleasingDTO =
                 ConvertHelper.convert(applicationShareDTO, ApplicationReleasingVO.class);
-        applicationReleasingDTO.setAppVersions(appMarketVersionDTOList);
+        applicationReleasingDTO.setAppVersions(appMarketVersionVOList);
 
         return applicationReleasingDTO;
     }
@@ -264,30 +264,30 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         ApplicationShareDTO applicationShareDTO = baseQuery(null, appMarketId);
         ApplicationDTO applicationDTO = applicationService.baseQuery(applicationShareDTO.getId());
         List<ApplicationShareVersionDTO> versionDOList = baseListByOptions(null, appMarketId, true);
-        List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
-                .convertList(versionDOList, AppMarketVersionDTO.class)
+        List<AppMarketVersionVO> appMarketVersionVOList = ConvertHelper
+                .convertList(versionDOList, AppMarketVersionVO.class)
                 .stream()
                 .sorted(this::compareAppMarketVersionDTO)
                 .collect(Collectors.toCollection(ArrayList::new));
         ApplicationReleasingVO applicationReleasingDTO =
                 ConvertHelper.convert(applicationShareDTO, ApplicationReleasingVO.class);
-        applicationReleasingDTO.setAppVersions(appMarketVersionDTOList);
+        applicationReleasingDTO.setAppVersions(appMarketVersionVOList);
 
         Long applicationId = applicationDTO.getId();
         applicationDTO = applicationService.baseQuery(applicationId);
 
-        Date latestUpdateDate = appMarketVersionDTOList.isEmpty()
+        Date latestUpdateDate = appMarketVersionVOList.isEmpty()
                 ? getLaterDate(applicationDTO.getLastUpdateDate(), applicationShareDTO.getMarketUpdatedDate())
                 : getLatestDate(
-                appMarketVersionDTOList.get(0).getUpdatedDate(),
+                appMarketVersionVOList.get(0).getUpdatedDate(),
                 applicationDTO.getLastUpdateDate(),
                 applicationShareDTO.getMarketUpdatedDate());
         applicationReleasingDTO.setLastUpdatedDate(latestUpdateDate);
 
-        Boolean versionExist = appMarketVersionDTOList.stream().anyMatch(t -> t.getId().equals(versionId));
+        Boolean versionExist = appMarketVersionVOList.stream().anyMatch(t -> t.getId().equals(versionId));
         Long latestVersionId = versionId;
         if (!versionExist) {
-            Optional<AppMarketVersionDTO> optional = appMarketVersionDTOList.stream()
+            Optional<AppMarketVersionVO> optional = appMarketVersionVOList.stream()
                     .max(this::compareAppMarketVersionDTO);
             latestVersionId = optional.isPresent()
                     ? optional.get().getId()
@@ -360,34 +360,34 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public void update(Long projectId, Long appMarketId, List<AppMarketVersionDTO> versionDTOList) {
+    public void update(Long projectId, Long appMarketId, List<AppMarketVersionVO> versionDTOList) {
         baseCheckByProjectId(projectId, appMarketId);
 
         ApplicationReleasingVO applicationReleasingDTO = queryById(projectId, appMarketId);
 
         List<Long> ids = versionDTOList.stream()
-                .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
+                .map(AppMarketVersionVO::getId).collect(Collectors.toCollection(ArrayList::new));
 
         applicationVersionService.baseCheckByAppIdAndVersionIds(applicationReleasingDTO.getAppId(), ids);
         applicationVersionService.baseUpdatePublishLevelByIds(ids, 1L);
     }
 
     @Override
-    public List<AppMarketVersionDTO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish) {
+    public List<AppMarketVersionVO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish) {
         return ConvertHelper.convertList(baseListByOptions(projectId, appMarketId, isPublish),
-                AppMarketVersionDTO.class);
+                AppMarketVersionVO.class);
     }
 
     @Override
-    public PageInfo<AppMarketVersionDTO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish,
-                                                              PageRequest pageRequest, String searchParam) {
+    public PageInfo<AppMarketVersionVO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish,
+                                                             PageRequest pageRequest, String searchParam) {
         return ConvertUtils.convertPage(
                 basePageByOptions(projectId, appMarketId, isPublish, pageRequest, searchParam),
-                AppMarketVersionDTO.class);
+                AppMarketVersionVO.class);
     }
 
     @Override
-    public AppMarketTgzDTO upload(Long projectId, MultipartFile file) {
+    public AppMarketTgzVO upload(Long projectId, MultipartFile file) {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         String dirName = UUIDTool.genUuid();
@@ -403,7 +403,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         FileUtil.unZipFiles(new File(path), destPath);
         FileUtil.deleteFile(path);
         File zipDirectory = new File(destPath);
-        AppMarketTgzDTO appMarketTgzDTO = new AppMarketTgzDTO();
+        AppMarketTgzVO appMarketTgzVO = new AppMarketTgzVO();
 
         if (zipDirectory.exists() && zipDirectory.isDirectory()) {
             File[] chartsDirectory = zipDirectory.listFiles();
@@ -417,7 +417,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
                 List<File> appFileList = Arrays.stream(appFiles)
                         .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
                 // do sth with appFileList
-                analyzeAppFile(appMarketTgzDTO.getAppMarketList(), appFileList);
+                analyzeAppFile(appMarketTgzVO.getAppMarketList(), appFileList);
             } else {
                 FileUtil.deleteDirectory(zipDirectory);
                 throw new CommonException("error.zip.illegal");
@@ -426,8 +426,8 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
             FileUtil.deleteDirectory(zipDirectory);
             throw new CommonException("error.zip.empty");
         }
-        appMarketTgzDTO.setFileCode(dirName);
-        return appMarketTgzDTO;
+        appMarketTgzVO.setFileCode(dirName);
+        return appMarketTgzVO;
     }
 
     @Override
@@ -532,7 +532,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public AppVersionAndValueDTO queryConfigByVerionId(Long appId, Long versionId, String accessToken) {
+    public AppVersionAndValueVO queryConfigByVerionId(Long appId, Long versionId, String accessToken) {
         DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
@@ -540,7 +540,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
         Map<String, Object> map = new HashMap<>();
         map.put("access_token", accessToken);
-        Response<AppVersionAndValueDTO> versionAndValueDTOResponse = null;
+        Response<AppVersionAndValueVO> versionAndValueDTOResponse = null;
         try {
             versionAndValueDTOResponse = shareClient.getConfigInfoByVerionId(appId, versionId, map).execute();
             if (!versionAndValueDTOResponse.isSuccessful()) {
@@ -558,10 +558,10 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
      * @param appMarkets 应用市场应用信息
      */
     @Override
-    public void export(List<AppMarketDownloadDTO> appMarkets, String fileName) {
+    public void export(List<AppMarketDownloadVO> appMarkets, String fileName) {
         List<String> images = new ArrayList<>();
-        for (AppMarketDownloadDTO appMarketDownloadDTO : appMarkets) {
-            ApplicationReleasingVO applicationReleasingDTO = queryShareApp(appMarketDownloadDTO.getAppMarketId(), null);
+        for (AppMarketDownloadVO appMarketDownloadVO : appMarkets) {
+            ApplicationReleasingVO applicationReleasingDTO = queryShareApp(appMarketDownloadVO.getAppMarketId(), null);
             String destpath = String.format("charts%s%s",
                     FILE_SEPARATOR,
                     applicationReleasingDTO.getCode());
@@ -570,13 +570,13 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
             OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
             applicationReleasingDTO.setAppVersions(
                     applicationReleasingDTO.getAppVersions().stream()
-                            .filter(t -> appMarketDownloadDTO.getAppVersionIds().contains(t.getId()))
+                            .filter(t -> appMarketDownloadVO.getAppVersionIds().contains(t.getId()))
                             .collect(Collectors.toCollection(ArrayList::new))
             );
             String appMarketJson = gson.toJson(applicationReleasingDTO);
             FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode() + JSON_FILE, appMarketJson);
             //下载chart taz包
-            getChart(images, appMarketDownloadDTO, destpath, applicationDTO, projectDTO, organizationDTO);
+            getChart(images, appMarketDownloadVO, destpath, applicationDTO, projectDTO, organizationDTO);
             StringBuilder stringBuilder = new StringBuilder();
             for (String image : images) {
                 stringBuilder.append(image);
@@ -597,9 +597,9 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public AccessTokenCheckResultDTO checkToken(AccessTokenDTO tokenDTO) {
+    public AccessTokenCheckResultVO checkToken(AccessTokenVO tokenDTO) {
         AppShareClient appShareClient = RetrofitHandler.getAppShareClient(tokenDTO.getSaasMarketUrl());
-        Response<AccessTokenCheckResultDTO> tokenDTOResponse = null;
+        Response<AccessTokenCheckResultVO> tokenDTOResponse = null;
 
         try {
             tokenDTOResponse = appShareClient.checkTokenExist(tokenDTO.getAccessToken()).execute();
@@ -613,7 +613,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public void saveToken(AccessTokenDTO tokenDTO) {
+    public void saveToken(AccessTokenVO tokenDTO) {
         DevopsMarketConnectInfoDTO connectInfoDO = new DevopsMarketConnectInfoDTO();
         BeanUtils.copyProperties(tokenDTO, connectInfoDO);
         marketConnectInfoRepositpry.baseCreateOrUpdate(connectInfoDO);
@@ -816,7 +816,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         return a.after(b) ? a : b;
     }
 
-    private Integer compareAppMarketVersionDTO(AppMarketVersionDTO s, AppMarketVersionDTO t) {
+    private Integer compareAppMarketVersionDTO(AppMarketVersionVO s, AppMarketVersionVO t) {
         if (s.getUpdatedDate().before(t.getUpdatedDate())) {
             return 1;
         } else {
@@ -890,8 +890,8 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
 
-    private void getChart(List<String> images, AppMarketDownloadDTO appMarketDownloadDTO, String destpath, ApplicationDTO applicationDTO, ProjectDTO projectDTO, OrganizationDTO organizationDTO) {
-        appMarketDownloadDTO.getAppVersionIds().forEach(appVersionId -> {
+    private void getChart(List<String> images, AppMarketDownloadVO appMarketDownloadVO, String destpath, ApplicationDTO applicationDTO, ProjectDTO projectDTO, OrganizationDTO organizationDTO) {
+        appMarketDownloadVO.getAppVersionIds().forEach(appVersionId -> {
 
             ApplicationVersionDTO applicationVersionDTO = applicationVersionService.baseQuery(appVersionId);
             images.add(applicationVersionDTO.getImage());
@@ -899,7 +899,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
         });
     }
 
-    private void createVersion(AppMarketVersionDTO appVersion,
+    private void createVersion(AppMarketVersionVO appVersion,
                                String organizationCode,
                                String projectCode,
                                String appCode,

@@ -4,9 +4,10 @@ import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.DeployVersionDTO
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.vo.iam.RoleDTO
+import io.choerodon.devops.api.vo.DeployVersionVO
+import io.choerodon.devops.api.vo.DeployVersionVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
 
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
@@ -111,18 +112,18 @@ class ApplicationVersionControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        List<ProjectWithRoleDTO> list = new ArrayList<>()
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<ProjectWithRoleVO> list = new ArrayList<>()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setId(44)
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("test-name")
         projectWithRoleDTO.setRoles(roleDTOList)
         list.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> page = new PageInfo(list)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> responseEntity2 = new ResponseEntity<>(page, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> page = new PageInfo(list)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> responseEntity2 = new ResponseEntity<>(page, HttpStatus.OK)
         Mockito.when(iamServiceClient.listProjectWithRole(anyLong(), anyInt(), anyInt())).thenReturn(responseEntity2)
         List<UserDO> userDOList = new ArrayList<>()
         UserDO userDO1 = new UserDO()
@@ -276,7 +277,7 @@ class ApplicationVersionControllerSpec extends Specification {
     // 项目下查询应用最新的版本和各环境下部署的版本
     def "GetDeployVersions"() {
         when: '项目下查询应用最新的版本和各环境下部署的版本'
-        def dto = restTemplate.getForObject(mapping + "/app/{app_id}/deployVersions", DeployVersionDTO.class, 1L, 1L)
+        def dto = restTemplate.getForObject(mapping + "/app/{app_id}/deployVersions", DeployVersionVO.class, 1L, 1L)
 
         then: '校验返回结果'
         dto["latestVersion"] == "0.2.0-dev.20180521111826"

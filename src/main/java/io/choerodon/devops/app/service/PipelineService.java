@@ -21,15 +21,15 @@ public interface PipelineService {
 
     PageInfo<PipelineRecordVO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Boolean pendingcheck, Boolean executed, Boolean reviewed);
 
-    PipelineReqDTO create(Long projectId, PipelineReqDTO pipelineReqDTO);
+    PipelineReqVO create(Long projectId, PipelineReqVO pipelineReqVO);
 
-    PipelineReqDTO update(Long projectId, PipelineReqDTO pipelineReqDTO);
+    PipelineReqVO update(Long projectId, PipelineReqVO pipelineReqVO);
 
     PipelineVO updateIsEnabled(Long projectId, Long pipelineId, Integer isEnabled);
 
     void delete(Long projectId, Long pipelineId);
 
-    PipelineReqDTO queryById(Long projectId, Long pipelineId);
+    PipelineReqVO queryById(Long projectId, Long pipelineId);
 
     void execute(Long projectId, Long pipelineId);
 
@@ -37,7 +37,7 @@ public interface PipelineService {
 
     List<PipelineUserVO> audit(Long projectId, PipelineUserRecordRelationshipVO userRecordRelDTO);
 
-    PipelineCheckDeployDTO checkDeploy(Long projectId, Long pipelineId);
+    PipelineCheckDeployVO checkDeploy(Long projectId, Long pipelineId);
 
     io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO createWorkFlowDTO(Long pipelineRecordId, Long pipelineId, String businessKey);
 
@@ -45,11 +45,11 @@ public interface PipelineService {
 
     void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long taskId, Boolean status);
 
-    PipelineRecordReqDTO getRecordById(Long projectId, Long pipelineRecordId);
+    PipelineRecordReqVO getRecordById(Long projectId, Long pipelineRecordId);
 
     void retry(Long projectId, Long pipelineRecordId);
 
-    List<PipelineRecordListDTO> queryByPipelineId(Long pipelineId);
+    List<PipelineRecordListVO> queryByPipelineId(Long pipelineId);
 
     void checkName(Long projectId, String name);
 
@@ -59,7 +59,7 @@ public interface PipelineService {
 
     void updateStatus(Long pipelineRecordId, Long stageRecordId, String status, String errorInfo);
 
-    CheckAuditDTO checkAudit(Long projectId, PipelineUserRecordRelationshipVO userRecordRelDTO);
+    CheckAuditVO checkAudit(Long projectId, PipelineUserRecordRelationshipVO userRecordRelDTO);
 
     void executeAutoDeploy(Long pipelineId);
 

@@ -6,7 +6,7 @@ public class DevopsMergeRequestVO {
 
     private ProjectReqVO project;
 
-    private ObjectAttributesDTO objectAttributes;
+    private ObjectAttributesVO objectAttributes;
 
     public ProjectReqVO getProject() {
         return project;
@@ -16,11 +16,11 @@ public class DevopsMergeRequestVO {
         this.project = project;
     }
 
-    public ObjectAttributesDTO getObjectAttributes() {
+    public ObjectAttributesVO getObjectAttributes() {
         return objectAttributes;
     }
 
-    public void setObjectAttributes(ObjectAttributesDTO objectAttributesDTODTO) {
+    public void setObjectAttributes(ObjectAttributesVO objectAttributesDTODTO) {
         this.objectAttributes = objectAttributesDTODTO;
     }
 

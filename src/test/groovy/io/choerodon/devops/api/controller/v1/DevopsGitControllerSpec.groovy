@@ -7,8 +7,8 @@ import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsBranchVO
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.vo.iam.RoleDTO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
 
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE
 import io.choerodon.devops.domain.application.repository.*
@@ -334,17 +334,17 @@ class DevopsGitControllerSpec extends Specification {
         Mockito.when(agileServiceClient.queryIssue(anyLong(), anyLong(), anyLong())).thenReturn(issueResponseEntity)
 
         and: '准备数据'
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         when: '获取工程下所有分支名'

@@ -8,19 +8,10 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1beta1HTTPIngressPath;
-import io.kubernetes.client.models.V1beta1Ingress;
-import io.kubernetes.client.models.V1beta1IngressBackend;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.api.vo.DevopsIngressPathVO;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
@@ -30,6 +21,13 @@ import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.models.V1beta1HTTPIngressPath;
+import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.models.V1beta1IngressBackend;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
@@ -52,7 +50,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
 
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeIngress = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(INGRESS))
                 .map(devopsEnvFileResourceE -> {

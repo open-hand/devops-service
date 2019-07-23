@@ -18,7 +18,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
@@ -203,17 +202,17 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             instanceEventVO.setUserImage(iamUserDTO == null ? null : iamUserDTO.getImageUrl());
             instanceEventVO.setCreateTime(devopsEnvCommandDTO.getCreationDate());
             instanceEventVO.setType(devopsEnvCommandDTO.getCommandType());
-            List<PodEventDTO> podEventDTOS = new ArrayList<>();
+            List<PodEventVO> podEventVOS = new ArrayList<>();
             //获取实例中job的event
             List<DevopsCommandEventDTO> devopsCommandEventDTOS = devopsCommandEventService
                     .baseListByCommandIdAndType(devopsEnvCommandDTO.getId(), ResourceType.JOB.getType());
             if (!devopsCommandEventDTOS.isEmpty()) {
                 LinkedHashMap<String, String> jobEvents = getDevopsCommandEvent(devopsCommandEventDTOS);
                 jobEvents.forEach((key, value) -> {
-                    PodEventDTO podEventDTO = new PodEventDTO();
-                    podEventDTO.setName(key);
-                    podEventDTO.setEvent(value);
-                    podEventDTOS.add(podEventDTO);
+                    PodEventVO podEventVO = new PodEventVO();
+                    podEventVO.setName(key);
+                    podEventVO.setEvent(value);
+                    podEventVOS.add(podEventVO);
                 });
             }
             List<DevopsEnvResourceDTO> jobs = baseListByCommandId(devopsEnvCommandDTO.getId());
@@ -225,23 +224,23 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                         devopsEnvResourceDetailService.baesQueryByMessageId(
                                 job.getResourceDetailId());
                 V1Job v1Job = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1Job.class);
-                if (podEventDTOS.size() < 4) {
+                if (podEventVOS.size() < 4) {
                     //job日志
                     if (i <= devopsEnvCommandLogES.size() - 1) {
-                        if (podEventDTOS.size() == i) {
-                            PodEventDTO podEventDTO = new PodEventDTO();
-                            podEventDTO.setName(v1Job.getMetadata().getName());
-                            podEventDTOS.add(podEventDTO);
+                        if (podEventVOS.size() == i) {
+                            PodEventVO podEventVO = new PodEventVO();
+                            podEventVO.setName(v1Job.getMetadata().getName());
+                            podEventVOS.add(podEventVO);
                         }
-                        podEventDTOS.get(i).setLog(devopsEnvCommandLogES.get(i).getLog());
+                        podEventVOS.get(i).setLog(devopsEnvCommandLogES.get(i).getLog());
                     }
                     //获取job状态
-                    if (i <= podEventDTOS.size() - 1) {
-                        if (podEventDTOS.size() == i) {
-                            PodEventDTO podEventDTO = new PodEventDTO();
-                            podEventDTOS.add(podEventDTO);
+                    if (i <= podEventVOS.size() - 1) {
+                        if (podEventVOS.size() == i) {
+                            PodEventVO podEventVO = new PodEventVO();
+                            podEventVOS.add(podEventVO);
                         }
-                        setJobStatus(v1Job, podEventDTOS.get(i));
+                        setJobStatus(v1Job, podEventVOS.get(i));
                     }
                 }
             }
@@ -252,17 +251,17 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 LinkedHashMap<String, String> podEvents = getDevopsCommandEvent(devopsCommandPodEventES);
                 int index = 0;
                 for (Map.Entry<String, String> entry : podEvents.entrySet()) {
-                    PodEventDTO podEventDTO = new PodEventDTO();
-                    podEventDTO.setName(entry.getKey());
-                    podEventDTO.setEvent(entry.getValue());
-                    podEventDTOS.add(podEventDTO);
+                    PodEventVO podEventVO = new PodEventVO();
+                    podEventVO.setName(entry.getKey());
+                    podEventVO.setEvent(entry.getValue());
+                    podEventVOS.add(podEventVO);
                     if (index++ >= 4) {
                         break;
                     }
                 }
             }
-            instanceEventVO.setPodEventDTO(podEventDTOS);
-            if (!instanceEventVO.getPodEventDTO().isEmpty()) {
+            instanceEventVO.setPodEventVO(podEventVOS);
+            if (!instanceEventVO.getPodEventVO().isEmpty()) {
                 instanceEventVOS.add(instanceEventVO);
             }
         });
@@ -270,14 +269,14 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     }
 
 
-    private void setJobStatus(V1Job v1Job, PodEventDTO podEventDTO) {
+    private void setJobStatus(V1Job v1Job, PodEventVO podEventVO) {
         if (v1Job.getStatus() != null) {
             if (v1Job.getStatus().getSucceeded() != null && v1Job.getStatus().getSucceeded() == 1) {
-                podEventDTO.setJobPodStatus("success");
+                podEventVO.setJobPodStatus("success");
             } else if (v1Job.getStatus().getFailed() != null) {
-                podEventDTO.setJobPodStatus("fail");
+                podEventVO.setJobPodStatus("fail");
             } else {
-                podEventDTO.setJobPodStatus("running");
+                podEventVO.setJobPodStatus("running");
             }
         }
     }

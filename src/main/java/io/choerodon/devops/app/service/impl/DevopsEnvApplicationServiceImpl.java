@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageVO;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
@@ -74,9 +73,9 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     }
 
     @Override
-    public List<DevopsEnvPortDTO> listPortByAppAndEnvId(Long envId, Long appId) {
+    public List<DevopsEnvPortVO> listPortByAppAndEnvId(Long envId, Long appId) {
         List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
-        List<DevopsEnvPortDTO> devopsEnvPortDTOS = new ArrayList<>();
+        List<DevopsEnvPortVO> devopsEnvPortVOS = new ArrayList<>();
         devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
             V1beta2Deployment v1beta2Deployment = json.deserialize(
                     devopsEnvMessageVO.getDetail(), V1beta2Deployment.class);
@@ -86,16 +85,16 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
 
                 Optional.ofNullable(ports).ifPresent(portList -> {
                     for (V1ContainerPort port : portList) {
-                        DevopsEnvPortDTO devopsEnvPortDTO = new DevopsEnvPortDTO();
-                        devopsEnvPortDTO.setResourceName(devopsEnvMessageVO.getResourceName());
-                        devopsEnvPortDTO.setPortName(port.getName());
-                        devopsEnvPortDTO.setPortValue(port.getContainerPort());
-                        devopsEnvPortDTOS.add(devopsEnvPortDTO);
+                        DevopsEnvPortVO devopsEnvPortVO = new DevopsEnvPortVO();
+                        devopsEnvPortVO.setResourceName(devopsEnvMessageVO.getResourceName());
+                        devopsEnvPortVO.setPortName(port.getName());
+                        devopsEnvPortVO.setPortValue(port.getContainerPort());
+                        devopsEnvPortVOS.add(devopsEnvPortVO);
                     }
                 });
             }
         });
-        return devopsEnvPortDTOS;
+        return devopsEnvPortVOS;
     }
 
     @Override

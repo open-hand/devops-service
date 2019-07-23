@@ -10,8 +10,7 @@ import java.util.stream.Collectors;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
-import io.choerodon.devops.api.vo.SecretReqDTO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
+import io.choerodon.devops.api.vo.SecretReqVO;
 import io.choerodon.devops.app.service.DevopsEnvCommandService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsSecretService;
@@ -56,7 +55,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
 
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync,
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync,
                                  List<V1Secret> v1Secrets, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforSecret = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(SECRET))
@@ -106,12 +105,12 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 checkSecretName(c7nSecret);
                 DevopsSecretDTO devopsSecretDTO = devopsSecretService
                         .baseQueryByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
-                SecretReqDTO secretReqDTO;
+                SecretReqVO secretReqVO;
                 // 初始化secret对象参数，存在secret则直接创建文件对象关联关系
                 if (devopsSecretDTO == null) {
-                    secretReqDTO = getSecretReqDTO(c7nSecret, envId, CREATE);
-                    devopsSecretService.addSecretByGitOps(secretReqDTO, userId);
-                    devopsSecretDTO = devopsSecretService.baseQueryByEnvIdAndName(envId, secretReqDTO.getName());
+                    secretReqVO = getSecretReqDTO(c7nSecret, envId, CREATE);
+                    devopsSecretService.addSecretByGitOps(secretReqVO, userId);
+                    devopsSecretDTO = devopsSecretService.baseQueryByEnvIdAndName(envId, secretReqVO.getName());
                 }
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
                         .baseQuery(devopsSecretDTO.getCommandId());
@@ -143,16 +142,16 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                         .baseQueryByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
                 checkSecretName(c7nSecret);
                 // 初始化secret对象参数,更新secret并更新文件对象关联关系
-                SecretReqDTO secretReqDTO = getSecretReqDTO(c7nSecret, envId, "update");
-                secretReqDTO.setId(devopsSecretDTO.getId());
-                if (secretReqDTO.equals(ConvertHelper.convert(devopsSecretDTO, SecretReqDTO.class))) {
+                SecretReqVO secretReqVO = getSecretReqDTO(c7nSecret, envId, "update");
+                secretReqVO.setId(devopsSecretDTO.getId());
+                if (secretReqVO.equals(ConvertHelper.convert(devopsSecretDTO, SecretReqVO.class))) {
                     isNotChange = true;
                 }
 
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsSecretDTO.getCommandId());
                 if (!isNotChange) {
                     devopsSecretService
-                            .updateDevopsSecretByGitOps(projectId, devopsSecretDTO.getId(), secretReqDTO, userId);
+                            .updateDevopsSecretByGitOps(projectId, devopsSecretDTO.getId(), secretReqVO, userId);
                     DevopsSecretDTO newSecretDTO = devopsSecretService
                             .baseQueryByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
                     devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(newSecretDTO.getCommandId());
@@ -183,26 +182,26 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         }
     }
 
-    private SecretReqDTO getSecretReqDTO(V1Secret c7nSecret, Long envId, String type) {
-        SecretReqDTO secretReqDTO = new SecretReqDTO();
-        secretReqDTO.setName(c7nSecret.getMetadata().getName());
-        secretReqDTO.setDescription("");
-        secretReqDTO.setType(type);
-        secretReqDTO.setEnvId(envId);
+    private SecretReqVO getSecretReqDTO(V1Secret c7nSecret, Long envId, String type) {
+        SecretReqVO secretReqVO = new SecretReqVO();
+        secretReqVO.setName(c7nSecret.getMetadata().getName());
+        secretReqVO.setDescription("");
+        secretReqVO.setType(type);
+        secretReqVO.setEnvId(envId);
         //等待界面支持secret类型之后在区分开
         if (c7nSecret.getType().equals("kubernetes.io/dockerconfigjson")) {
             Map<String, String> map = new HashMap<>();
             c7nSecret.getData().forEach((key, value) -> {
                 try {
                     map.put(key, new String(value, "utf-8"));
-                    secretReqDTO.setValue(map);
+                    secretReqVO.setValue(map);
                 } catch (UnsupportedEncodingException e) {
                     logger.info(e.getMessage());
                 }
             });
         } else {
-            secretReqDTO.setValue(c7nSecret.getStringData());
+            secretReqVO.setValue(c7nSecret.getStringData());
         }
-        return secretReqDTO;
+        return secretReqVO;
     }
 }

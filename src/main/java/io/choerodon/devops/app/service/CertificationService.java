@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.C7nCertificationDTO;
+import io.choerodon.devops.api.vo.C7nCertificationVO;
 import io.choerodon.devops.api.vo.CertificationVO;
-import io.choerodon.devops.api.vo.OrgCertificationDTO;
+import io.choerodon.devops.api.vo.OrgCertificationVO;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
@@ -26,7 +26,7 @@ public interface CertificationService {
      * @param projectId        项目id
      * @param certificationDTO 证书
      */
-    void createCertification(Long projectId, C7nCertificationDTO certificationDTO,
+    void createCertification(Long projectId, C7nCertificationVO certificationDTO,
                              MultipartFile key, MultipartFile cert, Boolean isGitOps);
 
     C7nCertification getC7nCertification(String name, String type, List<String> domains,
@@ -54,7 +54,7 @@ public interface CertificationService {
 
     Long createCertCommand(String type, Long certId, Long userId);
 
-    List<OrgCertificationDTO> listOrgCertInProject(Long projectId);
+    List<OrgCertificationVO> listOrgCertInProject(Long projectId);
 
     CertificationDTO baseCreate(CertificationDTO certificationVO);
 

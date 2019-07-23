@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
+import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.valueobject.MemberHelper;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
@@ -52,21 +52,21 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
 
     @Override
-    public void createGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
-        gitlabGroupMemberDTOList.stream()
-                .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
-                .forEach(gitlabGroupMemberDTO -> {
+    public void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList) {
+        gitlabGroupMemberVOList.stream()
+                .filter(gitlabGroupMemberVO -> !gitlabGroupMemberVO.getResourceType().equals(SITE))
+                .forEach(gitlabGroupMemberVO -> {
                     try {
-                        List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
+                        List<String> userMemberRoleList = gitlabGroupMemberVO.getRoleLabels();
                         if (userMemberRoleList == null) {
                             userMemberRoleList = new ArrayList<>();
                             LOGGER.info("user member role is empty");
                         }
                         MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
-                        operation(gitlabGroupMemberDTO.getResourceId(),
-                                gitlabGroupMemberDTO.getResourceType(),
+                        operation(gitlabGroupMemberVO.getResourceId(),
+                                gitlabGroupMemberVO.getResourceType(),
                                 memberHelper,
-                                gitlabGroupMemberDTO.getUserId());
+                                gitlabGroupMemberVO.getUserId());
                     } catch (Exception e) {
                         if (e.getMessage().equals(ERROR_GITLAB_GROUP_ID_SELECT)) {
                             LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
@@ -78,11 +78,11 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     }
 
     @Override
-    public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
-        gitlabGroupMemberDTOList.stream()
-                .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
-                .forEach(gitlabGroupMemberDTO -> {
-                    UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberDTO.getUserId());
+    public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList) {
+        gitlabGroupMemberVOList.stream()
+                .filter(gitlabGroupMemberVO -> !gitlabGroupMemberVO.getResourceType().equals(SITE))
+                .forEach(gitlabGroupMemberVO -> {
+                    UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupMemberVO.getUserId());
                     Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
                     GitLabUserDTO gitlabUserDTO = gitlabServiceClientOperator.queryUserById(
                             TypeUtil.objToInteger(gitlabUserId));
@@ -92,8 +92,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     }
                     DevopsProjectDTO devopsProjectDTO;
                     MemberDTO memberDTO;
-                    if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
-                        devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupMemberDTO.getResourceId());
+                    if (PROJECT.equals(gitlabGroupMemberVO.getResourceType())) {
+                        devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupMemberVO.getResourceId());
                         memberDTO = gitlabServiceClientOperator.queryGroupMember(
                                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), gitlabUserId);
                         if (memberDTO != null && memberDTO.getUserId() != null) {
@@ -106,7 +106,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         }
                         // 删除用户时同时清除gitlab的权限
                         List<Integer> gitlabProjectIds = applicationService
-                                .baseListByProjectId(gitlabGroupMemberDTO.getResourceId()).stream()
+                                .baseListByProjectId(gitlabGroupMemberVO.getResourceId()).stream()
                                 .filter(e -> e.getGitlabProjectId() != null)
                                 .map(ApplicationDTO::getGitlabProjectId).map(TypeUtil::objToInteger)
                                 .collect(Collectors.toList());
@@ -120,13 +120,13 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         });
                         // devops
                         applicationUserPermissionService.baseDeleteByUserIdAndAppIds(
-                                applicationService.baseListByProjectId(gitlabGroupMemberDTO.getResourceId()).stream()
+                                applicationService.baseListByProjectId(gitlabGroupMemberVO.getResourceId()).stream()
                                         .filter(applicationE -> applicationE.getGitlabProjectId() != null)
                                         .map(ApplicationDTO::getId).collect(Collectors.toList()),
                                 userAttrDTO.getIamUserId());
                     } else {
                         OrganizationDTO organizationDTO =
-                                iamService.queryOrganizationById(gitlabGroupMemberDTO.getResourceId());
+                                iamService.queryOrganizationById(gitlabGroupMemberVO.getResourceId());
                         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(
                                 organizationDTO.getCode() + "_" + TEMPLATE,
                                 TypeUtil.objToInteger(gitlabUserId));

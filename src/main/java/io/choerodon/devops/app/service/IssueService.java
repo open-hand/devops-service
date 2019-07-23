@@ -4,11 +4,11 @@ import java.util.List;
 
 import io.choerodon.devops.api.vo.CustomMergeRequestVO;
 import io.choerodon.devops.api.vo.DevopsBranchVO;
-import io.choerodon.devops.api.vo.IssueDTO;
+import io.choerodon.devops.api.vo.IssueVO;
 
 public interface IssueService {
 
-    IssueDTO countCommitAndMergeRequest(Long issueId);
+    IssueVO countCommitAndMergeRequest(Long issueId);
 
     List<DevopsBranchVO> getBranchsByIssueId(Long issueId);
 

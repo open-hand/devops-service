@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageVO;
+import io.choerodon.devops.api.vo.DevopsEnvMessageVO;
 import io.choerodon.devops.domain.application.repository.DevopsEnvApplicationRepostitory;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;

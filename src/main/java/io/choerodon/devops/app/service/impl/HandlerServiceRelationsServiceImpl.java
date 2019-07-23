@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import com.google.gson.Gson;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
-import io.choerodon.devops.api.vo.EndPointPortDTO;
+import io.choerodon.devops.api.vo.EndPointPortVO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.api.vo.iam.entity.*;
@@ -45,7 +45,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     private DevopsServiceInstanceService devopsServiceInstanceService;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync, List<V1Service> v1Services, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<V1Service> v1Services, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeService = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(SERVICE))
                 .map(devopsEnvFileResourceE -> {
@@ -172,7 +172,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         if (v1Service.getSpec().getExternalIPs() != null) {
             devopsServiceReqVO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
         }
-        Map<String, List<EndPointPortDTO>> endPoints = new HashMap<>();
+        Map<String, List<EndPointPortVO>> endPoints = new HashMap<>();
         v1Endpoints.stream().filter(v1Endpoints1 -> v1Endpoints1.getMetadata().getName().equals(v1Service.getMetadata().getName())).forEach(v1Endpoints1 -> {
             StringBuilder keyBuilder = new StringBuilder();
             for (int i = 0; i < v1Endpoints1.getSubsets().get(0).getAddresses().size(); i++) {
@@ -183,10 +183,10 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 }
             }
             endPoints.put(keyBuilder.toString(), v1Endpoints1.getSubsets().get(0).getPorts().stream().map(v1EndpointPort -> {
-                EndPointPortDTO endPointPortDTO = new EndPointPortDTO();
-                endPointPortDTO.setName(v1EndpointPort.getName());
-                endPointPortDTO.setPort(v1EndpointPort.getPort());
-                return endPointPortDTO;
+                EndPointPortVO endPointPortVO = new EndPointPortVO();
+                endPointPortVO.setName(v1EndpointPort.getName());
+                endPointPortVO.setPort(v1EndpointPort.getPort());
+                return endPointPortVO;
             }).collect(Collectors.toList()));
             devopsServiceReqVO.setEndPoints(endPoints);
         });

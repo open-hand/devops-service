@@ -3,8 +3,6 @@ package io.choerodon.devops.api.vo;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
-
 /**
  * Created by Zenger on 2018/3/28.
  */

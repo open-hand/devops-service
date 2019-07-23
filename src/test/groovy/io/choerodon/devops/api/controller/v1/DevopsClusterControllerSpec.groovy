@@ -7,7 +7,7 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.ClusterNodeInfoDTO
+import io.choerodon.devops.api.vo.ClusterNodeInfoVO
 import io.choerodon.devops.api.vo.DevopsClusterRepVO
 import io.choerodon.devops.api.vo.DevopsClusterReqVO
 import io.choerodon.devops.app.service.impl.ClusterNodeInfoServiceImpl
@@ -148,7 +148,7 @@ class DevopsClusterControllerSpec extends Specification {
         Mockito.when(mockStringRedisTemplate.opsForList()).thenReturn(mockListOperations)
         Mockito.when(mockListOperations.size(anyString())).thenReturn(1L)
 
-        ClusterNodeInfoDTO clusterNodeInfoDTO = new ClusterNodeInfoDTO()
+        ClusterNodeInfoVO clusterNodeInfoDTO = new ClusterNodeInfoVO()
         clusterNodeInfoDTO.setNodeName("uat01")
 
         Mockito.when(mockListOperations.range(anyString(), anyLong(), anyLong())).thenReturn(Arrays.asList(JSONObject.toJSONString(clusterNodeInfoDTO)))
@@ -323,7 +323,7 @@ class DevopsClusterControllerSpec extends Specification {
         def url = MAPPING + "/nodes?cluster_id={clusterId}&node_name={nodeName}"
 
         when: "发送请求"
-        def res = restTemplate.getForEntity(url, ClusterNodeInfoDTO, devopsClusterDO.getOrganizationId(), devopsClusterDO.getId(), devopsEnvPodDO.getNodeName())
+        def res = restTemplate.getForEntity(url, ClusterNodeInfoVO, devopsClusterDO.getOrganizationId(), devopsClusterDO.getId(), devopsEnvPodDO.getNodeName())
 
         then: "校验结果"
         res.getStatusCode().is2xxSuccessful()

@@ -6,9 +6,9 @@ import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.ExportOctetStream2HttpMessageConverter
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.AppMarketDownloadDTO
-import io.choerodon.devops.api.vo.AppMarketTgzDTO
-import io.choerodon.devops.api.vo.AppMarketVersionDTO
+import io.choerodon.devops.api.vo.AppMarketDownloadVO
+import io.choerodon.devops.api.vo.AppMarketTgzVO
+import io.choerodon.devops.api.vo.AppMarketVersionVO
 import io.choerodon.devops.api.vo.ApplicationReleasingVO
 import io.choerodon.devops.api.vo.ProjectVO
 <<<<<<< HEAD
@@ -189,8 +189,8 @@ class ApplicationMarketControllerSpec extends Specification {
         applicationReleasingDTO.setPublishLevel("public")
 
         and: '应用版本'
-        List<AppMarketVersionDTO> appVersions = new ArrayList<>()
-        AppMarketVersionDTO appMarketVersionDTO = new AppMarketVersionDTO()
+        List<AppMarketVersionVO> appVersions = new ArrayList<>()
+        AppMarketVersionVO appMarketVersionDTO = new AppMarketVersionVO()
         appMarketVersionDTO.setId(1L)
         appVersions.add(appMarketVersionDTO)
         applicationReleasingDTO.setAppVersions(appVersions)
@@ -289,9 +289,9 @@ class ApplicationMarketControllerSpec extends Specification {
 
     def "UpdateVersions"() {
         given: '准备dotList'
-        AppMarketVersionDTO appMarketVersionDTO = new AppMarketVersionDTO()
+        AppMarketVersionVO appMarketVersionDTO = new AppMarketVersionVO()
         appMarketVersionDTO.setId(1L)
-        List<AppMarketVersionDTO> dtoList = new ArrayList<>()
+        List<AppMarketVersionVO> dtoList = new ArrayList<>()
         dtoList.add(appMarketVersionDTO)
 
         when: '更新单个应用市场的应用'
@@ -315,7 +315,7 @@ class ApplicationMarketControllerSpec extends Specification {
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<MultiValueMap<String, Object>>(map, headers)
 
         when: '应用市场解析导入应用'
-        def dto = restTemplate.postForObject("/v1/projects/1/apps_market/upload", requestEntity, AppMarketTgzDTO.class)
+        def dto = restTemplate.postForObject("/v1/projects/1/apps_market/upload", requestEntity, AppMarketTgzVO.class)
         fileCode = dto.fileCode
 
         then: '验证返回值'
@@ -345,8 +345,8 @@ class ApplicationMarketControllerSpec extends Specification {
 
     def "ExportFile"() {
         given: '准备dto baseList'
-        List<AppMarketDownloadDTO> dtoList = new ArrayList<>()
-        AppMarketDownloadDTO appMarketDownloadDTO = new AppMarketDownloadDTO()
+        List<AppMarketDownloadVO> dtoList = new ArrayList<>()
+        AppMarketDownloadVO appMarketDownloadDTO = new AppMarketDownloadVO()
         appMarketDownloadDTO.setAppMarketId(applicationMarketMapper.selectAll().get(0).getId())
         List<Long> appVersionList = new ArrayList<>()
         appVersionList.add(1L)
@@ -360,7 +360,7 @@ class ApplicationMarketControllerSpec extends Specification {
         headersList.add(MediaType.APPLICATION_OCTET_STREAM)
         headers.setAccept(headersList)
 
-        HttpEntity<List<AppMarketDownloadDTO>> reqHttpEntity = new HttpEntity<>(dtoList)
+        HttpEntity<List<AppMarketDownloadVO>> reqHttpEntity = new HttpEntity<>(dtoList)
 
         when: '导出应用市场应用信息'
         ResponseEntity<byte[]> responseEntity = restTemplate.exchange("/v1/projects/1/apps_market/export?fileName=testChart", HttpMethod.POST, reqHttpEntity, byte[].class)

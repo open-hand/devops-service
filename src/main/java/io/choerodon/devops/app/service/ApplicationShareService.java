@@ -57,7 +57,7 @@ public interface ApplicationShareService {
 
     PageInfo<ApplicationVersionRespVO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params);
 
-    AppVersionAndValueDTO getValuesAndChart(Long versionId);
+    AppVersionAndValueVO getValuesAndChart(Long versionId);
 
     void updateByShareId(Long shareId, Boolean idFree);
 
@@ -91,14 +91,14 @@ public interface ApplicationShareService {
 
     void update(Long projectId, Long appMarketId, ApplicationReleasingVO applicationRelease);
 
-    void update(Long projectId, Long appMarketId, List<AppMarketVersionDTO> versionDTOList);
+    void update(Long projectId, Long appMarketId, List<AppMarketVersionVO> versionDTOList);
 
-    List<AppMarketVersionDTO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish);
+    List<AppMarketVersionVO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish);
 
-    PageInfo<AppMarketVersionDTO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish,
-                                                       PageRequest pageRequest, String searchParam);
+    PageInfo<AppMarketVersionVO> queryAppVersionsById(Long projectId, Long appMarketId, Boolean isPublish,
+                                                      PageRequest pageRequest, String searchParam);
 
-    AppMarketTgzDTO upload(Long projectId, MultipartFile file);
+    AppMarketTgzVO upload(Long projectId, MultipartFile file);
 
     Boolean importApps(Long projectId, String fileName, Boolean isPublic);
 
@@ -109,17 +109,17 @@ public interface ApplicationShareService {
      *
      * @param appMarkets 应用市场应用信息
      */
-    void export(List<AppMarketDownloadDTO> appMarkets, String fileName);
+    void export(List<AppMarketDownloadVO> appMarkets, String fileName);
 
     PageInfo<ApplicationReleasingVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params);
 
     PageInfo<ApplicationVersionRespVO> pageVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params);
 
-    AppVersionAndValueDTO queryConfigByVerionId(Long appId, Long versionId, String accessToken);
+    AppVersionAndValueVO queryConfigByVerionId(Long appId, Long versionId, String accessToken);
 
-    AccessTokenCheckResultDTO checkToken(AccessTokenDTO tokenDTO);
+    AccessTokenCheckResultVO checkToken(AccessTokenVO tokenDTO);
 
-    void saveToken(AccessTokenDTO tokenDTO);
+    void saveToken(AccessTokenVO tokenDTO);
 
     ApplicationShareDTO baseQueryByAppId(Long appId);
 

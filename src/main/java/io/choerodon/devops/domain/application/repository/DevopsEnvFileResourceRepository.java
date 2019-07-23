@@ -2,8 +2,6 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
-
 /**
  * Creator: Runge
  * Date: 2018/7/25

@@ -6,8 +6,8 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsIngressPathVO
 import io.choerodon.devops.api.vo.DevopsIngressVO
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.vo.iam.RoleDTO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
 
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
@@ -203,17 +203,17 @@ class DevopsIngressControllerSpec extends Specification {
         ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         RepositoryFile repositoryFile = new RepositoryFile()

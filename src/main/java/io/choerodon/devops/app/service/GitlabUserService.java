@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.GitlabUserRequestDTO;
+import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 
 /**
@@ -8,9 +8,9 @@ import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
  */
 public interface GitlabUserService {
 
-    void createGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO);
+    void createGitlabUser(GitlabUserRequestVO gitlabUserReqDTO);
 
-    void updateGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO);
+    void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO);
 
     void isEnabledGitlabUser(Integer userId);
 

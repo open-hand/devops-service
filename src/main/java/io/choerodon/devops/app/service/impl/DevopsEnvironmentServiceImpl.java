@@ -24,6 +24,7 @@ import io.choerodon.devops.domain.application.repository.DevopsServiceRepository
 import io.choerodon.devops.infra.common.util.enums.EnvironmentGitopsStatus;
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
@@ -761,21 +762,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     private PageInfo<UserVO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
-        RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
+        RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         if (searchParams != null && !"".equals(searchParams)) {
             Map maps = gson.fromJson(searchParams, Map.class);
             Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-            roleAssignmentSearchDTO.setParam(new String[]{param});
+            roleAssignmentSearchVO.setParam(new String[]{param});
             if (searchParamMap.get("loginName") != null) {
                 String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
                 String subLogin = loginName.substring(1, loginName.length() - 1);
-                roleAssignmentSearchDTO.setLoginName(subLogin);
+                roleAssignmentSearchVO.setLoginName(subLogin);
             }
             if (searchParamMap.get("realName") != null) {
                 String realName = TypeUtil.objToString(searchParamMap.get("realName"));
                 String subReal = realName.substring(1, realName.length() - 1);
-                roleAssignmentSearchDTO.setRealName(subReal);
+                roleAssignmentSearchVO.setRealName(subReal);
             }
         }
         // 获取项目所有者角色id和数量
@@ -784,7 +785,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Long memberId = iamService.queryRoleIdByCode(PROJECT_MEMBER);
         // 所有项目成员，可能还带有项目所有者的角色，需要过滤
         PageInfo<IamUserDTO> allMemberWithOtherUsersPage = iamService
-                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchDTO,
+                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchVO,
                         memberId, projectId, false);
         // 如果项目成员查出来为空，则直接返回空列表
         if (allMemberWithOtherUsersPage.getList().isEmpty()) {
@@ -792,7 +793,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         // 所有项目所有者
         PageInfo<IamUserDTO> allOwnerUsersPage = iamService
-                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchDTO,
+                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchVO,
                         ownerId, projectId, false);
         // 如果项目所有者查出来为空，则返回之前的项目成员列表
         if (allOwnerUsersPage.getList().isEmpty()) {

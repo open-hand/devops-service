@@ -8,8 +8,8 @@ import java.util.List;
  */
 public class MergeRequestVO {
 
-    private AssigneeDTO assignee;
-    private AuthorDTO author;
+    private AssigneeVO assignee;
+    private AuthorVO author;
     private Date createdAt;
     private String description;
     private Integer id;
@@ -31,19 +31,19 @@ public class MergeRequestVO {
         return (mergeRequestVO != null && mergeRequestVO.getId() != null);
     }
 
-    public AssigneeDTO getAssignee() {
+    public AssigneeVO getAssignee() {
         return assignee;
     }
 
-    public void setAssignee(AssigneeDTO assignee) {
+    public void setAssignee(AssigneeVO assignee) {
         this.assignee = assignee;
     }
 
-    public AuthorDTO getAuthor() {
+    public AuthorVO getAuthor() {
         return author;
     }
 
-    public void setAuthor(AuthorDTO author) {
+    public void setAuthor(AuthorVO author) {
         this.author = author;
     }
 

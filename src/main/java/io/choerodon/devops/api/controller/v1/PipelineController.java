@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,6 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -47,7 +45,7 @@ public class PipelineController {
      * 项目下创建流水线
      *
      * @param projectId      项目id
-     * @param pipelineReqDTO 流水线信息
+     * @param pipelineReqVO 流水线信息
      * @return PipelineAppDeployDTO
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -57,8 +55,8 @@ public class PipelineController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
-            @RequestBody PipelineReqDTO pipelineReqDTO) {
-        return Optional.ofNullable(pipelineService.create(projectId, pipelineReqDTO))
+            @RequestBody PipelineReqVO pipelineReqVO) {
+        return Optional.ofNullable(pipelineService.create(projectId, pipelineReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.create"));
     }
@@ -67,18 +65,18 @@ public class PipelineController {
      * 项目下更新流水线
      *
      * @param projectId      项目id
-     * @param pipelineReqDTO 流水线信息
+     * @param pipelineReqVO 流水线信息
      * @return PipelineAppDeployDTO
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新流水线")
     @PutMapping
-    public ResponseEntity<PipelineReqDTO> update(
+    public ResponseEntity<PipelineReqVO> update(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
-            @RequestBody PipelineReqDTO pipelineReqDTO) {
-        return Optional.ofNullable(pipelineService.update(projectId, pipelineReqDTO))
+            @RequestBody PipelineReqVO pipelineReqVO) {
+        return Optional.ofNullable(pipelineService.update(projectId, pipelineReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.update"));
     }
@@ -130,12 +128,12 @@ public class PipelineController {
      *
      * @param projectId  项目id
      * @param pipelineId 流水线Id
-     * @return PipelineReqDTO
+     * @return PipelineReqVO
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询流水线详情")
     @GetMapping(value = "/{pipeline_id}")
-    public ResponseEntity<PipelineReqDTO> queryById(
+    public ResponseEntity<PipelineReqVO> queryById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
@@ -212,7 +210,7 @@ public class PipelineController {
      *
      * @param projectId  项目id
      * @param pipelineId 流水线Id
-     * @return PipelineReqDTO
+     * @return PipelineReqVO
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "执行流水线")
@@ -256,7 +254,7 @@ public class PipelineController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验人工审核")
     @PostMapping("/check_audit")
-    public ResponseEntity<CheckAuditDTO> checkAudit(
+    public ResponseEntity<CheckAuditVO> checkAudit(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PipelineUserRelDTO", required = true)
@@ -276,7 +274,7 @@ public class PipelineController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "条件校验")
     @GetMapping("/check_deploy")
-    public ResponseEntity<PipelineCheckDeployDTO> checkDeploy(
+    public ResponseEntity<PipelineCheckDeployVO> checkDeploy(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "记录Id", required = true)
@@ -291,12 +289,12 @@ public class PipelineController {
      *
      * @param projectId 项目id
      * @param recordId  流水线记录Id
-     * @return PipelineRecordReqDTO
+     * @return PipelineRecordReqVO
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询流水线记录详情")
     @GetMapping(value = "/{pipeline_record_id}/record_detail")
-    public ResponseEntity<PipelineRecordReqDTO> getRecordById(
+    public ResponseEntity<PipelineRecordReqVO> getRecordById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
@@ -311,7 +309,7 @@ public class PipelineController {
      *
      * @param projectId 项目id
      * @param recordId  流水线记录Id
-     * @return PipelineRecordReqDTO
+     * @return PipelineRecordReqVO
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "流水线重试")
@@ -335,7 +333,7 @@ public class PipelineController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "流水线所有记录")
     @GetMapping(value = "/{pipeline_id}/list_record")
-    public ResponseEntity<List<PipelineRecordListDTO>> queryByPipelineId(
+    public ResponseEntity<List<PipelineRecordListVO>> queryByPipelineId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)

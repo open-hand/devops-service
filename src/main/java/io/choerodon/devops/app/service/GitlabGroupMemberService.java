@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
+import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
@@ -12,9 +12,9 @@ import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
  */
 public interface GitlabGroupMemberService {
 
-    void createGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList);
+    void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList);
 
-    void deleteGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList);
+    void deleteGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList);
 
     void checkEnvProject(DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO);
 

@@ -4,11 +4,9 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.vo.iam.UserVO;
-import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
+import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.IamAppDTO;
@@ -42,12 +40,12 @@ public interface IamService {
     IamUserDTO queryByEmail(Long projectId, String email);
 
     PageInfo<IamUserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
-                                                            RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId,
-                                                            Long projectId, Boolean doPage);
+                                                                RoleAssignmentSearchVO roleAssignmentSearchVO, Long roleId,
+                                                                Long projectId, Boolean doPage);
 
-    PageInfo<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, Boolean doPage);
+    PageInfo<UserWithRoleVO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, Boolean doPage);
 
-    List<ProjectWithRoleDTO> listProjectWithRoleDTO(Long userId);
+    List<ProjectWithRoleVO> listProjectWithRoleDTO(Long userId);
 
     Long queryRoleIdByCode(String roleCode);
 

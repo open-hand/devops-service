@@ -11,8 +11,8 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.GitConfigDTO;
-import io.choerodon.devops.api.vo.GitEnvConfigDTO;
+import io.choerodon.devops.api.vo.GitConfigVO;
+import io.choerodon.devops.api.vo.GitEnvConfigVO;
 import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
 import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
@@ -504,25 +504,25 @@ public class GitUtil {
     }
 
 
-    public GitConfigDTO getGitConfig(Long clusterId) {
+    public GitConfigVO getGitConfig(Long clusterId) {
         List<DevopsEnvironmentE> devopsEnvironments = devopsEnvironmentRepository.baseListByClusterId(clusterId);
-        GitConfigDTO gitConfigDTO = new GitConfigDTO();
-        List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
+        GitConfigVO gitConfigVO = new GitConfigVO();
+        List<GitEnvConfigVO> gitEnvConfigVOS = new ArrayList<>();
         devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
             ProjectDTO projectDTO = iamService.queryIamProject(devopsEnvironmentE.getProjectE().getId());
             OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
             String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentE.getCode());
 
-            GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
-            gitEnvConfigDTO.setEnvId(devopsEnvironmentE.getId());
-            gitEnvConfigDTO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
-            gitEnvConfigDTO.setGitUrl(repoUrl);
-            gitEnvConfigDTO.setNamespace(devopsEnvironmentE.getCode());
-            gitEnvConfigDTOS.add(gitEnvConfigDTO);
+            GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();
+            gitEnvConfigVO.setEnvId(devopsEnvironmentE.getId());
+            gitEnvConfigVO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
+            gitEnvConfigVO.setGitUrl(repoUrl);
+            gitEnvConfigVO.setNamespace(devopsEnvironmentE.getCode());
+            gitEnvConfigVOS.add(gitEnvConfigVO);
         });
-        gitConfigDTO.setEnvs(gitEnvConfigDTOS);
-        gitConfigDTO.setGitHost(gitlabSshUrl);
-        return gitConfigDTO;
+        gitConfigVO.setEnvs(gitEnvConfigVOS);
+        gitConfigVO.setGitHost(gitlabSshUrl);
+        return gitConfigVO;
     }
 
     private void addFile(Git git, String relativePath) throws GitAPIException {

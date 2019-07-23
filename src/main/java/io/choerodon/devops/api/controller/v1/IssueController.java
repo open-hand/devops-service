@@ -9,7 +9,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.CustomMergeRequestVO;
 import io.choerodon.devops.api.vo.DevopsBranchVO;
-import io.choerodon.devops.api.vo.IssueDTO;
+import io.choerodon.devops.api.vo.IssueVO;
 import io.choerodon.devops.app.service.IssueService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -78,7 +78,7 @@ public class IssueController {
     @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest和commit数量")
     @GetMapping("/commit_and_merge_request/count")
-    public ResponseEntity<IssueDTO> countCommitAndMergeRequest(
+    public ResponseEntity<IssueVO> countCommitAndMergeRequest(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "issueID")

@@ -25,8 +25,8 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.ApplicationVersionAndCommitDTO;
-import io.choerodon.devops.api.vo.DeployVersionDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionAndCommitVO;
+import io.choerodon.devops.api.vo.DeployVersionVO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
@@ -182,14 +182,14 @@ public class ApplicationVersionController {
      *
      * @param projectId 项目ID
      * @param appId     应用ID
-     * @return DeployVersionDTO
+     * @return DeployVersionVO
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询应用最新的版本和各环境下部署的版本")
     @GetMapping(value = "/app/{app_id}/deployVersions")
-    public ResponseEntity<DeployVersionDTO> queryDeployedVersions(
+    public ResponseEntity<DeployVersionVO> queryDeployedVersions(
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID", required = true)
@@ -259,7 +259,7 @@ public class ApplicationVersionController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据分支名查询版本")
     @GetMapping(value = "/list_by_branch")
-    public ResponseEntity<List<ApplicationVersionAndCommitDTO>> listAppVersionsByBranch(
+    public ResponseEntity<List<ApplicationVersionAndCommitVO>> listAppVersionsByBranch(
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID", required = true)

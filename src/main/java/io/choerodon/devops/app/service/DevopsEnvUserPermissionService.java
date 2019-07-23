@@ -37,4 +37,6 @@ public interface DevopsEnvUserPermissionService {
 
     void baseCheckEnvDeployPermission(Long userId, Long envId);
 
+    void baseDelete(Long envId, Long userId);
+
 }

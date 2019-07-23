@@ -9,7 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.OrgCertificationDTO;
+import io.choerodon.devops.api.vo.OrgCertificationVO;
 import io.choerodon.devops.api.vo.ProjectReqVO;
 import io.choerodon.devops.app.service.DevopsOrgCertificationService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -33,7 +33,7 @@ public class OrgCertificationController {
      * 组织下创建证书
      *
      * @param organizationId      组织Id
-     * @param orgCertificationDTO 证书信息
+     * @param orgCertificationVO 证书信息
      */
     @Permission(type= ResourceType.ORGANIZATION,roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下创建证书")
@@ -42,12 +42,12 @@ public class OrgCertificationController {
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "证书信息", required = true)
-            @ModelAttribute OrgCertificationDTO orgCertificationDTO,
+            @ModelAttribute OrgCertificationVO orgCertificationVO,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
-        devopsOrgCertificationService.create(organizationId, key, cert, orgCertificationDTO);
+        devopsOrgCertificationService.create(organizationId, key, cert, orgCertificationVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -55,7 +55,7 @@ public class OrgCertificationController {
      * 更新证书下的项目
      *
      * @param organizationId      组织Id
-     * @param orgCertificationDTO 集群对象
+     * @param orgCertificationVO 集群对象
      */
     @Permission(type= ResourceType.ORGANIZATION,roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "更新证书下的项目")
@@ -66,8 +66,8 @@ public class OrgCertificationController {
             @ApiParam(value = "集群Id")
             @PathVariable Long certId,
             @ApiParam(value = "集群对象")
-            @RequestBody OrgCertificationDTO orgCertificationDTO) {
-        devopsOrgCertificationService.update(certId, orgCertificationDTO);
+            @RequestBody OrgCertificationVO orgCertificationVO) {
+        devopsOrgCertificationService.update(certId, orgCertificationVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -80,7 +80,7 @@ public class OrgCertificationController {
     @Permission(type= ResourceType.ORGANIZATION,roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询单个证书信息")
     @GetMapping("/{cert_id}")
-    public ResponseEntity<OrgCertificationDTO> query(
+    public ResponseEntity<OrgCertificationVO> query(
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
@@ -164,7 +164,7 @@ public class OrgCertificationController {
     @ApiOperation(value = "组织证书列表查询")
     @CustomPageRequest
     @PostMapping("/page_cert")
-    public ResponseEntity<PageInfo<OrgCertificationDTO>> pageOrgCert(
+    public ResponseEntity<PageInfo<OrgCertificationVO>> pageOrgCert(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "分页参数")

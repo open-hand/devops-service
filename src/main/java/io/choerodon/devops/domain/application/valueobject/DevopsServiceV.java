@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.api.vo.DevopsIngressVO;
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.EndPointPortDTO;
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -14,6 +15,9 @@ import io.choerodon.devops.api.vo.iam.entity.PortMapE;
 import io.choerodon.devops.infra.dto.PortMapDTO;
 >>>>>>> [REF] finish refactoring DevopsIngressController.
 =======
+=======
+import io.choerodon.devops.api.vo.EndPointPortVO;
+>>>>>>> [REF] refactor original DTO to VO
 import io.choerodon.devops.infra.dto.PortMapVO;
 >>>>>>> [IMP]修复后端结构
 import io.choerodon.devops.infra.dto.ServiceInstanceDO;
@@ -46,7 +50,7 @@ public class DevopsServiceV {
     private Long appId;
     private Long appProjectId;
     private String appName;
-    private Map<String, List<EndPointPortDTO>> endPoinits;
+    private Map<String, List<EndPointPortVO>> endPoinits;
     private Map<String, String> labels;
     private List<ServiceInstanceDO> appInstance;
     private String commandType;
@@ -198,11 +202,11 @@ public class DevopsServiceV {
         this.error = error;
     }
 
-    public Map<String, List<EndPointPortDTO>> getEndPoinits() {
+    public Map<String, List<EndPointPortVO>> getEndPoinits() {
         return endPoinits;
     }
 
-    public void setEndPoinits(Map<String, List<EndPointPortDTO>> endPoinits) {
+    public void setEndPoinits(Map<String, List<EndPointPortVO>> endPoinits) {
         this.endPoinits = endPoinits;
     }
 

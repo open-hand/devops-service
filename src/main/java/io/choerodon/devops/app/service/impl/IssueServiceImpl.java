@@ -10,7 +10,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CustomMergeRequestVO;
 import io.choerodon.devops.api.vo.DevopsBranchVO;
-import io.choerodon.devops.api.vo.IssueDTO;
+import io.choerodon.devops.api.vo.IssueVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
@@ -47,7 +47,7 @@ public class IssueServiceImpl implements IssueService {
 
 
     @Override
-    public IssueDTO countCommitAndMergeRequest(Long issueId) {
+    public IssueVO countCommitAndMergeRequest(Long issueId) {
         List<DevopsBranchVO> devopsBranchVOS = getBranchsByIssueId(issueId);
         List<DevopsGitlabCommitDTO> devopsGitlabCommitVOS = new ArrayList<>();
         List<CustomMergeRequestVO> customMergeRequestVOS = new ArrayList<>();
@@ -60,23 +60,23 @@ public class IssueServiceImpl implements IssueService {
         Optional<CustomMergeRequestVO> customMergeRequestDTO = customMergeRequestVOS.stream().max(
                 Comparator.comparing(CustomMergeRequestVO::getUpdatedAt)
         );
-        IssueDTO issueDTO = new IssueDTO();
+        IssueVO issueVO = new IssueVO();
         if (!customMergeRequestVOS.isEmpty()) {
             for (CustomMergeRequestVO mergeRequestTmp : customMergeRequestVOS) {
                 if ("opened".equals(mergeRequestTmp.getState())) {
-                    issueDTO.setMergeRequestStatus("opened");
+                    issueVO.setMergeRequestStatus("opened");
                     break;
                 }
             }
         }
-        issueDTO.setBranchCount(devopsBranchVOS.size());
-        issueDTO.setTotalCommit(devopsGitlabCommitVOS.size());
-        issueDTO.setTotalMergeRequest(customMergeRequestVOS.size());
+        issueVO.setBranchCount(devopsBranchVOS.size());
+        issueVO.setTotalCommit(devopsGitlabCommitVOS.size());
+        issueVO.setTotalMergeRequest(customMergeRequestVOS.size());
         devopsGitlabCommitE.ifPresent(gitlabCommitDTO ->
-                issueDTO.setCommitUpdateTime(gitlabCommitDTO.getCommitDate()));
+                issueVO.setCommitUpdateTime(gitlabCommitDTO.getCommitDate()));
         customMergeRequestDTO.ifPresent(customMergeRequestVO1 ->
-                issueDTO.setMergeRequestUpdateTime(customMergeRequestVO1.getUpdatedAt()));
-        return issueDTO;
+                issueVO.setMergeRequestUpdateTime(customMergeRequestVO1.getUpdatedAt()));
+        return issueVO;
     }
 
     @Override

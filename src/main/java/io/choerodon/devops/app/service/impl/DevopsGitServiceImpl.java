@@ -17,6 +17,7 @@ import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
@@ -854,21 +855,21 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
         IamUserDTO authorUser = iamServiceClientOperator.queryUserByUserId(authorUserId);
         if (authorUser != null) {
-            AuthorDTO authorDTO = new AuthorDTO();
-            authorDTO.setUsername(authorUser.getLoginName());
-            authorDTO.setName(authorUser.getRealName());
-            authorDTO.setId(authorUser.getId() == null ? null : authorUser.getId().intValue());
-            authorDTO.setWebUrl(authorUser.getImageUrl());
-            mergeRequestVO.setAuthor(authorDTO);
+            AuthorVO authorVO = new AuthorVO();
+            authorVO.setUsername(authorUser.getLoginName());
+            authorVO.setName(authorUser.getRealName());
+            authorVO.setId(authorUser.getId() == null ? null : authorUser.getId().intValue());
+            authorVO.setWebUrl(authorUser.getImageUrl());
+            mergeRequestVO.setAuthor(authorVO);
         }
         IamUserDTO assigneeUser = iamServiceClientOperator.queryUserByUserId(assigneeId);
         if (assigneeUser != null) {
-            AssigneeDTO assigneeDTO = new AssigneeDTO();
-            assigneeDTO.setUsername(assigneeUser.getLoginName());
-            assigneeDTO.setName(assigneeUser.getRealName());
-            assigneeDTO.setId(assigneeId.intValue());
-            assigneeDTO.setWebUrl(assigneeUser.getImageUrl());
-            mergeRequestVO.setAssignee(assigneeDTO);
+            AssigneeVO assigneeVO = new AssigneeVO();
+            assigneeVO.setUsername(assigneeUser.getLoginName());
+            assigneeVO.setName(assigneeUser.getRealName());
+            assigneeVO.setId(assigneeId.intValue());
+            assigneeVO.setWebUrl(assigneeUser.getImageUrl());
+            mergeRequestVO.setAssignee(assigneeVO);
         }
         return mergeRequestVO;
     }

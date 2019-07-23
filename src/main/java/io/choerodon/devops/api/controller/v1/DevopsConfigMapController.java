@@ -19,7 +19,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsConfigMapVO;
-import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
+import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -98,13 +98,13 @@ public class DevopsConfigMapController {
      *
      * @param projectId   项目id
      * @param configMapId 配置映射Id
-     * @return DevopsConfigMapRepDTO
+     * @return DevopsConfigMapRespVO
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建配置映射")
     @GetMapping("/{configMap_id}")
-    public ResponseEntity<DevopsConfigMapRepDTO> query(
+    public ResponseEntity<DevopsConfigMapRespVO> query(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
@@ -131,7 +131,7 @@ public class DevopsConfigMapController {
     @ApiOperation(value = "环境配置映射查询")
     @CustomPageRequest
     @PostMapping(value = "/page_by_options")
-    public ResponseEntity<PageInfo<DevopsConfigMapRepDTO>> pageByOptions(
+    public ResponseEntity<PageInfo<DevopsConfigMapRespVO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id")

@@ -5,9 +5,10 @@ import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsConfigMapDTO
-import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.vo.iam.RoleDTO
+import io.choerodon.devops.api.vo.DevopsConfigMapRespVO
+import io.choerodon.devops.api.vo.DevopsConfigMapRespVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.app.service.impl.DevopsConfigMapServiceImpl
 <<<<<<< HEAD
@@ -120,17 +121,17 @@ class DevopsConfigMapControllerSpec extends Specification {
         ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.when(iamServiceClient.queryIamProject(anyLong())).thenReturn(responseEntity)
 
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         MemberDTO memberDO = new MemberDTO()
@@ -236,7 +237,7 @@ class DevopsConfigMapControllerSpec extends Specification {
 
     def "Query"() {
         when: '根据id查询'
-        def dto = restTemplate.getForEntity(MAPPING + "/1", DevopsConfigMapRepDTO.class, 1L)
+        def dto = restTemplate.getForEntity(MAPPING + "/1", DevopsConfigMapRespVO.class, 1L)
 
         then: '校验结果'
         dto.getBody()["name"] == "asdasdqqqq"

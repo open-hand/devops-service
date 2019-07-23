@@ -10,12 +10,18 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.ApplicationTemplateVO
 import io.choerodon.devops.api.vo.ApplicationTemplateRespVO
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO
 <<<<<<< HEAD
 =======
 import io.choerodon.devops.api.vo.ApplicationTemplateVO
 import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO
 >>>>>>> [REF] refactor ApplicationTemplateController
+=======
+import io.choerodon.devops.api.vo.ApplicationTemplateUpdateVO
+import io.choerodon.devops.api.vo.ApplicationTemplateVO
+import io.choerodon.devops.api.vo.DevopsProjectVO
+>>>>>>> [REF] refactor original DTO to VO
 import io.choerodon.devops.app.service.ApplicationTemplateService
 import io.choerodon.devops.app.service.DevopsGitService
 <<<<<<< HEAD
@@ -177,7 +183,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     // 组织下更新应用模板
     def "updateTemplate"() {
         given: '初始化模板更新dto类'
-        ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO = new ApplicationTemplateUpdateDTO()
+        ApplicationTemplateUpdateVO applicationTemplateUpdateDTO = new ApplicationTemplateUpdateVO()
         applicationTemplateUpdateDTO.setId(4L)
         applicationTemplateUpdateDTO.setName("updateName")
         applicationTemplateUpdateDTO.setDescription("des")

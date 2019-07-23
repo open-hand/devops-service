@@ -251,7 +251,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             Long ownerId = iamServiceClientOperator.queryRoleIdByCode(PROJECT_OWNER);
             PageInfo<IamUserDTO> allOwnerUsersPage = iamServiceClientOperator
 
-                    .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(),
+                    .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(),
 
                             ownerId, devopsEnvironmentDTO.getProjectId(), false);
             List<NoticeSendDTO.User> users = new ArrayList<>();

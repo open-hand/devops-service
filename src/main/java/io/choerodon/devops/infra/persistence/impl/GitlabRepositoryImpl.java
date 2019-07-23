@@ -7,7 +7,7 @@ import feign.FeignException;
 import feign.RetryableException;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
+import io.choerodon.devops.api.vo.DevopsProjectVO;
 import io.choerodon.devops.infra.dto.gitlab.DeployKeyDTO;
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;

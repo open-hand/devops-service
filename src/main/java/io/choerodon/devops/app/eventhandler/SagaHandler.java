@@ -6,14 +6,15 @@ import java.util.stream.Collectors;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.devops.api.vo.GitlabGroupMemberDTO;
-import io.choerodon.devops.api.vo.GitlabUserRequestDTO;
+import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
+import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 import io.choerodon.devops.api.vo.GitlabUserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,10 @@ public class SagaHandler {
     private GitlabUserService gitlabUserService;
     @Autowired
     private ApplicationService applicationService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
 
 
     private void loggerInfo(Object o) {
@@ -234,13 +239,13 @@ public class SagaHandler {
             description = "角色同步事件",
             sagaCode = SagaTopicCodeConstants.IAM_UPDATE_MEMBER_ROLE,
             maxRetryCount = 3, seq = 1)
-    public List<GitlabGroupMemberDTO> handleGitlabGroupMemberEvent(String payload) {
-        List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList = gson.fromJson(payload,
-                new TypeToken<List<GitlabGroupMemberDTO>>() {
+    public List<GitlabGroupMemberVO> handleGitlabGroupMemberEvent(String payload) {
+        List<GitlabGroupMemberVO> gitlabGroupMemberVOList = gson.fromJson(payload,
+                new TypeToken<List<GitlabGroupMemberVO>>() {
                 }.getType());
-        loggerInfo(gitlabGroupMemberDTOList);
-        gitlabGroupMemberService.createGitlabGroupMemberRole(gitlabGroupMemberDTOList);
-        return gitlabGroupMemberDTOList;
+        loggerInfo(gitlabGroupMemberVOList);
+        gitlabGroupMemberService.createGitlabGroupMemberRole(gitlabGroupMemberVOList);
+        return gitlabGroupMemberVOList;
     }
 
     /**
@@ -250,20 +255,20 @@ public class SagaHandler {
             description = "删除角色同步事件",
             sagaCode = SagaTopicCodeConstants.IAM_DELETE_MEMBER_ROLE,
             maxRetryCount = 3, seq = 1)
-    public List<GitlabGroupMemberDTO> handleDeleteMemberRoleEvent(String payload) {
-        List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList = gson.fromJson(payload,
-                new TypeToken<List<GitlabGroupMemberDTO>>() {
+    public List<GitlabGroupMemberVO> handleDeleteMemberRoleEvent(String payload) {
+        List<GitlabGroupMemberVO> gitlabGroupMemberVOList = gson.fromJson(payload,
+                new TypeToken<List<GitlabGroupMemberVO>>() {
                 }.getType());
-        loggerInfo(gitlabGroupMemberDTOList);
-        if (gitlabGroupMemberDTOList.size() > 0) {
-            List<Long> envIds = devopsEnviromentRepository.queryByprojectAndActive(gitlabGroupMemberDTOList.get(0).getResourceId(), null)
-                    .stream().map(DevopsEnvironmentE::getId).collect(Collectors.toList());
-            if (envIds != null && !envIds.isEmpty()) {
-                envIds.forEach(envId -> gitlabGroupMemberDTOList.forEach(gitlabGroupMemberDTO -> devopsEnvUserPermissionRepository.delete(envId, gitlabGroupMemberDTO.getUserId())));
+        loggerInfo(gitlabGroupMemberVOList);
+        if (gitlabGroupMemberVOList.size() > 0) {
+            List<Long> envIds = devopsEnvironmentService.baseListByProjectIdAndActive(gitlabGroupMemberVOList.get(0).getResourceId(), null)
+                    .stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
+            if (!envIds.isEmpty()) {
+                envIds.forEach(envId -> gitlabGroupMemberVOList.forEach(gitlabGroupMemberDTO -> devopsEnvUserPermissionService.baseDelete(envId, gitlabGroupMemberDTO.getUserId())));
             }
         }
-        gitlabGroupMemberService.deleteGitlabGroupMemberRole(gitlabGroupMemberDTOList);
-        return gitlabGroupMemberDTOList;
+        gitlabGroupMemberService.deleteGitlabGroupMemberRole(gitlabGroupMemberVOList);
+        return gitlabGroupMemberVOList;
     }
 
     /**
@@ -278,7 +283,7 @@ public class SagaHandler {
         }.getType());
         loggerInfo(gitlabUserDTO);
         gitlabUserDTO.forEach(t -> {
-            GitlabUserRequestDTO gitlabUserReqDTO = new GitlabUserRequestDTO();
+            GitlabUserRequestVO gitlabUserReqDTO = new GitlabUserRequestVO();
             gitlabUserReqDTO.setProvider("oauth2_generic");
             gitlabUserReqDTO.setExternUid(t.getId());
             gitlabUserReqDTO.setSkipConfirmation(true);
@@ -307,7 +312,7 @@ public class SagaHandler {
         GitlabUserVO gitlabUserVO = gson.fromJson(payload, GitlabUserVO.class);
         loggerInfo(gitlabUserVO);
 
-        GitlabUserRequestDTO gitlabUserReqDTO = new GitlabUserRequestDTO();
+        GitlabUserRequestVO gitlabUserReqDTO = new GitlabUserRequestVO();
         gitlabUserReqDTO.setProvider("oauth2_generic");
         gitlabUserReqDTO.setExternUid(gitlabUserVO.getId());
         gitlabUserReqDTO.setSkipConfirmation(true);

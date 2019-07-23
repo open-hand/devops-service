@@ -46,7 +46,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     private Gson gson = new Gson();
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync,
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync,
 
                                  List<C7nCertification> c7nCertifications, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<C7nCertification> updateC7nCertification = new ArrayList<>();

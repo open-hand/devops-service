@@ -17,9 +17,9 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
-import io.choerodon.devops.api.vo.C7nCertificationDTO;
+import io.choerodon.devops.api.vo.C7nCertificationVO;
 import io.choerodon.devops.api.vo.CertificationVO;
-import io.choerodon.devops.api.vo.OrgCertificationDTO;
+import io.choerodon.devops.api.vo.OrgCertificationVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
@@ -84,7 +84,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createCertification(Long projectId, C7nCertificationDTO certificationDTO,
+    public void createCertification(Long projectId, C7nCertificationVO certificationDTO,
                                     MultipartFile key, MultipartFile cert, Boolean isGitOps) {
 
         Long envId = certificationDTO.getEnvId();
@@ -311,19 +311,19 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public List<OrgCertificationDTO> listOrgCertInProject(Long projectId) {
+    public List<OrgCertificationVO> listOrgCertInProject(Long projectId) {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-        List<OrgCertificationDTO> orgCertificationDTOS = new ArrayList<>();
+        List<OrgCertificationVO> orgCertificationVOS = new ArrayList<>();
         baseListByProject(projectId, projectDTO.getOrganizationId()).forEach(certificationDTO -> {
-            OrgCertificationDTO orgCertificationDTO = new OrgCertificationDTO();
-            orgCertificationDTO.setName(certificationDTO.getName());
-            orgCertificationDTO.setId(certificationDTO.getId());
+            OrgCertificationVO orgCertificationVO = new OrgCertificationVO();
+            orgCertificationVO.setName(certificationDTO.getName());
+            orgCertificationVO.setId(certificationDTO.getId());
             List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
             }.getType());
-            orgCertificationDTO.setDomain(domains.get(0));
-            orgCertificationDTOS.add(orgCertificationDTO);
+            orgCertificationVO.setDomain(domains.get(0));
+            orgCertificationVOS.add(orgCertificationVO);
         });
-        return orgCertificationDTOS;
+        return orgCertificationVOS;
     }
 
     @Override

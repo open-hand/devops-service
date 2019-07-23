@@ -167,13 +167,13 @@ public class ApplicationShareController {
      *
      * @param projectId   项目id
      * @param appShareId 发布ID
-     * @return List of AppMarketVersionDTO
+     * @return List of AppMarketVersionVO
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下单个应用市场的应用的版本")
     @GetMapping("/{app_share_id}/versions")
-    public ResponseEntity<List<AppMarketVersionDTO>> queryAppVersionsById(
+    public ResponseEntity<List<AppMarketVersionVO>> queryAppVersionsById(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
@@ -191,14 +191,14 @@ public class ApplicationShareController {
      *
      * @param projectId   项目id
      * @param appShareId 发布ID
-     * @return Page of AppMarketVersionDTO
+     * @return Page of AppMarketVersionVO
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询项目下单个应用市场的应用的版本")
     @CustomPageRequest
     @PostMapping("/{app_share_id}/versions")
-    public ResponseEntity<PageInfo<AppMarketVersionDTO>> pageAppVersionsById(
+    public ResponseEntity<PageInfo<AppMarketVersionVO>> pageAppVersionsById(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
@@ -275,7 +275,7 @@ public class ApplicationShareController {
             @ApiParam(value = "发布ID", required = true)
             @PathVariable("app_share_id") Long appShareId,
             @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody List<AppMarketVersionDTO> versionList) {
+            @RequestBody List<AppMarketVersionVO> versionList) {
         applicationShareService.update(projectId, appShareId, versionList);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -290,7 +290,7 @@ public class ApplicationShareController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用市场解析导入应用")
     @PostMapping("/upload")
-    public ResponseEntity<AppMarketTgzDTO> upload(
+    public ResponseEntity<AppMarketTgzVO> upload(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "文件", required = true)
@@ -358,7 +358,7 @@ public class ApplicationShareController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody List<AppMarketDownloadDTO> appMarkets,
+            @RequestBody List<AppMarketDownloadVO> appMarkets,
             @ApiParam(value = "导出包名字")
             @RequestParam(value = "file_name", required = false) String fileName,
             HttpServletResponse res) {
@@ -414,7 +414,7 @@ public class ApplicationShareController {
     @ApiOperation(value = "项目下查询远程应用版本详情")
     @CustomPageRequest
     @PostMapping(value = "/remote/config")
-    public ResponseEntity<AppVersionAndValueDTO> queryConfigByVerionId(
+    public ResponseEntity<AppVersionAndValueVO> queryConfigByVerionId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = true)

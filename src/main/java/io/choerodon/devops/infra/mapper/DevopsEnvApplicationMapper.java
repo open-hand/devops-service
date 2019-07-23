@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.DevopsEnvMessageVO;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;

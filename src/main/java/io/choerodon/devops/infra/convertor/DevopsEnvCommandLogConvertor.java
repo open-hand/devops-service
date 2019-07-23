@@ -1,7 +1,6 @@
 package io.choerodon.devops.infra.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandLogVO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandLogDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;

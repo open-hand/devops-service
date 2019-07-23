@@ -98,7 +98,7 @@ public class DevopsEnvApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询应用在环境下的所有port")
     @GetMapping("/list_port")
-    public ResponseEntity<List<DevopsEnvPortDTO>> listPortByAppAndEnvId(
+    public ResponseEntity<List<DevopsEnvPortVO>> listPortByAppAndEnvId(
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "应用id", required = true)

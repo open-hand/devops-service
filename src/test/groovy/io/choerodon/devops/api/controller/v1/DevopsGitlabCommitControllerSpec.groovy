@@ -107,7 +107,7 @@ class DevopsGitlabCommitControllerSpec extends Specification {
 
         then: '校验返回值'
         devopsGitlabCommit != null
-        !devopsGitlabCommit.getCommitFormUserDTOList().isEmpty()
+        !devopsGitlabCommit.getCommitFormUserVOList().isEmpty()
     }
 
     def "GetRecordCommits"() {

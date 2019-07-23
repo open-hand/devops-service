@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvCommandValueVO;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandValueDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandValueMapper;

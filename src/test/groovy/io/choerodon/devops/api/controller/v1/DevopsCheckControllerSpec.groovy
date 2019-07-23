@@ -6,11 +6,12 @@ import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO
-import io.choerodon.devops.api.vo.iam.RoleDTO
-import io.choerodon.devops.api.vo.iam.RoleSearchDTO
+import io.choerodon.devops.api.vo.RoleAssignmentSearchVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+import io.choerodon.devops.api.vo.iam.RoleSearchVO
 import io.choerodon.devops.api.vo.iam.UserVO
-import io.choerodon.devops.api.vo.iam.UserWithRoleDTO
+import io.choerodon.devops.api.vo.iam.UserWithRoleVO
+import io.choerodon.devops.api.vo.iam.UserWithRoleVO
 import io.choerodon.devops.app.service.DevopsCheckLogService
 <<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE
@@ -235,15 +236,15 @@ class DevopsCheckControllerSpec extends Specification {
         when(mockGitlabServiceClient.queryProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDTO(), HttpStatus.OK))
         when(mockGitlabServiceClient.listProjectHook(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(null, HttpStatus.OK))
 
-        RoleDTO roleDTO = new RoleDTO()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setId(234L)
 //        PageInfo pageInfo = new PageInfo(0, 10, true)
-        List<RoleDTO> roleDTOS = Arrays.asList(roleDTO)
-        PageInfo<RoleDTO> page = new PageInfo(roleDTOS)
-        when(mockIamServiceClient.queryRoleIdByCode(any(RoleSearchDTO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
+        List<RoleVO> roleDTOS = Arrays.asList(roleDTO)
+        PageInfo<RoleVO> page = new PageInfo(roleDTOS)
+        when(mockIamServiceClient.queryRoleIdByCode(any(RoleSearchVO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
         List<UserVO> userDTOS = new ArrayList<>()
-        PageInfo<RoleDTO> page1 = new PageInfo(userDTOS)
-        when(mockIamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(page1, HttpStatus.OK))
+        PageInfo<RoleVO> page1 = new PageInfo(userDTOS)
+        when(mockIamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchVO))).thenReturn(new ResponseEntity<>(page1, HttpStatus.OK))
 
         // 准备升级到0.10 的数据
         when(mockGitlabServiceClient.updateProjectHook(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ProjectHookDTO(), HttpStatus.OK))
@@ -293,14 +294,14 @@ class DevopsCheckControllerSpec extends Specification {
         when(mockGitlabServiceClient.listCommitStatus(anyInt(), anyString(), anyInt())).thenReturn(new ResponseEntity<>(createMockCommitStatusDOs(), HttpStatus.OK))
 
         // 准备升级到0.11.0的数据
-        UserWithRoleDTO userWithRoleDTO = new UserWithRoleDTO()
+        UserWithRoleVO userWithRoleDTO = new UserWithRoleVO()
         userWithRoleDTO.setRoles(Collections.emptyList())
         userWithRoleDTO.setLoginName("userWithRoleDTO")
         userWithRoleDTO.setId(userAttrDO.getIamUserId())
-        List<UserWithRoleDTO> userWithRoleDTOList = Arrays.asList(userWithRoleDTO)
+        List<UserWithRoleVO> userWithRoleDTOList = Arrays.asList(userWithRoleDTO)
         PageInfo userWithRolePageInfo = new PageInfo(userWithRoleDTOList)
-//        PageInfo<UserWithRoleDTO> userWithRoleDTOPage = new PageInfo<>(userWithRoleDTOList, userWithRolePageInfo, 1)
-        when(mockIamServiceClient.queryUserByProjectId(eq(devopsProjectDO.getIamProjectId()), anyInt(), anyInt(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(userWithRolePageInfo, HttpStatus.OK))
+//        PageInfo<UserWithRoleVO> userWithRoleDTOPage = new PageInfo<>(userWithRoleDTOList, userWithRolePageInfo, 1)
+        when(mockIamServiceClient.queryUserByProjectId(eq(devopsProjectDO.getIamProjectId()), anyInt(), anyInt(), anyBoolean(), any(RoleAssignmentSearchVO))).thenReturn(new ResponseEntity<>(userWithRolePageInfo, HttpStatus.OK))
 
         MemberDTO memberDO = new MemberDTO()
         memberDO.setId(TypeUtil.objToInteger(userAttrDO.getGitlabUserId()))

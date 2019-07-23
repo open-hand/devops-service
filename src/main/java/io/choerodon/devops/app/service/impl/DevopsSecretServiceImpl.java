@@ -8,11 +8,12 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
-import io.choerodon.devops.api.vo.SecretRepDTO;
-import io.choerodon.devops.api.vo.SecretReqDTO;
+import io.choerodon.devops.api.vo.SecretReqVO;
+import io.choerodon.devops.api.vo.SecretRespVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
@@ -73,25 +74,25 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SecretRepDTO createOrUpdate(SecretReqDTO secretReqDTO) {
-        if (secretReqDTO.getValue() == null || secretReqDTO.getValue().size() == 0) {
+    public SecretRespVO createOrUpdate(SecretReqVO secretReqVO) {
+        if (secretReqVO.getValue() == null || secretReqVO.getValue().size() == 0) {
             throw new CommonException("error.secret.value.is.null");
         }
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(secretReqDTO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(secretReqVO.getEnvId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
         // 处理secret对象
-        DevopsSecretDTO devopsSecretDTO = handleSecret(secretReqDTO);
+        DevopsSecretDTO devopsSecretDTO = handleSecret(secretReqVO);
         // 初始化V1Secret对象
         V1Secret v1Secret = initV1Secret(devopsSecretDTO);
         // 更新操作如果key-value没有改变
-        if (UPDATE.equals(secretReqDTO.getType())) {
+        if (UPDATE.equals(secretReqVO.getType())) {
             //更新secret的时候校验gitops库文件是否存在,处理部署secret时，由于没有创gitops文件导致的部署失败
-            resourceFileCheckHandler.check(devopsEnvironmentDTO, secretReqDTO.getId(), secretReqDTO.getName(), SECRET);
+            resourceFileCheckHandler.check(devopsEnvironmentDTO, secretReqVO.getId(), secretReqVO.getName(), SECRET);
 
-            DevopsSecretDTO oldSecretDTO = baseQueryByEnvIdAndName(secretReqDTO.getEnvId(), secretReqDTO.getName());
+            DevopsSecretDTO oldSecretDTO = baseQueryByEnvIdAndName(secretReqVO.getEnvId(), secretReqVO.getName());
             Map<String, String> secretMaps = gson.fromJson(oldSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
             }.getType());
             oldSecretDTO.setValueMap(secretMaps);
@@ -99,32 +100,32 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             for (Map.Entry<String, String> e : oldSecretDTO.getValueMap().entrySet()) {
                 oldMap.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
             }
-            if (oldMap.equals(secretReqDTO.getValue())) {
+            if (oldMap.equals(secretReqVO.getValue())) {
                 baseUpdate(devopsSecretDTO);
-                return ConvertHelper.convert(devopsSecretDTO, SecretRepDTO.class);
+                return ConvertHelper.convert(devopsSecretDTO, SecretRespVO.class);
             }
         }
-        DevopsEnvCommandDTO devopsEnvCommandE = initDevopsEnvCommandDTO(secretReqDTO.getType());
+        DevopsEnvCommandDTO devopsEnvCommandE = initDevopsEnvCommandDTO(secretReqVO.getType());
 
         // 在gitops库处理secret文件
         operateEnvGitLabFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), v1Secret, devopsSecretDTO,
-                devopsEnvCommandE, CREATE.equals(secretReqDTO.getType()), userAttrDTO, secretReqDTO.getAppId());
-        return ConvertUtils.convertObject(baseQuery(devopsSecretDTO.getId()), SecretRepDTO.class);
+                devopsEnvCommandE, CREATE.equals(secretReqVO.getType()), userAttrDTO, secretReqVO.getAppId());
+        return ConvertUtils.convertObject(baseQuery(devopsSecretDTO.getId()), SecretRespVO.class);
     }
 
-    private DevopsSecretDTO handleSecret(SecretReqDTO secretReqDTO) {
-        if (CREATE.equals(secretReqDTO.getType())) {
+    private DevopsSecretDTO handleSecret(SecretReqVO secretReqVO) {
+        if (CREATE.equals(secretReqVO.getType())) {
             // 校验secret名字合法性和环境下唯一性
-            DevopsSecretValidator.checkName(secretReqDTO.getName());
-            baseCheckName(secretReqDTO.getName(), secretReqDTO.getEnvId());
+            DevopsSecretValidator.checkName(secretReqVO.getName());
+            baseCheckName(secretReqVO.getName(), secretReqVO.getEnvId());
         }
         // 校验key-name
-        if (!secretReqDTO.getType().equals("kubernetes.io/dockerconfigjson")) {
-            DevopsSecretValidator.checkKeyName(secretReqDTO.getValue().keySet());
+        if (!secretReqVO.getType().equals("kubernetes.io/dockerconfigjson")) {
+            DevopsSecretValidator.checkKeyName(secretReqVO.getValue().keySet());
         }
 
-        DevopsSecretDTO devopsSecretDTO = ConvertHelper.convert(secretReqDTO, DevopsSecretDTO.class);
-        devopsSecretDTO.setValueMap(secretReqDTO.getValue());
+        DevopsSecretDTO devopsSecretDTO = ConvertHelper.convert(secretReqVO, DevopsSecretDTO.class);
+        devopsSecretDTO.setValueMap(secretReqVO.getValue());
         devopsSecretDTO.setStatus(SecretStatus.OPERATING.getStatus());
 
         return devopsSecretDTO;
@@ -262,12 +263,12 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public void addSecretByGitOps(SecretReqDTO secretReqDTO, Long userId) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(secretReqDTO.getEnvId());
+    public void addSecretByGitOps(SecretReqVO secretReqVO, Long userId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(secretReqVO.getEnvId());
         //校验环境是否链接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
         // 处理secret对象
-        DevopsSecretDTO devopsSecretDTO = handleSecret(secretReqDTO);
+        DevopsSecretDTO devopsSecretDTO = handleSecret(secretReqVO);
         // 创建secret
         Long secretId = baseCreate(devopsSecretDTO).getId();
         DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
@@ -283,18 +284,18 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public void updateDevopsSecretByGitOps(Long projectId, Long id, SecretReqDTO secretReqDTO, Long userId) {
+    public void updateDevopsSecretByGitOps(Long projectId, Long id, SecretReqVO secretReqVO, Long userId) {
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(secretReqDTO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(secretReqVO.getEnvId());
         //校验环境是否链接
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
-        DevopsSecretDTO oldSecretDTO = baseQueryByEnvIdAndName(secretReqDTO.getEnvId(), secretReqDTO.getName());
-        if (oldSecretDTO.getValue().equals(secretReqDTO.getValue())) {
+        DevopsSecretDTO oldSecretDTO = baseQueryByEnvIdAndName(secretReqVO.getEnvId(), secretReqVO.getName());
+        if (oldSecretDTO.getValue().equals(secretReqVO.getValue())) {
             return;
         }
         // 处理secret对象
-        DevopsSecretDTO devopsSecretE = handleSecret(secretReqDTO);
+        DevopsSecretDTO devopsSecretE = handleSecret(secretReqVO);
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(UPDATE);
         // 更新secret对象
         devopsEnvCommandDTO.setObjectId(id);
@@ -312,13 +313,13 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public PageInfo<SecretRepDTO> pageByOption(Long envId, PageRequest pageRequest, String params, Long appId) {
-        return ConvertUtils.convertPage(basePageByOption(envId, pageRequest, params, appId), SecretRepDTO.class);
+    public PageInfo<SecretRespVO> pageByOption(Long envId, PageRequest pageRequest, String params, Long appId) {
+        return ConvertUtils.convertPage(basePageByOption(envId, pageRequest, params, appId), SecretRespVO.class);
     }
 
     @Override
-    public SecretRepDTO querySecret(Long secretId) {
-        return ConvertUtils.convertObject(baseQuery(secretId), SecretRepDTO.class);
+    public SecretRespVO querySecret(Long secretId) {
+        return ConvertUtils.convertObject(baseQuery(secretId), SecretRespVO.class);
     }
 
     @Override
@@ -387,10 +388,10 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         return devopsSecretMapper.select(devopsSecretDTO);
     }
 
-    private Map<String, String> getEncodedSecretMaps(SecretReqDTO secretReqDTO) {
+    private Map<String, String> getEncodedSecretMaps(SecretReqVO secretReqVO) {
         Map<String, String> encodedSecretMaps = new HashMap<>();
-        if (!secretReqDTO.getValue().isEmpty()) {
-            for (Map.Entry<String, String> e : secretReqDTO.getValue().entrySet()) {
+        if (!secretReqVO.getValue().isEmpty()) {
+            for (Map.Entry<String, String> e : secretReqVO.getValue().entrySet()) {
                 if (!e.getKey().equals(".dockerconfigjson")) {
                     encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
                 } else {

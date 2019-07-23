@@ -5,19 +5,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-<<<<<<< HEAD
 import io.choerodon.devops.api.vo.*;
-=======
-import io.choerodon.devops.api.vo.AppUserPermissionRepDTO;
-import io.choerodon.devops.api.vo.ApplicationCodeDTO;
-import io.choerodon.devops.api.vo.ApplicationImportDTO;
-import io.choerodon.devops.api.vo.ApplicationRepVO;
-import io.choerodon.devops.api.vo.ApplicationReqVO;
-import io.choerodon.devops.api.vo.ApplicationTemplateRespVO;
-import io.choerodon.devops.api.vo.ApplicationUpdateVO;
-import io.choerodon.devops.api.vo.SonarContentsDTO;
-import io.choerodon.devops.api.vo.SonarTableDTO;
->>>>>>> [REF] refactor ApplicationTemplateController
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
@@ -153,7 +141,7 @@ public interface ApplicationService {
      * @param status    环境状态
      * @return baseList of ApplicationRepDTO
      */
-    List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status, Long appId);
+    List<ApplicationCodeVO> listByEnvId(Long projectId, Long envId, String status, Long appId);
 
     /**
      * 根据环境id获取已部署正在运行实例的应用
@@ -163,7 +151,7 @@ public interface ApplicationService {
      * @param pageRequest 分页参数
      * @return baseList of ApplicationRepDTO
      */
-    PageInfo<ApplicationCodeDTO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest);
+    PageInfo<ApplicationCodeVO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest);
 
     /**
      * 项目下查询所有已经启用的应用
@@ -232,7 +220,7 @@ public interface ApplicationService {
      * @param appId 应用id
      * @return List
      */
-    List<AppUserPermissionRepDTO> listAllUserPermission(Long appId);
+    List<AppUserPermissionRespVO> listAllUserPermission(Long appId);
 
     /**
      * valid the repository url and access token
@@ -248,10 +236,10 @@ public interface ApplicationService {
      * 从外部代码托管平台导入项目创建应用
      *
      * @param projectId            project id
-     * @param applicationImportDTO 导入操作的相关信息
+     * @param applicationImportVO 导入操作的相关信息
      * @return response
      */
-    ApplicationRepVO importApp(Long projectId, ApplicationImportDTO applicationImportDTO);
+    ApplicationRepVO importApp(Long projectId, ApplicationImportVO applicationImportVO);
 
 
     /**
@@ -313,7 +301,7 @@ public interface ApplicationService {
      * @param appId     应用id
      * @return
      */
-    SonarContentsDTO getSonarContent(Long projectId, Long appId);
+    SonarContentsVO getSonarContent(Long projectId, Long appId);
 
     /**
      * 查看sonarqube相关报表
@@ -322,7 +310,7 @@ public interface ApplicationService {
      * @param appId     应用id
      * @return
      */
-    SonarTableDTO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime);
+    SonarTableVO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime);
 
 
     /**

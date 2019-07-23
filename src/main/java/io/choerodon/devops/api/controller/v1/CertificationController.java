@@ -10,9 +10,9 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.C7nCertificationDTO;
+import io.choerodon.devops.api.vo.C7nCertificationVO;
 import io.choerodon.devops.api.vo.CertificationVO;
-import io.choerodon.devops.api.vo.OrgCertificationDTO;
+import io.choerodon.devops.api.vo.OrgCertificationVO;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -53,7 +53,7 @@ public class CertificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书", required = true)
-            @ModelAttribute C7nCertificationDTO certification,
+            @ModelAttribute C7nCertificationVO certification,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
@@ -195,7 +195,7 @@ public class CertificationController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下有权限的组织层证书")
     @GetMapping("/list_org_cert")
-    public ResponseEntity<List<OrgCertificationDTO>> listOrgCert(
+    public ResponseEntity<List<OrgCertificationVO>> listOrgCert(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(certificationService.listOrgCertInProject(projectId))

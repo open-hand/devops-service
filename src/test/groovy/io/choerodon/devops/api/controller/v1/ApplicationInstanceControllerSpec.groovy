@@ -9,6 +9,7 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 
 import io.choerodon.devops.api.vo.*
+<<<<<<< HEAD
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 <<<<<<< HEAD
@@ -16,6 +17,10 @@ import io.choerodon.devops.api.vo.iam.RoleDTO
 
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult
 =======
+=======
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+>>>>>>> [REF] refactor original DTO to VO
 import io.choerodon.devops.domain.application.valueobject.InstanceValueVO
 >>>>>>> [IMP]重构后端代码
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
@@ -479,17 +484,17 @@ class ApplicationInstanceControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         List<ProjectDO> projectDOList = new ArrayList<>()
@@ -1022,7 +1027,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/time?envId=1&startTime=" + startTime + "&endTime=" + startTime, appIds, DeployTimeVO.class)
 
         then: '校验返回值'
-        dto.getDeployAppDTOS().get(0)["appName"] == "appName"
+        dto.getDeployAppVOS().get(0)["appName"] == "appName"
     }
 
     def "ListDeployFrequency"() {

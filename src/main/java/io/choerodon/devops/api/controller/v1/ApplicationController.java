@@ -26,15 +26,15 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.AppUserPermissionRepDTO;
-import io.choerodon.devops.api.vo.ApplicationCodeDTO;
-import io.choerodon.devops.api.vo.ApplicationImportDTO;
+import io.choerodon.devops.api.vo.AppUserPermissionRespVO;
+import io.choerodon.devops.api.vo.ApplicationCodeVO;
+import io.choerodon.devops.api.vo.ApplicationImportVO;
 import io.choerodon.devops.api.vo.ApplicationRepVO;
 import io.choerodon.devops.api.vo.ApplicationReqVO;
 import io.choerodon.devops.api.vo.ApplicationTemplateRespVO;
 import io.choerodon.devops.api.vo.ApplicationUpdateVO;
-import io.choerodon.devops.api.vo.SonarContentsDTO;
-import io.choerodon.devops.api.vo.SonarTableDTO;
+import io.choerodon.devops.api.vo.SonarContentsVO;
+import io.choerodon.devops.api.vo.SonarTableVO;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;
@@ -78,7 +78,7 @@ public class ApplicationController {
      * 项目下从外部代码库导入应用
      *
      * @param projectId            项目id
-     * @param applicationImportDTO 应用信息
+     * @param applicationImportVO 应用信息
      * @return ApplicationRepDTO
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -88,8 +88,8 @@ public class ApplicationController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
-            @RequestBody ApplicationImportDTO applicationImportDTO) {
-        return Optional.ofNullable(applicationService.importApp(projectId, applicationImportDTO))
+            @RequestBody ApplicationImportVO applicationImportVO) {
+        return Optional.ofNullable(applicationService.importApp(projectId, applicationImportVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.create"));
     }
@@ -226,7 +226,7 @@ public class ApplicationController {
     @ApiOperation(value = "根据环境id分页获取已部署正在运行实例的应用")
     @CustomPageRequest
     @GetMapping("/page_by_ids")
-    public ResponseEntity<PageInfo<ApplicationCodeDTO>> pageByEnvIdAndAppId(
+    public ResponseEntity<PageInfo<ApplicationCodeVO>> pageByEnvIdAndAppId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
@@ -287,7 +287,7 @@ public class ApplicationController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境id获取已部署正在运行实例的应用")
     @GetMapping("/list_by_env")
-    public ResponseEntity<List<ApplicationCodeDTO>> listByEnvIdAndStatus(
+    public ResponseEntity<List<ApplicationCodeVO>> listByEnvIdAndStatus(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
@@ -470,7 +470,7 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取应用下所有用户权限")
     @GetMapping(value = "/{appId}/list_all")
-    public ResponseEntity<List<AppUserPermissionRepDTO>> listAllUserPermission(
+    public ResponseEntity<List<AppUserPermissionRespVO>> listAllUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
@@ -560,7 +560,7 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation("查看sonarqube相关信息")
     @GetMapping("/{app_id}/sonarqube")
-    public ResponseEntity<SonarContentsDTO> getSonarQube(
+    public ResponseEntity<SonarContentsVO> getSonarQube(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
@@ -580,7 +580,7 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation("查看sonarqube相关信息")
     @GetMapping("/{app_id}/sonarqube_table")
-    public ResponseEntity<SonarTableDTO> getSonarQubeTable(
+    public ResponseEntity<SonarTableVO> getSonarQubeTable(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)

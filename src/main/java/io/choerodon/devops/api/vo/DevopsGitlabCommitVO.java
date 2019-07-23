@@ -10,24 +10,24 @@ import java.util.List;
  * Description:
  */
 public class DevopsGitlabCommitVO {
-    private List<CommitFormUserDTO> commitFormUserDTOList;
+    private List<CommitFormUserVO> commitFormUserVOList;
     private List<Date> totalCommitsDate;
 
     public DevopsGitlabCommitVO() {
     }
 
-    public DevopsGitlabCommitVO(List<CommitFormUserDTO> commitFormUserDTOList,
+    public DevopsGitlabCommitVO(List<CommitFormUserVO> commitFormUserVOList,
                                 List<Date> totalCommitsDate) {
-        this.commitFormUserDTOList = commitFormUserDTOList;
+        this.commitFormUserVOList = commitFormUserVOList;
         this.totalCommitsDate = totalCommitsDate;
     }
 
-    public List<CommitFormUserDTO> getCommitFormUserDTOList() {
-        return commitFormUserDTOList;
+    public List<CommitFormUserVO> getCommitFormUserVOList() {
+        return commitFormUserVOList;
     }
 
-    public void setCommitFormUserDTOList(List<CommitFormUserDTO> commitFormUserDTOList) {
-        this.commitFormUserDTOList = commitFormUserDTOList;
+    public void setCommitFormUserVOList(List<CommitFormUserVO> commitFormUserVOList) {
+        this.commitFormUserVOList = commitFormUserVOList;
     }
 
     public List<Date> getTotalCommitsDate() {

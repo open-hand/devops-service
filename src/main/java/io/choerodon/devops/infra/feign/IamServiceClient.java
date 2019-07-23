@@ -5,11 +5,11 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.constant.PageConstant;
-import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.vo.iam.RoleDTO;
-import io.choerodon.devops.api.vo.iam.RoleSearchDTO;
-import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
+import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
+import io.choerodon.devops.api.vo.iam.RoleSearchVO;
+import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
 import io.choerodon.devops.infra.dto.iam.IamAppDTO;
@@ -59,8 +59,8 @@ public interface IamServiceClient {
     ResponseEntity<PageInfo<IamUserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users/count")
-    ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
-                                                                       @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+    ResponseEntity<List<RoleVO>> listRolesWithUserCountOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
+                                                                      @RequestBody(required = false) @Valid RoleAssignmentSearchVO roleAssignmentSearchVO);
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users")
     ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
@@ -69,22 +69,22 @@ public interface IamServiceClient {
             @RequestParam(name = "role_id") Long roleId,
             @PathVariable(name = "project_id") Long sourceId,
             @RequestParam(name = "doPage") Boolean doPage,
-            @RequestBody RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+            @RequestBody RoleAssignmentSearchVO roleAssignmentSearchVO);
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users/roles")
-    ResponseEntity<PageInfo<UserWithRoleDTO>> queryUserByProjectId(@PathVariable("project_id") Long projectId,
-                                                                   @RequestParam("page") int page,
-                                                                   @RequestParam("size") int size,
-                                                                   @RequestParam("doPage") Boolean doPage,
-                                                                   @RequestBody @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+    ResponseEntity<PageInfo<UserWithRoleVO>> queryUserByProjectId(@PathVariable("project_id") Long projectId,
+                                                                  @RequestParam("page") int page,
+                                                                  @RequestParam("size") int size,
+                                                                  @RequestParam("doPage") Boolean doPage,
+                                                                  @RequestBody @Valid RoleAssignmentSearchVO roleAssignmentSearchVO);
 
     @GetMapping(value = "/v1/users/{id}/project_roles")
-    ResponseEntity<PageInfo<ProjectWithRoleDTO>> listProjectWithRole(@PathVariable("id") Long id,
-                                                                     @RequestParam("page") int page,
-                                                                     @RequestParam("size") int size);
+    ResponseEntity<PageInfo<ProjectWithRoleVO>> listProjectWithRole(@PathVariable("id") Long id,
+                                                                    @RequestParam("page") int page,
+                                                                    @RequestParam("size") int size);
 
     @PostMapping(value = "/v1/roles/search")
-    ResponseEntity<PageInfo<RoleDTO>> queryRoleIdByCode(@RequestBody @Valid RoleSearchDTO roleSearchDTO);
+    ResponseEntity<PageInfo<RoleVO>> queryRoleIdByCode(@RequestBody @Valid RoleSearchVO roleSearchVO);
 
 
     @PostMapping(value = "/v1/organizations/{organization_id}/applications")

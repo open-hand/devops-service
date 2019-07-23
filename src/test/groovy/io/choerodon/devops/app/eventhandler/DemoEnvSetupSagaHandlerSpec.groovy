@@ -5,10 +5,10 @@ import io.choerodon.core.domain.Page
 import io.choerodon.core.domain.PageInfo
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.vo.iam.RoleDTO
-import io.choerodon.devops.api.vo.iam.RoleSearchDTO
+import io.choerodon.devops.api.vo.RoleAssignmentSearchVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+import io.choerodon.devops.api.vo.iam.RoleSearchVO
 import io.choerodon.devops.api.vo.iam.UserVO
 <<<<<<< HEAD
 import io.choerodon.devops.app.service.ApplicationService
@@ -147,13 +147,13 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             Mockito.doReturn(null).when(gitlabServiceClient).createTag(any(), any(), any(), any(), any(), any())
 
 
-            RoleDTO roleDTO = new RoleDTO()
+            RoleVO roleDTO = new RoleVO()
             roleDTO.setId(234L)
             roleDTO.setCode("role/project/default/project-owner")
             PageInfo pageInfo = new PageInfo(0, 10, true)
-            List<RoleDTO> roleDTOS = Arrays.asList(roleDTO)
-            Page<RoleDTO> page = new Page(roleDTOS, pageInfo, 1)
-            when(iamServiceClient.queryRoleIdByCode(any(RoleSearchDTO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
+            List<RoleVO> roleDTOS = Arrays.asList(roleDTO)
+            Page<RoleVO> page = new Page(roleDTOS, pageInfo, 1)
+            when(iamServiceClient.queryRoleIdByCode(any(RoleSearchVO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
             when(gitlabServiceClient.listDeploykey(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
             when(gitlabServiceClient.getFile(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK))
             when(gitlabServiceClient.queryProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDTO(), HttpStatus.OK))
@@ -210,13 +210,13 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             memberUserDTOList.add(memberUserDTO)
             memberUserDTOPage.setContent(memberUserDTOList)
             ResponseEntity<Page<UserVO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
-            RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
+            RoleAssignmentSearchVO roleAssignmentSearchDTO = new RoleAssignmentSearchVO()
             roleAssignmentSearchDTO.setLoginName("")
             roleAssignmentSearchDTO.setRealName("")
             String[] param = new String[1]
             param[0] = ""
             roleAssignmentSearchDTO.setParam(param)
-            Mockito.when(iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO.class))).thenReturn(ownerPageResponseEntity)
+            Mockito.when(iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchVO.class))).thenReturn(ownerPageResponseEntity)
 
             ImpersonationTokenDO impersonationTokenDO = new ImpersonationTokenDO()
             impersonationTokenDO.setToken("test")
@@ -246,17 +246,17 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             ResponseEntity<ProjectHookDTO> projectHookResponseEntity = new ResponseEntity<>(projectHook, HttpStatus.OK)
             Mockito.doReturn(projectHookResponseEntity).when(gitlabServiceClient).createProjectHook(any(), any(), any())
 
-            List<RoleDTO> roleDTOList = new ArrayList<>()
+            List<RoleVO> roleDTOList = new ArrayList<>()
             roleDTOList.add(roleDTO)
-            List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-            ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+            List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+            ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
             projectWithRoleDTO.setName("pro")
             projectWithRoleDTO.setRoles(roleDTOList)
             projectWithRoleDTOList.add(projectWithRoleDTO)
-            Page<ProjectWithRoleDTO> projectWithRoleDTOPage = new Page<>()
+            Page<ProjectWithRoleVO> projectWithRoleDTOPage = new Page<>()
             projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
             projectWithRoleDTOPage.setTotalPages(2)
-            ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+            ResponseEntity<Page<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
             Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
         }
     }

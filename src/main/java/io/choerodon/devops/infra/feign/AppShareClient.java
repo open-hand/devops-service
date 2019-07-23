@@ -11,8 +11,8 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
 
-import io.choerodon.devops.api.vo.AccessTokenCheckResultDTO;
-import io.choerodon.devops.api.vo.AppVersionAndValueDTO;
+import io.choerodon.devops.api.vo.AccessTokenCheckResultVO;
+import io.choerodon.devops.api.vo.AppVersionAndValueVO;
 import io.choerodon.devops.api.vo.ApplicationReleasingVO;
 
 /**
@@ -30,11 +30,11 @@ public interface AppShareClient {
                                                                 @QueryMap Map<String, Object> map);
 
     @GET("v1/public/app_shares/{app_id}/versions/{version_id}/config_info")
-    Call<AppVersionAndValueDTO> getConfigInfoByVerionId(@Path("app_id") Long appId,
-                                                        @Path("version_id") Long versionId,
-                                                        @QueryMap Map<String, Object> map);
+    Call<AppVersionAndValueVO> getConfigInfoByVerionId(@Path("app_id") Long appId,
+                                                       @Path("version_id") Long versionId,
+                                                       @QueryMap Map<String, Object> map);
 
     @POST("v1/public/app_shares/check_token")
-    Call<AccessTokenCheckResultDTO> checkTokenExist(@Query("access_token") String accessToken);
+    Call<AccessTokenCheckResultVO> checkTokenExist(@Query("access_token") String accessToken);
 
 }

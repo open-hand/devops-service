@@ -11,7 +11,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ApplicationTemplateRespVO;
-import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
+import io.choerodon.devops.api.vo.ApplicationTemplateUpdateVO;
 import io.choerodon.devops.api.vo.ApplicationTemplateVO;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.mybatis.annotation.SortDefault;
@@ -59,7 +59,7 @@ public class ApplicationTemplateController {
      * 组织下更新应用模板
      *
      * @param organizationId               组织id
-     * @param applicationTemplateUpdateDTO 模板信息
+     * @param applicationTemplateUpdateVO 模板信息
      * @return ApplicationTemplateDTO
      */
     @Permission(type = ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
@@ -69,8 +69,8 @@ public class ApplicationTemplateController {
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "模板信息", required = true)
-            @RequestBody ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO) {
-        return Optional.ofNullable(applicationTemplateService.update(applicationTemplateUpdateDTO, organizationId))
+            @RequestBody ApplicationTemplateUpdateVO applicationTemplateUpdateVO) {
+        return Optional.ofNullable(applicationTemplateService.update(applicationTemplateUpdateVO, organizationId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appTemplate.update"));
     }

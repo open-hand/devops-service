@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageVO;
+import io.choerodon.devops.api.vo.DevopsEnvMessageVO;
 
 import java.util.List;
 

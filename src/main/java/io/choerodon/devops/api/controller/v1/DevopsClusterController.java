@@ -318,7 +318,7 @@ public class    DevopsClusterController {
     @ApiOperation(value = "分页查询集群下的节点")
     @CustomPageRequest
     @GetMapping("/page_nodes")
-    public ResponseEntity<PageInfo<ClusterNodeInfoDTO>> listClusterNodes(
+    public ResponseEntity<PageInfo<ClusterNodeInfoVO>> listClusterNodes(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群id", required = true)
@@ -340,7 +340,7 @@ public class    DevopsClusterController {
     @Permission(type= ResourceType.ORGANIZATION,roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "根据集群id和节点名查询节点状态信息")
     @GetMapping(value = "/nodes")
-    public ResponseEntity<ClusterNodeInfoDTO> queryNodeInfo(
+    public ResponseEntity<ClusterNodeInfoVO> queryNodeInfo(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群id", required = true)

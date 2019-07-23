@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 import com.alibaba.fastjson.JSONArray;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.payload.OperationPodPayload;
+import io.choerodon.devops.app.eventhandler.payload.SecretPayLoad;
 import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
 import io.choerodon.devops.domain.application.valueobject.Payload;
@@ -198,10 +200,10 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     @Override
     public void initCluster(Long clusterId) {
-        GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(clusterId);
+        GitConfigVO gitConfigVO = gitUtil.getGitConfig(clusterId);
         Msg msg = new Msg();
         try {
-            msg.setPayload(mapper.writeValueAsString(gitConfigDTO));
+            msg.setPayload(mapper.writeValueAsString(gitConfigVO));
         } catch (IOException e) {
             throw new CommonException("read envId from agent session failed", e);
         }
@@ -214,23 +216,23 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     @Override
     public void initEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, Long clusterId) {
-        GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(clusterId);
-        List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
+        GitConfigVO gitConfigVO = gitUtil.getGitConfig(clusterId);
+        List<GitEnvConfigVO> gitEnvConfigVOS = new ArrayList<>();
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
 
-        GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
-        gitEnvConfigDTO.setEnvId(devopsEnvironmentDTO.getId());
-        gitEnvConfigDTO.setGitRsaKey(devopsEnvironmentDTO.getEnvIdRsa());
-        gitEnvConfigDTO.setGitUrl(repoUrl);
-        gitEnvConfigDTO.setNamespace(devopsEnvironmentDTO.getCode());
-        gitEnvConfigDTOS.add(gitEnvConfigDTO);
-        gitConfigDTO.setEnvs(gitEnvConfigDTOS);
-        gitConfigDTO.setGitHost(gitlabSshUrl);
+        GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();
+        gitEnvConfigVO.setEnvId(devopsEnvironmentDTO.getId());
+        gitEnvConfigVO.setGitRsaKey(devopsEnvironmentDTO.getEnvIdRsa());
+        gitEnvConfigVO.setGitUrl(repoUrl);
+        gitEnvConfigVO.setNamespace(devopsEnvironmentDTO.getCode());
+        gitEnvConfigVOS.add(gitEnvConfigVO);
+        gitConfigVO.setEnvs(gitEnvConfigVOS);
+        gitConfigVO.setGitHost(gitlabSshUrl);
         Msg msg = new Msg();
         try {
-            msg.setPayload(mapper.writeValueAsString(gitConfigDTO));
+            msg.setPayload(mapper.writeValueAsString(gitConfigVO));
         } catch (IOException e) {
             throw new CommonException("read envId from agent session failed", e);
         }
@@ -278,12 +280,12 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
     @Override
     public void deleteEnv(Long envId, String code, Long clusterId) {
-        GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
-        gitEnvConfigDTO.setEnvId(envId);
-        gitEnvConfigDTO.setNamespace(code);
+        GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();
+        gitEnvConfigVO.setEnvId(envId);
+        gitEnvConfigVO.setNamespace(code);
         Msg msg = new Msg();
         try {
-            msg.setPayload(mapper.writeValueAsString(gitEnvConfigDTO));
+            msg.setPayload(mapper.writeValueAsString(gitEnvConfigVO));
         } catch (IOException e) {
             throw new CommonException("error get envId and code", e);
         }

@@ -17,6 +17,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.dto.*;
@@ -1394,10 +1395,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
         devopsClusterDTO.setInit(true);
         devopsClusterService.baseUpdate(devopsClusterDTO);
-        GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(devopsClusterDTO.getId());
+        GitConfigVO gitConfigVO = gitUtil.getGitConfig(devopsClusterDTO.getId());
         Msg initClusterEnv = new Msg();
         try {
-            initClusterEnv.setPayload(mapper.writeValueAsString(gitConfigDTO));
+            initClusterEnv.setPayload(mapper.writeValueAsString(gitConfigVO));
         } catch (IOException e) {
             throw new CommonException("read envId from agent session failed", e);
         }
@@ -1415,14 +1416,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
         String status = K8sUtil.changePodStatus(v1Pod);
         if (status.equals("Running")) {
-            PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
+            PodUpdateVO podUpdateVO = new PodUpdateVO();
             Optional<V1Container> container = v1Pod.getSpec().getContainers().stream().filter(v1Container -> v1Container.getName().contains("automation-test")).findFirst();
             if (container.isPresent()) {
-                podUpdateDTO.setConName(container.get().getName());
+                podUpdateVO.setConName(container.get().getName());
             }
-            podUpdateDTO.setPodName(v1Pod.getMetadata().getName());
-            podUpdateDTO.setReleaseNames(KeyParseTool.getReleaseName(key));
-            podUpdateDTO.setStatus(0L);
+            podUpdateVO.setPodName(v1Pod.getMetadata().getName());
+            podUpdateVO.setReleaseNames(KeyParseTool.getReleaseName(key));
+            podUpdateVO.setStatus(0L);
 
             producer.applyAndReturn(
                     StartSagaBuilder
@@ -1431,7 +1432,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                             .withRefType("")
                             .withSagaCode(SagaTopicCodeConstants.TEST_POD_UPDATE_SAGA),
                     builder -> builder
-                            .withPayloadAndSerialize(podUpdateDTO)
+                            .withPayloadAndSerialize(podUpdateVO)
                             .withRefId(""));
         }
     }
@@ -1440,16 +1441,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Saga(code = SagaTopicCodeConstants.TEST_JOB_LOG_SAGA,
             description = "测试Job日志(test job log saga)", inputSchema = "{}")
     public void testJobLog(String key, String msg, Long clusterId) {
-        JobLogDTO jobLogDTO = json.deserialize(msg, JobLogDTO.class);
-        PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
-        podUpdateDTO.setReleaseNames(KeyParseTool.getReleaseName(key));
-        if (jobLogDTO.getSucceed() != null && jobLogDTO.getSucceed()) {
-            podUpdateDTO.setStatus(1L);
+        JobLogVO jobLogVO = json.deserialize(msg, JobLogVO.class);
+        PodUpdateVO podUpdateVO = new PodUpdateVO();
+        podUpdateVO.setReleaseNames(KeyParseTool.getReleaseName(key));
+        if (jobLogVO.getSucceed() != null && jobLogVO.getSucceed()) {
+            podUpdateVO.setStatus(1L);
         } else {
-            podUpdateDTO.setStatus(-1L);
+            podUpdateVO.setStatus(-1L);
         }
-        podUpdateDTO.setLogFile(jobLogDTO.getLog());
-        String input = gson.toJson(podUpdateDTO);
+        podUpdateVO.setLogFile(jobLogVO.getLog());
+        String input = gson.toJson(podUpdateVO);
         logger.info(input);
 
         producer.applyAndReturn(
@@ -1459,7 +1460,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         .withRefType("")
                         .withSagaCode(SagaTopicCodeConstants.TEST_JOB_LOG_SAGA),
                 builder -> builder
-                        .withPayloadAndSerialize(podUpdateDTO)
+                        .withPayloadAndSerialize(podUpdateVO)
                         .withRefId(""));
     }
 
@@ -1468,17 +1469,17 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             description = "测试Release状态(test status saga)", inputSchema = "{}")
     public void getTestAppStatus(String key, String msg, Long clusterId) {
         logger.info(msg);
-        List<TestReleaseStatus> testReleaseStatuses = JSONArray.parseArray(msg, TestReleaseStatus.class);
-        List<PodUpdateDTO> podUpdateDTOS = new ArrayList<>();
-        for (TestReleaseStatus testReleaseStatu : testReleaseStatuses) {
-            PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
-            podUpdateDTO.setReleaseNames(testReleaseStatu.getReleaseName());
+        List<TestReleaseStatusPayload> testReleaseStatusPayloads = JSONArray.parseArray(msg, TestReleaseStatusPayload.class);
+        List<PodUpdateVO> podUpdateVOS = new ArrayList<>();
+        for (TestReleaseStatusPayload testReleaseStatu : testReleaseStatusPayloads) {
+            PodUpdateVO podUpdateVO = new PodUpdateVO();
+            podUpdateVO.setReleaseNames(testReleaseStatu.getReleaseName());
             if (testReleaseStatu.getStatus().equals("running")) {
-                podUpdateDTO.setStatus(1L);
+                podUpdateVO.setStatus(1L);
             } else {
-                podUpdateDTO.setStatus(0L);
+                podUpdateVO.setStatus(0L);
             }
-            podUpdateDTOS.add(podUpdateDTO);
+            podUpdateVOS.add(podUpdateVO);
         }
         producer.applyAndReturn(
                 StartSagaBuilder
@@ -1487,7 +1488,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         .withRefType("")
                         .withSagaCode(SagaTopicCodeConstants.TEST_STATUS_SAGA),
                 builder -> builder
-                        .withPayloadAndSerialize(podUpdateDTOS)
+                        .withPayloadAndSerialize(podUpdateVOS)
                         .withRefId(""));
     }
 
@@ -1643,7 +1644,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Override
     public void handleNodeSync(String msg, Long clusterId) {
-        clusterNodeInfoService.setValueForKey(clusterNodeInfoService.getRedisClusterKey(clusterId), JSONArray.parseArray(msg, AgentNodeInfoDTO.class));
+        clusterNodeInfoService.setValueForKey(clusterNodeInfoService.getRedisClusterKey(clusterId), JSONArray.parseArray(msg, AgentNodeInfoVO.class));
     }
 
     @Override

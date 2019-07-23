@@ -87,14 +87,14 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
     private Gson gson = new Gson();
 
-    private DemoDataDTO demoDataDTO;
+    private DemoDataVO demoDataVO;
     private Integer gitlabUserId;
 
     @PostConstruct
     public void loadData() {
         try {
             String content = StreamUtils.copyToString(this.getClass().getClassLoader().getResourceAsStream(demoDataFilePath), Charset.forName("UTF-8"));
-            demoDataDTO = JSONObject.parseObject(content, DemoDataDTO.class);
+            demoDataVO = JSONObject.parseObject(content, DemoDataVO.class);
         } catch (Exception e) {
             logger.error("Load content of demo data failed. exception is: {}", e);
         }
@@ -104,7 +104,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     public void initialDemoEnv(OrganizationRegisterEventPayload organizationRegisterEventPayload) {
         Long projectId = organizationRegisterEventPayload.getProject().getId();
         // 1. 创建应用
-        ApplicationReqVO app = demoDataDTO.getApplicationInfo();
+        ApplicationReqVO app = demoDataVO.getApplicationInfo();
         app.setApplicationTemplateId(getMicroServiceTemplateId());
         app.setIsSkipCheckPermission(Boolean.TRUE);
 
@@ -119,12 +119,12 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         Integer gitlabProjectId = applicationService.baseQuery(applicationRepDTO.getId()).getGitlabProjectId();
 
 //        2. 创建分支
-        BranchDTO branchDO = gitlabServiceClientOperator.queryBranch(gitlabProjectId, demoDataDTO.getBranchInfo().getBranchName());
+        BranchDTO branchDO = gitlabServiceClientOperator.queryBranch(gitlabProjectId, demoDataVO.getBranchInfo().getBranchName());
         if (branchDO.getName() == null) {
             gitlabServiceClientOperator.createBranch(
                     gitlabProjectId,
-                    demoDataDTO.getBranchInfo().getBranchName(),
-                    demoDataDTO.getBranchInfo().getOriginBranch(),
+                    demoDataVO.getBranchInfo().getBranchName(),
+                    demoDataVO.getBranchInfo().getOriginBranch(),
                     gitlabUserId);
         }
 
@@ -139,12 +139,12 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         mergeBranch(gitlabProjectId);
 
         // 6. 创建标记，由于选择人工造版本数据而不是通过ci，此处tag-name不使用正确的。
-        devopsGitService.createTag(projectId, applicationRepDTO.getId(), demoDataDTO.getTagInfo().getTag() + "-alpha.1", demoDataDTO.getTagInfo().getRef(), demoDataDTO.getTagInfo().getMsg(), demoDataDTO.getTagInfo().getReleaseNotes());
+        devopsGitService.createTag(projectId, applicationRepDTO.getId(), demoDataVO.getTagInfo().getTag() + "-alpha.1", demoDataVO.getTagInfo().getRef(), demoDataVO.getTagInfo().getMsg(), demoDataVO.getTagInfo().getReleaseNotes());
 
         createFakeApplicationVersion(applicationRepDTO.getId());
 
         // 7. 发布应用
-        ApplicationReleasingVO applicationReleasingDTO = demoDataDTO.getApplicationRelease();
+        ApplicationReleasingVO applicationReleasingDTO = demoDataVO.getApplicationRelease();
         applicationReleasingDTO.setAppId(applicationRepDTO.getId());
         applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
         applicationMarketService.create(projectId, applicationReleasingDTO);
@@ -228,7 +228,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @throws CommonException if there isn't a template named 'MicroService'
      */
     private Long getMicroServiceTemplateId() throws CommonException {
-        List<ApplicationTemplateRespVO> template = applicationTemplateService.listByOptions(new PageRequest(0, 1), null, demoDataDTO.getTemplateSearchParam()).getList();
+        List<ApplicationTemplateRespVO> template = applicationTemplateService.listByOptions(new PageRequest(0, 1), null, demoDataVO.getTemplateSearchParam()).getList();
 
         if (template != null && !template.isEmpty()) {
             return template.get(0).getId();
@@ -243,7 +243,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param gitlabProjectId gitlab project id
      */
     private void newCommit(Integer gitlabProjectId) {
-        gitlabServiceClientOperator.createFile(gitlabProjectId, "newFile" + UUID.randomUUID().toString().replaceAll("-", ""), "a new commit.", "[ADD] a new file", gitlabUserId, demoDataDTO.getBranchInfo().getBranchName());
+        gitlabServiceClientOperator.createFile(gitlabProjectId, "newFile" + UUID.randomUUID().toString().replaceAll("-", ""), "a new commit.", "[ADD] a new file", gitlabUserId, demoDataVO.getBranchInfo().getBranchName());
     }
 
 
@@ -255,7 +255,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private void mergeBranch(Integer gitlabProjectId) {
         try {
             // 创建merge request
-            MergeRequestDTO mergeRequest = gitlabServiceClientOperator.createMergeRequest(gitlabProjectId, demoDataDTO.getBranchInfo().getBranchName(), "master", "a new merge request", "[ADD] add instant push", gitlabUserId);
+            MergeRequestDTO mergeRequest = gitlabServiceClientOperator.createMergeRequest(gitlabProjectId, demoDataVO.getBranchInfo().getBranchName(), "master", "a new merge request", "[ADD] add instant push", gitlabUserId);
 
             // 确认merge request
             gitlabServiceClientOperator.acceptMergeRequest(gitlabProjectId, mergeRequest.getId(), "", Boolean.FALSE, Boolean.TRUE, gitlabUserId);
@@ -272,15 +272,15 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param applicationId the application id
      * @return the version
      */
-    private AppMarketVersionDTO getApplicationVersion(Long projectId, Long applicationId) {
+    private AppMarketVersionVO getApplicationVersion(Long projectId, Long applicationId) {
         PageRequest pageRequest = new PageRequest(0, 1);
         PageInfo<ApplicationVersionRespVO> versions = applicationVersionService.pageApplicationVersionInApp(projectId, applicationId, pageRequest, null);
         if (!versions.getList().isEmpty()) {
-            AppMarketVersionDTO appMarketVersionDTO = new AppMarketVersionDTO();
-            BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionDTO);
-            return appMarketVersionDTO;
+            AppMarketVersionVO appMarketVersionVO = new AppMarketVersionVO();
+            BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionVO);
+            return appMarketVersionVO;
         } else {
-            logger.error("Error: can not find a version with name {}", demoDataDTO.getTagInfo().getTag());
+            logger.error("Error: can not find a version with name {}", demoDataVO.getTagInfo().getTag());
             return null;
         }
     }
@@ -294,7 +294,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         try {
             byte[] bytes = StreamUtils.copyToByteArray(this.getClass().getClassLoader().getResourceAsStream(tgzFilePath));
             MockMultipartFile multipartFile = new MockMultipartFile("code-i.tgz", "code-i.tgz", "application/tgz", bytes);
-            applicationVersionService.create(demoDataDTO.getAppVersion().getImage(), applicationService.baseQuery(appId).getToken(), demoDataDTO.getAppVersion().getVersion(), demoDataDTO.getAppVersion().getCommit(), multipartFile);
+            applicationVersionService.create(demoDataVO.getAppVersion().getImage(), applicationService.baseQuery(appId).getToken(), demoDataVO.getAppVersion().getVersion(), demoDataVO.getAppVersion().getCommit(), multipartFile);
         } catch (IOException e) {
             logger.error("can not find file {}", tgzFilePath);
             throw new CommonException(e);

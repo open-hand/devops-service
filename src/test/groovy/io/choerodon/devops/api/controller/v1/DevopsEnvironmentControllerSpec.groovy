@@ -14,10 +14,16 @@ import io.choerodon.devops.api.vo.*
 <<<<<<< HEAD
 =======
 >>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+<<<<<<< HEAD
 >>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.vo.iam.RoleDTO
 import io.choerodon.devops.api.vo.iam.RoleSearchDTO
+=======
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+import io.choerodon.devops.api.vo.iam.RoleSearchVO
+>>>>>>> [REF] refactor original DTO to VO
 import io.choerodon.devops.api.vo.iam.UserVO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 
@@ -260,17 +266,17 @@ class DevopsEnvironmentControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         MemberDTO memberDO = new MemberDTO()
@@ -278,25 +284,25 @@ class DevopsEnvironmentControllerSpec extends Specification {
         ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
-        List<RoleDTO> ownerRoleDTOList = new ArrayList<>()
-        List<RoleDTO> memberRoleDTOList = new ArrayList<>()
-        RoleDTO ownerRoleDTO = new RoleDTO()
+        List<RoleVO> ownerRoleDTOList = new ArrayList<>()
+        List<RoleVO> memberRoleDTOList = new ArrayList<>()
+        RoleVO ownerRoleDTO = new RoleVO()
         ownerRoleDTO.setId(45L)
         ownerRoleDTO.setCode("role/project/default/project-owner")
         ownerRoleDTOList.add(ownerRoleDTO)
-        PageInfo<RoleDTO> ownerRoleDTOPage = new PageInfo<>(ownerRoleDTOList)
-        RoleDTO memberRoleDTO = new RoleDTO()
+        PageInfo<RoleVO> ownerRoleDTOPage = new PageInfo<>(ownerRoleDTOList)
+        RoleVO memberRoleDTO = new RoleVO()
         memberRoleDTO.setId(43L)
         memberRoleDTO.setCode("role/project/default/project-member")
         memberRoleDTOList.add(memberRoleDTO)
-        PageInfo<RoleDTO> memberRoleDTOPage = new PageInfo<>(memberRoleDTOList)
-        ResponseEntity<PageInfo<RoleDTO>> responseEntity3 = new ResponseEntity<>(ownerRoleDTOPage, HttpStatus.OK)
-        RoleSearchDTO ownerRoleSearchDTO = new RoleSearchDTO()
+        PageInfo<RoleVO> memberRoleDTOPage = new PageInfo<>(memberRoleDTOList)
+        ResponseEntity<PageInfo<RoleVO>> responseEntity3 = new ResponseEntity<>(ownerRoleDTOPage, HttpStatus.OK)
+        RoleSearchVO ownerRoleSearchDTO = new RoleSearchVO()
         ownerRoleSearchDTO.setCode("role/project/default/project-owner")
-        ResponseEntity<PageInfo<RoleDTO>> responseEntity4 = new ResponseEntity<>(memberRoleDTOPage, HttpStatus.OK)
-        RoleSearchDTO memberRoleSearchDTO = new RoleSearchDTO()
+        ResponseEntity<PageInfo<RoleVO>> responseEntity4 = new ResponseEntity<>(memberRoleDTOPage, HttpStatus.OK)
+        RoleSearchVO memberRoleSearchDTO = new RoleSearchVO()
         memberRoleSearchDTO.setCode("role/project/default/project-member")
-        Mockito.when(iamServiceClient.queryRoleIdByCode(any(RoleSearchDTO.class))).thenReturn(responseEntity3).thenReturn(responseEntity4)
+        Mockito.when(iamServiceClient.queryRoleIdByCode(any(RoleSearchVO.class))).thenReturn(responseEntity3).thenReturn(responseEntity4)
 
         and: 'mock查询项目成员和所有者的角色列表'
         List<UserVO> ownerUserDTOList = new ArrayList<>()
@@ -315,13 +321,13 @@ class DevopsEnvironmentControllerSpec extends Specification {
         PageInfo<UserVO> memberUserDTOPage = new PageInfo<>(memberUserDTOList)
         ResponseEntity<PageInfo<UserVO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
         ResponseEntity<PageInfo<UserVO>> memberPageResponseEntity = new ResponseEntity<>(memberUserDTOPage, HttpStatus.OK)
-        RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
+        RoleAssignmentSearchVO roleAssignmentSearchDTO = new RoleAssignmentSearchVO()
         roleAssignmentSearchDTO.setLoginName("")
         roleAssignmentSearchDTO.setRealName("")
         String[] param = new String[1]
         param[0] = ""
         roleAssignmentSearchDTO.setParam(param)
-        Mockito.when(iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO.class))).thenReturn(ownerPageResponseEntity).thenReturn(memberPageResponseEntity)
+        Mockito.when(iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchVO.class))).thenReturn(ownerPageResponseEntity).thenReturn(memberPageResponseEntity)
     }
 
     def "Create"() {
@@ -363,7 +369,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         userAttrRepository.baseQueryById(_ as Long) >> userAttrE
 
         and: 'mock envUtil'
-        GitConfigDTO gitConfigDTO = new GitConfigDTO()
+        GitConfigVO gitConfigDTO = new GitConfigVO()
         gitUtil.getGitConfig(_ as Long) >> gitConfigDTO
         when: '项目下创建环境'
         restTemplate.postForObject("/v1/projects/1/envs", devopsEnviromentDTO, String.class)

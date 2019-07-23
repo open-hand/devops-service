@@ -166,7 +166,7 @@ public class OrgAppShareController {
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据版本Id获取values和chart")
     @GetMapping(value = "/values")
-    public ResponseEntity<AppVersionAndValueDTO> getValuesAndChart(
+    public ResponseEntity<AppVersionAndValueVO> getValuesAndChart(
             @ApiParam(value = "应用Id")
             @RequestParam(value = "version_id") Long versionId) {
         return Optional.ofNullable(
@@ -178,9 +178,9 @@ public class OrgAppShareController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "token校验")
     @PostMapping(value = "/check_token")
-    public ResponseEntity<AccessTokenCheckResultDTO> checkToken(
+    public ResponseEntity<AccessTokenCheckResultVO> checkToken(
             @ApiParam(value = "token")
-            @RequestBody AccessTokenDTO tokenDTO) {
+            @RequestBody AccessTokenVO tokenDTO) {
         return Optional.ofNullable(
                 applicationShareService.checkToken(tokenDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -192,7 +192,7 @@ public class OrgAppShareController {
     @PostMapping(value = "/save_token")
     public ResponseEntity saveToken(
             @ApiParam(value = "token")
-            @RequestBody AccessTokenDTO tokenDTO) {
+            @RequestBody AccessTokenVO tokenDTO) {
         applicationShareService.saveToken(tokenDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

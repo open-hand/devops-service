@@ -11,12 +11,11 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
-import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.vo.iam.RoleDTO;
-import io.choerodon.devops.api.vo.iam.RoleSearchDTO;
-import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
+import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
+import io.choerodon.devops.api.vo.iam.RoleSearchVO;
+import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
 import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
@@ -114,13 +113,13 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public List<ProjectWithRoleDTO> listProjectWithRoleDTO(Long userId) {
-        List<ProjectWithRoleDTO> returnList = new ArrayList<>();
+    public List<ProjectWithRoleVO> listProjectWithRoleDTO(Long userId) {
+        List<ProjectWithRoleVO> returnList = new ArrayList<>();
         int page = 0;
         int size = 0;
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity =
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity =
                 iamServiceClient.listProjectWithRole(userId, page, size);
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = pageResponseEntity.getBody();
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = pageResponseEntity.getBody();
         if (!projectWithRoleDTOPage.getList().isEmpty()) {
             returnList.addAll(projectWithRoleDTOPage.getList());
         }
@@ -154,11 +153,11 @@ public class IamServiceImpl implements IamService {
 
     @Override
     public PageInfo<IamUserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
-                                                                       RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                                       RoleAssignmentSearchVO roleAssignmentSearchVO,
                                                                        Long roleId, Long projectId, Boolean doPage) {
         try {
             return iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
-                    projectId, doPage, roleAssignmentSearchDTO).getBody();
+                    projectId, doPage, roleAssignmentSearchVO).getBody();
         } catch (FeignException e) {
             LOGGER.error("get users by role id {} and project id {} error", roleId, projectId);
         }
@@ -166,13 +165,13 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public PageInfo<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,
-                                                                    Boolean doPage) {
+    public PageInfo<UserWithRoleVO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,
+                                                                   Boolean doPage) {
         try {
-            RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
-            ResponseEntity<PageInfo<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient
+            RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+            ResponseEntity<PageInfo<UserWithRoleVO>> userEPageResponseEntity = iamServiceClient
                     .queryUserByProjectId(projectId,
-                            pageRequest.getPage(), pageRequest.getSize(), doPage, roleAssignmentSearchDTO);
+                            pageRequest.getPage(), pageRequest.getSize(), doPage, roleAssignmentSearchVO);
             return userEPageResponseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("get user permission by project id {} error", projectId);
@@ -198,9 +197,9 @@ public class IamServiceImpl implements IamService {
     @Override
     public Long queryRoleIdByCode(String roleCode) {
         try {
-            RoleSearchDTO roleSearchDTO = new RoleSearchDTO();
-            roleSearchDTO.setCode(roleCode);
-            return iamServiceClient.queryRoleIdByCode(roleSearchDTO).getBody().getList().get(0).getId();
+            RoleSearchVO roleSearchVO = new RoleSearchVO();
+            roleSearchVO.setCode(roleCode);
+            return iamServiceClient.queryRoleIdByCode(roleSearchVO).getBody().getList().get(0).getId();
         } catch (FeignException e) {
             LOGGER.error("get role id by code {} error", roleCode);
             return null;
@@ -216,11 +215,11 @@ public class IamServiceImpl implements IamService {
         // 项目下所有项目成员
         List<Long> memberIds =
 
-                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), memberId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), memberId,
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
         List<Long> ownerIds =
-                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), ownerId,
+                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), ownerId,
 
                         projectId, false).getList().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
@@ -234,11 +233,11 @@ public class IamServiceImpl implements IamService {
         Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
         // 项目下所有项目成员
 
-        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), memberId,
+        List<IamUserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), memberId,
                 projectId, false).getList();
         List<Long> memberIds = list.stream().filter(userDTO -> userDTO.getEnabled()).map(IamUserDTO::getId).collect(Collectors.toList());
         // 项目下所有项目所有者
-        this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchDTO(), ownerId,
+        this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), new RoleAssignmentSearchVO(), ownerId,
 
                 projectId, false).getList().stream().filter(userDTO -> userDTO.getEnabled()).forEach(t -> {
             if (!memberIds.contains(t.getId())) {
@@ -250,14 +249,14 @@ public class IamServiceImpl implements IamService {
 
     @Override
     public Boolean isProjectOwner(Long userId, ProjectDTO projectDTO) {
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = listProjectWithRoleDTO(userId);
-        List<RoleDTO> roleDTOS = new ArrayList<>();
-        projectWithRoleDTOList.stream().filter(projectWithRoleDTO ->
+        List<ProjectWithRoleVO> projectWithRoleVOList = listProjectWithRoleDTO(userId);
+        List<RoleVO> roleVOS = new ArrayList<>();
+        projectWithRoleVOList.stream().filter(projectWithRoleDTO ->
                 projectWithRoleDTO.getName().equals(projectDTO.getName())).forEach(projectWithRoleDTO ->
-                roleDTOS.addAll(projectWithRoleDTO.getRoles()
+                roleVOS.addAll(projectWithRoleDTO.getRoles()
                         .stream().filter(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))
                         .collect(Collectors.toList())));
-        return !roleDTOS.isEmpty();
+        return !roleVOS.isEmpty();
     }
 
     @Override

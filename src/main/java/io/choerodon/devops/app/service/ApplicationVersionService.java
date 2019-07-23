@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.ApplicationVersionAndCommitDTO;
+import io.choerodon.devops.api.vo.ApplicationVersionAndCommitVO;
 import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
-import io.choerodon.devops.api.vo.DeployVersionDTO;
+import io.choerodon.devops.api.vo.DeployVersionVO;
 import io.choerodon.devops.infra.dto.ApplicationLatestVersionDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 import org.springframework.web.multipart.MultipartFile;
@@ -87,9 +87,9 @@ public interface ApplicationVersionService {
      * 项目下查询应用最新的版本和各环境下部署的版本
      *
      * @param appId 应用ID
-     * @return DeployVersionDTO
+     * @return DeployVersionVO
      */
-    DeployVersionDTO queryDeployedVersions(Long appId);
+    DeployVersionVO queryDeployedVersions(Long appId);
 
 
     String queryVersionValue(Long appVersionId);
@@ -98,7 +98,7 @@ public interface ApplicationVersionService {
 
     List<ApplicationVersionRespVO> listByAppVersionIds(List<Long> appVersionIds);
 
-    List<ApplicationVersionAndCommitDTO> listByAppIdAndBranch(Long appId, String branch);
+    List<ApplicationVersionAndCommitVO> listByAppIdAndBranch(Long appId, String branch);
 
     /**
      * 根据pipelineID 查询版本, 判断是否存在

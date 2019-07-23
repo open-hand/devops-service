@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 
 public interface DevopsEnvFileResourceService {

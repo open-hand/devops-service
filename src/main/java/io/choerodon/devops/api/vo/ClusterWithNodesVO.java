@@ -8,13 +8,13 @@ import com.github.pagehelper.PageInfo;
  * @author zmf
  */
 public class ClusterWithNodesVO extends DevopsClusterRepVO {
-    private PageInfo<ClusterNodeInfoDTO> nodes;
+    private PageInfo<ClusterNodeInfoVO> nodes;
 
-    public PageInfo<ClusterNodeInfoDTO> getNodes() {
+    public PageInfo<ClusterNodeInfoVO> getNodes() {
         return nodes;
     }
 
-    public void setNodes(PageInfo<ClusterNodeInfoDTO> nodes) {
+    public void setNodes(PageInfo<ClusterNodeInfoVO> nodes) {
         this.nodes = nodes;
     }
 }

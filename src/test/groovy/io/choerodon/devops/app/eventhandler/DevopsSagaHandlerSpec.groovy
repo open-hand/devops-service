@@ -2,7 +2,7 @@ package io.choerodon.devops.app.eventhandler
 
 import com.google.gson.Gson
 import io.choerodon.devops.api.vo.CommitVO
-import io.choerodon.devops.api.vo.PipelineWebHookDTO
+import io.choerodon.devops.api.vo.PipelineWebHookVO
 import io.choerodon.devops.api.vo.PushWebHookVO
 import io.choerodon.devops.app.service.*
 
@@ -209,7 +209,7 @@ class DevopsSagaHandlerSpec extends Specification {
 
     def "GitlabPipeline"() {
         given: '初始化PipelineWebHookDTO'
-        PipelineWebHookDTO pipelineWebHookDTO = new PipelineWebHookDTO()
+        PipelineWebHookVO pipelineWebHookDTO = new PipelineWebHookVO()
         String data = gson.toJson(pipelineWebHookDTO)
 
         when: '方法调用'

@@ -10,7 +10,7 @@ public class InstanceEventVO {
     private String userImage;
     private String loginName;
     private String realName;
-    private List<PodEventDTO> podEventDTO;
+    private List<PodEventVO> podEventVO;
 
     public String getType() {
         return type;
@@ -60,11 +60,11 @@ public class InstanceEventVO {
         this.realName = realName;
     }
 
-    public List<PodEventDTO> getPodEventDTO() {
-        return podEventDTO;
+    public List<PodEventVO> getPodEventVO() {
+        return podEventVO;
     }
 
-    public void setPodEventDTO(List<PodEventDTO> podEventDTO) {
-        this.podEventDTO = podEventDTO;
+    public void setPodEventVO(List<PodEventVO> podEventVO) {
+        this.podEventVO = podEventVO;
     }
 }

@@ -64,12 +64,12 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     private TransactionalProducer transactionalProducer;
 
     @Override
-    @Saga(code = DEVOPS_GITLAB_PIPELINE, description = "gitlab pipeline创建到数据库", inputSchemaClass = PipelineWebHookDTO.class)
-    public void create(PipelineWebHookDTO pipelineWebHookDTO, String token) {
-        pipelineWebHookDTO.setToken(token);
+    @Saga(code = DEVOPS_GITLAB_PIPELINE, description = "gitlab pipeline创建到数据库", inputSchemaClass = PipelineWebHookVO.class)
+    public void create(PipelineWebHookVO pipelineWebHookVO, String token) {
+        pipelineWebHookVO.setToken(token);
         ApplicationDTO applicationDTO = applicationService.baseQueryByToken(token);
         try {
-            String input = objectMapper.writeValueAsString(pipelineWebHookDTO);
+            String input = objectMapper.writeValueAsString(pipelineWebHookVO);
             transactionalProducer.apply(
                     StartSagaBuilder.newBuilder()
                             .withRefType("app")
@@ -83,14 +83,14 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public void handleCreate(PipelineWebHookDTO pipelineWebHookDTO) {
-        ApplicationDTO applicationDTO = applicationService.baseQueryByToken(pipelineWebHookDTO.getToken());
-        DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = baseQueryByGitlabPipelineId(pipelineWebHookDTO.getObjectAttributes().getId());
-        if ("admin1".equals(pipelineWebHookDTO.getUser().getUsername()) || "root".equals(pipelineWebHookDTO.getUser().getUsername())) {
-            pipelineWebHookDTO.getUser().setUsername("admin");
+    public void handleCreate(PipelineWebHookVO pipelineWebHookVO) {
+        ApplicationDTO applicationDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
+        DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = baseQueryByGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+        if ("admin1".equals(pipelineWebHookVO.getUser().getUsername()) || "root".equals(pipelineWebHookVO.getUser().getUsername())) {
+            pipelineWebHookVO.getUser().setUsername("admin");
         }
         Integer gitlabUserId = ADMIN;
-        UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(pipelineWebHookDTO.getUser().getUsername());
+        UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
         if (userAttrE != null) {
             gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
         }
@@ -99,13 +99,13 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
         List<Stage> stages = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
-        List<Integer> gitlabJobIds = gitlabServiceClientOperator.listJobs(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(pipelineWebHookDTO.getObjectAttributes().getId()), gitlabUserId)
+        List<Integer> gitlabJobIds = gitlabServiceClientOperator.listJobs(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(pipelineWebHookVO.getObjectAttributes().getId()), gitlabUserId)
                 .stream()
                 .map(JobDTO::getId)
                 .collect(Collectors.toList());
 
         Stage sonar = null;
-        List<CommitStatusDTO> commitStatusDTOS = gitlabServiceClientOperator.listCommitStatus(applicationDTO.getGitlabProjectId(), pipelineWebHookDTO.getObjectAttributes().getSha(), ADMIN);
+        List<CommitStatusDTO> commitStatusDTOS = gitlabServiceClientOperator.listCommitStatus(applicationDTO.getGitlabProjectId(), pipelineWebHookVO.getObjectAttributes().getSha(), ADMIN);
         for (CommitStatusDTO commitStatusDTO : commitStatusDTOS) {
             if (gitlabJobIds.contains(commitStatusDTO.getId())) {
                 Stage stage = getPipelineStage(commitStatusDTO);
@@ -117,23 +117,23 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 stageNames.add(commitStatusDTO.getName());
             }
         }
-        DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(pipelineWebHookDTO.getObjectAttributes().getSha(), pipelineWebHookDTO.getObjectAttributes().getRef());
+        DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(pipelineWebHookVO.getObjectAttributes().getSha(), pipelineWebHookVO.getObjectAttributes().getRef());
 
         //pipeline不存在则创建,存在则更新状态和阶段信息
         if (devopsGitlabPipelineDTO == null) {
             devopsGitlabPipelineDTO = new DevopsGitlabPipelineDTO();
             devopsGitlabPipelineDTO.setAppId(applicationDTO.getId());
             devopsGitlabPipelineDTO.setPipelineCreateUserId(userAttrE == null ? null : userAttrE.getIamUserId());
-            devopsGitlabPipelineDTO.setPipelineId(pipelineWebHookDTO.getObjectAttributes().getId());
-            devopsGitlabPipelineDTO.setStatus(pipelineWebHookDTO.getObjectAttributes().getStatus());
-            devopsGitlabPipelineDTO.setPipelineCreationDate(pipelineWebHookDTO.getObjectAttributes().getCreatedAt());
+            devopsGitlabPipelineDTO.setPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+            devopsGitlabPipelineDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
+            devopsGitlabPipelineDTO.setPipelineCreationDate(pipelineWebHookVO.getObjectAttributes().getCreatedAt());
             if (devopsGitlabCommitDTO != null) {
                 devopsGitlabPipelineDTO.setCommitId(devopsGitlabCommitDTO.getId());
             }
             devopsGitlabPipelineDTO.setStage(JSONArray.toJSONString(stages));
             baseCreate(devopsGitlabPipelineDTO);
         } else {
-            devopsGitlabPipelineDTO.setStatus(pipelineWebHookDTO.getObjectAttributes().getStatus());
+            devopsGitlabPipelineDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
 
             List<Stage> originalStages = JSONArray.parseArray(devopsGitlabPipelineDTO.getStage(), Stage.class);
             List<Stage> result = new ArrayList<>();
@@ -175,15 +175,15 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public void updateStages(JobWebHookDTO jobWebHookDTO) {
+    public void updateStages(JobWebHookVO jobWebHookVO) {
         //按照job的状态实时更新pipeline阶段的状态
-        DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(jobWebHookDTO.getSha(), jobWebHookDTO.getRef());
-        if (devopsGitlabCommitDTO != null && !"created".equals(jobWebHookDTO.getBuildStatus())) {
+        DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(jobWebHookVO.getSha(), jobWebHookVO.getRef());
+        if (devopsGitlabCommitDTO != null && !"created".equals(jobWebHookVO.getBuildStatus())) {
             DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = baseQueryByCommitId(devopsGitlabCommitDTO.getId());
             if (devopsGitlabPipelineDTO != null) {
                 List<Stage> stages = JSONArray.parseArray(devopsGitlabPipelineDTO.getStage(), Stage.class);
-                stages.stream().filter(stage -> jobWebHookDTO.getBuildName().equals(stage.getName())).forEach(stage ->
-                        stage.setStatus(jobWebHookDTO.getBuildStatus())
+                stages.stream().filter(stage -> jobWebHookVO.getBuildName().equals(stage.getName())).forEach(stage ->
+                        stage.setStatus(jobWebHookVO.getBuildStatus())
                 );
                 devopsGitlabPipelineDTO.setStage(JSONArray.toJSONString(stages));
                 baseUpdate(devopsGitlabPipelineDTO);
@@ -192,11 +192,11 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public PipelineTimeDTO getPipelineTime(Long appId, Date startTime, Date endTime) {
+    public PipelineTimeVO getPipelineTime(Long appId, Date startTime, Date endTime) {
         if (appId == null) {
-            return new PipelineTimeDTO();
+            return new PipelineTimeVO();
         }
-        PipelineTimeDTO pipelineTimeDTO = new PipelineTimeDTO();
+        PipelineTimeVO pipelineTimeVO = new PipelineTimeVO();
         List<DevopsGitlabPipelineDTO> devopsGitlabPipelineDOS = baseListByApplicationId(appId, startTime, endTime);
         List<String> pipelineTimes = new LinkedList<>();
         List<String> refs = new LinkedList<>();
@@ -217,11 +217,11 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 pipelineTimes.add(getPipelineTime(stages));
             }
         });
-        pipelineTimeDTO.setCreateDates(createDates);
-        pipelineTimeDTO.setPipelineTime(pipelineTimes);
-        pipelineTimeDTO.setRefs(refs);
-        pipelineTimeDTO.setVersions(versions);
-        return pipelineTimeDTO;
+        pipelineTimeVO.setCreateDates(createDates);
+        pipelineTimeVO.setPipelineTime(pipelineTimes);
+        pipelineTimeVO.setRefs(refs);
+        pipelineTimeVO.setVersions(versions);
+        return pipelineTimeVO;
     }
 
     private String getPipelineTime(List<Stage> stages) {
@@ -239,11 +239,11 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public PipelineFrequencyDTO getPipelineFrequency(Long appId, Date startTime, Date endTime) {
+    public PipelineFrequencyVO getPipelineFrequency(Long appId, Date startTime, Date endTime) {
         if (appId == null) {
-            return new PipelineFrequencyDTO();
+            return new PipelineFrequencyVO();
         }
-        PipelineFrequencyDTO pipelineFrequencyDTO = new PipelineFrequencyDTO();
+        PipelineFrequencyVO pipelineFrequencyVO = new PipelineFrequencyVO();
         List<DevopsGitlabPipelineDTO> devopsGitlabPipelineDOS = baseListByApplicationId(appId, startTime, endTime);
         //按照创建时间分组
         Map<String, List<DevopsGitlabPipelineDTO>> resultMaps = devopsGitlabPipelineDOS.stream()
@@ -271,11 +271,11 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             pipelineSuccessFrequency.add(newPipelineSuccessFrequency[0]);
             pipelineFailFrequency.add(newPipelineFailFrequency[0]);
         });
-        pipelineFrequencyDTO.setCreateDates(creationDates);
-        pipelineFrequencyDTO.setPipelineFailFrequency(pipelineFailFrequency);
-        pipelineFrequencyDTO.setPipelineFrequencys(pipelineFrequencies);
-        pipelineFrequencyDTO.setPipelineSuccessFrequency(pipelineSuccessFrequency);
-        return pipelineFrequencyDTO;
+        pipelineFrequencyVO.setCreateDates(creationDates);
+        pipelineFrequencyVO.setPipelineFailFrequency(pipelineFailFrequency);
+        pipelineFrequencyVO.setPipelineFrequencys(pipelineFrequencies);
+        pipelineFrequencyVO.setPipelineSuccessFrequency(pipelineSuccessFrequency);
+        return pipelineFrequencyVO;
     }
 
     @Override

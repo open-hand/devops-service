@@ -44,6 +44,7 @@ import io.choerodon.devops.infra.dto.ApplicationLatestVersionDTO;
 =======
 >>>>>>> [IMP]修改后端代码结构
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
@@ -785,16 +786,16 @@ public InstanceControllerDetailDTO getInstanceResourceDetailJson(Long
         creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder())
                 .collect(Collectors.toList());
 
-        List<DeployAppDTO> deployAppDTOS = new ArrayList<>();
+        List<DeployAppVO> deployAppVOS = new ArrayList<>();
 
         //以应用为维度分组
         Map<String, List<DeployDTO>> resultMaps = deployDTOS.stream()
                 .collect(Collectors.groupingBy(DeployDTO::getAppName));
 
         resultMaps.forEach((key, value) -> {
-            DeployAppDTO deployAppDTO = new DeployAppDTO();
+            DeployAppVO deployAppVO = new DeployAppVO();
             List<DeployDetailVO> deployDetailVOS = new ArrayList<>();
-            deployAppDTO.setAppName(key);
+            deployAppVO.setAppName(key);
             //给应用下每个实例操作设置时长
             value.forEach(deployDO -> {
                 DeployDetailVO deployDetailVO = new DeployDetailVO();
@@ -803,11 +804,11 @@ public InstanceControllerDetailDTO getInstanceResourceDetailJson(Long
                         getDeployTime(deployDO.getLastUpdateDate().getTime() - deployDO.getCreationDate().getTime()));
                 deployDetailVOS.add(deployDetailVO);
             });
-            deployAppDTO.setDeployDetailVOS(deployDetailVOS);
-            deployAppDTOS.add(deployAppDTO);
+            deployAppVO.setDeployDetailVOS(deployDetailVOS);
+            deployAppVOS.add(deployAppVO);
         });
         deployTimeVO.setCreationDates(creationDates);
-        deployTimeVO.setDeployAppDTOS(deployAppDTOS);
+        deployTimeVO.setDeployAppVOS(deployAppVOS);
         return deployTimeVO;
     }
 

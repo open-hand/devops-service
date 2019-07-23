@@ -5,11 +5,11 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.vo.iam.RoleDTO;
-import io.choerodon.devops.api.vo.iam.RoleSearchDTO;
-import io.choerodon.devops.api.vo.iam.UserWithRoleDTO;
+import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
+import io.choerodon.devops.api.vo.iam.RoleSearchVO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
+import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
 import io.choerodon.devops.infra.dto.iam.IamAppDTO;
@@ -78,8 +78,8 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnProjectLevel(
-            Long projectId, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+    public ResponseEntity<List<RoleVO>> listRolesWithUserCountOnProjectLevel(
+            Long projectId, RoleAssignmentSearchVO roleAssignmentSearchVO) {
         throw new CommonException("error.roles.get.byProjectId");
     }
 
@@ -87,23 +87,23 @@ public class IamServiceClientFallback implements IamServiceClient {
     public ResponseEntity<PageInfo<IamUserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(int page, int size, Long roleId,
                                                                                    Long sourceId,
                                                                                    Boolean doPage,
-                                                                                   RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+                                                                                   RoleAssignmentSearchVO roleAssignmentSearchVO) {
         throw new CommonException("error.user.get.byRoleId");
     }
 
     @Override
-    public ResponseEntity<PageInfo<UserWithRoleDTO>> queryUserByProjectId(Long projectId, int page, int size,
-                                                                          Boolean doPage, RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+    public ResponseEntity<PageInfo<UserWithRoleVO>> queryUserByProjectId(Long projectId, int page, int size,
+                                                                         Boolean doPage, RoleAssignmentSearchVO roleAssignmentSearchVO) {
         throw new CommonException("error.user.get.byProjectId");
     }
 
     @Override
-    public ResponseEntity<com.github.pagehelper.PageInfo<ProjectWithRoleDTO>> listProjectWithRole(Long id, int page, int size) {
+    public ResponseEntity<com.github.pagehelper.PageInfo<ProjectWithRoleVO>> listProjectWithRole(Long id, int page, int size) {
         throw new CommonException("error.project.role.get");
     }
 
     @Override
-    public ResponseEntity<PageInfo<RoleDTO>> queryRoleIdByCode(RoleSearchDTO roleSearchDTO) {
+    public ResponseEntity<PageInfo<RoleVO>> queryRoleIdByCode(RoleSearchVO roleSearchVO) {
         throw new CommonException("error.roleId.get");
     }
 

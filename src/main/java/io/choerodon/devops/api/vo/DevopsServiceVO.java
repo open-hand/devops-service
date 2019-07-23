@@ -17,7 +17,7 @@ public class DevopsServiceVO {
     private Long appId;
     private Long appProjectId;
     private String appName;
-    private DevopsServiceTargetDTO target;
+    private DevopsServiceTargetVO target;
     private DevopsServiceConfigVO config;
     private String commandType;
     private String commandStatus;
@@ -97,11 +97,11 @@ public class DevopsServiceVO {
         this.appProjectId = appProjectId;
     }
 
-    public DevopsServiceTargetDTO getTarget() {
+    public DevopsServiceTargetVO getTarget() {
         return target;
     }
 
-    public void setTarget(DevopsServiceTargetDTO target) {
+    public void setTarget(DevopsServiceTargetVO target) {
         this.target = target;
     }
 

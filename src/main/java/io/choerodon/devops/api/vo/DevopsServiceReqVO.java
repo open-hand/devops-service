@@ -26,7 +26,7 @@ public class DevopsServiceReqVO {
     @NotNull
     private List<PortMapVO> ports;
 
-    private Map<String, List<EndPointPortDTO>> endPoints;
+    private Map<String, List<EndPointPortVO>> endPoints;
 
     @ApiModelProperty("实例code")
     private List<String> appInstance;
@@ -97,11 +97,11 @@ public class DevopsServiceReqVO {
         this.type = type;
     }
 
-    public Map<String, List<EndPointPortDTO>> getEndPoints() {
+    public Map<String, List<EndPointPortVO>> getEndPoints() {
         return endPoints;
     }
 
-    public void setEndPoints(Map<String, List<EndPointPortDTO>> endPoints) {
+    public void setEndPoints(Map<String, List<EndPointPortVO>> endPoints) {
         this.endPoints = endPoints;
     }
 }

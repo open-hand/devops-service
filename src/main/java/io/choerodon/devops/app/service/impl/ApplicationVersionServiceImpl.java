@@ -260,10 +260,10 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public DeployVersionDTO queryDeployedVersions(Long appId) {
+    public DeployVersionVO queryDeployedVersions(Long appId) {
         ApplicationVersionDTO applicationVersionDTO = baseQueryNewestVersion(appId);
-        DeployVersionDTO deployVersionDTO = new DeployVersionDTO();
-        List<DeployEnvVersionDTO> deployEnvVersionDTOS = new ArrayList<>();
+        DeployVersionVO deployVersionVO = new DeployVersionVO();
+        List<DeployEnvVersionVO> deployEnvVersionVOS = new ArrayList<>();
         if (applicationVersionDTO != null) {
             Map<Long, List<ApplicationInstanceDTO>> envInstances = applicationInstanceService.baseListByAppId(appId)
                     .stream()
@@ -273,9 +273,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             if (!envInstances.isEmpty()) {
                 envInstances.forEach((key, value) -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(key);
-                    DeployEnvVersionDTO deployEnvVersionDTO = new DeployEnvVersionDTO();
-                    deployEnvVersionDTO.setEnvName(devopsEnvironmentDTO.getName());
-                    List<DeployInstanceVersionDTO> deployInstanceVersionDTOS = new ArrayList<>();
+                    DeployEnvVersionVO deployEnvVersionVO = new DeployEnvVersionVO();
+                    deployEnvVersionVO.setEnvName(devopsEnvironmentDTO.getName());
+                    List<DeployInstanceVersionVO> deployInstanceVersionVOS = new ArrayList<>();
                     Map<Long, List<ApplicationInstanceDTO>> versionInstances = value.stream().collect(Collectors.groupingBy(t -> {
                         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(t.getCommandId());
                         return devopsEnvCommandDTO.getObjectVersionId();
@@ -284,25 +284,25 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                     if (!versionInstances.isEmpty()) {
                         versionInstances.forEach((newKey, newValue) -> {
                             ApplicationVersionDTO newApplicationVersionDTO = baseQuery(newKey);
-                            DeployInstanceVersionDTO deployInstanceVersionDTO = new DeployInstanceVersionDTO();
-                            deployInstanceVersionDTO.setDeployVersion(newApplicationVersionDTO.getVersion());
-                            deployInstanceVersionDTO.setInstanceCount(newValue.size());
+                            DeployInstanceVersionVO deployInstanceVersionVO = new DeployInstanceVersionVO();
+                            deployInstanceVersionVO.setDeployVersion(newApplicationVersionDTO.getVersion());
+                            deployInstanceVersionVO.setInstanceCount(newValue.size());
                             if (newApplicationVersionDTO.getId() < applicationVersionDTO.getId()) {
-                                deployInstanceVersionDTO.setUpdate(true);
+                                deployInstanceVersionVO.setUpdate(true);
                             }
-                            deployInstanceVersionDTOS.add(deployInstanceVersionDTO);
+                            deployInstanceVersionVOS.add(deployInstanceVersionVO);
                         });
                     }
 
-                    deployEnvVersionDTO.setDeployIntanceVersionDTO(deployInstanceVersionDTOS);
-                    deployEnvVersionDTOS.add(deployEnvVersionDTO);
+                    deployEnvVersionVO.setDeployIntanceVersionDTO(deployInstanceVersionVOS);
+                    deployEnvVersionVOS.add(deployEnvVersionVO);
                 });
 
-                deployVersionDTO.setLatestVersion(applicationVersionDTO.getVersion());
-                deployVersionDTO.setDeployEnvVersionDTO(deployEnvVersionDTOS);
+                deployVersionVO.setLatestVersion(applicationVersionDTO.getVersion());
+                deployVersionVO.setDeployEnvVersionVO(deployEnvVersionVOS);
             }
         }
-        return deployVersionDTO;
+        return deployVersionVO;
     }
 
     @Override
@@ -322,31 +322,31 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public List<ApplicationVersionAndCommitDTO> listByAppIdAndBranch(Long appId, String branch) {
+    public List<ApplicationVersionAndCommitVO> listByAppIdAndBranch(Long appId, String branch) {
         List<ApplicationVersionDTO> applicationVersionDTOS = baseListByAppIdAndBranch(appId, branch);
         ApplicationDTO applicationDTO = applicationService.baseQuery(appId);
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        List<ApplicationVersionAndCommitDTO> applicationVersionAndCommitDTOS = new ArrayList<>();
+        List<ApplicationVersionAndCommitVO> applicationVersionAndCommitVOS = new ArrayList<>();
 
         applicationVersionDTOS.forEach(applicationVersionDTO -> {
-            ApplicationVersionAndCommitDTO applicationVersionAndCommitDTO = new ApplicationVersionAndCommitDTO();
+            ApplicationVersionAndCommitVO applicationVersionAndCommitVO = new ApplicationVersionAndCommitVO();
             DevopsGitlabCommitDTO devopsGitlabCommitE = devopsGitlabCommitService.baseQueryByShaAndRef(applicationVersionDTO.getCommit(), branch);
             IamUserDTO userE = iamServiceClientOperator.queryUserByUserId(devopsGitlabCommitE.getUserId());
-            applicationVersionAndCommitDTO.setAppName(applicationDTO.getName());
-            applicationVersionAndCommitDTO.setCommit(applicationVersionDTO.getCommit());
-            applicationVersionAndCommitDTO.setCommitContent(devopsGitlabCommitE.getCommitContent());
-            applicationVersionAndCommitDTO.setCommitUserImage(userE == null ? null : userE.getImageUrl());
-            applicationVersionAndCommitDTO.setCommitUserName(userE == null ? null : userE.getRealName());
-            applicationVersionAndCommitDTO.setVersion(applicationVersionDTO.getVersion());
-            applicationVersionAndCommitDTO.setCreateDate(applicationVersionDTO.getCreationDate());
-            applicationVersionAndCommitDTO.setCommitUrl(gitlabUrl + "/"
+            applicationVersionAndCommitVO.setAppName(applicationDTO.getName());
+            applicationVersionAndCommitVO.setCommit(applicationVersionDTO.getCommit());
+            applicationVersionAndCommitVO.setCommitContent(devopsGitlabCommitE.getCommitContent());
+            applicationVersionAndCommitVO.setCommitUserImage(userE == null ? null : userE.getImageUrl());
+            applicationVersionAndCommitVO.setCommitUserName(userE == null ? null : userE.getRealName());
+            applicationVersionAndCommitVO.setVersion(applicationVersionDTO.getVersion());
+            applicationVersionAndCommitVO.setCreateDate(applicationVersionDTO.getCreationDate());
+            applicationVersionAndCommitVO.setCommitUrl(gitlabUrl + "/"
                     + organization.getCode() + "-" + projectDTO.getCode() + "/"
                     + applicationDTO.getCode() + ".git");
-            applicationVersionAndCommitDTOS.add(applicationVersionAndCommitDTO);
+            applicationVersionAndCommitVOS.add(applicationVersionAndCommitVO);
 
         });
-        return applicationVersionAndCommitDTOS;
+        return applicationVersionAndCommitVOS;
     }
 
     @Override

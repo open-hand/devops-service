@@ -1,8 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;

@@ -11,8 +11,8 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.DevopsGitlabPipelineVO;
-import io.choerodon.devops.api.vo.PipelineFrequencyDTO;
-import io.choerodon.devops.api.vo.PipelineTimeDTO;
+import io.choerodon.devops.api.vo.PipelineFrequencyVO;
+import io.choerodon.devops.api.vo.PipelineTimeVO;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -44,7 +44,7 @@ public class DevopsGitlabPipelineController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取pipeline时长报表")
     @GetMapping(value = "/time")
-    public ResponseEntity<PipelineTimeDTO> listPipelineTime(
+    public ResponseEntity<PipelineTimeVO> listPipelineTime(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "app_id")
@@ -73,7 +73,7 @@ public class DevopsGitlabPipelineController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取pipeline次数报表")
     @GetMapping(value = "/frequency")
-    public ResponseEntity<PipelineFrequencyDTO> listPipelineFrequency(
+    public ResponseEntity<PipelineFrequencyVO> listPipelineFrequency(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "app_id")

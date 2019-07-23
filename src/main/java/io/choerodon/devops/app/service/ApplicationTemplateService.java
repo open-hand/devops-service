@@ -5,7 +5,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.ApplicationTemplateRespVO;
-import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
+import io.choerodon.devops.api.vo.ApplicationTemplateUpdateVO;
 import io.choerodon.devops.api.vo.ApplicationTemplateVO;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.infra.dto.ApplicationTemplateDTO;
@@ -27,11 +27,11 @@ public interface ApplicationTemplateService {
     /**
      * 组织下更新应用模板
      *
-     * @param applicationTemplateUpdateDTO 模板信息
+     * @param applicationTemplateUpdateVO 模板信息
      * @param organizationId               组织Id
      * @return ApplicationTemplateDTO
      */
-    ApplicationTemplateRespVO update(ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO, Long organizationId);
+    ApplicationTemplateRespVO update(ApplicationTemplateUpdateVO applicationTemplateUpdateVO, Long organizationId);
 
     /**
      * 组织下删除应用模板

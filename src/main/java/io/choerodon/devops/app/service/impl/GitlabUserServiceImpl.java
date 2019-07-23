@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.api.vo.GitlabUserRequestDTO;
+import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
@@ -32,7 +32,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
 
     @Override
-    public void createGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
+    public void createGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
 
         checkGitlabUser(gitlabUserReqDTO);
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserByUserName(gitlabUserReqDTO.getUsername());
@@ -53,7 +53,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     }
 
     @Override
-    public void updateGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
+    public void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
 
         checkGitlabUser(gitlabUserReqDTO);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
@@ -81,8 +81,8 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     }
 
 
-    private void checkGitlabUser(GitlabUserRequestDTO gitlabUserRequestDTO) {
-        String userName = gitlabUserRequestDTO.getUsername();
+    private void checkGitlabUser(GitlabUserRequestVO gitlabUserRequestVO) {
+        String userName = gitlabUserRequestVO.getUsername();
         StringBuilder newUserName = new StringBuilder();
         for (int i = 0; i < userName.length(); i++) {
             if (!Pattern.matches(SERVICE_PATTERN, String.valueOf(userName.charAt(i)))) {
@@ -91,7 +91,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                 newUserName.append(String.valueOf(userName.charAt(i)));
             }
         }
-        gitlabUserRequestDTO.setUsername(newUserName.toString());
+        gitlabUserRequestVO.setUsername(newUserName.toString());
     }
 
     @Override

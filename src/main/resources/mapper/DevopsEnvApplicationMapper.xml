@@ -17,7 +17,7 @@
         d.env_id = #{envId}
     </select>
 
-    <select id="listResourceByEnvAndApp" resultType="io.choerodon.devops.api.vo.iam.entity.DevopsEnvMessageVO">
+    <select id="listResourceByEnvAndApp" resultType="io.choerodon.devops.api.vo.DevopsEnvMessageVO">
         SELECT
         der.name resourceName,
         derd.message detail

@@ -644,13 +644,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         devopsServiceVO.setConfig(devopsServiceConfigVO);
 
-        DevopsServiceTargetDTO devopsServiceTargetDTO = new DevopsServiceTargetDTO();
-        devopsServiceTargetDTO.setAppInstance(devopsServiceQueryDTO.getAppInstance());
-        devopsServiceTargetDTO.setLabels(gson.fromJson(devopsServiceQueryDTO.getEndPoints(), new TypeToken<Map<String, List<EndPointPortDTO>>>() {
+        DevopsServiceTargetVO devopsServiceTargetVO = new DevopsServiceTargetVO();
+        devopsServiceTargetVO.setAppInstance(devopsServiceQueryDTO.getAppInstance());
+        devopsServiceTargetVO.setLabels(gson.fromJson(devopsServiceQueryDTO.getEndPoints(), new TypeToken<Map<String, List<EndPointPortVO>>>() {
         }.getType()));
-        devopsServiceTargetDTO.setEndPoints(gson.fromJson(devopsServiceQueryDTO.getLabels(), new TypeToken<Map<String, String>>() {
+        devopsServiceTargetVO.setEndPoints(gson.fromJson(devopsServiceQueryDTO.getLabels(), new TypeToken<Map<String, String>>() {
         }.getType()));
-        devopsServiceVO.setTarget(devopsServiceTargetDTO);
+        devopsServiceVO.setTarget(devopsServiceTargetVO);
         return devopsServiceVO;
     }
 

@@ -19,7 +19,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationTemplateValidator;
 import io.choerodon.devops.api.vo.ApplicationTemplateRespVO;
-import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO;
+import io.choerodon.devops.api.vo.ApplicationTemplateUpdateVO;
 import io.choerodon.devops.api.vo.ApplicationTemplateVO;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
@@ -143,9 +143,9 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     }
 
     @Override
-    public ApplicationTemplateRespVO update(ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO, Long organizationId) {
+    public ApplicationTemplateRespVO update(ApplicationTemplateUpdateVO applicationTemplateUpdateVO, Long organizationId) {
         ApplicationTemplateDTO templateDTO = new ApplicationTemplateDTO();
-        BeanUtils.copyProperties(applicationTemplateUpdateDTO, templateDTO);
+        BeanUtils.copyProperties(applicationTemplateUpdateVO, templateDTO);
         return ConvertUtils.convertObject(baseUpdate(templateDTO), ApplicationTemplateRespVO.class);
     }
 

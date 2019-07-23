@@ -14,7 +14,7 @@ public class ApplicationReleasingVO {
     private String name;
     private String code;
     private String publishLevel;
-    private List<AppMarketVersionDTO> appVersions;
+    private List<AppMarketVersionVO> appVersions;
     private String imgUrl;
     private String category;
     private String description;
@@ -90,11 +90,11 @@ public class ApplicationReleasingVO {
         this.publishLevel = publishLevel;
     }
 
-    public List<AppMarketVersionDTO> getAppVersions() {
+    public List<AppMarketVersionVO> getAppVersions() {
         return appVersions;
     }
 
-    public void setAppVersions(List<AppMarketVersionDTO> appVersions) {
+    public void setAppVersions(List<AppMarketVersionVO> appVersions) {
         this.appVersions = appVersions;
     }
 

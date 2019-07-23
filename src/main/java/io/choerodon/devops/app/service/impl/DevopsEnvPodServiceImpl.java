@@ -10,7 +10,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
-import io.choerodon.devops.api.vo.ContainerDTO;
+import io.choerodon.devops.api.vo.ContainerVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
@@ -86,19 +86,19 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
         try {
             V1Pod pod = K8sUtil.deserialize(message, V1Pod.class);
-            List<ContainerDTO> containers = pod.getStatus().getContainerStatuses()
+            List<ContainerVO> containers = pod.getStatus().getContainerStatuses()
                     .stream()
                     .map(container -> {
-                        ContainerDTO containerDTO = new ContainerDTO();
-                        containerDTO.setName(container.getName());
-                        containerDTO.setReady(container.isReady());
-                        return containerDTO;
+                        ContainerVO containerVO = new ContainerVO();
+                        containerVO.setName(container.getName());
+                        containerVO.setReady(container.isReady());
+                        return containerVO;
                     })
                     .collect(Collectors.toList());
 
             // 将不可用的容器置于靠前位置
-            Map<Boolean, List<ContainerDTO>> containsByStatus = containers.stream().collect(Collectors.groupingBy(container -> container.getReady() == null ? Boolean.FALSE : container.getReady()));
-            List<ContainerDTO> result = new ArrayList<>();
+            Map<Boolean, List<ContainerVO>> containsByStatus = containers.stream().collect(Collectors.groupingBy(container -> container.getReady() == null ? Boolean.FALSE : container.getReady()));
+            List<ContainerVO> result = new ArrayList<>();
             if (!ArrayUtil.isEmpty(containsByStatus.get(Boolean.FALSE))) {
                 result.addAll(containsByStatus.get(Boolean.FALSE));
             }

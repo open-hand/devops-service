@@ -20,9 +20,8 @@ import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqDTO;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
 import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
-import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ObjectType;
@@ -71,13 +70,13 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createOrUpdateResource(Long projectId, DevopsCustomizeResourceReqDTO devopsCustomizeResourceReqDTO, MultipartFile contentFile) {
+    public void createOrUpdateResource(Long projectId, DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO, MultipartFile contentFile) {
 
-        String content = devopsCustomizeResourceReqDTO.getContent();
+        String content = devopsCustomizeResourceReqVO.getContent();
 
         String resourceFilePath = String.format("custom-%s.yaml", GenerateUUID.generateUUID().substring(0, 5));
 
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceReqDTO.getEnvId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceReqVO.getEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -120,20 +119,20 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                 datas.put(METADATA, metadata);
                 objects.add(datas);
 
-                handleCustomResource(projectId, devopsCustomizeResourceReqDTO.getEnvId(), FileUtil.getYaml().dump(datas), kind.toString(), name, devopsCustomizeResourceReqDTO.getType(), devopsCustomizeResourceReqDTO.getResourceId(), resourceFilePath, null);
+                handleCustomResource(projectId, devopsCustomizeResourceReqVO.getEnvId(), FileUtil.getYaml().dump(datas), kind.toString(), name, devopsCustomizeResourceReqVO.getType(), devopsCustomizeResourceReqVO.getResourceId(), resourceFilePath, null);
 
             }
         } catch (Exception e) {
             throw e;
         }
-        if (devopsCustomizeResourceReqDTO.getType().equals(CREATE)) {
+        if (devopsCustomizeResourceReqVO.getType().equals(CREATE)) {
             gitlabServiceClientOperator.createFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), resourceFilePath, FileUtil.getYaml().dumpAll(objects.iterator()),
                     "ADD FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         } else {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
 
-            DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = baseQuery(devopsCustomizeResourceReqDTO.getResourceId());
+            DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = baseQuery(devopsCustomizeResourceReqVO.getResourceId());
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
                     devopsCustomizeResourceDTO.getFilePath())) {
                 throw new CommonException("error.fileResource.not.exist");

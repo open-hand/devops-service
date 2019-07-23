@@ -7,17 +7,16 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
 import io.choerodon.devops.api.vo.DevopsConfigMapVO;
-import io.choerodon.devops.api.vo.DevopsConfigMapRepDTO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.devops.app.service.DevopsEnvCommandService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvFileResourceVO;
+import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.infra.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.app.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.models.V1ConfigMap;
@@ -41,7 +40,7 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
 
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceVO> beforeSync, List<V1ConfigMap> v1ConfigMaps, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<V1ConfigMap> v1ConfigMaps, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeConfigMaps = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(CONFIG_MAP))
                 .map(devopsEnvFileResourceE -> {
@@ -133,23 +132,23 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                                 .baseQueryByEnvIdAndName(envId, configMap.getMetadata().getName());
                         DevopsConfigMapVO devopsConfigMapVO = new DevopsConfigMapVO();
 
-                        DevopsConfigMapRepDTO devopsConfigMapRepDTO = new DevopsConfigMapRepDTO();
+                        DevopsConfigMapRespVO devopsConfigMapRespVO = new DevopsConfigMapRespVO();
                         //初始化configMap参数,创建时判断configMap是否存在，存在则直接创建文件对象关联关系
                         if (devopsConfigMapDTO == null) {
                             devopsConfigMapVO = getDevospConfigMapDTO(
                                     configMap,
                                     envId,
                                     "create");
-                            devopsConfigMapRepDTO = devopsConfigMapService.createOrUpdateByGitOps(devopsConfigMapVO, userId);
+                            devopsConfigMapRespVO = devopsConfigMapService.createOrUpdateByGitOps(devopsConfigMapVO, userId);
                         } else {
-                            devopsConfigMapRepDTO.setId(devopsConfigMapDTO.getId());
-                            devopsConfigMapRepDTO.setCommandId(devopsConfigMapDTO.getCommandId());
+                            devopsConfigMapRespVO.setId(devopsConfigMapDTO.getId());
+                            devopsConfigMapRespVO.setCommandId(devopsConfigMapDTO.getCommandId());
                         }
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsConfigMapRepDTO.getCommandId());
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsConfigMapRespVO.getCommandId());
                         devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
 
-                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, configMap.hashCode(), devopsConfigMapRepDTO.getId(),
+                        devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, null, configMap.hashCode(), devopsConfigMapRespVO.getId(),
                                 configMap.getKind());
                     } catch (CommonException e) {
                         String errorCode = "";

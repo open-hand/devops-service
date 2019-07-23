@@ -14,10 +14,7 @@ import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportPayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload;
-import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
+import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
@@ -278,13 +275,13 @@ public class DevopsSagaHandler {
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitlabPipeline(String data) {
-        PipelineWebHookDTO pipelineWebHookDTO = null;
+        PipelineWebHookVO pipelineWebHookVO = null;
         try {
-            pipelineWebHookDTO = objectMapper.readValue(data, PipelineWebHookDTO.class);
+            pipelineWebHookVO = objectMapper.readValue(data, PipelineWebHookVO.class);
         } catch (IOException e) {
             LOGGER.info(e.getMessage());
         }
-        devopsGitlabPipelineService.handleCreate(pipelineWebHookDTO);
+        devopsGitlabPipelineService.handleCreate(pipelineWebHookVO);
         return data;
     }
 

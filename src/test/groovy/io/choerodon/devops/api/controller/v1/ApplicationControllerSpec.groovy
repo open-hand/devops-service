@@ -9,12 +9,12 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.vo.ApplicationImportDTO
+import io.choerodon.devops.api.vo.ApplicationImportVO
 import io.choerodon.devops.api.vo.ApplicationRepVO
 import io.choerodon.devops.api.vo.ApplicationReqVO
 import io.choerodon.devops.api.vo.ApplicationUpdateVO
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.vo.iam.RoleDTO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.api.vo.ProjectVO
@@ -178,17 +178,17 @@ class ApplicationControllerSpec extends Specification {
             ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
             Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-            List<RoleDTO> roleDTOList = new ArrayList<>()
-            RoleDTO roleDTO = new RoleDTO()
+            List<RoleVO> roleDTOList = new ArrayList<>()
+            RoleVO roleDTO = new RoleVO()
             roleDTO.setCode("role/project/default/project-owner")
             roleDTOList.add(roleDTO)
-            List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-            ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+            List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+            ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
             projectWithRoleDTO.setName("pro")
             projectWithRoleDTO.setRoles(roleDTOList)
             projectWithRoleDTOList.add(projectWithRoleDTO)
-            PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
-            ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+            PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
+            ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
             Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
         }
     }
@@ -607,7 +607,7 @@ class ApplicationControllerSpec extends Specification {
     def "import Application"() {
         given: '创建issueDTO'
         def url = MAPPING + "/import"
-        ApplicationImportDTO applicationDTO = new ApplicationImportDTO()
+        ApplicationImportVO applicationDTO = new ApplicationImportVO()
         applicationDTO.setName("test-import-github")
         applicationDTO.setCode("test-import-gitlab")
         applicationDTO.setType("normal")

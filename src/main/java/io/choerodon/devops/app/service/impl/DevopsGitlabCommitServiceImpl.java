@@ -10,7 +10,7 @@ import com.google.gson.reflect.TypeToken;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
-import io.choerodon.devops.api.vo.CommitFormUserDTO;
+import io.choerodon.devops.api.vo.CommitFormUserVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.app.service.ApplicationService;
@@ -122,13 +122,13 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         Map<Long, IamUserDTO> userMap = getUserDOMap(devopsGitlabCommitDTOS);
 
         // 获取用户分别的commit
-        List<CommitFormUserDTO> commitFormUserDTOS = getCommitFormUserDTOList(devopsGitlabCommitDTOS, userMap);
+        List<CommitFormUserVO> commitFormUserVOS = getCommitFormUserDTOList(devopsGitlabCommitDTOS, userMap);
 
         // 获取总的commit(将所有用户的commit_date放入一个数组)，按照时间先后排序
-        List<Date> totalCommitsDate = getTotalDates(commitFormUserDTOS);
+        List<Date> totalCommitsDate = getTotalDates(commitFormUserVOS);
         Collections.sort(totalCommitsDate);
 
-        return new DevopsGitlabCommitVO(commitFormUserDTOS, totalCommitsDate);
+        return new DevopsGitlabCommitVO(commitFormUserVOS, totalCommitsDate);
     }
 
     @Override
@@ -158,10 +158,10 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         return userEList.stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u, (u1, u2) -> u1));
     }
 
-    private List<CommitFormUserDTO> getCommitFormUserDTOList
+    private List<CommitFormUserVO> getCommitFormUserDTOList
             (List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS,
              Map<Long, IamUserDTO> userMap) {
-        List<CommitFormUserDTO> commitFormUserDTOS = new ArrayList<>();
+        List<CommitFormUserVO> commitFormUserVOS = new ArrayList<>();
         // 遍历list，key为userid，value为list
         Map<Long, List<DevopsGitlabCommitDTO>> map = new HashMap<>();
         for (DevopsGitlabCommitDTO devopsGitlabCommitDTO : devopsGitlabCommitDTOS) {
@@ -187,9 +187,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             // 遍历list，将每个用户的所有commit date取出放入List<Date>，然后保存为DTO
             List<Date> date = new ArrayList<>();
             list.forEach(e -> date.add(e.getCommitDate()));
-            commitFormUserDTOS.add(new CommitFormUserDTO(userId, name, imgUrl, date));
+            commitFormUserVOS.add(new CommitFormUserVO(userId, name, imgUrl, date));
         });
-        return commitFormUserDTOS;
+        return commitFormUserVOS;
     }
 
     private PageInfo<CommitFormRecordVO> getCommitFormRecordDTOS(Long
@@ -198,9 +198,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         return devopsGitlabCommitService.basePageByOptions(projectId, appId, pageRequest, userMap, startDate, endDate);
     }
 
-    private List<Date> getTotalDates(List<CommitFormUserDTO> commitFormUserDTOS) {
+    private List<Date> getTotalDates(List<CommitFormUserVO> commitFormUserVOS) {
         List<Date> totalCommitsDate = new ArrayList<>();
-        commitFormUserDTOS.forEach(e -> totalCommitsDate.addAll(e.getCommitDates()));
+        commitFormUserVOS.forEach(e -> totalCommitsDate.addAll(e.getCommitDates()));
         return totalCommitsDate;
     }
 

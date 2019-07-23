@@ -13,7 +13,7 @@ import javax.validation.constraints.Size;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
 
-import io.choerodon.devops.api.vo.iam.RoleDTO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -65,7 +65,7 @@ public class ProjectCreateDTO {
     private List<Long> categoryIds;
 
     @Transient
-    private List<RoleDTO> roles;
+    private List<RoleVO> roles;
 
     @Transient
     private List<ProjectCreateDTO> projects;
@@ -140,11 +140,11 @@ public class ProjectCreateDTO {
         this.category = category;
     }
 
-    public List<RoleDTO> getRoles() {
+    public List<RoleVO> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<RoleDTO> roles) {
+    public void setRoles(List<RoleVO> roles) {
         this.roles = roles;
     }
 
