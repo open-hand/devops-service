@@ -82,21 +82,6 @@ class AppReleaseStore {
     return this.loading;
   }
 
-<<<<<<< HEAD
-  loadData = ({
-                isRefresh = false,
-                projectId,
-                page = 1,
-                size,
-                sorter = {field: 'id', order: 'desc'},
-
-                postData = {
-                  searchParam: {},
-                  param: '',
-                },
-                key = '1',
-              }) => {
-=======
   loadData = (
     {
       isRefresh = false,
@@ -111,7 +96,7 @@ class AppReleaseStore {
       key = '1',
     },
   ) => {
->>>>>>> [FIX]fix app-release url
+
     if (isRefresh) {
       this.changeIsRefresh(true);
     }
@@ -120,16 +105,12 @@ class AppReleaseStore {
     const pageSize =
         key === '1' ? this.unPageInfo.pageSize : this.pageInfo.pageSize;
     const _size = size || pageSize;
-<<<<<<< HEAD
-    const url = `/devops/v1/projects/${projectId}/${
-        key === '1' ? 'apps/list_unpublish' : 'apps_market/list'
-        }?page=${page}&size=${_size}&sort=${sorter.field},${sorter.order}`;
-=======
+
 
     const url = `/devops/v1/projects/${projectId}/${
       key === '1' ? 'apps/list_unpublish' : 'apps_market/list'
       }?page=${page}&size=${_size}&sort=${sorter.field},${sorter.order}`;
->>>>>>> [FIX]fix app-release url
+
 
     return axios.post(url).then(data => {
       const res = handleProptError(data);
