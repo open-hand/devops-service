@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;

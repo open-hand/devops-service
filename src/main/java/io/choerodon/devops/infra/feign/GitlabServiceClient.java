@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
+import io.choerodon.devops.infra.dto.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;

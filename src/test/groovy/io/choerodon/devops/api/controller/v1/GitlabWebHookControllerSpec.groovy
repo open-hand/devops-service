@@ -13,7 +13,7 @@ import io.choerodon.devops.app.service.DevopsGitlabPipelineService
 
 import io.choerodon.devops.app.service.AgentCommandService
 import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
+import io.choerodon.devops.infra.dto.CommitDTO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient

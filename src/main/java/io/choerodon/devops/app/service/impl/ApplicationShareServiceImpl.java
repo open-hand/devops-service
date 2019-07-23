@@ -16,8 +16,6 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
-import io.choerodon.devops.domain.application.repository.MarketConnectInfoRepositpry;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
@@ -73,11 +71,9 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     @Autowired
     private HarborConfigurationProperties harborConfigurationProperties;
     @Autowired
-    private DevopsProjectConfigRepository devopsProjectConfigRepository;
-    @Autowired
     private ApplicationVersionReadmeMapper applicationVersionReadmeMapper;
     @Autowired
-    private MarketConnectInfoRepositpry marketConnectInfoRepositpry;
+    private MarketConnectInfoService marketConnectInfoService;
     @Autowired
     private ChartUtil chartUtil;
     @Autowired
@@ -213,8 +209,8 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
                 appVersionAndValueVO.setHarbor(gson.fromJson(devopsProjectConfigService.baseQueryByName(null, "harbor_default").getConfig(), ProjectConfigVO.class));
                 appVersionAndValueVO.setChart(gson.fromJson(devopsProjectConfigService.baseQueryByName(null, "chart_default").getConfig(), ProjectConfigVO.class));
             } else {
-                appVersionAndValueVO.setHarbor(gson.fromJson(devopsProjectConfigRepository.baseQuery(applicationDTO.getHarborConfigId()).getConfig(), ProjectConfigVO.class));
-                appVersionAndValueVO.setChart(gson.fromJson(devopsProjectConfigRepository.baseQuery(applicationDTO.getChartConfigId()).getConfig(), ProjectConfigVO.class));
+                appVersionAndValueVO.setHarbor(gson.fromJson(devopsProjectConfigService.baseQuery(applicationDTO.getHarborConfigId()).getConfig(), ProjectConfigVO.class));
+                appVersionAndValueVO.setChart(gson.fromJson(devopsProjectConfigService.baseQuery(applicationDTO.getChartConfigId()).getConfig(), ProjectConfigVO.class));
             }
             appVersionAndValueVO.setVersionRemoteDTO(versionRemoteDTO);
         }
@@ -481,7 +477,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
     @Override
     public PageInfo<ApplicationReleasingVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params) {
-        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
+        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
         }
@@ -506,7 +502,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
     @Override
     public PageInfo<ApplicationVersionRespVO> pageVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params) {
-        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
+        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
         }
@@ -533,7 +529,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
 
     @Override
     public AppVersionAndValueVO queryConfigByVerionId(Long appId, Long versionId, String accessToken) {
-        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoRepositpry.baseQuery();
+        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
         }
@@ -616,7 +612,7 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     public void saveToken(AccessTokenVO tokenDTO) {
         DevopsMarketConnectInfoDTO connectInfoDO = new DevopsMarketConnectInfoDTO();
         BeanUtils.copyProperties(tokenDTO, connectInfoDO);
-        marketConnectInfoRepositpry.baseCreateOrUpdate(connectInfoDO);
+        marketConnectInfoService.baseCreateOrUpdate(connectInfoDO);
     }
 
     public ApplicationShareDTO baseCreateOrUpdate(ApplicationShareDTO applicationShareDTO) {

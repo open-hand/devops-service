@@ -74,7 +74,6 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     }
 
 
-    @Override
     @Transactional
     public void updateEnvUserPermission(Long envId, List<Long> addUsersList, List<Long> deleteUsersList) {
         // 待添加的用户列表

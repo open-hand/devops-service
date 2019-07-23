@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.dto.gitlab;
 
-public class CommitStatsDO {
+public class CommitStatsDTO {
 
     private Integer additions;
     private Integer deletions;

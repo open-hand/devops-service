@@ -14,6 +14,7 @@ import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
 import io.choerodon.devops.domain.application.valueobject.Payload;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -111,13 +112,13 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void upgradeCluster(DevopsClusterE devopsClusterE) {
+    public void upgradeCluster(DevopsClusterDTO devopsClusterDTO) {
         Msg msg = new Msg();
         Map<String, String> configs = new HashMap<>();
         configs.put("config.connect", agentServiceUrl);
-        configs.put("config.token", devopsClusterE.getToken());
-        configs.put("config.clusterId", devopsClusterE.getId().toString());
-        configs.put("config.choerodonId", devopsClusterE.getChoerodonId());
+        configs.put("config.token", devopsClusterDTO.getToken());
+        configs.put("config.clusterId", devopsClusterDTO.getId().toString());
+        configs.put("config.choerodonId", devopsClusterDTO.getChoerodonId());
         configs.put("rbac.create", "true");
         Payload payload = new Payload(
                 "choerodon",
@@ -125,10 +126,10 @@ public class AgentCommandServiceImpl implements AgentCommandService {
                 "choerodon-cluster-agent",
                 agentExpectVersion,
                 Props2YAML.fromContent(FileUtil.propertiesToString(configs))
-                        .convert(), "choerodon-cluster-agent-" + devopsClusterE.getCode(), null);
+                        .convert(), "choerodon-cluster-agent-" + devopsClusterDTO.getCode(), null);
         msg.setKey(String.format(KEY_FORMAT,
-                devopsClusterE.getId(),
-                "choerodon-cluster-agent-" + devopsClusterE.getCode()));
+                devopsClusterDTO.getId(),
+                "choerodon-cluster-agent-" + devopsClusterDTO.getCode()));
         msg.setType(HelmType.HELM_RELEASE_UPGRADE.toValue());
         try {
             msg.setPayload(mapper.writeValueAsString(payload));

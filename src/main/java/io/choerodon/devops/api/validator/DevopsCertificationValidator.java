@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.CertificationService;
-import io.choerodon.devops.domain.application.repository.CertificationRepository;
 
 /**
  * Creator: Runge

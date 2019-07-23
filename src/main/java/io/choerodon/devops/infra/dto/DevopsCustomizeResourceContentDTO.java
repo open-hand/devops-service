@@ -19,7 +19,6 @@ public class DevopsCustomizeResourceContentDTO {
     private Long id;
     private String content;
 
-
     public Long getId() {
         return id;
     }

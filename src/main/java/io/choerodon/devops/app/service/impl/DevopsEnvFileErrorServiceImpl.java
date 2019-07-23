@@ -30,19 +30,16 @@ public class DevopsEnvFileErrorServiceImpl implements DevopsEnvFileErrorService 
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public DevopsEnvFileErrorDTO baseCreateOrUpdate(DevopsEnvFileErrorVO devopsEnvFileErrorVO) {
-        DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = new DevopsEnvFileErrorDTO();
-        devopsEnvFileErrorDTO.setFilePath(devopsEnvFileErrorVO.getFilePath());
-        devopsEnvFileErrorDTO.setEnvId(devopsEnvFileErrorVO.getEnvId());
+    public DevopsEnvFileErrorDTO baseCreateOrUpdate(DevopsEnvFileErrorDTO devopsEnvFileErrorDTO) {
         DevopsEnvFileErrorDTO newDevopsEnvFileErrorDTO = devopsEnvFileErrorMapper.selectOne(devopsEnvFileErrorDTO);
         if (newDevopsEnvFileErrorDTO != null) {
-            newDevopsEnvFileErrorDTO.setCommit(devopsEnvFileErrorVO.getCommit());
-            newDevopsEnvFileErrorDTO.setError(devopsEnvFileErrorVO.getError());
+            newDevopsEnvFileErrorDTO.setCommit(devopsEnvFileErrorDTO.getCommit());
+            newDevopsEnvFileErrorDTO.setError(devopsEnvFileErrorDTO.getError());
             if (devopsEnvFileErrorMapper.updateByPrimaryKeySelective(newDevopsEnvFileErrorDTO) != 1) {
                 throw new CommonException("error.env.error.file.update");
             }
         } else {
-            if (devopsEnvFileErrorMapper.insert(ConvertHelper.convert(devopsEnvFileErrorVO, DevopsEnvFileErrorDTO.class)) != 1) {
+            if (devopsEnvFileErrorMapper.insert(ConvertHelper.convert(devopsEnvFileErrorDTO, DevopsEnvFileErrorDTO.class)) != 1) {
                 throw new CommonException("error.env.error.file.create");
             }
         }
@@ -66,10 +63,8 @@ public class DevopsEnvFileErrorServiceImpl implements DevopsEnvFileErrorService 
 
 
     @Override
-    public void baseDelete(DevopsEnvFileErrorVO devopsEnvFileErrorVO) {
-        DevopsEnvFileErrorDTO devopsEnvFileErrorDO = new DevopsEnvFileErrorDTO();
-        BeanUtils.copyProperties(devopsEnvFileErrorVO, devopsEnvFileErrorDO);
-        devopsEnvFileErrorMapper.delete(devopsEnvFileErrorDO);
+    public void baseDelete(DevopsEnvFileErrorDTO devopsEnvFileErrorDTO) {
+        devopsEnvFileErrorMapper.delete(devopsEnvFileErrorDTO);
     }
 
     @Override

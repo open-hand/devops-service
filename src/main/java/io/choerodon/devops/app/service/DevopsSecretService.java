@@ -98,7 +98,4 @@ public interface DevopsSecretService {
     PageInfo<DevopsSecretDTO> basePageByOption(Long envId, PageRequest pageRequest, String params, Long appId);
 
     List<DevopsSecretDTO> baseListByEnv(Long envId);
-
-
-    DevopsSecretDTO baseQueryByEnvIdAndName(Long envId, String name);
 }

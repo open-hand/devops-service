@@ -1,4 +1,4 @@
-package io.choerodon.devops.infra.dataobject;
+package io.choerodon.devops.infra.dto;
 
 import javax.persistence.Table;
 

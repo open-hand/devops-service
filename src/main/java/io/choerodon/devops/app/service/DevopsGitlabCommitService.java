@@ -9,7 +9,6 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 

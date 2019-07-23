@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.GitlabUserService;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

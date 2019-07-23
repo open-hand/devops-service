@@ -7,9 +7,9 @@ import java.util.stream.Collectors;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.app.service.UserAttrService;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -28,15 +28,15 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
     private ApplicationService applicationService;
     private IamService iamService;
     private UserAttrService userAttrService;
-    private DevopsProjectRepository devopsProjectRepository;
+    private DevopsProjectService devopsProjectService;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     public UpdateAppUserPermissionServiceImpl() {
         this.applicationService = ApplicationContextHelper.getSpringFactory().getBean(ApplicationService.class);
         this.iamService = ApplicationContextHelper.getSpringFactory().getBean(IamService.class);
         this.userAttrService = ApplicationContextHelper.getSpringFactory().getBean(UserAttrService.class);
-        this.devopsProjectRepository = ApplicationContextHelper.getSpringFactory()
-                .getBean(DevopsProjectRepository.class);
+        this.devopsProjectService = ApplicationContextHelper.getSpringFactory()
+                .getBean(DevopsProjectService.class);
         this.gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory()
                 .getBean(GitlabServiceClientOperator.class);
     }
@@ -51,7 +51,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
 
         ApplicationDTO applicationDTO = applicationService.baseQuery(appId);
         Integer gitlabProjectId = applicationDTO.getGitlabProjectId();
-        DevopsProjectDTO devopsProjectDTO = devopsProjectRepository.baseQueryByProjectId(applicationDTO.getProjectId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(applicationDTO.getProjectId());
         Integer gitlabGroupId = devopsProjectDTO.getDevopsAppGroupId().intValue();
 
         // 如果之前对应的gitlab project同步失败时，不进行后续操作

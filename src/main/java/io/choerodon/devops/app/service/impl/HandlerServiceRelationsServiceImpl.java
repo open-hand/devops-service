@@ -9,7 +9,6 @@ import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.EndPointPortVO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.api.vo.iam.entity.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;

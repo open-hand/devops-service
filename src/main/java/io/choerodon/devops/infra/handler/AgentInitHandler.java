@@ -3,10 +3,11 @@ package io.choerodon.devops.infra.handler;
 import java.util.List;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
-import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.app.service.DevopsClusterProPermissionService;
+import io.choerodon.devops.app.service.DevopsClusterService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.AgentCommandService;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.websocket.session.AgentConfigurer;
 import io.choerodon.websocket.session.AgentSessionManager;
 import io.choerodon.websocket.session.Session;
@@ -19,11 +20,11 @@ import org.springframework.stereotype.Component;
 public class AgentInitHandler implements AgentConfigurer {
 
     @Autowired
-    DevopsEnvironmentRepository devopsEnvironmentRepository;
+    DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    DevopsClusterRepository devopsClusterRepository;
+    DevopsClusterService devopsClusterService;
     @Autowired
-    DevopsClusterProPermissionRepository devopsClusterProPermissionRepository;
+    DevopsClusterProPermissionService devopsClusterProPermissionService;
     @Autowired
     private AgentCommandService agentCommandService;
     @Autowired
@@ -45,8 +46,8 @@ public class AgentInitHandler implements AgentConfigurer {
                 List<Long> connected = clusterConnectionHandler.getConnectedEnvList();
                 List<Long> upgraded = clusterConnectionHandler.getUpdatedEnvList();
                 if (connected.contains(clusterId) && !upgraded.contains(clusterId)) {
-                    DevopsClusterE devopsClusterE = devopsClusterRepository.baseQuery(clusterId);
-                    agentCommandService.upgradeCluster(devopsClusterE);
+                    DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+                    agentCommandService.upgradeCluster(devopsClusterDTO);
                 }
                 agentCommandService.initCluster(clusterId);
             } catch (Exception e) {

@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO;
+import io.choerodon.devops.infra.dto.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.ReleaseDO;
 import io.choerodon.devops.infra.dto.gitlab.TagDTO;
 import org.springframework.beans.BeanUtils;

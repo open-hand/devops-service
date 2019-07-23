@@ -6,6 +6,7 @@ import java.util.Map;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.GitlabWebHookService;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

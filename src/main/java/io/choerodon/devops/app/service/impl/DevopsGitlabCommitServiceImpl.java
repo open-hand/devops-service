@@ -17,9 +17,10 @@ import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.CommitDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import io.choerodon.devops.infra.util.PageRequestUtil;
@@ -45,6 +46,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
     private DevopsGitService devopsGitService;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     @Override
     public void create(PushWebHookVO pushWebHookVO, String token) {
@@ -78,7 +81,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             //直接从一个分支切出来另外一个分支，没有commits记录
             DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(pushWebHookVO.getCheckoutSha(), ref);
             if (devopsGitlabCommitDTO == null) {
-                CommitDTO commitDTO = devopsGitService.getCommit(TypeUtil.objToInteger(applicationDTO.getGitlabProjectId()), pushWebHookVO.getCheckoutSha(), ADMIN);
+                CommitDTO commitDTO = gitlabServiceClientOperator.queryCommit(TypeUtil.objToInteger(applicationDTO.getGitlabProjectId()), pushWebHookVO.getCheckoutSha(), ADMIN);
                 devopsGitlabCommitDTO = new DevopsGitlabCommitDTO();
                 devopsGitlabCommitDTO.setAppId(applicationDTO.getId());
                 devopsGitlabCommitDTO.setCommitContent(commitDTO.getMessage());

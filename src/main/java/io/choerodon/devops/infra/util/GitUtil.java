@@ -13,10 +13,10 @@ import com.jcraft.jsch.Session;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitConfigVO;
 import io.choerodon.devops.api.vo.GitEnvConfigVO;
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import org.apache.commons.io.FileUtils;
@@ -53,7 +53,7 @@ public class GitUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     @Autowired
-    DevopsEnvironmentRepository devopsEnvironmentRepository;
+    DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     IamService iamService;
     private String classPath;
@@ -505,11 +505,11 @@ public class GitUtil {
 
 
     public GitConfigVO getGitConfig(Long clusterId) {
-        List<DevopsEnvironmentE> devopsEnvironments = devopsEnvironmentRepository.baseListByClusterId(clusterId);
+        List<DevopsEnvironmentDTO> devopsEnvironments = devopsEnvironmentService.baseListByClusterId(clusterId);
         GitConfigVO gitConfigVO = new GitConfigVO();
-        List<GitEnvConfigVO> gitEnvConfigVOS = new ArrayList<>();
+        List<GitEnvConfigVO> gitEnvConfigDTOS = new ArrayList<>();
         devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
-            ProjectDTO projectDTO = iamService.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+            ProjectDTO projectDTO = iamService.queryIamProject(devopsEnvironmentE.getProjectId());
             OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
             String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentE.getCode());
 
@@ -518,9 +518,9 @@ public class GitUtil {
             gitEnvConfigVO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
             gitEnvConfigVO.setGitUrl(repoUrl);
             gitEnvConfigVO.setNamespace(devopsEnvironmentE.getCode());
-            gitEnvConfigVOS.add(gitEnvConfigVO);
+            gitEnvConfigDTOS.add(gitEnvConfigVO);
         });
-        gitConfigVO.setEnvs(gitEnvConfigVOS);
+        gitConfigVO.setEnvs(gitEnvConfigDTOS);
         gitConfigVO.setGitHost(gitlabSshUrl);
         return gitConfigVO;
     }

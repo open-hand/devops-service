@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.feign.WorkFlowServiceClient;
-import io.choerodon.devops.infra.persistence.impl.WorkFlowRepositoryImpl;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -19,7 +18,7 @@ import io.choerodon.devops.infra.persistence.impl.WorkFlowRepositoryImpl;
 @Component
 public class WorkFlowServiceOperator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WorkFlowRepositoryImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkFlowServiceOperator.class);
 
     @Autowired
     private WorkFlowServiceClient workFlowServiceClient;

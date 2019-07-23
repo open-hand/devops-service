@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.dto.gitlab;
 
 import java.util.List;
 
+import io.choerodon.devops.infra.dto.CommitDTO;
+
 /**
  * Creator: Runge
  * Date: 2018/7/26

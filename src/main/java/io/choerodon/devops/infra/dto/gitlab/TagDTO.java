@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.dto.gitlab;
 
 import org.springframework.beans.BeanUtils;
 
+import io.choerodon.devops.infra.dto.CommitDTO;
+
 /**
  * Created by Zenger on 2018/4/8.
  */

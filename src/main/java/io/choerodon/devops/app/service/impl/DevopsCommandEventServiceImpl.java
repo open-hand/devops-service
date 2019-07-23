@@ -42,21 +42,4 @@ public class DevopsCommandEventServiceImpl implements DevopsCommandEventService 
         devopsCommandEventMapper.delete(devopsCommandEventDTO);
     }
 
-    public DevopsCommandEventE doToEntity(DevopsCommandEventDTO devopsCommandEventDTO) {
-        DevopsCommandEventE devopsCommandEventE = new DevopsCommandEventE();
-        BeanUtils.copyProperties(devopsCommandEventDTO, devopsCommandEventE);
-        if (devopsCommandEventDTO.getCommandId() != null) {
-            devopsCommandEventE.initDevopsEnvCommandE(devopsCommandEventDTO.getCommandId());
-        }
-        return devopsCommandEventE;
-    }
-
-    public DevopsCommandEventDTO entityToDo(DevopsCommandEventE devopsCommandEventE) {
-        DevopsCommandEventDTO devopsCommandEventDTO = new DevopsCommandEventDTO();
-        BeanUtils.copyProperties(devopsCommandEventE, devopsCommandEventDTO);
-        if (devopsCommandEventE.getDevopsEnvCommandE() != null) {
-            devopsCommandEventDTO.setCommandId(devopsCommandEventE.getDevopsEnvCommandE().getId());
-        }
-        return devopsCommandEventDTO;
-    }
 }

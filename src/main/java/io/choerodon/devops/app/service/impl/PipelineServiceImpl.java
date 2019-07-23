@@ -18,7 +18,6 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.notify.NoticeSendDTO;
@@ -116,8 +115,6 @@ public class PipelineServiceImpl implements PipelineService {
     private PipelineMapper pipelineMapper;
     @Autowired
     private ApplicationInstanceMapper applicationInstanceMapper;
-    @Autowired
-    private WorkFlowServiceOperator workFlowServiceOperator;
 
     @Override
     public PageInfo<PipelineVO> pageByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params) {
@@ -149,7 +146,7 @@ public class PipelineServiceImpl implements PipelineService {
         classifyParam.put("reviewed", reviewed);
         classifyParam.put("pendingcheck", pendingcheck);
         classifyParam.put("userId", DetailsHelper.getUserDetails().getUserId());
-        PageInfo<PipelineRecordVO> pageRecordDTOS = ConvertPageHelper.convertPageInfo(
+        PageInfo<PipelineRecordVO> pageRecordDTOS = ConvertUtils.convertPage(
                 pipelineRecordService.basePageByOptions(projectId, pipelineId, pageRequest, params, classifyParam), PipelineRecordVO.class);
         pageRecordDTOS.setList(pageRecordDTOS.getList().stream().peek(t -> {
             t.setExecute(false);

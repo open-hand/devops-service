@@ -16,8 +16,6 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.entity.*;
-import io.choerodon.devops.api.vo.iam.entity.iam.UserE;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
@@ -216,7 +214,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 });
             }
             List<DevopsEnvResourceDTO> jobs = baseListByCommandId(devopsEnvCommandDTO.getId());
-            List<DevopsEnvCommandLogVO> devopsEnvCommandLogES = devopsEnvCommandLogService
+            List<DevopsEnvCommandLogDTO> devopsEnvCommandLogES = devopsEnvCommandLogService
                     .baseListByDeployId(devopsEnvCommandDTO.getId());
             for (int i = 0; i < jobs.size(); i++) {
                 DevopsEnvResourceDTO job = jobs.get(i);

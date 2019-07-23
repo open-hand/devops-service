@@ -1,11 +1,14 @@
-package io.choerodon.devops.infra.dataobject.gitlab;
+package io.choerodon.devops.infra.dto;
 
 import java.util.Date;
 import java.util.List;
 
+import io.choerodon.devops.api.vo.AuthorVO;
+import io.choerodon.devops.infra.dto.gitlab.CommitStatsDTO;
+
 public class CommitDTO {
 
-    private AuthorDO author;
+    private AuthorVO author;
     private Date authoredDate;
     private String authorEmail;
     private String authorName;
@@ -17,17 +20,17 @@ public class CommitDTO {
     private String message;
     private List<String> parentIds;
     private String shortId;
-    private CommitStatsDO stats;
+    private CommitStatsDTO stats;
     private String status;
     private Date timestamp;
     private String title;
     private String url;
 
-    public AuthorDO getAuthor() {
+    public AuthorVO getAuthor() {
         return author;
     }
 
-    public void setAuthor(AuthorDO author) {
+    public void setAuthor(AuthorVO author) {
         this.author = author;
     }
 
@@ -119,11 +122,11 @@ public class CommitDTO {
         this.shortId = shortId;
     }
 
-    public CommitStatsDO getStats() {
+    public CommitStatsDTO getStats() {
         return stats;
     }
 
-    public void setStats(CommitStatsDO stats) {
+    public void setStats(CommitStatsDTO stats) {
         this.stats = stats;
     }
 

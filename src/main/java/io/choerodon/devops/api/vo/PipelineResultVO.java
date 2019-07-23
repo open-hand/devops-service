@@ -3,8 +3,6 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabJobE;
-
 
 public class PipelineResultVO {
 
@@ -14,7 +12,7 @@ public class PipelineResultVO {
     private String commit;
     private String ref;
     private String commitUser;
-    private List<GitlabJobE> jobs;
+    private List<GitlabJobVO> jobs;
     private Date createdAt;
     private Long[] time;
     private String title;
@@ -85,11 +83,11 @@ public class PipelineResultVO {
         this.commitUser = commitUser;
     }
 
-    public List<GitlabJobE> getJobs() {
+    public List<GitlabJobVO> getJobs() {
         return jobs;
     }
 
-    public void setJobs(List<GitlabJobE> jobs) {
+    public void setJobs(List<GitlabJobVO> jobs) {
         this.jobs = jobs;
     }
 

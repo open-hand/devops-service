@@ -20,11 +20,9 @@ import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
 import io.choerodon.devops.infra.common.util.enums.EnvironmentGitopsStatus;
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
@@ -80,7 +78,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private String gitlabUrl;
 
     @Autowired
-    private DevopsServiceRepository devopsServiceRepository;
+    private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsEnvironmentValidator devopsEnvironmentValidator;
     @Autowired
@@ -119,6 +117,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsIngressService devopsIngressService;
     @Autowired
     private TransactionalProducer producer;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
+    private DevopsGitService devopsGitService;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_ENV, description = "创建环境", inputSchema = "{}")
@@ -287,7 +289,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnviromentRepVO> listDeployed(Long projectId) {
-        List<Long> envList = devopsServiceRepository.baseListEnvByRunningService();
+        List<Long> envList = devopsServiceService.baseListEnvByRunningService();
         return listByProjectIdAndActive(projectId, true).stream().filter(t ->
                 envList.contains(t.getId())).collect(Collectors.toList());
     }
@@ -840,9 +842,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvCommandService.baseListByObject(HelmObjectKind.INGRESS.toValue(), ingressE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
         devopsIngressService.deleteIngressAndIngressPathByEnvId(envId);
         // 删除环境对应的网络和网络实例
-        devopsServiceRepository.baseListByEnvId(envId).forEach(serviceE ->
+        devopsServiceService.baseListByEnvId(envId).forEach(serviceE ->
                 devopsEnvCommandService.baseListByObject(HelmObjectKind.SERVICE.toValue(), serviceE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
-        devopsServiceRepository.baseDeleteServiceAndInstanceByEnvId(envId);
+        devopsServiceService.baseDeleteServiceAndInstanceByEnvId(envId);
 
         // 删除环境
         baseDeleteById(envId);

@@ -13,6 +13,7 @@ import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
+import io.choerodon.devops.infra.dto.AppUserPermissionDTO
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
 import org.mockito.Mockito

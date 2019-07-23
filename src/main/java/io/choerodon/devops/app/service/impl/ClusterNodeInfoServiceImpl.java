@@ -12,7 +12,8 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AgentNodeInfoVO;
 import io.choerodon.devops.api.vo.ClusterNodeInfoVO;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
-import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
+import io.choerodon.devops.app.service.DevopsClusterService;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,15 +41,15 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterNodeInfoServiceImpl.class);
 
     @Autowired
-    private DevopsClusterRepository devopsClusterRepository;
+    private DevopsClusterService devopsClusterService;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public String getRedisClusterKey(Long clusterId) {
-        DevopsClusterE devopsClusterE = devopsClusterRepository.baseQuery(clusterId);
-        if (devopsClusterE != null) {
-            return getRedisClusterKey(clusterId, devopsClusterE.getOrganizationId());
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        if (devopsClusterDTO != null) {
+            return getRedisClusterKey(clusterId, devopsClusterDTO.getOrganizationId());
         } else {
             throw new CommonException("error.cluster.get");
         }

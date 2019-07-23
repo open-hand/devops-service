@@ -9,6 +9,14 @@ import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
@@ -24,13 +32,6 @@ import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -381,22 +382,22 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     /**
      * pod entity to cluster pod vo
      *
-     * @param pod pod entity
+     * @param devopsEnvPodDTO pod entity
      * @return the cluster pod vo
      */
-    private DevopsClusterPodVO podE2ClusterPodDTO(DevopsEnvPodDTO pod) {
-        DevopsClusterPodVO devopsEnvPodDTO = new DevopsClusterPodVO();
-        BeanUtils.copyProperties(pod, devopsEnvPodDTO);
+    private DevopsClusterPodVO podE2ClusterPodDTO(DevopsEnvPodDTO devopsEnvPodDTO) {
+        DevopsClusterPodVO devopsClusterPodVO = new DevopsClusterPodVO();
+        BeanUtils.copyProperties(devopsEnvPodDTO, devopsClusterPodVO);
+        DevopsEnvPodVO devopsEnvPodVO = ConvertUtils.convertObject(devopsEnvPodDTO, DevopsEnvPodVO.class);
+        devopsEnvPodService.setContainers(devopsEnvPodVO);
 
-        devopsEnvPodService.setContainers(pod);
-
-        devopsEnvPodDTO.setContainersForLogs(
-                pod.getContainers()
+        devopsClusterPodVO.setContainersForLogs(
+                devopsEnvPodDTO.getContainers()
                         .stream()
-                        .map(container -> new DevopsEnvPodContainerLogVO(pod.getName(), container.getName()))
+                        .map(container -> new DevopsEnvPodContainerLogVO(devopsEnvPodDTO.getName(), container.getName()))
                         .collect(Collectors.toList())
         );
-        return devopsEnvPodDTO;
+        return devopsClusterPodVO;
     }
 
     /**

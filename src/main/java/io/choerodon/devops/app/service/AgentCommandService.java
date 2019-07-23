@@ -6,6 +6,7 @@ import java.util.Map;
 import io.choerodon.devops.api.vo.ProjectConfigVO;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 
 /**
@@ -28,7 +29,7 @@ public interface AgentCommandService {
 
     void getTestAppStatus(Map<Long, List<String>> testReleases);
 
-    void upgradeCluster(DevopsClusterE devopsClusterE);
+    void upgradeCluster(DevopsClusterDTO devopsClusterDTO);
 
     void createCertManager(Long clusterId);
 

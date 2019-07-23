@@ -4,11 +4,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ProjectVO;
-import io.choerodon.devops.domain.application.valueobject.OrganizationVO;
+import io.choerodon.devops.app.service.IamService;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.helper.EnvSession;
@@ -27,15 +30,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class ClusterConnectionHandler {
 
+    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
-
     @Autowired(required = false)
     @Lazy
     private EnvListener envListener;
-
+    @Autowired
+    private IamService iamService;
+    @Autowired
+    private GitUtil gitUtil;
 
     public static int compareVersion(String a, String b) {
         if (!a.contains("-") && !b.contains("-")) {
@@ -125,14 +131,14 @@ public class ClusterConnectionHandler {
 
 
     public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa) {
-        ProjectVO projectE = iamRepository.queryIamProject(projectId);
-        OrganizationVO organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
         String path = String.format("gitops/%s/%s/%s",
-                organization.getCode(), projectE.getCode(), envCode);
+                organizationDTO.getCode(), projectDTO.getCode(), envCode);
         //生成环境git仓库ssh地址
-        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(),
-                projectE.getCode(), envCode);
+        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(),
+                projectDTO.getCode(), envCode);
 
         File file = new File(path);
         gitUtil.setSshKey(envRsa);

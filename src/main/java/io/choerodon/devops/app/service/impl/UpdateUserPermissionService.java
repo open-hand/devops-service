@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.TypeUtil;

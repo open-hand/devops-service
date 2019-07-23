@@ -3,8 +3,9 @@ package io.choerodon.devops.infra.dto.gitlab;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.gitlab.MilestoneE;
-import io.choerodon.devops.api.vo.iam.entity.gitlab.UserE;
+import io.choerodon.devops.api.vo.AuthorVO;
+import io.choerodon.devops.infra.dto.CommitDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * GitLab 合并请求
@@ -13,7 +14,7 @@ public class MergeRequestDTO {
 
     private Integer approvalsBeforeMerge;
     private AssigneeDO assignee;
-    private AuthorDO author;
+    private AuthorVO author;
     private DiffDTO changes;
     private Date createdAt;
     private String description;
@@ -25,7 +26,7 @@ public class MergeRequestDTO {
     private String mergeCommitSha;
     private String mergeStatus;
     private Boolean mergeWhenBuildSucceeds;
-    private MilestoneE milestone;
+    private MilestoneDTO milestone;
     private Integer projectId;
     private String sha;
     private Boolean shouldRemoveSourceBranch;
@@ -47,7 +48,7 @@ public class MergeRequestDTO {
     private Integer approvalsRequired;
     private Integer approvalsMissing;
 
-    private List<UserE> approvedBy;
+    private List<IamUserDTO> approvedBy;
 
     private List<CommitDTO> commits;
 
@@ -79,11 +80,11 @@ public class MergeRequestDTO {
         this.assignee = assignee;
     }
 
-    public AuthorDO getAuthor() {
+    public AuthorVO getAuthor() {
         return author;
     }
 
-    public void setAuthor(AuthorDO author) {
+    public void setAuthor(AuthorVO author) {
         this.author = author;
     }
 
@@ -175,11 +176,11 @@ public class MergeRequestDTO {
         this.mergeWhenBuildSucceeds = mergeWhenBuildSucceeds;
     }
 
-    public MilestoneE getMilestone() {
+    public MilestoneDTO getMilestone() {
         return milestone;
     }
 
-    public void setMilestone(MilestoneE milestoneE) {
+    public void setMilestone(MilestoneDTO milestoneE) {
         this.milestone = milestoneE;
     }
 
@@ -357,7 +358,7 @@ public class MergeRequestDTO {
      *
      * @return the baseList of users that have approved the merge request
      */
-    public List<UserE> getApprovedBy() {
+    public List<IamUserDTO> getApprovedBy() {
         return approvedBy;
     }
 
@@ -367,7 +368,7 @@ public class MergeRequestDTO {
      *
      * @param approvedBy the baseList of users that have approved the merge request
      */
-    public void setApprovedBy(List<UserE> approvedBy) {
+    public void setApprovedBy(List<IamUserDTO> approvedBy) {
         this.approvedBy = approvedBy;
     }
 }

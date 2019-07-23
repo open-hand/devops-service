@@ -136,7 +136,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
 
     @Override
     public void checkName(Long organizationId, String name) {
-        CertificationE certificationE = new CertificationE();
+        CertificationDTO certificationE = new CertificationDTO();
         certificationE.setOrganizationId(organizationId);
         certificationE.setName(name);
         if (certificationService.baseQueryByOrgAndName(organizationId, name) != null) {

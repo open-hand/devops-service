@@ -2,7 +2,7 @@ package io.choerodon.devops.domain.application.valueobject;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.iam.entity.gitlab.GitlabJobE;
+import io.choerodon.devops.api.vo.GitlabJobVO;
 
 
 public class PipelineResultV {
@@ -21,7 +21,7 @@ public class PipelineResultV {
     private String imageUrl;
     private String gitlabUrl;
     private Boolean latest;
-    private List<GitlabJobE> jobs;
+    private List<GitlabJobVO> jobs;
 
     public String getAppName() {
         return appName;
@@ -135,11 +135,11 @@ public class PipelineResultV {
         this.latest = latest;
     }
 
-    public List<GitlabJobE> getJobs() {
+    public List<GitlabJobVO> getJobs() {
         return jobs;
     }
 
-    public void setJobs(List<GitlabJobE> jobs) {
+    public void setJobs(List<GitlabJobVO> jobs) {
         this.jobs = jobs;
     }
 

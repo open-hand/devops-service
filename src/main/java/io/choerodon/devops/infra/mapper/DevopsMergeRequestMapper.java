@@ -23,7 +23,7 @@ public interface DevopsMergeRequestMapper extends Mapper<DevopsMergeRequestDTO> 
     List<DevopsMergeRequestDTO> getByProjectIdAndState(@Param("projectId") Integer gitLabProjectId,
                                                        @Param("state") String state);
 
-    List<DevopsMergeRequestVO> listBySourceBranch(@Param("projectId")Integer gitLabProjectId, @Param("branchName") String branchName);
+    List<DevopsMergeRequestDTO> listBySourceBranch(@Param("projectId")Integer gitLabProjectId, @Param("branchName") String branchName);
 
     DevopsMergeRequestDTO countMergeRequest(@Param("projectId") Integer gitlabProjectId);
 }

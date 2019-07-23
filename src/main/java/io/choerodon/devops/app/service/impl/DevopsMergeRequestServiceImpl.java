@@ -31,7 +31,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
 
 
     @Override
-    public List<DevopsMergeRequestVO> baseListBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
+    public List<DevopsMergeRequestDTO> baseListBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
         return devopsMergeRequestMapper.listBySourceBranch(gitLabProjectId.intValue(),sourceBranchName);
     }
 

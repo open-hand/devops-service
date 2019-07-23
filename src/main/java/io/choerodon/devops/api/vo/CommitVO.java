@@ -3,11 +3,10 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.infra.dto.gitlab.AuthorDO;
-import io.choerodon.devops.infra.dto.gitlab.CommitStatsDO;
+import io.choerodon.devops.infra.dto.gitlab.CommitStatsDTO;
 
 public class CommitVO {
-    private AuthorDO author;
+    private AuthorVO author;
     private Date authoredDate;
     private String authorEmail;
     private String authorName;
@@ -19,7 +18,7 @@ public class CommitVO {
     private String message;
     private List<String> parentIds;
     private String shortId;
-    private CommitStatsDO stats;
+    private CommitStatsDTO stats;
     private String status;
     private Date timestamp;
     private String title;
@@ -28,11 +27,11 @@ public class CommitVO {
     private List<String> modified;
     private List<String> removed;
 
-    public AuthorDO getAuthor() {
+    public AuthorVO getAuthor() {
         return author;
     }
 
-    public void setAuthor(AuthorDO author) {
+    public void setAuthor(AuthorVO author) {
         this.author = author;
     }
 
@@ -124,11 +123,11 @@ public class CommitVO {
         this.shortId = shortId;
     }
 
-    public CommitStatsDO getStats() {
+    public CommitStatsDTO getStats() {
         return stats;
     }
 
-    public void setStats(CommitStatsDO stats) {
+    public void setStats(CommitStatsDTO stats) {
         this.stats = stats;
     }
 

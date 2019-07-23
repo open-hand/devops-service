@@ -15,12 +15,16 @@ import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
 =======
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
 >>>>>>> [IMP] 修改AppControler重构
 =======
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDTO
+=======
+import io.choerodon.devops.infra.dto.CommitDTO
+>>>>>>> [IMP] 重构后端代码
 =======
 >>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
 >>>>>>> [IMP]修改后端结构

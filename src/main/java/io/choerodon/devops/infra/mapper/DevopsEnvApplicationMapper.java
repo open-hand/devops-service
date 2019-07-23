@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.DevopsEnvMessageVO;
+import io.choerodon.devops.api.vo.iam.DevopsEnvMessageDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -32,5 +32,5 @@ public interface DevopsEnvApplicationMapper extends Mapper<DevopsEnvApplicationD
      * @param appId 应用Id
      * @return List 环境资源信息
      */
-    List<DevopsEnvMessageVO> listResourceByEnvAndApp(@Param("envId") Long envId, @Param("appId") Long appId);
+    List<DevopsEnvMessageDTO> listResourceByEnvAndApp(@Param("envId") Long envId, @Param("appId") Long appId);
 }

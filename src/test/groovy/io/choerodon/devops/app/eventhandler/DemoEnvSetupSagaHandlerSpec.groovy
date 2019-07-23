@@ -33,8 +33,12 @@ import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
 import io.choerodon.devops.infra.dataobject.UserAttrDTO
 
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
+<<<<<<< HEAD
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDTO
 >>>>>>> [IMP] 修改environment Controller
+=======
+
+>>>>>>> [IMP] 重构后端代码
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient

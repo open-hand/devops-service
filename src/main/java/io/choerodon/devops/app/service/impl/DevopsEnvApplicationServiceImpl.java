@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.iam.DevopsEnvMessageDTO;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
@@ -59,7 +60,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
 
     @Override
     public List<DevopsEnvLabelVO> listLabelByAppAndEnvId(Long envId, Long appId) {
-        List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
+        List<DevopsEnvMessageDTO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
         List<DevopsEnvLabelVO> devopsEnvLabelVOS = new ArrayList<>();
         devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
             DevopsEnvLabelVO devopsEnvLabelVO = new DevopsEnvLabelVO();
@@ -74,44 +75,44 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
 
     @Override
     public List<DevopsEnvPortVO> listPortByAppAndEnvId(Long envId, Long appId) {
-        List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
+        List<DevopsEnvMessageDTO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
         List<DevopsEnvPortVO> devopsEnvPortVOS = new ArrayList<>();
-        devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
-            V1beta2Deployment v1beta2Deployment = json.deserialize(
-                    devopsEnvMessageVO.getDetail(), V1beta2Deployment.class);
-            List<V1Container> containers = v1beta2Deployment.getSpec().getTemplate().getSpec().getContainers();
-            for (V1Container container : containers) {
-                List<V1ContainerPort> ports = container.getPorts();
+            devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
+                V1beta2Deployment v1beta2Deployment = json.deserialize(
+                        devopsEnvMessageVO.getDetail(), V1beta2Deployment.class);
+                List<V1Container> containers = v1beta2Deployment.getSpec().getTemplate().getSpec().getContainers();
+                for (V1Container container : containers) {
+                    List<V1ContainerPort> ports = container.getPorts();
 
-                Optional.ofNullable(ports).ifPresent(portList -> {
-                    for (V1ContainerPort port : portList) {
-                        DevopsEnvPortVO devopsEnvPortVO = new DevopsEnvPortVO();
-                        devopsEnvPortVO.setResourceName(devopsEnvMessageVO.getResourceName());
-                        devopsEnvPortVO.setPortName(port.getName());
-                        devopsEnvPortVO.setPortValue(port.getContainerPort());
-                        devopsEnvPortVOS.add(devopsEnvPortVO);
-                    }
-                });
-            }
-        });
-        return devopsEnvPortVOS;
-    }
-
-    @Override
-    public DevopsEnvApplicationDTO baseCreate(DevopsEnvApplicationDTO devopsEnvApplicationDTO) {
-        if (devopsEnvApplicationMapper.insert(devopsEnvApplicationDTO) != 1) {
-            throw new CommonException("error.insert.env.app");
+                    Optional.ofNullable(ports).ifPresent(portList -> {
+                        for (V1ContainerPort port : portList) {
+                            DevopsEnvPortVO devopsEnvPortVO = new DevopsEnvPortVO();
+                            devopsEnvPortVO.setResourceName(devopsEnvMessageVO.getResourceName());
+                            devopsEnvPortVO.setPortName(port.getName());
+                            devopsEnvPortVO.setPortValue(port.getContainerPort());
+                            devopsEnvPortVOS.add(devopsEnvPortVO);
+                        }
+                    });
+                }
+            });
+            return devopsEnvPortVOS;
         }
-        return devopsEnvApplicationDTO;
-    }
 
-    @Override
-    public List<Long> baseListAppByEnvId(Long envId) {
-        return devopsEnvApplicationMapper.queryAppByEnvId(envId);
-    }
+        @Override
+        public DevopsEnvApplicationDTO baseCreate (DevopsEnvApplicationDTO devopsEnvApplicationDTO){
+            if (devopsEnvApplicationMapper.insert(devopsEnvApplicationDTO) != 1) {
+                throw new CommonException("error.insert.env.app");
+            }
+            return devopsEnvApplicationDTO;
+        }
 
-    @Override
-    public List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appId) {
-        return devopsEnvApplicationMapper.listResourceByEnvAndApp(envId, appId);
+        @Override
+        public List<Long> baseListAppByEnvId (Long envId){
+            return devopsEnvApplicationMapper.queryAppByEnvId(envId);
+        }
+
+        @Override
+        public List<DevopsEnvMessageDTO> baseListResourceByEnvAndApp (Long envId, Long appId){
+            return devopsEnvApplicationMapper.listResourceByEnvAndApp(envId, appId);
+        }
     }
-}

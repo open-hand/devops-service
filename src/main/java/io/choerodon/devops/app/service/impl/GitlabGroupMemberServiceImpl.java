@@ -135,8 +135,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                             return;
                         }
                         memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                                TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), gitlabUserId);
-                        deleteGilabRole(memberDTO, devopsProjectDTO, gitlabUserId, false);
+                                TypeUtil.objToInteger(groupDTO.getId()), gitlabUserId);
+                        gitlabServiceClientOperator.deleteGroupMember(
+                                groupDTO.getId(), gitlabUserId);
                     }
                 });
     }
@@ -308,10 +309,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     return;
                 }
                 memberDTO = gitlabServiceClientOperator.queryGroupMember(
-                        TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                        TypeUtil.objToInteger(groupDTO.getId()),
                         (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
                 addOrUpdateGilabRole(accessLevel, memberDTO,
-                        TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), userAttrDTO);
+                        TypeUtil.objToInteger(groupDTO.getId()), userAttrDTO);
             }
         }
     }

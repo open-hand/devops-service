@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.iam.DevopsEnvMessageDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 
 /**
@@ -45,5 +46,5 @@ public interface DevopsEnvApplicationService {
 
     List<Long> baseListAppByEnvId(Long envId);
 
-    List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appId);
+    List<DevopsEnvMessageDTO> baseListResourceByEnvAndApp(Long envId, Long appId);
 }
