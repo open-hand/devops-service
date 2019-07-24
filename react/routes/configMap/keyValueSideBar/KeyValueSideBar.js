@@ -170,7 +170,7 @@ export default class KeyValueSideBar extends Component {
       newData.push(initConfig);
     }
 
-    const uniqData = _.uniqBy([...dataSource.filter(item => item.index !== ''), ...newData], 'index');
+    const uniqData = _.uniqBy([...dataSource.filter(item => item.index !== ''), ...newData], 'Layout.less.less');
     this.setState({
       dataSource: uniqData,
       counter: _counter,
@@ -183,7 +183,7 @@ export default class KeyValueSideBar extends Component {
    */
   handleSave = (row) => {
     const newData = [...this.state.dataSource];
-    const index = _.findIndex(newData, ['index', row.index]);
+    const index = _.findIndex(newData, ['Layout.less.less', row.Layout]);
 
     newData.splice(index, 1, {
       ...newData[index],
@@ -315,7 +315,7 @@ export default class KeyValueSideBar extends Component {
     if (!isYamlEdit) {
       hasKVError = this.checkErrorData();
       const allData = [...dataSource.filter(item => !_.isEmpty(item.key))];
-      configData = _.uniqBy(allData, 'index');
+      configData = _.uniqBy(allData, 'Layout.less.less');
     } else {
       hasConfigRuleError = this.checkConfigRuleError();
       // TODO: yaml 转对象的错误处理
@@ -548,7 +548,7 @@ export default class KeyValueSideBar extends Component {
           className="c7n-editable-table"
           dataSource={dataSource}
           columns={columns}
-          rowKey={record => record.index}
+          rowKey={record => record.Layout}
         />
         <Button icon="add" onClick={this.handleAdd} type="primary">
           <FormattedMessage id={`${title}.add`} />

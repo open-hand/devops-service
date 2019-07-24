@@ -113,7 +113,7 @@ export default class TaskCreate extends Component {
       form: { setFields },
     } = this.props;
     const { getTaskList, getStageList } = PipelineCreateStore;
-    const { appDeployDTOS, type } = _.find(getTaskList[stageId], ['index', taskId]) || {};
+    const { appDeployDTOS, type } = _.find(getTaskList[stageId], ['Layout.less.less', taskId]) || {};
     const { applicationId, envId, instanceId, valueId, instanceName } = appDeployDTOS || {};
 
     this.setState({
@@ -144,7 +144,7 @@ export default class TaskCreate extends Component {
      * 针对自动触发时，首个阶段的首个任务必须是部署任务
      */
     const isHeadStage = (_.head(getStageList) || {}).tempId === stageId;
-    const isHeadTask = _.isEmpty(getTaskList) || (_.head(getTaskList[stageId]) || {}).index === taskId;
+    const isHeadTask = _.isEmpty(getTaskList) || (_.head(getTaskList[stageId]) || {}).Layout === taskId;
     if (isHeadStage && isHeadTask) {
       this.setState({ isHead: true });
     }
@@ -314,7 +314,7 @@ export default class TaskCreate extends Component {
     } = this.props;
     const { appId: selectApp, envId: selectEnv } = this.state;
     const { getTaskList } = PipelineCreateStore;
-    const { appDeployDTOS } = _.find(getTaskList[stageId], ['index', taskId]) || {};
+    const { appDeployDTOS } = _.find(getTaskList[stageId], ['Layout.less.less', taskId]) || {};
     const { applicationId, envId, instanceId, valueId } = appDeployDTOS || {};
     const { code } = _.find(PipelineCreateStore.getAppData, ['id', selectApp]) || {};
     const initIstName = code ? `${code}-${uuidv1().substring(0, 5)}` : uuidv1().substring(0, 30);
@@ -532,7 +532,7 @@ export default class TaskCreate extends Component {
     } = this.state;
 
     const { appDeployDTOS, type, name: taskName, isCountersigned, taskUserRelDTOS } =
-    _.find(getTaskList[stageId], ['index', taskId]) || {};
+    _.find(getTaskList[stageId], ['Layout.less.less', taskId]) || {};
     const { instanceId, applicationId, triggerVersion, envId, valueId } =
     appDeployDTOS || {};
 

@@ -2,10 +2,10 @@ import React, { useState, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Tree } from 'choerodon-ui/pro';
 import classnames from 'classnames';
-import ScrollArea from '../../components/scrollArea';
-import TreeSearch from './TreeSearch';
+import ScrollArea from '../../components/scroll-area';
+import TreeSearch from './tree-search';
 
-import './TreeView.scss';
+import './index.less';
 
 const TreeView = ({
   dataSource,

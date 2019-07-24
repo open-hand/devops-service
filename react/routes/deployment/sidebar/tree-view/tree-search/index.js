@@ -1,8 +1,8 @@
-import React, { memo } from 'react';
+import React, { memo } from 'react/index';
 import PropTypes from 'prop-types';
 import { Icon, TextField } from 'choerodon-ui/pro';
 
-import './TreeSearch.scss';
+import './index.less';
 
 const TreeSearch = memo(({ onChange }) => <div className="c7n-deployment-sidebar-search">
   <TextField

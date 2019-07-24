@@ -37,6 +37,7 @@ const PipelineRecord = asyncRouter(() => import('./routes/pipelineRecord'));
 const CodeQuality = asyncRouter(() => import('./routes/codeQuality'));
 const Notifications = asyncRouter(() => import('./routes/notifications'));
 const Resource = asyncRouter(() => import('./routes/resource'));
+const Deployment = asyncRouter(() => import('./routes/deployment'));
 
 function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
   const IntlProviderAsync = asyncLocaleProvider(language, () => import(`./locale/${language}`),);
@@ -76,6 +77,7 @@ function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
         <Route path={`${match.url}/code-quality`} component={CodeQuality} />
         <Route path={`${match.url}/notifications`} component={Notifications} />
         <Route path={`${match.url}/custom-resource`} component={Resource} />
+        <Route path={`${match.url}/deployment`} component={Deployment} />
         <Route path="*" component={nomatch} />
       </Switch>
     </IntlProviderAsync>
