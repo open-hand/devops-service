@@ -30,6 +30,7 @@
     "echarts-for-react": "^2.0.12",
     "js-file-download": "^0.4.4",
     "js-yaml": "^3.12.1",
+    "mobx-react-lite": "^1.4.1",
     "moment": "^2.22.2",
     "quill-delta-to-html": "^0.8.4",
     "rc-table": "^6.4.2",
