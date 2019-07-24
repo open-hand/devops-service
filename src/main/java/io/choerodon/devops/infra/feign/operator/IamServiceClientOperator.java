@@ -12,9 +12,9 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
+import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.*;
-import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
 import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -266,9 +266,9 @@ public class IamServiceClientOperator {
         }
     }
 
-    public PageInfo<OrganizationSimplifyDTO> getAllOrgs(Integer page, Integer size) {
+    public PageInfo<OrganizationSimplifyVO> getAllOrgs(Integer page, Integer size) {
         try {
-            ResponseEntity<PageInfo<OrganizationSimplifyDTO>> simplifyDTOs = iamServiceClient
+            ResponseEntity<PageInfo<OrganizationSimplifyVO>> simplifyDTOs = iamServiceClient
                     .getAllOrgs(page, size);
             return simplifyDTOs.getBody();
         } catch (FeignException e) {

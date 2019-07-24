@@ -183,11 +183,6 @@ public interface DevopsEnvironmentService {
      */
     DevopsEnviromentRepVO queryByCode(Long clusterId, String code);
 
-    /**
-     * @param sagaClient
-     */
-    void initMockService(SagaClient sagaClient);
-
 
     /**
      * @param envId

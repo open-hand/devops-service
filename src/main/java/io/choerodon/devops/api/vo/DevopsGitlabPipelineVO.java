@@ -3,7 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.domain.application.valueobject.Stage;
+import io.choerodon.devops.api.vo.kubernetes.Stage;
+
 
 public class DevopsGitlabPipelineVO {
 

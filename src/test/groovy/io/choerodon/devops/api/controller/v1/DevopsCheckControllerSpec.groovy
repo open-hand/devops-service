@@ -13,28 +13,17 @@ import io.choerodon.devops.api.vo.iam.UserVO
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO
 import io.choerodon.devops.app.service.DevopsCheckLogService
-<<<<<<< HEAD
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE
-import io.choerodon.devops.domain.application.valueobject.ProjectHook
-import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
-=======
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO
->>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.infra.common.util.TypeUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.common.util.enums.PipelineStatus
-<<<<<<< HEAD
-import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.*
-=======
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
 import io.choerodon.devops.infra.dataobject.UserAttrDTO
 import io.choerodon.devops.infra.dto.CommitDTO
 
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
->>>>>>> [IMP] 修改environment Controller
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.dto.iam.IamUserDTO

@@ -5,13 +5,13 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.constant.PageConstant;
+import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
 import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.api.vo.iam.RoleSearchVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
-import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
-import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
+import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -38,7 +38,7 @@ public interface IamServiceClient {
     ResponseEntity<OrganizationDTO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
     @PostMapping(value = "/v1/project/{projectId}/memberRoles/single")
-    ResponseEntity<MemberRoleV> addMemberRole(@PathVariable("projectId") Long projectId, @RequestBody @Valid MemberRoleV memberRoleVo);
+    ResponseEntity<MemberRoleVO> addMemberRole(@PathVariable("projectId") Long projectId, @RequestBody @Valid MemberRoleVO memberRoleVo);
 
     @GetMapping(value = "/v1/users")
     ResponseEntity<IamUserDTO> queryByLoginName(@RequestParam("login_name") String loginName);
@@ -115,6 +115,7 @@ public interface IamServiceClient {
                                              @RequestBody @Valid ProjectDTO projectDTO);
 
     @PostMapping("/v1/organizations/all")
-    ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(@RequestParam(defaultValue = PageConstant.PAGE, required = false, value = "page") final int page,
-                                                                 @RequestParam(defaultValue = PageConstant.SIZE, required = false, value = "size") final int size);
+    ResponseEntity<PageInfo<OrganizationSimplifyVO>> getAllOrgs(
+            @RequestParam(defaultValue = PageConstant.PAGE, required = false, value = "page") final int page,
+            @RequestParam(defaultValue = PageConstant.SIZE, required = false, value = "size") final int size);
 }

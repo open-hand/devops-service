@@ -4,19 +4,14 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import static java.util.Comparator.comparing;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import com.zaxxer.hikari.util.UtilityElf;
 import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -38,9 +33,7 @@ import io.choerodon.devops.infra.enums.PipelineNoticeType;
 import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
-import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
-import io.choerodon.devops.infra.mapper.PipelineUserRecordRelMapper;
 import io.choerodon.devops.infra.util.*;
 import io.reactivex.Emitter;
 import io.reactivex.Observable;
@@ -70,11 +63,6 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String TASK = "task";
 
     private static final Gson gson = new Gson();
-    private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
-            0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-workflow", false));
-    @Autowired
-    private PipelineUserRelationshipService pipelineUserRelationshipService;
     @Autowired
     private PipelineUserRecordRelationshipService pipelineUserRecordRelationshipService;
     @Autowired
@@ -98,8 +86,6 @@ public class PipelineServiceImpl implements PipelineService {
     @Autowired
     private ApplicationVersionService applicationVersionService;
     @Autowired
-    private SagaClient sagaClient;
-    @Autowired
     private NotifyClient notifyClient;
     @Autowired
     private ApplicationInstanceService applicationInstanceService;
@@ -110,11 +96,9 @@ public class PipelineServiceImpl implements PipelineService {
     @Autowired
     private PipelineUserRelationshipService userRelationshipService;
     @Autowired
-    private PipelineUserRecordRelMapper recordRelMapper;
-    @Autowired
     private PipelineMapper pipelineMapper;
     @Autowired
-    private ApplicationInstanceMapper applicationInstanceMapper;
+    private TransactionalProducer producer;
 
     @Override
     public PageInfo<PipelineVO> pageByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params) {
@@ -363,14 +347,23 @@ public class PipelineServiceImpl implements PipelineService {
                     }
                 }
             }
+
             String input = gson.toJson(applicationDeployVO);
-            sagaClient.startSaga(DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE, new StartInstanceDTO(input, "env", taskRecordDTO.getEnvId().toString(), ResourceLevel.PROJECT.value(), taskRecordDTO.getProjectId()));
+            producer.apply(
+                    StartSagaBuilder.newBuilder()
+                            .withJson(input)
+                            .withRefType("env")
+                            .withRefId(taskRecordDTO.getEnvId().toString())
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(taskRecordDTO.getProjectId()),
+                    builder -> {
+                    });
         } catch (Exception e) {
             sendFailedSiteMessage(pipelineRecordId, GitUserNameUtil.getUserId().longValue());
-            PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
-            Long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordE.getExecutionTime());
-            stageRecordE.setExecutionTime(time.toString());
-            stageRecordRepository.update(stageRecordE);
+            PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
+            long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
+            stageRecordDTO.setExecutionTime(Long.toString(time));
+            pipelineStageRecordService.baseUpdate(stageRecordDTO);
             setPipelineFailed(pipelineRecordId, stageRecordId, taskRecordDTO, e.getMessage());
             throw new CommonException("error.create.pipeline.auto.deploy.instance", e);
         }
@@ -383,7 +376,7 @@ public class PipelineServiceImpl implements PipelineService {
         String status;
         PipelineRecordDTO pipelineRecordE = pipelineRecordService.baseQueryById(recordRelDTO.getPipelineRecordId());
         PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(recordRelDTO.getStageRecordId());
-        String auditUser = new String();
+        String auditUser = "";
         if ("task".equals(recordRelDTO.getType())) {
             auditUser = pipelineTaskRecordService.baseQueryRecordById(recordRelDTO.getTaskRecordId()).getAuditUser();
         } else {
@@ -578,7 +571,7 @@ public class PipelineServiceImpl implements PipelineService {
             Long stageRecordId = recordE.getId();
             pipelineTaskService.baseQueryTaskByStageId(stageE.getId()).forEach(taskE -> {
                 List<PipelineUserRelationshipDTO> taskUserRels = userRelationshipService.baseListByOptions(null, null, taskE.getId());
-                PipelineTaskRecordDTO taskRecordDTO = createTaskRecordE(taskE, stageRecordId, taskUserRels);
+                PipelineTaskRecordDTO taskRecordDTO = createTaskRecordDTO(taskE, stageRecordId, taskUserRels);
                 DevopsPipelineTaskDTO devopsPipelineTaskDTO = new DevopsPipelineTaskDTO();
                 devopsPipelineTaskDTO.setTaskRecordId(taskRecordDTO.getId());
                 devopsPipelineTaskDTO.setTaskName(taskE.getName());
@@ -1063,7 +1056,7 @@ public class PipelineServiceImpl implements PipelineService {
         return pipelineStageRecordService.baseCreateOrUpdate(recordE);
     }
 
-    private PipelineTaskRecordDTO createTaskRecordE(PipelineTaskDTO taskE, Long stageRecordId, List<PipelineUserRelationshipDTO> taskUserRels) {
+    private PipelineTaskRecordDTO createTaskRecordDTO(PipelineTaskDTO taskE, Long stageRecordId, List<PipelineUserRelationshipDTO> taskUserRels) {
         //创建task记录
         PipelineTaskRecordDTO taskRecordE = new PipelineTaskRecordDTO();
         BeanUtils.copyProperties(taskE, taskRecordE);
@@ -1075,7 +1068,7 @@ public class PipelineServiceImpl implements PipelineService {
             PipelineAppDeployDTO appDeployE = pipelineAppDeployService.baseQueryById(taskE.getAppDeployId());
             BeanUtils.copyProperties(appDeployE, taskRecordE);
             if (appDeployE.getInstanceName() == null) {
-                taskRecordE.setInstanceName(applicationInstanceRepository.selectById(appDeployE.getInstanceId()).getCode());
+                taskRecordE.setInstanceName(applicationInstanceService.baseQuery(appDeployE.getInstanceId()).getCode());
             }
             taskRecordE.setInstanceId(null);
             taskRecordE.setValueId(appDeployE.getValueId());

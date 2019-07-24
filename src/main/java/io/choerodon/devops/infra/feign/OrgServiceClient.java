@@ -1,13 +1,12 @@
 package io.choerodon.devops.infra.feign;
 
+import io.choerodon.devops.api.vo.kubernetes.ProjectCategoryEDTO;
+import io.choerodon.devops.infra.feign.fallback.OrgServiceClientFallBack;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import io.choerodon.devops.domain.application.valueobject.ProjectCategoryEDTO;
-import io.choerodon.devops.infra.feign.fallback.OrgServiceClientFallBack;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

@@ -20,8 +20,8 @@ import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.common.util.enums.EnvironmentGitopsStatus;
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
+import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
@@ -82,10 +82,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsEnvironmentValidator devopsEnvironmentValidator;
     @Autowired
-    private ClusterConnectionHandler clusterConnectionHandler;
-    @Autowired
-    private SagaClient sagaClient;
-    @Autowired
     private AgentCommandService agentCommandService;
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
@@ -121,6 +117,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsGitService devopsGitService;
+    @Autowired
+    private ClusterConnectionHandler clusterConnectionHandler;
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_ENV, description = "创建环境", inputSchema = "{}")
@@ -296,7 +294,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnvironmentViewVO> listEnvTree(Long projectId) {
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
 
         List<DevopsEnvironmentViewVO> connectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
@@ -405,7 +403,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentInfoVO vo = new DevopsEnvironmentInfoVO();
         BeanUtils.copyProperties(envInfo, vo);
 
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
         vo.setConnect(upgradeClusterList.contains(envInfo.getClusterId()));
 
         if (envInfo.getAgentSyncCommit().equals(envInfo.getSagaSyncCommit()) &&
@@ -901,11 +899,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public DevopsEnviromentRepVO queryByCode(Long clusterId, String code) {
         return ConvertUtils.convertObject(baseQueryByProjectIdAndCode(clusterId, code), DevopsEnviromentRepVO.class);
-    }
-
-    @Override
-    public void initMockService(SagaClient sagaClient) {
-        this.sagaClient = sagaClient;
     }
 
 

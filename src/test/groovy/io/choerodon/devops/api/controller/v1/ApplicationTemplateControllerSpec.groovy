@@ -10,37 +10,14 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.ApplicationTemplateVO
 import io.choerodon.devops.api.vo.ApplicationTemplateRespVO
-<<<<<<< HEAD
-import io.choerodon.devops.api.vo.ApplicationTemplateUpdateDTO
-<<<<<<< HEAD
-=======
-import io.choerodon.devops.api.vo.ApplicationTemplateVO
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO
->>>>>>> [REF] refactor ApplicationTemplateController
-=======
 import io.choerodon.devops.api.vo.ApplicationTemplateUpdateVO
 import io.choerodon.devops.api.vo.ApplicationTemplateVO
 import io.choerodon.devops.api.vo.DevopsProjectVO
->>>>>>> [REF] refactor original DTO to VO
 import io.choerodon.devops.app.service.ApplicationTemplateService
 import io.choerodon.devops.app.service.DevopsGitService
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-import io.choerodon.devops.domain.application.entity.DevopsProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
 
-<<<<<<< HEAD
->>>>>>> [IMP]修复后端结构
-
-=======
-import io.choerodon.devops.api.vo.iam.entity.DevopsProjectVO
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE
-import io.choerodon.devops.domain.application.repository.GitlabRepository
-=======
->>>>>>> [IMP] 重构部分Repository
 import io.choerodon.devops.domain.application.repository.IamRepository
->>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO
 import io.choerodon.devops.infra.dataobject.ApplicationTemplateDO
@@ -114,7 +91,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     @Shared
     Long template_id = 4L
 
-     //初始化部分对象
+    //初始化部分对象
     def setupSpec() {
         given:
         organization.setId(init_id)

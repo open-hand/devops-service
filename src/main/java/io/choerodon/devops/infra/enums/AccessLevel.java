@@ -4,8 +4,8 @@ import java.util.HashMap;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import io.choerodon.devops.api.vo.kubernetes.MemberHelper;
 
-import io.choerodon.devops.domain.application.valueobject.MemberHelper;
 
 /**
  * Created by Zenger on 2017/11/14.

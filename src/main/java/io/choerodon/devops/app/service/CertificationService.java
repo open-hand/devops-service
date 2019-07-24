@@ -7,7 +7,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.C7nCertificationVO;
 import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.OrgCertificationVO;
-import io.choerodon.devops.domain.application.valueobject.C7nCertification;
+import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.CertificationFileDTO;
 import org.springframework.web.multipart.MultipartFile;

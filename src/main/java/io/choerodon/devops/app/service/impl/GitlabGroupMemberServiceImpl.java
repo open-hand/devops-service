@@ -5,8 +5,8 @@ import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
+import io.choerodon.devops.api.vo.kubernetes.MemberHelper;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.valueobject.MemberHelper;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;

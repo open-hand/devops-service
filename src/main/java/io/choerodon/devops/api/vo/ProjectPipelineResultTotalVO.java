@@ -2,7 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
+import io.choerodon.devops.api.vo.kubernetes.PipelineResultVO;
+
 
 /**
  * Created by Zenger on 2018/4/9.
@@ -14,7 +15,7 @@ public class ProjectPipelineResultTotalVO {
     private Integer numberOfElements;
     private Integer number;
     private Integer size;
-    private List<PipelineResultV> content;
+    private List<PipelineResultVO> content;
 
     public Integer getTotalPages() {
         return totalPages;
@@ -56,11 +57,11 @@ public class ProjectPipelineResultTotalVO {
         this.size = size;
     }
 
-    public List<PipelineResultV> getContent() {
+    public List<PipelineResultVO> getContent() {
         return content;
     }
 
-    public void setContent(List<PipelineResultV> content) {
+    public void setContent(List<PipelineResultVO> content) {
         this.content = content;
     }
 }

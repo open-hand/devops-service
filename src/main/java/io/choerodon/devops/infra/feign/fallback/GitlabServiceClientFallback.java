@@ -6,9 +6,8 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload;
-import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.infra.dto.CommitDTO;
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.http.HttpStatus;
@@ -180,19 +179,19 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<RepositoryFile> createFile(Integer projectId, String path, String content, String
+    public ResponseEntity<RepositoryFileDTO> createFile(Integer projectId, String path, String content, String
             commitMessage, Integer userId) {
         throw new CommonException("error.file.create");
     }
 
     @Override
-    public ResponseEntity<RepositoryFile> createFile(Integer projectId, String path, String content, String
+    public ResponseEntity<RepositoryFileDTO> createFile(Integer projectId, String path, String content, String
             commitMessage, Integer userId, String branchName) {
         throw new CommonException("error.file.create");
     }
 
     @Override
-    public ResponseEntity<RepositoryFile> updateFile(Integer projectId, String path, String content, String
+    public ResponseEntity<RepositoryFileDTO> updateFile(Integer projectId, String path, String content, String
             commitMessage, Integer userId) {
         throw new CommonException("error.file.update");
     }
@@ -203,7 +202,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<RepositoryFile> getFile(Integer projectId, String commit, String filePath) {
+    public ResponseEntity<RepositoryFileDTO> getFile(Integer projectId, String commit, String filePath) {
         return new ResponseEntity("error.file.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

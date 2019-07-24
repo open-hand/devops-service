@@ -12,15 +12,16 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
+import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.valueobject.C7nCertification;
-import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
@@ -809,7 +810,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(appId, branchName);
             if (devopsBranchDTO == null) {
-                createBranchSync(pushWebHookDTO, appId);
+                createBranchSync(pushWebHookVO, appId);
             }
 
 

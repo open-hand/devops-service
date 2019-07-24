@@ -13,4 +13,6 @@ public interface DevopsEnvFileErrorMapper extends Mapper<DevopsEnvFileErrorDTO> 
     DevopsEnvFileErrorDTO queryByEnvAndPathAndCommits(@Param("envId") Long envId,
                                                       @Param("filePath") String filePath,
                                                       @Param("commits") List<String> commits);
+
+    long queryErrorFileCountByEnvId(@Param("envId") Long envId);
 }

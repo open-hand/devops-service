@@ -11,14 +11,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.exception.CommonException;
@@ -27,19 +19,26 @@ import io.choerodon.devops.api.vo.DevopsIngressPathVO;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.repository.DevopsApplicationResourceRepository;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsApplicationResourceMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class DevopsIngressServiceImpl implements DevopsIngressService {
@@ -84,6 +83,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private DevopsIngressMapper devopsIngressMapper;
     @Autowired
     private DevopsIngressPathMapper devopsIngressPathMapper;
+    @Autowired
+    private DevopsApplicationResourceMapper devopsAppResourceMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)

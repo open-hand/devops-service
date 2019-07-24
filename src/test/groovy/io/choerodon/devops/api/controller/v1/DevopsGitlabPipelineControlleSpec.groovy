@@ -6,10 +6,10 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.PipelineFrequencyVO
 import io.choerodon.devops.api.vo.PipelineTimeVO
 <<<<<<< HEAD
-
-=======
 import io.choerodon.devops.domain.application.repository.IamRepository
->>>>>>> [IMP] 修改AppControler重构
+=======
+
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
 import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO

@@ -9,11 +9,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson.JSON;
-import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
+import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
-import io.choerodon.devops.domain.application.valueobject.CheckLog;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
@@ -24,7 +23,6 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 

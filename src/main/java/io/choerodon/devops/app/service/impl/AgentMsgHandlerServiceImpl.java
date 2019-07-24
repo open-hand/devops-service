@@ -16,10 +16,10 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.kubernetes.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -1182,8 +1182,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
         logger.info("sync command status!");
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        List<CommandVO> commandVOS = new ArrayList<>();
-        getCommands(envId, commandVOS);
+        List<Command> commands = new ArrayList<>();
+        getCommands(envId, commands);
         Msg msg = new Msg();
         msg.setKey(String.format("cluster:%d.env:%s.envId:%d",
                 clusterId,
@@ -1191,7 +1191,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 envId));
         msg.setType(HelmType.STATUS_SYNC.toValue());
         try {
-            msg.setPayload(JSONArray.toJSONString(commandVOS));
+            msg.setPayload(JSONArray.toJSONString(commands));
         } catch (Exception e) {
             throw new CommonException("error.payload.error", e);
         }
@@ -1200,78 +1200,78 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
 
-    private void getCommands(Long envId, List<CommandVO> commandVOS) {
-        List<CommandVO> removeCommandVOS = new ArrayList<>();
+    private void getCommands(Long envId, List<Command> commands) {
+        List<Command> removeCommands = new ArrayList<>();
         applicationInstanceService.baseListByEnvId(envId).stream().forEach(applicationInstanceDTO -> {
             Long commandId = applicationInstanceDTO.getCommandId();
             if (commandId != null) {
-                CommandVO commandVO = new CommandVO();
-                commandVO.setId(applicationInstanceDTO.getCommandId());
-                commandVO.setResourceType(INSTANCE_KIND);
-                commandVO.setResourceName(applicationInstanceDTO.getCode());
-                commandVOS.add(commandVO);
+                Command command = new Command();
+                command.setId(applicationInstanceDTO.getCommandId());
+                command.setResourceType(INSTANCE_KIND);
+                command.setResourceName(applicationInstanceDTO.getCode());
+                commands.add(command);
             }
         });
         devopsServiceService.baseListByEnvId(envId).stream().forEach(devopsServiceDTO -> {
             Long commandId = devopsServiceDTO.getCommandId();
             if (commandId != null) {
-                CommandVO commandVO = new CommandVO();
-                commandVO.setId(devopsServiceDTO.getCommandId());
-                commandVO.setResourceType(SERVICE_KIND);
-                commandVO.setResourceName(devopsServiceDTO.getName());
-                commandVOS.add(commandVO);
+                Command command = new Command();
+                command.setId(devopsServiceDTO.getCommandId());
+                command.setResourceType(SERVICE_KIND);
+                command.setResourceName(devopsServiceDTO.getName());
+                commands.add(command);
             }
         });
         devopsIngressService.baseListByEnvId(envId).stream().forEach(devopsIngressDTO -> {
             Long commandId = devopsIngressDTO.getCommandId();
             if (commandId != null) {
-                CommandVO commandVO = new CommandVO();
-                commandVO.setId(devopsIngressDTO.getCommandId());
-                commandVO.setResourceType(INGRESS_KIND);
-                commandVO.setResourceName(devopsIngressDTO.getName());
-                commandVOS.add(commandVO);
+                Command command = new Command();
+                command.setId(devopsIngressDTO.getCommandId());
+                command.setResourceType(INGRESS_KIND);
+                command.setResourceName(devopsIngressDTO.getName());
+                commands.add(command);
             }
         });
         certificationService.baseListByEnvId(envId).stream().forEach(certificationDTO -> {
             Long commandId = certificationDTO.getCommandId();
             if (commandId != null) {
-                CommandVO commandVO = new CommandVO();
-                commandVO.setId(certificationDTO.getCommandId());
-                commandVO.setResourceType(CERTIFICATE_KIND);
-                commandVO.setResourceName(certificationDTO.getName());
-                commandVOS.add(commandVO);
+                Command command = new Command();
+                command.setId(certificationDTO.getCommandId());
+                command.setResourceType(CERTIFICATE_KIND);
+                command.setResourceName(certificationDTO.getName());
+                commands.add(command);
             }
         });
         for (DevopsConfigMapDTO devopsConfigMapDTO : devopsConfigMapService.baseListByEnv(envId)) {
             Long commandId = devopsConfigMapDTO.getCommandId();
             if (commandId != null) {
-                CommandVO commandVO = new CommandVO();
-                commandVO.setId(commandId);
-                commandVO.setResourceType(CONFIGMAP_KIND);
-                commandVO.setResourceName(devopsConfigMapDTO.getName());
-                commandVOS.add(commandVO);
+                Command command = new Command();
+                command.setId(commandId);
+                command.setResourceType(CONFIGMAP_KIND);
+                command.setResourceName(devopsConfigMapDTO.getName());
+                commands.add(command);
             }
         }
         devopsSecretService.baseListByEnv(envId).forEach(devopsSecretDTO -> {
             Long commandId = devopsSecretDTO.getCommandId();
             if (commandId != null) {
-                CommandVO commandVO = new CommandVO();
-                commandVO.setId(commandId);
-                commandVO.setResourceType(SECRET_KIND);
-                commandVO.setResourceName(devopsSecretDTO.getName());
-                commandVOS.add(commandVO);
+                Command command = new Command();
+                command.setId(commandId);
+                command.setResourceType(SECRET_KIND);
+                command.setResourceName(devopsSecretDTO.getName());
+                commands.add(command);
             }
         });
         Date d = new Date();
-        if (!commandVOS.isEmpty()) {
-            commandVOS.stream().forEach(commandVO -> {
-                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(commandVO.getId());
-                commandVO.setCommit(devopsEnvCommandDTO.getSha());
+        if (!commands.isEmpty()) {
+            commands.stream().forEach(command -> {
+                DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(command.getId());
+                command.setCommit(devopsEnvCommandDTO.getSha());
                 if (!CommandStatus.OPERATING.getStatus().equals(devopsEnvCommandDTO.getStatus()) || (CommandStatus.OPERATING.getStatus().equals(devopsEnvCommandDTO.getStatus()) && d.getTime() - devopsEnvCommandDTO.getLastUpdateDate().getTime() <= 180000)) {
-                    removeCommandVOS.add(commandVO);
+                    removeCommands.add(command);
                 }
             });
-            commandVOS.removeAll(removeCommandVOS);
+            commands.removeAll(removeCommands);
         }
     }
 
@@ -1285,14 +1285,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
 
         logger.info("sync command status result: {}.", msg);
-        List<CommandVO> commandVOS = JSONArray.parseArray(msg, CommandVO.class);
-        List<CommandVO> oldCommandVOS = new ArrayList<>();
-        getCommands(envId, oldCommandVOS);
-        if (!oldCommandVOS.isEmpty()) {
-            oldCommandVOS.stream().filter(oldComand -> oldComand.getId() != null).forEach(commandVO ->
-                    commandVOS.stream().filter(commandVO1 -> commandVO1.getId() != null && commandVO1.getId().equals(commandVO.getId())).forEach(commandVO1 -> {
-                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(commandVO.getId());
-                        if (commandVO1.getCommit() != null && commandVO.getCommit() != null && commandVO.getCommit().equals(commandVO1.getCommit())) {
+        List<Command> commands = JSONArray.parseArray(msg, Command.class);
+        List<Command> oldCommands = new ArrayList<>();
+        getCommands(envId, oldCommands);
+        if (!oldCommands.isEmpty()) {
+            oldCommands.stream().filter(oldCommand -> oldCommand.getId() != null).forEach(command ->
+                    commands.stream().filter(command1 -> command1.getId() != null && command1.getId().equals(command.getId())).forEach(command1 -> {
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(command.getId());
+                        if (command1.getCommit() != null && command.getCommit() != null && command.getCommit().equals(command1.getCommit())) {
                             devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
                             updateResourceStatus(envId, devopsEnvCommandDTO, InstanceStatus.RUNNING, ServiceStatus.RUNNING, IngressStatus.RUNNING, CertificationStatus.ACTIVE);
                         } else {

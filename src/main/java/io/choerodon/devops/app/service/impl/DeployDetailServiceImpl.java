@@ -19,15 +19,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class DeployDetailServiceImpl implements DeployDetailService {
-
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper;
-
-
-    @Override
-    public List<DevopsEnvPodVO> getPods(Long instanceId) {
-        return null;
-    }
 
     @Override
     public List<DevopsEnvPodVO> baseQueryPods(Long instanceId) {

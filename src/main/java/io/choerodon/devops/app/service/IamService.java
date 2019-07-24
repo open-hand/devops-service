@@ -4,11 +4,11 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
+import io.choerodon.devops.api.vo.ProjectCreateVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
-import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
-import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
@@ -61,7 +61,7 @@ public interface IamService {
 
     IamAppDTO queryIamAppByCode(Long organizationId, String code);
 
-    ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO);
+    ProjectDTO createProject(Long organizationId, ProjectCreateVO projectCreateDTO);
 
-    PageInfo<OrganizationSimplifyDTO> getAllOrgs(Integer page, Integer size);
+    PageInfo<OrganizationSimplifyVO> getAllOrgs(Integer page, Integer size);
 }

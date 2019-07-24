@@ -1,11 +1,10 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import io.choerodon.devops.api.vo.kubernetes.ProjectCategoryEDTO;
+import io.choerodon.devops.infra.feign.OrgServiceClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import io.choerodon.devops.domain.application.valueobject.ProjectCategoryEDTO;
-import io.choerodon.devops.infra.feign.OrgServiceClient;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

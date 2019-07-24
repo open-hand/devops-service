@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
+
 /**
  * 展示环境信息及一些相关的信息
  *
@@ -14,7 +16,7 @@ public class DevopsEnvironmentInfoVO {
     private Long clusterId;
     private String clusterName;
     /**
-     * value from {@link io.choerodon.devops.infra.common.util.enums.EnvironmentGitopsStatus}
+     * value from {@link EnvironmentGitopsStatus}
      */
     private String gitopsStatus;
 

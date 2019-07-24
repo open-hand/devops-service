@@ -6,10 +6,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
+import io.choerodon.devops.api.vo.kubernetes.certification.*;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.domain.application.valueobject.C7nCertification;
-import io.choerodon.devops.domain.application.valueobject.certification.*;
 import io.choerodon.devops.infra.dto.CertificationDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;

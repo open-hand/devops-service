@@ -32,10 +32,6 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
 
     @Autowired
     private ApplicationService applicationService;
-
-    @Autowired
-    private DevopsEnvApplicationMapper devopsEnvApplicationMapper;
-
     @Autowired
     private DevopsEnvApplicationMapper devopsEnvApplicationMapper;
 
@@ -77,42 +73,42 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     public List<DevopsEnvPortVO> listPortByAppAndEnvId(Long envId, Long appId) {
         List<DevopsEnvMessageDTO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
         List<DevopsEnvPortVO> devopsEnvPortVOS = new ArrayList<>();
-            devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
-                V1beta2Deployment v1beta2Deployment = json.deserialize(
-                        devopsEnvMessageVO.getDetail(), V1beta2Deployment.class);
-                List<V1Container> containers = v1beta2Deployment.getSpec().getTemplate().getSpec().getContainers();
-                for (V1Container container : containers) {
-                    List<V1ContainerPort> ports = container.getPorts();
+        devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
+            V1beta2Deployment v1beta2Deployment = json.deserialize(
+                    devopsEnvMessageVO.getDetail(), V1beta2Deployment.class);
+            List<V1Container> containers = v1beta2Deployment.getSpec().getTemplate().getSpec().getContainers();
+            for (V1Container container : containers) {
+                List<V1ContainerPort> ports = container.getPorts();
 
-                    Optional.ofNullable(ports).ifPresent(portList -> {
-                        for (V1ContainerPort port : portList) {
-                            DevopsEnvPortVO devopsEnvPortVO = new DevopsEnvPortVO();
-                            devopsEnvPortVO.setResourceName(devopsEnvMessageVO.getResourceName());
-                            devopsEnvPortVO.setPortName(port.getName());
-                            devopsEnvPortVO.setPortValue(port.getContainerPort());
-                            devopsEnvPortVOS.add(devopsEnvPortVO);
-                        }
-                    });
-                }
-            });
-            return devopsEnvPortVOS;
-        }
-
-        @Override
-        public DevopsEnvApplicationDTO baseCreate (DevopsEnvApplicationDTO devopsEnvApplicationDTO){
-            if (devopsEnvApplicationMapper.insert(devopsEnvApplicationDTO) != 1) {
-                throw new CommonException("error.insert.env.app");
+                Optional.ofNullable(ports).ifPresent(portList -> {
+                    for (V1ContainerPort port : portList) {
+                        DevopsEnvPortVO devopsEnvPortVO = new DevopsEnvPortVO();
+                        devopsEnvPortVO.setResourceName(devopsEnvMessageVO.getResourceName());
+                        devopsEnvPortVO.setPortName(port.getName());
+                        devopsEnvPortVO.setPortValue(port.getContainerPort());
+                        devopsEnvPortVOS.add(devopsEnvPortVO);
+                    }
+                });
             }
-            return devopsEnvApplicationDTO;
-        }
-
-        @Override
-        public List<Long> baseListAppByEnvId (Long envId){
-            return devopsEnvApplicationMapper.queryAppByEnvId(envId);
-        }
-
-        @Override
-        public List<DevopsEnvMessageDTO> baseListResourceByEnvAndApp (Long envId, Long appId){
-            return devopsEnvApplicationMapper.listResourceByEnvAndApp(envId, appId);
-        }
+        });
+        return devopsEnvPortVOS;
     }
+
+    @Override
+    public DevopsEnvApplicationDTO baseCreate(DevopsEnvApplicationDTO devopsEnvApplicationDTO) {
+        if (devopsEnvApplicationMapper.insert(devopsEnvApplicationDTO) != 1) {
+            throw new CommonException("error.insert.env.app");
+        }
+        return devopsEnvApplicationDTO;
+    }
+
+    @Override
+    public List<Long> baseListAppByEnvId(Long envId) {
+        return devopsEnvApplicationMapper.queryAppByEnvId(envId);
+    }
+
+    @Override
+    public List<DevopsEnvMessageDTO> baseListResourceByEnvAndApp(Long envId, Long appId) {
+        return devopsEnvApplicationMapper.listResourceByEnvAndApp(envId, appId);
+    }
+}

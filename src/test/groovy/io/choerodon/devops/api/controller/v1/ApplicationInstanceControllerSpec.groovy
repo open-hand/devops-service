@@ -7,40 +7,17 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-
 import io.choerodon.devops.api.vo.*
-<<<<<<< HEAD
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.vo.iam.RoleDTO
-<<<<<<< HEAD
-
-
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult
-=======
-=======
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
->>>>>>> [REF] refactor original DTO to VO
 import io.choerodon.devops.domain.application.valueobject.InstanceValueVO
->>>>>>> [IMP]重构后端代码
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
-import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-<<<<<<< HEAD
-=======
 import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> [IMP] 修改AppControler重构
-=======
-import io.choerodon.devops.infra.dto.gitlab.UserDTO
->>>>>>> [IMP]修改后端结构
-=======
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO
->>>>>>> [IMP] refactor AplicationControler
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*

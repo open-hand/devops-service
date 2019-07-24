@@ -7,14 +7,11 @@ import java.util.Map;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
-import io.choerodon.devops.domain.application.valueobject.InstanceValueVO;
 import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
-<<<<<<< HEAD
-=======
 import io.choerodon.devops.infra.dto.ApplicationInstanceOverViewDTO;
 import io.choerodon.devops.infra.dto.DeployDTO;
->>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.infra.enums.ResourceType;
 
 /**

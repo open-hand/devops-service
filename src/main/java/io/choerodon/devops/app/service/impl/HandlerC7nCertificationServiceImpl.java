@@ -8,19 +8,18 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.models.V1Endpoints;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
+import io.choerodon.devops.api.vo.kubernetes.certification.CertificationExistCert;
+import io.choerodon.devops.api.vo.kubernetes.certification.CertificationSpec;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.valueobject.C7nCertification;
-import io.choerodon.devops.domain.application.valueobject.certification.CertificationExistCert;
-import io.choerodon.devops.domain.application.valueobject.certification.CertificationSpec;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.models.V1Endpoints;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 @Service
@@ -128,7 +127,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         CertificationFileDTO certificationFileDTO = certificationService.baseQueryCertFile(certificationDTO.getId());
         String type;
         String keyContent = null;
-        Map<String,String> issuerRef = new HashMap<>();
+        Map<String, String> issuerRef = new HashMap<>();
         String certContent = null;
         if (certificationFileDTO != null) {
             type = CertificationType.UPLOAD.getType();

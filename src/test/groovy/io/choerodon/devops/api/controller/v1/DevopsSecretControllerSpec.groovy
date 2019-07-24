@@ -12,24 +12,16 @@ import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.app.service.impl.DevopsSecretServiceImpl
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
 
 
 import io.choerodon.devops.domain.application.repository.IamRepository
 =======
->>>>>>> [IMP]修改后端结构
 <<<<<<< HEAD
 =======
 
 >>>>>>> [IMP]修复后端结构
 
-=======
-import io.choerodon.devops.api.vo.iam.entity.DevopsEnvironmentE
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
-import io.choerodon.devops.domain.application.repository.GitlabRepository
-import io.choerodon.devops.domain.application.repository.IamRepository
->>>>>>> [IMP] 修改AppControler重构
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil

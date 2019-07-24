@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
-import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.infra.dto.CommitDTO;
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -140,14 +140,14 @@ public interface GitlabServiceClient {
                                               @RequestParam(value = "userId") Integer userId);
 
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
-    ResponseEntity<RepositoryFile> createFile(@PathVariable("projectId") Integer projectId,
-                                              @RequestParam("path") String path,
-                                              @RequestParam("content") String content,
-                                              @RequestParam("commitMessage") String commitMessage,
-                                              @RequestParam("userId") Integer userId);
+    ResponseEntity<RepositoryFileDTO> createFile(@PathVariable("projectId") Integer projectId,
+                                                 @RequestParam("path") String path,
+                                                 @RequestParam("content") String content,
+                                                 @RequestParam("commitMessage") String commitMessage,
+                                                 @RequestParam("userId") Integer userId);
 
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
-    ResponseEntity<RepositoryFile> createFile(@PathVariable("projectId") Integer projectId,
+    ResponseEntity<RepositoryFileDTO> createFile(@PathVariable("projectId") Integer projectId,
                                               @RequestParam("path") String path,
                                               @RequestParam("content") String content,
                                               @RequestParam("commitMessage") String commitMessage,
@@ -155,7 +155,7 @@ public interface GitlabServiceClient {
                                               @RequestParam("branch_name") String branchName);
 
     @PutMapping(value = "/v1/projects/{projectId}/repository/file")
-    ResponseEntity<RepositoryFile> updateFile(@PathVariable("projectId") Integer projectId,
+    ResponseEntity<RepositoryFileDTO> updateFile(@PathVariable("projectId") Integer projectId,
                                               @RequestParam("path") String path,
                                               @RequestParam("content") String content,
                                               @RequestParam("commitMessage") String commitMessage,
@@ -168,7 +168,7 @@ public interface GitlabServiceClient {
                               @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/{commit}/file")
-    ResponseEntity<RepositoryFile> getFile(@PathVariable("projectId") Integer projectId,
+    ResponseEntity<RepositoryFileDTO> getFile(@PathVariable("projectId") Integer projectId,
                                            @PathVariable("commit") String commit,
                                            @RequestParam(value = "file_path") String filePath);
 

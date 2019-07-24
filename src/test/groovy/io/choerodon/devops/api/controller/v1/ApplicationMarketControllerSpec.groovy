@@ -11,16 +11,8 @@ import io.choerodon.devops.api.vo.AppMarketTgzVO
 import io.choerodon.devops.api.vo.AppMarketVersionVO
 import io.choerodon.devops.api.vo.ApplicationReleasingVO
 import io.choerodon.devops.api.vo.ProjectVO
-<<<<<<< HEAD
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE
-<<<<<<< HEAD
 
-=======
-=======
-
->>>>>>> [IMP] refactor validator
 import io.choerodon.devops.domain.application.repository.IamRepository
->>>>>>> [IMP] 修改AppControler重构
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.dataobject.*

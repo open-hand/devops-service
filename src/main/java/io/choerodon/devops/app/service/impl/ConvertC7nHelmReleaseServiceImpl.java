@@ -4,15 +4,14 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
-
 
 
 public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7nHelmRelease> {

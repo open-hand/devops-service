@@ -11,54 +11,27 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.*
 <<<<<<< HEAD
 =======
-<<<<<<< HEAD
-=======
 >>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
-<<<<<<< HEAD
->>>>>>> [IMP]修改后端结构
-import io.choerodon.devops.api.vo.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.vo.iam.RoleDTO
-import io.choerodon.devops.api.vo.iam.RoleSearchDTO
-=======
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.api.vo.iam.RoleSearchVO
->>>>>>> [REF] refactor original DTO to VO
 import io.choerodon.devops.api.vo.iam.UserVO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 
 <<<<<<< HEAD
 =======
-<<<<<<< HEAD
-=======
 >>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
-<<<<<<< HEAD
->>>>>>> [IMP]修改后端结构
-import io.choerodon.devops.api.vo.iam.entity.UserAttrE
-=======
 
->>>>>>> [IMP] refactor validator
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 <<<<<<< HEAD
-<<<<<<< HEAD
-import io.choerodon.devops.infra.dataobject.*
-<<<<<<< HEAD
-=======
->>>>>>> [IMP]重构后端结构
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO
-=======
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDTO
->>>>>>> [IMP] 修改AppControler重构
-=======
 
 
 =======
 >>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
->>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO

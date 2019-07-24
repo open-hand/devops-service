@@ -10,35 +10,20 @@ import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.api.vo.iam.RoleSearchVO
 import io.choerodon.devops.api.vo.iam.UserVO
-<<<<<<< HEAD
-import io.choerodon.devops.app.service.ApplicationService
-import io.choerodon.devops.api.vo.iam.entity.gitlab.CommitE
-import io.choerodon.devops.domain.application.valueobject.ProjectHook
-=======
 
 import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO
->>>>>>> [IMP]修改后端结构
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.dto.gitlab.VariableDTO
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
-<<<<<<< HEAD
-import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.*
-=======
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
 import io.choerodon.devops.infra.dataobject.UserAttrDTO
 
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
-<<<<<<< HEAD
-import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDTO
->>>>>>> [IMP] 修改environment Controller
-=======
 
->>>>>>> [IMP] 重构后端代码
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient

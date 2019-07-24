@@ -182,9 +182,9 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                         MemberUser memberUser = new MemberUser();
                         memberUser.setUsername(username);
                         projectMember.setMemberUser(memberUser);
-                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), projectMember).execute();
+                        result = harborClient.setProjectMember(projects.body().get(0).getProjectId(), new ProjectMember()).execute();
                     }
-                    if (result.raw().code() != 201) {
+                    if (result.raw().code() != 200) {
                         throw new CommonException(result.errorBody().string());
                     }
                 }
@@ -239,13 +239,13 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                         throw new CommonException(systemInfoResponse.errorBody().string());
                     }
                     if (systemInfoResponse.body().getHarborVersion().equals("v1.4.0")) {
-                        Response<List<User>> users = harborClient.listUser(String.format("user%s%s", organization.getId(), projectId)).execute();
+                        Response<List<User>> users = harborClient.listUser(String.format("user%s%s", organizationDTO.getId(), projectId)).execute();
                         if (users.raw().code() != 200) {
                             throw new CommonException(users.errorBody().string());
                         }
                         harborClient.deleteLowVersionMember(projects.body().get(0).getProjectId(), users.body().get(0).getUserId().intValue()).execute();
                     } else {
-                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format("user%s%s", organization.getId(), projectId)).execute();
+                        Response<List<ProjectMember>> projectMembers = harborClient.getProjectMembers(projects.body().get(0).getProjectId(), String.format("user%s%s", organizationDTO.getId(), projectId)).execute();
                         if (projectMembers.raw().code() != 200) {
                             throw new CommonException(projectMembers.errorBody().string());
                         }

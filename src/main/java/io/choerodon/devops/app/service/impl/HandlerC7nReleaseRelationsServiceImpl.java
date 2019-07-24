@@ -5,16 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.kubernetes.client.models.V1Endpoints;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ApplicationDeployVO;
 import io.choerodon.devops.api.vo.ApplicationInstanceVO;
+import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
+import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.domain.application.valueobject.InstanceValueVO;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -23,6 +19,9 @@ import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.models.V1Endpoints;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 @Service

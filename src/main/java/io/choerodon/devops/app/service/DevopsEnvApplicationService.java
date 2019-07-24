@@ -13,8 +13,6 @@ import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 public interface DevopsEnvApplicationService {
     List<DevopsEnvApplicationVO> batchCreate(DevopsEnvApplicationCreationVO devopsEnvApplicationCreationVO);
 
-    List<ApplicationRepVO> queryAppByEnvId(Long envId);
-
 
     /**
      * 查询环境下的所有应用

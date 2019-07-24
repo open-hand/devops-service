@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import feign.FeignException;
 import feign.RetryableException;
+import io.choerodon.devops.api.vo.kubernetes.RepositoryFile;
+import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -15,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.infra.dto.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -189,7 +190,7 @@ public class GitlabServiceClientOperator {
 
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         try {
-            ResponseEntity<RepositoryFile> result = gitlabServiceClient
+            ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
                     .createFile(projectId, path, content, commitMessage, userId);
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
@@ -202,7 +203,7 @@ public class GitlabServiceClientOperator {
 
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branch) {
         try {
-            ResponseEntity<RepositoryFile> result = gitlabServiceClient
+            ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
                     .createFile(projectId, path, content, commitMessage, userId, branch);
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
@@ -214,7 +215,7 @@ public class GitlabServiceClientOperator {
 
     public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         try {
-            ResponseEntity<RepositoryFile> result = gitlabServiceClient
+            ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
                     .updateFile(projectId, path, content, commitMessage, userId);
             if (result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.update");
@@ -464,7 +465,7 @@ public class GitlabServiceClientOperator {
         if (memberDTO == null) {
             throw new CommonException("error.user.not.the.pro.authority");
         }
-        List<TagDTO> tagTotalList = pageTag(gitlabProjectId, userId);
+        List<TagDTO> tagTotalList = listTag(gitlabProjectId, userId);
         PageInfo<TagDTO> tagsPage = new PageInfo<>();
         List<TagDTO> tagList = tagTotalList.stream()
                 .filter(t -> filterTag(t, params))

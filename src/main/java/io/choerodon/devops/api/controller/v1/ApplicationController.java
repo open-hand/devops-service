@@ -256,7 +256,7 @@ public class ApplicationController {
     @ApiOperation(value = "项目下分页查询应用 应用分享使用")
     @CustomPageRequest
     @PostMapping("/list_by_options/app_market")
-    public ResponseEntity<PageInfo<ApplicationRepDTO>> pageByOptionsMarket(
+    public ResponseEntity<PageInfo<ApplicationRepVO>> pageByOptionsMarket(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用是否启用")
@@ -270,7 +270,7 @@ public class ApplicationController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationService.listByOptions(projectId, isActive, hasVersion, doPage, pageRequest, params))
+        applicationService.pageByOptions(projectId, isActive, hasVersion, null, null, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appTemplate.get"));
     }

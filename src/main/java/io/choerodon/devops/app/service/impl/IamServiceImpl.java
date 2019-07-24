@@ -11,14 +11,15 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
+import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
+import io.choerodon.devops.api.vo.ProjectCreateVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
-import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.api.vo.iam.RoleSearchVO;
+import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
+import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.app.service.IamService;
-import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
-import io.choerodon.devops.domain.application.valueobject.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
@@ -297,10 +298,10 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO) {
+    public ProjectDTO createProject(Long organizationId, ProjectCreateVO projectCreateVO) {
         try {
             ProjectDTO projectDTO = new ProjectDTO();
-            BeanUtils.copyProperties(projectCreateDTO, projectDTO);
+            BeanUtils.copyProperties(projectCreateVO, projectDTO);
             ResponseEntity<ProjectDTO> projectDTORes = iamServiceClient
                     .createProject(organizationId, projectDTO);
             return projectDTORes.getBody();
@@ -311,9 +312,9 @@ public class IamServiceImpl implements IamService {
     }
 
     @Override
-    public PageInfo<OrganizationSimplifyDTO> getAllOrgs(Integer page, Integer size) {
+    public PageInfo<OrganizationSimplifyVO> getAllOrgs(Integer page, Integer size) {
         try {
-            ResponseEntity<PageInfo<OrganizationSimplifyDTO>> simplifyDTOs = iamServiceClient
+            ResponseEntity<PageInfo<OrganizationSimplifyVO>> simplifyDTOs = iamServiceClient
                     .getAllOrgs(page, size);
             return simplifyDTOs.getBody();
         } catch (FeignException e) {

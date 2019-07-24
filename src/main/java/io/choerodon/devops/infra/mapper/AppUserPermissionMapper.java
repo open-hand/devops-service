@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.dataobject.AppUserPermissionDTO;
+import io.choerodon.devops.infra.dto.AppUserPermissionDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 

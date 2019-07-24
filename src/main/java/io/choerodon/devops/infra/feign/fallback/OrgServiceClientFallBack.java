@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.feign.fallback;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.valueobject.ProjectCategoryEDTO;
+import io.choerodon.devops.api.vo.kubernetes.ProjectCategoryEDTO;
 import io.choerodon.devops.infra.feign.OrgServiceClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;

@@ -8,6 +8,7 @@ import java.util.Date;
 public class DevopsCustomizeResourceVO {
 
     private Long id;
+    private Long projectId;
     private Long envId;
     private Boolean envStatus;
     private String resourceContent;
@@ -24,6 +25,14 @@ public class DevopsCustomizeResourceVO {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public Boolean getEnvStatus() {

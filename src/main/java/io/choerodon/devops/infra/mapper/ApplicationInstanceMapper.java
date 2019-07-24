@@ -4,6 +4,7 @@ import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.infra.dto.AppInstanceInfoDTO;
 import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.infra.dto.ApplicationInstanceOverViewDTO;
 import io.choerodon.devops.infra.dto.DeployDTO;
@@ -15,6 +16,7 @@ import org.apache.ibatis.annotations.Param;
  * Created by Zenger on 2018/4/15.
  */
 public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDTO> {
+    AppInstanceInfoDTO queryInfoById(@Param("instanceId") Long instanceId);
 
     List<ApplicationInstanceDTO> listApplicationInstance(@Param("projectId") Long projectId,
                                                          @Param("envId") Long envId,
@@ -34,18 +36,10 @@ public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDTO
                                                               @Param("envId") Long envId,
                                                               @Param("appId") Long appId);
 
-<<<<<<
-
-    <HEAD
-    int checkOptions(@Param("envId") Long envId,
-                     @Param("appId") Long appId,
-                     @Param("appInstanceCode") String appInstanceCode);
-=======
 
     int countByOptions(@Param("envId") Long envId,
                        @Param("appId") Long appId,
                        @Param("appInstanceCode") String appInstanceCode);
->>>>>>>[IMP]重构后端代码
 
     String queryValueByEnvIdAndAppId(@Param("envId") Long envId, @Param("appId") Long appId);
 

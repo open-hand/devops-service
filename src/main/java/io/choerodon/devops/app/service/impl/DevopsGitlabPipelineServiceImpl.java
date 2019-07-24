@@ -19,8 +19,8 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.kubernetes.Stage;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.valueobject.Stage;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitStatusDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
@@ -76,7 +76,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                             .withRefId(applicationDTO.getId().toString())
                             .withSagaCode(DEVOPS_GITLAB_PIPELINE)
                             .withJson(input),
-                    builder -> {});
+                    builder -> {
+                    });
         } catch (JsonProcessingException e) {
             throw new CommonException(e.getMessage(), e);
         }

@@ -5,13 +5,13 @@ import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
 import io.choerodon.devops.api.vo.iam.RoleSearchVO;
 import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
-import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
-import io.choerodon.devops.domain.application.valueobject.OrganizationSimplifyDTO;
+import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
@@ -43,7 +43,7 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<MemberRoleV> addMemberRole(Long projectId, MemberRoleV memberRoleVo) {
+    public ResponseEntity<MemberRoleVO> addMemberRole(Long projectId, MemberRoleVO memberRoleVo) {
         throw new CommonException("error.memberRole.add");
     }
 
@@ -139,7 +139,7 @@ public class IamServiceClientFallback implements IamServiceClient {
 
 
     @Override
-    public ResponseEntity<PageInfo<OrganizationSimplifyDTO>> getAllOrgs(int page, int size) {
+    public ResponseEntity<PageInfo<OrganizationSimplifyVO>> getAllOrgs(int page, int size) {
         throw new CommonException("error.get.all.organizations");
     }
 }
