@@ -1,14 +1,9 @@
 package io.choerodon.devops.api.vo.iam;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 /**
  * @author lizongwei
  * @date 2019/7/2
  */
-@Component
-@Scope("prototype")
 public class DevopsEnvMessageDTO {
 
     private String resourceName;

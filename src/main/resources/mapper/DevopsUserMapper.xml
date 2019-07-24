@@ -3,7 +3,7 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.UserAttrMapper">
 
-    <select id="listByUserIds" resultType="io.choerodon.devops.infra.dataobject.UserAttrDTO">
+    <select id="listByUserIds" resultType="io.choerodon.devops.infra.dto.UserAttrDTO">
 
         SELECT
         du.iam_user_id,

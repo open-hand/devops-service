@@ -377,9 +377,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     private PageInfo<ApplicationDTO> listByOptionsFromBase(Long projectId, Boolean isActive, Boolean hasVersion,
-                                                   Boolean appMarket,
-                                                   String type, Boolean doPage,
-                                                   PageRequest pageRequest, String params) {
+                                                           Boolean appMarket,
+                                                           String type, Boolean doPage,
+                                                           PageRequest pageRequest, String params) {
         PageInfo<ApplicationDTO> applicationES = new PageInfo<>();
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);

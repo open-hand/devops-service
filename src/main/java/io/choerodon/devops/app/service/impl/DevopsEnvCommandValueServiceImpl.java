@@ -6,12 +6,14 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsEnvCommandValueService;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandValueDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandValueMapper;
+import org.springframework.stereotype.Service;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  10:48 2019/7/12
  * Description:
  */
+@Service
 public class DevopsEnvCommandValueServiceImpl implements DevopsEnvCommandValueService {
     @Autowired
     private DevopsEnvCommandValueMapper devopsEnvCommandValueMapper;
