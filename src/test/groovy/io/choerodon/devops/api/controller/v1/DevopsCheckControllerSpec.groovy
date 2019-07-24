@@ -20,7 +20,7 @@ import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.common.util.enums.PipelineStatus
 import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
 import io.choerodon.devops.infra.dataobject.UserAttrDTO
-import io.choerodon.devops.infra.dto.CommitDTO
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO
 
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO

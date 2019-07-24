@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.AuthorVO;
-import io.choerodon.devops.infra.dto.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**

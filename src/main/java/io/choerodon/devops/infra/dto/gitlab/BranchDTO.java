@@ -1,8 +1,6 @@
 package io.choerodon.devops.infra.dto.gitlab;
 
 
-import io.choerodon.devops.infra.dto.CommitDTO;
-
 public class BranchDTO {
     private CommitDTO commit;
     private Boolean developersCanMerge;
