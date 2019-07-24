@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.DevopsEnvMessageDTO;
+import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 
 /**
@@ -44,5 +44,14 @@ public interface DevopsEnvApplicationService {
 
     List<Long> baseListAppByEnvId(Long envId);
 
-    List<DevopsEnvMessageDTO> baseListResourceByEnvAndApp(Long envId, Long appId);
+    List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appId);
+
+    /**
+     * 查询项目下可用的且没有与该环境关联的应用
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return 应用列表
+     */
+    List<BaseApplicationVO> listNonRelatedApplications(Long projectId, Long envId);
 }

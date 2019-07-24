@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.iam.DevopsEnvMessageDTO;
+import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
@@ -56,7 +56,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
 
     @Override
     public List<DevopsEnvLabelVO> listLabelByAppAndEnvId(Long envId, Long appId) {
-        List<DevopsEnvMessageDTO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
+        List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
         List<DevopsEnvLabelVO> devopsEnvLabelVOS = new ArrayList<>();
         devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
             DevopsEnvLabelVO devopsEnvLabelVO = new DevopsEnvLabelVO();
@@ -71,7 +71,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
 
     @Override
     public List<DevopsEnvPortVO> listPortByAppAndEnvId(Long envId, Long appId) {
-        List<DevopsEnvMessageDTO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
+        List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
         List<DevopsEnvPortVO> devopsEnvPortVOS = new ArrayList<>();
         devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
             V1beta2Deployment v1beta2Deployment = json.deserialize(
@@ -108,7 +108,12 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     }
 
     @Override
-    public List<DevopsEnvMessageDTO> baseListResourceByEnvAndApp(Long envId, Long appId) {
+    public List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appId) {
         return devopsEnvApplicationMapper.listResourceByEnvAndApp(envId, appId);
+    }
+
+    @Override
+    public List<BaseApplicationVO> listNonRelatedApplications(Long projectId, Long envId) {
+        return devopsEnvApplicationMapper.listNonRelatedApplications(projectId, envId);
     }
 }
