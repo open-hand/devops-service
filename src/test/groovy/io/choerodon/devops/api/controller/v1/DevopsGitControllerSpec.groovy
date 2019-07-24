@@ -18,10 +18,7 @@ import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO
-<<<<<<< HEAD
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO
-=======
->>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO

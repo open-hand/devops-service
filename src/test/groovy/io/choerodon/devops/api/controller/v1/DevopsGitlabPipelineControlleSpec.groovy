@@ -5,34 +5,6 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.PipelineFrequencyVO
 import io.choerodon.devops.api.vo.PipelineTimeVO
-<<<<<<< HEAD
-import io.choerodon.devops.domain.application.repository.IamRepository
-=======
-
->>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
-import io.choerodon.devops.infra.dataobject.ApplicationDTO
-import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO
-import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
-import io.choerodon.devops.infra.dataobject.iam.ProjectDO
-import io.choerodon.devops.infra.dataobject.iam.UserDO
-import io.choerodon.devops.infra.feign.IamServiceClient
-import io.choerodon.devops.infra.mapper.ApplicationMapper
-import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper
-import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.context.annotation.Import
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import spock.lang.Shared
-import spock.lang.Specification
-import spock.lang.Stepwise
-import spock.lang.Subject
-
-import static org.mockito.Matchers.any
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)

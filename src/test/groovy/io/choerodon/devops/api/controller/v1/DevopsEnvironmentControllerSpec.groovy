@@ -9,29 +9,16 @@ import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.*
-<<<<<<< HEAD
-=======
->>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
-import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.api.vo.iam.RoleSearchVO
+import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.api.vo.iam.UserVO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
-
-<<<<<<< HEAD
-=======
->>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
-
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
-<<<<<<< HEAD
-
-
-=======
->>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -51,7 +38,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**

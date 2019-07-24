@@ -6,24 +6,12 @@ import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.vo.DevopsConfigMapDTO
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO
-import io.choerodon.devops.api.vo.DevopsConfigMapRespVO
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
 import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.app.service.impl.DevopsConfigMapServiceImpl
-<<<<<<< HEAD
-
-
-import io.choerodon.devops.domain.application.repository.IamRepository
-=======
-<<<<<<< HEAD
-=======
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE
-
-
->>>>>>> [IMP]修复后端结构
-
->>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil

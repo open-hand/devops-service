@@ -1,8 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl
 
-
 import io.choerodon.devops.IntegrationTestConfiguration
-
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.feign.IamServiceClient
 import org.mockito.Mockito

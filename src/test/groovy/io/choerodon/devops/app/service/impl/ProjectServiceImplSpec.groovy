@@ -1,13 +1,8 @@
 package io.choerodon.devops.app.service.impl
 
 import io.choerodon.devops.IntegrationTestConfiguration
-<<<<<<< HEAD
-import io.choerodon.devops.domain.application.event.ProjectEvent
-import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
-=======
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO
->>>>>>> 99504a39d606d3005354e0b1bdcb50530cde6afd
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
