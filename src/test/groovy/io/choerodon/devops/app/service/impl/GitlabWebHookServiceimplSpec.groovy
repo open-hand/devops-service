@@ -4,21 +4,22 @@ import com.google.gson.Gson
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.PushWebHookDTO
+
+import io.choerodon.devops.api.vo.PushWebHookVO
+import io.choerodon.devops.api.vo.PushWebHookVO
 import io.choerodon.devops.app.service.DevopsGitService
-import io.choerodon.devops.app.service.GitlabWebHookService
-import io.choerodon.devops.domain.application.entity.*
-import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE
-import io.choerodon.devops.domain.application.entity.gitlab.DiffE
+
+import io.choerodon.devops.api.vo.iam.entity.*
+
 import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.service.DeployService
+import io.choerodon.devops.app.service.AgentCommandService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.enums.CommandStatus
-import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.dto.PortMapVO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
@@ -155,7 +156,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
     private DevopsGitRepository devopsGitRepository
 
     @Autowired
-    private DeployService deployService
+    private AgentCommandService deployService
 
     @Autowired
     @Qualifier("mockEnvUtil")
@@ -168,7 +169,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
     DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
 
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
 
     @Shared
     ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
@@ -180,7 +181,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
     CertificationFileDO certificationFileDO = new CertificationFileDO()
 
     @Shared
-    PushWebHookDTO pushWebHookDTO = new PushWebHookDTO()
+    PushWebHookVO pushWebHookDTO = new PushWebHookVO()
 
     @Shared
     DevopsEnvCommitDO devopsEnvCommitDO = new DevopsEnvCommitDO()
@@ -320,61 +321,61 @@ class GitlabWebHookServiceimplSpec extends Specification {
         applicationInstanceE.initDevopsEnvironmentEById(devopsEnvironmentE.getId())
         applicationInstanceE = applicationInstanceRepository.create(applicationInstanceE)
 
-        DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE()
+        DevopsEnvCommandValueVO devopsEnvCommandValueE = new DevopsEnvCommandValueVO()
         devopsEnvCommandValueE.setValue(applicationVersionValueDO.getValue())
 
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE = new DevopsEnvCommandVO()
         devopsEnvCommandE.setObject("instance")
         devopsEnvCommandE.setObjectId(applicationInstanceE.getId())
         devopsEnvCommandE.setCommandType("create")
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus())
-        devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId())
+        devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository.baseCreate(devopsEnvCommandValueE).getId())
 
         applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId())
         applicationInstanceRepository.update(applicationInstanceE)
 
 
         //初始化实例文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE.setResourceId(applicationInstanceE.getId())
         devopsEnvFileResourceE.setResourceType("C7NHelmRelease")
         devopsEnvFileResourceE.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE)
 
         //初始化service
         DevopsServiceE devopsServiceE = new DevopsServiceE()
         devopsServiceE.setName("svc" + code)
         devopsServiceE.setEnvId(devopsEnvironmentE.getId())
         devopsServiceE.setAppId(1L)
-        devopsServiceE.setPorts(new ArrayList<PortMapE>())
-        devopsServiceE = devopsServiceRepository.insert(devopsServiceE)
+        devopsServiceE.setPorts(new ArrayList<PortMapVO>())
+        devopsServiceE = devopsServiceRepository.baseCreate(devopsServiceE)
 
-        DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE1 = new DevopsEnvCommandVO()
         devopsEnvCommandE1.setObject("service")
         devopsEnvCommandE1.setObjectId(devopsServiceE.getId())
         devopsEnvCommandE1.setCommandType("create")
         devopsEnvCommandE1.setStatus(CommandStatus.SUCCESS.getStatus())
 
         devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId())
-        devopsServiceRepository.update(devopsServiceE)
+        devopsServiceRepository.baseUpdate(devopsServiceE)
 
         //初始化service文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE1 = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE1 = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE1.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE1.setResourceId(devopsServiceE.getId())
         devopsEnvFileResourceE1.setResourceType("Service")
         devopsEnvFileResourceE1.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE1)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE1)
 
         //初始化域名
         DevopsIngressE devopsIngressE = new DevopsIngressE()
         devopsIngressE.setName("ing" + code)
         devopsIngressE.setEnvId(devopsEnvironmentE.getId())
         devopsIngressE.setDomain("devops-service2-front.staging.saas.test.com")
-        devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE)
+        devopsIngressE = devopsIngressRepository.baseCreateIngress(devopsIngressE)
 
-        DevopsEnvCommandE devopsEnvCommandE2 = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE2 = new DevopsEnvCommandVO()
         devopsEnvCommandE2.setObject("ingress")
         devopsEnvCommandE2.setObjectId(devopsIngressE.getId())
         devopsEnvCommandE2.setCommandType("create")
@@ -383,15 +384,15 @@ class GitlabWebHookServiceimplSpec extends Specification {
 
         DevopsIngressDO devopsIngressDO = devopsIngressMapper.selectByPrimaryKey(devopsIngressE.getId())
         devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE2).getId())
-        devopsIngressRepository.updateIngress(devopsIngressDO)
+        devopsIngressRepository.baseUpdateIngress(devopsIngressDO)
 
         //初始化域名文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE2 = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE2 = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE2.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE2.setResourceId(devopsIngressE.getId())
         devopsEnvFileResourceE2.setResourceType("Ingress")
         devopsEnvFileResourceE2.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE2)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE2)
 
         //初始化证书
         CertificationE certificationE = new CertificationE()
@@ -401,9 +402,9 @@ class GitlabWebHookServiceimplSpec extends Specification {
         List<String> domain = new ArrayList<>()
         domain.add("test.saas.test.com")
         certificationE.setDomains(domain)
-        certificationE = certificationRepository.create(certificationE);
+        certificationE = certificationRepository.baseCreate(certificationE);
 
-        DevopsEnvCommandE devopsEnvCommandE3 = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE3 = new DevopsEnvCommandVO()
         devopsEnvCommandE3.setObject("certificate")
         devopsEnvCommandE3.setObjectId(certificationE.getId())
         devopsEnvCommandE3.setCommandType("create")
@@ -411,15 +412,15 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsEnvCommandRepository.create(devopsEnvCommandE3)
 
         certificationE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE3).getId())
-        certificationRepository.updateCommandId(certificationE)
+        certificationRepository.baseUpdateCommandId(certificationE)
 
         //初始化证书文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE3 = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE3 = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE3.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE3.setResourceId(certificationE.getId())
         devopsEnvFileResourceE3.setResourceType("Certificate")
         devopsEnvFileResourceE3.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE3)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE3)
 
         //初始化Secret
         DevopsSecretE devopsSecretE = new DevopsSecretE()
@@ -429,9 +430,9 @@ class GitlabWebHookServiceimplSpec extends Specification {
         keys.put("test", "test")
         devopsSecretE.setValue(keys)
         devopsSecretE.setDescription("test")
-        devopsSecretE = devopsSecretRepository.create(devopsSecretE)
+        devopsSecretE = devopsSecretRepository.baseCreate(devopsSecretE)
 
-        DevopsEnvCommandE devopsEnvCommandE4 = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE4 = new DevopsEnvCommandVO()
         devopsEnvCommandE4.setObject("secret")
         devopsEnvCommandE4.setObjectId(devopsSecretE.getId())
         devopsEnvCommandE4.setCommandType("create")
@@ -439,15 +440,15 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsEnvCommandRepository.create(devopsEnvCommandE4)
 
         devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE4).getId())
-        devopsSecretRepository.update(devopsSecretE)
+        devopsSecretRepository.baseUpdate(devopsSecretE)
 
         //初始化Secret文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE4 = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE4 = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE4.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE4.setResourceId(devopsSecretE.getId())
         devopsEnvFileResourceE4.setResourceType("Secret")
         devopsEnvFileResourceE4.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE4)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE4)
 
         //初始化ConfigMap
         DevopsConfigMapE devopsConfigMapE = new DevopsConfigMapE()
@@ -457,7 +458,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsConfigMapE.setDescription("test")
         devopsConfigMapE = devopsConfigMapRepository.create(devopsConfigMapE)
 
-        DevopsEnvCommandE devopsEnvCommandE5 = new DevopsEnvCommandE()
+        DevopsEnvCommandVO devopsEnvCommandE5 = new DevopsEnvCommandVO()
         devopsEnvCommandE5.setObject("configMap")
         devopsEnvCommandE5.setObjectId(devopsConfigMapE.getId())
         devopsEnvCommandE5.setCommandType("create")
@@ -469,12 +470,12 @@ class GitlabWebHookServiceimplSpec extends Specification {
 
 
         //初始化ConfigMap文件关系
-        DevopsEnvFileResourceE devopsEnvFileResourceE5 = new DevopsEnvFileResourceE()
+        DevopsEnvFileResourceVO devopsEnvFileResourceE5 = new DevopsEnvFileResourceVO()
         devopsEnvFileResourceE5.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE5.setResourceId(devopsConfigMapE.getId())
         devopsEnvFileResourceE5.setResourceType("ConfigMap")
         devopsEnvFileResourceE5.setFilePath(code + ".yaml")
-        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE5)
+        devopsEnvFileResourceRepository.baseCreate(devopsEnvFileResourceE5)
 
     }
 
@@ -520,23 +521,23 @@ class GitlabWebHookServiceimplSpec extends Specification {
         hand("gitopsb", devopsEnvironmentE)
 
         //初始化gitops tag 比较结果
-        CompareResultsE compareResultsE = new CompareResultsE()
-        List<DiffE> diffES = new ArrayList<>()
-        DiffE diffE = new DiffE()
+        CompareResultDTO compareResultsE = new CompareResultDTO()
+        List<DiffDTO> diffES = new ArrayList<>()
+        DiffDTO diffE = new DiffDTO()
         diffE.setDeletedFile(true)
         diffE.setRenamedFile(false)
         diffE.setNewFile(false)
         diffE.setNewPath("gitopsa.yaml")
         diffE.setOldPath("gitopsa.yaml")
         diffES.add(diffE)
-        DiffE diffE1 = new DiffE()
+        DiffDTO diffE1 = new DiffDTO()
         diffE1.setDeletedFile(false)
         diffE1.setRenamedFile(false)
         diffE1.setNewFile(false)
         diffE1.setOldPath("gitopsb.yaml")
         diffE1.setNewPath("gitopsb.yaml")
         diffES.add(diffE1)
-        DiffE diffE2 = new DiffE()
+        DiffDTO diffE2 = new DiffDTO()
         diffE2.setDeletedFile(false)
         diffE2.setRenamedFile(false)
         diffE2.setNewFile(true)
@@ -555,7 +556,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
         DevopsServiceE devopsServiceE = new DevopsServiceE()
         devopsServiceE.setName("svcgitopsC")
         devopsServiceE.setEnvId(devopsEnvironmentE.getId())
-        devopsServiceE.setPorts(new ArrayList<PortMapE>())
+        devopsServiceE.setPorts(new ArrayList<PortMapVO>())
 
         DevopsIngressE devopsIngressE = new DevopsIngressE()
         devopsIngressE.setName("inggitopsC")
@@ -571,8 +572,8 @@ class GitlabWebHookServiceimplSpec extends Specification {
         devopsIngressPathDO.setIngressId(2L)
         devopsIngressPathMapper.insert(devopsIngressPathDO)
 
-        ResponseEntity<CompareResultsE> responseEntity2 = new ResponseEntity<>(compareResultsE, HttpStatus.OK)
-        Mockito.doReturn(responseEntity2).when(gitlabServiceClient).getCompareResults(1, "devops-sync", "123456")
+        ResponseEntity<CompareResultDTO> responseEntity2 = new ResponseEntity<>(compareResultsE, HttpStatus.OK)
+        Mockito.doReturn(responseEntity2).when(gitlabServiceClient).queryCompareResult(1, "devops-sync", "123456")
 
 
         when:
@@ -580,7 +581,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 
         then:
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
-        List<DevopsEnvFileResourceE> devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndPath(1, "gitopsc.yaml")
+        List<DevopsEnvFileResourceVO> devopsEnvFileResourceE = devopsEnvFileResourceRepository.baseQueryByEnvIdAndPath(1, "gitopsc.yaml")
         devopsEnvFileResourceE.size() == 6
     }
 
@@ -673,7 +674,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object: instest2";
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //    }
@@ -712,7 +713,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object: svctest2"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //
@@ -752,7 +753,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object: ingtest2"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //
@@ -791,7 +792,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        2 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the App: testappasdasdasdnot exist in the devops-service"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //
@@ -831,7 +832,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "The related instance of the service not found: instest212"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //
@@ -871,7 +872,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the related service of the ingress not exist:svctest2asd"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //    }
@@ -910,7 +911,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "the ingress domain and path is already exist!"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //    }
@@ -949,7 +950,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //        1 * iamRepository.queryOrganizationById(_) >> organization
 //        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
 //        1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
+//        List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.baseListByEnvId(1L)
 //        devopsEnvFileErrorE.get(0).getError() == "The C7nHelmRelease does not define name properties"
 //        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 //    }
@@ -981,9 +982,9 @@ class GitlabWebHookServiceimplSpec extends Specification {
             }
         }
         // 删除app
-        List<ApplicationDO> list6 = applicationMapper.selectAll()
+        List<ApplicationDTO> list6 = applicationMapper.selectAll()
         if (list6 != null && !list6.isEmpty()) {
-            for (ApplicationDO e : list6) {
+            for (ApplicationDTO e : list6) {
                 applicationMapper.delete(e)
             }
         }

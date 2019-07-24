@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.feign.fallback;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
+import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.feign.WorkFlowServiceClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -19,12 +19,12 @@ public class WorkFlowServiceClientFallback implements WorkFlowServiceClient {
     }
 
     @Override
-    public ResponseEntity<Boolean> approveUserTask(Long projectId, String business_key) {
+    public ResponseEntity<Boolean> approveUserTask(Long projectId, String businessKey) {
         throw new CommonException("error.workflow.approve");
     }
 
     @Override
-    public ResponseEntity stopInstance(Long projectId, String business_key) {
+    public ResponseEntity stopInstance(Long projectId, String businessKey) {
         throw new CommonException("error.workflow.stop");
     }
 }

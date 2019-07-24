@@ -2,7 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCheckLogMapper">
-    <select id="queryNonEnvGroupProject" resultType="io.choerodon.devops.infra.dataobject.DevopsProjectDO">
+
+    <select id="queryNonEnvGroupProject" resultType="io.choerodon.devops.infra.dataobject.DevopsProjectDTO">
+
         SELECT *
         FROM devops_project
         WHERE devops_app_group_id IS NOT NULL

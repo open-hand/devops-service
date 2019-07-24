@@ -9,7 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -36,7 +36,7 @@ public class DevopsEnvironmentController {
      * 项目下创建环境
      *
      * @param projectId           项目id
-     * @param devopsEnviromentDTO 环境信息
+     * @param devopsEnviromentVO 环境信息
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境")
@@ -45,8 +45,8 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
-            @RequestBody DevopsEnviromentDTO devopsEnviromentDTO) {
-        devopsEnvironmentService.create(projectId, devopsEnviromentDTO);
+            @RequestBody DevopsEnviromentVO devopsEnviromentVO) {
+        devopsEnvironmentService.create(projectId, devopsEnviromentVO);
     }
 
     /**
@@ -57,8 +57,8 @@ public class DevopsEnvironmentController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询存在网络环境")
-    @GetMapping(value = "/deployed")
-    public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectIdDeployed(
+    @GetMapping(value = "/list_by_deployed")
+    public ResponseEntity<List<DevopsEnviromentRepVO>> listByDeployed(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listDeployed(projectId))
@@ -94,8 +94,8 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询环境")
-    @GetMapping
-    public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectIdAndActive(
+    @GetMapping(value = "/list_by_active")
+    public ResponseEntity<List<DevopsEnviromentRepVO>> listByActive(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否启用", required = true)
@@ -115,8 +115,8 @@ public class DevopsEnvironmentController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下环境流水线查询环境")
-    @GetMapping("/groups")
-    public ResponseEntity<List<DevopsEnvGroupEnvsDTO>> listByProjectIdAndActiveWithGroup(
+    @GetMapping("/list_by_groups")
+    public ResponseEntity<List<DevopsEnvGroupEnvsVO>> listByProjectIdAndActiveWithGroup(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否启用", required = true)
@@ -137,14 +137,14 @@ public class DevopsEnvironmentController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下启用停用环境")
     @PutMapping("/{environment_id}/active")
-    public ResponseEntity<Boolean> enableOrDisableEnv(
+    public ResponseEntity<Boolean> updateActive(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "environment_id") Long environmentId,
             @ApiParam(value = "是否启用", required = true)
             @RequestParam(value = "active") Boolean active) {
-        return Optional.ofNullable(devopsEnvironmentService.activeEnvironment(projectId, environmentId, active))
+        return Optional.ofNullable(devopsEnvironmentService.updateActive(projectId, environmentId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.active"));
     }
@@ -160,7 +160,7 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询单个环境")
     @GetMapping("/{environment_id}")
-    public ResponseEntity<DevopsEnvironmentUpdateDTO> query(
+    public ResponseEntity<DevopsEnvironmentUpdateVO> query(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
@@ -199,16 +199,14 @@ public class DevopsEnvironmentController {
      * @param devopsEnvironmentUpdateDTO 环境信息
      * @return DevopsEnvironmentUpdateDTO
      */
-    @Permission(type = ResourceType.PROJECT, roles = {
-            InitRoleCode.PROJECT_OWNER
-    })
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新环境")
     @PutMapping
-    public ResponseEntity<DevopsEnvironmentUpdateDTO> update(
+    public ResponseEntity<DevopsEnvironmentUpdateVO> update(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境信息", required = true)
-            @RequestBody DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO) {
+            @RequestBody DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO) {
         return Optional.ofNullable(devopsEnvironmentService.update(devopsEnvironmentUpdateDTO, projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.update"));
@@ -223,8 +221,8 @@ public class DevopsEnvironmentController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下环境流水线排序")
-    @PutMapping("/sort")
-    public ResponseEntity<DevopsEnvGroupEnvsDTO> sort(
+    @PostMapping("/sort")
+    public ResponseEntity<DevopsEnvGroupEnvsVO> sort(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境列表", required = true)
@@ -262,8 +260,8 @@ public class DevopsEnvironmentController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询有正在运行实例的环境")
-    @GetMapping(value = "/instance")
-    public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectId(
+    @GetMapping(value = "/list_by_instance")
+    public ResponseEntity<List<DevopsEnviromentRepVO>> listByProjectId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id")
@@ -286,7 +284,7 @@ public class DevopsEnvironmentController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询环境同步状态")
     @GetMapping(value = "/{env_id}/status")
-    public ResponseEntity<EnvSyncStatusDTO> queryEnvSyncStatus(
+    public ResponseEntity<EnvSyncStatusVO> queryEnvSyncStatus(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "项目id", required = true)
@@ -308,8 +306,8 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @CustomPageRequest
     @ApiOperation(value = "分页查询项目下用户权限")
-    @PostMapping(value = "/list")
-    public ResponseEntity<PageInfo<DevopsEnvUserPermissionDTO>> listUserPermissionByEnvId(
+    @PostMapping(value = "/page_by_options")
+    public ResponseEntity<PageInfo<DevopsEnvUserPermissionVO>> listUserPermissionByEnvId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -329,18 +327,18 @@ public class DevopsEnvironmentController {
      *
      * @param projectId 项目id
      * @param envId     环境id
-     * @return list
+     * @return baseList
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取环境下所有用户权限")
-    @GetMapping(value = "/{envId}/list_all")
-    public ResponseEntity<List<DevopsEnvUserPermissionDTO>> listAllUserPermission(
+    @GetMapping(value = "/{env_id}/list_all")
+    public ResponseEntity<List<DevopsEnvUserPermissionVO>> listAllUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId,projectId))
+            @PathVariable(value = "env_id") Long envId) {
+        return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
     }
@@ -354,12 +352,12 @@ public class DevopsEnvironmentController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境下为用户分配权限")
-    @PostMapping(value = "/{envId}/permission")
+    @PostMapping(value = "/{env_id}/permission")
     public ResponseEntity<Boolean> updateEnvUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable Long envId,
+            @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "有权限的用户ids")
             @RequestBody List<Long> userIds) {
         return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(envId, userIds))
@@ -377,12 +375,12 @@ public class DevopsEnvironmentController {
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除已停用的环境")
-    @DeleteMapping(value = "/{envId}")
+    @DeleteMapping(value = "/{env_id}")
     public ResponseEntity deleteDeactivatedEnvironment(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable Long envId) {
+            @PathVariable(value = "env_id") Long envId) {
         devopsEnvironmentService.deleteDeactivatedEnvironment(envId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -397,8 +395,8 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询集群信息")
-    @GetMapping(value = "/clusters")
-    public ResponseEntity<List<DevopsClusterRepDTO>> listDevopsClusters(
+    @GetMapping(value = "/list_clusters")
+    public ResponseEntity<List<DevopsClusterRepVO>> listDevopsClusters(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listDevopsCluster(projectId))
@@ -416,7 +414,7 @@ public class DevopsEnvironmentController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据环境编码查询环境")
     @GetMapping(value = "/query_by_code")
-    public ResponseEntity<DevopsEnviromentRepDTO> queryByCode(
+    public ResponseEntity<DevopsEnviromentRepVO> queryByCode(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境编码", required = true)
@@ -436,7 +434,7 @@ public class DevopsEnvironmentController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试gitOps")
     @GetMapping(value = "/{env_id}/retry")
-    public void retryGitOps(
+    public void retryByGitOps(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境编码", required = true)

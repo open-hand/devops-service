@@ -41,7 +41,6 @@ choerodon_temp/*
 
 ### native temp files
 deployfile
-gitops
 tmp
 
 ### front ###

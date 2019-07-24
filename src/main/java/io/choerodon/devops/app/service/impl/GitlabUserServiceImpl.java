@@ -2,18 +2,19 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.regex.Pattern;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
-import io.choerodon.devops.app.service.GitlabUserService;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.event.GitlabUserEvent;
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import io.choerodon.devops.api.vo.GitlabUserRequestVO;
+import io.choerodon.devops.app.service.GitlabUserService;
+import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitlabUserReqDTO;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * Created by Zenger on 2018/3/28.
@@ -25,64 +26,63 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     @Autowired
     private GitlabConfigurationProperties gitlabConfigurationProperties;
     @Autowired
-    private GitlabUserRepository gitlabUserRepository;
+    private UserAttrService userAttrService;
     @Autowired
-    private UserAttrRepository userAttrRepository;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
 
     @Override
-    public void createGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
+    public void createGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
 
         checkGitlabUser(gitlabUserReqDTO);
-        GitlabUserE gitlabUserE = gitlabUserRepository.getUserByUserName(gitlabUserReqDTO.getUsername());
-        if (gitlabUserE == null) {
-            gitlabUserE = gitlabUserRepository.createGitLabUser(
+        GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserByUserName(gitlabUserReqDTO.getUsername());
+        if (gitLabUserDTO == null) {
+            gitLabUserDTO = gitlabServiceClientOperator.createUser(
                     gitlabConfigurationProperties.getPassword(),
                     gitlabConfigurationProperties.getProjectLimit(),
-                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
+                    ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
         }
-        UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(gitlabUserE.getId().longValue());
-        if (userAttrE == null) {
-            userAttrE = new UserAttrE();
-            userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
-            userAttrE.setGitlabUserId(gitlabUserE.getId().longValue());
-            userAttrE.setGitlabUserName(gitlabUserE.getUsername());
-            userAttrRepository.insert(userAttrE);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(gitLabUserDTO.getId().longValue());
+        if (userAttrDTO == null) {
+            userAttrDTO = new UserAttrDTO();
+            userAttrDTO.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
+            userAttrDTO.setGitlabUserId(gitLabUserDTO.getId().longValue());
+            userAttrDTO.setGitlabUserName(gitLabUserDTO.getUsername());
+            userAttrService.baseInsert(userAttrDTO);
         }
     }
 
     @Override
-    public void updateGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
+    public void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
 
         checkGitlabUser(gitlabUserReqDTO);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
-        if (userAttrE != null) {
-
-            gitlabUserRepository.updateGitLabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
+        if (userAttrDTO != null) {
+            gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
                     gitlabConfigurationProperties.getProjectLimit(),
-                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
+                    ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
         }
     }
 
     @Override
     public void isEnabledGitlabUser(Integer userId) {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(userId));
-        if (userAttrE != null) {
-            gitlabUserRepository.isEnabledGitlabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(userId));
+        if (userAttrDTO != null) {
+            gitlabServiceClientOperator.enableUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
     }
 
     @Override
     public void disEnabledGitlabUser(Integer userId) {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(userId));
-        if (userAttrE != null) {
-            gitlabUserRepository.disEnabledGitlabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(userId));
+        if (userAttrDTO != null) {
+            gitlabServiceClientOperator.disableUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
     }
 
 
-    private void checkGitlabUser(GitlabUserRequestDTO gitlabUserRequestDTO) {
-        String userName = gitlabUserRequestDTO.getUsername();
+    private void checkGitlabUser(GitlabUserRequestVO gitlabUserRequestVO) {
+        String userName = gitlabUserRequestVO.getUsername();
         StringBuilder newUserName = new StringBuilder();
         for (int i = 0; i < userName.length(); i++) {
             if (!Pattern.matches(SERVICE_PATTERN, String.valueOf(userName.charAt(i)))) {
@@ -91,11 +91,16 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                 newUserName.append(String.valueOf(userName.charAt(i)));
             }
         }
-        gitlabUserRequestDTO.setUsername(newUserName.toString());
+        gitlabUserRequestVO.setUsername(newUserName.toString());
     }
 
     @Override
-    public Boolean checkEmailIsExist(String email) {
-        return gitlabUserRepository.checkEmailIsExist(email);
+    public Boolean doesEmailExists(String email) {
+        return gitlabServiceClientOperator.checkEmail(email);
+    }
+
+    @Override
+    public GitLabUserDTO getGitlabUserByUserId(Integer userId) {
+        return gitlabServiceClientOperator.queryUserById(userId);
     }
 }

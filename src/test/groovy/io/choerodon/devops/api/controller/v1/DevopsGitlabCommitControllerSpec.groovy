@@ -3,9 +3,13 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.DevopsGitlabCommitDTO
+import io.choerodon.devops.api.vo.DevopsGitlabCommitVO
+<<<<<<< HEAD
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.infra.dataobject.ApplicationDO
+=======
+
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -43,7 +47,7 @@ class DevopsGitlabCommitControllerSpec extends Specification {
     private ApplicationMapper applicationMapper
 
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
     DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO()
 
@@ -99,11 +103,11 @@ class DevopsGitlabCommitControllerSpec extends Specification {
         devopsGitlabCommitMapper.insert(devopsGitlabCommitDO)
 
         when: '获取应用下的代码提交'
-        def devopsGitlabCommit = restTemplate.postForObject("/v1/projects/1/commits?start_date=2015/10/12&end_date=3018/10/18", [1], DevopsGitlabCommitDTO.class)
+        def devopsGitlabCommit = restTemplate.postForObject("/v1/projects/1/commits?start_date=2015/10/12&end_date=3018/10/18", [1], DevopsGitlabCommitVO.class)
 
         then: '校验返回值'
         devopsGitlabCommit != null
-        !devopsGitlabCommit.getCommitFormUserDTOList().isEmpty()
+        !devopsGitlabCommit.getCommitFormUserVOList().isEmpty()
     }
 
     def "GetRecordCommits"() {
@@ -115,9 +119,9 @@ class DevopsGitlabCommitControllerSpec extends Specification {
 
         and: '清理数据'
         // 删除app
-        List<ApplicationDO> list = applicationMapper.selectAll()
+        List<ApplicationDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDO e : list) {
+            for (ApplicationDTO e : list) {
                 applicationMapper.delete(e)
             }
         }

@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.api.dto.SonarInfoDTO;
+import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.app.service.SonarService;
 
 /**
@@ -23,7 +23,7 @@ public class SonarServiceImpl implements SonarService {
     private String url;
 
     @Override
-    public SonarInfoDTO getSonarInfo() {
-        return new SonarInfoDTO(userName, password, url);
+    public SonarInfoVO getSonarInfo() {
+        return new SonarInfoVO(userName, password, url);
     }
 }

@@ -1,10 +1,10 @@
 package io.choerodon.devops.api.validator;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
-import io.choerodon.devops.api.dto.ProjectConfigDTO;
+import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
+import io.choerodon.devops.api.vo.ProjectConfigVO;
 import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
+import io.choerodon.devops.infra.enums.ProjectConfigType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -20,15 +20,15 @@ public class DevopsProjectConfigValidator {
     @Autowired
     ApplicationService applicationService;
 
-    public void checkConfigType(DevopsProjectConfigDTO devopsProjectConfigDTO) {
-        ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigDTO.getType().toUpperCase());
-        ProjectConfigDTO configDTO = devopsProjectConfigDTO.getConfig();
+    public void checkConfigType(DevopsProjectConfigVO devopsProjectConfigVO) {
+        ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigVO.getType().toUpperCase());
+        ProjectConfigVO configDTO = devopsProjectConfigVO.getConfig();
         switch (type) {
             case HARBOR:
-                applicationService.checkHarborIsUsable(configDTO.getUrl(),configDTO.getUserName(),configDTO.getPassword(),configDTO.getProject(),configDTO.getEmail());
+                applicationService.checkHarbor(configDTO.getUrl(),configDTO.getUserName(),configDTO.getPassword(),configDTO.getProject(),configDTO.getEmail());
                 break;
             case CHART:
-                applicationService.checkChartIsUsable(configDTO.getUrl());
+                applicationService.checkChart(configDTO.getUrl());
                 break;
             default:
                 throw new CommonException("error.project.config.type");

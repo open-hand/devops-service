@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper">
-    <select id="list" resultType="io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO">
+    <select id="list" resultType="io.choerodon.devops.infra.dto.DevopsProjectConfigDTO">
 
         SELECT
         dpc.id,
@@ -64,7 +64,7 @@
         </if>
     </sql>
 
-    <select id="queryByIdAndType" resultType="io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO">
+    <select id="queryByIdAndType" resultType="io.choerodon.devops.infra.dto.DevopsProjectConfigDTO">
             SELECT
                 dpc.id,
                 dpc.project_id,
@@ -94,7 +94,7 @@
             OR da.harbor_config_id = #{configId}
     </select>
 
-    <select id="queryByNameWithNoProject" resultType="io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO">
+    <select id="queryByNameWithNoProject" resultType="io.choerodon.devops.infra.dto.DevopsProjectConfigDTO">
         SELECT
             dpc.*
         FROM

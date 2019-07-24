@@ -9,24 +9,25 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.ApplicationImportDTO
-import io.choerodon.devops.api.dto.ApplicationRepDTO
-import io.choerodon.devops.api.dto.ApplicationReqDTO
-import io.choerodon.devops.api.dto.ApplicationUpdateDTO
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
+import io.choerodon.devops.api.vo.ApplicationImportVO
+import io.choerodon.devops.api.vo.ApplicationRepVO
+import io.choerodon.devops.api.vo.ApplicationReqVO
+import io.choerodon.devops.api.vo.ApplicationUpdateVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.app.service.DevopsGitService
-import io.choerodon.devops.domain.application.entity.ProjectE
-import io.choerodon.devops.domain.application.entity.UserAttrE
-import io.choerodon.devops.domain.application.event.IamAppPayLoad
+import io.choerodon.devops.api.vo.ProjectVO
+
+import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad
 import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.dto.AppUserPermissionDTO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
@@ -74,9 +75,9 @@ class ApplicationControllerSpec extends Specification {
     @Autowired
     private DevopsProjectMapper devopsProjectMapper
     @Autowired
-    private AppUserPermissionMapper appUserPermissionMapper
+    private ApplicationUserPermissionMapper appUserPermissionMapper
     @Autowired
-    private ApplicationMarketMapper applicationMarketMapper
+    private ApplicationShareMapper applicationMarketMapper
     @Autowired
     private DevopsProjectRepository devopsProjectRepository
     @Autowired
@@ -102,9 +103,9 @@ class ApplicationControllerSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    Organization organization = new Organization()
+    OrganizationVO organization = new OrganizationVO()
     @Shared
-    ProjectE projectE = new ProjectE()
+    ProjectVO projectE = new ProjectVO()
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
@@ -178,17 +179,17 @@ class ApplicationControllerSpec extends Specification {
             ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
             Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-            List<RoleDTO> roleDTOList = new ArrayList<>()
-            RoleDTO roleDTO = new RoleDTO()
+            List<RoleVO> roleDTOList = new ArrayList<>()
+            RoleVO roleDTO = new RoleVO()
             roleDTO.setCode("role/project/default/project-owner")
             roleDTOList.add(roleDTO)
-            List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-            ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+            List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+            ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
             projectWithRoleDTO.setName("pro")
             projectWithRoleDTO.setRoles(roleDTOList)
             projectWithRoleDTOList.add(projectWithRoleDTO)
-            PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
-            ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+            PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
+            ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
             Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
         }
     }
@@ -223,7 +224,7 @@ class ApplicationControllerSpec extends Specification {
     def "create"() {
         given: '创建issueDTO'
         isToInit = false
-        ApplicationReqDTO applicationDTO = new ApplicationReqDTO()
+        ApplicationReqVO applicationDTO = new ApplicationReqVO()
 
         and: '赋值'
         applicationDTO.setId(init_id)
@@ -240,11 +241,11 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setUserIds(userList)
 
         and: 'mock查询gitlab用户'
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setId(1)
         memberDO.setAccessLevel(AccessLevel.OWNER)
-        ResponseEntity<MemberDO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(memberDOResponseEntity)
+        ResponseEntity<MemberDTO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(memberDOResponseEntity)
 
         and: 'mock iam创建用户'
         IamAppPayLoad iamAppPayLoad = new IamAppPayLoad()
@@ -257,12 +258,12 @@ class ApplicationControllerSpec extends Specification {
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any(StartInstanceDTO))
 
         when: '创建一个应用'
-        def entity = restTemplate.postForEntity(MAPPING, applicationDTO, ApplicationRepDTO.class, project_id)
+        def entity = restTemplate.postForEntity(MAPPING, applicationDTO, ApplicationRepVO.class, project_id)
 
         then: '校验结果'
         entity.statusCode.is2xxSuccessful()
         entity.getBody().getId() == 1L
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
 
         expect: '校验查询结果'
         applicationDO["code"] == "appCode"
@@ -271,7 +272,7 @@ class ApplicationControllerSpec extends Specification {
     // 项目下查询单个应用信息
     def "queryByAppId"() {
         when:
-        def entity = restTemplate.getForEntity(MAPPING + "/{app_id}/detail", ApplicationRepDTO.class, project_id, 1L)
+        def entity = restTemplate.getForEntity(MAPPING + "/{app_id}/detail", ApplicationRepVO.class, project_id, 1L)
 
         then: '校验结果'
         entity.getBody()["code"] == "appCode"
@@ -280,13 +281,13 @@ class ApplicationControllerSpec extends Specification {
     // 项目下更新应用信息
     def "update"() {
         given: '设置applicationUpdateDTO类'
-        ApplicationUpdateDTO applicationUpdateDTO = new ApplicationUpdateDTO()
+        ApplicationUpdateVO applicationUpdateDTO = new ApplicationUpdateVO()
         applicationUpdateDTO.setId(init_id)
         applicationUpdateDTO.setName("updatename")
         applicationUpdateDTO.setIsSkipCheckPermission(true)
 
         and: "初始化gitlab数据"
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
         applicationDO.setGitlabProjectId(1)
         applicationMapper.updateByPrimaryKeySelective(applicationDO)
 
@@ -296,8 +297,8 @@ class ApplicationControllerSpec extends Specification {
         when: '以前和现在都跳过权限检查，直接返回true，且该应用下无权限表记录'
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
-        List<AppUserPermissionDO> permissionResult = appUserPermissionMapper.selectAll()
-        ApplicationDO appResult = applicationMapper.selectByPrimaryKey(1L)
+        List<AppUserPermissionDTO> permissionResult = appUserPermissionMapper.selectAll()
+        ApplicationDTO appResult = applicationMapper.selectByPrimaryKey(1L)
         permissionResult.size() == 0
         appResult.getIsSkipCheckPermission()
 
@@ -308,8 +309,8 @@ class ApplicationControllerSpec extends Specification {
         applicationUpdateDTO.setUserIds(userIds)
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
-        List<AppUserPermissionDO> permissionResult1 = appUserPermissionMapper.selectAll()
-        ApplicationDO appResult1 = applicationMapper.selectByPrimaryKey(1L)
+        List<AppUserPermissionDTO> permissionResult1 = appUserPermissionMapper.selectAll()
+        ApplicationDTO appResult1 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult1.size() == 1
         permissionResult1.get(0).getAppId() == 1L
         !appResult1.getIsSkipCheckPermission()
@@ -318,8 +319,8 @@ class ApplicationControllerSpec extends Specification {
         applicationUpdateDTO.setIsSkipCheckPermission(false)
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
-        List<AppUserPermissionDO> permissionResult2 = appUserPermissionMapper.selectAll()
-        ApplicationDO appResult2 = applicationMapper.selectByPrimaryKey(1L)
+        List<AppUserPermissionDTO> permissionResult2 = appUserPermissionMapper.selectAll()
+        ApplicationDTO appResult2 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult2.size() == 1
         permissionResult2.get(0).getAppId() == 1L
         !appResult2.getIsSkipCheckPermission()
@@ -328,8 +329,8 @@ class ApplicationControllerSpec extends Specification {
         applicationUpdateDTO.setIsSkipCheckPermission(true)
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
         then: '校验结果'
-        List<AppUserPermissionDO> permissionResult3 = appUserPermissionMapper.selectAll()
-        ApplicationDO appResult3 = applicationMapper.selectByPrimaryKey(1L)
+        List<AppUserPermissionDTO> permissionResult3 = appUserPermissionMapper.selectAll()
+        ApplicationDTO appResult3 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult3.size() == 0
         appResult3.getIsSkipCheckPermission()
     }
@@ -350,7 +351,7 @@ class ApplicationControllerSpec extends Specification {
         restTemplate.put(MAPPING + "/1?active=true", Boolean.class, 1L)
 
         then: '返回值'
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
 
         expect: '校验是否激活'
         applicationDO["isActive"] == true
@@ -360,7 +361,7 @@ class ApplicationControllerSpec extends Specification {
     def "deleteByAppId"() {
         given: 'mock删除git项目'
         ResponseEntity responseEntity2 = new ResponseEntity(HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.deleteProjectByProjectName(anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
+        Mockito.when(gitlabServiceClient.deleteProjectByName(anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
 
         when:
         restTemplate.delete(MAPPING + "/1", 1L)
@@ -369,7 +370,7 @@ class ApplicationControllerSpec extends Specification {
         applicationMapper.selectAll().isEmpty()
 
         and: '添加上删除的应用'
-        ApplicationDO applicationDO = new ApplicationDO()
+        ApplicationDTO applicationDO = new ApplicationDTO()
         applicationDO.setId(1L)
         applicationDO.setProjectId(1L)
         applicationDO.setName("appName")
@@ -591,7 +592,7 @@ class ApplicationControllerSpec extends Specification {
     def "import Application"() {
         given: '创建issueDTO'
         def url = MAPPING + "/import"
-        ApplicationImportDTO applicationDTO = new ApplicationImportDTO()
+        ApplicationImportVO applicationDTO = new ApplicationImportVO()
         applicationDTO.setName("test-import-github")
         applicationDTO.setCode("test-import-gitlab")
         applicationDTO.setType("normal")
@@ -603,11 +604,11 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setHarborConfigId(harborConfigId)
         applicationDTO.setChartConfigId(chartConfigId)
 
-        def searchCondition = new ApplicationDO()
+        def searchCondition = new ApplicationDTO()
         searchCondition.setCode(applicationDTO.getCode())
 
         when: '导入一个github应用'
-        def entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepDTO.class, project_id)
+        def entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepVO.class, project_id)
 
         then: '校验结果'
         entity.statusCode.is2xxSuccessful()
@@ -630,7 +631,7 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setRepositoryUrl("http://git.staging.saas.test.com/code-x-code-x/test-empty.git")
         applicationDTO.setPlatformType("gitlab")
         applicationDTO.setAccessToken("munijNHhNBEh7BRNhwrV")
-        entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepDTO.class, project_id)
+        entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepVO.class, project_id)
 
         then: '校验结果'
         entity.getStatusCode().is2xxSuccessful()
@@ -643,7 +644,7 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setPlatformType("gitlab")
         applicationDTO.setAccessToken("munijNHhNBEh7BRNhwrV")
         searchCondition.setCode(applicationDTO.getCode())
-        entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepDTO.class, project_id)
+        entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepVO.class, project_id)
 
         then: '校验结果'
         entity.getStatusCode().is2xxSuccessful()

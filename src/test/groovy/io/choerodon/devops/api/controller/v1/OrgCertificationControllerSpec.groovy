@@ -6,9 +6,8 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.controller.v1.DevopsClusterController
-import io.choerodon.devops.api.dto.OrgCertificationDTO
-import io.choerodon.devops.domain.application.repository.IamRepository
+import io.choerodon.devops.api.vo.OrgCertificationVO
+
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -81,7 +80,7 @@ class OrgCertificationControllerSpec extends Specification {
 
     def "Create"() {
         given: '初始化DTO'
-        OrgCertificationDTO orgCertificationDTO = new OrgCertificationDTO()
+        OrgCertificationVO orgCertificationDTO = new OrgCertificationVO()
         orgCertificationDTO.setName("test")
         orgCertificationDTO.setDomain("test")
         orgCertificationDTO.setCertValue("test")
@@ -129,7 +128,7 @@ class OrgCertificationControllerSpec extends Specification {
 
     def "Update"() {
         given: '初始化DTO'
-        OrgCertificationDTO orgCertificationDTO = new OrgCertificationDTO()
+        OrgCertificationVO orgCertificationDTO = new OrgCertificationVO()
         List<Long> projectIds = new ArrayList<>()
         projectIds.add(2L)
         orgCertificationDTO.setProjects(projectIds)
@@ -145,7 +144,7 @@ class OrgCertificationControllerSpec extends Specification {
 
     def "Query"() {
         when: '查询单个证书信息'
-        def dto = restTemplate.getForObject(MAPPING + "/" + ID, OrgCertificationDTO.class, 1L)
+        def dto = restTemplate.getForObject(MAPPING + "/" + ID, OrgCertificationVO.class, 1L)
 
         then: '校验返回值'
         dto["name"] == "test"

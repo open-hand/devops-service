@@ -2,32 +2,32 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.CertificationDTO;
-import io.choerodon.devops.api.dto.OrgCertificationDTO;
-import io.choerodon.devops.api.dto.ProjectDTO;
+import io.choerodon.devops.api.vo.OrgCertificationVO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
+import io.choerodon.devops.app.service.CertificationService;
+import io.choerodon.devops.app.service.DevopsCertificationProRelationshipService;
 import io.choerodon.devops.app.service.DevopsOrgCertificationService;
-import io.choerodon.devops.domain.application.entity.CertificationE;
-import io.choerodon.devops.domain.application.entity.DevopsCertificationProRelE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.repository.CertificationRepository;
-import io.choerodon.devops.domain.application.repository.DevopsCertificationProRelRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.devops.infra.common.util.SslUtil;
-import io.choerodon.devops.infra.dataobject.CertificationFileDO;
+import io.choerodon.devops.app.service.IamService;
+import io.choerodon.devops.infra.dto.CertificationDTO;
+import io.choerodon.devops.infra.dto.CertificationFileDTO;
+import io.choerodon.devops.infra.dto.DevopsCertificationProRelationshipDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.util.FileUtil;
+import io.choerodon.devops.infra.util.GenerateUUID;
+import io.choerodon.devops.infra.util.SslUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
@@ -38,38 +38,37 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
 
     private Gson gson = new Gson();
     @Autowired
-    private CertificationRepository certificationRepository;
+    private DevopsCertificationProRelationshipService devopsCertificationProRelationshipService;
     @Autowired
-    private DevopsCertificationProRelRepository devopsCertificationProRelRepository;
+    private IamService iamService;
     @Autowired
-    private IamRepository iamRepository;
+    private CertificationService certificationService;
 
     @Override
-    public void insert(Long organizationId, MultipartFile key, MultipartFile cert, OrgCertificationDTO orgCertificationDTO) {
-
-
+    @Transactional
+    public void create(Long organizationId, MultipartFile key, MultipartFile cert, OrgCertificationVO orgCertificationVO) {
         //如果是选择上传文件方式
-        Organization organization = iamRepository.queryOrganizationById(organizationId);
-        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organization.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(organizationId);
+        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getCode(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
         String certFileName;
         String keyFileName;
 
         if (key != null && cert != null) {
             certFileName = cert.getOriginalFilename();
             keyFileName = key.getOriginalFilename();
-            orgCertificationDTO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
-            orgCertificationDTO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
+            orgCertificationVO.setKeyValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key))));
+            orgCertificationVO.setCertValue(FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert))));
         } else {
-            certFileName = String.format("%s.%s",GenerateUUID.generateUUID().substring(0, 5),"crt");
-            keyFileName = String.format("%s.%s",GenerateUUID.generateUUID().substring(0, 5),"key");
-            FileUtil.saveDataToFile(path, certFileName, orgCertificationDTO.getCertValue());
-            FileUtil.saveDataToFile(path, keyFileName, orgCertificationDTO.getKeyValue());
+            certFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "crt");
+            keyFileName = String.format("%s.%s", GenerateUUID.generateUUID().substring(0, 5), "key");
+            FileUtil.saveDataToFile(path, certFileName, orgCertificationVO.getCertValue());
+            FileUtil.saveDataToFile(path, keyFileName, orgCertificationVO.getKeyValue());
         }
         File certPath = new File(path + FILE_SEPARATOR + certFileName);
         File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
         try {
             SslUtil.validate(certPath, keyPath);
-        }catch (Exception e) {
+        } catch (Exception e) {
             FileUtil.deleteFile(certPath);
             FileUtil.deleteFile(keyPath);
             throw new CommonException(e);
@@ -77,38 +76,38 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
         FileUtil.deleteFile(certPath);
         FileUtil.deleteFile(keyPath);
 
-
-
-        CertificationE certificationE = new CertificationE();
-        certificationE.setName(orgCertificationDTO.getName());
-        certificationE.setOrganizationId(organizationId);
-        certificationE.setSkipCheckProjectPermission(orgCertificationDTO.getSkipCheckProjectPermission());
-        certificationE.setDomains(Arrays.asList(orgCertificationDTO.getDomain()));
-        certificationE.setCertificationFileId(certificationRepository.storeCertFile(new CertificationFileDO(orgCertificationDTO.getCertValue(), orgCertificationDTO.getKeyValue())));
-        certificationE = certificationRepository.create(certificationE);
-        if (!orgCertificationDTO.getSkipCheckProjectPermission() && orgCertificationDTO.getProjects() != null) {
-            for (Long projectId : orgCertificationDTO.getProjects()) {
-                DevopsCertificationProRelE devopsCertificationProRelE = new DevopsCertificationProRelE();
-                devopsCertificationProRelE.setCertId(certificationE.getId());
-                devopsCertificationProRelE.setProjectId(projectId);
-                devopsCertificationProRelRepository.insert(devopsCertificationProRelE);
+        CertificationDTO certificationDTO = new CertificationDTO();
+        certificationDTO.setName(orgCertificationVO.getName());
+        certificationDTO.setOrganizationId(organizationId);
+        certificationDTO.setSkipCheckProjectPermission(orgCertificationVO.getSkipCheckProjectPermission());
+        certificationDTO.setDomains(orgCertificationVO.getDomain());
+        certificationDTO.setCertificationFileId(certificationService.baseStoreCertFile(new CertificationFileDTO(orgCertificationVO.getCertValue(), orgCertificationVO.getKeyValue())));
+        certificationDTO = certificationService.baseCreate(certificationDTO);
+        if (!orgCertificationVO.getSkipCheckProjectPermission() && orgCertificationVO.getProjects() != null) {
+            for (Long projectId : orgCertificationVO.getProjects()) {
+                DevopsCertificationProRelationshipDTO devopsCertificationProRelationshipDTO = new DevopsCertificationProRelationshipDTO();
+                devopsCertificationProRelationshipDTO.setCertId(certificationDTO.getId());
+                devopsCertificationProRelationshipDTO.setProjectId(projectId);
+                devopsCertificationProRelationshipService.baseInsertRelationship(devopsCertificationProRelationshipDTO);
             }
         }
     }
 
 
-    public void update(Long certId, OrgCertificationDTO orgCertificationDTO) {
-        List<Long> projects = orgCertificationDTO.getProjects();
-        Boolean skipCheckPro = orgCertificationDTO.getSkipCheckProjectPermission();
+    @Override
+    @Transactional
+    public void update(Long certId, OrgCertificationVO orgCertificationVO) {
+        List<Long> projects = orgCertificationVO.getProjects();
+        Boolean skipCheckPro = orgCertificationVO.getSkipCheckProjectPermission();
         List<Long> addProjects = new ArrayList<>();
-        CertificationE certificationE = certificationRepository.queryById(certId);
+        CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
         //以前不跳过项目权限校验,但是现在跳过，情况集群对应的项目集群校验表
-        if (skipCheckPro && !certificationE.getSkipCheckProjectPermission()) {
-            devopsCertificationProRelRepository.deleteByCertId(certId);
+        if (skipCheckPro && !certificationDTO.getSkipCheckProjectPermission()) {
+            devopsCertificationProRelationshipService.baseDeleteByCertificationId(certId);
         } else {
             //操作集群项目权限校验表记录
-            List<Long> projectIds = devopsCertificationProRelRepository.listByCertId(certId)
-                    .stream().map(DevopsCertificationProRelE::getProjectId).collect(Collectors.toList());
+            List<Long> projectIds = devopsCertificationProRelationshipService.baseListByCertificationId(certId)
+                    .stream().map(DevopsCertificationProRelationshipDTO::getProjectId).collect(Collectors.toList());
 
             projects.forEach(projectId -> {
                 if (!projectIds.contains(projectId)) {
@@ -118,96 +117,106 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
                 }
             });
             addProjects.forEach(addProject -> {
-                DevopsCertificationProRelE devopsClusterProPermissionE = new DevopsCertificationProRelE();
-                devopsClusterProPermissionE.setCertId(certId);
-                devopsClusterProPermissionE.setProjectId(addProject);
-                devopsCertificationProRelRepository.insert(devopsClusterProPermissionE);
+                DevopsCertificationProRelationshipDTO devopsCertificationProRelationshipDTO = new DevopsCertificationProRelationshipDTO();
+                devopsCertificationProRelationshipDTO.setCertId(certId);
+                devopsCertificationProRelationshipDTO.setProjectId(addProject);
+                devopsCertificationProRelationshipService.baseInsertRelationship(devopsCertificationProRelationshipDTO);
             });
             projectIds.forEach(deleteProject -> {
-                DevopsCertificationProRelE devopsClusterProPermissionE = new DevopsCertificationProRelE();
-                devopsClusterProPermissionE.setCertId(certId);
-                devopsClusterProPermissionE.setProjectId(deleteProject);
-                devopsCertificationProRelRepository.delete(devopsClusterProPermissionE);
+                DevopsCertificationProRelationshipDTO devopsCertificationProRelationshipDTO = new DevopsCertificationProRelationshipDTO();
+                devopsCertificationProRelationshipDTO.setCertId(certId);
+                devopsCertificationProRelationshipDTO.setProjectId(deleteProject);
+                devopsCertificationProRelationshipService.baseDelete(devopsCertificationProRelationshipDTO);
             });
         }
-        certificationE.setSkipCheckProjectPermission(orgCertificationDTO.getSkipCheckProjectPermission());
-        certificationRepository.updateSkipProjectPermission(certificationE);
+        certificationDTO.setSkipCheckProjectPermission(orgCertificationVO.getSkipCheckProjectPermission());
+        certificationService.baseUpdateSkipProjectPermission(certificationDTO);
     }
 
 
+    @Override
     public void checkName(Long organizationId, String name) {
-        CertificationE certificationE = new CertificationE();
+        CertificationDTO certificationE = new CertificationDTO();
         certificationE.setOrganizationId(organizationId);
         certificationE.setName(name);
-        if (certificationRepository.queryByOrgAndName(organizationId, name) != null) {
+        if (certificationService.baseQueryByOrgAndName(organizationId, name) != null) {
             throw new CommonException("error.cert.name.exist");
         }
     }
 
-    public List<ProjectDTO> listCertProjects(Long certId) {
-        return devopsCertificationProRelRepository.listByCertId(certId).stream()
+    @Override
+    public List<ProjectReqVO> listCertProjects(Long certId) {
+        return devopsCertificationProRelationshipService.baseListByCertificationId(certId).stream()
                 .map(devopsCertificationProRelE -> {
-                    ProjectE projectE = iamRepository.queryIamProject(devopsCertificationProRelE.getProjectId());
-
-                    return new ProjectDTO(devopsCertificationProRelE.getProjectId(), projectE.getName(), projectE.getCode(), null);
+                    ProjectDTO projectDTO = iamService.queryIamProject(devopsCertificationProRelE.getProjectId());
+                    return new ProjectReqVO(devopsCertificationProRelE.getProjectId(), projectDTO.getName(), projectDTO.getCode(), null);
                 }).collect(Collectors.toList());
     }
 
+    @Override
     public void deleteCert(Long certId) {
-        List<CertificationE> certificationES = certificationRepository.listByOrgCertId(certId);
-        if (certificationES.isEmpty()) {
-            devopsCertificationProRelRepository.deleteByCertId(certId);
-            certificationRepository.deleteById(certId);
+        List<CertificationDTO> certificationDTOS = certificationService.baseListByOrgCertId(certId);
+        if (certificationDTOS.isEmpty()) {
+            devopsCertificationProRelationshipService.baseDeleteByCertificationId(certId);
+            certificationService.baseDeleteById(certId);
         } else {
             throw new CommonException("error.cert.related");
         }
     }
 
-    public PageInfo<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
-                                             String[] params) {
-        PageInfo<ProjectE> projects = iamRepository
+    @Override
+    public PageInfo<ProjectReqVO> pageProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
+                                               String[] params) {
+        PageInfo<ProjectDTO> projectDTOPageInfo = iamService
                 .queryProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params);
-        PageInfo<ProjectDTO> pageProjectDTOS = new PageInfo<>();
-        List<ProjectDTO> projectDTOS = new ArrayList<>();
-        if (!projects.getList().isEmpty()) {
-            BeanUtils.copyProperties(projects, pageProjectDTOS);
+        PageInfo<ProjectReqVO> pageProjectDTOS = new PageInfo<>();
+        List<ProjectReqVO> projectDTOS = new ArrayList<>();
+        if (!projectDTOPageInfo.getList().isEmpty()) {
+            BeanUtils.copyProperties(projectDTOPageInfo, pageProjectDTOS);
             List<Long> projectIds;
             if (clusterId != null) {
-                projectIds = devopsCertificationProRelRepository.listByCertId(clusterId).stream()
-                        .map(DevopsCertificationProRelE::getProjectId).collect(Collectors.toList());
+                projectIds = devopsCertificationProRelationshipService.baseListByCertificationId(clusterId).stream()
+                        .map(DevopsCertificationProRelationshipDTO::getProjectId).collect(Collectors.toList());
             } else {
                 projectIds = new ArrayList<>();
             }
-            projects.getList().forEach(projectDO -> {
-                ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
+            projectDTOPageInfo.getList().forEach(projectDO -> {
+                ProjectReqVO projectDTO = new ProjectReqVO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
                 projectDTOS.add(projectDTO);
             });
         }
-        BeanUtils.copyProperties(projects, pageProjectDTOS);
+        BeanUtils.copyProperties(projectDTOPageInfo, pageProjectDTOS);
         pageProjectDTOS.setList(projectDTOS);
         return pageProjectDTOS;
     }
 
 
-    public PageInfo<OrgCertificationDTO> pageCerts(Long organizationId, PageRequest pageRequest,
-                                               String params) {
-        PageInfo<CertificationDTO> certificationDTOS = certificationRepository
-                .page(null, organizationId, null, pageRequest, params);
-        PageInfo<OrgCertificationDTO> orgCertificationDTOS = new PageInfo<>();
+    @Override
+    public PageInfo<OrgCertificationVO> pageCerts(Long organizationId, PageRequest pageRequest,
+                                                  String params) {
+        PageInfo<CertificationDTO> certificationDTOS = certificationService
+                .basePage(null, organizationId, null, pageRequest, params);
+        PageInfo<OrgCertificationVO> orgCertificationDTOS = new PageInfo<>();
         BeanUtils.copyProperties(certificationDTOS, orgCertificationDTOS);
-        List<OrgCertificationDTO> orgCertifications = new ArrayList<>();
+        List<OrgCertificationVO> orgCertifications = new ArrayList<>();
+
         if (!certificationDTOS.getList().isEmpty()) {
             certificationDTOS.getList().forEach(certificationDTO -> {
-                OrgCertificationDTO orgCertificationDTO = new OrgCertificationDTO(certificationDTO.getId(), certificationDTO.getCertName(), certificationDTO.getDomains().get(0), certificationDTO.getSkipCheckProjectPermission());
-                orgCertifications.add(orgCertificationDTO);
+                List<String> stringList = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
+                }.getType());
+                OrgCertificationVO orgCertificationVO = new OrgCertificationVO(certificationDTO.getId(), certificationDTO.getName(), stringList.get(0), certificationDTO.getSkipCheckProjectPermission());
+                orgCertifications.add(orgCertificationVO);
             });
         }
         orgCertificationDTOS.setList(orgCertifications);
         return orgCertificationDTOS;
     }
 
-    public OrgCertificationDTO getCert(Long certId) {
-        CertificationE certificationE = certificationRepository.queryById(certId);
-        return new OrgCertificationDTO(certificationE.getId(), certificationE.getName(), certificationE.getDomains().get(0), certificationE.getSkipCheckProjectPermission());
+    @Override
+    public OrgCertificationVO queryCert(Long certId) {
+        CertificationDTO certificationDTO = certificationService.baseQueryById(certId);
+        List<String> stringList = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
+        }.getType());
+        return new OrgCertificationVO(certificationDTO.getId(), certificationDTO.getName(), stringList.get(0), certificationDTO.getSkipCheckProjectPermission());
     }
 }

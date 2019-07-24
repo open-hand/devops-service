@@ -6,10 +6,10 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
 
-import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
-import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
-import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.AccessTokenCheckResultVO;
+import io.choerodon.devops.api.vo.AppVersionAndValueVO;
+import io.choerodon.devops.api.vo.ApplicationReleasingVO;
+import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
 import io.choerodon.devops.infra.feign.AppShareClient;
 
 /**
@@ -20,22 +20,22 @@ import io.choerodon.devops.infra.feign.AppShareClient;
 @Component
 public class AppShareClientFallback implements AppShareClient {
     @Override
-    public Call<PageInfo<ApplicationReleasingDTO>> getAppShares(Map<String, Object> map) {
+    public Call<PageInfo<ApplicationReleasingVO>> getAppShares(Map<String, Object> map) {
         return null;
     }
 
     @Override
-    public Call<PageInfo<ApplicationVersionRepDTO>> listVersionByAppId(Long appId, Map<String, Object> map) {
+    public Call<PageInfo<ApplicationVersionRespVO>> listVersionByAppId(Long appId, Map<String, Object> map) {
         return null;
     }
 
     @Override
-    public Call<AppVersionAndValueDTO> getConfigInfoByVerionId(Long appId, Long versionId, Map<String, Object> map) {
+    public Call<AppVersionAndValueVO> getConfigInfoByVerionId(Long appId, Long versionId, Map<String, Object> map) {
         return null;
     }
 
     @Override
-    public Call<AccessTokenCheckResultDTO> checkTokenExist(String accessToken) {
+    public Call<AccessTokenCheckResultVO> checkTokenExist(String accessToken) {
         return null;
     }
 }

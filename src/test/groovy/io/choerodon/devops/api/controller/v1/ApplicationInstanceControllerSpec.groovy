@@ -7,27 +7,17 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.*
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository
-import io.choerodon.devops.domain.application.repository.GitlabRepository
-import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult
+import io.choerodon.devops.api.vo.*
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+import io.choerodon.devops.domain.application.valueobject.InstanceValueVO
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
-import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.common.util.FileUtil
-import io.choerodon.devops.infra.common.util.GitUtil
-import io.choerodon.devops.infra.common.util.JsonYamlConversionUtil
-import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.common.util.enums.InstanceStatus
-import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
+import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
@@ -85,7 +75,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Autowired
     private DevopsEnvCommandMapper devopsEnvCommandMapper
     @Autowired
-    private ApplicationMarketMapper applicationMarketMapper
+    private ApplicationShareMapper applicationMarketMapper
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
@@ -114,7 +104,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Shared
     Map<String, Object> searchParam = new HashMap<>()
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
     DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
     @Shared
@@ -405,22 +395,22 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         // derd
         devopsEnvResourceDetailDO.setId(1L)
-        devopsEnvResourceDetailDO.setMessage("{\"kind\":\"Pod\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"iam-service-56946b7b9f-42xnx\",\"generateName\":\"iam-service-56946b7b9f-\",\"namespace\":\"choerodon-devops-prod\",\"selfLink\":\"/api/v1/namespaces/choerodon-devops-prod/pods/iam-service-56946b7b9f-42xnx\",\"uid\":\"1667ab32-6b40-11e8-94ae-00163e0e2443\",\"resourceVersion\":\"4333254\",\"creationTimestamp\":\"2018-06-08T17:19:23Z\",\"labels\":{\"choerodon.io/metrics-port\":\"8031\",\"choerodon.io/release\":\"iam-service\",\"choerodon.io/service\":\"iam-service\",\"choerodon.io/version\":\"0.6.0\",\"pod-template-hash\":\"1250263659\"},\"annotations\":{\"choerodon.io/metrics-group\":\"spring-boot\",\"choerodon.io/metrics-path\":\"/prometheus\",\"kubernetes.io/created-by\":\"{\\\"kind\\\":\\\"SerializedReference\\\",\\\"apiVersion\\\":\\\"v1\\\",\\\"reference\\\":{\\\"kind\\\":\\\"ReplicaSet\\\",\\\"namespace\\\":\\\"choerodon-devops-prod\\\",\\\"name\\\":\\\"iam-service-56946b7b9f\\\",\\\"uid\\\":\\\"0f7ec2d5-6b40-11e8-94ae-00163e0e2443\\\",\\\"apiVersion\\\":\\\"extensions\\\",\\\"resourceVersion\\\":\\\"4332963\\\"}}\\n\"},\"ownerReferences\":[{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"ReplicaSet\",\"name\":\"iam-service-56946b7b9f\",\"uid\":\"0f7ec2d5-6b40-11e8-94ae-00163e0e2443\",\"controller\":true,\"blockOwnerDeletion\":true}]},\"spec\":{\"volumes\":[{\"name\":\"default-token-mjcs5\",\"secret\":{\"secretName\":\"default-token-mjcs5\",\"defaultMode\":420}}],\"containers\":[{\"name\":\"iam-service\",\"image\":\"registry-vpc.cn-shanghai.aliyuncs.com/choerodon/iam-service:0.6.0\",\"ports\":[{\"name\":\"http\",\"containerPort\":8030,\"protocol\":\"TCP\"}],\"env\":[{\"name\":\"CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"EUREKA_CLIENT_SERVICEURL_DEFAULTZONE\",\"value\":\"http://register-server.choerodon-devops-prod:8000/eureka/\"},{\"name\":\"SPRING_CLOUD_CONFIG_ENABLED\",\"value\":\"true\"},{\"name\":\"SPRING_CLOUD_CONFIG_URI\",\"value\":\"http://config-server.choerodon-devops-prod:8010/\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES\",\"value\":\"172.19.136.81:2181,172.19.136.82:2181,172.19.136.83:2181\"},{\"name\":\"SPRING_DATASOURCE_PASSWORD\",\"value\":\"JAu9p8zL\"},{\"name\":\"SPRING_DATASOURCE_URL\",\"value\":\"jdbc:mysql://rm-uf65upic89q7007h5.mysql.rds.aliyuncs.com:3306/iam_service?useUnicode=true\\u0026characterEncoding=utf-8\\u0026useSSL=false\"},{\"name\":\"SPRING_DATASOURCE_USERNAME\",\"value\":\"c7n_iam\"},{\"name\":\"SPRING_KAFKA_BOOTSTRAP_SERVERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"}],\"resources\":{\"limits\":{\"memory\":\"3Gi\"},\"requests\":{\"memory\":\"2Gi\"}},\"volumeMounts\":[{\"name\":\"default-token-mjcs5\",\"readOnly\":true,\"mountPath\":\"/var/run/secrets/kubernetes.io/serviceaccount\"}],\"readinessProbe\":{\"exec\":{\"command\":[\"curl\",\"localhost:8031/health\"]},\"initialDelaySeconds\":60,\"timeoutSeconds\":10,\"periodSeconds\":10,\"successThreshold\":1,\"failureThreshold\":3},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"serviceAccountName\":\"default\",\"serviceAccount\":\"default\",\"nodeName\":\"choerodon2\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"},\"status\":{\"phase\":\"Running\",\"conditions\":[{\"type\":\"Initialized\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-06-08T17:19:23Z\"},{\"type\":\"Ready\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-06-08T17:20:30Z\"},{\"type\":\"PodScheduled\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-06-08T17:19:23Z\"}],\"hostIP\":\"172.19.136.82\",\"podIP\":\"192.168.2.209\",\"startTime\":\"2018-06-08T17:19:23Z\",\"containerStatuses\":[{\"name\":\"iam-service\",\"state\":{\"running\":{\"startedAt\":\"2018-06-08T17:19:24Z\"}},\"lastState\":{},\"ready\":true,\"restartCount\":0,\"image\":\"registry-vpc.cn-shanghai.aliyuncs.com/choerodon/iam-service:0.6.0\",\"imageID\":\"docker-pullable://registry-vpc.cn-shanghai.aliyuncs.com/choerodon/iam-service@sha256:ecf370e2623a62631499a7780c6851418b806018ed2d3ae2530f54cf638cb432\",\"containerID\":\"docker://2892c582b8109dff691df6190f8555cef1f9680e11d27864472bebb57962250b\"}],\"qosClass\":\"Burstable\"}}")
+        devopsEnvResourceDetailDO.setMessage("{\"kind\":\"Pod\",\"apiVersion\":\"v1\",\"metadata\":{\"name\":\"iam-service-56946b7b9f-42xnx\",\"generateName\":\"iam-service-56946b7b9f-\",\"namespace\":\"choerodon-devops-prod\",\"selfLink\":\"/api/v1/namespaces/choerodon-devops-prod/pods/iam-service-56946b7b9f-42xnx\",\"uid\":\"1667ab32-6b40-11e8-94ae-00163e0e2443\",\"resourceVersion\":\"4333254\",\"creationTimestamp\":\"2018-06-08T17:19:23Z\",\"labels\":{\"choerodon.io/metrics-port\":\"8031\",\"choerodon.io/release\":\"iam-service\",\"choerodon.io/service\":\"iam-service\",\"choerodon.io/version\":\"0.6.0\",\"pod-template-hash\":\"1250263659\"},\"annotation\":{\"choerodon.io/metrics-group\":\"spring-boot\",\"choerodon.io/metrics-path\":\"/prometheus\",\"kubernetes.io/created-by\":\"{\\\"kind\\\":\\\"SerializedReference\\\",\\\"apiVersion\\\":\\\"v1\\\",\\\"reference\\\":{\\\"kind\\\":\\\"ReplicaSet\\\",\\\"namespace\\\":\\\"choerodon-devops-prod\\\",\\\"name\\\":\\\"iam-service-56946b7b9f\\\",\\\"uid\\\":\\\"0f7ec2d5-6b40-11e8-94ae-00163e0e2443\\\",\\\"apiVersion\\\":\\\"extensions\\\",\\\"resourceVersion\\\":\\\"4332963\\\"}}\\n\"},\"ownerReferences\":[{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"ReplicaSet\",\"name\":\"iam-service-56946b7b9f\",\"uid\":\"0f7ec2d5-6b40-11e8-94ae-00163e0e2443\",\"controller\":true,\"blockOwnerDeletion\":true}]},\"spec\":{\"volumes\":[{\"name\":\"default-token-mjcs5\",\"secret\":{\"secretName\":\"default-token-mjcs5\",\"defaultMode\":420}}],\"containers\":[{\"name\":\"iam-service\",\"image\":\"registry-vpc.cn-shanghai.aliyuncs.com/choerodon/iam-service:0.6.0\",\"ports\":[{\"name\":\"http\",\"containerPort\":8030,\"protocol\":\"TCP\"}],\"env\":[{\"name\":\"CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"EUREKA_CLIENT_SERVICEURL_DEFAULTZONE\",\"value\":\"http://register-server.choerodon-devops-prod:8000/eureka/\"},{\"name\":\"SPRING_CLOUD_CONFIG_ENABLED\",\"value\":\"true\"},{\"name\":\"SPRING_CLOUD_CONFIG_URI\",\"value\":\"http://config-server.choerodon-devops-prod:8010/\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES\",\"value\":\"172.19.136.81:2181,172.19.136.82:2181,172.19.136.83:2181\"},{\"name\":\"SPRING_DATASOURCE_PASSWORD\",\"value\":\"JAu9p8zL\"},{\"name\":\"SPRING_DATASOURCE_URL\",\"value\":\"jdbc:mysql://rm-uf65upic89q7007h5.mysql.rds.aliyuncs.com:3306/iam_service?useUnicode=true\\u0026characterEncoding=utf-8\\u0026useSSL=false\"},{\"name\":\"SPRING_DATASOURCE_USERNAME\",\"value\":\"c7n_iam\"},{\"name\":\"SPRING_KAFKA_BOOTSTRAP_SERVERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"}],\"resources\":{\"limits\":{\"memory\":\"3Gi\"},\"requests\":{\"memory\":\"2Gi\"}},\"volumeMounts\":[{\"name\":\"default-token-mjcs5\",\"readOnly\":true,\"mountPath\":\"/var/run/secrets/kubernetes.io/serviceaccount\"}],\"readinessProbe\":{\"exec\":{\"command\":[\"curl\",\"localhost:8031/health\"]},\"initialDelaySeconds\":60,\"timeoutSeconds\":10,\"periodSeconds\":10,\"successThreshold\":1,\"failureThreshold\":3},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"serviceAccountName\":\"default\",\"serviceAccount\":\"default\",\"nodeName\":\"choerodon2\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"},\"status\":{\"phase\":\"Running\",\"conditions\":[{\"type\":\"Initialized\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-06-08T17:19:23Z\"},{\"type\":\"Ready\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-06-08T17:20:30Z\"},{\"type\":\"PodScheduled\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-06-08T17:19:23Z\"}],\"hostIP\":\"172.19.136.82\",\"podIP\":\"192.168.2.209\",\"startTime\":\"2018-06-08T17:19:23Z\",\"containerStatuses\":[{\"name\":\"iam-service\",\"state\":{\"running\":{\"startedAt\":\"2018-06-08T17:19:24Z\"}},\"lastState\":{},\"ready\":true,\"restartCount\":0,\"image\":\"registry-vpc.cn-shanghai.aliyuncs.com/choerodon/iam-service:0.6.0\",\"imageID\":\"docker-pullable://registry-vpc.cn-shanghai.aliyuncs.com/choerodon/iam-service@sha256:ecf370e2623a62631499a7780c6851418b806018ed2d3ae2530f54cf638cb432\",\"containerID\":\"docker://2892c582b8109dff691df6190f8555cef1f9680e11d27864472bebb57962250b\"}],\"qosClass\":\"Burstable\"}}")
 
         devopsEnvResourceDetailDO2.setId(2L)
-        devopsEnvResourceDetailDO2.setMessage("{\"apiVersion\":\"apps/v1beta2\",\"kind\":\"Deployment\",\"metadata\":{\"annotations\":{\"deployment.kubernetes.io/revision\":\"3\"},\"creationTimestamp\":\"2018-05-20T03:36:57Z\",\"generation\":5,\"labels\":{\"choerodon.io/logs-parser\":\"spring-boot\",\"choerodon.io/release\":\"iam-service\"},\"name\":\"iam-service\",\"namespace\":\"choerodon-devops-prod\",\"resourceVersion\":\"4333256\",\"selfLink\":\"/apis/apps/v1beta2/namespaces/choerodon-devops-prod/deployments/iam-service\",\"uid\":\"0c56c1b5-5bdf-11e8-a66e-00163e0e2443\"},\"spec\":{\"progressDeadlineSeconds\":600,\"replicas\":1,\"revisionHistoryLimit\":10,\"selector\":{\"matchLabels\":{\"choerodon.io/release\":\"iam-service\"}},\"strategy\":{\"rollingUpdate\":{\"maxSurge\":\"25%\",\"maxUnavailable\":\"25%\"},\"type\":\"RollingUpdate\"},\"template\":{\"metadata\":{\"annotations\":{\"choerodon.io/metrics-group\":\"spring-boot\",\"choerodon.io/metrics-path\":\"/prometheus\"},\"creationTimestamp\":null,\"labels\":{\"choerodon.io/metrics-port\":\"8031\",\"choerodon.io/release\":\"iam-service\",\"choerodon.io/service\":\"iam-service\",\"choerodon.io/version\":\"0.6.0\"}},\"spec\":{\"containers\":[{\"env\":[{\"name\":\"CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"EUREKA_CLIENT_SERVICEURL_DEFAULTZONE\",\"value\":\"http://register-server.choerodon-devops-prod:8000/eureka/\"},{\"name\":\"SPRING_CLOUD_CONFIG_ENABLED\",\"value\":\"true\"},{\"name\":\"SPRING_CLOUD_CONFIG_URI\",\"value\":\"http://config-server.choerodon-devops-prod:8010/\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES\",\"value\":\"172.19.136.81:2181,172.19.136.82:2181,172.19.136.83:2181\"},{\"name\":\"SPRING_DATASOURCE_PASSWORD\",\"value\":\"JAu9p8zL\"},{\"name\":\"SPRING_DATASOURCE_URL\",\"value\":\"jdbc:mysql://rm-uf65upic89q7007h5.mysql.rds.aliyuncs.com:3306/iam_service?useUnicode=true\\u0026characterEncoding=utf-8\\u0026useSSL=false\"},{\"name\":\"SPRING_DATASOURCE_USERNAME\",\"value\":\"c7n_iam\"},{\"name\":\"SPRING_KAFKA_BOOTSTRAP_SERVERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"}],\"image\":\"registry-vpc.cn-shanghai.aliyuncs.com/choerodon/iam-service:0.6.0\",\"imagePullPolicy\":\"Always\",\"name\":\"iam-service\",\"ports\":[{\"containerPort\":8030,\"name\":\"http\",\"protocol\":\"TCP\"}],\"readinessProbe\":{\"exec\":{\"command\":[\"curl\",\"localhost:8031/health\"]},\"failureThreshold\":3,\"initialDelaySeconds\":60,\"periodSeconds\":10,\"successThreshold\":1,\"timeoutSeconds\":10},\"resources\":{\"limits\":{\"memory\":\"3Gi\"},\"requests\":{\"memory\":\"2Gi\"}},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\"}],\"dnsPolicy\":\"ClusterFirst\",\"restartPolicy\":\"Always\",\"schedulerName\":\"default-scheduler\",\"securityContext\":{},\"terminationGracePeriodSeconds\":30}}},\"status\":{\"availableReplicas\":1,\"conditions\":[{\"lastTransitionTime\":\"2018-05-20T03:36:57Z\",\"lastUpdateTime\":\"2018-06-08T17:19:11Z\",\"message\":\"ReplicaSet \\\"iam-service-56946b7b9f\\\" has successfully progressed.\",\"reason\":\"NewReplicaSetAvailable\",\"status\":\"True\",\"type\":\"Progressing\"},{\"lastTransitionTime\":\"2018-06-08T17:20:30Z\",\"lastUpdateTime\":\"2018-06-08T17:20:30Z\",\"message\":\"Deployment has minimum availability.\",\"reason\":\"MinimumReplicasAvailable\",\"status\":\"True\",\"type\":\"Available\"}],\"observedGeneration\":5,\"readyReplicas\":1,\"replicas\":1,\"updatedReplicas\":1}}")
+        devopsEnvResourceDetailDO2.setMessage("{\"apiVersion\":\"apps/v1beta2\",\"kind\":\"Deployment\",\"metadata\":{\"annotation\":{\"deployment.kubernetes.io/revision\":\"3\"},\"creationTimestamp\":\"2018-05-20T03:36:57Z\",\"generation\":5,\"labels\":{\"choerodon.io/logs-parser\":\"spring-boot\",\"choerodon.io/release\":\"iam-service\"},\"name\":\"iam-service\",\"namespace\":\"choerodon-devops-prod\",\"resourceVersion\":\"4333256\",\"selfLink\":\"/apis/apps/v1beta2/namespaces/choerodon-devops-prod/deployments/iam-service\",\"uid\":\"0c56c1b5-5bdf-11e8-a66e-00163e0e2443\"},\"spec\":{\"progressDeadlineSeconds\":600,\"replicas\":1,\"revisionHistoryLimit\":10,\"selector\":{\"matchLabels\":{\"choerodon.io/create\":\"iam-service\"}},\"strategy\":{\"rollingUpdate\":{\"maxSurge\":\"25%\",\"maxUnavailable\":\"25%\"},\"type\":\"RollingUpdate\"},\"template\":{\"metadata\":{\"annotation\":{\"choerodon.io/metrics-group\":\"spring-boot\",\"choerodon.io/metrics-path\":\"/prometheus\"},\"creationTimestamp\":null,\"labels\":{\"choerodon.io/metrics-port\":\"8031\",\"choerodon.io/create\":\"iam-service\",\"choerodon.io/service\":\"iam-service\",\"choerodon.io/version\":\"0.6.0\"}},\"spec\":{\"containers\":[{\"env\":[{\"name\":\"CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"EUREKA_CLIENT_SERVICEURL_DEFAULTZONE\",\"value\":\"http://register-server.choerodon-devops-prod:8000/eureka/\"},{\"name\":\"SPRING_CLOUD_CONFIG_ENABLED\",\"value\":\"true\"},{\"name\":\"SPRING_CLOUD_CONFIG_URI\",\"value\":\"http://config-server.choerodon-devops-prod:8010/\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES\",\"value\":\"172.19.136.81:2181,172.19.136.82:2181,172.19.136.83:2181\"},{\"name\":\"SPRING_DATASOURCE_PASSWORD\",\"value\":\"JAu9p8zL\"},{\"name\":\"SPRING_DATASOURCE_URL\",\"value\":\"jdbc:mysql://rm-uf65upic89q7007h5.mysql.rds.aliyuncs.com:3306/iam_service?useUnicode=true\\u0026characterEncoding=utf-8\\u0026useSSL=false\"},{\"name\":\"SPRING_DATASOURCE_USERNAME\",\"value\":\"c7n_iam\"},{\"name\":\"SPRING_KAFKA_BOOTSTRAP_SERVERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"}],\"image\":\"registry-vpc.cn-shanghai.aliyuncs.com/choerodon/iam-service:0.6.0\",\"imagePullPolicy\":\"Always\",\"name\":\"iam-service\",\"ports\":[{\"containerPort\":8030,\"name\":\"http\",\"protocol\":\"TCP\"}],\"readinessProbe\":{\"exec\":{\"command\":[\"curl\",\"localhost:8031/health\"]},\"failureThreshold\":3,\"initialDelaySeconds\":60,\"periodSeconds\":10,\"successThreshold\":1,\"timeoutSeconds\":10},\"resources\":{\"limits\":{\"memory\":\"3Gi\"},\"requests\":{\"memory\":\"2Gi\"}},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\"}],\"dnsPolicy\":\"ClusterFirst\",\"restartPolicy\":\"Always\",\"schedulerName\":\"default-scheduler\",\"securityContext\":{},\"terminationGracePeriodSeconds\":30}}},\"status\":{\"availableReplicas\":1,\"conditions\":[{\"lastTransitionTime\":\"2018-05-20T03:36:57Z\",\"lastUpdateTime\":\"2018-06-08T17:19:11Z\",\"message\":\"ReplicaSet \\\"iam-service-56946b7b9f\\\" has successfully progressed.\",\"reason\":\"NewReplicaSetAvailable\",\"status\":\"True\",\"type\":\"Progressing\"},{\"lastTransitionTime\":\"2018-06-08T17:20:30Z\",\"lastUpdateTime\":\"2018-06-08T17:20:30Z\",\"message\":\"Deployment has minimum availability.\",\"reason\":\"MinimumReplicasAvailable\",\"status\":\"True\",\"type\":\"Available\"}],\"observedGeneration\":5,\"readyReplicas\":1,\"replicas\":1,\"updatedReplicas\":1}}")
 
         devopsEnvResourceDetailDO3.setId(3L)
-        devopsEnvResourceDetailDO3.setMessage("{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"creationTimestamp\":\"2018-05-20T03:29:11Z\",\"labels\":{\"choerodon.io/release\":\"config-server\"},\"name\":\"config-server\",\"namespace\":\"choerodon-devops-prod\",\"resourceVersion\":\"4325981\",\"selfLink\":\"/api/v1/namespaces/choerodon-devops-prod/services/config-server\",\"uid\":\"f68d3f07-5bdd-11e8-a66e-00163e0e2443\"},\"spec\":{\"clusterIP\":\"192.168.28.13\",\"ports\":[{\"name\":\"http\",\"port\":8010,\"protocol\":\"TCP\",\"targetPort\":\"http\"}],\"selector\":{\"choerodon.io/release\":\"config-server\"},\"sessionAffinity\":\"None\",\"type\":\"ClusterIP\"},\"status\":{\"loadBalancer\":{}}}")
+        devopsEnvResourceDetailDO3.setMessage("{\"apiVersion\":\"v1\",\"kind\":\"Service\",\"metadata\":{\"creationTimestamp\":\"2018-05-20T03:29:11Z\",\"labels\":{\"choerodon.io/release\":\"config-server\"},\"name\":\"config-server\",\"namespace\":\"choerodon-devops-prod\",\"resourceVersion\":\"4325981\",\"selfLink\":\"/api/v1/namespaces/choerodon-devops-prod/services/config-server\",\"uid\":\"f68d3f07-5bdd-11e8-a66e-00163e0e2443\"},\"spec\":{\"clusterIP\":\"192.168.28.13\",\"ports\":[{\"name\":\"http\",\"port\":8010,\"protocol\":\"TCP\",\"targetPort\":\"http\"}],\"selector\":{\"choerodon.io/create\":\"config-server\"},\"sessionAffinity\":\"None\",\"type\":\"ClusterIP\"},\"status\":{\"loadBalancer\":{}}}")
 
         devopsEnvResourceDetailDO4.setId(4L)
         devopsEnvResourceDetailDO4.setMessage("{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"Ingress\",\"metadata\":{\"creationTimestamp\":\"2018-05-20T03:48:33Z\",\"generation\":1,\"labels\":{\"choerodon.io/release\":\"devops-service\"},\"name\":\"devops-service\",\"namespace\":\"choerodon-devops-prod\",\"resourceVersion\":\"4337962\",\"selfLink\":\"/apis/extensions/v1beta1/namespaces/choerodon-devops-prod/ingresses/devops-service\",\"uid\":\"aadd986d-5be0-11e8-a66e-00163e0e2443\"},\"spec\":{\"rules\":[{\"host\":\"devops.service.choerodon.com.cn\",\"http\":{\"paths\":[{\"backend\":{\"serviceName\":\"devops-service\",\"servicePort\":8060},\"path\":\"/\"}]}}]},\"status\":{\"loadBalancer\":{\"ingress\":[{}]}}}")
 
         devopsEnvResourceDetailDO5.setId(5L)
-        devopsEnvResourceDetailDO5.setMessage("{\"metadata\":{\"name\":\"springboot-14f93-55f7896455\",\"namespace\":\"ljt\",\"selfLink\":\"/apis/extensions/v1beta1/namespaces/ljt/replicasets/springboot-14f93-55f7896455\",\"uid\":\"5553489b-6c9b-11e8-ad82-525400d91faf\",\"resourceVersion\":\"24136809\",\"generation\":5,\"creationTimestamp\":\"2018-06-10T10:45:04Z\",\"labels\":{\"choerodon.io/application\":\"springboot\",\"choerodon.io/release\":\"springboot-14f93\",\"choerodon.io/version\":\"0.1.0-dev.20180530070103\",\"pod-template-hash\":\"1193452011\"},\"annotations\":{\"deployment.kubernetes.io/desired-replicas\":\"1\",\"deployment.kubernetes.io/max-replicas\":\"2\",\"deployment.kubernetes.io/revision\":\"5\",\"deployment.kubernetes.io/revision-history\":\"1,3\"},\"ownerReferences\":[{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"Deployment\",\"name\":\"springboot-14f93\",\"uid\":\"5550ab04-6c9b-11e8-8371-6a12b79743a2\",\"controller\":true,\"blockOwnerDeletion\":true}]},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"choerodon.io/release\":\"springboot-14f93\",\"pod-template-hash\":\"1193452011\"}},\"template\":{\"metadata\":{\"creationTimestamp\":null,\"labels\":{\"choerodon.io/application\":\"springboot\",\"choerodon.io/release\":\"springboot-14f93\",\"choerodon.io/version\":\"0.1.0-dev.20180530070103\",\"pod-template-hash\":\"1193452011\"}},\"spec\":{\"containers\":[{\"name\":\"springboot-14f93\",\"image\":\"registry.saas.test.com/operation-ystest1805192/springboot:0.1.0-dev.20180530070103\",\"ports\":[{\"name\":\"http\",\"containerPort\":8080,\"protocol\":\"TCP\"}],\"resources\":{\"limits\":{\"memory\":\"500Mi\"},\"requests\":{\"memory\":\"256Mi\"}},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"}}},\"status\":{\"replicas\":1,\"fullyLabeledReplicas\":1,\"readyReplicas\":1,\"availableReplicas\":1,\"observedGeneration\":5}}")
+        devopsEnvResourceDetailDO5.setMessage("{\"metadata\":{\"name\":\"springboot-14f93-55f7896455\",\"namespace\":\"ljt\",\"selfLink\":\"/apis/extensions/v1beta1/namespaces/ljt/replicasets/springboot-14f93-55f7896455\",\"uid\":\"5553489b-6c9b-11e8-ad82-525400d91faf\",\"resourceVersion\":\"24136809\",\"generation\":5,\"creationTimestamp\":\"2018-06-10T10:45:04Z\",\"labels\":{\"choerodon.io/application\":\"springboot\",\"choerodon.io/release\":\"springboot-14f93\",\"choerodon.io/version\":\"0.1.0-dev.20180530070103\",\"pod-template-hash\":\"1193452011\"},\"annotation\":{\"deployment.kubernetes.io/desired-replicas\":\"1\",\"deployment.kubernetes.io/max-replicas\":\"2\",\"deployment.kubernetes.io/revision\":\"5\",\"deployment.kubernetes.io/revision-history\":\"1,3\"},\"ownerReferences\":[{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"Deployment\",\"name\":\"springboot-14f93\",\"uid\":\"5550ab04-6c9b-11e8-8371-6a12b79743a2\",\"controller\":true,\"blockOwnerDeletion\":true}]},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"choerodon.io/create\":\"springboot-14f93\",\"pod-template-hash\":\"1193452011\"}},\"template\":{\"metadata\":{\"creationTimestamp\":null,\"labels\":{\"choerodon.io/application\":\"springboot\",\"choerodon.io/create\":\"springboot-14f93\",\"choerodon.io/version\":\"0.1.0-dev.20180530070103\",\"pod-template-hash\":\"1193452011\"}},\"spec\":{\"containers\":[{\"name\":\"springboot-14f93\",\"image\":\"registry.saas.test.com/operation-ystest1805192/springboot:0.1.0-dev.20180530070103\",\"ports\":[{\"name\":\"http\",\"containerPort\":8080,\"protocol\":\"TCP\"}],\"resources\":{\"limits\":{\"memory\":\"500Mi\"},\"requests\":{\"memory\":\"256Mi\"}},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"}}},\"status\":{\"replicas\":1,\"fullyLabeledReplicas\":1,\"readyReplicas\":1,\"availableReplicas\":1,\"observedGeneration\":5}}")
 
         devopsEnvResourceDetailDO6.setId(6L)
-        devopsEnvResourceDetailDO6.setMessage("{\"metadata\":{\"name\":\"cctestws-7bc7a-init-db\",\"namespace\":\"ljt\",\"selfLink\":\"/apis/batch/v1/namespaces/ljt/jobs/cctestws-7bc7a-init-db\",\"uid\":\"f56fcbf4-6d24-11e8-8371-6a12b79743a2\",\"resourceVersion\":\"19435339\",\"creationTimestamp\":\"2018-06-11T03:10:13Z\",\"labels\":{\"choerodon.io/release\":\"cctestws-7bc7a\"},\"annotations\":{\"helm.sh/hook\":\"pre-install,pre-upgrade\",\"helm.sh/hook-weight\":\"1\"}},\"spec\":{\"parallelism\":1,\"completions\":1,\"activeDeadlineSeconds\":120,\"backoffLimit\":1,\"selector\":{\"matchLabels\":{\"controller-uid\":\"f56fcbf4-6d24-11e8-8371-6a12b79743a2\"}},\"template\":{\"metadata\":{\"name\":\"cctestws-7bc7a-init-db\",\"creationTimestamp\":null,\"labels\":{\"controller-uid\":\"f56fcbf4-6d24-11e8-8371-6a12b79743a2\",\"job-name\":\"cctestws-7bc7a-init-db\"}},\"spec\":{\"volumes\":[{\"name\":\"tools-jar\",\"emptyDir\":{}}],\"initContainers\":[{\"name\":\"tools\",\"image\":\"registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.0\",\"command\":[\"sh\",\"-c\",\"cp -rf /var/choerodon/* /tools\"],\"resources\":{},\"volumeMounts\":[{\"name\":\"tools-jar\",\"mountPath\":\"/tools\"}],\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"containers\":[{\"name\":\"cctestws-7bc7a-init-db\",\"image\":\"registry.saas.test.com/operation-ystest1805192/cctestws:1.8.1-hotfix-we.20180608135220\",\"command\":[\"/bin/sh\",\"-c\",\" java -Dspring.datasource.url=\\\"jdbc:mysql://192.168.12.175:3306/demo_service?useUnicode=true\\u0026characterEncoding=utf-8\\u0026useSSL=false\\\" -Dspring.datasource.username=root -Dspring.datasource.password=choerodon -Ddata.init=true -Ddata.jar=/cctestws.jar -jar /var/choerodon/choerodon-tool-liquibase.jar; \"],\"resources\":{},\"volumeMounts\":[{\"name\":\"tools-jar\",\"mountPath\":\"/var/choerodon\"}],\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"IfNotPresent\"}],\"restartPolicy\":\"Never\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"}}},\"status\":{\"conditions\":[{\"type\":\"Failed\",\"status\":\"True\",\"lastProbeTime\":\"2018-06-11T03:10:34Z\",\"lastTransitionTime\":\"2018-06-11T03:10:34Z\",\"reason\":\"BackoffLimitExceeded\",\"message\":\"Job has reach the specified backoff limit\"}],\"startTime\":\"2018-06-11T03:10:13Z\",\"failed\":1}}")
+        devopsEnvResourceDetailDO6.setMessage("{\"metadata\":{\"name\":\"cctestws-7bc7a-init-db\",\"namespace\":\"ljt\",\"selfLink\":\"/apis/batch/v1/namespaces/ljt/jobs/cctestws-7bc7a-init-db\",\"uid\":\"f56fcbf4-6d24-11e8-8371-6a12b79743a2\",\"resourceVersion\":\"19435339\",\"creationTimestamp\":\"2018-06-11T03:10:13Z\",\"labels\":{\"choerodon.io/release\":\"cctestws-7bc7a\"},\"annotation\":{\"helm.sh/hook\":\"pre-install,pre-upgrade\",\"helm.sh/hook-weight\":\"1\"}},\"spec\":{\"parallelism\":1,\"completions\":1,\"activeDeadlineSeconds\":120,\"backoffLimit\":1,\"selector\":{\"matchLabels\":{\"controller-uid\":\"f56fcbf4-6d24-11e8-8371-6a12b79743a2\"}},\"template\":{\"metadata\":{\"name\":\"cctestws-7bc7a-init-db\",\"creationTimestamp\":null,\"labels\":{\"controller-uid\":\"f56fcbf4-6d24-11e8-8371-6a12b79743a2\",\"job-name\":\"cctestws-7bc7a-init-db\"}},\"spec\":{\"volumes\":[{\"name\":\"tools-jar\",\"emptyDir\":{}}],\"initContainers\":[{\"name\":\"tools\",\"image\":\"registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.0\",\"command\":[\"sh\",\"-c\",\"cp -rf /var/choerodon/* /tools\"],\"resources\":{},\"volumeMounts\":[{\"name\":\"tools-jar\",\"mountPath\":\"/tools\"}],\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"containers\":[{\"name\":\"cctestws-7bc7a-init-db\",\"image\":\"registry.saas.test.com/operation-ystest1805192/cctestws:1.8.1-hotfix-we.20180608135220\",\"command\":[\"/bin/sh\",\"-c\",\" java -Dspring.datasource.url=\\\"jdbc:mysql://192.168.12.175:3306/demo_service?useUnicode=true\\u0026characterEncoding=utf-8\\u0026useSSL=false\\\" -Dspring.datasource.username=root -Dspring.datasource.password=choerodon -Ddata.init=true -Ddata.jar=/cctestws.jar -jar /var/choerodon/choerodon-tool-liquibase.jar; \"],\"resources\":{},\"volumeMounts\":[{\"name\":\"tools-jar\",\"mountPath\":\"/var/choerodon\"}],\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"IfNotPresent\"}],\"restartPolicy\":\"Never\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"}}},\"status\":{\"conditions\":[{\"type\":\"Failed\",\"status\":\"True\",\"lastProbeTime\":\"2018-06-11T03:10:34Z\",\"lastTransitionTime\":\"2018-06-11T03:10:34Z\",\"reason\":\"BackoffLimitExceeded\",\"message\":\"Job has reach the specified backoff limit\"}],\"startTime\":\"2018-06-11T03:10:13Z\",\"failed\":1}}")
 
         devopsEnvResourceDetailDO7.setId(7L)
         devopsEnvResourceDetailDO7.setMessage("{\"apiVersion\":\"v1\",\"kind\":\"Pod\",\"metadata\":{\"creationTimestamp\":\"2018-12-18T08:03:42Z\",\"generateName\":\"daemonset-name-\",\"labels\":{\"controller-revision-hash\":\"608462091\",\"name\":\"fluentd-elasticsearch\",\"pod-template-generation\":\"1\"},\"name\":\"daemonset-name-hd24n\",\"namespace\":\"default\",\"ownerReferences\":[{\"apiVersion\":\"extensions/v1beta1\",\"blockOwnerDeletion\":true,\"controller\":true,\"kind\":\"DaemonSet\",\"name\":\"daemonset-name\",\"uid\":\"6f6bb78b-029b-11e9-a58a-0800272ecd84\"}],\"resourceVersion\":\"47798\",\"selfLink\":\"/api/v1/namespaces/default/pods/daemonset-name-hd24n\",\"uid\":\"6f9b9e49-029b-11e9-a58a-0800272ecd84\"},\"spec\":{\"containers\":[{\"image\":\"nginx\",\"imagePullPolicy\":\"Always\",\"name\":\"container-name\",\"resources\":{\"limits\":{\"memory\":\"200Mi\"},\"requests\":{\"cpu\":\"100m\",\"memory\":\"200Mi\"}},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"volumeMounts\":[{\"mountPath\":\"/var/run/secrets/kubernetes.io/serviceaccount\",\"name\":\"default-token-rmhmg\",\"readOnly\":true}]}],\"dnsPolicy\":\"ClusterFirst\",\"nodeName\":\"minikube\",\"restartPolicy\":\"Always\",\"schedulerName\":\"default-scheduler\",\"securityContext\":{},\"serviceAccount\":\"default\",\"serviceAccountName\":\"default\",\"terminationGracePeriodSeconds\":30,\"tolerations\":[{\"effect\":\"NoSchedule\",\"key\":\"node-role.kubernetes.io/master\"},{\"effect\":\"NoExecute\",\"key\":\"node.kubernetes.io/not-ready\",\"operator\":\"Exists\"},{\"effect\":\"NoExecute\",\"key\":\"node.kubernetes.io/unreachable\",\"operator\":\"Exists\"},{\"effect\":\"NoSchedule\",\"key\":\"node.kubernetes.io/disk-pressure\",\"operator\":\"Exists\"},{\"effect\":\"NoSchedule\",\"key\":\"node.kubernetes.io/memory-pressure\",\"operator\":\"Exists\"}],\"volumes\":[{\"name\":\"default-token-rmhmg\",\"secret\":{\"defaultMode\":420,\"secretName\":\"default-token-rmhmg\"}}]},\"status\":{\"conditions\":[{\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-12-18T08:03:42Z\",\"status\":\"True\",\"type\":\"Initialized\"},{\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-12-18T08:03:51Z\",\"status\":\"True\",\"type\":\"Ready\"},{\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-12-18T08:03:46Z\",\"status\":\"True\",\"type\":\"PodScheduled\"}],\"containerStatuses\":[{\"containerID\":\"docker://60289d333e7dc5e74665768e807bc024c6c76670ae2ca041aa6b602bb4b1b791\",\"image\":\"nginx:latest\",\"imageID\":\"docker-pullable://nginx@sha256:5d32f60db294b5deb55d078cd4feb410ad88e6fe77500c87d3970eca97f54dba\",\"lastState\":{},\"name\":\"container-name\",\"ready\":true,\"restartCount\":0,\"state\":{\"running\":{\"startedAt\":\"2018-12-18T08:03:50Z\"}}}],\"hostIP\":\"192.168.99.100\",\"phase\":\"Running\",\"podIP\":\"172.17.0.4\",\"qosClass\":\"Burstable\",\"startTime\":\"2018-12-18T08:03:42Z\"}}")
@@ -471,17 +461,17 @@ class ApplicationInstanceControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         List<ProjectDO> projectDOList = new ArrayList<>()
@@ -490,11 +480,11 @@ class ApplicationInstanceControllerSpec extends Specification {
         ResponseEntity<PageInfo<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
         Mockito.doReturn(projectDOPageResponseEntity).when(iamServiceClient).queryProjectByOrgId(anyLong(), anyInt(), anyInt(), isNull(), isNull())
 
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setId(1)
         memberDO.setAccessLevel(AccessLevel.OWNER)
-        ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
+        ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
         UserDO userDO = new UserDO()
         userDO.setId(1L)
@@ -506,7 +496,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         List<PipelineDO> pipelineDOList = new ArrayList<>()
         PipelineDO pipelineDO = new PipelineDO()
         pipelineDO.setId(1)
-        io.choerodon.devops.infra.dataobject.gitlab.UserDO gitlabUser = new io.choerodon.devops.infra.dataobject.gitlab.UserDO()
+        GitLabUserDTO gitlabUser = new GitLabUserDTO()
         pipelineDO.setRef("")
         pipelineDO.setUser(gitlabUser)
         gitlabUser.setId(1)
@@ -516,7 +506,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Mockito.when(gitlabServiceClient.listPipeline(anyInt(), anyInt())).thenReturn(responseEntity4)
 
         ResponseEntity<PipelineDO> responseEntity5 = new ResponseEntity<>(pipelineDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getPipeline(anyInt(), anyInt(), anyInt())).thenReturn(responseEntity5)
+        Mockito.when(gitlabServiceClient.queryPipeline(anyInt(), anyInt(), anyInt())).thenReturn(responseEntity5)
 
         ResponseEntity responseEntity6 = new ResponseEntity<>(HttpStatus.OK)
         Mockito.when(gitlabServiceClient.deleteFile(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity6)
@@ -607,7 +597,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "QueryValue"() {
         when: '获取部署 Value'
-        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/value", ReplaceResult.class)
+        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/value", InstanceValueVO.class)
 
         then:
         result.getDeltaYaml().equals("")
@@ -616,7 +606,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "QueryUpgradeValue"() {
         when: '获取升级 Value'
-        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/appVersion/1/value", ReplaceResult.class)
+        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/appVersion/1/value", InstanceValueVO.class)
 
         then:
         result.getDeltaYaml().equals("")
@@ -624,7 +614,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "QueryValues"() {
         when: '查询value列表'
-        def result = restTemplate.getForObject("/v1/projects/1/app_instances/value?appId=1&envId=1&appVersionId=1", ReplaceResult.class)
+        def result = restTemplate.getForObject("/v1/projects/1/app_instances/value?appId=1&envId=1&appVersionId=1", InstanceValueVO.class)
 
         then: '校验返回值'
         result.getDeltaYaml().equals("")
@@ -632,11 +622,11 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "PreviewValues"() {
         given:
-        ReplaceResult replaceResult = new ReplaceResult()
+        InstanceValueVO replaceResult = new InstanceValueVO()
         replaceResult.setYaml(applicationVersionValueDO.getValue())
 
         when: '查询value列表'
-        def result = restTemplate.postForObject("/v1/projects/1/app_instances/previewValue?appVersionId=1", replaceResult, ReplaceResult.class)
+        def result = restTemplate.postForObject("/v1/projects/1/app_instances/previewValue?appVersionId=1", replaceResult, InstanceValueVO.class)
 
         then: '校验返回值'
         result.getDeltaYaml().equals("")
@@ -650,7 +640,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long projectId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json?deployment_name=" + deploymentName, InstanceControllerDetailDTO, projectId, map.get("instanceId"))
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json?deployment_name=" + deploymentName, InstanceControllerDetailVO, projectId, map.get("instanceId"))
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
         ((Map<String, Map>) entity.getBody().getDetail()).get("metadata") != null
@@ -674,7 +664,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long projectId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml?deployment_name=" + deploymentName, InstanceControllerDetailDTO, projectId, map.get("instanceId"))
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml?deployment_name=" + deploymentName, InstanceControllerDetailVO, projectId, map.get("instanceId"))
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
@@ -698,7 +688,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long instanceId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_json?daemon_set_name=" + daemonSetName, InstanceControllerDetailDTO, projectId, instanceId)
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_json?daemon_set_name=" + daemonSetName, InstanceControllerDetailVO, projectId, instanceId)
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
         ((Map<String, Map>) entity.getBody().getDetail()).get("metadata") != null
@@ -718,7 +708,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long instanceId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_yaml?daemon_set_name=" + daemonSetName, InstanceControllerDetailDTO, projectId, instanceId)
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_yaml?daemon_set_name=" + daemonSetName, InstanceControllerDetailVO, projectId, instanceId)
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
@@ -739,7 +729,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long instanceId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_json?stateful_set_name=" + statefulSetName, InstanceControllerDetailDTO, projectId, instanceId)
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_json?stateful_set_name=" + statefulSetName, InstanceControllerDetailVO, projectId, instanceId)
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
         ((Map<String, Map>) entity.getBody().getDetail()).get("metadata") != null
@@ -759,7 +749,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long instanceId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_yaml?stateful_set_name=" + statefulSetName, InstanceControllerDetailDTO, projectId, instanceId)
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_yaml?stateful_set_name=" + statefulSetName, InstanceControllerDetailVO, projectId, instanceId)
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
@@ -782,7 +772,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         applicationInstanceMapper.insert(instanceInit)
 
         DevopsEnvResourceDetailDO detailInit = new DevopsEnvResourceDetailDO()
-        detailInit.setMessage("{\"metadata\":{\"name\":\"ins4\",\"namespace\":\"env1112\",\"selfLink\":\"/apis/extensions/v1beta1/namespaces/env1112/deployments/ins4\",\"uid\":\"d444dd68-f44c-11e8-aca1-525400d91faf\",\"resourceVersion\":\"69026386\",\"generation\":2,\"creationTimestamp\":\"2018-11-30T03:05:45Z\",\"labels\":{\"choerodon.io\":\"2018.11.30-105053-master\",\"choerodon.io/application\":\"code-i\",\"choerodon.io/logs-parser\":\"nginx\",\"choerodon.io/release\":\"ins4\",\"choerodon.io/version\":\"2018.11.20-135445-master\"},\"annotations\":{\"deployment.kubernetes.io/revision\":\"2\"}},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"choerodon.io/release\":\"ins4\"}},\"template\":{\"metadata\":{\"creationTimestamp\":null,\"labels\":{\"choerodon.io\":\"2018.11.30-105053-master\",\"choerodon.io/application\":\"code-i\",\"choerodon.io/release\":\"ins4\",\"choerodon.io/version\":\"2018.11.20-135445-master\"}},\"spec\":{\"containers\":[{\"name\":\"ins4\",\"image\":\"registry.saas.test.com/code-x-code-x/code-i:2018.11.20-135445-master\",\"ports\":[{\"name\":\"http\",\"containerPort\":80,\"protocol\":\"TCP\"}],\"env\":[{\"name\":\"PRO_API_HOST\",\"value\":\"api.example.com.cn\"},{\"name\":\"PRO_CLIENT_ID\",\"value\":\"example\"},{\"name\":\"PRO_COOKIE_SERVER\",\"value\":\"example.com.cn\"},{\"name\":\"PRO_HEADER_TITLE_NAME\",\"value\":\"Choerodon\"},{\"name\":\"PRO_HTTP\",\"value\":\"http\"},{\"name\":\"PRO_LOCAL\",\"value\":\"true\"},{\"name\":\"PRO_TITLE_NAME\",\"value\":\"Choerodon\"}],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"IfNotPresent\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"}},\"strategy\":{\"type\":\"RollingUpdate\",\"rollingUpdate\":{\"maxUnavailable\":\"25%\",\"maxSurge\":\"25%\"}},\"revisionHistoryLimit\":10,\"progressDeadlineSeconds\":600},\"status\":{\"observedGeneration\":2,\"replicas\":1,\"updatedReplicas\":1,\"readyReplicas\":1,\"availableReplicas\":1,\"conditions\":[{\"type\":\"Available\",\"status\":\"True\",\"lastUpdateTime\":\"2018-11-30T03:05:49Z\",\"lastTransitionTime\":\"2018-11-30T03:05:49Z\",\"reason\":\"MinimumReplicasAvailable\",\"message\":\"Deployment has minimum availability.\"},{\"type\":\"Progressing\",\"status\":\"True\",\"lastUpdateTime\":\"2018-12-02T08:20:37Z\",\"lastTransitionTime\":\"2018-11-30T03:05:45Z\",\"reason\":\"NewReplicaSetAvailable\",\"message\":\"ReplicaSet \\\"ins4-786469cf45\\\" has successfully progressed.\"}]}}")
+        detailInit.setMessage("{\"metadata\":{\"name\":\"ins4\",\"namespace\":\"env1112\",\"selfLink\":\"/apis/extensions/v1beta1/namespaces/env1112/deployments/ins4\",\"uid\":\"d444dd68-f44c-11e8-aca1-525400d91faf\",\"resourceVersion\":\"69026386\",\"generation\":2,\"creationTimestamp\":\"2018-11-30T03:05:45Z\",\"labels\":{\"choerodon.io\":\"2018.11.30-105053-master\",\"choerodon.io/application\":\"code-i\",\"choerodon.io/logs-parser\":\"nginx\",\"choerodon.io/release\":\"ins4\",\"choerodon.io/version\":\"2018.11.20-135445-master\"},\"annotation\":{\"deployment.kubernetes.io/revision\":\"2\"}},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"choerodon.io/create\":\"ins4\"}},\"template\":{\"metadata\":{\"creationTimestamp\":null,\"labels\":{\"choerodon.io\":\"2018.11.30-105053-master\",\"choerodon.io/application\":\"code-i\",\"choerodon.io/create\":\"ins4\",\"choerodon.io/version\":\"2018.11.20-135445-master\"}},\"spec\":{\"containers\":[{\"name\":\"ins4\",\"image\":\"registry.saas.test.com/code-x-code-x/code-i:2018.11.20-135445-master\",\"ports\":[{\"name\":\"http\",\"containerPort\":80,\"protocol\":\"TCP\"}],\"env\":[{\"name\":\"PRO_API_HOST\",\"value\":\"api.example.com.cn\"},{\"name\":\"PRO_CLIENT_ID\",\"value\":\"example\"},{\"name\":\"PRO_COOKIE_SERVER\",\"value\":\"example.com.cn\"},{\"name\":\"PRO_HEADER_TITLE_NAME\",\"value\":\"Choerodon\"},{\"name\":\"PRO_HTTP\",\"value\":\"http\"},{\"name\":\"PRO_LOCAL\",\"value\":\"true\"},{\"name\":\"PRO_TITLE_NAME\",\"value\":\"Choerodon\"}],\"resources\":{},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"IfNotPresent\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"}},\"strategy\":{\"type\":\"RollingUpdate\",\"rollingUpdate\":{\"maxUnavailable\":\"25%\",\"maxSurge\":\"25%\"}},\"revisionHistoryLimit\":10,\"progressDeadlineSeconds\":600},\"status\":{\"observedGeneration\":2,\"replicas\":1,\"updatedReplicas\":1,\"readyReplicas\":1,\"availableReplicas\":1,\"conditions\":[{\"type\":\"Available\",\"status\":\"True\",\"lastUpdateTime\":\"2018-11-30T03:05:49Z\",\"lastTransitionTime\":\"2018-11-30T03:05:49Z\",\"reason\":\"MinimumReplicasAvailable\",\"message\":\"Deployment has minimum availability.\"},{\"type\":\"Progressing\",\"status\":\"True\",\"lastUpdateTime\":\"2018-12-02T08:20:37Z\",\"lastTransitionTime\":\"2018-11-30T03:05:45Z\",\"reason\":\"NewReplicaSetAvailable\",\"message\":\"ReplicaSet \\\"ins4-786469cf45\\\" has successfully progressed.\"}]}}")
         devopsEnvResourceDetailMapper.insert(detailInit)
 
         DevopsEnvResourceDO resourceInit = new DevopsEnvResourceDO()
@@ -805,7 +795,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "FormatValue"() {
         given: '初始化replaceResult'
-        ReplaceResult result = new ReplaceResult()
+        InstanceValueVO result = new InstanceValueVO()
         result.setYaml("env:\n" +
                 "  open:\n" +
                 "    PRO_API_HOST: api.example.com.cn1\n" +
@@ -827,7 +817,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     //部署实例
     def "Deploy"() {
         given: '初始化applicationDeployDTO'
-        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO()
+        ApplicationDeployVO applicationDeployDTO = new ApplicationDeployVO()
         applicationDeployDTO.setEnvironmentId(1L)
         applicationDeployDTO.setValues(applicationVersionValueDO.getValue())
         applicationDeployDTO.setAppId(1L)
@@ -843,7 +833,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         gitUtil.cloneBySsh(_ as String, _ as String) >> null
 
         when: '部署应用'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployDTO.class)
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployVO.class)
 
         then: '校验返回值'
         dto != null
@@ -853,7 +843,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     def "deployTestApp"() {
         given: "准备数据"
         def url = MAPPING + "/deploy_test_app"
-        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO()
+        ApplicationDeployVO applicationDeployDTO = new ApplicationDeployVO()
         applicationDeployDTO.setEnvironmentId(1L)
         applicationDeployDTO.setValues(applicationVersionValueDO.getValue())
         applicationDeployDTO.setAppId(1L)
@@ -887,14 +877,14 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def "ListResources"() {
         when: '获取部署实例资源对象'
-        def dto = restTemplate.getForObject("/v1/projects/1/app_instances/1/resources", DevopsEnvResourceDTO.class)
+        def dto = restTemplate.getForObject("/v1/projects/1/app_instances/1/resources", DevopsEnvResourceVO.class)
 
         then: '校验返回值'
-        dto.getPodDTOS().get(0)["name"] == "iam-service-56946b7b9f-42xnx"
-        dto.getServiceDTOS().get(0)["name"] == "config-server"
-        dto.getIngressDTOS().get(0)["name"] == "devops-service"
-        dto.getDeploymentDTOS().get(0)["name"] == "iam-service"
-        dto.getReplicaSetDTOS().get(0)["name"] == "springboot-14f93-55f7896455"
+        dto.getPodVOS().get(0)["name"] == "iam-service-56946b7b9f-42xnx"
+        dto.getServiceVOS().get(0)["name"] == "config-server"
+        dto.getIngressVOS().get(0)["name"] == "devops-service"
+        dto.getDeploymentVOS().get(0)["name"] == "iam-service"
+        dto.getReplicaSetVOS().get(0)["name"] == "springboot-14f93-55f7896455"
     }
 
     def "ListEvents"() {
@@ -986,10 +976,10 @@ class ApplicationInstanceControllerSpec extends Specification {
         envUtil.getUpdatedEnvList() >> connectedEnvList
 
         when: '环境总览实例查询'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/1/listByEnv", "{\"searchParam\":{},\"param\":\"\"}", DevopsEnvPreviewDTO.class)
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/1/listByEnv", "{\"searchParam\":{},\"param\":\"\"}", DevopsEnvPreviewVO.class)
 
         then: '校验返回值'
-        dto.getDevopsEnvPreviewAppDTOS().get(0)["appName"] == "appName"
+        dto.getDevopsEnvPreviewAppVOS().get(0)["appName"] == "appName"
     }
 
     def "ListDeployTime"() {
@@ -1011,10 +1001,10 @@ class ApplicationInstanceControllerSpec extends Specification {
         String startTime = year + "/" + month + "/" + day
 
         when: '获取部署时长报表'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/time?envId=1&startTime=" + startTime + "&endTime=" + startTime, appIds, DeployTimeDTO.class)
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/time?envId=1&startTime=" + startTime + "&endTime=" + startTime, appIds, DeployTimeVO.class)
 
         then: '校验返回值'
-        dto.getDeployAppDTOS().get(0)["appName"] == "appName"
+        dto.getDeployAppVOS().get(0)["appName"] == "appName"
     }
 
     def "ListDeployFrequency"() {
@@ -1030,7 +1020,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         envIds.add(1L)
 
         when: '获取部署次数报表'
-        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/frequency?appId=1&startTime=" + startTime + "&endTime=" + startTime, envIds, DeployFrequencyDTO.class)
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/frequency?appId=1&startTime=" + startTime + "&endTime=" + startTime, envIds, DeployFrequencyVO.class)
 
         then: '校验返回值'
         dto.getCreationDates().size() == 1
@@ -1132,9 +1122,9 @@ class ApplicationInstanceControllerSpec extends Specification {
             }
         }
         // 删除app
-        List<ApplicationDO> list6 = applicationMapper.selectAll()
+        List<ApplicationDTO> list6 = applicationMapper.selectAll()
         if (list6 != null && !list6.isEmpty()) {
-            for (ApplicationDO e : list6) {
+            for (ApplicationDTO e : list6) {
                 applicationMapper.delete(e)
             }
         }

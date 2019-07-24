@@ -10,7 +10,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.DevopsEnvFileErrorDTO;
+import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO;
 import io.choerodon.devops.app.service.DevopsEnvFileService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -34,6 +34,7 @@ import springfox.documentation.annotations.ApiIgnore;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/envs/{env_id}/error_file")
 public class DevopsEnvFileErrorController {
+
     @Autowired
     private DevopsEnvFileService devopsEnvFileService;
 
@@ -42,35 +43,35 @@ public class DevopsEnvFileErrorController {
      *
      * @param projectId 项目 ID
      * @param envId     环境 ID
-     * @return list of DevopsEnvFileErrorDTO
+     * @return baseList of DevopsEnvFileErrorDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询环境文件错误列表")
-    @GetMapping(value = "/list")
-    public ResponseEntity<List<DevopsEnvFileErrorDTO>> list(
+    @GetMapping(value = "/listByEnv")
+    public ResponseEntity<List<DevopsEnvFileErrorVO>> listByEnvId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvFileService.listByEnvId(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.fileError.list"));
+                .orElseThrow(() -> new CommonException("error.env.fileError.baseList"));
     }
 
     /**
-     * 项目下查询环境文件错误列表
+     * 项目下分页查询环境文件错误列表
      *
      * @param projectId 项目 ID
      * @param envId     环境 ID
-     * @return list of DevopsEnvFileErrorDTO
+     * @return baseList of DevopsEnvFileErrorDTO
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下查询环境文件错误列表")
+    @ApiOperation(value = "项目下分页查询环境文件错误列表")
     @CustomPageRequest
-    @GetMapping(value = "/list_by_page")
-    public ResponseEntity<PageInfo<DevopsEnvFileErrorDTO>> page(
+    @GetMapping(value = "/pageByEnv")
+    public ResponseEntity<PageInfo<DevopsEnvFileErrorVO>> pageByEnvId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -80,6 +81,6 @@ public class DevopsEnvFileErrorController {
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvFileService.pageByEnvId(envId, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.fileError.list"));
+                .orElseThrow(() -> new CommonException("error.env.fileError.baseList"));
     }
 }

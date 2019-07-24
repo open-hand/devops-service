@@ -3,16 +3,11 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.DevopsServiceDTO;
-import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
+import io.choerodon.devops.api.vo.DevopsServiceReqVO;
+import io.choerodon.devops.api.vo.DevopsServiceVO;
+import io.choerodon.devops.infra.dto.DevopsServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -22,41 +17,41 @@ public interface DevopsServiceService {
     /**
      * 部署网络
      *
-     * @param projectId           项目id
-     * @param devopsServiceReqDTO 部署网络参数
+     * @param projectId          项目id
+     * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
-    Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO);
+    Boolean create(Long projectId, DevopsServiceReqVO devopsServiceReqVO);
 
 
     /**
      * 部署网络,GitOps
      *
-     * @param projectId           项目id
-     * @param devopsServiceReqDTO 部署网络参数
+     * @param projectId          项目id
+     * @param devopsServiceReqVO 部署网络参数
      * @return Boolean
      */
-    Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Long userId);
+    Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqVO devopsServiceReqVO, Long userId);
 
     /**
      * 更新网络
      *
-     * @param projectId           项目id
-     * @param id                  网络Id
-     * @param devopsServiceReqDTO 部署网络参数
+     * @param projectId          项目id
+     * @param id                 网络Id
+     * @param devopsServiceReqVO 部署网络参数
      * @return boolean
      */
-    Boolean updateDevopsService(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO);
+    Boolean update(Long projectId, Long id, DevopsServiceReqVO devopsServiceReqVO);
 
     /**
      * 更新网络
      *
-     * @param projectId           项目id
-     * @param id                  网络Id
-     * @param devopsServiceReqDTO 部署网络参数
+     * @param projectId          项目id
+     * @param id                 网络Id
+     * @param devopsServiceReqVO 部署网络参数
      * @return boolean
      */
-    Boolean updateDevopsServiceByGitOps(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO, Long userId);
+    Boolean updateDevopsServiceByGitOps(Long projectId, Long id, DevopsServiceReqVO devopsServiceReqVO, Long userId);
 
 
     /**
@@ -64,7 +59,7 @@ public interface DevopsServiceService {
      *
      * @param id 网络ID
      */
-    void deleteDevopsService(Long id);
+    void delete(Long id);
 
 
     /**
@@ -88,17 +83,17 @@ public interface DevopsServiceService {
      * 分页查询网络列表
      *
      * @param envId 参数
-     * @return List of DevopsServiceDTO
+     * @return List of DevopsServiceVO
      */
-    List<DevopsServiceDTO> listDevopsService(Long envId);
+    List<DevopsServiceVO> listByEnvId(Long envId);
 
     /**
      * 查询单个网络
      *
      * @param id 网络id
-     * @return DevopsServiceDTO
+     * @return DevopsServiceVO
      */
-    DevopsServiceDTO query(Long id);
+    DevopsServiceVO query(Long id);
 
     /**
      * /**
@@ -108,9 +103,9 @@ public interface DevopsServiceService {
      * @param envId       环境id
      * @param pageRequest 分页参数
      * @param searchParam 查询参数
-     * @return Page of DevopsServiceDTO
+     * @return Page of DevopsServiceVO
      */
-    PageInfo<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsServiceVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
 
 
     /**
@@ -118,9 +113,9 @@ public interface DevopsServiceService {
      *
      * @param envId       网络id
      * @param serviceName 网络名
-     * @return DevopsServiceDTO
+     * @return DevopsServiceVO
      */
-    DevopsServiceDTO queryByName(Long envId, String serviceName);
+    DevopsServiceVO queryByName(Long envId, String serviceName);
 
     /**
      * 查询实例下关联的网络域名（不包含chart）
@@ -129,7 +124,43 @@ public interface DevopsServiceService {
      * @param instanceId  实例Id
      * @param pageRequest 分页参数
      * @param appId       应用id
-     * @return Page of DevopsServiceDTO
+     * @return Page of DevopsServiceVO
      */
-    PageInfo<DevopsServiceDTO> listByInstanceId(Long projectId, Long instanceId, PageRequest pageRequest,Long appId);
+    PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appId);
+
+
+    DevopsServiceDTO baseQuery(Long id);
+
+    Boolean baseCheckName(Long envId, String name);
+
+    PageInfo<DevopsServiceQueryDTO> basePageByOptions(Long projectId, Long envId, Long instanceId, PageRequest pageRequest,
+                                                      String searchParam, Long appId);
+
+    List<DevopsServiceQueryDTO> baseListRunningService(Long envId);
+
+    List<DevopsServiceDTO> baseListByEnvId(Long envId);
+
+    DevopsServiceQueryDTO baseQueryById(Long id);
+
+    DevopsServiceDTO baseCreate(DevopsServiceDTO devopsServiceDTO);
+
+    void baseDelete(Long id);
+
+    void baseUpdate(DevopsServiceDTO devopsServiceDTO);
+
+    void baseUpdateLables(Long id);
+
+    void baseUpdateEndPoint(Long id);
+
+    List<Long> baseListEnvByRunningService();
+
+    DevopsServiceDTO baseQueryByNameAndEnvId(String name, Long envId);
+
+    Boolean baseCheckServiceByEnv(Long envId);
+
+
+    List<DevopsServiceDTO> baseList();
+
+    void baseDeleteServiceAndInstanceByEnvId(Long envId);
+
 }

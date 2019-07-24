@@ -2,10 +2,9 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
+import io.choerodon.devops.infra.dto.AppUserPermissionDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
-
-import io.choerodon.devops.infra.dataobject.AppUserPermissionDO;
 
 /**
  * Created by n!Ck
@@ -13,8 +12,8 @@ import io.choerodon.devops.infra.dataobject.AppUserPermissionDO;
  * Time: 11:08
  * Description:
  */
-public interface AppUserPermissionMapper extends Mapper<AppUserPermissionDO> {
-    List<AppUserPermissionDO> listAllUserPermissionByAppId(@Param("appId") Long appId);
+public interface AppUserPermissionMapper extends Mapper<AppUserPermissionDTO> {
+    List<AppUserPermissionDTO> listAllUserPermissionByAppId(@Param("appId") Long appId);
 
     void deleteByUserIdWithAppIds(@Param("appIds") List<Long> appIds, @Param("userId") Long userId);
 }

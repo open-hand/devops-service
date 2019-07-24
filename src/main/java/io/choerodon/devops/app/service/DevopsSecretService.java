@@ -1,10 +1,12 @@
 package io.choerodon.devops.app.service;
 
-import com.github.pagehelper.PageInfo;
+import java.util.List;
 
+import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.SecretRepDTO;
-import io.choerodon.devops.api.dto.SecretReqDTO;
+import io.choerodon.devops.api.vo.SecretRespVO;
+import io.choerodon.devops.api.vo.SecretReqVO;
+import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 
 /**
  * Created by n!Ck
@@ -17,10 +19,10 @@ public interface DevopsSecretService {
     /**
      * 创建或更新密钥
      *
-     * @param secretReqDTO 请求体
-     * @return SecretRepDTO
+     * @param secretReqVO 请求体
+     * @return SecretRespVO
      */
-    SecretRepDTO createOrUpdate(SecretReqDTO secretReqDTO);
+    SecretRespVO createOrUpdate(SecretReqVO secretReqVO);
 
     /**
      * 删除密钥
@@ -41,18 +43,18 @@ public interface DevopsSecretService {
     /**
      * 创建密钥,GitOps
      *
-     * @param secretReqDTO 密钥参数
+     * @param secretReqVO 密钥参数
      */
-    void addSecretByGitOps(SecretReqDTO secretReqDTO, Long userId);
+    void addSecretByGitOps(SecretReqVO secretReqVO, Long userId);
 
     /**
      * 更新密钥,GitOps
      *
      * @param projectId    项目id
      * @param id           网络Id
-     * @param secretReqDTO 请求体
+     * @param secretReqVO 请求体
      */
-    void updateDevopsSecretByGitOps(Long projectId, Long id, SecretReqDTO secretReqDTO, Long userId);
+    void updateDevopsSecretByGitOps(Long projectId, Long id, SecretReqVO secretReqVO, Long userId);
 
     /**
      * 分页查询secret
@@ -62,15 +64,15 @@ public interface DevopsSecretService {
      * @param params      查询参数
      * @return Page
      */
-    PageInfo<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params, Long appId);
+    PageInfo<SecretRespVO> pageByOption(Long envId, PageRequest pageRequest, String params, Long appId);
 
     /**
      * 根据密钥id查询密钥
      *
      * @param secretId 密钥id
-     * @return SecretRepDTO
+     * @return SecretRespVO
      */
-    SecretRepDTO querySecret(Long secretId);
+    SecretRespVO querySecret(Long secretId);
 
     /**
      * 校验名字唯一性
@@ -79,4 +81,21 @@ public interface DevopsSecretService {
      * @param name  密钥名
      */
     void checkName(Long envId, String name);
+
+
+    DevopsSecretDTO baseQuery(Long secretId);
+
+    DevopsSecretDTO baseCreate(DevopsSecretDTO devopsSecretDTO);
+
+    void baseUpdate(DevopsSecretDTO devopsSecretDTO);
+
+    void baseDelete(Long secretId);
+
+    void baseCheckName(String name, Long envId);
+
+    DevopsSecretDTO baseQueryByEnvIdAndName(Long envId, String name);
+
+    PageInfo<DevopsSecretDTO> basePageByOption(Long envId, PageRequest pageRequest, String params, Long appId);
+
+    List<DevopsSecretDTO> baseListByEnv(Long envId);
 }

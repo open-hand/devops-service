@@ -8,31 +8,37 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.*
-import io.choerodon.devops.api.dto.gitlab.MemberDTO
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
-import io.choerodon.devops.api.dto.iam.RoleSearchDTO
-import io.choerodon.devops.api.dto.iam.UserDTO
+import io.choerodon.devops.api.vo.*
+<<<<<<< HEAD
+=======
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+import io.choerodon.devops.api.vo.iam.RoleSearchVO
+import io.choerodon.devops.api.vo.iam.UserVO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
-import io.choerodon.devops.domain.application.entity.DevopsServiceE
-import io.choerodon.devops.domain.application.entity.ProjectE
-import io.choerodon.devops.domain.application.entity.UserAttrE
+
+<<<<<<< HEAD
+=======
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+
 import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
-import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -124,9 +130,9 @@ class DevopsEnvironmentControllerSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    Organization organization = new Organization()
+    OrganizationVO organization = new OrganizationVO()
     @Shared
-    ProjectE projectE = new ProjectE()
+    ProjectVO projectE = new ProjectVO()
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
@@ -233,68 +239,68 @@ class DevopsEnvironmentControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER)
-        ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
+        ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
-        List<RoleDTO> ownerRoleDTOList = new ArrayList<>()
-        List<RoleDTO> memberRoleDTOList = new ArrayList<>()
-        RoleDTO ownerRoleDTO = new RoleDTO()
+        List<RoleVO> ownerRoleDTOList = new ArrayList<>()
+        List<RoleVO> memberRoleDTOList = new ArrayList<>()
+        RoleVO ownerRoleDTO = new RoleVO()
         ownerRoleDTO.setId(45L)
         ownerRoleDTO.setCode("role/project/default/project-owner")
         ownerRoleDTOList.add(ownerRoleDTO)
-        PageInfo<RoleDTO> ownerRoleDTOPage = new PageInfo<>(ownerRoleDTOList)
-        RoleDTO memberRoleDTO = new RoleDTO()
+        PageInfo<RoleVO> ownerRoleDTOPage = new PageInfo<>(ownerRoleDTOList)
+        RoleVO memberRoleDTO = new RoleVO()
         memberRoleDTO.setId(43L)
         memberRoleDTO.setCode("role/project/default/project-member")
         memberRoleDTOList.add(memberRoleDTO)
-        PageInfo<RoleDTO> memberRoleDTOPage = new PageInfo<>(memberRoleDTOList)
-        ResponseEntity<PageInfo<RoleDTO>> responseEntity3 = new ResponseEntity<>(ownerRoleDTOPage, HttpStatus.OK)
-        RoleSearchDTO ownerRoleSearchDTO = new RoleSearchDTO()
+        PageInfo<RoleVO> memberRoleDTOPage = new PageInfo<>(memberRoleDTOList)
+        ResponseEntity<PageInfo<RoleVO>> responseEntity3 = new ResponseEntity<>(ownerRoleDTOPage, HttpStatus.OK)
+        RoleSearchVO ownerRoleSearchDTO = new RoleSearchVO()
         ownerRoleSearchDTO.setCode("role/project/default/project-owner")
-        ResponseEntity<PageInfo<RoleDTO>> responseEntity4 = new ResponseEntity<>(memberRoleDTOPage, HttpStatus.OK)
-        RoleSearchDTO memberRoleSearchDTO = new RoleSearchDTO()
+        ResponseEntity<PageInfo<RoleVO>> responseEntity4 = new ResponseEntity<>(memberRoleDTOPage, HttpStatus.OK)
+        RoleSearchVO memberRoleSearchDTO = new RoleSearchVO()
         memberRoleSearchDTO.setCode("role/project/default/project-member")
-        Mockito.when(iamServiceClient.queryRoleIdByCode(any(RoleSearchDTO.class))).thenReturn(responseEntity3).thenReturn(responseEntity4)
+        Mockito.when(iamServiceClient.queryRoleIdByCode(any(RoleSearchVO.class))).thenReturn(responseEntity3).thenReturn(responseEntity4)
 
         and: 'mock查询项目成员和所有者的角色列表'
-        List<UserDTO> ownerUserDTOList = new ArrayList<>()
-        List<UserDTO> memberUserDTOList = new ArrayList<>()
-        UserDTO ownerUserDTO = new UserDTO()
+        List<UserVO> ownerUserDTOList = new ArrayList<>()
+        List<UserVO> memberUserDTOList = new ArrayList<>()
+        UserVO ownerUserDTO = new UserVO()
         ownerUserDTO.setId(1L)
         ownerUserDTO.setLoginName("test")
         ownerUserDTO.setRealName("realTest")
         ownerUserDTOList.add(ownerUserDTO)
-        PageInfo<UserDTO> ownerUserDTOPage = new PageInfo<>(ownerUserDTOList)
-        UserDTO memberUserDTO = new UserDTO()
+        PageInfo<UserVO> ownerUserDTOPage = new PageInfo<>(ownerUserDTOList)
+        UserVO memberUserDTO = new UserVO()
         memberUserDTO.setId(4L)
         memberUserDTO.setLoginName("test4")
         memberUserDTO.setRealName("realTest4")
         memberUserDTOList.add(memberUserDTO)
-        PageInfo<UserDTO> memberUserDTOPage = new PageInfo<>(memberUserDTOList)
-        ResponseEntity<PageInfo<UserDTO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
-        ResponseEntity<PageInfo<UserDTO>> memberPageResponseEntity = new ResponseEntity<>(memberUserDTOPage, HttpStatus.OK)
-        RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
+        PageInfo<UserVO> memberUserDTOPage = new PageInfo<>(memberUserDTOList)
+        ResponseEntity<PageInfo<UserVO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
+        ResponseEntity<PageInfo<UserVO>> memberPageResponseEntity = new ResponseEntity<>(memberUserDTOPage, HttpStatus.OK)
+        RoleAssignmentSearchVO roleAssignmentSearchDTO = new RoleAssignmentSearchVO()
         roleAssignmentSearchDTO.setLoginName("")
         roleAssignmentSearchDTO.setRealName("")
         String[] param = new String[1]
         param[0] = ""
         roleAssignmentSearchDTO.setParam(param)
-        Mockito.when(iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO.class))).thenReturn(ownerPageResponseEntity).thenReturn(memberPageResponseEntity)
+        Mockito.when(iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchVO.class))).thenReturn(ownerPageResponseEntity).thenReturn(memberPageResponseEntity)
     }
 
     def "Create"() {
@@ -309,7 +315,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO2)
 
         and: '设置DTO类'
-        DevopsEnviromentDTO devopsEnviromentDTO = new DevopsEnviromentDTO()
+        DevopsEnviromentVO devopsEnviromentDTO = new DevopsEnviromentVO()
         devopsEnviromentDTO.setClusterId(1L)
         devopsEnviromentDTO.setCode("testCodeChange")
         devopsEnviromentDTO.setName("testNameChange")
@@ -333,10 +339,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
         ResponseEntity<List<UserDO>> responseEntity2 = new ResponseEntity<>(userDOList, HttpStatus.OK)
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity2)
         Mockito.doReturn(responseEntity2).when(iamServiceClient).listUsersByIds(1L)
-        userAttrRepository.queryById(_ as Long) >> userAttrE
+        userAttrRepository.baseQueryById(_ as Long) >> userAttrE
 
         and: 'mock envUtil'
-        GitConfigDTO gitConfigDTO = new GitConfigDTO()
+        GitConfigVO gitConfigDTO = new GitConfigVO()
         gitUtil.getGitConfig(_ as Long) >> gitConfigDTO
         when: '项目下创建环境'
         restTemplate.postForObject("/v1/projects/1/envs", devopsEnviromentDTO, String.class)
@@ -355,8 +361,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsServiceE.setId(2L)
         devopsServiceE1.setEnvId(2L)
         devopsServiceE1.setStatus("running")
-        devopsServiceRepository.insert(devopsServiceE)
-        devopsServiceRepository.insert(devopsServiceE1)
+        devopsServiceRepository.baseCreate(devopsServiceE)
+        devopsServiceRepository.baseCreate(devopsServiceE1)
 
         and: 'mock envUtil方法'
         List<Long> envList = new ArrayList<>()
@@ -442,7 +448,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     def "Query"() {
         when: '项目下查询单个环境'
-        DevopsEnvironmentUpdateDTO dto = restTemplate.getForObject("/v1/projects/1/envs/1", DevopsEnvironmentUpdateDTO.class)
+        DevopsEnvironmentUpdateVO dto = restTemplate.getForObject("/v1/projects/1/envs/1", DevopsEnvironmentUpdateVO.class)
 
         then: '返回值'
         dto["code"] == "testCodeEnv"
@@ -452,14 +458,14 @@ class DevopsEnvironmentControllerSpec extends Specification {
         given: '初始化环境更新DTO对象'
         def envs = devopsEnvironmentMapper.selectAll()
         def envId = envs.get(envs.size() - 1).getId()
-        DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO = new DevopsEnvironmentUpdateDTO()
+        DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO = new DevopsEnvironmentUpdateVO()
         devopsEnvironmentUpdateDTO.setId(envId)
         devopsEnvironmentUpdateDTO.setClusterId(1L)
         devopsEnvironmentUpdateDTO.setDevopsEnvGroupId(2L)
         devopsEnvironmentUpdateDTO.setName("testNameChange1222")
 
         when: '项目下更新环境'
-        restTemplate.put("/v1/projects/1/envs", devopsEnvironmentUpdateDTO, DevopsEnvironmentUpdateDTO.class)
+        restTemplate.put("/v1/projects/1/envs", devopsEnvironmentUpdateDTO, DevopsEnvironmentUpdateVO.class)
 
         then: '返回值'
         devopsEnvironmentMapper.selectByPrimaryKey(envId).getName() == "testNameChange1222"
@@ -544,7 +550,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvironmentMapper.updateSagaSyncEnvCommit(1L,1L)
 
         when: '查询环境同步状态'
-        def envSyncStatusDTO = restTemplate.getForObject("/v1/projects/1/envs/1/status", EnvSyncStatusDTO.class)
+        def envSyncStatusDTO = restTemplate.getForObject("/v1/projects/1/envs/1/status", EnvSyncStatusVO.class)
 
         then: '返回值'
         envSyncStatusDTO.getAgentSyncCommit().equals("testCommitSha")
@@ -558,7 +564,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         HttpEntity<String> strEntity = new HttpEntity<String>(params, headers)
 
         when: '分页查询项目下用户权限'
-        def page = restTemplate.postForObject("/v1/projects/1/envs/list?page=0&size=5", strEntity, Page.class)
+        def page = restTemplate.postForObject("/v1/projects/1/envs/baseList?page=0&size=5", strEntity, Page.class)
 
         then: '返回值'
         page != null
@@ -599,30 +605,30 @@ class DevopsEnvironmentControllerSpec extends Specification {
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(addIamUserResponseEntity)
 
         and: '初始化用户3，4的gitlab对象'
-        UserAttrDO userAttrDO1 = new UserAttrDO()
+        io.choerodon.devops.infra.dataobject.UserAttrDTO userAttrDO1 = new io.choerodon.devops.infra.dataobject.UserAttrDTO()
         userAttrDO1.setIamUserId(3L)
         userAttrDO1.setGitlabUserId(3L)
         userAttrMapper.insert(userAttrDO1)
-        UserAttrDO userAttrDO2 = new UserAttrDO()
+        io.choerodon.devops.infra.dataobject.UserAttrDTO userAttrDO2 = new io.choerodon.devops.infra.dataobject.UserAttrDTO()
         userAttrDO2.setIamUserId(4L)
         userAttrDO2.setGitlabUserId(4L)
         userAttrMapper.insert(userAttrDO2)
 
         and: '添加用户4'
         ResponseEntity responseEntity = new ResponseEntity(HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.addMemberIntoProject(anyInt(), any(MemberDTO.class))).thenReturn(responseEntity)
+        Mockito.when(gitlabServiceClient.createProjectMember(anyInt(), any(MemberDTO.class))).thenReturn(responseEntity)
 
         and: '查询gitlab项目下是否有1和3用户'
-        MemberDO memberDO1 = new MemberDO()
+        MemberDTO memberDO1 = new MemberDTO()
         memberDO1.setId(1)
         memberDO1.setAccessLevel(AccessLevel.NONE)
-        ResponseEntity<MemberDO> memberDOResponseEntity1 = new ResponseEntity<>(memberDO1, HttpStatus.OK)
+        ResponseEntity<MemberDTO> memberDOResponseEntity1 = new ResponseEntity<>(memberDO1, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getProjectMember(anyInt(), anyInt())).thenReturn(memberDOResponseEntity1)
 
         and: '删除1和3的gitlab用户'
         ResponseEntity responseEntity1 = new ResponseEntity(HttpStatus.OK)
         ResponseEntity responseEntity2 = new ResponseEntity(HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.removeMemberFromProject(anyInt(), anyInt())).thenReturn(responseEntity1).thenReturn(responseEntity2)
+        Mockito.when(gitlabServiceClient.deleteProjectMember(anyInt(), anyInt())).thenReturn(responseEntity1).thenReturn(responseEntity2)
 
         when: '环境下为用户分配权限'
         def count = restTemplate.postForObject("/v1/projects/1/envs/1/permission", userIds, Boolean.class)
@@ -657,9 +663,9 @@ class DevopsEnvironmentControllerSpec extends Specification {
         list.get(0)["name"] == "testCluster"
 
         // 删除user，保留默认初始化的1号用户
-        List<UserAttrDO> list0 = userAttrMapper.selectAll()
+        List<io.choerodon.devops.infra.dataobject.UserAttrDTO> list0 = userAttrMapper.selectAll()
         if (list0 != null && !list0.isEmpty()) {
-            for (UserAttrDO e : list0) {
+            for (io.choerodon.devops.infra.dataobject.UserAttrDTO e : list0) {
                 if (e.getIamUserId() != 1L) {
                     userAttrMapper.delete(e)
                 }
@@ -778,10 +784,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
         and: 'mock 删除gitlab仓库'
         ResponseEntity responseEntity = new ResponseEntity(HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.deleteProject(anyInt(), anyInt())).thenReturn(responseEntity)
-        GitlabProjectDO gitlabProjectDO = new GitlabProjectDO()
+        Mockito.when(gitlabServiceClient.deleteProjectById(anyInt(), anyInt())).thenReturn(responseEntity)
+        GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO()
         gitlabProjectDO.setId(1)
-        Mockito.when(gitlabServiceClient.getProjectById(anyInt())).thenReturn(new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK))
+        Mockito.when(gitlabServiceClient.queryProjectById(anyInt())).thenReturn(new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK))
 
         when: '删除已停用的环境'
         restTemplate.delete("/v1/projects/1/envs/999")

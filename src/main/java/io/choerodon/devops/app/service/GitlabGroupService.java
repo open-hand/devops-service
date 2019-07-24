@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
+import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 
 /**
  * Created with IntelliJ IDEA.

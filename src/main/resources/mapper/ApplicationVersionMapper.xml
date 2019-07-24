@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.ApplicationVersionMapper">
-    <select id="listApplicationVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+    <select id="listApplicationVersion" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT
         dav.id,
         dav.version,
@@ -40,7 +40,7 @@
         </if>
     </select>
 
-    <select id="listAppLatestVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO">
+    <select id="listAppLatestVersion" resultType="io.choerodon.devops.infra.dto.ApplicationLatestVersionDTO">
         SELECT
         dap.version,
         dap.id versionId,
@@ -69,7 +69,7 @@
         )
         OR dam.publish_level = 'public'
     </select>
-    <select id="queryByCommitSha" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+    <select id="queryByCommitSha" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT
             dav.*
         FROM
@@ -80,7 +80,7 @@
         AND dav.`commit` = #{commit}
     </select>
 
-    <select id="listByAppIdAndEnvId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+    <select id="listByAppIdAndEnvId" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT
         dav.id,
         dav.version
@@ -112,7 +112,7 @@
         AND dav.id = #{versionId}
     </select>
 
-    <select id="selectByAppId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+    <select id="selectByAppId" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT
         dav.id,
         dav.version,
@@ -133,7 +133,7 @@
         dav.id DESC
     </select>
 
-    <select id="selectByAppIdAndParamWithPage" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+    <select id="selectByAppIdAndParamWithPage" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT
         dav.id,
         dav.version,
@@ -159,7 +159,7 @@
         dav.id DESC
     </select>
 
-    <select id="selectDeployedByAppId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+    <select id="selectDeployedByAppId" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT DISTINCT
         dav.id,
         dav.version
@@ -175,7 +175,7 @@
         dav.id DESC
     </select>
 
-    <select id="getAllPublishedVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+    <select id="getAllPublishedVersion" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         select
         dav.id,
         dav.version,
@@ -196,7 +196,7 @@
         dav.app_id = #{applicationId}
     </select>
 
-    <select id="selectUpgradeVersions" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+    <select id="selectUpgradeVersions" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT id, app_id, version,creation_date
         FROM
         devops_app_version
@@ -224,12 +224,12 @@
     </select>
 
 
-    <select id="getLatestVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+    <select id="getLatestVersion" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         select * from devops_app_version where app_id = #{appId} order by id desc limit 1
     </select>
 
 
-    <select id="listByAppVersionIds" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+    <select id="listByAppVersionIds" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT *
         FROM
         devops_app_version dav
@@ -243,7 +243,7 @@
         </if>
     </select>
 
-    <select id="listByAppIdAndBranch" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+    <select id="listByAppIdAndBranch" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT
         *
         FROM

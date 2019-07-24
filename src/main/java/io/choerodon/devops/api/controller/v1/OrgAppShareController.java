@@ -4,6 +4,15 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.base.domain.Sort;
+import io.choerodon.base.enums.ResourceType;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.ApplicationShareService;
+import io.choerodon.mybatis.annotation.SortDefault;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,16 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
-import io.choerodon.base.enums.ResourceType;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.AppShareService;
-import io.choerodon.mybatis.annotation.SortDefault;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -31,7 +30,7 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 @RequestMapping(value = "/v1/organizations/apps_share")
 public class OrgAppShareController {
     @Autowired
-    private AppShareService appShareService;
+    private ApplicationShareService applicationShareService;
 
     /**
      * 查询所有已发布的应用
@@ -39,13 +38,13 @@ public class OrgAppShareController {
      * @param isSite      is_site
      * @param pageRequest 分页参数
      * @param searchParam 搜索参数
-     * @return list of ApplicationReleasingDTO
+     * @return baseList of ApplicationReleasingDTO
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "查询所有已发布的应用")
     @CustomPageRequest
     @PostMapping(value = "/listByOptions")
-    public ResponseEntity<PageInfo<ApplicationReleasingDTO>> pageListMarketAppsByProjectId(
+    public ResponseEntity<PageInfo<ApplicationReleasingVO>> pageListMarketAppsByProjectId(
             @ApiParam(value = "发布层级")
             @RequestParam(value = "is_site", required = false) Boolean isSite,
             @ApiParam(value = "是否收费")
@@ -55,7 +54,7 @@ public class OrgAppShareController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                appShareService.listMarketAppsBySite(isSite, isFree, pageRequest, searchParam))
+                applicationShareService.listMarketAppsBySite(isSite, isFree, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.share.applications.by.site"));
     }
@@ -63,16 +62,16 @@ public class OrgAppShareController {
     /**
      * 根据shareId获取应用详情
      *
-     * @return list of ApplicationReleasingDTO
+     * @return baseList of ApplicationReleasingDTO
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据shareId获取应用详情")
     @GetMapping(value = "/app_detail")
-    public ResponseEntity<ApplicationReleasingDTO> getAppDetailByShareId(
+    public ResponseEntity<ApplicationReleasingVO> getAppDetailByShareId(
             @ApiParam(value = "shareId")
             @RequestParam(value = "share_id") Long shareId) {
         return Optional.ofNullable(
-                appShareService.getAppDetailByShareId(shareId))
+                applicationShareService.getAppDetailByShareId(shareId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.detail.by.share.id"));
     }
@@ -80,7 +79,7 @@ public class OrgAppShareController {
     /**
      * 根据shareId更新应用共享
      *
-     * @return list of ApplicationReleasingDTO
+     * @return baseList of ApplicationReleasingDTO
      */
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据shareId更新应用共享")
@@ -90,7 +89,7 @@ public class OrgAppShareController {
             @RequestParam(value = "share_id") Long shareId,
             @ApiParam(value = "是否收费")
             @RequestParam(value = "is_free") Boolean isFree) {
-        appShareService.updateByShareId(shareId, isFree);
+        applicationShareService.updateByShareId(shareId, isFree);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -105,9 +104,9 @@ public class OrgAppShareController {
     @PostMapping(value = "/batch_release")
     public ResponseEntity<List<Long>> batchRelease(
             @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody List<ApplicationReleasingDTO> releasingDTOList) {
+            @RequestBody List<ApplicationReleasingVO> releasingDTOList) {
         return Optional.ofNullable(
-                appShareService.batchRelease(releasingDTOList))
+                applicationShareService.batchRelease(releasingDTOList))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.batch.release"));
     }
@@ -122,7 +121,7 @@ public class OrgAppShareController {
     @ApiOperation(value = "根据Ids获取应用详情")
     @CustomPageRequest
     @PostMapping(value = "/details")
-    public ResponseEntity<PageInfo<ApplicationReleasingDTO>> getAppsDetail(
+    public ResponseEntity<PageInfo<ApplicationReleasingVO>> getAppsDetail(
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody List<Long> shareIds,
             @ApiParam(value = "分页参数")
@@ -130,7 +129,7 @@ public class OrgAppShareController {
             @ApiParam(value = "查询参数")
             @RequestParam(required = false) String params) {
         return Optional.ofNullable(
-                appShareService.getAppsDetail(pageRequest, params, shareIds))
+                applicationShareService.getAppsDetail(pageRequest, params, shareIds))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.app.detail.by.shareId"));
     }
@@ -145,7 +144,7 @@ public class OrgAppShareController {
     @ApiOperation(value = "根据应用Id获取已发布版本")
     @CustomPageRequest
     @PostMapping(value = "/list_versions")
-    public ResponseEntity<PageInfo<ApplicationVersionRepDTO>> getVersionsByAppId(
+    public ResponseEntity<PageInfo<ApplicationVersionRespVO>> getVersionsByAppId(
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_id") Long appId,
             @ApiParam(value = "分页参数")
@@ -153,7 +152,7 @@ public class OrgAppShareController {
             @ApiParam(value = "查询参数")
             @RequestParam(required = false) String version) {
         return Optional.ofNullable(
-                appShareService.getVersionsByAppId(appId, pageRequest, version))
+                applicationShareService.getVersionsByAppId(appId, pageRequest, version))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.versions.by.appId"));
     }
@@ -167,11 +166,11 @@ public class OrgAppShareController {
     @Permission(type = ResourceType.SITE, permissionWithin = true)
     @ApiOperation(value = "根据版本Id获取values和chart")
     @GetMapping(value = "/values")
-    public ResponseEntity<AppVersionAndValueDTO> getValuesAndChart(
+    public ResponseEntity<AppVersionAndValueVO> getValuesAndChart(
             @ApiParam(value = "应用Id")
             @RequestParam(value = "version_id") Long versionId) {
         return Optional.ofNullable(
-                appShareService.getValuesAndChart(versionId))
+                applicationShareService.getValuesAndChart(versionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.values.chart"));
     }
@@ -179,11 +178,11 @@ public class OrgAppShareController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "token校验")
     @PostMapping(value = "/check_token")
-    public ResponseEntity<AccessTokenCheckResultDTO> checkToken(
+    public ResponseEntity<AccessTokenCheckResultVO> checkToken(
             @ApiParam(value = "token")
-            @RequestBody AccessTokenDTO tokenDTO) {
+            @RequestBody AccessTokenVO tokenDTO) {
         return Optional.ofNullable(
-                appShareService.checkToken(tokenDTO))
+                applicationShareService.checkToken(tokenDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.check.access.token"));
     }
@@ -193,8 +192,8 @@ public class OrgAppShareController {
     @PostMapping(value = "/save_token")
     public ResponseEntity saveToken(
             @ApiParam(value = "token")
-            @RequestBody AccessTokenDTO tokenDTO) {
-        appShareService.saveToken(tokenDTO);
+            @RequestBody AccessTokenVO tokenDTO) {
+        applicationShareService.saveToken(tokenDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

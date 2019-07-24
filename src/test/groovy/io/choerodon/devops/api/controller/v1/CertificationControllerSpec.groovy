@@ -4,11 +4,10 @@ import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.service.DevopsEnvironmentService
-import io.choerodon.devops.app.service.GitlabGroupMemberService
+
 import io.choerodon.devops.app.service.impl.CertificationServiceImpl
-import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository
-import io.choerodon.devops.domain.application.repository.GitlabRepository
-import io.choerodon.devops.domain.application.repository.IamRepository
+
+
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.CertificationDO

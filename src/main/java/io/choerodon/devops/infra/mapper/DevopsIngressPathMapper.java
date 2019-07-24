@@ -5,7 +5,7 @@ import java.util.List;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
+import io.choerodon.devops.infra.dto.DevopsIngressPathDTO;
 
 /**
  * Creator: Runge
@@ -13,13 +13,13 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
  * Time: 14:30
  * Description:
  */
-public interface DevopsIngressPathMapper extends Mapper<DevopsIngressPathDO> {
+public interface DevopsIngressPathMapper extends Mapper<DevopsIngressPathDTO> {
 
-    List<DevopsIngressPathDO> selectByEnvIdAndServiceName(@Param("envId") Long envId,
-                                                          @Param("serviceName") String serviceName);
+    List<DevopsIngressPathDTO> listPathByEnvIdAndServiceName(@Param("envId") Long envId,
+                                                             @Param("serviceName") String serviceName);
 
-    List<DevopsIngressPathDO> selectByEnvIdAndServiceId(@Param("envId") Long envId,
-                                                        @Param("serviceId") Long serviceId);
+    List<DevopsIngressPathDTO> listPathByEnvIdAndServiceId(@Param("envId") Long envId,
+                                                           @Param("serviceId") Long serviceId);
 
     boolean checkDomainAndPath(@Param("envId") Long envId, @Param("domain") String domain,
                                @Param("path") String path, @Param("ingressId") Long ingressId);

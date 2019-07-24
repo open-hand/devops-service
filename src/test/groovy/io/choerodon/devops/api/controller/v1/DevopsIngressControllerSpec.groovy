@@ -4,11 +4,11 @@ import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.DevopsIngressDTO
-import io.choerodon.devops.api.dto.DevopsIngressPathDTO
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE
+import io.choerodon.devops.api.vo.DevopsIngressPathVO
+import io.choerodon.devops.api.vo.DevopsIngressVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
@@ -16,8 +16,7 @@ import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.common.util.enums.CertificationStatus
-import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
@@ -99,9 +98,9 @@ class DevopsIngressControllerSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO()
+    DevopsIngressVO devopsIngressDTO = new DevopsIngressVO()
     @Shared
-    DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO()
+    DevopsIngressPathVO devopsIngressPathDTO = new DevopsIngressPathVO()
     @Shared
     DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared
@@ -132,7 +131,7 @@ class DevopsIngressControllerSpec extends Specification {
         devopsIngressPathDTO.setServicePort(7777L)
         devopsIngressPathDTO.setServiceName("test")
         devopsIngressPathDTO.setServiceStatus("running")
-        List<DevopsIngressPathDTO> pathList = new ArrayList<>()
+        List<DevopsIngressPathVO> pathList = new ArrayList<>()
         pathList.add(devopsIngressPathDTO)
 
         devopsIngressDTO.setEnvId(1L)
@@ -199,22 +198,22 @@ class DevopsIngressControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER)
-        ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
+        ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         RepositoryFile repositoryFile = new RepositoryFile()
@@ -252,16 +251,16 @@ class DevopsIngressControllerSpec extends Specification {
 
     def "Update"() {
         given: '初始化DTO类'
-        devopsIngressPathDTO = new DevopsIngressPathDTO()
+        devopsIngressPathDTO = new DevopsIngressPathVO()
         devopsIngressPathDTO.setPath("/bootz")
         devopsIngressPathDTO.setServiceId(1L)
         devopsIngressPathDTO.setServicePort(7777L)
         devopsIngressPathDTO.setServiceName("test")
         devopsIngressPathDTO.setServiceStatus("running")
-        List<DevopsIngressPathDTO> pathList = new ArrayList<>()
+        List<DevopsIngressPathVO> pathList = new ArrayList<>()
         pathList.add(devopsIngressPathDTO)
         // 修改后的DTO
-        DevopsIngressDTO newDevopsIngressDTO = new DevopsIngressDTO()
+        DevopsIngressVO newDevopsIngressDTO = new DevopsIngressVO()
         newDevopsIngressDTO.setId(1L)
         newDevopsIngressDTO.setEnvId(1L)
         newDevopsIngressDTO.setCertId(1L)
@@ -285,7 +284,7 @@ class DevopsIngressControllerSpec extends Specification {
 
     def "QueryDomainId"() {
         when: '项目下查询域名'
-        def dto = restTemplate.getForObject("/v1/projects/1/ingress/1", DevopsIngressDTO.class)
+        def dto = restTemplate.getForObject("/v1/projects/1/ingress/1", DevopsIngressVO.class)
 
         then: '校验返回值'
         dto["domain"] == "test.test-test.test"
@@ -299,7 +298,7 @@ class DevopsIngressControllerSpec extends Specification {
         restTemplate.delete("/v1/projects/1/ingress/1")
 
         then: '校验返回值'
-        devopsEnvCommandRepository.queryByObject("ingress", 1L).getCommandType() == "delete"
+        devopsEnvCommandRepository.baseQueryByObject("ingress", 1L).getCommandType() == "delete"
     }
 
     def "CheckName"() {

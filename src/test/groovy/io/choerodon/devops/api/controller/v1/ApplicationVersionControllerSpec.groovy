@@ -4,15 +4,16 @@ import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO
-import io.choerodon.devops.api.dto.DeployVersionDTO
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
-import io.choerodon.devops.domain.application.repository.IamRepository
+import io.choerodon.devops.api.vo.DeployVersionVO
+import io.choerodon.devops.api.vo.DeployVersionVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
+import io.choerodon.devops.infra.dto.AppUserPermissionDTO
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
 import org.mockito.Mockito
@@ -56,7 +57,7 @@ class ApplicationVersionControllerSpec extends Specification {
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
-    private AppUserPermissionMapper appUserPermissionMapper
+    private ApplicationUserPermissionMapper appUserPermissionMapper
     @Autowired
     private ApplicationVersionMapper applicationVersionMapper
     @Autowired
@@ -82,7 +83,7 @@ class ApplicationVersionControllerSpec extends Specification {
     @Shared
     ApplicationVersionValueDO applicationVersionValueDO = new ApplicationVersionValueDO()
     @Shared
-    AppUserPermissionDO appUserPermissionDO = new AppUserPermissionDO()
+    AppUserPermissionDTO appUserPermissionDO = new AppUserPermissionDTO()
     @Shared
     DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared
@@ -94,7 +95,7 @@ class ApplicationVersionControllerSpec extends Specification {
     @Shared
     DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO()
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
 
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
@@ -112,18 +113,18 @@ class ApplicationVersionControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        List<ProjectWithRoleDTO> list = new ArrayList<>()
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<ProjectWithRoleVO> list = new ArrayList<>()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setId(44)
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("test-name")
         projectWithRoleDTO.setRoles(roleDTOList)
         list.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> page = new PageInfo(list)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> responseEntity2 = new ResponseEntity<>(page, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> page = new PageInfo(list)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> responseEntity2 = new ResponseEntity<>(page, HttpStatus.OK)
         Mockito.when(iamServiceClient.listProjectWithRole(anyLong(), anyInt(), anyInt())).thenReturn(responseEntity2)
         List<UserDO> userDOList = new ArrayList<>()
         UserDO userDO1 = new UserDO()
@@ -277,7 +278,7 @@ class ApplicationVersionControllerSpec extends Specification {
     // 项目下查询应用最新的版本和各环境下部署的版本
     def "GetDeployVersions"() {
         when: '项目下查询应用最新的版本和各环境下部署的版本'
-        def dto = restTemplate.getForObject(mapping + "/app/{app_id}/deployVersions", DeployVersionDTO.class, 1L, 1L)
+        def dto = restTemplate.getForObject(mapping + "/app/{app_id}/deployVersions", DeployVersionVO.class, 1L, 1L)
 
         then: '校验返回结果'
         dto["latestVersion"] == "0.2.0-dev.20180521111826"
@@ -345,9 +346,9 @@ class ApplicationVersionControllerSpec extends Specification {
             }
         }
         // 删除app
-        List<ApplicationDO> list2 = applicationMapper.selectAll()
+        List<ApplicationDTO> list2 = applicationMapper.selectAll()
         if (list2 != null && !list2.isEmpty()) {
-            for (ApplicationDO e : list2) {
+            for (ApplicationDTO e : list2) {
                 applicationMapper.delete(e)
             }
         }
@@ -359,9 +360,9 @@ class ApplicationVersionControllerSpec extends Specification {
             }
         }
         // 删除appUserPermission
-        List<AppUserPermissionDO> list4 = appUserPermissionMapper.selectAll()
+        List<AppUserPermissionDTO> list4 = appUserPermissionMapper.selectAll()
         if (list4 != null && !list4.isEmpty()) {
-            for (AppUserPermissionDO e : list4) {
+            for (AppUserPermissionDTO e : list4) {
                 appUserPermissionMapper.delete(e)
             }
         }

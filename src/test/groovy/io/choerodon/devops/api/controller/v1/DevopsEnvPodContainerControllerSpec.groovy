@@ -49,18 +49,18 @@ class DevopsEnvPodContainerControllerSpec extends Specification {
 //        InstanceStatus
 //
 //        when: '获取日志信息 By Pod'
-//        def list = restTemplate.getForObject("/v1/projects/1/app_pod/1/containers/logs", List.class)
+//        def baseList = restTemplate.getForObject("/v1/projects/1/app_pod/1/containers/logs", List.class)
 //
 //        then: '校验返回结果'
-//        list.size() == 1
+//        baseList.size() == 1
 //    }
 
 //    def "HandleShellByPod"() {
 //        when: '获取日志shell信息 By Pod'
-//        def list = restTemplate.getForObject("/v1/projects/1/app_pod/1/containers/logs/shell", List.class)
+//        def baseList = restTemplate.getForObject("/v1/projects/1/app_pod/1/containers/logs/shell", List.class)
 //
 //        then: '校验返回结果'
-//        list.size() == 1
+//        baseList.size() == 1
 //
 //        and: '清理数据'
 //        // 删除envPodContainer

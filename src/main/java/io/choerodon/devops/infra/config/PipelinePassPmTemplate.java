@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.notify.Level;
 import io.choerodon.core.notify.NotifyBusinessType;
 import io.choerodon.core.notify.PmTemplate;
-import io.choerodon.devops.infra.common.util.enums.PipelineNoticeType;
+import io.choerodon.devops.infra.enums.PipelineNoticeType;
 
 /**
  * Creator: ChangpingShi0213@gmail.com

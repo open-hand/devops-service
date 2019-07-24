@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.feign;
 import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -10,11 +11,9 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
 
-import io.choerodon.base.domain.Sort;
-import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
-import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
-import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.AccessTokenCheckResultVO;
+import io.choerodon.devops.api.vo.AppVersionAndValueVO;
+import io.choerodon.devops.api.vo.ApplicationReleasingVO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -24,18 +23,18 @@ import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 public interface AppShareClient {
 
     @POST("v1/public/app_shares/by_token")
-    Call<PageInfo<ApplicationReleasingDTO>> getAppShares(@QueryMap Map<String, Object> map);
+    Call<PageInfo<ApplicationReleasingVO>> getAppShares(@QueryMap Map<String, Object> map);
 
     @POST("v1/public/app_shares/{app_id}/list_versions")
-    Call<PageInfo<ApplicationVersionRepDTO>> listVersionByAppId(@Path("app_id") Long appId,
+    Call<PageInfo<ApplicationVersionRespVO>> listVersionByAppId(@Path("app_id") Long appId,
                                                                 @QueryMap Map<String, Object> map);
 
     @GET("v1/public/app_shares/{app_id}/versions/{version_id}/config_info")
-    Call<AppVersionAndValueDTO> getConfigInfoByVerionId(@Path("app_id") Long appId,
-                                                        @Path("version_id") Long versionId,
-                                                        @QueryMap Map<String, Object> map);
+    Call<AppVersionAndValueVO> getConfigInfoByVerionId(@Path("app_id") Long appId,
+                                                       @Path("version_id") Long versionId,
+                                                       @QueryMap Map<String, Object> map);
 
     @POST("v1/public/app_shares/check_token")
-    Call<AccessTokenCheckResultDTO> checkTokenExist(@Query("access_token") String accessToken);
+    Call<AccessTokenCheckResultVO> checkTokenExist(@Query("access_token") String accessToken);
 
 }

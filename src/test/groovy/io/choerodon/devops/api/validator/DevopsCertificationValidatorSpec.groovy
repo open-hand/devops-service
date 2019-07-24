@@ -19,7 +19,7 @@ class DevopsCertificationValidatorSpec extends Specification {
         String name = "z-z"
         Long envId = 1L
 
-        Mockito.when(mockCertificationRepository.checkCertNameUniqueInEnv(Mockito.anyLong(), Mockito.anyString())).thenReturn(true)
+        Mockito.when(mockCertificationRepository.baseCheckCertNameUniqueInEnv(Mockito.anyLong(), Mockito.anyString())).thenReturn(true)
 
         when: "调用方法"
         devopsCertificationValidator.checkCertification(envId, name)
@@ -32,7 +32,7 @@ class DevopsCertificationValidatorSpec extends Specification {
         given: "准备数据"
         Long envId = 1L
 
-        Mockito.when(mockCertificationRepository.checkCertNameUniqueInEnv(Mockito.anyLong(), Mockito.anyString())).thenReturn(false)
+        Mockito.when(mockCertificationRepository.baseCheckCertNameUniqueInEnv(Mockito.anyLong(), Mockito.anyString())).thenReturn(false)
 
         when: "调用方法"
         devopsCertificationValidator.checkCertification(envId, name)

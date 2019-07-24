@@ -120,7 +120,7 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
                 getConnection(dataBaseUrl, dataBaseUsername, dataBasePassword)
         Statement stat = conn.createStatement()
         //创建 SQL的IF函数，用JAVA的方法代替函数
-        stat.execute("CREATE ALIAS IF NOT EXISTS BINARY FOR \"io.choerodon.devops.infra.common.util.MybatisFunctionTestUtil.binaryFunction\"")
+        stat.execute("CREATE ALIAS IF NOT EXISTS BINARY FOR \"io.choerodon.devops.infra.util.MybatisFunctionTestUtil.binaryFunction\"")
         stat.close()
         conn.close()
     }

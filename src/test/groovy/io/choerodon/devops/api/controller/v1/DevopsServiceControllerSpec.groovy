@@ -4,19 +4,18 @@ import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.DevopsServiceDTO
-import io.choerodon.devops.api.dto.DevopsServiceReqDTO
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
-import io.choerodon.devops.domain.application.entity.PortMapE
+import io.choerodon.devops.api.vo.DevopsServiceReqVO
+import io.choerodon.devops.api.vo.DevopsServiceVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+import io.choerodon.devops.infra.dto.PortMapVO
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
@@ -161,22 +160,22 @@ class DevopsServiceControllerSpec extends Specification {
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER)
-        ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
+        ResponseEntity<MemberDTO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         RepositoryFile repositoryFile = new RepositoryFile()
@@ -203,14 +202,14 @@ class DevopsServiceControllerSpec extends Specification {
 
     def "Create"() {
         given:
-        List<PortMapE> portMapES = new ArrayList<>()
-        PortMapE portMapE = new PortMapE()
+        List<PortMapVO> portMapES = new ArrayList<>()
+        PortMapVO portMapE = new PortMapVO()
         portMapE.setPort(7777L)
         portMapE.setNodePort(9999L)
         portMapE.setTargetPort("8888")
         portMapES.add(portMapE)
 
-        DevopsServiceReqDTO devopsServiceReqDTO = new DevopsServiceReqDTO()
+        DevopsServiceReqVO devopsServiceReqDTO = new DevopsServiceReqVO()
         devopsServiceReqDTO.setPorts()
         devopsServiceReqDTO.setAppId(1L)
         devopsServiceReqDTO.setEnvId(1L)
@@ -230,8 +229,8 @@ class DevopsServiceControllerSpec extends Specification {
 
     def "Update"() {
         given: 'mock envUtil'
-        List<PortMapE> portMapES = new ArrayList<>()
-        PortMapE portMapE = new PortMapE()
+        List<PortMapVO> portMapES = new ArrayList<>()
+        PortMapVO portMapE = new PortMapVO()
         portMapE.setPort(7777L)
         portMapE.setNodePort(9999L)
         portMapE.setTargetPort("8888")
@@ -239,7 +238,7 @@ class DevopsServiceControllerSpec extends Specification {
 
         List<String> appInstances = new ArrayList<>()
         appInstances.add(applicationInstanceDO.getCode())
-        DevopsServiceReqDTO newDevopsServiceReqDTO = new DevopsServiceReqDTO()
+        DevopsServiceReqVO newDevopsServiceReqDTO = new DevopsServiceReqVO()
         newDevopsServiceReqDTO.setAppId(1L)
         newDevopsServiceReqDTO.setEnvId(1L)
         newDevopsServiceReqDTO.setType("ClusterIP")
@@ -249,7 +248,7 @@ class DevopsServiceControllerSpec extends Specification {
         newDevopsServiceReqDTO.setExternalIp("1.2.1.1")
 
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
-        id = devopsServiceRepository.selectByNameAndEnvId("svcsvc", 1L).getId()
+        id = devopsServiceRepository.baseQueryByNameAndEnvId("svcsvc", 1L).getId()
         devopsEnvFileResourceDO = devopsEnvFileResourceMapper.selectByPrimaryKey(1L)
         devopsEnvFileResourceDO.setResourceId(id)
         devopsEnvFileResourceMapper.updateByPrimaryKey(devopsEnvFileResourceDO)
@@ -272,7 +271,7 @@ class DevopsServiceControllerSpec extends Specification {
         restTemplate.delete("/v1/projects/1/service/{id}", id)
 
         then: '校验返回值'
-        devopsEnvCommandRepository.queryByObject("service", id).getCommandType() == "delete"
+        devopsEnvCommandRepository.baseQueryByObject("service", id).getCommandType() == "delete"
     }
 
     def "ListByEnvId"() {
@@ -297,7 +296,7 @@ class DevopsServiceControllerSpec extends Specification {
 
     def "Query"() {
         when: '查询单个网络'
-        def dto = restTemplate.getForObject("/v1/projects/1/service/{id}", DevopsServiceDTO.class, id)
+        def dto = restTemplate.getForObject("/v1/projects/1/service/{id}", DevopsServiceVO.class, id)
 
         then: '校验返回值'
         dto != null

@@ -9,7 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -23,7 +23,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 @RestController
 @RequestMapping(value = "/v1/organizations/{organization_id}/clusters")
-public class DevopsClusterController {
+public class    DevopsClusterController {
     private static final String ERROR_CLUSTER_QUERY = "error.cluster.query";
 
     @Autowired
@@ -35,7 +35,7 @@ public class DevopsClusterController {
      * 组织下创建集群
      *
      * @param organizationId      组织Id
-     * @param devopsClusterReqDTO 集群信息
+     * @param devopsClusterReqVO 集群信息
      */
     @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下创建集群")
@@ -44,20 +44,20 @@ public class DevopsClusterController {
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群信息", required = true)
-            @RequestBody DevopsClusterReqDTO devopsClusterReqDTO) {
-        return Optional.ofNullable(devopsClusterService.createCluster(organizationId, devopsClusterReqDTO))
+            @RequestBody DevopsClusterReqVO devopsClusterReqVO) {
+        return Optional.ofNullable(devopsClusterService.createCluster(organizationId, devopsClusterReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.cluster.insert"));
     }
 
     /**
-     * 更新集群下的项目
+     * 更新集群
      *
      * @param organizationId      组织Id
-     * @param devopsClusterReqDTO 集群对象
+     * @param devopsClusterReqVO 集群对象
      */
     @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
-    @ApiOperation(value = "更新集群下的项目")
+    @ApiOperation(value = "更新集群")
     @PutMapping
     public void update(
             @ApiParam(value = "组织Id", required = true)
@@ -65,8 +65,8 @@ public class DevopsClusterController {
             @ApiParam(value = "集群Id")
             @RequestParam Long clusterId,
             @ApiParam(value = "集群对象")
-            @RequestBody DevopsClusterReqDTO devopsClusterReqDTO) {
-        devopsClusterService.updateCluster(clusterId, devopsClusterReqDTO);
+            @RequestBody DevopsClusterReqVO devopsClusterReqVO) {
+        devopsClusterService.updateCluster(clusterId, devopsClusterReqVO);
     }
 
     /**
@@ -77,13 +77,13 @@ public class DevopsClusterController {
      */
     @Permission(type= ResourceType.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询单个集群信息")
-    @GetMapping("/{clusterId}")
-    public ResponseEntity<DevopsClusterRepDTO> query(
+    @GetMapping("/{cluster_id}")
+    public ResponseEntity<DevopsClusterRepVO> query(
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable Long clusterId) {
-        return Optional.ofNullable(devopsClusterService.getCluster(clusterId))
+            @PathVariable(value = "cluster_id") Long clusterId) {
+        return Optional.ofNullable(devopsClusterService.query(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
     }
@@ -97,7 +97,7 @@ public class DevopsClusterController {
     @Permission(type= ResourceType.ORGANIZATION,roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "根据code查询集群")
     @GetMapping("/query_by_code")
-    public ResponseEntity<DevopsClusterRepDTO> queryByCode(
+    public ResponseEntity<DevopsClusterRepVO> queryByCode(
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Code")
@@ -152,7 +152,7 @@ public class DevopsClusterController {
     @ApiOperation(value = "分页查询项目列表")
     @CustomPageRequest
     @PostMapping("/page_projects")
-    public ResponseEntity<PageInfo<ProjectDTO>> pageProjects(
+    public ResponseEntity<PageInfo<ProjectReqVO>> pageProjects(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "分页参数")
@@ -161,26 +161,26 @@ public class DevopsClusterController {
             @RequestParam(required = false) Long clusterId,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody String[] params) {
-        return Optional.ofNullable(devopsClusterService.listProjects(organizationId, clusterId, pageRequest, params))
+        return Optional.ofNullable(devopsClusterService.pageProjects(organizationId, clusterId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
     }
 
     /**
-     * 查询已有权限的项目列表
+     * 查询集群下已有权限的项目列表
      *
      * @param organizationId 项目id
      * @return List
      */
     @Permission(type= ResourceType.ORGANIZATION,
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
-    @ApiOperation(value = "查询已有权限的项目列表")
-    @GetMapping("/list_cluster_projects/{clusterId}")
-    public ResponseEntity<List<ProjectDTO>> listClusterProjects(
+    @ApiOperation(value = "查询集群下已有权限的项目列表")
+    @GetMapping("/list_cluster_projects/{cluster_id}")
+    public ResponseEntity<List<ProjectReqVO>> listClusterProjects(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable Long clusterId) {
+            @PathVariable(value = "cluster_id") Long clusterId) {
         return Optional.ofNullable(devopsClusterService.listClusterProjects(organizationId, clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
@@ -198,12 +198,12 @@ public class DevopsClusterController {
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询shell脚本")
     @CustomPageRequest
-    @GetMapping("/query_shell/{clusterId}")
+    @GetMapping("/query_shell/{cluster_id}")
     public ResponseEntity<String> queryShell(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id", required = true)
-            @PathVariable Long clusterId) {
+            @PathVariable(value = "cluster_id") Long clusterId) {
         return Optional.ofNullable(devopsClusterService.queryShell(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
@@ -220,7 +220,7 @@ public class DevopsClusterController {
     @ApiOperation(value = "集群列表查询")
     @CustomPageRequest
     @PostMapping("/page_cluster")
-    public ResponseEntity<PageInfo<ClusterWithNodesDTO>> listCluster(
+    public ResponseEntity<PageInfo<ClusterWithNodesVO>> pageCluster(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "分页参数")
@@ -245,12 +245,12 @@ public class DevopsClusterController {
     @Permission(type= ResourceType.ORGANIZATION,
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "删除集群")
-    @DeleteMapping("/{clusterId}")
+    @DeleteMapping("/{cluster_id}")
     public void deleteCluster(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable Long clusterId) {
+            @PathVariable(value = "cluster_id") Long clusterId) {
         devopsClusterService.deleteCluster(clusterId);
     }
 
@@ -264,13 +264,13 @@ public class DevopsClusterController {
     @Permission(type= ResourceType.ORGANIZATION,
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询集群下是否关联已连接环境")
-    @GetMapping("/{clusterId}/connect_envs")
-    public ResponseEntity<Boolean> hasConnectEnvs(
+    @GetMapping("/{cluster_id}/check_connect_envs")
+    public ResponseEntity<Boolean> checkConnectEnvs(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @PathVariable Long clusterId) {
-        return Optional.ofNullable(devopsClusterService.IsClusterRelatedEnvs(clusterId))
+            @PathVariable(value = "cluster_id") Long clusterId) {
+        return Optional.ofNullable(devopsClusterService.checkConnectEnvs(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.connect.env.query"));
     }
@@ -289,7 +289,7 @@ public class DevopsClusterController {
     @ApiOperation(value = "分页查询节点下的Pod")
     @CustomPageRequest
     @PostMapping(value = "/page_node_pods")
-    public ResponseEntity<PageInfo<DevopsClusterPodDTO>> pageQueryPodsByNodeName(
+    public ResponseEntity<PageInfo<DevopsClusterPodVO>> pageQueryPodsByNodeName(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群id", required = true)
@@ -300,7 +300,7 @@ public class DevopsClusterController {
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数", required = false)
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsClusterService.pageQueryPodsByNodeName(clusterId, nodeName, pageRequest, searchParam))
+        return Optional.ofNullable(devopsClusterService.pagePodsByNodeName(clusterId, nodeName, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.node.pod.query", nodeName));
     }
@@ -318,14 +318,14 @@ public class DevopsClusterController {
     @ApiOperation(value = "分页查询集群下的节点")
     @CustomPageRequest
     @GetMapping("/page_nodes")
-    public ResponseEntity<PageInfo<ClusterNodeInfoDTO>> listClusterNodes(
+    public ResponseEntity<PageInfo<ClusterNodeInfoVO>> listClusterNodes(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
-        return new ResponseEntity<>(clusterNodeInfoService.pageQueryClusterNodeInfo(clusterId, organizationId, pageRequest), HttpStatus.OK);
+        return new ResponseEntity<>(clusterNodeInfoService.pageClusterNodeInfo(clusterId, organizationId, pageRequest), HttpStatus.OK);
     }
 
 
@@ -340,14 +340,14 @@ public class DevopsClusterController {
     @Permission(type= ResourceType.ORGANIZATION,roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "根据集群id和节点名查询节点状态信息")
     @GetMapping(value = "/nodes")
-    public ResponseEntity<ClusterNodeInfoDTO> queryNodeInfo(
+    public ResponseEntity<ClusterNodeInfoVO> queryNodeInfo(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "节点名称", required = true)
             @RequestParam(value = "node_name") String nodeName) {
-        return new ResponseEntity<>(clusterNodeInfoService.getNodeInfo(organizationId, clusterId, nodeName), HttpStatus.OK);
+        return new ResponseEntity<>(clusterNodeInfoService.queryNodeInfo(organizationId, clusterId, nodeName), HttpStatus.OK);
     }
 
 

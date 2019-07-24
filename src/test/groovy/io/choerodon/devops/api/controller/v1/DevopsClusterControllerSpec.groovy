@@ -7,11 +7,11 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.ClusterNodeInfoDTO
-import io.choerodon.devops.api.dto.DevopsClusterRepDTO
-import io.choerodon.devops.api.dto.DevopsClusterReqDTO
+import io.choerodon.devops.api.vo.ClusterNodeInfoVO
+import io.choerodon.devops.api.vo.DevopsClusterRepVO
+import io.choerodon.devops.api.vo.DevopsClusterReqVO
 import io.choerodon.devops.app.service.impl.ClusterNodeInfoServiceImpl
-import io.choerodon.devops.domain.application.repository.IamRepository
+
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
 import io.choerodon.devops.infra.dataobject.DevopsClusterDO
@@ -21,7 +21,6 @@ import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
-import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -149,7 +148,7 @@ class DevopsClusterControllerSpec extends Specification {
         Mockito.when(mockStringRedisTemplate.opsForList()).thenReturn(mockListOperations)
         Mockito.when(mockListOperations.size(anyString())).thenReturn(1L)
 
-        ClusterNodeInfoDTO clusterNodeInfoDTO = new ClusterNodeInfoDTO()
+        ClusterNodeInfoVO clusterNodeInfoDTO = new ClusterNodeInfoVO()
         clusterNodeInfoDTO.setNodeName("uat01")
 
         Mockito.when(mockListOperations.range(anyString(), anyLong(), anyLong())).thenReturn(Arrays.asList(JSONObject.toJSONString(clusterNodeInfoDTO)))
@@ -176,7 +175,7 @@ class DevopsClusterControllerSpec extends Specification {
     def "Create"() {
         given: '初始化DTO'
         isToInit = false
-        DevopsClusterReqDTO devopsClusterReqDTO = new DevopsClusterReqDTO()
+        DevopsClusterReqVO devopsClusterReqDTO = new DevopsClusterReqVO()
         List<Long> projectIds = new ArrayList<>()
         projectIds.add(1L)
         devopsClusterReqDTO.setCode("cluster")
@@ -198,7 +197,7 @@ class DevopsClusterControllerSpec extends Specification {
         searchCondition.setName("cluster")
         ID = devopsClusterMapper.selectOne(searchCondition).getId()
 
-        DevopsClusterReqDTO devopsClusterReqDTO = new DevopsClusterReqDTO()
+        DevopsClusterReqVO devopsClusterReqDTO = new DevopsClusterReqVO()
         List<Long> projectIds = new ArrayList<>()
         projectIds.add(2L)
         devopsClusterReqDTO.setCode("cluster")
@@ -217,7 +216,7 @@ class DevopsClusterControllerSpec extends Specification {
 
     def "Query"() {
         when: '查询单个集群信息'
-        def dto = restTemplate.getForObject(MAPPING + "/" + ID, DevopsClusterRepDTO.class, 1L)
+        def dto = restTemplate.getForObject(MAPPING + "/" + ID, DevopsClusterRepVO.class, 1L)
 
         then: '校验返回值'
         dto["name"] == "updateCluster"
@@ -324,7 +323,7 @@ class DevopsClusterControllerSpec extends Specification {
         def url = MAPPING + "/nodes?cluster_id={clusterId}&node_name={nodeName}"
 
         when: "发送请求"
-        def res = restTemplate.getForEntity(url, ClusterNodeInfoDTO, devopsClusterDO.getOrganizationId(), devopsClusterDO.getId(), devopsEnvPodDO.getNodeName())
+        def res = restTemplate.getForEntity(url, ClusterNodeInfoVO, devopsClusterDO.getOrganizationId(), devopsClusterDO.getId(), devopsEnvPodDO.getNodeName())
 
         then: "校验结果"
         res.getStatusCode().is2xxSuccessful()

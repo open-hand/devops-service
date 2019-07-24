@@ -2,9 +2,7 @@ package io.choerodon.devops.infra.feign;
 
 import java.util.Map;
 
-import io.choerodon.devops.infra.dataobject.harbor.*;
-import org.springframework.security.core.parameters.P;
-import org.springframework.web.bind.annotation.PutMapping;
+import io.choerodon.devops.infra.dto.harbor.*;
 import retrofit2.Call;
 import retrofit2.http.*;
 import java.util.*;

@@ -3,10 +3,14 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.domain.application.entity.ProjectE
-import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.api.vo.ProjectVO
+
+<<<<<<< HEAD
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.Organization
+=======
+
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
@@ -57,11 +61,11 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
     @Shared
     Long project_id = 1L
     @Shared
-    ProjectE projectE = new ProjectE()
+    ProjectVO projectE = new ProjectVO()
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
-    Organization organization = new Organization()
+    OrganizationVO organization = new OrganizationVO()
 
     def setup() {
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
@@ -98,7 +102,7 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
         when: '项目下查询环境文件错误列表'
-        def list = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/list", List.class)
+        def list = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/baseList", List.class)
 
         then: '校验返回结果'
         list.size() == 2

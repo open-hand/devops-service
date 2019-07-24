@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.dataobject.PipelineTaskRecordDO;
+import io.choerodon.devops.infra.dto.PipelineTaskRecordDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -11,9 +11,9 @@ import org.apache.ibatis.annotations.Param;
  * Date:  16:27 2019/4/9
  * Description:
  */
-public interface PipelineTaskRecordMapper extends Mapper<PipelineTaskRecordDO> {
-    List<PipelineTaskRecordDO> queryByStageRecordId(@Param("stageRecordId") Long stageRecordId,
-                                                    @Param("taskId") Long taskId);
+public interface PipelineTaskRecordMapper extends Mapper<PipelineTaskRecordDTO> {
+    List<PipelineTaskRecordDTO> queryByStageRecordId(@Param("stageRecordId") Long stageRecordId,
+                                                     @Param("taskId") Long taskId);
 
-    List<PipelineTaskRecordDO> queryAllAutoTaskRecord(@Param("pipelineRecordId") Long pipelineRecordId);
+    List<PipelineTaskRecordDTO> queryAllAutoTaskRecord(@Param("pipelineRecordId") Long pipelineRecordId);
 }

@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.feign;
 
 import java.util.Map;
 
-import io.choerodon.devops.api.dto.sonar.*;
+import io.choerodon.devops.api.vo.sonar.*;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.POST;

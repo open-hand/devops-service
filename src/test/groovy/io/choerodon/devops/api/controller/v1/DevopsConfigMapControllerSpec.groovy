@@ -4,23 +4,33 @@ import com.github.pagehelper.PageInfo
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.DevopsConfigMapDTO
-import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
+import io.choerodon.devops.api.vo.DevopsConfigMapDTO
+import io.choerodon.devops.api.vo.DevopsConfigMapRespVO
+import io.choerodon.devops.api.vo.DevopsConfigMapRespVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.app.service.impl.DevopsConfigMapServiceImpl
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
-import io.choerodon.devops.domain.application.repository.GitlabRepository
+<<<<<<< HEAD
+
+
 import io.choerodon.devops.domain.application.repository.IamRepository
+=======
+<<<<<<< HEAD
+=======
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE
+
+
+>>>>>>> [IMP]修复后端结构
+
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileResourceDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
@@ -103,23 +113,23 @@ class DevopsConfigMapControllerSpec extends Specification {
         ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.when(iamServiceClient.queryIamProject(anyLong())).thenReturn(responseEntity)
 
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER)
-        ResponseEntity<MemberDO> responseEntity1 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity1)
+        ResponseEntity<MemberDTO> responseEntity1 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity1)
 
         RepositoryFile file = new RepositoryFile()
         file.setFilePath("filePath")
@@ -219,7 +229,7 @@ class DevopsConfigMapControllerSpec extends Specification {
 
     def "Query"() {
         when: '根据id查询'
-        def dto = restTemplate.getForEntity(MAPPING + "/1", DevopsConfigMapRepDTO.class, 1L)
+        def dto = restTemplate.getForEntity(MAPPING + "/1", DevopsConfigMapRespVO.class, 1L)
 
         then: '校验结果'
         dto.getBody()["name"] == "asdasdqqqq"

@@ -3,7 +3,7 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper">
 
-    <select id="queryLatestByEnvAndPath" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO">
+    <select id="queryLatestByEnvAndPath" resultType="io.choerodon.devops.infra.dto.DevopsEnvFileErrorDTO">
         SELECT
         d.*
         FROM
@@ -19,7 +19,7 @@
     </select>
 
 
-    <select id="queryByEnvAndPathAndCommits" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO">
+    <select id="queryByEnvAndPathAndCommits" resultType="io.choerodon.devops.infra.dto.DevopsEnvFileErrorDTO">
         SELECT
         d.*
         FROM

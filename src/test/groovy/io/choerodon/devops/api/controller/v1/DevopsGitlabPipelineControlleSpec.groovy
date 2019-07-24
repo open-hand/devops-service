@@ -3,10 +3,14 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.PipelineFrequencyDTO
-import io.choerodon.devops.api.dto.PipelineTimeDTO
+import io.choerodon.devops.api.vo.PipelineFrequencyVO
+import io.choerodon.devops.api.vo.PipelineTimeVO
+<<<<<<< HEAD
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.infra.dataobject.ApplicationDO
+=======
+
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -52,7 +56,7 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
     DevopsGitlabPipelineDO devopsGitlabPipelineDO = new DevopsGitlabPipelineDO()
 
@@ -103,7 +107,7 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
         devopsGitlabPipelineMapper.insert(devopsGitlabPipelineDO);
 
         when: '获取pipeline时长报表'
-        def pipelineTimeDTO = restTemplate.getForObject("/v1/projects/1/pipeline/time?appId=1&startTime=2015/10/12&endTime=3018/10/18", PipelineTimeDTO.class)
+        def pipelineTimeDTO = restTemplate.getForObject("/v1/projects/1/pipeline/time?appId=1&startTime=2015/10/12&endTime=3018/10/18", PipelineTimeVO.class)
 
         then: '校验返回值'
         pipelineTimeDTO.getRefs().size() != 0
@@ -111,7 +115,7 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
 
     def "ListPipelineFrequency"() {
         when: '获取pipeline次数报表'
-        def pipelineFrequencyDTO = restTemplate.getForObject("/v1/projects/1/pipeline/frequency?appId=1&startTime=2015/10/12&endTime=3018/10/18", PipelineFrequencyDTO.class)
+        def pipelineFrequencyDTO = restTemplate.getForObject("/v1/projects/1/pipeline/frequency?appId=1&startTime=2015/10/12&endTime=3018/10/18", PipelineFrequencyVO.class)
 
         then: '校验返回值'
         pipelineFrequencyDTO.getPipelineFrequencys().size() != 0
@@ -126,9 +130,9 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
 
         and: '清理数据'
         // 删除app
-        List<ApplicationDO> list = applicationMapper.selectAll()
+        List<ApplicationDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDO e : list) {
+            for (ApplicationDTO e : list) {
                 applicationMapper.delete(e)
             }
         }

@@ -3,7 +3,7 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper">
 
-    <select id="queryByObject" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO">
+    <select id="queryByObject" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
         SELECT
         d.*
         FROM
@@ -14,7 +14,7 @@
     </select>
 
 
-    <select id="listByObject" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO">
+    <select id="listByObject" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
         SELECT
         d.*
         FROM
@@ -30,7 +30,7 @@
         ORDER BY d.id DESC
     </select>
 
-    <select id="queryInstanceCommand" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO">
+    <select id="queryInstanceCommand" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
         SELECT
         d.*
         FROM

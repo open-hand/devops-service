@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineRecordMapper">
-    <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.PipelineRecordDTO">
         <if test="classifyParam.executed ==null and classifyParam.pendingcheck == null and classifyParam.reviewed==null">
             <include refid="selectSql"/>
             <if test="pipelineId != null">
@@ -113,7 +113,7 @@
 
     </select>
 
-    <select id="queryById" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
+    <select id="queryById" resultType="io.choerodon.devops.infra.dto.PipelineRecordDTO">
         SELECT
         dpr.id,
         dpr. STATUS,

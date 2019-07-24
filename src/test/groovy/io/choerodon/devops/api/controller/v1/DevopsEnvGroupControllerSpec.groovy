@@ -1,7 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.DevopsEnvGroupDTO
+import io.choerodon.devops.api.vo.DevopsEnvGroupVO
 import io.choerodon.devops.infra.dataobject.DevopsEnvGroupDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
 import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper
@@ -65,7 +65,7 @@ class DevopsEnvGroupControllerSpec extends Specification {
         devopsEnvGroupMapper.insert(devopsEnvGroupDO1)
 
         when: '项目下创建环境组'
-        def envDTO = restTemplate.postForObject("/v1/projects/1/env_groups?devopsEnvGroupName=test2", null, DevopsEnvGroupDTO.class)
+        def envDTO = restTemplate.postForObject("/v1/projects/1/env_groups?devopsEnvGroupName=test2", null, DevopsEnvGroupVO.class)
 
         then: '校验返回结果'
         envDTO["projectId"] == 1
@@ -73,12 +73,12 @@ class DevopsEnvGroupControllerSpec extends Specification {
 
     def "Update"() {
         given: '初始化更新DTO类'
-        DevopsEnvGroupDTO devopsEnvGroupDTO = new DevopsEnvGroupDTO()
+        DevopsEnvGroupVO devopsEnvGroupDTO = new DevopsEnvGroupVO()
         devopsEnvGroupDTO.setId(1L)
         devopsEnvGroupDTO.setName("name")
 
         when: '项目下更新环境组'
-        restTemplate.put("/v1/projects/1/env_groups", devopsEnvGroupDTO, DevopsEnvGroupDTO.class)
+        restTemplate.put("/v1/projects/1/env_groups", devopsEnvGroupDTO, DevopsEnvGroupVO.class)
 
         then: '校验更新结果'
         devopsEnvGroupMapper.selectByPrimaryKey(1L)["name"] == "name"

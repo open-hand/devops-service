@@ -2,11 +2,13 @@ package io.choerodon.devops.app.service.impl
 
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.domain.application.event.GitlabUserEvent
-import io.choerodon.devops.domain.application.event.OrganizationEventPayload
-import io.choerodon.devops.domain.application.repository.GitlabRepository
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository
-import io.choerodon.devops.infra.dataobject.UserAttrDO
+import io.choerodon.devops.app.eventhandler.payload.GitlabUserPayload
+import io.choerodon.devops.app.eventhandler.payload.OrganizationEventPayload
+<<<<<<< HEAD
+
+import io.choerodon.devops.infra.dataobject.UserAttrDTO
+=======
+>>>>>>> [IMP]修复后端结构
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO
 import io.choerodon.devops.infra.dataobject.gitlab.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
@@ -60,7 +62,7 @@ class OrganizationServiceImplSpec extends Specification {
         UserDO userDO = new UserDO()
         userDO.setId(2)
         ResponseEntity<UserDO> responseEntity1 = new ResponseEntity<>(userDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.createGitLabUser(anyString(), anyInt(), any(GitlabUserEvent.class))).thenReturn(responseEntity1)
+        Mockito.when(gitlabServiceClient.createUser(anyString(), anyInt(), any(GitlabUserPayload.class))).thenReturn(responseEntity1)
         Mockito.when(gitlabServiceClient.queryUserByUserName(anyString())).thenReturn(responseEntity1)
 
     }
@@ -82,9 +84,9 @@ class OrganizationServiceImplSpec extends Specification {
     def "CleanupData"() {
         given:
         // 删除user
-        List<UserAttrDO> list = userAttrMapper.selectAll()
+        List<UserAttrDTO> list = userAttrMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (UserAttrDO e : list) {
+            for (UserAttrDTO e : list) {
                 if (e.getIamUserId() > 1L) {
                     userAttrMapper.delete(e)
                 }

@@ -6,7 +6,7 @@ import java.util.Map;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO;
+import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
 
 /**
  * Created by n!Ck
@@ -14,13 +14,13 @@ import io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO;
  * Time: 9:17
  * Description:
  */
-public interface DevopsEnvUserPermissionMapper extends Mapper<DevopsEnvUserPermissionDO> {
+public interface DevopsEnvUserPermissionMapper extends Mapper<DevopsEnvUserPermissionDTO> {
 
-    List<DevopsEnvUserPermissionDO> pageUserEnvPermissionByOption(@Param("envId") Long envId,
-                                                                  @Param("searchParam") Map<String, Object> searchParam,
-                                                                  @Param("param") String param);
+    List<DevopsEnvUserPermissionDTO> pageUserEnvPermissionByOption(@Param("envId") Long envId,
+                                                                   @Param("searchParam") Map<String, Object> searchParam,
+                                                                   @Param("param") String param);
 
-    List<DevopsEnvUserPermissionDO> listAllUserPermission(@Param("envId") Long envId);
+    List<DevopsEnvUserPermissionDTO> listByEnvId(@Param("envId") Long envId);
 
-    List<DevopsEnvUserPermissionDO> listAll(@Param("envId") Long envId);
+    List<DevopsEnvUserPermissionDTO> listAll(@Param("envId") Long envId);
 }

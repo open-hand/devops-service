@@ -2,7 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.SonarInfoDTO;
+import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.app.service.SonarService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ public class SonarController {
     @Permission(permissionPublic = true)
     @ApiOperation(value = "触发自动部署")
     @GetMapping("/info")
-    public ResponseEntity<SonarInfoDTO> getSonarInfo() {
+    public ResponseEntity<SonarInfoVO> getSonarInfo() {
         return Optional.ofNullable(sonarService.getSonarInfo())
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.sonar.info"));

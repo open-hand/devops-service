@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.ApplicationMapper">
-    <select id="list" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <select id="list" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
         SELECT
         da.id,
         da.project_id,
@@ -54,7 +54,7 @@
         </if>
     </select>
 
-    <select id="listByEnvId" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <select id="listByEnvId" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
         SELECT DISTINCT
         da.id,
         da.`code`,
@@ -76,7 +76,7 @@
         </if>
     </select>
 
-    <select id="listActive" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <select id="listByActive" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
         SELECT
             da.*
         FROM
@@ -88,7 +88,27 @@
           AND da.project_id = #{projectId}
     </select>
 
-    <select id="listAll" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <select id="listDeployedApp" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
+        SELECT DISTINCT
+        dam.publish_level publishLevel,
+        dam.contributor,
+        dam.description,
+        da.*
+        FROM
+        devops_application da
+        JOIN devops_app_instance dai ON dai.app_id = da.id
+        AND dai.`status` != 'deleted'
+        JOIN devops_env de ON dai.env_id = de.id
+        LEFT JOIN devops_app_share dam ON dam.app_id = da.id
+        WHERE
+        da.is_active
+        AND de.project_id = #{projectId}
+        ORDER BY
+        dam.publish_level ASC,
+        da.id DESC
+    </select>
+
+    <select id="listAll" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
         SELECT DISTINCT
         dam.publish_level publishLevel,
         dam.contributor,
@@ -161,7 +181,7 @@
         </if>
     </sql>
 
-    <select id="listByActiveAndPubAndVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <select id="basePageByActiveAndPubAndHasVersion" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
         SELECT
         da.`id`,
         da.`code`,
@@ -177,7 +197,7 @@
         <include refid="sqlparam"/>
     </select>
 
-    <select id="queryByToken" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <select id="queryByToken" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
         SELECT
         da.id,
         da.project_id,
@@ -210,7 +230,7 @@
         AND da.id = #{applicationId}
     </select>
 
-    <select id="listByCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <select id="listByCode" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
         SELECT
         da.`id`,
         da.project_id
@@ -221,7 +241,7 @@
         da.code = #{code}
     </select>
 
-    <select id="listCodeRepository" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <select id="listCodeRepository" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
         SELECT
         da.id,
         da.project_id,
@@ -249,7 +269,7 @@
         <include refid="sqlparam"/>
     </select>
 
-    <select id="listByGitLabProjectIds" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <select id="listByGitLabProjectIds" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
         SELECT da.gitlab_project_id
         FROM devops_application da
         WHERE da.gitlab_project_id IN
@@ -259,11 +279,11 @@
     </select>
 
 
-    <update id="updateAppToSuccess" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <update id="updateAppToSuccess" parameterType="io.choerodon.devops.infra.dto.ApplicationDTO">
         UPDATE devops_application da set da.is_failed = null  where da.id = #{appId}
     </update>
 
-    <update id="updateSql" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <update id="updateApplicationStatus" parameterType="io.choerodon.devops.infra.dto.ApplicationDTO">
         UPDATE devops_application da
         set da.is_failed = null,
         da.token=#{token},
@@ -273,7 +293,7 @@
         where da.id = #{appId}
     </update>
 
-    <update id="updateAppHarborConfig" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <update id="updateAppHarborConfig" parameterType="io.choerodon.devops.infra.dto.ApplicationDTO">
         UPDATE devops_application da
         <if test='harborPrivate != null'>
             <if test='harborPrivate == true'>
@@ -288,7 +308,7 @@
         AND da.project_id = #{projectId}
     </update>
 
-    <select id="queryByCodeWithNoProject" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+    <select id="queryByCodeWithNoProject" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
         SELECT
             da.*
         FROM

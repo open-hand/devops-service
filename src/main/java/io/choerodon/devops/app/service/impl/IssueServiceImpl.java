@@ -7,16 +7,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.dto.CustomMergeRequestDTO;
-import io.choerodon.devops.api.dto.DevopsBranchDTO;
-import io.choerodon.devops.api.dto.IssueDTO;
-import io.choerodon.devops.app.service.IssueService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
-import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.CustomMergeRequestVO;
+import io.choerodon.devops.api.vo.DevopsBranchVO;
+import io.choerodon.devops.api.vo.IssueVO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.DevopsBranchDTO;
+import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
+import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.mapper.ApplicationMapper;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,132 +33,131 @@ import org.springframework.stereotype.Service;
 public class IssueServiceImpl implements IssueService {
 
     @Autowired
-    private DevopsBranchRepository devopsBranchRepository;
-
+    private DevopsBranchService devopsBranchService;
     @Autowired
-    private DevopsGitRepository devopsGitRepository;
-
+    private ApplicationService applicationService;
     @Autowired
-    private ApplicationRepository applicationRepository;
-
+    private DevopsMergeRequestService devopsMergeRequestService;
     @Autowired
-    private DevopsMergeRequestRepository devopsMergeRequestRepository;
-
+    private IamService iamService;
     @Autowired
-    private IamRepository iamRepository;
-
+    private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
-    private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
+    private ApplicationMapper applicationMapper;
 
 
     @Override
-    public IssueDTO countCommitAndMergeRequest(Long issueId) {
-        List<DevopsBranchDTO> devopsBranchDTOs = getBranchsByIssueId(issueId);
-        List<DevopsGitlabCommitE> commitDTOS = new ArrayList<>();
-        List<CustomMergeRequestDTO> customMergeRequestDTOS = new ArrayList<>();
-        devopsBranchDTOs.forEach(devopsBranchDTO -> {
-            commitDTOS.addAll(devopsBranchDTO.getCommits());
-            customMergeRequestDTOS.addAll(devopsBranchDTO.getMergeRequests());
+    public IssueVO countCommitAndMergeRequest(Long issueId) {
+        List<DevopsBranchVO> devopsBranchVOS = getBranchsByIssueId(issueId);
+        List<DevopsGitlabCommitDTO> devopsGitlabCommitVOS = new ArrayList<>();
+        List<CustomMergeRequestVO> customMergeRequestVOS = new ArrayList<>();
+        devopsBranchVOS.forEach(devopsBranchDTO -> {
+            devopsGitlabCommitVOS.addAll(devopsBranchDTO.getCommits());
+            customMergeRequestVOS.addAll(devopsBranchDTO.getMergeRequests());
         });
-        Optional<DevopsGitlabCommitE> devopsGitlabCommitE = commitDTOS.stream().max(
-                Comparator.comparing(DevopsGitlabCommitE::getCommitDate));
-        Optional<CustomMergeRequestDTO> customMergeRequestDTO = customMergeRequestDTOS.stream().max(
-                Comparator.comparing(CustomMergeRequestDTO::getUpdatedAt)
+        Optional<DevopsGitlabCommitDTO> devopsGitlabCommitE = devopsGitlabCommitVOS.stream().max(
+                Comparator.comparing(DevopsGitlabCommitDTO::getCommitDate));
+        Optional<CustomMergeRequestVO> customMergeRequestDTO = customMergeRequestVOS.stream().max(
+                Comparator.comparing(CustomMergeRequestVO::getUpdatedAt)
         );
-        IssueDTO issueDTO = new IssueDTO();
-        if (!customMergeRequestDTOS.isEmpty()) {
-            for (CustomMergeRequestDTO mergeRequestTmp : customMergeRequestDTOS) {
+        IssueVO issueVO = new IssueVO();
+        if (!customMergeRequestVOS.isEmpty()) {
+            for (CustomMergeRequestVO mergeRequestTmp : customMergeRequestVOS) {
                 if ("opened".equals(mergeRequestTmp.getState())) {
-                    issueDTO.setMergeRequestStatus("opened");
+                    issueVO.setMergeRequestStatus("opened");
                     break;
                 }
             }
         }
-        issueDTO.setBranchCount(devopsBranchDTOs.size());
-        issueDTO.setTotalCommit(commitDTOS.size());
-        issueDTO.setTotalMergeRequest(customMergeRequestDTOS.size());
-        devopsGitlabCommitE.ifPresent(commitDTO1 ->
-                issueDTO.setCommitUpdateTime(commitDTO1.getCommitDate()));
-        customMergeRequestDTO.ifPresent(customMergeRequestDTO1 ->
-                issueDTO.setMergeRequestUpdateTime(customMergeRequestDTO1.getUpdatedAt()));
-        return issueDTO;
+        issueVO.setBranchCount(devopsBranchVOS.size());
+        issueVO.setTotalCommit(devopsGitlabCommitVOS.size());
+        issueVO.setTotalMergeRequest(customMergeRequestVOS.size());
+        devopsGitlabCommitE.ifPresent(gitlabCommitDTO ->
+                issueVO.setCommitUpdateTime(gitlabCommitDTO.getCommitDate()));
+        customMergeRequestDTO.ifPresent(customMergeRequestVO1 ->
+                issueVO.setMergeRequestUpdateTime(customMergeRequestVO1.getUpdatedAt()));
+        return issueVO;
     }
 
     @Override
-    public List<DevopsBranchDTO> getBranchsByIssueId(Long issueId) {
-        List<DevopsBranchDO> devopsBranchDOs = devopsBranchRepository.getDevopsBranchsByIssueId(issueId);
-        List<DevopsBranchDTO> devopsBranchDTOS = new ArrayList<>();
-        devopsBranchDOs.forEach(devopsBranchDO -> {
-            Integer gitLabProjectId = devopsGitRepository.getGitLabId(devopsBranchDO.getAppId());
+    public List<DevopsBranchVO> getBranchsByIssueId(Long issueId) {
+        List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchService.baseListDevopsBranchesByIssueId(issueId);
+        List<DevopsBranchVO> devopsBranchVOS = new ArrayList<>();
+        devopsBranchDTOS.forEach(devopsBranchDO -> {
+            Integer gitLabProjectId = getGitLabId(devopsBranchDO.getAppId());
 
-            List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.queryByAppIdAndBranch(devopsBranchDO.getAppId(), devopsBranchDO.getBranchName(), devopsBranchDO.getCheckoutDate());
+            List<DevopsGitlabCommitDTO> devopsGitlabCommitES = devopsGitlabCommitService.baseListByAppIdAndBranch(devopsBranchDO.getAppId(), devopsBranchDO.getBranchName(), devopsBranchDO.getCheckoutDate());
 
             devopsGitlabCommitES = devopsGitlabCommitES.stream().filter(devopsGitlabCommitE ->
                     !devopsGitlabCommitE.getCommitSha().equals(devopsBranchDO.getCheckoutCommit()))
                     .collect(Collectors.toList());
-            DevopsBranchDTO devopsBranchDTO = ConvertHelper.convert(devopsBranchDO, DevopsBranchDTO.class);
-            devopsBranchDTO.setCommits(devopsGitlabCommitES);
-            ApplicationE app = applicationRepository.query(devopsBranchDO.getAppId());
-            devopsBranchDTO.setAppName(app.getName());
-            List<DevopsMergeRequestE> mergeRequests = devopsMergeRequestRepository.getBySourceBranch(
+            DevopsBranchVO devopsBranchVO = ConvertHelper.convert(devopsBranchDO, DevopsBranchVO.class);
+            devopsBranchVO.setCommits(devopsGitlabCommitES);
+            ApplicationDTO applicationDTO = applicationService.baseQuery(devopsBranchDO.getAppId());
+            devopsBranchVO.setAppName(applicationDTO.getName());
+            List<DevopsMergeRequestDTO> mergeRequests = devopsMergeRequestService.baseListBySourceBranch(
                     devopsBranchDO.getBranchName(), (long) gitLabProjectId);
-            devopsBranchDTO.setMergeRequests(addAuthorNameAndAssigneeName(
+            devopsBranchVO.setMergeRequests(addAuthorNameAndAssigneeName(
                     mergeRequests, devopsBranchDO.getAppId()));
-            devopsBranchDTOS.add(devopsBranchDTO);
+            devopsBranchVOS.add(devopsBranchVO);
         });
-        return devopsBranchDTOS;
+        return devopsBranchVOS;
     }
 
-    private List<CustomMergeRequestDTO> addAuthorNameAndAssigneeName(List<DevopsMergeRequestE> devopsMergeRequestES,
-                                                                     Long applicationId) {
-        List<CustomMergeRequestDTO> mergeRequests = new ArrayList<>();
-
-
+    private List<CustomMergeRequestVO> addAuthorNameAndAssigneeName(List<DevopsMergeRequestDTO> devopsMergeRequestDTOS,
+                                                                    Long applicationId) {
+        List<CustomMergeRequestVO> mergeRequests = new ArrayList<>();
         List<Long> authorIds = new ArrayList<>();
         List<Long> assigneeIds = new ArrayList<>();
-        devopsMergeRequestES.stream().forEach(devopsMergeRequestE -> {
+        devopsMergeRequestDTOS.stream().forEach(devopsMergeRequestE -> {
             authorIds.add(devopsMergeRequestE.getAuthorId());
             assigneeIds.add(devopsMergeRequestE.getAssigneeId());
         });
+        List<IamUserDTO> authors = iamService.listUsersByIds(authorIds);
+        List<IamUserDTO> assignees = iamService.listUsersByIds(assigneeIds);
 
-
-        List<UserE> authors = iamRepository.listUsersByIds(authorIds);
-        List<UserE> assignees = iamRepository.listUsersByIds(assigneeIds);
-
-
-        devopsMergeRequestES.forEach(devopsMergeRequestE -> {
+        devopsMergeRequestDTOS.forEach(devopsMergeRequestE -> {
             Long authorId = devopsMergeRequestE.getAuthorId();
             Long assigneeId = devopsMergeRequestE.getAssigneeId();
-            CustomMergeRequestDTO customMergeRequestDTO = new CustomMergeRequestDTO();
-            customMergeRequestDTO.setApplicationId(applicationId);
+            CustomMergeRequestVO customMergeRequestVO = new CustomMergeRequestVO();
+            customMergeRequestVO.setApplicationId(applicationId);
             if (authorId != null) {
                 authors.stream().filter(userE -> userE.getId().equals(authorId)).forEach(authorUser -> {
-                    customMergeRequestDTO.setAuthorName(authorUser.getLoginName() + authorUser.getRealName());
-                    customMergeRequestDTO.setImageUrl(authorUser.getImageUrl());
+                    customMergeRequestVO.setAuthorName(authorUser.getLoginName() + authorUser.getRealName());
+                    customMergeRequestVO.setImageUrl(authorUser.getImageUrl());
                 });
             }
             if (assigneeId != null) {
                 assignees.stream().filter(userE -> userE.getId().equals(assigneeId)).forEach(assigneeUser -> {
-                    customMergeRequestDTO.setAssigneeName(assigneeUser.getLoginName());
+                    customMergeRequestVO.setAssigneeName(assigneeUser.getLoginName());
                 });
             }
-            BeanUtils.copyProperties(devopsMergeRequestE, customMergeRequestDTO);
-            mergeRequests.add(customMergeRequestDTO);
+            BeanUtils.copyProperties(devopsMergeRequestE, customMergeRequestVO);
+            mergeRequests.add(customMergeRequestVO);
         });
         return mergeRequests;
     }
 
     @Override
-    public List<CustomMergeRequestDTO> getMergeRequestsByIssueId(Long issueId) {
-        List<DevopsBranchDO> devopsBranchDOs = devopsBranchRepository.getDevopsBranchsByIssueId(issueId);
-        List<CustomMergeRequestDTO> mergeRequests = new ArrayList<>();
-        devopsBranchDOs.forEach(devopsBranchDO -> {
-            Integer gitLabProjectId = devopsGitRepository.getGitLabId(devopsBranchDO.getAppId());
-            List<DevopsMergeRequestE> devopsMergeRequestES = devopsMergeRequestRepository.getBySourceBranch(
+    public List<CustomMergeRequestVO> getMergeRequestsByIssueId(Long issueId) {
+        List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchService.baseListDevopsBranchesByIssueId(issueId);
+        List<CustomMergeRequestVO> mergeRequests = new ArrayList<>();
+        devopsBranchDTOS.forEach(devopsBranchDO -> {
+            Integer gitLabProjectId = getGitLabId(devopsBranchDO.getAppId());
+            List<DevopsMergeRequestDTO> devopsMergeRequestDTOS = devopsMergeRequestService.baseListBySourceBranch(
                     devopsBranchDO.getBranchName(), (long) gitLabProjectId);
             mergeRequests.addAll(addAuthorNameAndAssigneeName(
-                    devopsMergeRequestES, devopsBranchDO.getAppId()));
+                    devopsMergeRequestDTOS, devopsBranchDO.getAppId()));
         });
         return mergeRequests;
+    }
+
+    private Integer getGitLabId(Long applicationId) {
+        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(applicationId);
+        if (applicationDO != null) {
+            return applicationDO.getGitlabProjectId();
+        } else {
+            throw new CommonException("error.application.select");
+        }
     }
 }

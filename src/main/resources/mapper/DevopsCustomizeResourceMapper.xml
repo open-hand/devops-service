@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCustomizeResourceMapper">
-    <select id="queryDetail" resultType="io.choerodon.devops.infra.dataobject.DevopsCustomizeResourceDO">
+    <select id="queryDetail" resultType="io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO">
      SELECT
 	dcr.id,
 	dcr.env_id,
@@ -18,7 +18,7 @@ FROM
     </select>
 
 
-    <select id="pageResources" resultType="io.choerodon.devops.infra.dataobject.DevopsCustomizeResourceDO">
+    <select id="pageResources" resultType="io.choerodon.devops.infra.dto.DevopsCustomizeResourceDTO">
         SELECT
         dcr.id,
         dcr.env_id,

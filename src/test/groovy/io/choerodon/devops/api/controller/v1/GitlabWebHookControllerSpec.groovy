@@ -5,23 +5,20 @@ import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.asgard.saga.feign.SagaClientCallback
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService
-import io.choerodon.devops.domain.application.repository.DevopsGitRepository
-import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.service.DeployService
+
+
+import io.choerodon.devops.app.service.AgentCommandService
 import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
+import io.choerodon.devops.infra.dto.CommitDTO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.websocket.helper.CommandSender
-import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -36,7 +33,6 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.ArgumentMatchers.any
 import static org.mockito.Matchers.anyString
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -78,7 +74,7 @@ class GitlabWebHookControllerSpec extends Specification {
     @Autowired
     private DevopsGitRepository devopsGitRepository
     @Autowired
-    private DeployService deployService
+    private AgentCommandService deployService
     @Autowired
     private DevopsGitService devopsGitService
 
@@ -90,7 +86,7 @@ class GitlabWebHookControllerSpec extends Specification {
     private CommandSender mockCommandSender = Mockito.mock(CommandSender)
 
     @Shared
-    private ApplicationDO applicationDO = new ApplicationDO()
+    private ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
     private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared
@@ -119,7 +115,7 @@ class GitlabWebHookControllerSpec extends Specification {
             devopsEnvironmentDO.setCode("env-test-webhook")
             devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
-            // mock list user
+            // mock baseList user
             UserDO userDO = new UserDO()
             userDO.setId(1L)
             PageInfo<UserDO> page = new PageInfo<>(Collections.singletonList(userDO))
@@ -127,15 +123,15 @@ class GitlabWebHookControllerSpec extends Specification {
             Mockito.when(iamServiceClient.listUsersByEmail(Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString())).thenReturn(responseEntity)
 
             // mock get commit
-            CommitDO commit = new CommitDO()
+            CommitDTO commit = new CommitDTO()
             commit.setMessage("message")
             commit.setAuthorName("zzz")
             commit.setId("asdfsdfasdfsdfsdfadf")
             commit.setAuthorEmail("1332efas@163.mail.com")
             commit.setUrl("http://www.baidu.com")
             commit.setCommittedDate(new Date())
-            ResponseEntity<CommitDO> res = new ResponseEntity<>(commit, HttpStatus.OK)
-            Mockito.when(mockGitlabServiceClient.getCommit(Mockito.anyInt(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
+            ResponseEntity<CommitDTO> res = new ResponseEntity<>(commit, HttpStatus.OK)
+            Mockito.when(mockGitlabServiceClient.queryCommit(Mockito.anyInt(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
 
             // mock env util
             Mockito.when(mockEnvUtil.getConnectedEnvList()).thenReturn(Arrays.asList(1L))

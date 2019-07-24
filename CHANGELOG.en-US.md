@@ -103,7 +103,7 @@ All notable changes to devops-service will be documented in this file.
 - Added ciphertext function to support adding ciphertext in each environment, which can be used to store k8s resources of small pieces of sensitive data, such as passwords, tokens, or keys.
 - Added the management function of the organization-level certificate, the certificate created at the organization level, can be used when creating a certificate for each project under the organization
 - Added instance events, support for viewing event records for each instance job and pod
-- Add a new instance to the Deployment for more details, including: port, data volume, health check, host settings, environment variables, tags
+- Add a new instance to the Deployment for more details, including: port, data volume, health check, host settings, environment variableDTOS, tags
 - New test application creation, this type of application is only available for automated testing
 - Added automatic refresh page, click on the corner next to all refresh buttons to set
 - The CrtManager plugin is automatically added to the cluster to enable the environment under the cluster to use the certificate.

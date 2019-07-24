@@ -2,16 +2,16 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.dto.CustomMergeRequestDTO;
-import io.choerodon.devops.api.dto.DevopsBranchDTO;
-import io.choerodon.devops.api.dto.IssueDTO;
+import io.choerodon.devops.api.vo.CustomMergeRequestVO;
+import io.choerodon.devops.api.vo.DevopsBranchVO;
+import io.choerodon.devops.api.vo.IssueVO;
 
 public interface IssueService {
 
-    IssueDTO countCommitAndMergeRequest(Long issueId);
+    IssueVO countCommitAndMergeRequest(Long issueId);
 
-    List<DevopsBranchDTO> getBranchsByIssueId(Long issueId);
+    List<DevopsBranchVO> getBranchsByIssueId(Long issueId);
 
-    List<CustomMergeRequestDTO> getMergeRequestsByIssueId(Long issueId);
+    List<CustomMergeRequestVO> getMergeRequestsByIssueId(Long issueId);
 
 }

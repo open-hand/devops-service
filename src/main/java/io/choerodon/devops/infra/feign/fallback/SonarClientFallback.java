@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.feign.fallback;
 
 import java.util.Map;
 
-import io.choerodon.devops.api.dto.sonar.*;
+import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.infra.feign.SonarClient;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;

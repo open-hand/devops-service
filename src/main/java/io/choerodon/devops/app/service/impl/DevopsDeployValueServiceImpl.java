@@ -1,33 +1,36 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import org.springframework.beans.BeanUtils;
+import com.google.gson.Gson;
+import io.choerodon.base.domain.PageRequest;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.vo.DevopsDeployValueVO;
+import io.choerodon.devops.api.vo.ProjectVO;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.DevopsDeployValueService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.PipelineAppDeployService;
+import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.PipelineAppDeployDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.mapper.DevopsDeployValueMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.FileUtil;
+import io.choerodon.devops.infra.util.PageRequestUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
-import io.choerodon.devops.app.service.DevopsDeployValueService;
-import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
-import io.choerodon.devops.domain.application.entity.DevopsDeployValueE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsDeployValueRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.infra.common.util.EnvUtil;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -36,89 +39,149 @@ import io.choerodon.devops.infra.common.util.EnvUtil;
  */
 @Service
 public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
+    private static final Gson gson = new Gson();
     @Autowired
-    private DevopsDeployValueRepository valueRepository;
+    private DevopsDeployValueMapper devopsDeployValueMapper;
     @Autowired
-    private IamRepository iamRepository;
+    private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
-    private EnvUtil envUtil;
+    private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
-    private DevopsEnvironmentRepository devopsEnviromentRepository;
+    private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private PipelineAppDeployRepository appDeployRepository;
+    private PipelineAppDeployService pipelineAppDeployService;
     @Autowired
-    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
-    @Autowired
-    private ApplicationInstanceRepository applicationInstanceRepository;
+    private ApplicationInstanceService applicationInstanceService;
 
     @Override
-    public DevopsDeployValueDTO createOrUpdate(Long projectId, DevopsDeployValueDTO pipelineValueDTO) {
+    public DevopsDeployValueVO createOrUpdate(Long projectId, DevopsDeployValueVO devopsDeployValueVO) {
 
-        FileUtil.checkYamlFormat(pipelineValueDTO.getValue());
+        FileUtil.checkYamlFormat(devopsDeployValueVO.getValue());
 
-        DevopsDeployValueE pipelineValueE = ConvertHelper.convert(pipelineValueDTO, DevopsDeployValueE.class);
-        pipelineValueE.setProjectId(projectId);
-        pipelineValueE = valueRepository.createOrUpdate(pipelineValueE);
-        return ConvertHelper.convert(pipelineValueE, DevopsDeployValueDTO.class);
+        DevopsDeployValueDTO devopsDeployValueDTO = ConvertUtils.convertObject(devopsDeployValueVO, DevopsDeployValueDTO.class);
+        devopsDeployValueDTO.setProjectId(projectId);
+        devopsDeployValueDTO = baseCreateOrUpdate(devopsDeployValueDTO);
+        return ConvertUtils.convertObject(devopsDeployValueDTO, DevopsDeployValueVO.class);
     }
 
     @Override
     public void delete(Long projectId, Long valueId) {
-        valueRepository.delete(valueId);
+        baseDelete(valueId);
     }
 
     @Override
-    public PageInfo<DevopsDeployValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
+    public PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
         Long userId = null;
-        if (!iamRepository.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectE)) {
+        if (!iamServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO)) {
             userId = DetailsHelper.getUserDetails().getUserId();
         }
-        PageInfo<DevopsDeployValueDTO> valueDTOS = ConvertPageHelper.convertPageInfo(valueRepository.listByOptions(projectId, appId, envId, userId, pageRequest, params), DevopsDeployValueDTO.class);
-        PageInfo<DevopsDeployValueDTO> page = new PageInfo<>();
-        BeanUtils.copyProperties(valueDTOS, page);
-        page.setList(valueDTOS.getList().stream().peek(t -> {
-            UserE userE = iamRepository.queryUserByUserId(t.getCreateBy());
-            t.setCreateUserName(userE.getLoginName());
-            t.setCreateUserUrl(userE.getImageUrl());
-            t.setCreateUserRealName(userE.getRealName());
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(t.getEnvId());
-            if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
-                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
-                t.setEnvStatus(true);
+        PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo = basePageByOptions(projectId, appId, envId, userId, pageRequest, params);
+        PageInfo<DevopsDeployValueVO> page = ConvertUtils.convertPage(deployValueDTOPageInfo, DevopsDeployValueVO.class);
+        page.setList(deployValueDTOPageInfo.getList().stream().map(devopsDeployValueDTO -> {
+
+            DevopsDeployValueVO devopsDeployValueVO = ConvertUtils.convertObject(devopsDeployValueDTO, DevopsDeployValueVO.class);
+            IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(devopsDeployValueDTO.getCreatedBy());
+            devopsDeployValueVO.setCreateUserName(iamUserDTO.getLoginName());
+            devopsDeployValueVO.setCreateUserUrl(iamUserDTO.getImageUrl());
+            devopsDeployValueVO.setCreateUserRealName(iamUserDTO.getRealName());
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsDeployValueDTO.getEnvId());
+            if (connectedEnvList.contains(devopsEnvironmentDTO.getClusterId())
+                    && updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
+                devopsDeployValueVO.setEnvStatus(true);
             }
+            return devopsDeployValueVO;
         }).collect(Collectors.toList()));
         return page;
     }
 
     @Override
-    public DevopsDeployValueDTO queryById(Long projectId, Long valueId) {
-        DevopsDeployValueDTO valueDTO = ConvertHelper.convert(valueRepository.queryById(valueId), DevopsDeployValueDTO.class);
-        valueDTO.setIndex(checkDelete(projectId, valueId));
-        return valueDTO;
+    public DevopsDeployValueVO query(Long projectId, Long valueId) {
+        DevopsDeployValueVO devopsDeployValueVO = ConvertUtils.convertObject(baseQueryById(valueId), DevopsDeployValueVO.class);
+        devopsDeployValueVO.setIndex(checkDelete(projectId, valueId));
+        return devopsDeployValueVO;
     }
 
     @Override
     public void checkName(Long projectId, String name) {
-        valueRepository.checkName(projectId, name);
+        baseCheckName(projectId, name);
     }
 
     @Override
-    public List<DevopsDeployValueDTO> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
-        return ConvertHelper.convertList(valueRepository.queryByAppIdAndEnvId(projectId, appId, envId), DevopsDeployValueDTO.class);
+    public List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appId, Long envId) {
+        return ConvertUtils.convertList(baseQueryByAppIdAndEnvId(projectId, appId, envId), DevopsDeployValueVO.class);
     }
 
     @Override
     public Boolean checkDelete(Long projectId, Long valueId) {
-        List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByValueId(valueId);
-        if (appDeployEList == null || appDeployEList.isEmpty()) {
-            List<ApplicationInstanceE> instanceEList = applicationInstanceRepository.listByValueId(valueId);
-            if (instanceEList == null || instanceEList.isEmpty()) {
+        List<PipelineAppDeployDTO> pipelineAppDeployDTOS = pipelineAppDeployService.baseQueryByValueId(valueId);
+        if (pipelineAppDeployDTOS == null || pipelineAppDeployDTOS.isEmpty()) {
+            List<ApplicationInstanceDTO> applicationInstanceDTOS = applicationInstanceService.baseListByValueId(valueId);
+            if (applicationInstanceDTOS == null || applicationInstanceDTOS.isEmpty()) {
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public PageInfo<DevopsDeployValueDTO> basePageByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params) {
+        Map maps = gson.fromJson(params, Map.class);
+        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo = PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsDeployValueMapper.listByOptions(projectId, appId, envId, userId, searchParamMap, paramMap));
+        return deployValueDTOPageInfo;
+    }
+
+    @Override
+    public DevopsDeployValueDTO baseCreateOrUpdate(DevopsDeployValueDTO devopsDeployValueDTO) {
+        if (devopsDeployValueDTO.getId() == null) {
+            if (devopsDeployValueMapper.insert(devopsDeployValueDTO) != 1) {
+                throw new CommonException("error.insert.pipeline.value");
+            }
+        } else {
+            devopsDeployValueDTO.setObjectVersionNumber(devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO).getObjectVersionNumber());
+            if (devopsDeployValueMapper.updateByPrimaryKeySelective(devopsDeployValueDTO) != 1) {
+                throw new CommonException("error.update.pipeline.value");
+            }
+            devopsDeployValueDTO.setObjectVersionNumber(null);
+        }
+        return devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO);
+    }
+
+    @Override
+    public void baseDelete(Long valueId) {
+        DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
+        devopsDeployValueDTO.setId(valueId);
+        devopsDeployValueMapper.deleteByPrimaryKey(devopsDeployValueDTO);
+    }
+
+    @Override
+    public DevopsDeployValueDTO baseQueryById(Long valueId) {
+        DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
+        devopsDeployValueDTO.setId(valueId);
+        return devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO);
+    }
+
+    @Override
+    public void baseCheckName(Long projectId, String name) {
+        DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
+        devopsDeployValueDTO.setProjectId(projectId);
+        devopsDeployValueDTO.setName(name);
+        if (devopsDeployValueMapper.select(devopsDeployValueDTO).size() > 0) {
+            throw new CommonException("error.devops.pipeline.value.name.exit");
+        }
+    }
+
+    @Override
+    public List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
+        DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
+        devopsDeployValueDTO.setProjectId(projectId);
+        devopsDeployValueDTO.setAppId(appId);
+        devopsDeployValueDTO.setEnvId(envId);
+        return devopsDeployValueMapper.select(devopsDeployValueDTO);
     }
 }

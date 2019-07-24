@@ -4,9 +4,9 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.convertor.ConvertHelper
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.DevopsProjectConfigDTO
-import io.choerodon.devops.api.dto.ProjectConfigDTO
-import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE
+import io.choerodon.devops.api.vo.DevopsProjectConfigVO
+import io.choerodon.devops.api.vo.ProjectConfigVO
+
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository
 import io.choerodon.devops.infra.feign.HarborClient
 import org.mockito.Mockito
@@ -44,11 +44,11 @@ class DevopsProjectConfigControllerSpec extends Specification {
 
     //创建配置
     def "Create"() {
-        DevopsProjectConfigDTO devopsProjectConfigDTO = new DevopsProjectConfigDTO()
+        DevopsProjectConfigVO devopsProjectConfigDTO = new DevopsProjectConfigVO()
         devopsProjectConfigDTO.setName("test")
         devopsProjectConfigDTO.setType("chart")
         devopsProjectConfigDTO.setProjectId(project_id)
-        ProjectConfigDTO projectConfigDTO = new ProjectConfigDTO()
+        ProjectConfigVO projectConfigDTO = new ProjectConfigVO()
         projectConfigDTO.setEmail("test")
         projectConfigDTO.setPassword("test")
         projectConfigDTO.setPrivate(true)
@@ -58,7 +58,7 @@ class DevopsProjectConfigControllerSpec extends Specification {
         devopsProjectConfigDTO.setConfig(projectConfigDTO)
 
         when: '创建配置'
-        def entity = restTemplate.postForEntity(MAPPING, devopsProjectConfigDTO, DevopsProjectConfigDTO.class, project_id)
+        def entity = restTemplate.postForEntity(MAPPING, devopsProjectConfigDTO, DevopsProjectConfigVO.class, project_id)
 
         then:
         entity.getBody().getName().equals("test")
@@ -76,15 +76,15 @@ class DevopsProjectConfigControllerSpec extends Specification {
 
     //更新配置
     def "Update"() {
-        DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(3L)
-        DevopsProjectConfigDTO devopsProjectConfigDTO = ConvertHelper.convert(devopsProjectConfigE, DevopsProjectConfigDTO.class)
+        DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.baseQuery(3L)
+        DevopsProjectConfigVO devopsProjectConfigDTO = ConvertHelper.convert(devopsProjectConfigE, DevopsProjectConfigVO.class)
         devopsProjectConfigDTO.setName("testnew")
 
         when:
         restTemplate.put(MAPPING, devopsProjectConfigDTO, project_id)
 
         then:
-        devopsProjectConfigRepository.queryByPrimaryKey(3L).getName().equals("testnew")
+        devopsProjectConfigRepository.baseQuery(3L).getName().equals("testnew")
 
     }
 
@@ -101,7 +101,7 @@ class DevopsProjectConfigControllerSpec extends Specification {
     //根据id查询配置
     def "QueryByPrimaryKey"() {
         when:
-        def object = restTemplate.getForObject(MAPPING + "/{project_config_id}", DevopsProjectConfigDTO.class, 1, 3)
+        def object = restTemplate.getForObject(MAPPING + "/{project_config_id}", DevopsProjectConfigVO.class, 1, 3)
 
         then:
         object.getName().equals("testnew")
@@ -135,7 +135,7 @@ class DevopsProjectConfigControllerSpec extends Specification {
         restTemplate.delete(MAPPING + "/{project_config_id}", 1, 3)
 
         then:
-        devopsProjectConfigRepository.queryByPrimaryKey(3) == null
+        devopsProjectConfigRepository.baseQuery(3) == null
 
     }
 }

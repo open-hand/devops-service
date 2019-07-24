@@ -1,21 +1,23 @@
 package io.choerodon.devops.api.controller.v1
 
 import com.github.pagehelper.PageInfo
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.IssueDTO
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
+import io.choerodon.devops.api.vo.IssueVO
+import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO
+import io.choerodon.devops.api.vo.iam.RoleVO
 import io.choerodon.devops.app.service.IssueService
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.ApplicationDO
+import io.choerodon.devops.infra.dataobject.ApplicationDTO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
-import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+<<<<<<< HEAD
+import io.choerodon.devops.infra.dto.CommitDTO
+=======
+>>>>>>> f7b3373a9ccceea0bbd4235a0e8f042f20369f6a
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
@@ -86,7 +88,7 @@ class IssueControllerSpec extends Specification {
     @Shared
     Date date1 = new Date(2018, 9, 7, 9, 18, 0)
     @Shared
-    ApplicationDO applicationDO = new ApplicationDO()
+    ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
     DevopsBranchDO devopsBranchDO = new DevopsBranchDO()
     @Shared
@@ -96,11 +98,11 @@ class IssueControllerSpec extends Specification {
     @Shared
     DevopsMergeRequestDO devopsMergeRequestDO1 = new DevopsMergeRequestDO()
     @Shared
-    List<CommitDO> commitDOS = new ArrayList<>()
+    List<CommitDTO> commitDOS = new ArrayList<>()
     @Shared
-    CommitDO commitDO = new CommitDO()
+    CommitDTO commitDO = new CommitDTO()
     @Shared
-    CommitDO commitDO1 = new CommitDO()
+    CommitDTO commitDO1 = new CommitDTO()
 
     def setupSpec() {
         applicationDO.setId(1L)
@@ -179,33 +181,33 @@ class IssueControllerSpec extends Specification {
         ResponseEntity<List<UserDO>> responseEntity2 = new ResponseEntity<>(addIamUserList, HttpStatus.OK)
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity2)
 
-        List<CommitDO> commitDOS1 = new ArrayList<>();
-        CommitDO commitDO = new CommitDO();
+        List<CommitDTO> commitDOS1 = new ArrayList<>();
+        CommitDTO commitDO = new CommitDTO();
         commitDO.setId("test")
         commitDOS1.add(commitDO)
-        ResponseEntity<List<CommitDO>> responseEntity3 = new ResponseEntity<>(commitDOS1, HttpStatus.OK)
+        ResponseEntity<List<CommitDTO>> responseEntity3 = new ResponseEntity<>(commitDOS1, HttpStatus.OK)
         Mockito.doReturn(responseEntity3).when(gitlabServiceClient).getCommits(anyInt(), anyString(), anyString())
 
 
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setAccessLevel(AccessLevel.OWNER)
-        ResponseEntity<MemberDO> responseEntity4 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity4)
+        ResponseEntity<MemberDTO> responseEntity4 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.queryGroupMember(anyInt(), anyInt())).thenReturn(responseEntity4)
 
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
+        List<RoleVO> roleDTOList = new ArrayList<>()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setCode("role/project/default/project-owner")
         roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        List<ProjectWithRoleVO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleVO projectWithRoleDTO = new ProjectWithRoleVO()
         projectWithRoleDTO.setName("pro")
         projectWithRoleDTO.setRoles(roleDTOList)
         projectWithRoleDTOList.add(projectWithRoleDTO)
-        PageInfo<ProjectWithRoleDTO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
-        ResponseEntity<PageInfo<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        PageInfo<ProjectWithRoleVO> projectWithRoleDTOPage = new PageInfo<>(projectWithRoleDTOList)
+        ResponseEntity<PageInfo<ProjectWithRoleVO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
-        ResponseEntity<List<CommitDO>> responseEntity5 = new ResponseEntity<>(commitDOS, HttpStatus.OK)
+        ResponseEntity<List<CommitDTO>> responseEntity5 = new ResponseEntity<>(commitDOS, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getCommits(anyInt(), anyString(), anyString())).thenReturn(responseEntity5)
     }
 
@@ -218,7 +220,7 @@ class IssueControllerSpec extends Specification {
         devopsMergeRequestMapper.insert(devopsMergeRequestDO1)
 
         when: '根据issueId获取issue关联的commit列表'
-        def list = restTemplate.getForObject("/v1/project/1/issue/1/commit/list", List.class)
+        def list = restTemplate.getForObject("/v1/project/1/issue/1/commit/baseList", List.class)
 
         then: '校验返回值'
         list.get(0)["branchName"] == "branch"
@@ -227,7 +229,7 @@ class IssueControllerSpec extends Specification {
 
     def "GetMergeRequestsByIssueId"() {
         when: '根据issueId获取issue关联的mergerequest列表'
-        def list = restTemplate.getForObject("/v1/project/1/issue/1/merge_request/list", List.class)
+        def list = restTemplate.getForObject("/v1/project/1/issue/1/merge_request/baseList", List.class)
 
         then: '校验返回值'
         list.get(0)["sourceBranch"] == "branch"
@@ -236,16 +238,16 @@ class IssueControllerSpec extends Specification {
 
     def "CountCommitAndMergeRequest"() {
         when: '根据issueId获取issue关联的mergerequest和commit数量'
-        def issueDTO = restTemplate.getForObject("/v1/project/1/issue/1/commit_and_merge_request/count", IssueDTO.class)
+        def issueDTO = restTemplate.getForObject("/v1/project/1/issue/1/commit_and_merge_request/count", IssueVO.class)
 
         then: '校验返回值'
         issueDTO["branchCount"] == 2
         issueDTO["mergeRequestStatus"] == "opened"
 
         // 删除app
-        List<ApplicationDO> list = applicationMapper.selectAll()
+        List<ApplicationDTO> list = applicationMapper.selectAll()
         if (list != null && !list.isEmpty()) {
-            for (ApplicationDO e : list) {
+            for (ApplicationDTO e : list) {
                 applicationMapper.delete(e)
             }
         }

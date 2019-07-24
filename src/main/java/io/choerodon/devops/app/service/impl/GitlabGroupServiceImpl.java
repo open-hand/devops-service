@@ -4,22 +4,19 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 
 import feign.FeignException;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
+import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.app.service.GitlabGroupService;
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
-import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import io.choerodon.devops.app.service.IamService;
+import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,15 +34,13 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     private static final String GROUP_NAME_FORMAT = "%s-%s%s";
 
     @Autowired
-    private GitlabServiceClient gitlabServiceClient;
+    private DevopsProjectService devopsProjectService;
     @Autowired
-    private DevopsProjectRepository devopsProjectRepository;
+    private UserAttrService userAttrService;
     @Autowired
-    private UserAttrRepository userAttrRepository;
+    private IamService iamService;
     @Autowired
-    private IamRepository iamRepository;
-    @Autowired
-    private GitlabRepository gitlabRepository;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     @Override
     public void createGroup(GitlabGroupPayload gitlabGroupPayload, String groupCodeSuffix) {
@@ -53,7 +48,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         String gitlabProjectName = getGitlabProjectName(gitlabGroupPayload);
 
         //创建gitlab group
-        GroupDO group = new GroupDO();
+        GroupDTO group = new GroupDTO();
         // name: orgName-projectName
         group.setName(String.format(GROUP_NAME_FORMAT,
                 gitlabGroupPayload.getOrganizationName(),
@@ -64,25 +59,24 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
                 gitlabGroupPayload.getOrganizationCode(),
                 gitlabGroupPayload.getProjectCode(),
                 groupCodeSuffix));
-        UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
-        DevopsProjectE devopsProjectE = gitlabRepository.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (devopsProjectE == null) {
-                devopsProjectE =
-                        ConvertHelper.convert(gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getBody(), DevopsProjectE.class);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupPayload.getUserId());
+        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        if (groupDTO == null) {
+            groupDTO=gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
+        DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(gitlabGroupPayload.getProjectId());
         if (groupCodeSuffix.isEmpty()) {
-            devopsProjectDO.setDevopsAppGroupId(TypeUtil.objToLong(devopsProjectE.getId()));
+            devopsProjectDO.setDevopsAppGroupId(TypeUtil.objToLong(groupDTO.getId()));
         } else if ("-gitops".equals(groupCodeSuffix)) {
-            devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(devopsProjectE.getId()));
+            devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(groupDTO.getId()));
         }
-        devopsProjectRepository.updateProjectAttr(devopsProjectDO);
+        devopsProjectService.baseUpdate(devopsProjectDO);
     }
 
     private String getGitlabProjectName(GitlabGroupPayload gitlabGroupPayload) {
-        ProjectE projectE = iamRepository.queryIamProject(gitlabGroupPayload.getProjectId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        List<ProjectE> projectES = iamRepository.listIamProjectByOrgId(organization.getId(), gitlabGroupPayload.getProjectName(), null);
+        ProjectDTO projectDTO = iamService.queryIamProject(gitlabGroupPayload.getProjectId());
+        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
+        List<ProjectDTO> projectES = iamService.listIamProjectByOrgId(organizationDTO.getId(), gitlabGroupPayload.getProjectName(), null);
         String validProjectName = getValidGroupName(gitlabGroupPayload.getProjectName());
         return projectES.size() > 1 ? validProjectName + "-" + (projectES.size() - 1) : validProjectName;
     }
@@ -92,7 +86,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         String gitlabProjectName = getGitlabProjectName(gitlabGroupPayload);
 
         //创建gitlab group
-        GroupDO group = new GroupDO();
+        GroupDTO group = new GroupDTO();
         // name: orgName-projectName
         group.setName(String.format(GROUP_NAME_FORMAT,
                 gitlabGroupPayload.getOrganizationName(),
@@ -103,16 +97,18 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
                 gitlabGroupPayload.getOrganizationCode(),
                 gitlabGroupPayload.getProjectCode(),
                 groupCodeSuffix));
-        UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
-        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(gitlabGroupPayload.getProjectId());
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupPayload.getUserId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(gitlabGroupPayload.getProjectId());
+
         Integer groupId;
         if (groupCodeSuffix.isEmpty()) {
-            groupId = TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId());
+            groupId = TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId());
         } else {
-            groupId = TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId());
+            groupId = TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId());
         }
         try {
-            gitlabRepository.updateGroup(groupId, TypeUtil.objToInteger(userAttrE.getGitlabUserId()), group);
+            gitlabServiceClientOperator.updateGroup(groupId, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), group);
         } catch (FeignException e) {
             throw new CommonException(e);
         }

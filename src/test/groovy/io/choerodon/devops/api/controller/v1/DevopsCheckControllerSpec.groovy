@@ -4,26 +4,29 @@ import com.github.pagehelper.PageInfo
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
-import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO
-import io.choerodon.devops.api.dto.iam.RoleDTO
-import io.choerodon.devops.api.dto.iam.RoleSearchDTO
-import io.choerodon.devops.api.dto.iam.UserDTO
-import io.choerodon.devops.api.dto.iam.UserWithRoleDTO
+import io.choerodon.devops.api.vo.RoleAssignmentSearchVO
+import io.choerodon.devops.api.vo.iam.RoleVO
+import io.choerodon.devops.api.vo.iam.RoleSearchVO
+import io.choerodon.devops.api.vo.iam.UserVO
+import io.choerodon.devops.api.vo.iam.UserWithRoleVO
+import io.choerodon.devops.api.vo.iam.UserWithRoleVO
 import io.choerodon.devops.app.service.DevopsCheckLogService
-import io.choerodon.devops.domain.application.entity.gitlab.CommitE
 import io.choerodon.devops.domain.application.repository.*
-import io.choerodon.devops.domain.application.valueobject.ProjectHook
-import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
+import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO
 import io.choerodon.devops.infra.common.util.TypeUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.common.util.enums.PipelineStatus
-import io.choerodon.devops.infra.dataobject.*
-import io.choerodon.devops.infra.dataobject.gitlab.*
+import io.choerodon.devops.infra.dataobject.DevopsProjectDTO
+import io.choerodon.devops.infra.dataobject.UserAttrDTO
+import io.choerodon.devops.infra.dto.CommitDTO
+
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDTO
+import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.dto.iam.IamUserDTO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
@@ -111,25 +114,25 @@ class DevopsCheckControllerSpec extends Specification {
     @Shared
     private DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
     @Shared
-    private ApplicationDO applicationDO = new ApplicationDO()
+    private ApplicationDTO applicationDO = new ApplicationDTO()
     @Shared
     private DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO()
     @Shared
-    private UserAttrDO userAttrDO = new UserAttrDO()
+    private UserAttrDTO userAttrDO = new UserAttrDTO()
     @Shared
-    private UserAttrDO userAttrDO2 = new UserAttrDO()
+    private UserAttrDTO userAttrDO2 = new UserAttrDTO()
     @Shared
     private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared
-    private DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
+    private DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO()
     @Shared
-    private DevopsProjectDO newDevopsProjectDO = new DevopsProjectDO()
+    private DevopsProjectDTO newDevopsProjectDO = new DevopsProjectDTO()
     @Shared
     private DevopsBranchDO branchDO = new DevopsBranchDO()
     @Shared
     private DevopsGitlabPipelineDO devopsGitlabPipelineDO = new DevopsGitlabPipelineDO()
     @Shared
-    private List<DevopsProjectDO> previousDevopsProjectDOList = new ArrayList<>()
+    private List<DevopsProjectDTO> previousDevopsProjectDOList = new ArrayList<>()
     @Shared
     private ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
     @Shared
@@ -183,12 +186,12 @@ class DevopsCheckControllerSpec extends Specification {
 
 
         ResponseEntity<List<BranchDO>> branchRes = new ResponseEntity<>(Arrays.asList(createMockBranchDO()), HttpStatus.OK)
-        when(mockGitlabServiceClient.listBranches(anyInt(), anyInt())).thenReturn(branchRes)
+        when(mockGitlabServiceClient.listBranch(anyInt(), anyInt())).thenReturn(branchRes)
 
-        ProjectHook hook = new ProjectHook()
+        ProjectHookDTO hook = new ProjectHookDTO()
         hook.setId(2)
-        ResponseEntity<ProjectHook> res = new ResponseEntity<>(hook, HttpStatus.OK)
-        when(mockGitlabServiceClient.createProjectHook(anyInt(), anyInt(), any(ProjectHook))).thenReturn(res)
+        ResponseEntity<ProjectHookDTO> res = new ResponseEntity<>(hook, HttpStatus.OK)
+        when(mockGitlabServiceClient.createProjectHook(anyInt(), anyInt(), any(ProjectHookDTO))).thenReturn(res)
 
         // 准备升级0.9的数据
         devopsEnvironmentDO.setName("fakeEnv")
@@ -214,34 +217,34 @@ class DevopsCheckControllerSpec extends Specification {
         groupDO.setId(1242)
         when(mockGitlabServiceClient.createGroup(any(GroupDO), anyInt())).thenReturn(new ResponseEntity<>(groupDO, HttpStatus.OK))
 
-        GitlabProjectDO gitlabProjectDO = new GitlabProjectDO()
+        GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO()
         gitlabProjectDO.setId(12523)
         when(mockGitlabServiceClient.createProject(anyInt(), anyString(), anyInt(), anyBoolean())).thenReturn(new ResponseEntity<>(gitlabProjectDO, HttpStatus.OK))
-        when(mockGitlabServiceClient.getDeploykeys(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
+        when(mockGitlabServiceClient.listDeploykey(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
         when(mockGitlabServiceClient.getFile(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(Boolean.FALSE, HttpStatus.OK))
-        when(mockGitlabServiceClient.getProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDO(), HttpStatus.OK))
-        when(mockGitlabServiceClient.getProjectHook(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(null, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryProjectByName(anyInt(), anyString(), anyString())).thenReturn(new ResponseEntity<>(new GitlabProjectDTO(), HttpStatus.OK))
+        when(mockGitlabServiceClient.listProjectHook(anyInt(), anyInt())).thenReturn(new ResponseEntity<>(null, HttpStatus.OK))
 
-        RoleDTO roleDTO = new RoleDTO()
+        RoleVO roleDTO = new RoleVO()
         roleDTO.setId(234L)
 //        PageInfo pageInfo = new PageInfo(0, 10, true)
-        List<RoleDTO> roleDTOS = Arrays.asList(roleDTO)
-        PageInfo<RoleDTO> page = new PageInfo(roleDTOS)
-        when(mockIamServiceClient.queryRoleIdByCode(any(RoleSearchDTO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
-        List<UserDTO> userDTOS = new ArrayList<>()
-        PageInfo<RoleDTO> page1 = new PageInfo(userDTOS)
-        when(mockIamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(page1, HttpStatus.OK))
+        List<RoleVO> roleDTOS = Arrays.asList(roleDTO)
+        PageInfo<RoleVO> page = new PageInfo(roleDTOS)
+        when(mockIamServiceClient.queryRoleIdByCode(any(RoleSearchVO))).thenReturn(new ResponseEntity<>(page, HttpStatus.OK))
+        List<UserVO> userDTOS = new ArrayList<>()
+        PageInfo<RoleVO> page1 = new PageInfo(userDTOS)
+        when(mockIamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchVO))).thenReturn(new ResponseEntity<>(page1, HttpStatus.OK))
 
         // 准备升级到0.10 的数据
-        when(mockGitlabServiceClient.updateProjectHook(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ProjectHook(), HttpStatus.OK))
+        when(mockGitlabServiceClient.updateProjectHook(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ProjectHookDTO(), HttpStatus.OK))
         when(mockGitlabServiceClient.listCommits(anyInt(), eq(1), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(createVersion10MockCommits(), HttpStatus.OK))
         when(mockGitlabServiceClient.listCommits(anyInt(), eq(2), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(new ArrayList(), HttpStatus.OK))
-        io.choerodon.devops.infra.dataobject.iam.UserDO userDO = new io.choerodon.devops.infra.dataobject.iam.UserDO()
+        IamUserDTO userDO = new IamUserDTO()
         userDO.setId(234L)
-        List<io.choerodon.devops.infra.dataobject.iam.UserDO> users = new ArrayList<>()
+        List<IamUserDTO> users = new ArrayList<>()
         users.add(userDO)
 //        PageInfo userPageInfo = new PageInfo(1, 10, true)
-        PageInfo<io.choerodon.devops.infra.dataobject.iam.UserDO> userPage = new PageInfo(users)
+        PageInfo<IamUserDTO> userPage = new PageInfo(users)
         when(mockIamServiceClient.listUsersByEmail(anyLong(), anyInt(), anyInt(), anyString())).thenReturn(new ResponseEntity<>(userPage, HttpStatus.OK))
 
 
@@ -256,7 +259,7 @@ class DevopsCheckControllerSpec extends Specification {
         po2.setCreatedAt("2018-10-13 15:33:12")
         po2.setSha("582b27c68b9fe0acbce77b873eb11c66b97409af")
         po2.setRef("feature-C7NCD-1778")
-        when(mockGitlabServiceClient.getPipeline(anyInt(), eq(10000), anyInt())).thenReturn(new ResponseEntity<>(po2, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryPipeline(anyInt(), eq(10000), anyInt())).thenReturn(new ResponseEntity<>(po2, HttpStatus.OK))
 
         PipelineDO po3 = new PipelineDO()
         UserDO u3 = new UserDO()
@@ -267,7 +270,7 @@ class DevopsCheckControllerSpec extends Specification {
         po3.setCreatedAt("2018-10-13 15:33:18")
         po3.setSha("582b27c68b9fe0acbce77b873eb11c66b974093a")
         po3.setRef("feature-C7NCD-1779")
-        when(mockGitlabServiceClient.getPipeline(anyInt(), eq(10001), anyInt())).thenReturn(new ResponseEntity<>(po3, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryPipeline(anyInt(), eq(10001), anyInt())).thenReturn(new ResponseEntity<>(po3, HttpStatus.OK))
 
         // 准备升级到0.10.4的数据
         devopsGitlabPipelineDO.setAppId(applicationDO.getId())
@@ -275,25 +278,25 @@ class DevopsCheckControllerSpec extends Specification {
         devopsGitlabPipelineDO.setPipelineId(324L)
         devopsGitlabPipelineMapper.insert(devopsGitlabPipelineDO)
 
-        when(mockGitlabServiceClient.getPipeline(anyInt(), eq((int) TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId())), anyInt())).thenReturn(new ResponseEntity<>(createMockPipelineDO(), HttpStatus.OK))
+        when(mockGitlabServiceClient.queryPipeline(anyInt(), eq((int) TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId())), anyInt())).thenReturn(new ResponseEntity<>(createMockPipelineDO(), HttpStatus.OK))
         when(mockGitlabServiceClient.listJobs(anyInt(), anyInt(), anyInt())).thenReturn(new ResponseEntity<>(createMockJobDOs(), HttpStatus.OK))
-        when(mockGitlabServiceClient.getCommitStatus(anyInt(), anyString(), anyInt())).thenReturn(new ResponseEntity<>(createMockCommitStatusDOs(), HttpStatus.OK))
+        when(mockGitlabServiceClient.listCommitStatus(anyInt(), anyString(), anyInt())).thenReturn(new ResponseEntity<>(createMockCommitStatusDOs(), HttpStatus.OK))
 
         // 准备升级到0.11.0的数据
-        UserWithRoleDTO userWithRoleDTO = new UserWithRoleDTO()
+        UserWithRoleVO userWithRoleDTO = new UserWithRoleVO()
         userWithRoleDTO.setRoles(Collections.emptyList())
         userWithRoleDTO.setLoginName("userWithRoleDTO")
         userWithRoleDTO.setId(userAttrDO.getIamUserId())
-        List<UserWithRoleDTO> userWithRoleDTOList = Arrays.asList(userWithRoleDTO)
+        List<UserWithRoleVO> userWithRoleDTOList = Arrays.asList(userWithRoleDTO)
         PageInfo userWithRolePageInfo = new PageInfo(userWithRoleDTOList)
-//        PageInfo<UserWithRoleDTO> userWithRoleDTOPage = new PageInfo<>(userWithRoleDTOList, userWithRolePageInfo, 1)
-        when(mockIamServiceClient.queryUserByProjectId(eq(devopsProjectDO.getIamProjectId()), anyInt(), anyInt(), anyBoolean(), any(RoleAssignmentSearchDTO))).thenReturn(new ResponseEntity<>(userWithRolePageInfo, HttpStatus.OK))
+//        PageInfo<UserWithRoleVO> userWithRoleDTOPage = new PageInfo<>(userWithRoleDTOList, userWithRolePageInfo, 1)
+        when(mockIamServiceClient.queryUserByProjectId(eq(devopsProjectDO.getIamProjectId()), anyInt(), anyInt(), anyBoolean(), any(RoleAssignmentSearchVO))).thenReturn(new ResponseEntity<>(userWithRolePageInfo, HttpStatus.OK))
 
-        MemberDO memberDO = new MemberDO()
+        MemberDTO memberDO = new MemberDTO()
         memberDO.setId(TypeUtil.objToInteger(userAttrDO.getGitlabUserId()))
         memberDO.setAccessLevel(AccessLevel.MASTER)
-        when(mockGitlabServiceClient.getUserMemberByUserId(eq(TypeUtil.objToInteger(devopsProjectDO.getDevopsEnvGroupId())), eq(TypeUtil.objToInteger(userAttrDO.getGitlabUserId())))).thenReturn(new ResponseEntity<>(memberDO, HttpStatus.OK))
-        when(mockGitlabServiceClient.getUserMemberByUserId(eq(TypeUtil.objToInteger(devopsProjectDO.getDevopsAppGroupId())), eq(TypeUtil.objToInteger(userAttrDO.getGitlabUserId())))).thenReturn(new ResponseEntity<>(memberDO, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryGroupMember(eq(TypeUtil.objToInteger(devopsProjectDO.getDevopsEnvGroupId())), eq(TypeUtil.objToInteger(userAttrDO.getGitlabUserId())))).thenReturn(new ResponseEntity<>(memberDO, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryGroupMember(eq(TypeUtil.objToInteger(devopsProjectDO.getDevopsAppGroupId())), eq(TypeUtil.objToInteger(userAttrDO.getGitlabUserId())))).thenReturn(new ResponseEntity<>(memberDO, HttpStatus.OK))
 
         // 准备升级到0.12.0的数据
         userAttrDO2.setIamUserId(101L)
@@ -301,11 +304,11 @@ class DevopsCheckControllerSpec extends Specification {
         userAttrDO2.setGitlabUserId(101L)
         userAttrMapper.insert(userAttrDO2)
 
-        io.choerodon.devops.infra.dataobject.iam.UserDO userRet1 = new io.choerodon.devops.infra.dataobject.iam.UserDO()
+        IamUserDTO userRet1 = new IamUserDTO()
         userRet1.setId(userAttrDO.getIamUserId())
         userRet1.setLoginName("admin")
 
-        io.choerodon.devops.infra.dataobject.iam.UserDO userRet2 = new io.choerodon.devops.infra.dataobject.iam.UserDO()
+        IamUserDTO userRet2 = new IamUserDTO()
         userRet2.setId(userAttrDO2.getIamUserId())
         userRet2.setLoginName("12241&*(@^1`")
 
@@ -320,7 +323,7 @@ class DevopsCheckControllerSpec extends Specification {
 
         UserDO userDOForGitlabUsername = new UserDO()
         userDOForGitlabUsername.setUsername("validUsername")
-        when(mockGitlabServiceClient.queryUserByUserId(eq(TypeUtil.objToInteger(userAttrDO2.getGitlabUserId())))).thenReturn(new ResponseEntity<>(userDOForGitlabUsername, HttpStatus.OK))
+        when(mockGitlabServiceClient.queryUserById(eq(TypeUtil.objToInteger(userAttrDO2.getGitlabUserId())))).thenReturn(new ResponseEntity<>(userDOForGitlabUsername, HttpStatus.OK))
 
         //  准备升级到0.14.0的数据
         devopsEnvPodDO.setId(100L)
@@ -329,7 +332,7 @@ class DevopsCheckControllerSpec extends Specification {
         devopsEnvPodMapper.insert(devopsEnvPodDO)
 
         devopsEnvResourceDetailDO.setId(124L)
-        devopsEnvResourceDetailDO.setMessage("{\"metadata\":{\"name\":\"fssc-db1f0-ffddcfcdc-kbj84\",\"generateName\":\"fssc-db1f0-ffddcfcdc-\",\"namespace\":\"cmcc-fssc-cmcc\",\"selfLink\":\"/api/v1/namespaces/cmcc-fssc-cmcc/pods/fssc-db1f0-ffddcfcdc-kbj84\",\"uid\":\"8b11c181-5f4a-11e8-b11c-00163e04f544\",\"resourceVersion\":\"16049404\",\"creationTimestamp\":\"2018-05-24T12:04:00Z\",\"labels\":{\"choerodon.io/release\":\"fssc-db1f0\",\"pod-template-hash\":\"998879787\"},\"annotations\":{\"kubernetes.io/created-by\":\"{\\\"kind\\\":\\\"SerializedReference\\\",\\\"apiVersion\\\":\\\"v1\\\",\\\"reference\\\":{\\\"kind\\\":\\\"ReplicaSet\\\",\\\"namespace\\\":\\\"cmcc-fssc-cmcc\\\",\\\"name\\\":\\\"fssc-db1f0-ffddcfcdc\\\",\\\"uid\\\":\\\"8b0e4cbe-5f4a-11e8-b11c-00163e04f544\\\",\\\"apiVersion\\\":\\\"extensions\\\",\\\"resourceVersion\\\":\\\"16048306\\\"}}\\n\"},\"ownerReferences\":[{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"ReplicaSet\",\"name\":\"fssc-db1f0-ffddcfcdc\",\"uid\":\"8b0e4cbe-5f4a-11e8-b11c-00163e04f544\",\"controller\":true,\"blockOwnerDeletion\":true}]},\"spec\":{\"volumes\":[{\"name\":\"default-token-wmrfv\",\"secret\":{\"secretName\":\"default-token-wmrfv\",\"defaultMode\":420}}],\"containers\":[{\"name\":\"fssc-db1f0\",\"image\":\"registry.choerodon.com.cn/cmcc-fssc/fssc:0.1.0-dev.20180524192305\",\"ports\":[{\"name\":\"http\",\"containerPort\":8080,\"protocol\":\"TCP\"}],\"env\":[{\"name\":\"ORACLE_HOST\",\"value\":\"116.228.77.183\"},{\"name\":\"ORACLE_PASS\",\"value\":\"hap_dev\"},{\"name\":\"ORACLE_PORT\",\"value\":\"30171\"},{\"name\":\"ORACLE_SID\",\"value\":\"TEST\"},{\"name\":\"ORACLE_USER\",\"value\":\"hap_dev\"},{\"name\":\"RABBITMQ_HOST\",\"value\":\"baozhang-rabbitmq.baozhang.svc\"},{\"name\":\"RABBITMQ_PASSWORD\",\"value\":\"guest\"},{\"name\":\"RABBITMQ_PORT\",\"value\":\"5672\"},{\"name\":\"RABBITMQ_USERNAME\",\"value\":\"guest\"},{\"name\":\"REDIS_DB\",\"value\":\"8\"},{\"name\":\"REDIS_IP\",\"value\":\"baozhang-redis.baozhang.svc\"}],\"resources\":{\"limits\":{\"memory\":\"2560Mi\"},\"requests\":{\"memory\":\"1536Mi\"}},\"volumeMounts\":[{\"name\":\"default-token-wmrfv\",\"readOnly\":true,\"mountPath\":\"/var/run/secrets/kubernetes.io/serviceaccount\"}],\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"serviceAccountName\":\"default\",\"serviceAccount\":\"default\",\"nodeName\":\"cmccnode3\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"},\"status\":{\"phase\":\"Running\",\"conditions\":[{\"type\":\"Initialized\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-05-24T12:04:00Z\"},{\"type\":\"Ready\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-05-24T12:14:59Z\"},{\"type\":\"PodScheduled\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-05-24T12:04:00Z\"}],\"hostIP\":\"172.20.117.95\",\"podIP\":\"192.168.17.49\",\"startTime\":\"2018-05-24T12:04:00Z\",\"containerStatuses\":[{\"name\":\"fssc-db1f0\",\"state\":{\"running\":{\"startedAt\":\"2018-05-24T12:14:59Z\"}},\"lastState\":{},\"ready\":true,\"restartCount\":1,\"image\":\"registry.choerodon.com.cn/cmcc-fssc/fssc:0.1.0-dev.20180524192305\",\"imageID\":\"docker-pullable://registry.choerodon.com.cn/cmcc-fssc/fssc@sha256:f94a9149b0d21f5eb8ec2968b3336081b5c7daa597deb2e0bd2cd87a42b9905a\",\"containerID\":\"docker://db7e30d1bccbaf51d40783aafe4b547a9a11e1be5ac847404d4abf785897e70e\"}],\"qosClass\":\"Burstable\"}}")
+        devopsEnvResourceDetailDO.setMessage("{\"metadata\":{\"name\":\"fssc-db1f0-ffddcfcdc-kbj84\",\"generateName\":\"fssc-db1f0-ffddcfcdc-\",\"namespace\":\"cmcc-fssc-cmcc\",\"selfLink\":\"/api/v1/namespaces/cmcc-fssc-cmcc/pods/fssc-db1f0-ffddcfcdc-kbj84\",\"uid\":\"8b11c181-5f4a-11e8-b11c-00163e04f544\",\"resourceVersion\":\"16049404\",\"creationTimestamp\":\"2018-05-24T12:04:00Z\",\"labels\":{\"choerodon.io/release\":\"fssc-db1f0\",\"pod-template-hash\":\"998879787\"},\"annotation\":{\"kubernetes.io/created-by\":\"{\\\"kind\\\":\\\"SerializedReference\\\",\\\"apiVersion\\\":\\\"v1\\\",\\\"reference\\\":{\\\"kind\\\":\\\"ReplicaSet\\\",\\\"namespace\\\":\\\"cmcc-fssc-cmcc\\\",\\\"name\\\":\\\"fssc-db1f0-ffddcfcdc\\\",\\\"uid\\\":\\\"8b0e4cbe-5f4a-11e8-b11c-00163e04f544\\\",\\\"apiVersion\\\":\\\"extensions\\\",\\\"resourceVersion\\\":\\\"16048306\\\"}}\\n\"},\"ownerReferences\":[{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"ReplicaSet\",\"name\":\"fssc-db1f0-ffddcfcdc\",\"uid\":\"8b0e4cbe-5f4a-11e8-b11c-00163e04f544\",\"controller\":true,\"blockOwnerDeletion\":true}]},\"spec\":{\"volumes\":[{\"name\":\"default-token-wmrfv\",\"secret\":{\"secretName\":\"default-token-wmrfv\",\"defaultMode\":420}}],\"containers\":[{\"name\":\"fssc-db1f0\",\"image\":\"registry.choerodon.com.cn/cmcc-fssc/fssc:0.1.0-dev.20180524192305\",\"ports\":[{\"name\":\"http\",\"containerPort\":8080,\"protocol\":\"TCP\"}],\"env\":[{\"name\":\"ORACLE_HOST\",\"value\":\"116.228.77.183\"},{\"name\":\"ORACLE_PASS\",\"value\":\"hap_dev\"},{\"name\":\"ORACLE_PORT\",\"value\":\"30171\"},{\"name\":\"ORACLE_SID\",\"value\":\"TEST\"},{\"name\":\"ORACLE_USER\",\"value\":\"hap_dev\"},{\"name\":\"RABBITMQ_HOST\",\"value\":\"baozhang-rabbitmq.baozhang.svc\"},{\"name\":\"RABBITMQ_PASSWORD\",\"value\":\"guest\"},{\"name\":\"RABBITMQ_PORT\",\"value\":\"5672\"},{\"name\":\"RABBITMQ_USERNAME\",\"value\":\"guest\"},{\"name\":\"REDIS_DB\",\"value\":\"8\"},{\"name\":\"REDIS_IP\",\"value\":\"baozhang-redis.baozhang.svc\"}],\"resources\":{\"limits\":{\"memory\":\"2560Mi\"},\"requests\":{\"memory\":\"1536Mi\"}},\"volumeMounts\":[{\"name\":\"default-token-wmrfv\",\"readOnly\":true,\"mountPath\":\"/var/run/secrets/kubernetes.io/serviceaccount\"}],\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"serviceAccountName\":\"default\",\"serviceAccount\":\"default\",\"nodeName\":\"cmccnode3\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"},\"status\":{\"phase\":\"Running\",\"conditions\":[{\"type\":\"Initialized\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-05-24T12:04:00Z\"},{\"type\":\"Ready\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-05-24T12:14:59Z\"},{\"type\":\"PodScheduled\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-05-24T12:04:00Z\"}],\"hostIP\":\"172.20.117.95\",\"podIP\":\"192.168.17.49\",\"startTime\":\"2018-05-24T12:04:00Z\",\"containerStatuses\":[{\"name\":\"fssc-db1f0\",\"state\":{\"running\":{\"startedAt\":\"2018-05-24T12:14:59Z\"}},\"lastState\":{},\"ready\":true,\"restartCount\":1,\"image\":\"registry.choerodon.com.cn/cmcc-fssc/fssc:0.1.0-dev.20180524192305\",\"imageID\":\"docker-pullable://registry.choerodon.com.cn/cmcc-fssc/fssc@sha256:f94a9149b0d21f5eb8ec2968b3336081b5c7daa597deb2e0bd2cd87a42b9905a\",\"containerID\":\"docker://db7e30d1bccbaf51d40783aafe4b547a9a11e1be5ac847404d4abf785897e70e\"}],\"qosClass\":\"Burstable\"}}")
         devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO)
 
         devopsEnvResourceDO.setId(143L)
@@ -347,11 +350,11 @@ class DevopsCheckControllerSpec extends Specification {
         applicationVersionDO.setImage("test")
 
 
-        List<MemberDO> memberDOList = new ArrayList<>()
+        List<MemberDTO> memberDOList = new ArrayList<>()
         memberDOList.add(memberDO)
-        ResponseEntity<List<MemberDO>> listResponseEntity = new ResponseEntity<>(memberDOList, HttpStatus.OK)
-        Mockito.doReturn(listResponseEntity).when(mockGitlabServiceClient).getAllMemberByProjectId(any())
-        Mockito.doReturn(null).when(mockGitlabServiceClient).updateMemberIntoProject(any(), any())
+        ResponseEntity<List<MemberDTO>> listResponseEntity = new ResponseEntity<>(memberDOList, HttpStatus.OK)
+        Mockito.doReturn(listResponseEntity).when(mockGitlabServiceClient).listMemberByProject(any())
+        Mockito.doReturn(null).when(mockGitlabServiceClient).updateProjectMember(any(), any())
     }
 
     def cleanup() {
@@ -513,16 +516,16 @@ class DevopsCheckControllerSpec extends Specification {
         return pipelineDOList
     }
 
-    private List<CommitDO> createVersion10MockCommits() {
-        List<CommitDO> commitDOList = new ArrayList<>()
-        CommitDO commitDO1 = new CommitDO()
+    private List<CommitDTO> createVersion10MockCommits() {
+        List<CommitDTO> commitDOList = new ArrayList<>()
+        CommitDTO commitDO1 = new CommitDTO()
         commitDO1.setId("e68aa4bff794e35b3e8800237e2ecb6484dd1cb9")
         commitDO1.setMessage("mock version10 Mock commits")
         commitDO1.setAuthorName("root")
         commitDO1.setTimestamp(new Date())
         commitDO1.setCommitterEmail("root@gmail.com")
 
-        CommitDO commitDO2 = new CommitDO()
+        CommitDTO commitDO2 = new CommitDTO()
         commitDO2.setId("a413150a63c7c51eebf71ca155a93ffe4f38d26a")
         commitDO2.setMessage("mock version10 Mock commits")
         commitDO2.setAuthorName("rsad")
@@ -546,7 +549,7 @@ class DevopsCheckControllerSpec extends Specification {
 
     // create fake branchDO
     private static BranchDO createMockBranchDO() {
-        CommitE commitE = new CommitE()
+        io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO commitE = new io.choerodon.devops.api.vo.iam.entity.gitlab.CommitDTO()
         commitE.setId("5ffeae40a2440a2be046d58514e0a7c7ef7d7362")
         commitE.setAuthorName("gitlabUsername")
         commitE.setAuthorEmail("zzz@gmail.com")

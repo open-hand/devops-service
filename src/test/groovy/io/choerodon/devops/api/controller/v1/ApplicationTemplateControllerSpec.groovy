@@ -8,25 +8,25 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.ApplicationTemplateDTO
-import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO
-import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO
+import io.choerodon.devops.api.vo.ApplicationTemplateVO
+import io.choerodon.devops.api.vo.ApplicationTemplateRespVO
+import io.choerodon.devops.api.vo.ApplicationTemplateUpdateVO
+import io.choerodon.devops.api.vo.ApplicationTemplateVO
+import io.choerodon.devops.api.vo.DevopsProjectVO
 import io.choerodon.devops.app.service.ApplicationTemplateService
 import io.choerodon.devops.app.service.DevopsGitService
-import io.choerodon.devops.domain.application.entity.DevopsProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
-import io.choerodon.devops.domain.application.repository.GitlabRepository
+
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.Organization
-import io.choerodon.devops.domain.application.valueobject.ProjectHook
-import io.choerodon.devops.infra.common.util.enums.Visibility
+import io.choerodon.devops.domain.application.valueobject.OrganizationVO
+import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO
 import io.choerodon.devops.infra.dataobject.ApplicationTemplateDO
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.ApplicationTemplateMapper
-import io.choerodon.devops.infra.persistence.impl.ApplicationTemplateRepositoryImpl
+
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -75,13 +75,13 @@ class ApplicationTemplateControllerSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
-    Organization organization = new Organization()
+    OrganizationVO organization = new OrganizationVO()
     @Shared
     OrganizationDO organizationDO = new OrganizationDO()
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
-    DevopsProjectE devopsProjectE = new DevopsProjectE()
+    DevopsProjectVO devopsProjectE = new DevopsProjectVO()
     @Shared
     Map<String, Object> searchParam = new HashMap<>();
     @Shared
@@ -91,7 +91,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     @Shared
     Long template_id = 4L
 
-     //初始化部分对象
+    //初始化部分对象
     def setupSpec() {
         given:
         organization.setId(init_id)
@@ -117,7 +117,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     //组织下创建应用模板
     def "createTemplate"() {
         given: "初始化数据"
-        ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO()
+        ApplicationTemplateVO applicationTemplateDTO = new ApplicationTemplateVO()
         applicationTemplateDTO.setId(4L)
         applicationTemplateDTO.setCode("code")
         applicationTemplateDTO.setName("app")
@@ -147,7 +147,7 @@ class ApplicationTemplateControllerSpec extends Specification {
         Mockito.when(gitlabServiceClient.createGroup(any(GroupDO.class), anyInt())).thenReturn(newResponseEntity)
 
         when: '组织下创建应用模板'
-        def entity = restTemplate.postForEntity("/v1/organizations/1/app_templates", applicationTemplateDTO, ApplicationTemplateRepDTO.class)
+        def entity = restTemplate.postForEntity("/v1/organizations/1/app_templates", applicationTemplateDTO, ApplicationTemplateRespVO.class)
 
         then: '验证响应状态码'
         entity.statusCode.is2xxSuccessful()
@@ -160,13 +160,13 @@ class ApplicationTemplateControllerSpec extends Specification {
     // 组织下更新应用模板
     def "updateTemplate"() {
         given: '初始化模板更新dto类'
-        ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO = new ApplicationTemplateUpdateDTO()
+        ApplicationTemplateUpdateVO applicationTemplateUpdateDTO = new ApplicationTemplateUpdateVO()
         applicationTemplateUpdateDTO.setId(4L)
         applicationTemplateUpdateDTO.setName("updateName")
         applicationTemplateUpdateDTO.setDescription("des")
 
         when: '组织下更新应用模板'
-        restTemplate.put("/v1/organizations/1/app_templates", applicationTemplateUpdateDTO, ApplicationTemplateRepDTO.class)
+        restTemplate.put("/v1/organizations/1/app_templates", applicationTemplateUpdateDTO, ApplicationTemplateRespVO.class)
 
         then: '返回值'
         ApplicationTemplateDO applicationTemplateDO = applicationTemplateMapper.selectByPrimaryKey(4L)
@@ -178,7 +178,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     // 组织下查询单个应用模板
     def "queryByAppTemplateId"() {
         when: '组织下查询单个应用模板'
-        def object = restTemplate.getForObject("/v1/organizations/{org_id}/app_templates/{template_id}", ApplicationTemplateRepDTO.class, org_id, template_id)
+        def object = restTemplate.getForObject("/v1/organizations/{org_id}/app_templates/{template_id}", ApplicationTemplateRespVO.class, org_id, template_id)
 
         then: '验证返回结果'
         object["code"] == "code"
@@ -240,9 +240,9 @@ class ApplicationTemplateControllerSpec extends Specification {
         given: 'mock 删除gitlab项目'
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
 
-        ProjectHook projectHook = new ProjectHook()
-        ResponseEntity<ProjectHook> responseEntity = new ResponseEntity<>(projectHook, HttpStatus.OK)
-        Mockito.when(gitlabServiceClient.deleteProject(anyInt(), anyInt())).thenReturn(responseEntity)
+        ProjectHookDTO projectHook = new ProjectHookDTO()
+        ResponseEntity<ProjectHookDTO> responseEntity = new ResponseEntity<>(projectHook, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.deleteProjectById(anyInt(), anyInt())).thenReturn(responseEntity)
 
         when: '组织下删除应用模板'
         restTemplate.delete("/v1/organizations/{project_id}/app_templates/{template_id}", org_id, 4L)
