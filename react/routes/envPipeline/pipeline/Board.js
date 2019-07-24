@@ -10,8 +10,8 @@ import classNames from 'classnames';
 import EnvCard from './EnvCard';
 import BoardSquare from './BoardSquare';
 import '../EnvPipeLineHome.scss';
-import EnvPipelineStore from '../../../../stores/project/envPipeline';
-import { scrollTo } from '../../../../utils';
+import EnvPipelineStore from '../../../stores/project/envPipeline';
+import { scrollTo } from '../../../utils';
 
 const scrollLeft = {};
 

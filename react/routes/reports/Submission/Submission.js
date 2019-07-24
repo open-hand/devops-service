@@ -13,8 +13,8 @@ import TimePicker from "../Component/TimePicker";
 import NoChart from "../Component/NoChart";
 import MaxTagPopover from "../Component/MaxTagPopover";
 import "./Submission.scss";
-import "../../../main.scss";
-import LoadingBar from "../../../../components/loadingBar/LoadingBar";
+import "../../main.scss";
+import LoadingBar from "../../../components/loadingBar/LoadingBar";
 
 /**
  * 将数据转为图表可用格式

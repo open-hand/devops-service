@@ -20,7 +20,7 @@ import { handleCheckerProptError } from '../../../utils';
 
 import '../../main.scss';
 import './CertificateCreate.scss';
-import '../../../project/envPipeline/EnvPipeLineHome.scss';
+import '../../envPipeline/EnvPipeLineHome.scss';
 
 const { TextArea } = Input;
 const { Sidebar } = Modal;

@@ -19,9 +19,9 @@ import {
   stores,
 } from '@choerodon/boot';
 import '../../main.scss';
-import editReleaseStore from '../../../../stores/project/appRelease/editRelease';
-import AppVersionStore from '../../../../stores/project/applicationVersion';
-import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import editReleaseStore from '../../../stores/project/appRelease/editRelease';
+import AppVersionStore from '../../../stores/project/applicationVersion';
+import DepPipelineEmpty from '../../../components/DepPipelineEmpty/DepPipelineEmpty';
 
 const TabPane = Tabs.TabPane;
 const { AppState } = stores;

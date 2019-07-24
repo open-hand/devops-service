@@ -13,8 +13,8 @@ import { Content } from "@choerodon/boot";
 import _ from "lodash";
 import '../../main.scss';
 import './DeploymentConfigCreate.scss';
-import YamlEditor from "../../../../components/yamlEditor/YamlEditor";
-import InterceptMask from "../../../../components/interceptMask/InterceptMask";
+import YamlEditor from "../../../components/yamlEditor/YamlEditor";
+import InterceptMask from "../../../components/interceptMask/InterceptMask";
 
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;

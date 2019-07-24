@@ -36,7 +36,7 @@ import { handleProptError } from '../../../utils';
 
 import '../EnvOverview.scss';
 import '../../instances/Instances.scss';
-import '../../../main.scss';
+import '../../main.scss';
 
 const Panel = Collapse.Panel;
 

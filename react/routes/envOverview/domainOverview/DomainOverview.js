@@ -15,7 +15,7 @@ import DeleteModal from '../../../components/deleteModal';
 
 import '../EnvOverview.scss';
 import '../../domain/domainHome/DomainHome.scss';
-import '../../../main.scss';
+import '../../main.scss';
 
 @Form.create({})
 @withRouter

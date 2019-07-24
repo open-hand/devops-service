@@ -12,8 +12,8 @@ import AppTagCreate from '../appTagCreate';
 import AppTagEdit from '../appTagEdit';
 import '../../main.scss';
 import './AppTag.scss';
-import DevPipelineStore from '../../../../stores/project/devPipeline';
-import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
+import DevPipelineStore from '../../../stores/project/devPipeline';
+import DepPipelineEmpty from "../../../components/DepPipelineEmpty/DepPipelineEmpty";
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;

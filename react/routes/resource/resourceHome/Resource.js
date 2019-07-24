@@ -26,7 +26,6 @@ import DepPipelineEmpty from '../../../components/DepPipelineEmpty/DepPipelineEm
 import RefreshBtn from '../../../components/refreshBtn';
 import DevopsStore from '../../../stores/DevopsStore';
 import { handlePromptError } from '../../../utils';
-import { HEIGHT } from '../../../src/app/devops/common/Constants';
 
 import '../../main.scss';
 
@@ -60,7 +59,7 @@ export default class Resource extends Component {
     ResourceStore.setResourceList([]);
     ResourceStore.setPageInfo({
       current: 1,
-      pageSize: HEIGHT <= 900 ? 10 : 15,
+      pageSize: 10,
       total: 0,
     });
     ResourceStore.setInfo({

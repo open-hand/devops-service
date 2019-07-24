@@ -11,7 +11,7 @@ import './BuildDuration.scss';
 import TimePicker from '../Component/TimePicker';
 import NoChart from '../Component/NoChart';
 import BuildTable from '../BuildNumber/BuildTable/BuildTable';
-import LoadingBar from '../../../../components/loadingBar/LoadingBar';
+import LoadingBar from '../../../components/loadingBar/LoadingBar';
 
 
 const { AppState } = stores;

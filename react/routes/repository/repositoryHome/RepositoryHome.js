@@ -9,8 +9,8 @@ import _ from 'lodash';
 import MouserOverWrapper from '../../../components/MouseOverWrapper';
 import '../../main.scss';
 import './RepositoryHome.scss';
-import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
-import DevPipelineStore from "../../../../stores/project/devPipeline";
+import DepPipelineEmpty from "../../../components/DepPipelineEmpty/DepPipelineEmpty";
+import DevPipelineStore from "../../../stores/project/devPipeline";
 
 const { AppState } = stores;
 const repoColor = [

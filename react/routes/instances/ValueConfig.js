@@ -8,7 +8,7 @@ import YamlEditor from '../../components/yamlEditor';
 import InterceptMask from '../../components/interceptMask/InterceptMask';
 
 import './Instances.scss';
-import '../../main.scss';
+import '../main.scss';
 
 const { Sidebar } = Modal;
 const { AppState } = stores;

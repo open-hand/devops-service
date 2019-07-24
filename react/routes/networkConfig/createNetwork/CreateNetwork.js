@@ -8,8 +8,8 @@ import { Content } from "@choerodon/boot";
 import _ from "lodash";
 import "../../main.scss";
 import "./CreateNetwork.scss";
-import EnvOverviewStore from "../../../../stores/project/envOverview";
-import InterceptMask from "../../../../components/interceptMask/InterceptMask";
+import EnvOverviewStore from "../../../stores/project/envOverview";
+import InterceptMask from "../../../components/interceptMask/InterceptMask";
 import NetworkForm from "../components/networkForm/NetworkForm";
 
 const { Sidebar } = Modal;

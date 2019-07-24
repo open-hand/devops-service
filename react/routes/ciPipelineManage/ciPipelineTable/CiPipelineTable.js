@@ -7,10 +7,10 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import TimeAgo from 'timeago-react';
 import '../../main.scss';
 import '../ciPipelineHome/CiPipelineHome.scss';
-import MouserOverWrapper from '../../../../components/MouseOverWrapper';
-import DevPipelineStore from '../../../../stores/project/devPipeline';
-import Tips from "../../../../components/Tips/Tips";
-import { getTableTitle } from '../../../../utils';
+import MouserOverWrapper from '../../../components/MouseOverWrapper';
+import DevPipelineStore from '../../../stores/project/devPipeline';
+import Tips from "../../../components/Tips/Tips";
+import { getTableTitle } from '../../../utils';
 
 const ICONS = {
   passed: {

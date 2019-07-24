@@ -15,9 +15,9 @@ import {
 import _ from "lodash";
 import MouserOverWrapper from "../../../components/MouseOverWrapper";
 import "../Importexport.scss";
-import "../../../main.scss";
-import exportChartStore from "../../../../stores/project/appStore/exportChart/ExportChartStore";
-import { handleProptError } from "../../../../utils";
+import "../../main.scss";
+import exportChartStore from "../../../stores/project/appStore/exportChart/ExportChartStore";
+import { handleProptError } from "../../../utils";
 
 const Option = Select.Option;
 const Step = Steps.Step;

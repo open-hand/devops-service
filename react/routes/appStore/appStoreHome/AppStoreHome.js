@@ -7,7 +7,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import LoadingBar from '../../../components/loadingBar';
 import './AppStore.scss';
-import '../../../main.scss';
+import '../../main.scss';
 
 const ButtonGroup = Button.Group;
 

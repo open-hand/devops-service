@@ -14,7 +14,7 @@ import CertificateCreate from '../certificateCreate';
 
 import '../../main.scss';
 import './Certificate.scss';
-import { handleCheckerProptError } from '../../../../utils';
+import { handleCheckerProptError } from '../../../utils';
 
 @injectIntl
 @withRouter

@@ -7,9 +7,9 @@ import _ from 'lodash';
 import './Issue.scss';
 import '../index.scss';
 import IssueDescription from './IssueDescription';
-import LoadingBar from '../../../../components/loadingBar';
-import TimePopover from '../../../../components/timePopover';
-import InterceptMask from "../../../../components/interceptMask/InterceptMask";
+import LoadingBar from '../../../components/loadingBar';
+import TimePopover from '../../../components/timePopover';
+import InterceptMask from "../../../components/interceptMask/InterceptMask";
 import { Content } from "@choerodon/boot";
 
 const Sidebar = Modal.Sidebar;

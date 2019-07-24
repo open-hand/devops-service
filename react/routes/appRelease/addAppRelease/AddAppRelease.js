@@ -23,7 +23,7 @@ import {
 import "../../main.scss";
 import "./index.scss";
 import VersionTable from "./VersionTable";
-import TimePopover from "../../../../components/timePopover";
+import TimePopover from "../../../components/timePopover";
 
 const { TextArea } = Input;
 const RadioGroup = Radio.Group;

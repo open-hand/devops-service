@@ -11,7 +11,7 @@ import LoadingBar from '../../components/loadingBar';
 import { handlePromptError } from '../../utils';
 
 import './Instances.scss';
-import '../../main.scss';
+import '../main.scss';
 
 const { Sidebar } = Modal;
 const Option = Select.Option;

@@ -14,9 +14,9 @@ import _ from 'lodash';
 import MouserOverWrapper from '../../../components/MouseOverWrapper';
 import AppName from '../../../components/appName';
 import '../../instances/Instances.scss';
-import '../../../main.scss';
-import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
-import DeploymentPipelineStore from '../../../../stores/project/deploymentPipeline';
+import '../../main.scss';
+import DepPipelineEmpty from '../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import DeploymentPipelineStore from '../../../stores/project/deploymentPipeline';
 
 const { AppState } = stores;
 

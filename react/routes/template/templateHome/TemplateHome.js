@@ -25,8 +25,8 @@ import MouserOverWrapper from "../../../components/MouseOverWrapper";
 import StatusIcon from "../../../components/StatusIcon";
 import RefreshBtn from "../../../components/refreshBtn";
 import "./TemplateHome.scss";
-import "../../../main.scss";
-import InterceptMask from "../../../../components/interceptMask/InterceptMask";
+import "../../main.scss";
+import InterceptMask from "../../../components/interceptMask/InterceptMask";
 
 const { AppState } = stores;
 const Option = Select.Option;

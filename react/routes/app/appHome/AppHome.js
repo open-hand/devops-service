@@ -34,7 +34,7 @@ import { handlePromptError } from '../../../utils';
 
 import '../../envPipeline/EnvPipeLineHome.scss';
 import './AppHome.scss';
-import '../../../main.scss';
+import '../../main.scss';
 import '../index.scss';
 
 const { AppState } = stores;

@@ -12,7 +12,6 @@ import StatusTags from '../../../components/StatusTags';
 import AppName from '../../../components/appName';
 import EnvOverviewStore from '../../../stores/project/envOverview';
 import DepPipelineEmpty from '../../../components/DepPipelineEmpty/DepPipelineEmpty';
-import { SORTER_MAP } from '../../../src/app/devops/common/Constants';
 import LogSidebar from '../logSidebar';
 import TermSidebar from '../termSidebar';
 
@@ -21,6 +20,10 @@ import './ContainerHome.scss';
 
 const { Option, OptGroup } = Select;
 const { AppState } = stores;
+const SORTER_MAP = {
+  ascend: 'asc',
+  descend: 'desc',
+};
 
 @observer
 class ContainerHome extends Component {

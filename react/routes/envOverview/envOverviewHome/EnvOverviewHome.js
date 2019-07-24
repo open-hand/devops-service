@@ -38,7 +38,7 @@ import RefreshBtn from '../../../components/refreshBtn';
 import DevopsStore from '../../../stores/DevopsStore';
 
 import '../EnvOverview.scss';
-import '../../../main.scss';
+import '../../main.scss';
 
 const { AppState } = stores;
 const { TabPane } = Tabs;

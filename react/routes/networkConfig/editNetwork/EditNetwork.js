@@ -21,9 +21,9 @@ import AppName from "../../../components/appName";
 import "../../main.scss";
 import "../createNetwork/CreateNetwork.scss";
 import "./EditNetwork.scss";
-import EnvOverviewStore from '../../../../stores/project/envOverview';
-import InterceptMask from "../../../../components/interceptMask/InterceptMask";
-import Tips from "../../../../components/Tips/Tips";
+import EnvOverviewStore from '../../../stores/project/envOverview';
+import InterceptMask from "../../../components/interceptMask/InterceptMask";
+import Tips from "../../../components/Tips/Tips";
 
 const { AppState } = stores;
 const { Sidebar } = Modal;

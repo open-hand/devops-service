@@ -7,7 +7,7 @@ import { DragSource } from "react-dnd";
 import { Button, Tooltip, Icon } from "choerodon-ui";
 import { Permission, stores } from "@choerodon/boot";
 import "../EnvPipeLineHome.scss";
-import EnvPipelineStore from "../../../../stores/project/envPipeline";
+import EnvPipelineStore from "../../../stores/project/envPipeline";
 
 const { AppState } = stores;
 

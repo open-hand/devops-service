@@ -7,8 +7,8 @@ import { Table, Form, Icon, Popover, Tooltip, Button, Modal } from "choerodon-ui
 import { stores, Permission } from "@choerodon/boot";
 import TimePopover from "../../../components/timePopover";
 import "../EnvOverview.scss";
-import "../../../main.scss";
-import MouserOverWrapper from "../../../../components/MouseOverWrapper";
+import "../../main.scss";
+import MouserOverWrapper from "../../../components/MouseOverWrapper";
 
 const { AppState } = stores;
 

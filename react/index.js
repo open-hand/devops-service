@@ -4,9 +4,9 @@ import { inject } from 'mobx-react';
 import { asyncRouter, asyncLocaleProvider, nomatch } from '@choerodon/boot';
 
 // organization
-const Template = asyncRouter(() => import('./organization/template'));
-const Cluster = asyncRouter(() => import('./organization/cluster'));
-const CertificateManage = asyncRouter(() => import('./organization/certificate'),);
+const Template = asyncRouter(() => import('./routes/template'));
+const Cluster = asyncRouter(() => import('./routes/cluster'));
+const CertificateManage = asyncRouter(() => import('./routes/certificate'),);
 // project
 const EnvPipelineIndex = asyncRouter(() => import('./routes/envPipeline'));
 const CiPipelineManageIndex = asyncRouter(() => import('./routes/ciPipelineManage'),);
@@ -25,7 +25,7 @@ const AppTag = asyncRouter(() => import('./routes/appTag'));
 const Repository = asyncRouter(() => import('./routes/repository'));
 const EnvOverview = asyncRouter(() => import('./routes/envOverview'));
 const DeployOverview = asyncRouter(() => import('./routes/deployOverview'));
-const Certificate = asyncRouter(() => import('./routes/certificate'));
+const Certificate = asyncRouter(() => import('./routes/certificatePro'));
 const Reports = asyncRouter(() => import('./routes/reports'));
 const DevConsole = asyncRouter(() => import('./routes/devConsole'));
 const ConfigMap = asyncRouter(() => import('./routes/configMap'));
@@ -39,7 +39,7 @@ const Notifications = asyncRouter(() => import('./routes/notifications'));
 const Resource = asyncRouter(() => import('./routes/resource'));
 
 function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
-  const IntlProviderAsync = asyncLocaleProvider(language, () => import(`../locale/${language}`),);
+  const IntlProviderAsync = asyncLocaleProvider(language, () => import(`./locale/${language}`),);
 
   return (
     <IntlProviderAsync>

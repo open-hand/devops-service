@@ -6,7 +6,7 @@ import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';
 import ReportsStore from '../../../stores/project/reports';
 import '../../ciPipelineManage/ciPipelineHome/CiPipelineHome.scss';
-import { getAxis } from '../../../../utils';
+import { getAxis } from '../../../utils';
 
 class BuildTable extends Component {
   constructor(props, context) {

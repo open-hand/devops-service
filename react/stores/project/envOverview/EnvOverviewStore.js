@@ -9,7 +9,6 @@ import ConfigMapStore from '../configMap';
 import SecretStore from '../secret';
 import ResourceStore from '../resource';
 import { handleProptError } from '../../../utils';
-import { HEIGHT } from '../../../common/Constants';
 import DeploymentPipelineStore from '../deploymentPipeline';
 
 const { AppState } = stores;
@@ -41,13 +40,13 @@ class EnvOverviewStore {
   @observable pageInfo = {
     current: 1,
     total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
+    pageSize: 10,
   };
 
   @observable logPageInfo = {
     current: 1,
     total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
+    pageSize: 10,
   };
 
   @observable Info = {

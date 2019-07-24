@@ -10,7 +10,7 @@ import { stores } from "@choerodon/boot";
 import { injectIntl, FormattedMessage } from "react-intl";
 import _ from "lodash";
 import "./index.scss"
-import LoadingBar from "../../../../../../components/loadingBar/LoadingBar";
+import LoadingBar from "../../../../../components/loadingBar/LoadingBar";
 
 const { RangePicker } = DatePicker;
 

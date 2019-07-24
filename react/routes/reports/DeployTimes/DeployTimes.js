@@ -13,10 +13,10 @@ import TimePicker from '../Component/TimePicker';
 import NoChart from '../Component/NoChart';
 import ContainerStore from '../../../stores/project/container';
 import '../DeployDuration/DeployDuration.scss';
-import { getAxis } from '../../../../utils';
-import LoadingBar from '../../../../components/loadingBar/LoadingBar';
+import { getAxis } from '../../../utils';
+import LoadingBar from '../../../components/loadingBar/LoadingBar';
 import MaxTagPopover from '../Component/MaxTagPopover';
-import MouserOverWrapper from '../../../../components/MouseOverWrapper/MouserOverWrapper';
+import MouserOverWrapper from '../../../components/MouseOverWrapper/MouserOverWrapper';
 
 configure({ enforceActions: 'never' });
 

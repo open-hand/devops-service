@@ -12,7 +12,7 @@ import InterceptMask from '../../../components/interceptMask';
 import Tips from '../../../components/Tips/Tips';
 
 import './PipelineCreate.scss';
-import '../../../main.scss';
+import '../../main.scss';
 
 const { Item: FormItem } = Form;
 const { Option } = Select;
