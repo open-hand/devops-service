@@ -1,0 +1,70 @@
+.c7n-reports-wrapper {
+  width: 950px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  .c7n-devops-report {
+    width: 280px;
+    height: 312px;
+    background: #fafafa;
+    padding: 18px;
+    margin-right: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+
+    .c7n-devops-report-pic {
+      width: 100%;
+      height: 170px;
+      padding: 24px 18px;
+      border-radius: 2px;
+      background-color: #fff;
+      box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.12), 0 2px 1px -1px rgba(0, 0, 0, 0.12);
+
+      .c7n-devops-report-picBox {
+        width: 100%;
+        height: 100%;
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        &.submission {
+          background-image: url('pic/submission.svg');
+        }
+        &.deploy-duration {
+          background-image: url('pic/deploy-duration.svg');
+        }
+        &.number {
+          background-image: url('pic/number.svg');
+        }
+        &.build-duration {
+          background-image: url('pic/build-duration.svg');
+        }
+        &.code-quality {
+          background-image: url('pic/code-quality.svg');
+        }
+      }
+    }
+    .c7n-devops-report-descr {
+      margin-top: 18px;
+      font-size: 13px;
+      line-height: 20px;
+
+      .c7n-devops-report-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .c7n-devops-report-text {
+        color: rgba(0, 0, 0, .65);
+        margin-bottom: 0;
+      }
+    }
+
+    &:hover {
+      .c7n-devops-report-title {
+        text-decoration: underline;
+      }
+    }
+  }
+}

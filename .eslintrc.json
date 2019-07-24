@@ -13,12 +13,10 @@
       "jsx": true
     }
   },
-  "extends": [
-    "airbnb"
-  ],
   "plugins": [
     "react",
-    "jsx-a11y"
+    "jsx-a11y",
+    "react-hooks"
   ],
   "extends": [
     "airbnb"
@@ -87,7 +85,9 @@
     "react/jsx-closing-tag-location": "off",
     "react/jsx-one-expression-per-line": "off",
     "react/sort-comp": "off",
-    "prefer-destructuring": "off"
+    "prefer-destructuring": "off",
+    "react-hooks/rules-of-hooks": "error", // 检查 Hook 的规则
+    "react-hooks/exhaustive-deps": "warn" // 检查 effect 的依赖
   },
   "globals": {
     "Choerodon": true

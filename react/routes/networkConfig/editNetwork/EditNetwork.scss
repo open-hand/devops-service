@@ -1,0 +1,9 @@
+@import "../createNetwork/CreateNetwork";
+
+.instance-status-disable {
+  color: #d50000 !important;
+  background: rgba(244, 67, 54, 0.3) !important;
+  .icon-cancel {
+    color: #d50000;
+  }
+}
