@@ -30,7 +30,7 @@ import EnvFlag from '../../../components/envFlag';
 import DeleteModal from '../../../components/deleteModal';
 
 import './NetworkHome.scss';
-import '../../../main.scss';
+import '../../main.scss';
 
 const { Option } = Select;
 

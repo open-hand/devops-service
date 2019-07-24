@@ -3,7 +3,6 @@ import { axios, store, stores } from "@choerodon/boot";
 import moment from "moment";
 import _ from "lodash";
 import { handleProptError } from "../../../utils";
-import {HEIGHT} from "../../../common/Constants";
 
 const { AppState } = stores;
 
@@ -12,7 +11,7 @@ class ReportsStore {
   @observable pageInfo = {
     current: 1,
     total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
+    pageSize: 10,
   };
 
   @observable Info = {

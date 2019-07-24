@@ -7,8 +7,8 @@ import { Content } from '@choerodon/boot';
 import _ from 'lodash';
 import '../../main.scss';
 import './CreateDomain.scss';
-import EnvOverviewStore from '../../../../stores/project/envOverview';
-import InterceptMask from '../../../../components/interceptMask/InterceptMask';
+import EnvOverviewStore from '../../../stores/project/envOverview';
+import InterceptMask from '../../../components/interceptMask/InterceptMask';
 import DomainForm from '../components/domainForm/DomainForm';
 
 const { Sidebar } = Modal;

@@ -7,11 +7,11 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import TimeAgo from 'timeago-react';
 import _ from 'lodash';
 import './MergeRequestHome.scss';
-import '../../../main.scss';
-import MouserOverWrapper from '../../../../components/MouseOverWrapper';
-import DevPipelineStore from '../../../../stores/project/devPipeline';
-import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
-import Tips from '../../../../components/Tips';
+import '../../main.scss';
+import MouserOverWrapper from '../../../components/MouseOverWrapper';
+import DevPipelineStore from '../../../stores/project/devPipeline';
+import DepPipelineEmpty from '../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import Tips from '../../../components/Tips';
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;

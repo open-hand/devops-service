@@ -18,7 +18,6 @@ import _ from 'lodash';
 import TimePopover from '../../../components/timePopover';
 import EnvFlag from '../../../components/envFlag';
 import DeploymentConfigCreate from '../deploymentConfigCreate';
-import { HEIGHT } from '../../../src/app/devops/common/Constants';
 import UserInfo from '../../../components/userInfo';
 import DeploymentPipelineStore from '../../../stores/project/deploymentPipeline';
 import DepPipelineEmpty from '../../../components/DepPipelineEmpty/DepPipelineEmpty';
@@ -58,7 +57,7 @@ class DeploymentConfig extends Component {
       DeploymentConfigStore,
       AppState: { currentMenuType: { projectId } },
     } = this.props;
-    DeploymentConfigStore.loadAllData(projectId, 1, HEIGHT < 900 ? 10 : 15);
+    DeploymentConfigStore.loadAllData(projectId, 1, 10);
   };
 
   /**

@@ -23,7 +23,7 @@ import EnvFlag from '../../../components/envFlag';
 import DeleteModal from '../../../components/deleteModal';
 
 import './DomainHome.scss';
-import '../../../main.scss';
+import '../../main.scss';
 
 const { Option } = Select;
 

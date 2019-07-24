@@ -1,7 +1,6 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import { handleProptError, getWindowHeight } from '../../../utils';
-import { SORTER_MAP } from '../../../src/app/devops/common/Constants';
 
 const pageSize = getWindowHeight() <= 900 ? 10 : 15;
 
@@ -9,6 +8,10 @@ const INIT_PAGINATION = {
   current: 1,
   total: 0,
   pageSize,
+};
+const SORTER_MAP = {
+  ascend: 'asc',
+  descend: 'desc',
 };
 
 @store('AppListStore')

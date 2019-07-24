@@ -2,7 +2,11 @@ import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import _ from 'lodash';
 import { handleProptError, handlePromptError } from '../../../utils';
-import { HEIGHT, SORTER_MAP } from '../../../src/app/devops/common/Constants';
+
+const SORTER_MAP = {
+  ascend: 'asc',
+  descend: 'desc',
+};
 
 @store('PipelineStore')
 class PipelineStore {
@@ -15,7 +19,7 @@ class PipelineStore {
   @observable pageInfo = {
     current: 1,
     total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
+    pageSize: 10,
   };
 
   @action setListData(data) {

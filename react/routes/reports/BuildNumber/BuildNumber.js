@@ -10,7 +10,7 @@ import './BuildNumber.scss';
 import TimePicker from '../Component/TimePicker';
 import NoChart from '../Component/NoChart';
 import BuildTable from './BuildTable/BuildTable';
-import LoadingBar from '../../../../components/loadingBar/LoadingBar';
+import LoadingBar from '../../../components/loadingBar/LoadingBar';
 import BuildChart from './BuildChart';
 
 const { AppState } = stores;

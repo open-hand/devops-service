@@ -7,12 +7,12 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import '../../main.scss';
 import './CiPipelineHome.scss';
-import CiPipelineStore from '../../../../stores/project/ciPipelineManage';
-import DevPipelineStore from '../../../../stores/project/devPipeline';
-import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
-import RefreshBtn from '../../../../components/refreshBtn';
-import DevopsStore from '../../../../stores/DevopsStore';
-import { getTableTitle } from '../../../../utils';
+import CiPipelineStore from '../../../stores/project/ciPipelineManage';
+import DevPipelineStore from '../../../stores/project/devPipeline';
+import DepPipelineEmpty from '../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import RefreshBtn from '../../../components/refreshBtn';
+import DevopsStore from '../../../stores/DevopsStore';
+import { getTableTitle } from '../../../utils';
 import CiPipelineTable from '../ciPipelineTable';
 
 const { Option, OptGroup } = Select;

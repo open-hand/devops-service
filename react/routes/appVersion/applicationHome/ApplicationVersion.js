@@ -7,8 +7,8 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import TimePopover from '../../../components/timePopover';
 import './ApplicationVersion.scss';
-import '../../../main.scss';
-import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import '../../main.scss';
+import DepPipelineEmpty from '../../../components/DepPipelineEmpty/DepPipelineEmpty';
 
 const { AppState } = stores;
 const { Option } = Select;

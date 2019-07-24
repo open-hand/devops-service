@@ -32,9 +32,9 @@ import RefreshBtn from "../../components/refreshBtn";
 import DevopsStore from "../../stores/DevopsStore";
 import "../main.scss";
 import "./EnvPipeLineHome.scss";
-import { scrollTo } from "../../../utils";
-import Tips from "../../../components/Tips/Tips";
-import InterceptMask from "../../../components/interceptMask/InterceptMask";
+import { scrollTo } from "../../utils";
+import Tips from "../../components/Tips/Tips";
+import InterceptMask from "../../components/interceptMask/InterceptMask";
 
 /**
  * 分页查询单页size

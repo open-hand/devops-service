@@ -13,7 +13,7 @@ import Rating from "../../../components/rating/Rating";
 import { QUALITY_LIST, OBJECT_TYPE } from "../components/Constants";
 
 import './CodeQuality.scss';
-import '../../../main.scss';
+import '../../main.scss';
 
 const { Option, OptGroup} = Select;
 

@@ -20,7 +20,6 @@ import _ from 'lodash';
 import TimePopover from '../../../components/timePopover';
 import StatusTags from '../../../components/StatusTags/StatusTags';
 import PendingCheckModal from '../components/pendingCheckModal/PendingCheckModal';
-import { HEIGHT } from '../../../src/app/devops/common/Constants';
 import { RELATED_TO_ME, STATUS_COLOR } from '../components/Constants';
 
 import '../../main.scss';
@@ -57,7 +56,7 @@ class PipelineRecord extends Component {
     } = this.props;
     PipelineRecordStore.loadPipelineData(projectId);
     const { pipelineId } = state || {};
-    PipelineRecordStore.loadRecordList(projectId, pipelineId, 1, HEIGHT < 900 ? 10 : 15);
+    PipelineRecordStore.loadRecordList(projectId, pipelineId, 1, 10);
     pipelineId && this.setState({ pipelineId });
   }
 
@@ -75,7 +74,7 @@ class PipelineRecord extends Component {
       sort: { columnKey: 'id', order: 'descend' },
       paras: [],
     });
-    PipelineRecordStore.loadRecordList(projectId, pipelineId, 1, HEIGHT < 900 ? 10 : 15, searchData);
+    PipelineRecordStore.loadRecordList(projectId, pipelineId, 1, 10, searchData);
   };
 
   /**

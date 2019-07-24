@@ -5,8 +5,8 @@ import {
 } from 'react-router-dom';
 import { asyncRouter, nomatch } from '@choerodon/boot';
 
-const ClusterHome = asyncRouter(() => import('./Home'), () => import('../../../stores/organization/cluster'));
-const NodeDetail= asyncRouter(() => import('./NodeDetail'), () => import('../../../stores/organization/cluster'));
+const ClusterHome = asyncRouter(() => import('./Home'), () => import('../../stores/organization/cluster'));
+const NodeDetail= asyncRouter(() => import('./NodeDetail'), () => import('../../stores/organization/cluster'));
 
 const ClusterIndex = ({ match }) => (
   <Switch>

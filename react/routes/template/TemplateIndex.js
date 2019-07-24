@@ -5,7 +5,7 @@ import {
 } from 'react-router-dom';
 import { asyncRouter, nomatch } from '@choerodon/boot';
 
-const TemplateHome = asyncRouter(() => import('./templateHome'), () => import('../../../stores/organization/template'));
+const TemplateHome = asyncRouter(() => import('./templateHome'), () => import('../../stores/organization/template'));
 
 const TemplateIndex = ({ match }) => (
   <Switch>

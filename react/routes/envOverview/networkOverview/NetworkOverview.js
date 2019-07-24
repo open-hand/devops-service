@@ -21,7 +21,7 @@ import DeleteModal from '../../../components/deleteModal';
 import { handleProptError } from '../../../utils';
 
 import '../EnvOverview.scss';
-import '../../../main.scss';
+import '../../main.scss';
 import '../../networkConfig/networkHome/NetworkHome.scss';
 
 @Form.create({})

@@ -1,7 +1,6 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/boot';
 import { handleProptError } from '../../../utils/index';
-import { HEIGHT } from '../../../common/Constants';
 
 const { AppState } = stores;
 
@@ -18,7 +17,7 @@ class SecretStore {
   @observable pageInfo = {
     current: 1,
     total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
+    pageSize: 10,
   };
 
   @observable Info = {

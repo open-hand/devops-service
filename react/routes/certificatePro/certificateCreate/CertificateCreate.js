@@ -20,7 +20,7 @@ import { handleCheckerProptError } from '../../../utils';
 
 import '../../main.scss';
 import './CertificateCreate.scss';
-import EnvOverviewStore from "../../../../stores/project/envOverview";
+import EnvOverviewStore from "../../../stores/project/envOverview";
 
 const { Sidebar } = Modal;
 const { Item: FormItem } = Form;

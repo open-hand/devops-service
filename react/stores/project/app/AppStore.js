@@ -2,7 +2,6 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import { handleProptError } from '../../../utils';
-import { HEIGHT } from '../../../src/app/devops/common/Constants';
 
 @store('AppStore')
 class AppStore {
@@ -29,13 +28,13 @@ class AppStore {
   @observable pageInfo = {
     current: 1,
     total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
+    pageSize: 10,
   };
 
   @observable mbrPageInfo = {
     current: 1,
     total: 0,
-    pageSize: HEIGHT <= 900 ? 10 : 15,
+    pageSize: 10,
   };
 
   @observable Info = {

@@ -8,11 +8,11 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import KeyValueTable from '../../configMap/keyValueTable';
 import KeyValueSideBar from '../../configMap/keyValueSideBar';
 import '../../configMap/configMapHome/ConfigMap.scss';
-import '../../../main.scss';
-import EnvOverviewStore from "../../../../stores/project/envOverview";
-import DevopsStore from "../../../../stores/DevopsStore";
-import DepPipelineEmpty from "../../../../components/DepPipelineEmpty/DepPipelineEmpty";
-import RefreshBtn from "../../../../components/refreshBtn";
+import '../../main.scss';
+import EnvOverviewStore from "../../../stores/project/envOverview";
+import DevopsStore from "../../../stores/DevopsStore";
+import DepPipelineEmpty from "../../../components/DepPipelineEmpty/DepPipelineEmpty";
+import RefreshBtn from "../../../components/refreshBtn";
 
 const { AppState } = stores;
 const { Option } = Select;

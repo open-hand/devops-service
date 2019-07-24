@@ -5,9 +5,9 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Tooltip, Icon, Table, Pagination } from 'choerodon-ui';
 import { Permission, stores } from '@choerodon/boot';
 import _ from 'lodash';
-import StatusTags from '../../../../components/StatusTags';
-import TimePopover from '../../../../components/timePopover';
-import MouserOverWrapper from '../../../../components/MouseOverWrapper';
+import StatusTags from '../../../components/StatusTags';
+import TimePopover from '../../../components/timePopover';
+import MouserOverWrapper from '../../../components/MouseOverWrapper';
 import './ClusterList.scss';
 
 const { AppState } = stores;

@@ -7,8 +7,8 @@ import _ from 'lodash';
 import MdEditor from '../../../components/MdEditor';
 import '../../main.scss';
 import './AppTagCreate.scss';
-import Tips from "../../../../components/Tips/Tips";
-import InterceptMask from "../../../../components/interceptMask/InterceptMask";
+import Tips from "../../../components/Tips/Tips";
+import InterceptMask from "../../../components/interceptMask/InterceptMask";
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;

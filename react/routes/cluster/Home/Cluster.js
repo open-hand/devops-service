@@ -9,10 +9,10 @@ import CopyToBoard from 'react-copy-to-clipboard';
 import LoadingBar from '../../../components/loadingBar';
 import ClusterList from '../clusterList';
 import './Cluster.scss';
-import '../../../project/envPipeline/EnvPipeLineHome.scss';
-import '../../../main.scss';
-import '../../../../components/DepPipelineEmpty/DepPipelineEmpty.scss';
-import InterceptMask from '../../../../components/interceptMask/InterceptMask';
+import '../../envPipeline/EnvPipeLineHome.scss';
+import '../../main.scss';
+import '../../../components/DepPipelineEmpty/DepPipelineEmpty.scss';
+import InterceptMask from '../../../components/interceptMask/InterceptMask';
 
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 

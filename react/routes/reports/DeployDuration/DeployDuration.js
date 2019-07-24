@@ -13,9 +13,9 @@ import StatusTags from '../../../components/StatusTags';
 import NoChart from '../Component/NoChart';
 import ContainerStore from '../../../stores/project/container';
 import './DeployDuration.scss';
-import LoadingBar from '../../../../components/loadingBar/LoadingBar';
+import LoadingBar from '../../../components/loadingBar/LoadingBar';
 import MaxTagPopover from '../Component/MaxTagPopover';
-import MouserOverWrapper from '../../../../components/MouseOverWrapper/MouserOverWrapper';
+import MouserOverWrapper from '../../../components/MouseOverWrapper/MouserOverWrapper';
 
 configure({ enforceActions: 'never' });
 

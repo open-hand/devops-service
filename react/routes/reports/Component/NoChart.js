@@ -5,8 +5,8 @@ import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { Button } from "choerodon-ui";
 import './NoChart.scss';
-import ReportsStore from '../../../../stores/project/reports';
-import EnvPipelineStore from "../../../../stores/project/envPipeline";
+import ReportsStore from '../../../stores/project/reports';
+import EnvPipelineStore from "../../../stores/project/envPipeline";
 
 @withRouter
 @observer

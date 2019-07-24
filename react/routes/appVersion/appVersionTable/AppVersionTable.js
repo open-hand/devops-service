@@ -7,7 +7,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import TimePopover from '../../../components/timePopover';
 import DevPipelineStore from '../../../stores/project/devPipeline';
 import '../applicationHome/ApplicationVersion.scss';
-import '../../../main.scss';
+import '../../main.scss';
 
 const { AppState } = stores;
 @observer

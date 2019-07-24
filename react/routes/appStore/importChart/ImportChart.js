@@ -20,7 +20,7 @@ import {
 } from "@choerodon/boot";
 import _ from "lodash";
 import "../Importexport.scss";
-import "../../../main.scss";
+import "../../main.scss";
 
 const Step = Steps.Step;
 const Option = Select.Option;
