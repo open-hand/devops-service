@@ -17,7 +17,7 @@ import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.infra.dto.ApplicationDTO;
-import io.choerodon.devops.infra.dto.CommitDTO;
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;

@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageInfo;
 import feign.FeignException;
 import feign.RetryableException;
-import io.choerodon.devops.api.vo.kubernetes.RepositoryFile;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
@@ -17,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.infra.dto.CommitDTO;
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;

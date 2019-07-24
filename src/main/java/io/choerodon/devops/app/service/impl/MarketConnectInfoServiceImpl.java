@@ -6,12 +6,14 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.MarketConnectInfoService;
 import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDTO;
 import io.choerodon.devops.infra.mapper.MarketConnectInfoMapper;
+import org.springframework.stereotype.Service;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  15:02 2019/7/15
  * Description:
  */
+@Service
 public class MarketConnectInfoServiceImpl implements MarketConnectInfoService {
     @Autowired
     private MarketConnectInfoMapper marketConnectInfoMapper;
