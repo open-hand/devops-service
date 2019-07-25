@@ -50,11 +50,13 @@
             <artifactId>choerodon-starter-mybatis</artifactId>
             <version>${choerodon.starters.version}</version>
         </dependency>
+
         <dependency>
             <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-websocket-helper</artifactId>
-            <version>0.11.2.RELEASE</version>
+            <artifactId>choerodon-starter-websocket</artifactId>
+            <version>0.12.0.RELEASE</version>
         </dependency>
+
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-actuator</artifactId>

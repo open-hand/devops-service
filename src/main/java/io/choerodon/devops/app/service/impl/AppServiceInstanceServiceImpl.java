@@ -40,8 +40,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.websocket.Msg;
-import io.choerodon.websocket.helper.CommandSender;
+
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,8 +81,6 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
 
     @Autowired
     private AgentCommandService agentCommandService;
-    @Autowired
-    private CommandSender commandSender;
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
@@ -1164,7 +1161,8 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         } else {
             instanceCommandType = HelmType.HELM_RELEASE_STOP.toValue();
         }
-        instanceCommand(payload, appServiceInstanceDTO.getCode(), instanceCommandType,
+
+        agentCommandService.startOrStopInstance(payload, appServiceInstanceDTO.getCode(), instanceCommandType,
                 devopsEnvironmentDTO.getCode(), devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getClusterId());
     }
 
@@ -1298,17 +1296,6 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         baseUpdate(instanceDTO);
     }
 
-    private void instanceCommand(String payload, String name,
-                                 String type, String namespace,
-                                 Long commandId, Long envId,
-                                 Long clusterId) {
-        Msg msg = new Msg();
-        msg.setKey("cluster:" + clusterId + ".env:" + namespace + ".envId:" + envId + ".release:" + name);
-        msg.setType(type);
-        msg.setPayload(payload);
-        msg.setCommandId(commandId);
-        commandSender.sendMsg(msg);
-    }
 
     private List<ErrorLineVO> getErrorLine(String value) {
         List<ErrorLineVO> errorLines = new ArrayList<>();

@@ -17,11 +17,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
-import io.choerodon.devops.infra.util.FileUtil;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.tool.UUIDTool;
+import io.choerodon.devops.infra.util.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
@@ -82,7 +78,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         // 复制所有服务
         originalAppServices.forEach(service -> {
-            final String workingDir = gitUtil.getWorkingDirectory("application-service-copy-" + UUIDTool.genUuid());
+            final String workingDir = gitUtil.getWorkingDirectory("application-service-copy-" + GenerateUUID.generateUUID());
             try {
                 copyAppService(newAppId, service, projectId, workingDir);
             } catch (Exception e) {

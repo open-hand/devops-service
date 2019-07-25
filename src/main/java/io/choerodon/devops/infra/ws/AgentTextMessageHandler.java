@@ -1,43 +1,42 @@
-package io.choerodon.devops.infra.gitops;
+package io.choerodon.devops.infra.ws;
 
 import io.choerodon.devops.app.service.AgentMsgHandlerService;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.HelmType;
 import io.choerodon.devops.infra.enums.InstanceStatus;
+import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.websocket.Msg;
-import io.choerodon.websocket.process.AbstractAgentMsgHandler;
-import io.choerodon.websocket.tool.KeyParseTool;
+import io.choerodon.websocket.receive.MessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.WebSocketSession;
 
 /**
- * Created by Zenger on 2018/4/17.
+ * Created by Sheep on 2019/7/25.
  */
+
 @Component
-public class AgentMessageHandler extends AbstractAgentMsgHandler {
+public class AgentTextMessageHandler implements MessageHandler<AgentMsg> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AgentMessageHandler.class);
 
-    private AgentMsgHandlerService agentMsgHandlerService;
+    private static final Logger logger = LoggerFactory.getLogger(AgentTextMessageHandler.class);
+
 
     @Autowired
-    public AgentMessageHandler(AgentMsgHandlerService agentMsgHandlerService) {
-        this.agentMsgHandlerService = agentMsgHandlerService;
-    }
+    private AgentMsgHandlerService agentMsgHandlerService;
 
     @Override
-    public void process(Msg msg) {
+    public void handle(WebSocketSession webSocketSession, String type, String key, AgentMsg msg) {
         HelmType helmType = HelmType.forValue(String.valueOf(msg.getType()));
+
         if (helmType == null) {
             return;
         }
         if (logger.isDebugEnabled()) {
             logger.debug(msg.toString());
         }
-        msg.setDispatch(false);
         switch (helmType) {
             case HELM_RELEASE_PRE_INSTALL:
                 agentMsgHandlerService.handlerPreInstall(
@@ -52,7 +51,7 @@ public class AgentMessageHandler extends AbstractAgentMsgHandler {
                 agentMsgHandlerService.handlerReleaseUpgrade(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 agentMsgHandlerService.updateInstanceStatus(
                         msg.getKey(),
-                        KeyParseTool.getResourceName(msg.getKey()),
+                        KeyParseUtil.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getClusterId()),
                         InstanceStatus.RUNNING.getStatus(),
                         CommandStatus.SUCCESS.getStatus(),
@@ -63,7 +62,7 @@ public class AgentMessageHandler extends AbstractAgentMsgHandler {
             case HELM_RELEASE_START:
                 agentMsgHandlerService.updateInstanceStatus(
                         msg.getKey(),
-                        KeyParseTool.getResourceName(msg.getKey()),
+                        KeyParseUtil.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getClusterId()),
                         InstanceStatus.RUNNING.getStatus(),
                         CommandStatus.SUCCESS.getStatus(),
@@ -72,7 +71,7 @@ public class AgentMessageHandler extends AbstractAgentMsgHandler {
             case HELM_RELEASE_STOP:
                 agentMsgHandlerService.updateInstanceStatus(
                         msg.getKey(),
-                        KeyParseTool.getResourceName(msg.getKey()),
+                        KeyParseUtil.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getClusterId()),
                         InstanceStatus.STOPPED.getStatus(),
                         CommandStatus.SUCCESS.getStatus(),
@@ -196,7 +195,12 @@ public class AgentMessageHandler extends AbstractAgentMsgHandler {
     }
 
     @Override
-    public int getOrder() {
-        return 0;
+    public String matchType() {
+        return "agent";
+    }
+
+    @Override
+    public Class<AgentMsg> payloadClass() {
+        return AgentMsg.class;
     }
 }

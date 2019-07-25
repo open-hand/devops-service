@@ -6,7 +6,10 @@ import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSONArray;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.ConfigVO;
+import io.choerodon.devops.api.vo.GitConfigVO;
+import io.choerodon.devops.api.vo.GitEnvConfigVO;
+import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.api.vo.kubernetes.ImagePullSecret;
 import io.choerodon.devops.api.vo.kubernetes.Payload;
 import io.choerodon.devops.app.eventhandler.payload.OperationPodPayload;
@@ -23,13 +26,13 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.websocket.Msg;
-import io.choerodon.websocket.helper.CommandSender;
+import io.choerodon.devops.infra.ws.AgentMsg;
+import io.choerodon.websocket.helper.WebSocketHelper;
+import io.choerodon.websocket.send.WebSocketSendPayload;
 import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 /**
@@ -48,9 +51,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private static final String OPERATE_DOCKER_REGISTRY_SECRET = "operate_docker_registry_secret";
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper mapper = new ObjectMapper();
-    @Autowired
-    @Lazy
-    private CommandSender commandSender;
+
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -58,6 +59,8 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private ClusterConnectionHandler clusterConnectionHandler;
     @Autowired
     private GitUtil gitUtil;
+    @Autowired
+    private WebSocketHelper webSocketHelper;
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -69,30 +72,33 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     private String agentExpectVersion;
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
+    @Value("${agent.certManagerUrl}")
+    private String certManagerUrl;
 
 
     @Override
     public void sendCommand(DevopsEnvironmentDTO devopsEnvironmentDTO) {
-        Msg msg = new Msg();
+        AgentMsg msg = new AgentMsg();
         msg.setKey("cluster:" + devopsEnvironmentDTO.getClusterId() + ".env:" + devopsEnvironmentDTO.getCode() + ".envId:" + devopsEnvironmentDTO.getId());
         msg.setType("git_ops_sync");
         msg.setPayload("");
-        commandSender.sendMsg(msg);
+        sendToWebsocket(devopsEnvironmentDTO.getClusterId(), msg);
     }
 
 
     @Override
-    public void deploy(AppServiceDTO applicationDTO, AppServiceVersionDTO appServiceVersionDTO, String releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values, Long commandId, String secretCode) {
-        Msg msg = new Msg();
+    public void deploy(AppServiceDTO appServiceDTO, AppServiceVersionDTO applicationVersionDTO, String
+            releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values, Long commandId, String secretCode) {
+        AgentMsg msg = new AgentMsg();
         List<ImagePullSecret> imagePullSecrets = null;
         if (secretCode != null) {
             imagePullSecrets = Arrays.asList(new ImagePullSecret(secretCode));
         }
         Payload payload = new Payload(
                 devopsEnvironmentDTO.getCode(),
-                appServiceVersionDTO.getRepository(),
-                applicationDTO.getCode(),
-                appServiceVersionDTO.getVersion(),
+                applicationVersionDTO.getRepository(),
+                appServiceDTO.getCode(),
+                applicationVersionDTO.getVersion(),
                 values, releaseName, imagePullSecrets);
 
         msg.setKey(String.format("cluster:%d.env:%s.envId:%d.release:%s",
@@ -108,12 +114,13 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         } catch (IOException e) {
             throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
-        commandSender.sendMsg(msg);
+        sendToWebsocket(devopsEnvironmentDTO.getClusterId(), msg);
     }
+
 
     @Override
     public void upgradeCluster(DevopsClusterDTO devopsClusterDTO) {
-        Msg msg = new Msg();
+        AgentMsg msg = new AgentMsg();
         Map<String, String> configs = new HashMap<>();
         configs.put("config.connect", agentServiceUrl);
         configs.put("config.token", devopsClusterDTO.getToken());
@@ -136,31 +143,33 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         } catch (IOException e) {
             throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
-        commandSender.sendMsg(msg);
+        sendToWebsocket(devopsClusterDTO.getId(), msg);
     }
 
     @Override
     public void createCertManager(Long clusterId) {
-        Msg msg = new Msg();
+        AgentMsg msg = new AgentMsg();
         Payload payload = new Payload(
                 "kube-system",
-                agentRepoUrl,
+                certManagerUrl,
                 "cert-manager",
-                agentExpectVersion,
+                "0.1.0",
                 null, "choerodon-cert-manager", null);
-        msg.setKey(String.format(KEY_FORMAT, clusterId, "choerodon-cert-manager"));
+        msg.setKey(String.format("cluster:%d.release:%s",
+                clusterId,
+                "choerodon-cert-manager"));
         msg.setType(HelmType.HELM_INSTALL_RELEASE.toValue());
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
         } catch (IOException e) {
-            throw new CommonException(ERROR_PAYLOAD_ERROR, e);
+            throw new CommonException("error.payload.error", e);
         }
-        commandSender.sendMsg(msg);
+        sendToWebsocket(clusterId, msg);
     }
 
     @Override
     public void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count) {
-        Msg msg = new Msg();
+        AgentMsg msg = new AgentMsg();
         OperationPodPayload operationPodPayload = new OperationPodPayload();
         operationPodPayload.setCount(count);
         operationPodPayload.setDeploymentName(deploymentName);
@@ -173,12 +182,13 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setType(OPERATE_POD_COUNT);
         msg.setKey(String.format(CLUSTER_FORMAT, clusterId
         ));
-        commandSender.sendMsg(msg);
+        sendToWebsocket(clusterId, msg);
     }
 
     @Override
-    public void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO, String type) {
-        Msg msg = new Msg();
+    public void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO
+            configVO, String Type) {
+        AgentMsg msg = new AgentMsg();
         SecretPayLoad secretPayLoad = new SecretPayLoad();
         secretPayLoad.setEmail(configVO.getEmail());
         secretPayLoad.setName(secretName);
@@ -196,13 +206,41 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setType(OPERATE_DOCKER_REGISTRY_SECRET);
         msg.setKey(String.format("cluster:%s.env:%s.Secret:%s", clusterId, namespace, secretName
         ));
-        commandSender.sendMsg(msg);
+        sendToWebsocket(clusterId, msg);
+    }
+
+    @Override
+    public void gitopsSyncCommandStatus(Long clusterId, String envCode, Long envId, List<Command> commands) {
+
+        AgentMsg msg = new AgentMsg();
+        msg.setKey(String.format("cluster:%d.env:%s.envId:%d",
+                clusterId,
+                envCode,
+                envId));
+        msg.setType(HelmType.STATUS_SYNC.toValue());
+        try {
+            msg.setPayload(JSONArray.toJSONString(commands));
+        } catch (Exception e) {
+            throw new CommonException("error.payload.error", e);
+        }
+        sendToWebsocket(clusterId, msg);
+    }
+
+    @Override
+    public void startOrStopInstance(String payload, String name, String type, String namespace, Long
+            commandId, Long envId, Long clusterId) {
+        AgentMsg msg = new AgentMsg();
+        msg.setKey("cluster:" + clusterId + ".env:" + namespace + ".envId:" + envId + ".release:" + name);
+        msg.setType(type);
+        msg.setPayload(payload);
+        msg.setCommandId(commandId);
+        sendToWebsocket(clusterId, msg);
     }
 
     @Override
     public void initCluster(Long clusterId) {
         GitConfigVO gitConfigVO = gitUtil.getGitConfig(clusterId);
-        Msg msg = new Msg();
+        AgentMsg msg = new AgentMsg();
         try {
             msg.setPayload(mapper.writeValueAsString(gitConfigVO));
         } catch (IOException e) {
@@ -211,8 +249,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setType(INIT_AGENT);
         msg.setKey(String.format(CLUSTER_FORMAT, clusterId
         ));
-        commandSender.sendMsg(msg);
-
+        sendToWebsocket(clusterId, msg);
     }
 
     @Override
@@ -231,7 +268,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         gitEnvConfigVOS.add(gitEnvConfigVO);
         gitConfigVO.setEnvs(gitEnvConfigVOS);
         gitConfigVO.setGitHost(gitlabSshUrl);
-        Msg msg = new Msg();
+        AgentMsg msg = new AgentMsg();
         try {
             msg.setPayload(mapper.writeValueAsString(gitConfigVO));
         } catch (IOException e) {
@@ -240,17 +277,18 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setType(INIT_ENV);
         msg.setKey(String.format(CLUSTER_FORMAT, clusterId
         ));
-        commandSender.sendMsg(msg);
+        sendToWebsocket(clusterId, msg);
     }
 
     @Override
-    public void deployTestApp(AppServiceDTO applicationDTO, AppServiceVersionDTO appServiceVersionDTO, String releaseName, String secretName, Long clusterId, String values) {
-        Msg msg = new Msg();
+    public void deployTestApp(AppServiceDTO appServiceDTO, AppServiceVersionDTO
+            appServiceVersionDTO, String releaseName, String secretName, Long clusterId, String values) {
+        AgentMsg msg = new AgentMsg();
         List<ImagePullSecret> imagePullSecrets = Arrays.asList(new ImagePullSecret(secretName));
         Payload payload = new Payload(
                 null,
                 appServiceVersionDTO.getRepository(),
-                applicationDTO.getCode(),
+                appServiceDTO.getCode(),
                 appServiceVersionDTO.getVersion(),
                 values, releaseName, imagePullSecrets);
         msg.setKey(String.format(KEY_FORMAT, clusterId, releaseName));
@@ -260,8 +298,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         } catch (IOException e) {
             throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
-        commandSender.sendMsg(msg);
-
+        sendToWebsocket(clusterId, msg);
     }
 
     @Override
@@ -269,12 +306,12 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         List<Long> connected = clusterConnectionHandler.getConnectedEnvList();
         testReleases.forEach((key, value) -> {
             if (connected.contains(key)) {
-                Msg msg = new Msg();
+                AgentMsg msg = new AgentMsg();
                 msg.setKey(String.format("cluster:%d",
                         key));
                 msg.setPayload(JSONArray.toJSONString(value));
                 msg.setType(HelmType.TEST_STATUS.toValue());
-                commandSender.sendMsg(msg);
+                sendToWebsocket(key, msg);
             }
         });
     }
@@ -284,7 +321,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();
         gitEnvConfigVO.setEnvId(envId);
         gitEnvConfigVO.setNamespace(code);
-        Msg msg = new Msg();
+        AgentMsg msg = new AgentMsg();
         try {
             msg.setPayload(mapper.writeValueAsString(gitEnvConfigVO));
         } catch (IOException e) {
@@ -292,8 +329,15 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         }
         msg.setType(DELETE_ENV);
         msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
-        commandSender.sendMsg(msg);
+        sendToWebsocket(clusterId, msg);
     }
 
+    private void sendToWebsocket(Long clusterId, AgentMsg msg) {
+        WebSocketSendPayload<AgentMsg> webSocketSendPayload = new WebSocketSendPayload<>();
+        webSocketSendPayload.setKey("cluster:" + clusterId);
+        webSocketSendPayload.setType("agent");
+        webSocketSendPayload.setData(msg);
+        webSocketHelper.sendMessage("cluster:" + clusterId, webSocketSendPayload);
+    }
 
 }
