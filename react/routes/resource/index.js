@@ -19,7 +19,7 @@ import _ from 'lodash';
 import classnames from 'classnames';
 import TimePopover from '../../components/timePopover';
 import StatusIcon from '../../components/StatusIcon/StatusIcon';
-import EnvOverviewStore from '../../stores/project/envOverview';
+import EnvOverviewStore from '../envOverview/stores';
 import ResourceSidebar from './ResourceSidebar';
 import ResourceDetail from './ResourceDetail';
 import DepPipelineEmpty from '../../components/DepPipelineEmpty/DepPipelineEmpty';

@@ -8,8 +8,8 @@ import TimeAgo from 'timeago-react';
 import { stores, Content } from '@choerodon/boot';
 import { Tooltip, Button, Modal, Collapse, Spin } from 'choerodon-ui';
 import { formatDate } from '../../../../utils';
-import DeploymentStore from '../../../../stores/project/instances/DeploymentStore';
-import InstancesStore from '../../../../stores/project/instances/InstancesStore';
+import DeploymentStore from '../../instances-home/stores/DeploymentStore';
+import InstancesStore from '../../instances-home/stores/InstancesStore';
 import SimpleTable from './SimpleTable';
 import PodCircle from './PodCircle';
 

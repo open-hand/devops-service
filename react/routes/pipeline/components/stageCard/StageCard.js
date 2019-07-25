@@ -3,7 +3,7 @@ import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Modal, Tooltip, Icon, Select } from 'choerodon-ui';
 import _ from 'lodash';
-import PipelineCreateStore from '../../../../stores/project/pipeline/PipelineCreateStore';
+import PipelineCreateStore from '../../stores/PipelineCreateStore';
 import TaskCreate from '../taskCreate';
 import StageTitle from '../stageTitle';
 import StageCreateModal from '../stageCreateModal';

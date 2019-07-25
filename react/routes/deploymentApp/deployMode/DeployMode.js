@@ -10,7 +10,7 @@ import _ from 'lodash';
 import classnames from 'classnames';
 import uuidV1 from 'uuid/v1';
 import ButtonGroup from '../components/buttonGroup';
-import EnvOverviewStore from '../../../stores/project/envOverview';
+import EnvOverviewStore from '../../envOverview/stores';
 import { handleCheckerProptError } from '../../../utils';
 
 import './DeployModal.scss';

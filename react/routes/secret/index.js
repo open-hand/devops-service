@@ -5,15 +5,15 @@ import { withRouter } from 'react-router-dom';
 import { Content, Header, Page, Permission, stores } from '@choerodon/boot';
 import _ from 'lodash';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import KeyValueTable from '../configMap/keyValueTable';
+import KeyValueTable from '../configMap/table';
 import KeyValueSideBar from '../configMap/keyValueSideBar';
-import EnvOverviewStore from "../../stores/project/envOverview";
+import EnvOverviewStore from "../envOverview/stores";
 import DevopsStore from "../../stores/DevopsStore";
 import DepPipelineEmpty from "../../components/DepPipelineEmpty/DepPipelineEmpty";
 import RefreshBtn from "../../components/refreshBtn";
 import SecretStore from './stores';
 
-import '../configMap/configMapHome/ConfigMap.scss';
+import '../configMap/index.scss';
 import '../main.scss';
 
 const { AppState } = stores;

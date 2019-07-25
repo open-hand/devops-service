@@ -6,7 +6,7 @@ import { Content, Permission } from '@choerodon/boot';
 import { Modal, Button, Table, Tooltip, Popover, Icon } from 'choerodon-ui';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
-import EnvOverviewStore from '../../../../stores/project/envOverview';
+import EnvOverviewStore from '../../../envOverview/stores';
 import StatusIcon from '../../../../components/StatusIcon/StatusIcon';
 import CreateNetwork from './CreateNetwork';
 import CreateIngress from './CreateIngress';

@@ -5,9 +5,9 @@ import { injectIntl } from 'react-intl';
 import { Modal } from 'choerodon-ui';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
-import EnvOverviewStore from '../../../../stores/project/envOverview';
-import NetworkConfigStore from '../../../../stores/project/networkConfig';
-import NetworkForm from '../../../networkConfig/components/networkForm/NetworkForm';
+import EnvOverviewStore from '../../../envOverview/stores';
+import NetworkConfigStore from '../../../network/stores';
+import NetworkForm from '../../../network/components/networkForm/NetworkForm';
 
 import '../../../main.scss';
 import './Networking.scss';

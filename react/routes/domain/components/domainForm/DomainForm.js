@@ -5,10 +5,10 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Tooltip, Radio, Input, Form, Select, Icon } from 'choerodon-ui';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
-import DomainStore from '../../../../stores/project/domain';
+import DomainStore from '../../stores';
 import Tips from '../../../../components/Tips/Tips';
-import EnvOverviewStore from '../../../../stores/project/envOverview';
-import InstancesStore from '../../../../stores/project/instances/InstancesStore';
+import EnvOverviewStore from '../../../envOverview/stores';
+import InstancesStore from '../../../instances/instances-home/stores/InstancesStore';
 
 import '../../../main.scss';
 import './DomainForm.scss';

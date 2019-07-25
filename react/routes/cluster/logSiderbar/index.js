@@ -8,7 +8,7 @@ import ReactCodeMirror from "react-codemirror";
 
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/base16-dark.css";
-import '../../container/containerHome/ContainerHome.scss';
+import '../../container/index.scss';
 
 const Sidebar = Modal.Sidebar;
 
