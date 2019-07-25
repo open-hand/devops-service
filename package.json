@@ -65,10 +65,10 @@
     "webpack-dev-server": "^2.9.1"
   },
   "lint-staged": {
-    "react/src/**/*.{js,jsx}": [
+    "react/**/*.{js,jsx}": [
       "npm run lint-staged:es"
     ],
-    "react/src/**/*.{scss,less}": "stylelint --syntax scss"
+    "react/**/*.{scss,less}": "stylelint --syntax scss"
   },
   "husky": {
     "hooks": {
