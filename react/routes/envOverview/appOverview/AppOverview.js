@@ -1,5 +1,5 @@
 /* eslint-disable react/sort-comp, react/no-access-state-in-setstate, no-bitwise */
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { observable, action } from 'mobx';
 import { withRouter } from 'react-router-dom';

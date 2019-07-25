@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react/index';
+import React, { useState, Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Tree } from 'choerodon-ui/pro';
 import classnames from 'classnames';
@@ -20,12 +20,12 @@ const TreeView = ({
   const [searchValue, setSearchValue] = useState('');
   const [autoExpandParent, setAutoExpandParent] = useState(true);
 
-  const treeNodes = nodesRender(dataSource, searchValue);
-  const treeClass = classnames({
+  const treeNodes = useMemo(() => nodesRender(dataSource, searchValue), [dataSource, nodesRender, searchValue]);
+  const treeClass = useMemo(() => classnames({
     'c7n-deployment-scroll': searchAble,
-  });
+  }), [searchAble]);
 
-  const handleSearch = (value) => {
+  function handleSearch(value) {
     const keys = dataFormatted.map((item, index, arr) => {
       if ((item.name || item.code).indexOf(value) > -1) {
         return getParentKey(item.prevKey, arr);
@@ -36,21 +36,21 @@ const TreeView = ({
     setAutoExpandParent(true);
     setExpandedKeys(keys);
     setSearchValue(value || '');
-  };
+  }
 
-  const handleExpand = (expanded) => {
+  function handleExpand(expanded) {
     setExpandedKeys(expanded);
     setAutoExpandParent(false);
-  };
+  }
 
-  const handleSelect = (selectedKeys) => {
+  function handleSelect(selectedKeys) {
     const currentKey = currentKeys[0];
     const nextKey = selectedKeys[0];
 
     if (nextKey && nextKey !== currentKey) {
       onSelect(selectedKeys, nextKey);
     }
-  };
+  }
 
   return (
     <Fragment>

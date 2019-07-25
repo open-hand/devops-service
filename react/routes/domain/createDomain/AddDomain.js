@@ -1,4 +1,4 @@
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Modal } from 'choerodon-ui';

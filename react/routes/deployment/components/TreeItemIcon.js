@@ -1,4 +1,4 @@
-import React from 'react/index';
+import React from 'react';
 import { Icon } from 'choerodon-ui/pro';
 import StatusDot from './status-dot';
 import PodCircle from './pod-circle';

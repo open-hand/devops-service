@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Content, Header, Page, Permission } from '@choerodon/boot';

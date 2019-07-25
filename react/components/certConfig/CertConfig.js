@@ -3,7 +3,7 @@
  * @date 2019-05-31 11:07
  */
 
-import React from 'react/index';
+import React from 'react';
 import PropTypes from 'prop-types';
 import CertUploader from './certUploader';
 import CertTextarea from './certTextarea';

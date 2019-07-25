@@ -1,7 +1,7 @@
 /**
  * hover 显示时间
  */
-import React from 'react/index';
+import React from 'react';
 import { observer } from 'mobx-react';
 import { Tooltip } from 'choerodon-ui';
 import TimeAgo from 'timeago-react';

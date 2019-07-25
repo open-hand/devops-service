@@ -3,7 +3,7 @@
  * @date 2019-05-14 20:46
  */
 
-import React from 'react/index';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { Tooltip } from 'choerodon-ui';

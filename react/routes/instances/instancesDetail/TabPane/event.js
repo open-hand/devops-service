@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { Steps, Tooltip, Icon, Popover, Modal, Progress } from 'choerodon-ui';
 import { Content, stores } from '@choerodon/boot';

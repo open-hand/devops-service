@@ -1,5 +1,5 @@
 /* eslint-disable react/no-danger */
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import Lightbox from 'react-image-lightbox';
 import './IssueDescription.scss';

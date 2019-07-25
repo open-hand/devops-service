@@ -1,7 +1,7 @@
 /**
  *create by mading on 2018/3/28
  */
-import React from 'react/index';
+import React from 'react';
 import {
   Route,
   Switch,

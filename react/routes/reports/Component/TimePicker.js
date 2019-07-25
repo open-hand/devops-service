@@ -1,4 +1,4 @@
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { Button, DatePicker } from 'choerodon-ui';

@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { useContext, useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import _ from 'lodash';
 import LayoutPage from '../components/layout';
 import { IST_ITEM, APP_ITEM, ENV_ITEM } from '../components/TreeItemIcon';
 import Sidebar from '../sidebar';
-import DeploymentStore from '../stores';
+import Stores from '../stores';
 
 import './index.less';
 
@@ -43,24 +43,26 @@ const getContent = (type) => {
 };
 
 const MainView = observer(({ MenuStore }) => {
+  const { store } = useContext(Stores);
+
   const rootRef = useRef(null);
   const [bounds, setBounds] = useState(null);
-  const [defaultCollapsed] = useState(MenuStore.collapsed);
+  const [defaultCollapsed] = useState(() => MenuStore.collapsed);
+
+  const getRootBounds = _.throttle(() => {
+    const { current } = rootRef;
+
+    if (current) {
+      const { offsetWidth, offsetHeight } = current;
+
+      setBounds({
+        width: offsetWidth,
+        height: offsetHeight,
+      });
+    }
+  }, 100);
 
   useEffect(() => {
-    const getRootBounds = _.throttle(() => {
-      const { current } = rootRef;
-
-      if (current) {
-        const { offsetWidth, offsetHeight } = current;
-
-        setBounds({
-          width: offsetWidth,
-          height: offsetHeight,
-        });
-      }
-    }, 100);
-
     getRootBounds();
     window.addEventListener('resize', getRootBounds, true);
     return () => {
@@ -87,8 +89,9 @@ const MainView = observer(({ MenuStore }) => {
     return computedBounds;
   }, [MenuStore.collapsed, bounds, defaultCollapsed]);
 
-  const { viewType } = DeploymentStore.getPreviewData;
-  const content = getContent(viewType);
+  // TODO: improve me
+  const { viewType } = store.getPreviewData;
+  const content = useMemo(() => getContent(viewType), [viewType]);
 
   const realProps = {
     Nav: getNav,

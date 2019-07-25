@@ -1,4 +1,4 @@
-import React, { memo } from 'react/index';
+import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { Icon, TextField } from 'choerodon-ui/pro';
 

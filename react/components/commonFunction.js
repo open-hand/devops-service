@@ -1,4 +1,4 @@
-import React from 'react/index';
+import React from 'react';
 import { stores } from '@choerodon/boot';
 import _ from 'lodash';
 import EnvOverviewStore from '../stores/project/envOverview';

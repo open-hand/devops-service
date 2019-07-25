@@ -1,4 +1,4 @@
-import React, { PureComponent } from "react/index";
+import React, { PureComponent } from "react";
 import Table from "rc-table";
 import PropTypes from "prop-types";
 import styled from "styled-components";

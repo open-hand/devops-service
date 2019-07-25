@@ -1,4 +1,4 @@
-import React from 'react/index';
+import React from 'react';
 import SimpleBar from 'simplebar-react';
 import classnames from 'classnames';
 

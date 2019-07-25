@@ -1,14 +1,15 @@
-import React, { useState, Fragment } from 'react';
+import React, { useContext, useState, useMemo, Fragment } from 'react';
 import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
-import { Tree, Select } from 'choerodon-ui/pro';
+import { Tree, Select, DataSet } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import SidebarHeading from './header';
 import TreeView from '../../../components/tree-view';
 import { APP_ITEM, ENV_ITEM, IST_ITEM, TreeItemIcon } from '../components/TreeItemIcon';
-import DeploymentStore from '../stores';
+import TreeDataSet from './stores/TreeDataSet';
+import Stores from '../stores';
 
 import './index.less';
 
@@ -86,17 +87,19 @@ const getViewOptions = formatMessage => ([
 ]);
 
 const Sidebar = observer(({ navBounds, intl: { formatMessage }, AppState: { currentMenuType } }) => {
+  const treeDataDs = useMemo(() => new DataSet(TreeDataSet(currentMenuType.id)), []);
+  const { store } = useContext(Stores);
   const [value, setValue] = useState(DEFAULT_VIEW_TYPE);
 
   const {
     getNavData,
     getSelectedTreeNode: selectedKeys,
     getNavFormatted,
-  } = DeploymentStore;
+  } = store;
 
   const handleSelect = (keys, next) => {
-    DeploymentStore.setSelectedTreeNode(keys);
-    DeploymentStore.loadPreviewData(currentMenuType.id, next);
+    store.setSelectedTreeNode(keys);
+    store.loadPreviewData(currentMenuType.id, next);
   };
 
   const handleChoose = (choose) => {

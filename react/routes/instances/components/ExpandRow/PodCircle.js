@@ -1,4 +1,4 @@
-import React, { PureComponent, Fragment } from "react/index";
+import React, { PureComponent, Fragment } from "react";
 import { FormattedMessage, injectIntl } from "react-intl";
 import { withRouter, Link } from "react-router-dom";
 import { stores } from "@choerodon/boot";

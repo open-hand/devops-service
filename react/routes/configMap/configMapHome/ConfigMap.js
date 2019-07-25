@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { Button, Tooltip, Select } from 'choerodon-ui';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';

@@ -1,4 +1,4 @@
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { DropTarget } from 'react-dnd';
 import _ from 'lodash';

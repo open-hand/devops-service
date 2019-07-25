@@ -1,5 +1,5 @@
 /* eslint-disable react/sort-comp */
-import React, { Component, Fragment } from "react/index";
+import React, { Component, Fragment } from "react";
 import { observer } from "mobx-react";
 import { withRouter } from "react-router-dom";
 import { injectIntl, FormattedMessage } from "react-intl";

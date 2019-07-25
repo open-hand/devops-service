@@ -1,4 +1,4 @@
-import React from 'react/index';
+import React from 'react';
 import { observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import { Progress } from 'choerodon-ui';

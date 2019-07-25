@@ -2,7 +2,7 @@
  * @author ale0720@163.com
  * @date 2019-06-13 15:45
  */
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';

@@ -1,4 +1,4 @@
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
@@ -109,7 +109,7 @@ class VersionTable extends Component {
   };
 
   handleSelectData = () => {
-    const selectData = _.map(this.props.store.selectData, 'id') || [];
+    const selectData = _.map(this.props.idnex.selectData, 'id') || [];
     this.setState({ selectedRowKeys: selectData });
   };
 
@@ -117,7 +117,7 @@ class VersionTable extends Component {
    * 关闭弹框
    */
   handleClose = () => {
-    this.props.store.changeShow(false);
+    this.props.idnex.changeShow(false);
   };
 
   /**

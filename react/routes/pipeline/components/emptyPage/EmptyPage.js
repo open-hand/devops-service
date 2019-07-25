@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react/index';
+import React, { Fragment, Component } from 'react';
 import { Card, Button, Icon } from 'choerodon-ui';
 import { Content, Header } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';

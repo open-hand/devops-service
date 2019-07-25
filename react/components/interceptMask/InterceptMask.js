@@ -1,4 +1,4 @@
-import React, { Component } from "react/index";
+import React, { Component } from "react";
 
 import "./InterceptMask.scss";
 

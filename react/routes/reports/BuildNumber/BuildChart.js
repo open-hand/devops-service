@@ -1,4 +1,4 @@
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { injectIntl } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { Spin } from 'choerodon-ui';

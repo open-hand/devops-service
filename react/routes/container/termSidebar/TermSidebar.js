@@ -1,4 +1,4 @@
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { Select, Modal } from 'choerodon-ui';
 import { injectIntl, FormattedMessage } from 'react-intl';

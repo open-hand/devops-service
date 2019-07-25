@@ -1,4 +1,4 @@
-import React from "react/index";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 import PropTypes from "prop-types";
 import { Tooltip } from "choerodon-ui";

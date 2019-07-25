@@ -2,7 +2,7 @@
  * THIS FILE IS PART OF Choerodon PROJECT
  * Term.js - base on xterm.js
  */
-import React, { PureComponent } from 'react/index';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Terminal } from 'xterm';
 import _ from 'lodash';

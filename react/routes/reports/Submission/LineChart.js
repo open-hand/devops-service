@@ -1,4 +1,4 @@
-import React, { PureComponent, Fragment } from "react/index";
+import React, { PureComponent, Fragment } from "react";
 import ReactEchartsCore from "echarts-for-react/lib/core";
 import PropTypes from "prop-types";
 import { Spin, Avatar, Tooltip } from "choerodon-ui";

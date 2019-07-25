@@ -1,4 +1,4 @@
-import React from "react/index";
+import React from "react";
 import { injectIntl } from "react-intl";
 import PropTypes from "prop-types";
 import "./PodStatus.scss";

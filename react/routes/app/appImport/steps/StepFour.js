@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react/index';
+import React, { Fragment } from 'react';
 import _ from 'lodash';
 import { observer } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';

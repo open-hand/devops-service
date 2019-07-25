@@ -1,5 +1,5 @@
 /* eslint-disable react/no-access-state-in-setstate, react/no-unused-state */
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import {
   Table,
   Button,

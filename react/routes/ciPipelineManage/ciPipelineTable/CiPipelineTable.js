@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Table, Tooltip } from 'choerodon-ui';
@@ -92,11 +92,11 @@ class CiPipelineTable extends Component {
   }
 
   get tableCiPipeline() {
-    const { pagination, ciPipelines } = this.props.store;
+    const { pagination, ciPipelines } = this.props.idnex;
     const { loading, intl: { formatMessage } } = this.props;
     let Loading = loading;
     if (loading === 'undefined') {
-      Loading = this.props.store.loading;
+      Loading = this.props.idnex.loading;
     }
 
     const ciPipelineColumns = [
@@ -167,7 +167,7 @@ class CiPipelineTable extends Component {
   }
 
   handleTableChange = (pagination) => {
-    this.props.store.loadPipelines(
+    this.props.idnex.loadPipelines(
       true,
       DevPipelineStore.selectedApp,
       pagination.current,

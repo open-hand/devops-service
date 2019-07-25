@@ -2,7 +2,7 @@
  * hover 显示全称
  */
 
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { Tooltip } from 'choerodon-ui';
 import PropTypes from 'prop-types';
 

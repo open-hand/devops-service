@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { Icon } from 'choerodon-ui';

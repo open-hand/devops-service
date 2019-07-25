@@ -1,4 +1,4 @@
-import React, { Component } from "react/index";
+import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { observer } from "mobx-react";
 import { Modal, Form, Radio, Input, Select, Tooltip } from "choerodon-ui";

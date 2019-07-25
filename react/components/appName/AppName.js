@@ -1,4 +1,4 @@
-import React, { Fragment } from "react/index";
+import React, { Fragment } from "react";
 import { FormattedMessage } from "react-intl";
 import PropTypes from "prop-types";
 import { Tooltip, Icon } from "choerodon-ui";

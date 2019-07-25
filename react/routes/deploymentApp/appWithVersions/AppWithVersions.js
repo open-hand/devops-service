@@ -3,7 +3,7 @@
  * @author ale0720@163.com
  * @date 2019-06-06 14:09
  */
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { Permission } from '@choerodon/boot';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';

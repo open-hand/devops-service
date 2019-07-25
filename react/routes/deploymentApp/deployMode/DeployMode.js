@@ -2,7 +2,7 @@
  * @author ale0720@163.com
  * @date 2019-06-11 17:19
  */
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Select, Icon, Radio, Form, Input } from 'choerodon-ui';

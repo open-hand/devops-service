@@ -2,7 +2,7 @@
  * @author ale0720@163.com
  * @date 2019-05-14 21:21
  */
-import React from 'react/index';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import './TableTags.scss';

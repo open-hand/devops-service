@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from "react/index";
+import React, { Component, Fragment } from "react";
 import {
   Table,
   Button,

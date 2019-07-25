@@ -2,7 +2,7 @@
  * @author ale0720@163.com
  * @date 2019-05-23 16:33
  */
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import {
   Table,
   Button,

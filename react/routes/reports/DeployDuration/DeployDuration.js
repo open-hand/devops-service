@@ -1,4 +1,4 @@
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { observable, action, configure } from 'mobx';
 import { injectIntl, FormattedMessage } from 'react-intl';

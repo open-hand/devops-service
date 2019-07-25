@@ -1,23 +1,11 @@
-import React, { useEffect } from 'react';
-import { inject } from 'mobx-react';
-import { Page, Header } from '@choerodon/boot';
-import { FormattedMessage } from 'react-intl';
-import MainView from './main-view';
-import DeploymentStore from './stores';
+import React from 'react';
+import { StoreProvider } from './stores';
+import Deployment from './Deployment';
 
-const Deployment = ({ AppState: { currentMenuType } }) => {
-  useEffect(() => {
-    DeploymentStore.loadNavData(currentMenuType.id);
-  }, [currentMenuType.id]);
-
-  return <Page
-    service={[
-      'devops-service.application-instance.pageByOptions',
-    ]}
-  >
-    <Header title={<FormattedMessage id="deployment.header" />} />
-    <MainView />
-  </Page>;
-};
-
-export default inject('AppState')(Deployment);
+export default function Index(props) {
+  return (
+    <StoreProvider {...props}>
+      <Deployment />
+    </StoreProvider>
+  );
+}

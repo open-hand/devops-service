@@ -2,7 +2,7 @@
  * @author ale0720@163.com
  * @date 2019-05-09 22:12
  */
-import React from 'react/index';
+import React from 'react';
 import { Form } from 'choerodon-ui';
 import { Provider } from './EditableContext';
 

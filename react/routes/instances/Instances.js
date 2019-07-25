@@ -1,5 +1,5 @@
 /* eslint-disable no-bitwise, react/no-access-state-in-setstate */
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';

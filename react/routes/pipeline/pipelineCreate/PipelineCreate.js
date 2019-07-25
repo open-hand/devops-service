@@ -1,4 +1,4 @@
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter, Prompt } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';

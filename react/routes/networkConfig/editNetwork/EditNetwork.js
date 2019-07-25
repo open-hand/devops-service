@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-return */
-import React, { Component, Fragment } from "react/index";
+import React, { Component, Fragment } from "react";
 import { observer, inject } from "mobx-react";
 import { withRouter } from "react-router-dom";
 import classnames from "classnames";

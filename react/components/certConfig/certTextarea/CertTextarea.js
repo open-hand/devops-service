@@ -2,7 +2,7 @@
  * @author ale0720@163.com
  * @date 2019-05-30 15:37
  */
-import React, { Fragment } from 'react/index';
+import React, { Fragment } from 'react';
 import {
   Form,
   Input,

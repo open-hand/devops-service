@@ -2,7 +2,7 @@
  * @author ale0720@163.com
  * @date 2019-05-13 16:47
  */
-import React, { Component } from 'react/index';
+import React, { Component } from 'react';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Content } from '@choerodon/boot';

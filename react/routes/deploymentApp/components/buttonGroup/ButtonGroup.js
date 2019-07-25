@@ -2,7 +2,7 @@
  * @author ale0720@163.com
  * @date 2019-06-14 09:43
  */
-import React from 'react/index';
+import React from 'react';
 import { Permission } from '@choerodon/boot';
 import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';

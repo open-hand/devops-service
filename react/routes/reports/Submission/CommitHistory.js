@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Avatar, Pagination, Spin, Tooltip } from 'choerodon-ui';
 import TimePopover from '../../../components/timePopover';

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { Table, Tooltip, Button } from 'choerodon-ui';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
@@ -41,7 +41,7 @@ class AppVersionTable extends Component {
     const { id: projectId } = AppState.currentMenuType;
     const { current, pageSize } = pagination;
     const page = current;
-    this.props.store.loadData(projectId, DevPipelineStore.getSelectApp, page, pageSize);
+    this.props.idnex.loadData(projectId, DevPipelineStore.getSelectApp, page, pageSize);
   };
 
   render() {
