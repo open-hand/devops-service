@@ -4,7 +4,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { withRouter } from 'react-router-dom';
 import { Icon, Popover, Spin } from 'choerodon-ui';
 import _ from 'lodash';
-import CodeQualityStore from '../../../../stores/project/codeQuality';
+import CodeQualityStore from '../../../codeQuality/stores';
 import Percentage from '../../../../components/percentage/Percentage';
 import Rating from '../../../../components/rating/Rating';
 import { QUALITY_LIST } from '../Constants';

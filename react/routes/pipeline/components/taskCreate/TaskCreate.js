@@ -7,7 +7,7 @@ import { Content } from '@choerodon/boot';
 import classnames from 'classnames';
 import _ from 'lodash';
 import uuidv1 from 'uuid/v1';
-import PipelineCreateStore from '../../../../stores/project/pipeline/PipelineCreateStore';
+import PipelineCreateStore from '../../stores/PipelineCreateStore';
 import Tips from '../../../../components/Tips';
 import YamlEditor from '../../../../components/yamlEditor';
 import {

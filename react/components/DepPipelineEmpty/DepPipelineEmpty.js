@@ -5,7 +5,7 @@ import { Card, Button, Icon } from 'choerodon-ui';
 import { stores, Header, Content } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import './DepPipelineEmpty.scss';
-import EnvPipelineStore from '../../stores/project/envPipeline';
+import EnvPipelineStore from '../../routes/env-pipeline/stores';
 import DeploymentPipelineStore from '../../stores/project/deploymentPipeline';
 
 const { AppState } = stores;

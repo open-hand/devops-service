@@ -1,7 +1,7 @@
 import React from 'react/index';
 import { stores } from '@choerodon/boot';
 import _ from 'lodash';
-import EnvOverviewStore from '../stores/project/envOverview';
+import EnvOverviewStore from '../routes/envOverview/stores';
 import DevopsStore from '../stores/DevopsStore';
 import { handleProptError } from '../utils';
 

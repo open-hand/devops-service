@@ -5,8 +5,8 @@ import { injectIntl } from 'react-intl';
 import { Modal } from 'choerodon-ui';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
-import DomainStore from '../../../../stores/project/domain';
-import InstancesStore from '../../../../stores/project/instances/InstancesStore';
+import DomainStore from '../../../domain/stores';
+import InstancesStore from '../../instances-home/stores/InstancesStore';
 import DomainForm from '../../../domain/components/domainForm/DomainForm';
 
 import '../../../main.scss';

@@ -7,7 +7,7 @@ import { Button, Form, Select, Input, Modal, Icon, Table, Popover } from 'choero
 import { EditableCell, EditableFormRow } from './editableTable';
 import { objToYaml, yamlToObj, takeObject, ConfigNode, makePostData } from '../utils';
 import YamlEditor from '../../../components/yamlEditor';
-import EnvOverviewStore from '../../../stores/project/envOverview';
+import EnvOverviewStore from '../../envOverview/stores';
 import InterceptMask from '../../../components/interceptMask/InterceptMask';
 
 import '../../main.scss';

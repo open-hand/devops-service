@@ -4,7 +4,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Button, Modal, Form, Input, Spin } from 'choerodon-ui';
 import PropTypes from 'prop-types';
 import DevopsStore from '../../stores/DevopsStore';
-import EnvOverviewStore from '../../stores/project/envOverview';
+import EnvOverviewStore from '../../routes/envOverview/stores';
 import { handleProptError } from '../../utils';
 
 import './DeleteModal.scss';

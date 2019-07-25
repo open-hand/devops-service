@@ -1,6 +1,20 @@
-/**
- *create by mading on 2018/3/28
- */
-import AppHome from './AppIndex';
+import React from 'react/index';
+import {
+  Route,
+  Switch,
+} from 'react-router-dom';
 
-export default AppHome;
+import { asyncRouter, nomatch } from '@choerodon/boot';
+
+const App = asyncRouter(() => import('./app-table'), () => import('./stores'));
+const AppImport = asyncRouter(() => import('./app-import'), () => import('./stores'));
+
+const EnvironmentIndex = ({ match }) => (
+  <Switch>
+    <Route exact path={match.url} component={App} />
+    <Route exact path={`${match.url}/import`} component={AppImport} />
+    <Route path="*" component={nomatch} />
+  </Switch>
+);
+
+export default EnvironmentIndex;

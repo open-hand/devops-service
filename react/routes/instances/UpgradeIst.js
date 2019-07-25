@@ -10,7 +10,7 @@ import InterceptMask from '../../components/interceptMask/InterceptMask';
 import LoadingBar from '../../components/loadingBar';
 import { handlePromptError } from '../../utils';
 
-import './Instances.scss';
+import './instances-home/index.scss';
 import '../main.scss';
 
 const { Sidebar } = Modal;

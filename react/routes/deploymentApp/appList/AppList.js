@@ -16,7 +16,7 @@ import classnames from 'classnames';
 import _ from 'lodash';
 import LoadingBar from '../../../components/loadingBar';
 import MouserOverWrapper from '../../../components/MouseOverWrapper';
-import AppListStore from '../../../stores/project/deployApp/AppListStore';
+import AppListStore from './stores/AppListStore';
 
 import '../../main.scss';
 import './AppList.scss';

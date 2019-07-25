@@ -7,7 +7,7 @@ import { Content, stores } from '@choerodon/boot';
 import YamlEditor from '../../components/yamlEditor';
 import InterceptMask from '../../components/interceptMask/InterceptMask';
 
-import './Instances.scss';
+import './instances-home/index.scss';
 import '../main.scss';
 
 const { Sidebar } = Modal;
