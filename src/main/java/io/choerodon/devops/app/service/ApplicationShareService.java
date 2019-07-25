@@ -35,31 +35,7 @@ public interface ApplicationShareService {
             PageRequest pageRequest,
             String searchParam);
 
-    /**
-     * 平台下查询所有发布在平台层的应用
-     *
-     * @param pageRequest 分页参数
-     * @param searchParam 模糊查询参数
-     * @return baseList of ApplicationReleasingDTO
-     */
-    PageInfo<ApplicationReleasingVO> listMarketAppsBySite(
-            Boolean isSite,
-            Boolean isFree,
-            PageRequest pageRequest,
-            String searchParam);
-
-    ApplicationReleasingVO getAppDetailByShareId(Long shareId);
-
-    List<Long> batchRelease(List<ApplicationReleasingVO> releasingDTOList);
-
-
-    PageInfo<ApplicationReleasingVO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds);
-
-    PageInfo<ApplicationVersionRespVO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params);
-
     AppVersionAndValueVO getValuesAndChart(Long versionId);
-
-    void updateByShareId(Long shareId, Boolean idFree);
 
     /**
      * 查询发布级别为全局或者在本组织下的所有应用市场的应用

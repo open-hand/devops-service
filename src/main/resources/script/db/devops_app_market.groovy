@@ -61,4 +61,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
             column(name: 'is_site', type: 'TINYINT UNSIGNED', remarks: '是否发布到平台层', afterColumn: "publish_level", defaultValue: "0")
         }
     }
+
+    changeSet(id: '2019-07-24-rename-table', author: 'scp') {
+        dropColumn(columnName: "contributor", tableName: "devops_app_share")
+        dropColumn(columnName: "description", tableName: "devops_app_share")
+        dropColumn(columnName: "img_url", tableName: "devops_app_share")
+        dropColumn(columnName: "is_site", tableName: "devops_app_share")
+        dropColumn(columnName: "is_free", tableName: "devops_app_share")
+        renameColumn(columnDataType: 'VARCHAR(100)', newColumnName: 'share_level', oldColumnName: 'publish_level', remarks: '共享层级', tableName: 'devops_app_share')
+        renameTable(newTableName: 'devops_app_share_rule', oldTableName: 'devops_app_share')
+    }
+
 }

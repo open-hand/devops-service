@@ -89,7 +89,7 @@ public class ApplicationVersionController {
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
-    @GetMapping("/list_by_app/{app_id}")
+    @GetMapping("/page_by_app/{app_id}")
     public ResponseEntity<PageInfo<ApplicationVersionRespVO>> queryByAppId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
