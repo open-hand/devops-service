@@ -6,8 +6,8 @@ import ContainerStore from '../container';
 import CertificateStore from '../certificate';
 import InstancesStore from '../instances/InstancesStore';
 import ConfigMapStore from '../configMap';
-import SecretStore from '../secret';
-import ResourceStore from '../resource';
+import SecretStore from '../../../routes/secret/stores';
+import ResourceStore from '../../../routes/resource/stores';
 import { handleProptError } from '../../../utils';
 import DeploymentPipelineStore from '../deploymentPipeline';
 
