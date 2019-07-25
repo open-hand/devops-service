@@ -6,10 +6,8 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Component;
 import retrofit2.Call;
 
-import io.choerodon.devops.api.vo.AccessTokenCheckResultVO;
-import io.choerodon.devops.api.vo.AppVersionAndValueVO;
-import io.choerodon.devops.api.vo.ApplicationReleasingVO;
-import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.infra.dto.iam.MarketAppDeployRecordDTO;
 import io.choerodon.devops.infra.feign.AppShareClient;
 
 /**
@@ -20,7 +18,7 @@ import io.choerodon.devops.infra.feign.AppShareClient;
 @Component
 public class AppShareClientFallback implements AppShareClient {
     @Override
-    public Call<PageInfo<ApplicationReleasingVO>> getAppShares(Map<String, Object> map) {
+    public Call<PageInfo<RemoteApplicationVO>> getAppShares(Map<String, Object> map) {
         return null;
     }
 
@@ -36,6 +34,11 @@ public class AppShareClientFallback implements AppShareClient {
 
     @Override
     public Call<AccessTokenCheckResultVO> checkTokenExist(String accessToken) {
+        return null;
+    }
+
+    @Override
+    public Call<Void> createAppDeployRecord(String accessToken, MarketAppDeployRecordDTO marketAppDeployRecordDTO) {
         return null;
     }
 }

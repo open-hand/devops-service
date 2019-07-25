@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
@@ -20,6 +21,7 @@ import io.choerodon.devops.infra.enums.ResourceType;
 public interface ApplicationInstanceService {
     /**
      * 根据实例id查询实例信息
+     *
      * @param instanceId 实例id
      * @return 实例信息
      */
@@ -297,7 +299,7 @@ public interface ApplicationInstanceService {
      * @param appRemoteDeployDTO
      * @return
      */
-    ApplicationInstanceVO deployRemoteApp(ApplicationRemoteDeployVO appRemoteDeployDTO);
+    ApplicationInstanceVO deployRemoteApp(Long projectId, ApplicationRemoteDeployVO appRemoteDeployDTO);
 
 
     /**

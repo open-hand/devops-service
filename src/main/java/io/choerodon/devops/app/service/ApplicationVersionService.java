@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.vo.AppVersionAndValueVO;
 import io.choerodon.devops.api.vo.ApplicationVersionAndCommitVO;
 import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
 import io.choerodon.devops.api.vo.DeployVersionVO;
@@ -127,6 +128,23 @@ public interface ApplicationVersionService {
      * @return ApplicationVersionRespVO
      */
     ApplicationVersionRespVO queryByAppAndVersion(Long appId, String version);
+
+    /**
+     * 获取远程应用版本
+     * @param appId
+     * @param pageRequest
+     * @param params
+     * @return
+     */
+    PageInfo<ApplicationVersionRespVO> pageVersionByAppId(Long appId, PageRequest pageRequest, String params);
+
+    /**
+     * 获取远程应用版本详情
+     * @param appId
+     * @param versionId
+     * @return
+     */
+    AppVersionAndValueVO queryConfigByVerionId(Long appId, Long versionId);
 
     List<ApplicationLatestVersionDTO> baseListAppNewestVersion(Long projectId);
 

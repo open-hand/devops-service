@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -60,6 +61,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.AppShareClient;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -160,6 +162,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private ApplicationShareService applicationShareService;
     @Autowired
     private DevopsBranchService devopsBranchService;
+    @Autowired
+    private MarketConnectInfoService marketConnectInfoService;
 
 
     @Override
@@ -1503,6 +1507,32 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
         }
         return sonarTableVO;
+    }
+
+
+    @Override
+    public PageInfo<RemoteApplicationVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params) {
+        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
+        if (marketConnectInfoDO == null) {
+            throw new CommonException("not.exist.remote token");
+        }
+        AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
+        Map<String, Object> map = new HashMap<>();
+        map.put("page", pageRequest.getPage());
+        map.put("size", pageRequest.getSize());
+        map.put("sort", PageRequestUtil.getOrderByStr(pageRequest));
+        map.put("access_token", marketConnectInfoDO.getAccessToken());
+        Response<PageInfo<RemoteApplicationVO>> pageInfoResponse = null;
+        try {
+            map.put("params", URLEncoder.encode(params, "UTF-8"));
+            pageInfoResponse = shareClient.getAppShares(map).execute();
+            if (!pageInfoResponse.isSuccessful()) {
+                throw new CommonException("error.get.app.shares");
+            }
+        } catch (IOException e) {
+            throw new CommonException("error.get.app.shares");
+        }
+        return pageInfoResponse.body();
     }
 
     @Override

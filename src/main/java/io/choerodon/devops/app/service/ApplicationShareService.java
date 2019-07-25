@@ -87,12 +87,6 @@ public interface ApplicationShareService {
      */
     void export(List<AppMarketDownloadVO> appMarkets, String fileName);
 
-    PageInfo<ApplicationReleasingVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params);
-
-    PageInfo<ApplicationVersionRespVO> pageVersionByAppId(Long appId, String accessToken, PageRequest pageRequest, String params);
-
-    AppVersionAndValueVO queryConfigByVerionId(Long appId, Long versionId, String accessToken);
-
     AccessTokenCheckResultVO checkToken(AccessTokenVO tokenDTO);
 
     void saveToken(AccessTokenVO tokenDTO);

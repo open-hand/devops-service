@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -13,6 +14,16 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import retrofit2.Response;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -30,26 +41,21 @@ import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.MarketAppDeployRecordDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.feign.AppShareClient;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 
 /**
@@ -61,15 +67,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     public static final String CHOERODON = "choerodon-test";
+    public static final String HARBOR = "harbor";
+    public static final String CHART = "chart";
     private static final String YAML_SUFFIX = ".yaml";
     private static final String RELEASE_PREFIX = "release-";
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
-    public static final String HARBOR = "harbor";
-    public static final String CHART = "chart";
-
-
     private static Gson gson = new Gson();
 
     @Value("${agent.version}")
@@ -131,6 +135,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private ResourceFileCheckHandler resourceFileCheckHandler;
     @Autowired
     private DevopsEnvApplicationMapper devopsEnvApplicationMapper;
+    @Autowired
+    private MarketConnectInfoService marketConnectInfoService;
+    @Autowired
+    private IamService iamService;
 
     @Override
     public AppInstanceInfoVO queryInfoById(Long instanceId) {
@@ -926,8 +934,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     @Transactional
-    public ApplicationInstanceVO deployRemoteApp(ApplicationRemoteDeployVO applicationRemoteDeployVO) {
-
+    public ApplicationInstanceVO deployRemoteApp(Long projectId, ApplicationRemoteDeployVO applicationRemoteDeployVO) {
         //创建远程应用
         ApplicationDTO applicationDTO = createApplication(applicationRemoteDeployVO);
 
@@ -939,9 +946,38 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationDeployVO.setAppId(applicationDTO.getId());
         applicationDeployVO.setAppVersionId(applicationVersionDTO.getId());
         applicationDeployVO.setValues(applicationRemoteDeployVO.getApplicationVersionRemoteVO().getValues());
-        return createOrUpdate(applicationDeployVO);
+        ApplicationInstanceVO applicationInstanceVO = createOrUpdate(applicationDeployVO);
+
+        //创建远程部署记录
+        createRemoteAppDeployRecord(projectId, applicationRemoteDeployVO);
+        return applicationInstanceVO;
     }
 
+
+    private void createRemoteAppDeployRecord(Long projectId, ApplicationRemoteDeployVO applicationRemoteDeployVO) {
+        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
+        if (marketConnectInfoDO == null) {
+            throw new CommonException("not.exist.remote token");
+        }
+        AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
+        Response<Void> versionAndValueDTOResponse = null;
+
+        MarketAppDeployRecordDTO marketAppDeployRecordDTO = new MarketAppDeployRecordDTO();
+        marketAppDeployRecordDTO.setAppId(applicationRemoteDeployVO.getApplicationRemoteVO().getId());
+        marketAppDeployRecordDTO.setVersionId(applicationRemoteDeployVO.getApplicationVersionRemoteVO().getId());
+
+        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
+        marketAppDeployRecordDTO.setOrganizationId(projectDTO.getOrganizationId());
+
+        try {
+            versionAndValueDTOResponse = shareClient.createAppDeployRecord(marketConnectInfoDO.getAccessToken(), marketAppDeployRecordDTO).execute();
+            if (!versionAndValueDTOResponse.isSuccessful()) {
+                throw new CommonException("error.create.app.deploy.record");
+            }
+        } catch (IOException e) {
+            throw new CommonException("error.create.app.deploy.record");
+        }
+    }
 
     @Override
     public ApplicationInstanceDTO baseQueryByCodeAndEnv(String code, Long envId) {

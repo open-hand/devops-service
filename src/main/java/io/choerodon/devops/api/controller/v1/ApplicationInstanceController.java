@@ -5,6 +5,14 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
@@ -15,13 +23,6 @@ import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 
 /**
@@ -84,9 +85,9 @@ public class ApplicationInstanceController {
             @ApiIgnore
             @ApiParam(value = "分页参数") PageRequest pageRequest,
             @ApiParam(value = "环境ID")
-            @RequestParam(value = "env_id" ,required = false) Long envId,
+            @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "版本ID")
-            @RequestParam(value ="version_id", required = false) Long versionId,
+            @RequestParam(value = "version_id", required = false) Long versionId,
             @ApiParam(value = "应用ID")
             @RequestParam(value = "app_id", required = false) Long appId,
             @ApiParam(value = "实例ID")
@@ -124,7 +125,7 @@ public class ApplicationInstanceController {
     /**
      * 获取实例上次部署配置
      *
-     * @param projectId     项目id
+     * @param projectId  项目id
      * @param instanceId 实例id
      * @return string
      */
@@ -319,7 +320,7 @@ public class ApplicationInstanceController {
             @ApiParam(value = "type", required = true)
             @RequestParam String type,
             @ApiParam(value = "实例ID")
-            @RequestParam(value = "instance_id",required = false) Long instanceId,
+            @RequestParam(value = "instance_id", required = false) Long instanceId,
             @ApiParam(value = "版本ID")
             @RequestParam(value = "version_id") Long appVersionId) {
         return Optional.ofNullable(applicationInstanceService.queryDeployValue(type, instanceId, appVersionId))
@@ -329,7 +330,7 @@ public class ApplicationInstanceController {
 
 
     /**
-     * @param projectId     项目id
+     * @param projectId       项目id
      * @param instanceValueVO 部署value
      * @return InstanceValueVO
      */
@@ -370,7 +371,7 @@ public class ApplicationInstanceController {
     /**
      * 部署应用
      *
-     * @param projectId            项目id
+     * @param projectId           项目id
      * @param applicationDeployVO 部署信息
      * @return ApplicationInstanceVO
      */
@@ -408,7 +409,7 @@ public class ApplicationInstanceController {
             @ApiParam(value = "环境 ID")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "应用Id")
-            @RequestParam(value = "app_id",required = false) Long appId,
+            @RequestParam(value = "app_id", required = false) Long appId,
             @ApiParam(value = "应用版本 ID")
             @RequestParam(value = "version_id", required = false) Long appVersionId) {
         return Optional.ofNullable(applicationInstanceService.listRunningInstance(projectId, appId, appVersionId, envId))
@@ -558,7 +559,7 @@ public class ApplicationInstanceController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
-            @PathVariable(value="instance_id") Long instanceId) {
+            @PathVariable(value = "instance_id") Long instanceId) {
         applicationInstanceService.deleteInstance(instanceId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -658,7 +659,7 @@ public class ApplicationInstanceController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "appId")
-            @RequestParam(value = "app_id" ,required = false) Long appId,
+            @RequestParam(value = "app_id", required = false) Long appId,
             @ApiParam(value = "envIds")
             @RequestBody(required = false) Long[] envIds,
             @ApiParam(value = "startTime")
@@ -742,7 +743,7 @@ public class ApplicationInstanceController {
     /**
      * 部署自动化测试应用
      *
-     * @param projectId            项目id
+     * @param projectId           项目id
      * @param applicationDeployVO 部署信息
      * @return ApplicationInstanceVO
      */
@@ -762,10 +763,10 @@ public class ApplicationInstanceController {
     /**
      * 操作pod的数量
      *
-     * @param projectId      项目id
-     * @param envId          环境id
-     * @param name deploymentName
-     * @param count          pod数量
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param name      deploymentName
+     * @param count     pod数量
      * @return ApplicationInstanceVO
      */
     @ApiOperation(value = "操作pod的数量")
@@ -802,7 +803,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
             @RequestBody ApplicationRemoteDeployVO appRemoteDeployDTO) {
-        return Optional.ofNullable(applicationInstanceService.deployRemoteApp(appRemoteDeployDTO))
+        return Optional.ofNullable(applicationInstanceService.deployRemoteApp(projectId, appRemoteDeployDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.remote.deploy"));
     }
