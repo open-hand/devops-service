@@ -16,11 +16,31 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import io.kubernetes.client.JSON;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.ApplicationValidator;
@@ -51,26 +71,6 @@ import io.choerodon.devops.infra.mapper.ApplicationUserPermissionMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.tool.UUIDTool;
-import io.kubernetes.client.JSON;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 
 /**
@@ -271,7 +271,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     public Boolean update(Long projectId, ApplicationUpdateVO applicationUpdateVO) {
 
-        ApplicationDTO applicationDTO = ConvertHelper.convert(applicationUpdateVO, ApplicationDTO.class);
+        ApplicationDTO applicationDTO = ConvertUtils.convertObject(applicationUpdateVO, ApplicationDTO.class);
         applicationDTO.setIsSkipCheckPermission(applicationUpdateVO.getIsSkipCheckPermission());
         applicationDTO.setProjectId(projectId);
         applicationDTO.setHarborConfigId(applicationUpdateVO.getHarborConfigId());
@@ -363,7 +363,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                                                     Boolean appMarket,
                                                     String type, Boolean doPage,
                                                     PageRequest pageRequest, String params) {
-        PageInfo<ApplicationDTO> applicationDTOS = listByOptionsFromBase(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
+        PageInfo<ApplicationDTO> applicationDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
@@ -371,30 +371,18 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         initApplicationParams(projectDTO, organizationDTO, applicationDTOS.getList(), urlSlash);
 
-        PageInfo<ApplicationRepVO> resultDTOPage = ConvertUtils.convertPage(applicationDTOS, ApplicationRepVO.class);
+        PageInfo<ApplicationRepVO> resultDTOPage = ConvertUtils.convertPage(applicationDTOS, this::dtoToRepVo);
         resultDTOPage.setList(setApplicationRepVOPermission(applicationDTOS.getList(), userAttrDTO, projectDTO));
         return resultDTOPage;
     }
 
-    private PageInfo<ApplicationDTO> listByOptionsFromBase(Long projectId, Boolean isActive, Boolean hasVersion,
-                                                           Boolean appMarket,
-                                                           String type, Boolean doPage,
-                                                           PageRequest pageRequest, String params) {
-        PageInfo<ApplicationDTO> applicationES = new PageInfo<>();
-
-        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
-        //是否需要分页
-        if (doPage != null && !doPage) {
-            applicationES.setList(applicationMapper.list(projectId, isActive, hasVersion, appMarket, type,
-                    (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
-                    mapParams.get(TypeUtil.PARAM).toString(), PageRequestUtil.checkSortIsEmpty(pageRequest)));
-        } else {
-            applicationES = PageHelper
-                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.list(projectId, isActive, hasVersion, appMarket, type,
-                            (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
-                            (String) mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
-        }
-        return applicationES;
+    @Override
+    public PageInfo<ApplicationRepVO> pageByOptionsAppMarket(Long projectId, Boolean isActive, Boolean hasVersion,
+                                                             Boolean appMarket,
+                                                             String type, Boolean doPage,
+                                                             PageRequest pageRequest, String params) {
+        PageInfo<ApplicationDTO> applicationDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
+        return ConvertUtils.convertPage(applicationDTOS, this::dtoToRepVo);
     }
 
     @Override
@@ -456,7 +444,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (isPredefined != null && isPredefined) {
             applicationTemplateDTOS = applicationTemplateDTOS.stream().filter(applicationTemplateDTO -> applicationTemplateDTO.getOrganizationId() == null).collect(Collectors.toList());
         }
-        return ConvertHelper.convertList(applicationTemplateDTOS, ApplicationTemplateRespVO.class);
+        return ConvertUtils.convertList(applicationTemplateDTOS, ApplicationTemplateRespVO.class);
     }
 
     @Override
@@ -741,7 +729,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<ApplicationCodeVO> listByEnvId(Long projectId, Long envId, String status, Long appId) {
-        List<ApplicationCodeVO> applicationCodeVOS = ConvertHelper
+        List<ApplicationCodeVO> applicationCodeVOS = ConvertUtils
                 .convertList(baseListByEnvId(projectId, envId, status),
                         ApplicationCodeVO.class);
         if (appId != null) {
@@ -891,12 +879,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                         .withPayloadAndSerialize(devOpsAppImportPayload)
                         .withRefId("")
                         .withSourceId(projectId));
-        return ConvertHelper.convert(baseQuery(appId), ApplicationRepVO.class);
+        return ConvertUtils.convertObject(baseQuery(appId), ApplicationRepVO.class);
     }
 
     @Override
     public ApplicationRepVO queryByCode(Long projectId, String code) {
-        return ConvertHelper.convert(baseQueryByCode(code, projectId), ApplicationRepVO.class);
+        return ConvertUtils.convertObject(baseQueryByCode(code, projectId), ApplicationRepVO.class);
     }
 
     @Override
@@ -1548,8 +1536,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public PageInfo<ApplicationDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
-            appMarket,
-                                                      String type, Boolean doPage, PageRequest pageRequest, String params) {
+            appMarket, String type, Boolean doPage, PageRequest pageRequest, String params) {
         PageInfo<ApplicationDTO> applicationDTOPageInfo = new PageInfo<>();
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
@@ -1748,7 +1735,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public ApplicationDTO getApplicationDTO(Long projectId, ApplicationReqVO applicationReqDTO) {
-        ApplicationDTO applicationDTO = ConvertHelper.convert(applicationReqDTO, ApplicationDTO.class);
+        ApplicationDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, ApplicationDTO.class);
         baseCheckName(projectId, applicationDTO.getName());
         baseCheckCode(applicationDTO);
         applicationDTO.setActive(true);
@@ -2033,7 +2020,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private List<ApplicationRepVO> setApplicationRepVOPermission(List<ApplicationDTO> applicationDTOList,
                                                                  UserAttrDTO userAttrDTO, ProjectDTO projectDTO) {
-        List<ApplicationRepVO> resultDTOList = ConvertHelper.convertList(applicationDTOList, ApplicationRepVO.class);
+        List<ApplicationRepVO> resultDTOList = ConvertUtils.convertList(applicationDTOList, this::dtoToRepVo);
         if (userAttrDTO == null) {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
@@ -2079,5 +2066,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                 }
             }
         }
+    }
+
+    private ApplicationRepVO dtoToRepVo(ApplicationDTO applicationDTO) {
+        ApplicationRepVO applicationRepVO = new ApplicationRepVO();
+        BeanUtils.copyProperties(applicationDTO, applicationRepVO);
+        applicationRepVO.setApplicationTemplateId(applicationDTO.getAppTemplateId());
+        applicationRepVO.setGitlabProjectId(TypeUtil.objToLong(applicationDTO.getGitlabProjectId()));
+        return applicationRepVO;
     }
 }

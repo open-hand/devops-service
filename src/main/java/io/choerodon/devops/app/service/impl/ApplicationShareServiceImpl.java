@@ -157,42 +157,6 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
     }
 
     @Override
-    public PageInfo<ApplicationReleasingVO> listMarketAppsBySite(Boolean isSite, Boolean isFree, PageRequest pageRequest, String searchParam) {
-        PageInfo<ApplicationShareDTO> applicationMarketEPage = basePageBySite(isSite, isFree, pageRequest, searchParam);
-        return ConvertUtils.convertPage(applicationMarketEPage, ApplicationReleasingVO.class);
-    }
-
-    @Override
-    public ApplicationReleasingVO getAppDetailByShareId(Long shareId) {
-        return queryById(null, shareId);
-    }
-
-    @Override
-    public List<Long> batchRelease(List<ApplicationReleasingVO> releasingDTOList) {
-        return releasingDTOList.stream().map(releasingDTO -> create(null, releasingDTO)).collect(Collectors.toList());
-    }
-
-    @Override
-    public PageInfo<ApplicationReleasingVO> getAppsDetail(PageRequest pageRequest, String params, List<Long> shareIds) {
-        try {
-            params = params == null || params.isEmpty() ? params : URLDecoder.decode(params, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new CommonException("error.decode.params");
-        }
-        PageInfo<ApplicationShareDTO> devopsAppShareEPageInfo = basePageByShareIds(pageRequest, params, shareIds);
-        return ConvertUtils.convertPage(devopsAppShareEPageInfo, ApplicationReleasingVO.class);
-    }
-
-    @Override
-    public PageInfo<ApplicationVersionRespVO> getVersionsByAppId(Long appId, PageRequest pageRequest, String params) {
-        PageInfo<ApplicationVersionRespVO> applicationVersionEPageInfo = applicationVersionService.pageByAppIdAndParam(appId, true, null, pageRequest, params);
-        if (applicationVersionEPageInfo.getList() == null) {
-            return new PageInfo<>();
-        }
-        return ConvertUtils.convertPage(applicationVersionEPageInfo, ApplicationVersionRespVO.class);
-    }
-
-    @Override
     public AppVersionAndValueVO getValuesAndChart(Long versionId) {
         AppVersionAndValueVO appVersionAndValueVO = new AppVersionAndValueVO();
         String versionValue = FileUtil.checkValueFormat(applicationVersionService.baseQueryValue(versionId));
@@ -215,14 +179,6 @@ public class ApplicationShareServiceImpl implements ApplicationShareService {
             appVersionAndValueVO.setVersionRemoteDTO(versionRemoteDTO);
         }
         return appVersionAndValueVO;
-    }
-
-    @Override
-    public void updateByShareId(Long shareId, Boolean isFree) {
-        ApplicationShareDTO applicationShareDTO = new ApplicationShareDTO();
-        applicationShareDTO.setId(shareId);
-        applicationShareDTO.setFree(isFree);
-        baseUpdate(applicationShareDTO);
     }
 
     @Override

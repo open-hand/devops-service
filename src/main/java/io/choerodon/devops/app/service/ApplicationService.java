@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportPayload;
@@ -83,6 +84,11 @@ public interface ApplicationService {
                                              PageRequest pageRequest,
                                              String params);
 
+
+    PageInfo<ApplicationRepVO> pageByOptionsAppMarket(Long projectId, Boolean isActive, Boolean hasVersion,
+                                                      Boolean appMarket,
+                                                      String type, Boolean doPage,
+                                                      PageRequest pageRequest, String params);
 
     /**
      * 处理应用创建逻辑
@@ -217,7 +223,7 @@ public interface ApplicationService {
     /**
      * 从外部代码托管平台导入项目创建应用
      *
-     * @param projectId            project id
+     * @param projectId           project id
      * @param applicationImportVO 导入操作的相关信息
      * @return response
      */
@@ -315,10 +321,10 @@ public interface ApplicationService {
 
     PageInfo<ApplicationDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
             appMarket,
-                                                      String type, Boolean doPage, PageRequest pageRequest, String params);
+                                               String type, Boolean doPage, PageRequest pageRequest, String params);
 
     PageInfo<ApplicationDTO> basePageCodeRepository(Long projectId, PageRequest pageRequest, String params,
-                                                           Boolean isProjectOwner, Long userId);
+                                                    Boolean isProjectOwner, Long userId);
 
 
     ApplicationDTO baseQueryByCode(String code, Long projectId);
@@ -334,7 +340,7 @@ public interface ApplicationService {
     List<ApplicationDTO> baseListDeployedApp(Long projectId);
 
     PageInfo<ApplicationDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
-                                                                        PageRequest pageRequest, String params);
+                                                                 PageRequest pageRequest, String params);
 
     ApplicationDTO baseQueryByToken(String token);
 

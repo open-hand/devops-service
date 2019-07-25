@@ -8,6 +8,12 @@ import java.util.stream.Collectors;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.notify.NoticeSendDTO;
@@ -25,11 +31,6 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -40,12 +41,10 @@ import org.springframework.stereotype.Service;
 public class DevopsNotificationServiceImpl implements DevopsNotificationService {
 
     public static final String RESOURCE_DELETE_CONFIRMATION = "resourceDeleteConfirmation";
-    private static final String PROJECT_OWNER = "role/project/default/project-owner";
-    private static final Long timeout = 600L;
     public static final String DEVOPS_DELETE_INSTANCE_4_SMS = "devopsDeleteInstance4Sms";
     public static final Gson gson = new Gson();
-
-
+    private static final String PROJECT_OWNER = "role/project/default/project-owner";
+    private static final Long timeout = 600L;
     @Autowired
     private DevopsNotificationMapper devopsNotificationMapper;
     @Autowired

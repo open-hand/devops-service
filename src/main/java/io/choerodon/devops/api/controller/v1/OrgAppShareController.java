@@ -33,131 +33,6 @@ public class OrgAppShareController {
     private ApplicationShareService applicationShareService;
 
     /**
-     * 查询所有已发布的应用
-     *
-     * @param isSite      is_site
-     * @param pageRequest 分页参数
-     * @param searchParam 搜索参数
-     * @return baseList of ApplicationReleasingDTO
-     */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
-    @ApiOperation(value = "查询所有已发布的应用")
-    @CustomPageRequest
-    @PostMapping(value = "/listByOptions")
-    public ResponseEntity<PageInfo<ApplicationReleasingVO>> pageListMarketAppsByProjectId(
-            @ApiParam(value = "发布层级")
-            @RequestParam(value = "is_site", required = false) Boolean isSite,
-            @ApiParam(value = "是否收费")
-            @RequestParam(value = "is_free", required = false) Boolean isFree,
-            @ApiParam(value = "分页参数")
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(
-                applicationShareService.listMarketAppsBySite(isSite, isFree, pageRequest, searchParam))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.get.share.applications.by.site"));
-    }
-
-    /**
-     * 根据shareId获取应用详情
-     *
-     * @return baseList of ApplicationReleasingDTO
-     */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
-    @ApiOperation(value = "根据shareId获取应用详情")
-    @GetMapping(value = "/app_detail")
-    public ResponseEntity<ApplicationReleasingVO> getAppDetailByShareId(
-            @ApiParam(value = "shareId")
-            @RequestParam(value = "share_id") Long shareId) {
-        return Optional.ofNullable(
-                applicationShareService.getAppDetailByShareId(shareId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.detail.by.share.id"));
-    }
-
-    /**
-     * 根据shareId更新应用共享
-     *
-     * @return baseList of ApplicationReleasingDTO
-     */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
-    @ApiOperation(value = "根据shareId更新应用共享")
-    @PutMapping(value = "/update")
-    public ResponseEntity updateByShareId(
-            @ApiParam(value = "shareId")
-            @RequestParam(value = "share_id") Long shareId,
-            @ApiParam(value = "是否收费")
-            @RequestParam(value = "is_free") Boolean isFree) {
-        applicationShareService.updateByShareId(shareId, isFree);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    /**
-     * 批量发布应用到平台
-     *
-     * @param releasingDTOList 发布应用的信息
-     * @return Long
-     */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
-    @ApiOperation(value = "批量发布应用到平台")
-    @PostMapping(value = "/batch_release")
-    public ResponseEntity<List<Long>> batchRelease(
-            @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody List<ApplicationReleasingVO> releasingDTOList) {
-        return Optional.ofNullable(
-                applicationShareService.batchRelease(releasingDTOList))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.batch.release"));
-    }
-
-    /**
-     * 根据Ids获取应用详情
-     *
-     * @param shareIds 订阅Id
-     * @return Long
-     */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
-    @ApiOperation(value = "根据Ids获取应用详情")
-    @CustomPageRequest
-    @PostMapping(value = "/details")
-    public ResponseEntity<PageInfo<ApplicationReleasingVO>> getAppsDetail(
-            @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody List<Long> shareIds,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestParam(required = false) String params) {
-        return Optional.ofNullable(
-                applicationShareService.getAppsDetail(pageRequest, params, shareIds))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.get.app.detail.by.shareId"));
-    }
-
-    /**
-     * 根据应用Id获取已发布版本
-     *
-     * @param appId 应用Id
-     * @return Long
-     */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
-    @ApiOperation(value = "根据应用Id获取已发布版本")
-    @CustomPageRequest
-    @PostMapping(value = "/list_versions")
-    public ResponseEntity<PageInfo<ApplicationVersionRespVO>> getVersionsByAppId(
-            @ApiParam(value = "应用Id")
-            @RequestParam(value = "app_id") Long appId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestParam(required = false) String version) {
-        return Optional.ofNullable(
-                applicationShareService.getVersionsByAppId(appId, pageRequest, version))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.get.versions.by.appId"));
-    }
-
-    /**
      * 根据版本Id获取values和chart
      *
      * @param versionId 版本Id
@@ -188,7 +63,7 @@ public class OrgAppShareController {
     }
 
     @Permission(type = ResourceType.SITE)
-    @ApiOperation(value = "token校验")
+    @ApiOperation(value = "token保存")
     @PostMapping(value = "/save_token")
     public ResponseEntity saveToken(
             @ApiParam(value = "token")
