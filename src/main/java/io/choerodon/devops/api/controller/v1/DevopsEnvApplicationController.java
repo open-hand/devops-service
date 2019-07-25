@@ -107,4 +107,25 @@ public class DevopsEnvApplicationController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.app.port.query"));
     }
+
+
+    /**
+     * 查询项目下可用的且没有与该环境关联的应用
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return 应用列表
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询项目下可用的且没有与该环境关联的应用")
+    @GetMapping("/non_related_apps")
+    public ResponseEntity<List<BaseApplicationVO>> listNonRelatedApplications(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @RequestParam(value = "env_id") Long envId) {
+        return Optional.ofNullable(devopsEnvApplicationService.listNonRelatedApplications(projectId, envId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.env.app.query"));
+    }
 }

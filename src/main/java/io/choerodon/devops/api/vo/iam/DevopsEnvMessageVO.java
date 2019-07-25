@@ -4,7 +4,7 @@ package io.choerodon.devops.api.vo.iam;
  * @author lizongwei
  * @date 2019/7/2
  */
-public class DevopsEnvMessageDTO {
+public class DevopsEnvMessageVO {
 
     private String resourceName;
 
