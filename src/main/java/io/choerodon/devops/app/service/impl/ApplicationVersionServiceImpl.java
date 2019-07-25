@@ -20,7 +20,9 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
+import io.choerodon.devops.infra.feign.AppShareClient;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
@@ -35,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import retrofit2.Response;
 
 @Service
 public class ApplicationVersionServiceImpl implements ApplicationVersionService {
@@ -82,6 +85,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private ApplicationMapper applicationMapper;
     @Autowired
     private DevopsProjectConfigMapper devopsProjectConfigMapper;
+    @Autowired
+    private MarketConnectInfoService marketConnectInfoService;
 
 
     private Gson gson = new Gson();
@@ -382,6 +387,53 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         return applicationVersionMapper.listAppNewestVersion(projectId, projectIds);
     }
 
+    @Override
+    public PageInfo<ApplicationVersionRespVO> pageVersionByAppId(Long appId, PageRequest pageRequest, String params) {
+        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
+        if (marketConnectInfoDO == null) {
+            throw new CommonException("not.exist.remote token");
+        }
+        AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
+        Map<String, Object> map = new HashMap<>();
+        map.put("page", pageRequest.getPage());
+        map.put("size", pageRequest.getSize());
+        map.put("sort", PageRequestUtil.getOrderByStr(pageRequest));
+        if (params != null) {
+            map.put("params", params);
+        }
+        map.put("access_token", marketConnectInfoDO.getAccessToken());
+        Response<PageInfo<ApplicationVersionRespVO>> pageInfoResponse = null;
+        try {
+            pageInfoResponse = shareClient.listVersionByAppId(appId, map).execute();
+            if (!pageInfoResponse.isSuccessful()) {
+                throw new CommonException("error.get.app.version.shares");
+            }
+        } catch (IOException e) {
+            throw new CommonException("error.get.app.version.shares");
+        }
+        return pageInfoResponse.body();
+    }
+
+    @Override
+    public AppVersionAndValueVO queryConfigByVerionId(Long appId, Long versionId) {
+        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
+        if (marketConnectInfoDO == null) {
+            throw new CommonException("not.exist.remote token");
+        }
+        AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
+        Map<String, Object> map = new HashMap<>();
+        map.put("access_token", marketConnectInfoDO.getAccessToken());
+        Response<AppVersionAndValueVO> versionAndValueDTOResponse = null;
+        try {
+            versionAndValueDTOResponse = shareClient.getConfigInfoByVerionId(appId, versionId, map).execute();
+            if (!versionAndValueDTOResponse.isSuccessful()) {
+                throw new CommonException("error.get.app.version.config.shares");
+            }
+        } catch (IOException e) {
+            throw new CommonException("error.get.app.version.config.shares");
+        }
+        return versionAndValueDTOResponse.body();
+    }
 
     public List<ApplicationVersionDTO> baseListByAppId(Long appId, Boolean isPublish) {
         List<ApplicationVersionDTO> applicationVersionDTOS = applicationVersionMapper.listByAppId(appId, isPublish);

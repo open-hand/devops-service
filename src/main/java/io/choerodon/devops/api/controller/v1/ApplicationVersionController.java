@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
+
+import io.choerodon.base.domain.Sort;
+import io.choerodon.devops.api.vo.AppVersionAndValueVO;
 import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -28,6 +31,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.ApplicationVersionAndCommitVO;
 import io.choerodon.devops.api.vo.DeployVersionVO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
+import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
 /**
@@ -344,6 +348,43 @@ public class ApplicationVersionController {
         return Optional.ofNullable(applicationVersionService.queryByAppAndVersion(appId, version))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
+
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询远程应用版本")
+    @CustomPageRequest
+    @PostMapping(value = "/page_remote/versions")
+    public ResponseEntity<PageInfo<ApplicationVersionRespVO>> pageVersionByAppId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用Id", required = true)
+            @RequestParam(value = "app_id") Long appId,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestParam(value = "version",required = false) String version) {
+        return Optional.ofNullable(
+                applicationVersionService.pageVersionByAppId(appId, pageRequest, version))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询远程应用版本详情")
+    @CustomPageRequest
+    @PostMapping(value = "/remote/config")
+    public ResponseEntity<AppVersionAndValueVO> queryConfigByVerionId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用Id", required = true)
+            @RequestParam(value = "app_id") Long appId,
+            @ApiParam(value = "版本Id", required = true)
+            @RequestParam(name = "version_id") Long versionId) {
+        return Optional.ofNullable(
+                applicationVersionService.queryConfigByVerionId(appId, versionId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.remote.version.config.get"));
     }
 
 }

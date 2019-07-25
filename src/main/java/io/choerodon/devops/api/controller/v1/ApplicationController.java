@@ -26,15 +26,7 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.AppUserPermissionRespVO;
-import io.choerodon.devops.api.vo.ApplicationCodeVO;
-import io.choerodon.devops.api.vo.ApplicationImportVO;
-import io.choerodon.devops.api.vo.ApplicationRepVO;
-import io.choerodon.devops.api.vo.ApplicationReqVO;
-import io.choerodon.devops.api.vo.ApplicationTemplateRespVO;
-import io.choerodon.devops.api.vo.ApplicationUpdateVO;
-import io.choerodon.devops.api.vo.SonarContentsVO;
-import io.choerodon.devops.api.vo.SonarTableVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;
@@ -253,7 +245,7 @@ public class ApplicationController {
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下分页查询应用 应用分享使用")
+    @ApiOperation(value = "项目下分页查询应用 应用发布使用")
     @CustomPageRequest
     @PostMapping("/page_by_options/app_market")
     public ResponseEntity<PageInfo<ApplicationRepVO>> pageByOptionsMarket(
@@ -594,6 +586,23 @@ public class ApplicationController {
         return Optional.ofNullable(applicationService.getSonarTable(projectId, appId, type, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.sonarqube.content.get"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询远程应用")
+    @CustomPageRequest
+    @PostMapping(value = "/page_remote")
+    public ResponseEntity<PageInfo<RemoteApplicationVO>> pageRemoteApps(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return Optional.ofNullable(
+                applicationService.pageRemoteApps(projectId, pageRequest, searchParam))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.remote.applications.get"));
     }
 
 }

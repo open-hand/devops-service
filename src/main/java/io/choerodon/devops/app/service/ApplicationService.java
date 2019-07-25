@@ -310,6 +310,14 @@ public interface ApplicationService {
      */
     String getGitlabUrl(Long projectId, Long appId);
 
+    /**
+     * 获取远程应用
+     * @param projectId
+     * @param pageRequest
+     * @param params
+     * @return
+     */
+    PageInfo<RemoteApplicationVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params);
 
     void baseCheckApp(Long projectId, Long appId);
 

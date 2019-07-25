@@ -6,11 +6,20 @@ package io.choerodon.devops.api.vo;
  * Description:
  */
 public class ApplicationVersionRemoteVO {
+    private Long id;
     private String values;
     private String image;
     private String readMeValue;
     private String repository;
     private String version;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getValues() {
         return values;
