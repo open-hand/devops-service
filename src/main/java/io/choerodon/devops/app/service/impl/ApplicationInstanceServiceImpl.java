@@ -724,7 +724,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(commandId);
         ApplicationInstanceDTO applicationInstanceDTO = baseQuery(devopsEnvCommandDTO.getObjectId());
         ApplicationInstanceRepVO applicationInstanceRepVO = new ApplicationInstanceRepVO();
-        applicationInstanceRepVO.setAppServiceName(applicationService.baseQuery(applicationInstanceDTO.getAppId()).getName());
+        applicationInstanceRepVO.setAppServiceName(applicationService.baseQuery(applicationInstanceDTO.getAppServiceId()).getName());
         applicationInstanceRepVO.setAppServiceVersion(applicationVersionService.baseQuery(devopsEnvCommandDTO.getObjectVersionId()).getVersion());
         applicationInstanceRepVO.setEnvName(devopsEnvironmentService.baseQueryById(applicationInstanceDTO.getEnvId()).getName());
         applicationInstanceRepVO.setInstanceName(applicationInstanceDTO.getCode());
