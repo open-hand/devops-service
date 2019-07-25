@@ -6,9 +6,9 @@ import { injectIntl } from 'react-intl';
 import { Tree, Select } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import SidebarHeading from './header';
-import TreeView from './tree-view';
-import { APP_ITEM, ENV_ITEM, IST_ITEM, TreeItemIcon } from './tree-view/TreeItemIcon';
-import DeploymentStore from './stores';
+import TreeView from '../../../components/tree-view';
+import { APP_ITEM, ENV_ITEM, IST_ITEM, TreeItemIcon } from '../components/TreeItemIcon';
+import DeploymentStore from '../stores';
 
 import './index.less';
 
@@ -76,7 +76,16 @@ const nodeRenderer = (record, search) => _.map(_.filter(record, ({ name }) => na
   </TreeNode>;
 });
 
-const Sidebar = observer(({ navBounds, intl: { formatMessage } }) => {
+const getViewOptions = formatMessage => ([
+  <Option value="instance" key="instance">
+    {formatMessage({ id: 'deployment.viewer.instance' })}
+  </Option>,
+  <Option value="resource" key="resource">
+    {formatMessage({ id: 'deployment.viewer.resource' })}
+  </Option>,
+]);
+
+const Sidebar = observer(({ navBounds, intl: { formatMessage }, AppState: { currentMenuType } }) => {
   const [value, setValue] = useState(DEFAULT_VIEW_TYPE);
 
   const {
@@ -86,35 +95,18 @@ const Sidebar = observer(({ navBounds, intl: { formatMessage } }) => {
   } = DeploymentStore;
 
   const handleSelect = (keys, next) => {
-    const {
-      AppState: {
-        currentMenuType: {
-          id: projectId,
-        },
-      },
-    } = this.props;
-
     DeploymentStore.setSelectedTreeNode(keys);
-    DeploymentStore.loadPreviewData(projectId, next);
+    DeploymentStore.loadPreviewData(currentMenuType.id, next);
   };
 
   const handleChoose = (choose) => {
     setValue(choose);
   };
 
-  const viewOptions = [
-    <Option value="instance" key="instance">
-      {formatMessage({ id: 'deployment.viewer.instance' })}
-    </Option>,
-    <Option value="resource" key="resource">
-      {formatMessage({ id: 'deployment.viewer.resource' })}
-    </Option>,
-  ];
-
   return <nav className="c7n-deployment-sidebar">
     <SidebarHeading
       value={value}
-      options={viewOptions}
+      options={getViewOptions(formatMessage)}
       bounds={navBounds}
       onClick={handleChoose}
     />

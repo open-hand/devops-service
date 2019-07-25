@@ -2,7 +2,7 @@
 import { action, computed, observable } from 'mobx';
 import _ from 'lodash';
 import { axios, store } from '@choerodon/boot';
-import { handlePromptError } from '../../../../utils';
+import { handlePromptError } from '../../../utils';
 
 const generateList = (tree) => {
   const dataList = [];

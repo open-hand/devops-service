@@ -14,7 +14,7 @@ const LayoutPage = React.memo(
             <Nav navBounds={navProps.position} />
           </L.Nav>
           <L.Main {...mainProps}>
-            <Content bounds={mainProps.position} />
+            <Content />
           </L.Main>
         </Fragment>
       )}

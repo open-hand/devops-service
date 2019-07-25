@@ -1,8 +1,8 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment } from 'react/index';
 import PropTypes from 'prop-types';
 import { Tree } from 'choerodon-ui/pro';
 import classnames from 'classnames';
-import ScrollArea from '../../components/scroll-area';
+import ScrollArea from '../scroll-area';
 import TreeSearch from './tree-search';
 
 import './index.less';

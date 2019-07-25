@@ -1,20 +1,51 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import { inject } from 'mobx-react';
 import { observer } from 'mobx-react-lite';
 import _ from 'lodash';
 import LayoutPage from '../components/layout';
+import { IST_ITEM, APP_ITEM, ENV_ITEM } from '../components/TreeItemIcon';
 import Sidebar from '../sidebar';
-import DeploymentStore from '../sidebar/stores';
+import DeploymentStore from '../stores';
 
 import './index.less';
 
 const LEFT_OFFSET = 200;
-
 const getNav = ({ navBounds }) => <Sidebar navBounds={navBounds} />;
 
-const MainView = observer(({ AppState: { currentMenuType }, MenuStore  }) => {
+// 实例视图
+const EnvContent = lazy(() => import('../contents/instance-view/environment'));
+const AppContent = lazy(() => import('../contents/instance-view/application'));
+const IstContent = lazy(() => import('../contents/instance-view/instance'));
+
+const getContent = (type) => {
+  let content;
+  switch (type) {
+    case ENV_ITEM:
+      content = () => <Suspense fallback={<div>Error</div>}>
+        <EnvContent />
+      </Suspense>;
+      break;
+    case APP_ITEM:
+      content = () => <Suspense fallback={<div>Error</div>}>
+        <AppContent />
+      </Suspense>;
+      break;
+    case IST_ITEM:
+      content = () => <Suspense fallback={<div>Error</div>}>
+        <IstContent />
+      </Suspense>;
+      break;
+    default:
+      content = () => null;
+  }
+
+  return content;
+};
+
+const MainView = observer(({ MenuStore }) => {
   const rootRef = useRef(null);
   const [bounds, setBounds] = useState(null);
+  const [defaultCollapsed] = useState(MenuStore.collapsed);
 
   useEffect(() => {
     const getRootBounds = _.throttle(() => {
@@ -29,34 +60,39 @@ const MainView = observer(({ AppState: { currentMenuType }, MenuStore  }) => {
         });
       }
     }, 100);
-    DeploymentStore.loadNavData(currentMenuType.id);
-    getRootBounds();
 
+    getRootBounds();
     window.addEventListener('resize', getRootBounds, true);
     return () => {
       window.removeEventListener('resize', getRootBounds);
     };
   }, []);
 
-  const realBounds = { ...bounds };
-  if (bounds) {
-    // 菜单栏展开关闭
-    const menuCollapsed = MenuStore.collapsed;
+  const realBounds = useMemo(() => {
+    const computedBounds = { ...bounds };
+    if (bounds) {
+      // 菜单栏展开关闭
+      const menuCollapsed = MenuStore.collapsed;
 
-    if (!MenuStore.collapsed) {
-      realBounds.width = menuCollapsed
-        ? bounds.width + LEFT_OFFSET
-        : bounds.width;
-    } else {
-      realBounds.width = menuCollapsed
-        ? bounds.width - LEFT_OFFSET
-        : bounds.width;
+      if (!defaultCollapsed) {
+        computedBounds.width = menuCollapsed
+          ? bounds.width + LEFT_OFFSET
+          : bounds.width;
+      } else {
+        computedBounds.width = menuCollapsed
+          ? bounds.width - LEFT_OFFSET
+          : bounds.width;
+      }
     }
-  }
+    return computedBounds;
+  }, [MenuStore.collapsed, bounds, defaultCollapsed]);
+
+  const { viewType } = DeploymentStore.getPreviewData;
+  const content = getContent(viewType);
 
   const realProps = {
     Nav: getNav,
-    Content: () => <div>hello</div>,
+    Content: content,
     options: { showNav: true },
     ...realBounds,
   };
@@ -68,4 +104,4 @@ const MainView = observer(({ AppState: { currentMenuType }, MenuStore  }) => {
   </div>);
 });
 
-export default inject('AppState', 'MenuStore')(MainView);
+export default inject('MenuStore')(MainView);

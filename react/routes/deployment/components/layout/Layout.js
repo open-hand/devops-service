@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import Draggable from 'react-draggable';
-import ScrollArea from '../scroll-area';
+import ScrollArea from '../../../../components/scroll-area';
 
 import './layout.less';
 

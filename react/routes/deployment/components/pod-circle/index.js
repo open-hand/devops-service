@@ -1,4 +1,4 @@
-import React, { memo } from 'react/index';
+import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { getWrapBounds, getPathAttr, getStrokeWidth, arraySum } from './util';
 

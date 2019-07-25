@@ -1,7 +1,7 @@
-import React from 'react';
+import React from 'react/index';
 import { Icon } from 'choerodon-ui/pro';
-import StatusDot from '../../components/status-dot';
-import PodCircle from '../../components/pod-circle';
+import StatusDot from './status-dot';
+import PodCircle from './pod-circle';
 
 const RUNNING_COLOR = '#0bc2a8';
 const PADDING_COLOR = '#fbb100';
