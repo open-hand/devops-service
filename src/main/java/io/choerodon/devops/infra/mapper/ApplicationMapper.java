@@ -3,9 +3,11 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.infra.dto.ApplicationDTO;
-import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationShareRuleDTO;
+import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created by younger on 2018/3/28.
@@ -61,4 +63,10 @@ public interface ApplicationMapper extends Mapper<ApplicationDTO> {
                                  @Param("isSynchro") Boolean isSynchro);
 
     void updateHarborConfig(@Param("projectId") Long projectId, @Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId, @Param("harborPrivate") boolean harborPrivate);
+
+
+    List<ApplicationDTO> listShareApplications(@Param("organizationId") Long organizationId,
+                                                        @Param("projectId") Long projectId,
+                                                        @Param("params") String params);
 }
+

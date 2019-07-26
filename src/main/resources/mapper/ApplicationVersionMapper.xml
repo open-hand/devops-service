@@ -295,4 +295,59 @@
             dav.is_publish = 1
     </update>
 
+    <select id="listShareVersionByAppId" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
+        SELECT DISTINCT
+            davall.id,
+            davall.app_id,
+            davall.`commit`,
+            davall.image,
+            davall.version
+        FROM
+            (
+                SELECT
+                    dav.app_id,
+                    dav.`commit`,
+                    dav.version,
+                    dav.id,
+                    dav.image
+                FROM
+                    devops_app_version dav
+                JOIN (
+                    SELECT
+                        dasr.version_type
+                    FROM
+                        devops_app_share_rule dasr
+                    WHERE
+                        dasr.app_id = #{appId}
+                    AND dasr.version IS NULL
+                ) dasr1 ON dav.version LIKE CONCAT(
+                    CONCAT('%', dasr1.version_type, '%')
+                )
+                AND dav.app_id =  #{appId}
+                UNION
+                    SELECT
+                        dav.app_id,
+                        dav.`commit`,
+                        dav.version,
+                        dav.id,
+                        dav.image
+                    FROM
+                        devops_app_version dav
+                    JOIN (
+                        SELECT
+                            dasr.version
+                        FROM
+                            devops_app_share_rule dasr
+                        WHERE
+                            dasr.app_id =  #{appId}
+                        AND dasr.version IS NOT NULL
+                    ) dasr2 ON dav.version = dasr2.version
+                    AND dav.app_id =  #{appId}
+            ) davall
+            <if test="params !=null">
+                WHEREdavall.version LIKE CONCAT(CONCAT('%', #{params}, '%'))
+            </if>
+
+    </select>
+
 </mapper>

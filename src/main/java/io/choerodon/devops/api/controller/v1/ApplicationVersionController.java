@@ -371,6 +371,26 @@ public class ApplicationVersionController {
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询远程应用版本")
+    @CustomPageRequest
+    @PostMapping(value = "/page_share/versions")
+    public ResponseEntity<PageInfo<ApplicationVersionRespVO>> pageShareVersionByAppId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用Id", required = true)
+            @RequestParam(value = "app_id") Long appId,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestParam(value = "version",required = false) String version) {
+        return Optional.ofNullable(
+                applicationVersionService.pageShareVersionByAppId(appId, pageRequest, version))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
+    }
+
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询远程应用版本详情")
     @CustomPageRequest
     @PostMapping(value = "/remote/config")

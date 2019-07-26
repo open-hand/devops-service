@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -412,6 +413,15 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             throw new CommonException("error.get.app.version.shares");
         }
         return pageInfoResponse.body();
+    }
+
+    @Override
+    public PageInfo<ApplicationVersionRespVO> pageShareVersionByAppId(Long appId, PageRequest pageRequest, String params) {
+        PageInfo<ApplicationVersionDTO> applicationDTOPageInfo = PageHelper.startPage(
+                pageRequest.getPage(),
+                pageRequest.getSize(),
+                PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationVersionMapper.listShareVersionByAppId(appId, params));
+        return ConvertUtils.convertPage(applicationDTOPageInfo, ApplicationVersionRespVO.class);
     }
 
     @Override

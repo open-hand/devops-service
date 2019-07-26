@@ -106,7 +106,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Lazy
     private SocketMsgDispatcher socketMsgDispatcher;
     @Autowired
-    private ApplicationShareService applicationShareService;
+    private ApplicationShareRuleService applicationShareService;
     @Autowired
     private DevopsCommandEventService devopsCommandEventService;
     @Autowired
@@ -1152,23 +1152,23 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private List<ApplicationDTO> findAppInAppMarket(List<ApplicationDTO> applicationDTOS, List<ApplicationDTO> applicationList) {
         List<ApplicationDTO> applications = new ArrayList<>();
-        if (!applicationList.isEmpty()) {
-            applicationList.forEach(applicationDTO -> {
-                if (applicationShareService.baseCountByAppId(applicationDTO.getId()) != 0) {
-                    applications.add(applicationDTO);
-                }
-            });
-        }
-        if (!applicationDTOS.isEmpty()) {
-            applicationDTOS.forEach(applicationDTO -> {
-                ApplicationShareDTO applicationShareDTO =
-                        applicationShareService.baseQueryByAppId(applicationDTO.getId());
-                if (applicationShareDTO != null
-                        || !applicationShareDTO.getPublishLevel().equals(PUBLIC)) {
-                    applications.add(applicationDTO);
-                }
-            });
-        }
+//        if (!applicationList.isEmpty()) {
+//            applicationList.forEach(applicationDTO -> {
+//                if (applicationShareService.baseCountByAppId(applicationDTO.getId()) != 0) {
+//                    applications.add(applicationDTO);
+//                }
+//            });
+//        }
+//        if (!applicationDTOS.isEmpty()) {
+//            applicationDTOS.forEach(applicationDTO -> {
+//                ApplicationShareRuleDTO applicationShareDTO =
+//                        applicationShareService.baseQueryByAppId(applicationDTO.getId());
+//                if (applicationShareDTO != null
+//                        || !applicationShareDTO.getPublishLevel().equals(PUBLIC)) {
+//                    applications.add(applicationDTO);
+//                }
+//            });
+//        }
         return applications;
     }
 

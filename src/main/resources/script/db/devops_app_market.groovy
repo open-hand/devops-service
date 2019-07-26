@@ -72,4 +72,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
         renameTable(newTableName: 'devops_app_share_rule', oldTableName: 'devops_app_share')
     }
 
+    changeSet(id: '2019-07-26-modify-table', author: 'scp') {
+        dropColumn(columnName: "category", tableName: "devops_app_share_rule")
+        dropColumn(columnName: "is_active", tableName: "devops_app_share_rule")
+        addColumn(tableName: 'devops_app_share_rule') {
+            column(name: 'version_type', type: 'VARCHAR(50)', remarks: '版本类型',afterColumn: "share_level")
+            column(name: 'version', type: 'VARCHAR(100)', remarks: '指定版本', afterColumn: "version_type")
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: 'project Id', afterColumn: "version")
+            column(name: 'organization_id', type: 'BIGINT UNSIGNED', remarks: '组织Id', afterColumn: "project_id")
+        }
+    }
+
 }
