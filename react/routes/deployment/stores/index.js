@@ -1,7 +1,9 @@
 import React, { createContext, useMemo } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
+import { DataSet } from 'choerodon-ui/pro';
 import DeploymentStore from './DeploymentStore';
+import TreeDataSet from './TreeDataSet';
 
 const Store = createContext();
 
@@ -10,29 +12,16 @@ export default Store;
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const { AppState: { currentMenuType: { type, id } }, intl, children } = props;
+    const treeDataSet = useMemo(() => new DataSet(TreeDataSet(id)), [id]);
     const value = {
       ...props,
-      prefixCls: 'lc-model-list',
-      intlPrefix: type === 'organization' ? 'organization.model.list' : 'global.model.list',
+      prefixCls: 'c7ncd-deployment',
+      intlPrefix: 'c7ncd.deployment',
       permissions: [
-        'low-code-service.model.pagedSearch',
-        'low-code-service.model.createModel',
-        'low-code-service.model.createBaseOnTable',
-        'low-code-service.model.check',
-        'low-code-service.model.update',
-        'low-code-service.model.delete',
+        'devops-service.application-instance.pageByOptions',
       ],
-      publishStatus: {
-        PUBLISHED: '已发布',
-        UNPUBLISH: '未发布',
-        PUBLISHING: '发布中',
-      },
-      publishColor: {
-        UNPUBLISH: '#b5b5b5',
-        PUBLISHING: '#4f90fe',
-        PUBLISHED: '#00bf96',
-      },
       store: new DeploymentStore(),
+      treeDataSet,
     };
     return (
       <Store.Provider value={value}>

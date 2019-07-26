@@ -1,39 +1,26 @@
-import React, { useContext, useState, useMemo, Fragment } from 'react';
+import React, { useContext, useState, memo, Fragment } from 'react';
 import { inject } from 'mobx-react';
-import { observer } from 'mobx-react-lite';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
-import { Tree, Select, DataSet } from 'choerodon-ui/pro';
-import _ from 'lodash';
+import toUpper from 'lodash/toUpper';
+import { Select } from 'choerodon-ui/pro';
 import SidebarHeading from './header';
 import TreeView from '../../../components/tree-view';
-import { APP_ITEM, ENV_ITEM, IST_ITEM, TreeItemIcon } from '../components/TreeItemIcon';
-import TreeDataSet from './stores/TreeDataSet';
+import { TreeItemIcon } from '../components/TreeItemIcon';
 import Stores from '../stores';
 
 import './index.less';
 
-const TreeNode = Tree.TreeNode;
 const { Option } = Select;
-
 const DEFAULT_VIEW_TYPE = 'instance';
 
-const getParentKey = (prevKey, list) => {
-  if (!prevKey) return;
+const nodeRenderer = (record, search) => {
+  const name = record.get('name');
+  const type = record.get('itemType');
 
-  let parentKey;
-  const node = list.filter(({ key }) => prevKey === key)[0];
-
-  if (node) {
-    parentKey = node.key;
-  }
-
-  return parentKey;
-};
-
-const treeItem = (name, type, search, record) => {
-  const index = name.indexOf(search);
+  const index = toUpper(name).indexOf(toUpper(search));
   const beforeStr = name.substr(0, index);
+  const currentStr = name.substr(index, search.length);
   const afterStr = name.substr(index + search.length);
 
   return <Fragment>
@@ -41,41 +28,12 @@ const treeItem = (name, type, search, record) => {
     <span className="c7n-deployment-tree-text">
       {index > -1 ? <Fragment>
         {beforeStr}
-        <span className="c7n-deployment-tree-text-highlight">{search}</span>
+        <span className="c7n-deployment-tree-text-highlight">{currentStr}</span>
         {afterStr}
       </Fragment> : name}
     </span>
   </Fragment>;
 };
-
-const nodeRenderer = (record, search) => _.map(_.filter(record, ({ name }) => name), ({ name, id, apps, connect, synchronize }) => {
-  const title = treeItem(name, ENV_ITEM, search, { connect, synchronize });
-  if (!(apps && apps.length)) {
-    return <TreeNode
-      key={String(id)}
-      title={title}
-    />;
-  }
-
-  return <TreeNode
-    key={`${id}`}
-    title={title}
-  >
-    {_.map(_.filter(apps, ({ name: aName }) => aName), ({ name: aName, id: aId, instances }) => {
-      const appTitle = treeItem(aName, APP_ITEM, search);
-      if (!(instances && instances.length)) {
-        return <TreeNode key={`${id}-${aId}`} title={appTitle} />;
-      }
-
-      return <TreeNode key={`${id}-${aId}`} title={appTitle}>
-        {_.map(_.filter(instances, ({ code }) => code), ((item) => {
-          const istTitle = treeItem(item.code, IST_ITEM, search, item);
-          return <TreeNode key={`${id}-${aId}-${item.id}`} title={istTitle} />;
-        }))}
-      </TreeNode>;
-    })}
-  </TreeNode>;
-});
 
 const getViewOptions = formatMessage => ([
   <Option value="instance" key="instance">
@@ -86,21 +44,9 @@ const getViewOptions = formatMessage => ([
   </Option>,
 ]);
 
-const Sidebar = observer(({ navBounds, intl: { formatMessage }, AppState: { currentMenuType } }) => {
-  const treeDataDs = useMemo(() => new DataSet(TreeDataSet(currentMenuType.id)), []);
-  const { store } = useContext(Stores);
+const Sidebar = memo(({ navBounds, intl: { formatMessage }, AppState: { currentMenuType } }) => {
+  const { treeDataSet } = useContext(Stores);
   const [value, setValue] = useState(DEFAULT_VIEW_TYPE);
-
-  const {
-    getNavData,
-    getSelectedTreeNode: selectedKeys,
-    getNavFormatted,
-  } = store;
-
-  const handleSelect = (keys, next) => {
-    store.setSelectedTreeNode(keys);
-    store.loadPreviewData(currentMenuType.id, next);
-  };
 
   const handleChoose = (choose) => {
     setValue(choose);
@@ -114,12 +60,8 @@ const Sidebar = observer(({ navBounds, intl: { formatMessage }, AppState: { curr
       onClick={handleChoose}
     />
     <TreeView
-      dataSource={getNavData}
-      dataFormatted={getNavFormatted}
-      currentKeys={selectedKeys}
-      getParentKey={getParentKey}
+      dataSource={treeDataSet}
       nodesRender={nodeRenderer}
-      onSelect={handleSelect}
     />
   </nav>;
 });

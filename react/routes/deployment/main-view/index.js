@@ -49,20 +49,20 @@ const MainView = observer(({ MenuStore }) => {
   const [bounds, setBounds] = useState(null);
   const [defaultCollapsed] = useState(() => MenuStore.collapsed);
 
-  const getRootBounds = _.throttle(() => {
-    const { current } = rootRef;
-
-    if (current) {
-      const { offsetWidth, offsetHeight } = current;
-
-      setBounds({
-        width: offsetWidth,
-        height: offsetHeight,
-      });
-    }
-  }, 100);
-
   useEffect(() => {
+    const getRootBounds = _.throttle(() => {
+      const { current } = rootRef;
+
+      if (current) {
+        const { offsetWidth, offsetHeight } = current;
+
+        setBounds({
+          width: offsetWidth,
+          height: offsetHeight,
+        });
+      }
+    }, 100);
+
     getRootBounds();
     window.addEventListener('resize', getRootBounds, true);
     return () => {
@@ -89,13 +89,13 @@ const MainView = observer(({ MenuStore }) => {
     return computedBounds;
   }, [MenuStore.collapsed, bounds, defaultCollapsed]);
 
-  // TODO: improve me
-  const { viewType } = store.getPreviewData;
-  const content = useMemo(() => getContent(viewType), [viewType]);
+  // const { viewType } = store.getPreviewData;
+  // const content = useMemo(() => getContent(viewType), [viewType]);
 
   const realProps = {
     Nav: getNav,
-    Content: content,
+    // Content: content,
+    Content: getContent(ENV_ITEM),
     options: { showNav: true },
     ...realBounds,
   };

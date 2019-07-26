@@ -27,19 +27,9 @@ const generateList = (tree) => {
 
 @store('InstanceMasterStore')
 class DeploymentStore {
-  @observable previewLoading = false;
-
   @observable linkLoading = false;
 
-  @observable treeLoading = false;
-
   @observable appLoading = false;
-
-  @observable previewData = {};
-
-  @observable navData = [];
-
-  @observable navFormatted = [];
 
   @observable selectedTreeNode = [];
 
@@ -68,46 +58,6 @@ class DeploymentStore {
   }
 
   @action
-  setPreviewLoading(data) {
-    this.previewLoading = data;
-  }
-
-  @computed
-  get getPreviewLoading() {
-    return this.previewLoading;
-  }
-
-  @action
-  setPreviewData(data) {
-    this.previewData = data;
-  }
-
-  @computed
-  get getPreviewData() {
-    return this.previewData;
-  }
-
-  @action
-  setNavData(data) {
-    this.navData = data;
-  }
-
-  @computed
-  get getNavData() {
-    return this.navData.slice();
-  }
-
-  @action
-  setNavFormatted(data) {
-    this.navFormatted = data;
-  }
-
-  @computed
-  get getNavFormatted() {
-    return this.navFormatted.slice();
-  }
-
-  @action
   setSelectedTreeNode(data) {
     this.selectedTreeNode = data;
   }
@@ -115,16 +65,6 @@ class DeploymentStore {
   @computed
   get getSelectedTreeNode() {
     return this.selectedTreeNode.slice();
-  }
-
-  @action
-  setTreeLoading(data) {
-    this.treeLoading = data;
-  }
-
-  @computed
-  get getTreeLoading() {
-    return this.treeLoading;
   }
 
   @action
@@ -195,57 +135,6 @@ class DeploymentStore {
     return this.tableInfo;
   }
 
-  async loadPreviewData(projectId, key) {
-    const ids = key.split('-');
-    const typeEnum = ['environment', 'application', 'instance'];
-    const requestType = typeEnum[ids.length - 1];
-    const requestMap = {
-      environment: () => axios.get(`/devops/v1/projects/${projectId}/envs/${ids[0]}/info`),
-      application: () => axios.get(`/devops/v1/projects/${projectId}/apps/${ids[1]}/detail`),
-      // status 取值有 operating, running,failed,stopped,deleted
-      instance: () => axios.get(`/devops/v1/projects/${projectId}/app_instances/${ids[2]}`),
-    };
-
-    this.setPreviewLoading(true);
-    try {
-      const data = await requestMap[requestType]();
-      if (handlePromptError(data)) {
-        this.setPreviewData({
-          viewType: requestType,
-          ...data,
-        });
-      }
-      this.setPreviewLoading(false);
-    } catch (e) {
-      // console.log(e);
-    }
-  }
-
-  async loadNavData(project) {
-    this.setTreeLoading(true);
-
-    try {
-      const data = await axios.get(`/devops/v1/projects/${project}/envs/ins_tree_menu`);
-
-      if (handlePromptError(data)) {
-        const navFormatted = generateList(data);
-
-        let key = String(data[0].id);
-        const selectedKey = this.previewData.key;
-        if (selectedKey && _.includes(navFormatted, ['key', selectedKey])) {
-          key = selectedKey;
-        }
-
-        this.setSelectedTreeNode([key]);
-        this.loadPreviewData(project, key);
-        this.setNavFormatted(navFormatted);
-        this.setNavData(data);
-      }
-      this.setTreeLoading(false);
-    } catch (e) {
-      this.setTreeLoading(false);
-    }
-  }
 
   async loadAllApps(projectId) {
     this.setAppLoading(true);

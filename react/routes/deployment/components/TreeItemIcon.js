@@ -13,14 +13,19 @@ export const IST_ITEM = 'instance';
 export const TreeItemIcon = React.memo(({ type, record = {} }) => {
   let prefix;
   switch (type) {
-    case ENV_ITEM:
-      prefix = <StatusDot {...record} />;
+    case ENV_ITEM: {
+      const connect = record.get('connect');
+      const synchronize = record.get('synchronize');
+
+      prefix = <StatusDot connect={connect} synchronize={synchronize} />;
       break;
+    }
     case APP_ITEM:
       prefix = <Icon type="widgets" />;
       break;
     case IST_ITEM: {
-      const { podRunningCount, podCount } = record;
+      const podRunningCount = record.get('podRunningCount');
+      const podCount = record.get('podCount');
       const podUnlinkCount = podCount - podRunningCount;
 
       prefix = <PodCircle

@@ -1,5 +1,7 @@
-import React, { useState, Fragment, useMemo } from 'react';
+import React, { Fragment, useMemo, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { runInAction } from 'mobx';
+import toUpper from 'lodash/toUpper';
 import { Tree } from 'choerodon-ui/pro';
 import classnames from 'classnames';
 import ScrollArea from '../scroll-area';
@@ -7,50 +9,45 @@ import TreeSearch from './tree-search';
 
 import './index.less';
 
-const TreeView = ({
-  dataSource,
-  currentKeys,
-  nodesRender,
-  searchAble,
-  dataFormatted,
-  getParentKey,
-  onSelect,
-}) => {
-  const [expandedKeys, setExpandedKeys] = useState([]);
-  const [searchValue, setSearchValue] = useState('');
-  const [autoExpandParent, setAutoExpandParent] = useState(true);
+function expandParents(record) {
+  if (!record.isExpanded) {
+    record.isExpanded = true;
 
-  const treeNodes = useMemo(() => nodesRender(dataSource, searchValue), [dataSource, nodesRender, searchValue]);
+    const parent = record.parent;
+    if (parent && !parent.isExpanded) {
+      expandParents(parent);
+    }
+  }
+}
+
+const TreeView = ({ dataSource, nodesRender, searchAble }) => {
+  const [searchValue, setSearchValue] = useState('');
+
   const treeClass = useMemo(() => classnames({
     'c7n-deployment-scroll': searchAble,
   }), [searchAble]);
+  const nodeRenderer = useCallback(({ record }) => nodesRender(record, searchValue), [nodesRender, searchValue]);
 
-  function handleSearch(value) {
-    const keys = dataFormatted.map((item, index, arr) => {
-      if ((item.name || item.code).indexOf(value) > -1) {
-        return getParentKey(item.prevKey, arr);
+  const handleSearch = (value) => {
+    dataSource.reset();
+    const treeData = dataSource.data;
+    const realValue = value || '';
+
+    // NOTE: 让多个 action 只执行一次，设置 isExpanded 就是一次action
+    runInAction(() => {
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < treeData.length; i++) {
+        const record = treeData[i];
+        const name = record.get('name');
+
+        if (value && toUpper(name).indexOf(toUpper(value)) > -1) {
+          expandParents(record);
+        }
       }
-      return null;
-    }).filter((item, i, self) => item && self.indexOf(item) === i);
+    });
 
-    setAutoExpandParent(true);
-    setExpandedKeys(keys);
-    setSearchValue(value || '');
-  }
-
-  function handleExpand(expanded) {
-    setExpandedKeys(expanded);
-    setAutoExpandParent(false);
-  }
-
-  function handleSelect(selectedKeys) {
-    const currentKey = currentKeys[0];
-    const nextKey = selectedKeys[0];
-
-    if (nextKey && nextKey !== currentKey) {
-      onSelect(selectedKeys, nextKey);
-    }
-  }
+    setSearchValue(realValue);
+  };
 
   return (
     <Fragment>
@@ -61,31 +58,21 @@ const TreeView = ({
       >
         <Tree
           className="c7n-deployment-tree"
-          onSelect={handleSelect}
-          onExpand={handleExpand}
-          selectedKeys={currentKeys}
-          expandedKeys={expandedKeys}
-          autoExpandParent={autoExpandParent}
-        >
-          {treeNodes}
-        </Tree>
+          dataSet={dataSource}
+          renderer={nodeRenderer}
+        />
       </ScrollArea>
     </Fragment>
   );
 };
 
 TreeView.propTypes = {
-  dataSource: PropTypes.array.isRequired,
-  dataFormatted: PropTypes.array.isRequired,
+  dataSource: PropTypes.shape({}).isRequired,
   nodesRender: PropTypes.func.isRequired,
-  onSelect: PropTypes.func.isRequired,
-  getParentKey: PropTypes.func,
-  currentKeys: PropTypes.array,
   searchAble: PropTypes.bool,
 };
 
 TreeView.defaultProps = {
-  currentKeys: [],
   searchAble: true,
 };
 
