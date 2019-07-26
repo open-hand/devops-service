@@ -10,7 +10,7 @@ const STATUS_OPERATING = 'operating';
 const STATUS_RUNNING = 'running';
 const STATUS_DISCONNECT = 'disconnect';
 
-const StatusDot = memo(({ connect, synchronize }) => {
+const StatusDot = memo(({ connect, synchronize, width }) => {
   /**
    *[connect: true, synchronize: true]   已连接 #0bc2a8
    *[connect: false, synchronize: true]  未连接 #ff9915
@@ -29,8 +29,9 @@ const StatusDot = memo(({ connect, synchronize }) => {
     'c7ncd-status': true,
     [`c7ncd-status-${status}`]: true,
   });
+  const dotWidth = width || '0.08rem';
 
-  const dot = <i className={styled} />;
+  const dot = <i className={styled} style={{ width: dotWidth, height: dotWidth }} />;
 
   return status ? <Tooltip
     placement="top"
@@ -43,6 +44,7 @@ const StatusDot = memo(({ connect, synchronize }) => {
 StatusDot.propTypes = {
   connect: PropTypes.bool.isRequired,
   synchronize: PropTypes.bool.isRequired,
+  width: PropTypes.string,
 };
 
 export default StatusDot;

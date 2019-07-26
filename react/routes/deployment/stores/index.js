@@ -4,6 +4,7 @@ import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import DeploymentStore from './DeploymentStore';
 import TreeDataSet from './TreeDataSet';
+import EnvLogStore from './EnvLogStore';
 
 const Store = createContext();
 
@@ -22,6 +23,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       ],
       store: new DeploymentStore(),
       treeDataSet,
+      EnvLogStore: new EnvLogStore(),
     };
     return (
       <Store.Provider value={value}>

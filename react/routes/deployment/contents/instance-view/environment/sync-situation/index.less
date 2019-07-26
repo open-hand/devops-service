@@ -1,0 +1,92 @@
+.c7ncd-deployment-environment-sync {
+
+  &-detail {
+
+    .log-sync-title {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+
+      &-text {
+        font-size: 14px;
+        margin-right: 4px;
+      }
+
+      &-icon {
+        color: rgba(0, 0, 0, 0.36);
+      }
+    }
+
+    .log-sync-line {
+      display: flex;
+      margin-bottom: 30px;
+
+      &-card {
+        padding: 16px;
+        height: 80px;
+        width: 194px;
+        box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.20), 0 0 0 1px rgba(0, 0, 0, 0.12), 0 2px 2px -1px rgba(0, 0, 0, 0.12);
+        text-align: center;
+        display: inline-block;
+        z-index: 9;
+
+        .log-sync-line-card-title {
+          border-bottom: 1px solid rgba(9, 0, 0, 0.26);
+          font-size: 14px;
+          line-height: 20px;
+          font-weight: 500;
+        }
+
+        .log-sync-line-card-commit {
+          color: #3f51b5;
+          line-height: 20px;
+          margin-top: 6px;
+        }
+      }
+
+      &-arrow {
+        display: inline-block;
+        width: 120px;
+        line-height: 80px;
+        text-align: center;
+        font-size: 16px;
+        color: rgba(0, 0, 0, 0.36);
+
+        .c7n-log-arrow-detail {
+          transform: scaleX(3);
+        }
+      }
+
+      &-retry {
+        line-height: inherit;
+      }
+    }
+  }
+
+  &-table-title {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+}
+
+.c7ncd-deployment-environment-sync-help {
+  width: 300px;
+
+  .log-help-desc {
+    margin: 0 0 10px 0;
+    padding: 0;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  .log-help-desc:first-child {
+    margin-bottom: 14px;
+  }
+
+  .log-help-title {
+    margin: 0;
+    padding: 0;
+    font-size: 12px;
+    color: #000;
+  }
+}

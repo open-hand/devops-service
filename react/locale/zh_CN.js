@@ -133,6 +133,7 @@ const commonField = {
   container: '容器',
 };
 
+const deploymentPre = 'c7ncd.deployment';
 const deployment = {
   // 环境
   // 已连接 icon-check_circle #0BC2A8
@@ -182,24 +183,6 @@ const deployment = {
   'deployment.event.status.stop': '停止实例',
   'deployment.event.status.restart': '启用实例',
   'deployment.event.status.delete': '删除实例',
-  'deployment.gitops.log': 'gitops日志',
-  'deployment.gitops.synchronize': '提交同步情况',
-  'deployment.gitops.gitlab': 'GitLab',
-  'deployment.gitops.analysis': '解析',
-  'deployment.gitops.agent': 'Agent',
-  'deployment.gitops.error.logs': '错误日志',
-  'deployment.gitops.error.info': '错误信息',
-  'deployment.gitops.error.time': '错误时间',
-  'deployment.gitops.retry.title': '重试GitOps',
-  'deployment.gitops.retry.des': '确定要重试GitOps吗？',
-  'deployment.gitops.help':
-    '由于 GitOps 对部署信息进行异步处理，提交同步情况用于查看当前对部署信息的解析进度。点击配置库可以查看对应的 GitOps环境库。',
-  'deployment.gitops.config': '配置库',
-  'deployment.gitops.config.des': '即 GitOps 环境库',
-  'deployment.gitops.parsed': '已解析',
-  'deployment.gitops.parsed.des': 'DevOps 平台会对部署文件进行解析，并在平台上生成相应的对象',
-  'deployment.gitops.executed': '已执行',
-  'deployment.gitops.executed.des': '执行后，k8s 平台也会生成相应的对象',
   'deployment.pod.name': 'Pod名称',
   'deployment.pod.ip': 'Pod IP',
   'deployment.pod.log': '容器日志',
@@ -216,6 +199,24 @@ const deployment = {
   'deployment.networking.ingress': '域名名称',
   'deployment.networking.ingress.empty': '暂无关联域名',
   'deployment.operation.ports': '端口号',
+  [`${deploymentPre}.environment.tabs.sync`]: '提交同步情况',
+  [`${deploymentPre}.environment.tabs.assignPermissions`]: '已分配权限人员',
+  [`${deploymentPre}.environment.error.logs`]: '错误日志',
+  [`${deploymentPre}.environment.error.info`]: '错误信息',
+  [`${deploymentPre}.environment.error.time`]: '错误时间',
+  [`${deploymentPre}.environment.gitlab`]: 'GitLab',
+  [`${deploymentPre}.environment.analysis`]: '解析',
+  [`${deploymentPre}.environment.agent`]: 'Agent',
+  [`${deploymentPre}.environment.help`]: '由于 GitOps 对部署信息进行异步处理，提交同步情况用于查看当前对部署信息的解析进度。点击配置库可以查看对应的 GitOps环境库。',
+  [`${deploymentPre}.environment.config`]: '配置库',
+  [`${deploymentPre}.environment.config.des`]: '即 GitOps 环境库',
+  [`${deploymentPre}.environment.parsed`]: '已解析',
+  [`${deploymentPre}.environment.parsed.des`]: 'DevOps 平台会对部署文件进行解析，并在平台上生成相应的对象',
+  [`${deploymentPre}.environment.executed`]: '已执行',
+  [`${deploymentPre}.environment.executed.des`]: '执行后，k8s 平台也会生成相应的对象',
+  [`${deploymentPre}.environment.retry`]: '重试GitOps',
+  [`${deploymentPre}.environment.retry.des`]: '确定要重试GitOps吗？',
+
 };
 
 // 文档地址前缀
