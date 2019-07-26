@@ -159,11 +159,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private DevopsProjectConfigService devopsProjectConfigService;
     @Autowired
-    private ApplicationShareService applicationShareService;
+    private ApplicationShareRuleService applicationShareService;
     @Autowired
     private DevopsBranchService devopsBranchService;
     @Autowired
     private MarketConnectInfoService marketConnectInfoService;
+    @Autowired
+    private ApplicationShareRuleService applicationShareRuleService;
 
 
     @Override
@@ -740,12 +742,12 @@ public class ApplicationServiceImpl implements ApplicationService {
             ApplicationDTO applicationDTO = baseQuery(appId);
             ApplicationCodeVO applicationCodeVO = new ApplicationCodeVO();
             BeanUtils.copyProperties(applicationDTO, applicationCodeVO);
-            ApplicationShareDTO applicationShareDTO = applicationShareService.baseQueryByAppId(appId);
-            if (applicationShareDTO != null) {
-                applicationCodeVO.setPublishLevel(applicationShareDTO.getPublishLevel());
-                applicationCodeVO.setContributor(applicationShareDTO.getContributor());
-                applicationCodeVO.setDescription(applicationShareDTO.getDescription());
-            }
+//            ApplicationShareRuleDTO applicationShareDTO = applicationShareService.baseQueryByAppId(appId);
+//            if (applicationShareDTO != null) {
+//                applicationCodeVO.setPublishLevel(applicationShareDTO.getPublishLevel());
+//                applicationCodeVO.setContributor(applicationShareDTO.getContributor());
+//                applicationCodeVO.setDescription(applicationShareDTO.getDescription());
+//            }
             for (int i = 0; i < applicationCodeVOS.size(); i++) {
                 if (applicationCodeVOS.get(i).getId().equals(applicationDTO.getId())) {
                     applicationCodeVOS.remove(applicationCodeVOS.get(i));
@@ -1522,9 +1524,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         map.put("size", pageRequest.getSize());
         map.put("sort", PageRequestUtil.getOrderByStr(pageRequest));
         map.put("access_token", marketConnectInfoDO.getAccessToken());
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Response<PageInfo<RemoteApplicationVO>> pageInfoResponse = null;
         try {
-            map.put("params", URLEncoder.encode(params, "UTF-8"));
+            map.put("params", URLEncoder.encode(mapParams.get("param").toString(), "UTF-8"));
             pageInfoResponse = shareClient.getAppShares(map).execute();
             if (!pageInfoResponse.isSuccessful()) {
                 throw new CommonException("error.get.app.shares");
@@ -1533,6 +1536,13 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new CommonException("error.get.app.shares");
         }
         return pageInfoResponse.body();
+    }
+
+    @Override
+    public PageInfo<ApplicationRepVO> pageShareApps(Long projectId, PageRequest pageRequest, String params) {
+        Long organizationId = iamService.queryIamProject(projectId).getOrganizationId();
+        PageInfo<ApplicationDTO> applicationDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listShareApplications(organizationId, projectId, params));
+        return ConvertUtils.convertPage(applicationDTOPageInfo, ApplicationRepVO.class);
     }
 
     @Override

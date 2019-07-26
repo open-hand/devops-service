@@ -591,7 +591,7 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询远程应用")
     @CustomPageRequest
-    @PostMapping(value = "/page_remote")
+    @PostMapping(value = "/page_remote_apps")
     public ResponseEntity<PageInfo<RemoteApplicationVO>> pageRemoteApps(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -605,4 +605,21 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.remote.applications.get"));
     }
 
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询共享应用")
+    @CustomPageRequest
+    @PostMapping(value = "/page_share_apps")
+    public ResponseEntity<PageInfo<ApplicationRepVO>> pageShareApps(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return Optional.ofNullable(
+                applicationService.pageShareApps(projectId, pageRequest, searchParam))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.shere.applications.get"));
+    }
 }

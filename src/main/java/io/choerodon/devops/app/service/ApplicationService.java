@@ -319,6 +319,15 @@ public interface ApplicationService {
      */
     PageInfo<RemoteApplicationVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params);
 
+    /**
+     * 获取共享应用
+     * @param projectId
+     * @param pageRequest
+     * @param params
+     * @return
+     */
+    PageInfo<ApplicationRepVO> pageShareApps(Long projectId, PageRequest pageRequest, String params);
+
     void baseCheckApp(Long projectId, Long appId);
 
     int baseUpdate(ApplicationDTO applicationDTO);

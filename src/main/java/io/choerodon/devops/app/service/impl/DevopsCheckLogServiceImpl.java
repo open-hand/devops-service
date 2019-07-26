@@ -16,7 +16,7 @@ import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
-import io.choerodon.devops.infra.mapper.ApplicationShareMapper;
+import io.choerodon.devops.infra.mapper.ApplicationShareRuleMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -39,7 +39,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private DevopsCheckLogMapper devopsCheckLogMapper;
     @Autowired
-    private ApplicationShareMapper applicationShareMapper;
+    private ApplicationShareRuleMapper applicationShareMapper;
     @Autowired
     private ApplicationInstanceMapper applicationInstanceMapper;
     @Autowired

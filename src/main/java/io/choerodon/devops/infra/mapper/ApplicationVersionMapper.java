@@ -73,4 +73,7 @@ public interface ApplicationVersionMapper extends Mapper<ApplicationVersionDTO> 
     void updateObJectVersionNumber(@Param("versionId") Long versionId);
 
     void updatePublishTime();
+
+    List<ApplicationVersionDTO> listShareVersionByAppId(@Param("appId") Long appId,
+                                                        @Param("params") String params);
 }

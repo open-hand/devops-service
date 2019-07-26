@@ -65,7 +65,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
-    private ApplicationShareService applicationMarketService;
+    private ApplicationShareRuleService applicationMarketService;
     @Autowired
     private ApplicationVersionService applicationVersionService;
     @Autowired
@@ -144,10 +144,10 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         createFakeApplicationVersion(applicationRepDTO.getId());
 
         // 7. 发布应用
-        ApplicationReleasingVO applicationReleasingDTO = demoDataVO.getApplicationRelease();
-        applicationReleasingDTO.setAppId(applicationRepDTO.getId());
-        applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
-        applicationMarketService.create(projectId, applicationReleasingDTO);
+//        ApplicationReleasingVO applicationReleasingDTO = demoDataVO.getApplicationRelease();
+//        applicationReleasingDTO.setAppId(applicationRepDTO.getId());
+//        applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
+//        applicationMarketService.create(projectId, applicationReleasingDTO);
     }
 
     /**

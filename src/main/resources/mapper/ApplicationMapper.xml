@@ -317,4 +317,27 @@
             da.code = #{code}
           AND da.project_id is null
     </select>
+
+    <select id="listShareApplications" resultType="io.choerodon.devops.infra.dto.ApplicationDTO">
+        SELECT
+            da.app_template_id,
+            da.id,
+            da.`code`,
+            da.`name`,
+            da.project_id,
+            da.chart_config_id,
+            da.harbor_config_id
+        FROM
+            devops_app_share_rule dasr
+        JOIN devops_application da ON da.id = dasr.app_id
+        WHERE
+            dasr.organization_id = #{organizationId}
+        AND (
+            dasr.share_level = 'organization'
+            OR dasr.project_id = #{projectId}
+        )
+        <if test="params != null">
+            and (da.code like #{params} or da.name like #{params} )
+        </if>
+    </select>
 </mapper>

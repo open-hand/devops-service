@@ -139,6 +139,15 @@ public interface ApplicationVersionService {
     PageInfo<ApplicationVersionRespVO> pageVersionByAppId(Long appId, PageRequest pageRequest, String params);
 
     /**
+     * 获取共享应用版本
+     * @param appId
+     * @param pageRequest
+     * @param params
+     * @return
+     */
+    PageInfo<ApplicationVersionRespVO> pageShareVersionByAppId(Long appId, PageRequest pageRequest, String params);
+
+    /**
      * 获取远程应用版本详情
      * @param appId
      * @param versionId

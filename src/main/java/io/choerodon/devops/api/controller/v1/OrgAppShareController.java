@@ -1,25 +1,19 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
 import java.util.Optional;
 
-import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.base.domain.PageRequest;
-import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.ApplicationShareService;
-import io.choerodon.mybatis.annotation.SortDefault;
-import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.devops.app.service.ApplicationShareRuleService;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -30,7 +24,7 @@ import springfox.documentation.annotations.ApiIgnore;
 @RequestMapping(value = "/v1/organizations/apps_share")
 public class OrgAppShareController {
     @Autowired
-    private ApplicationShareService applicationShareService;
+    private ApplicationShareRuleService applicationShareService;
 
     /**
      * 根据版本Id获取values和chart
@@ -38,7 +32,7 @@ public class OrgAppShareController {
      * @param versionId 版本Id
      * @return Long
      */
-    @Permission(type = ResourceType.SITE, permissionWithin = true)
+    @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "根据版本Id获取values和chart")
     @GetMapping(value = "/values")
     public ResponseEntity<AppVersionAndValueVO> getValuesAndChart(
