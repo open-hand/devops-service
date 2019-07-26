@@ -227,7 +227,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @return the id
      * @throws CommonException if there isn't a template named 'MicroService'
      */
-    private Long getMicroServiceTemplateId() throws CommonException {
+    private Long getMicroServiceTemplateId() {
         List<ApplicationTemplateRespVO> template = applicationTemplateService.listByOptions(new PageRequest(0, 1), null, demoDataVO.getTemplateSearchParam()).getList();
 
         if (template != null && !template.isEmpty()) {

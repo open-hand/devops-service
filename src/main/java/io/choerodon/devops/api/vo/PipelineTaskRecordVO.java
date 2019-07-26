@@ -2,8 +2,6 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  11:34 2019/4/14

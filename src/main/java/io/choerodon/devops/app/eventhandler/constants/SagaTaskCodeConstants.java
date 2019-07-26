@@ -171,4 +171,8 @@ public class SagaTaskCodeConstants {
      * 禁用用户
      */
     public static final String IAM_DISABLE_USER = "devopsDisableUser";
+
+
+    private SagaTaskCodeConstants() {
+    }
 }

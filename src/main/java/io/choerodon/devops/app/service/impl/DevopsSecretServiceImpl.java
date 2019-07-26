@@ -275,7 +275,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         devopsEnvCommandDTO.setCommandType(CREATE);
         devopsEnvCommandDTO.setStatus(devopsSecretDTO.getStatus());
         devopsEnvCommandDTO.setObjectId(secretId);
-        devopsEnvCommandDTO.setObject("secret");
+        devopsEnvCommandDTO.setObject(SECRET);
         devopsEnvCommandDTO.setCreatedBy(userId);
         devopsSecretDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         devopsSecretDTO.setId(secretId);

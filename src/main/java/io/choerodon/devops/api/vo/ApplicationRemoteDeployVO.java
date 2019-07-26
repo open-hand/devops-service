@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  10:29 2019/7/3

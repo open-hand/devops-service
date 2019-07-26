@@ -444,8 +444,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     .get(CHOERODON_IO_NETWORK_SERVICE_INSTANCES);
             if (releaseNames != null) {
                 String[] releases = releaseNames.split("\\+");
-                List<Long> beforeInstanceIdS = devopsEnvResourceService.baseListByEnvAndType(envId, SERVICE_KIND).stream().filter(result -> result.getName().equals(v1Service.getMetadata().getName())).map(result ->
-                        result.getAppInstanceId()).collect(Collectors.toList());
+                List<Long> beforeInstanceIdS = devopsEnvResourceService.baseListByEnvAndType(envId, SERVICE_KIND)
+                        .stream()
+                        .filter(result -> result.getName().equals(v1Service.getMetadata().getName()))
+                        .map(DevopsEnvResourceDTO::getAppInstanceId)
+                        .collect(Collectors.toList());
                 List<Long> afterInstanceIds = new ArrayList<>();
                 for (String release : releases) {
                     applicationInstanceDTO = applicationInstanceService
@@ -1365,15 +1368,15 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Override
     public void upgradeCluster(String key, String msg) {
         //0.10.0-0.11.0  初始化集群信息
-        logger.info(String.format("upgradeCluster message: %s", msg));
+        logger.info("upgradeCluster message: {}", msg);
         UpgradeClusterVO upgradeClusterVO = json.deserialize(msg, UpgradeClusterVO.class);
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQueryByToken(upgradeClusterVO.getToken());
         if (devopsClusterDTO == null) {
-            logger.info(String.format("the cluster is not exist: %s", upgradeClusterVO.getToken()));
+            logger.info("the cluster is not exist: {}", upgradeClusterVO.getToken());
             return;
         }
         if (devopsClusterDTO.getInit() != null) {
-            logger.info(String.format("the cluster has bean init: %s", devopsClusterDTO.getName()));
+            logger.info("the cluster has bean init: {}", devopsClusterDTO.getName());
             return;
         }
         if (upgradeClusterVO.getEnvs() != null) {

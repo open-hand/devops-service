@@ -323,7 +323,7 @@ public class PipelineServiceImpl implements PipelineService {
         //获取数据
         PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(taskRecordId);
         Long pipelineRecordId = pipelineStageRecordService.baseQueryById(stageRecordId).getPipelineRecordId();
-        CutomerContextUtil.setUserId(taskRecordDTO.getCreatedBy());
+        CustomContextUtil.setUserId(taskRecordDTO.getCreatedBy());
         ApplicationVersionDTO appVersionE = getDeployVersion(pipelineRecordId, stageRecordId, taskRecordDTO);
         //保存记录
         taskRecordDTO.setStatus(WorkFlowStatus.RUNNING.toValue());
@@ -771,7 +771,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public void executeAutoDeploy(Long pipelineId) {
         PipelineDTO pipelineDTO = baseQueryById(pipelineId);
-        CutomerContextUtil.setUserId(pipelineDTO.getCreatedBy());
+        CustomContextUtil.setUserId(pipelineDTO.getCreatedBy());
         PipelineRecordDTO pipelineRecordE = new PipelineRecordDTO(pipelineId, pipelineDTO.getTriggerType(), pipelineDTO.getProjectId(), WorkFlowStatus.RUNNING.toValue(), pipelineDTO.getName());
         String uuid = GenerateUUID.generateUUID();
         pipelineRecordE.setBusinessKey(uuid);

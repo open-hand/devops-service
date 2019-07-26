@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import com.github.pagehelper.PageInfo;
-import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;

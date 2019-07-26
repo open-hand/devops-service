@@ -43,7 +43,7 @@ public class DevopsEnvironmentValidator {
         if (devopsIngressService.baseCheckByEnv(envId)) {
             throw new CommonException("error.env.stop.IngressExist");
         }
-        if (pipelineAppDeployService.baseQueryByEnvId(envId).size() > 0) {
+        if (!pipelineAppDeployService.baseQueryByEnvId(envId).isEmpty()) {
             throw new CommonException("error.env.stop.IngressExist");
         }
     }

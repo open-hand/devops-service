@@ -97,7 +97,6 @@ public interface ApplicationTemplateService {
      */
     Boolean applicationTemplateExist(String uuid);
 
-//    void initMockService(SagaClient sagaClient);
 
     /**
      * 设置应用应用模板创建失败状态

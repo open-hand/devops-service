@@ -26,8 +26,6 @@ public class DevopsProjectConfigDTO extends BaseDTO {
 
     private String type;
 
-    private Long objectVersionNumber;
-
     public Long getId() {
         return id;
     }
@@ -66,13 +64,5 @@ public class DevopsProjectConfigDTO extends BaseDTO {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
     }
 }

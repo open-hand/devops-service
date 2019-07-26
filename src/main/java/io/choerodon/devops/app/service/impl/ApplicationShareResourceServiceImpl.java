@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.ApplicationShareResourceService;
 import io.choerodon.devops.infra.dto.ApplicationShareResourceDTO;

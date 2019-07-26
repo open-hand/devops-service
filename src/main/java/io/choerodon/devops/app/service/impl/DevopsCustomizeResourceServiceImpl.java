@@ -106,7 +106,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
                 LinkedHashMap metadata = (LinkedHashMap) datas.get(METADATA);
                 //校验yaml文件内资源属性是否合法,并返回资源的name
-                String name = CheckResource(metadata, kind);
+                String name = checkResource(metadata, kind);
 
                 //添加自定义标签
                 LinkedHashMap labels = (LinkedHashMap) metadata.get(LABELS);
@@ -329,7 +329,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     }
 
 
-    private String CheckResource(LinkedHashMap metadata, Object kind) {
+    private String checkResource(LinkedHashMap metadata, Object kind) {
         if (kind == null) {
             throw new CommonException("custom.resource.kind.not.found");
         }

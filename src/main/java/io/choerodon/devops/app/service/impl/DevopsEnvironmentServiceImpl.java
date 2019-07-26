@@ -57,7 +57,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String ENV = "ENV";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String PROJECT_MEMBER = "role/project/default/project-member";
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${agent.version}")
     private String agentExpectVersion;
@@ -498,7 +497,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public DevopsEnvGroupEnvsVO sort(Long[] environmentIds) {
         DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = Arrays.stream(environmentIds)
-                .map(id -> baseQueryById(id))
+                .map(this::baseQueryById)
                 .collect(Collectors.toList());
         long sequence = 1L;
         for (DevopsEnvironmentDTO devopsEnvironmentDTO : devopsEnvironmentDTOS) {
