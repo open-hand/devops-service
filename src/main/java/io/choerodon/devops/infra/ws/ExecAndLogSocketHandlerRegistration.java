@@ -36,7 +36,7 @@ public class ExecAndLogSocketHandlerRegistration implements SocketHandlerRegistr
 
     @Override
     public String path() {
-        return "/exec,/log";
+        return "/ws/exec,/ws/log";
     }
 
     @Override
@@ -101,7 +101,6 @@ public class ExecAndLogSocketHandlerRegistration implements SocketHandlerRegistr
         } catch (IOException e) {
             logger.warn("close clean timeout session failed {}", e.getMessage());
         }
-
     }
 
 

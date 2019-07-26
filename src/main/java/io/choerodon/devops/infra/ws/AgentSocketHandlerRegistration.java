@@ -115,7 +115,7 @@ public class AgentSocketHandlerRegistration implements SocketHandlerRegistration
         //将websocketSession和关联的key做关联
         webSocketHelper.contact(webSocketSession, registerKey);
 
-        //将已连接的agent集群信息放到redis中
+        //将已连接的agent集群信息放到redis中,用于判断集群是否连接
         ClusterSession clusterSession = new ClusterSession();
         clusterSession.setClusterId(TypeUtil.objToLong(attribute.get("clusterId")));
         clusterSession.setVersion(TypeUtil.objToString(attribute.get("version")));
@@ -138,7 +138,7 @@ public class AgentSocketHandlerRegistration implements SocketHandlerRegistration
         Map<String, Object> attribute = attributes.get(webSocketSession.getId());
         String registerKey = TypeUtil.objToString(attribute.get("key"));
 
-        //移除关联关系
+        //移除各种关联关系
         webSocketHelper.removeKeyContact(webSocketSession, registerKey);
         redisTemplate.opsForHash().delete(CLUSTER_SESSION, registerKey);
         try {
