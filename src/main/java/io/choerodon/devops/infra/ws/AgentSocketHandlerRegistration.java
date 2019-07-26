@@ -1,7 +1,10 @@
 package io.choerodon.devops.infra.ws;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
@@ -13,7 +16,6 @@ import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.helper.SocketHandlerRegistration;
 import io.choerodon.websocket.helper.WebSocketHelper;
-import io.choerodon.websocket.relationship.DefaultRelationshipDefining;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

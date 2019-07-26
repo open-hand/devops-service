@@ -5,11 +5,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-import io.choerodon.websocket.helper.WebSocketHelper;
 import io.choerodon.websocket.receive.MessageHandler;
 import io.choerodon.websocket.relationship.DefaultRelationshipDefining;
-import org.checkerframework.checker.units.qual.A;
-import org.nutz.ioc.IocException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

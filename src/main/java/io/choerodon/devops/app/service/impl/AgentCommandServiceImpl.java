@@ -27,6 +27,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.ws.AgentMsg;
+import io.choerodon.devops.infra.ws.PipeRequest;
 import io.choerodon.websocket.helper.WebSocketHelper;
 import io.choerodon.websocket.send.WebSocketSendPayload;
 import io.codearte.props2yaml.Props2YAML;
@@ -235,6 +236,19 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setPayload(payload);
         msg.setCommandId(commandId);
         sendToWebsocket(clusterId, msg);
+    }
+
+    @Override
+    public void startLogOrExecConnection(String type, String key, PipeRequest pipeRequest, Long clusterId) {
+        AgentMsg agentMsg = new AgentMsg();
+        agentMsg.setKey(key);
+        agentMsg.setType(type);
+        try {
+            agentMsg.setPayload(mapper.writeValueAsString(pipeRequest));
+        } catch (IOException e) {
+            throw new CommonException(ERROR_PAYLOAD_ERROR, e);
+        }
+        sendToWebsocket(clusterId,agentMsg);
     }
 
     @Override

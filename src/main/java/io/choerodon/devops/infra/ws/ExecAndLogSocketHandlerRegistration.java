@@ -1,10 +1,13 @@
 package io.choerodon.devops.infra.ws;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
+import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.websocket.helper.SocketHandlerRegistration;
 import io.choerodon.websocket.helper.WebSocketHelper;
@@ -27,12 +30,16 @@ import org.springframework.web.socket.server.HandshakeFailureException;
 public class ExecAndLogSocketHandlerRegistration implements SocketHandlerRegistration {
 
     private static final Logger logger = LoggerFactory.getLogger(ExecAndLogSocketHandlerRegistration.class);
+    public static final String KUBERNETES_GET_LOGS = "kubernetes_get_logs";
+    public static final String EXEC_COMMAND = "kubernetes_exec";
     private ConcurrentHashMap<String, Map<String, Object>> attributes = new ConcurrentHashMap<>();
     private Set<String> keys = new HashSet<>();
 
 
     @Autowired
     private WebSocketHelper webSocketHelper;
+    @Autowired
+    private AgentCommandService agentCommandService;
 
     @Override
     public String path() {
@@ -54,16 +61,16 @@ public class ExecAndLogSocketHandlerRegistration implements SocketHandlerRegistr
         if (key == null || key.trim().isEmpty()) {
             throw new HandshakeFailureException("Key is null");
         }
-        if(env == null || env.trim().isEmpty()) {
+        if (env == null || env.trim().isEmpty()) {
             throw new HandshakeFailureException("Env is null!");
         }
-        if(podName == null || podName.trim().isEmpty()) {
+        if (podName == null || podName.trim().isEmpty()) {
             throw new HandshakeFailureException("PodName is null!");
         }
-        if(containerName == null || containerName.trim().isEmpty()) {
+        if (containerName == null || containerName.trim().isEmpty()) {
             throw new HandshakeFailureException("ContainerName is null!");
         }
-        if(logId == null || logId.trim().isEmpty()) {
+        if (logId == null || logId.trim().isEmpty()) {
             throw new HandshakeFailureException("LogId is null!");
         }
 
@@ -85,6 +92,15 @@ public class ExecAndLogSocketHandlerRegistration implements SocketHandlerRegistr
         //将websocketSession和关联的key做关联
         webSocketHelper.contact(webSocketSession, registerKey);
 
+
+        //通知agent建立与前端同样的ws连接
+        PipeRequest pipeRequest = new PipeRequest(attribute.get("podName").toString(), attribute.get("containerName").toString(), attribute.get("pipeID").toString(), attribute.get("namespace").toString());
+        Long clusterId = TypeUtil.objToLong(registerKey.split("\\.")[0].split(":")[1]);
+        if (webSocketSession.getUri().equals("/ws/log")) {
+            agentCommandService.startLogOrExecConnection(KUBERNETES_GET_LOGS, registerKey, pipeRequest, clusterId);
+        } else {
+            agentCommandService.startLogOrExecConnection(EXEC_COMMAND, registerKey, pipeRequest, clusterId);
+        }
         keys.add(registerKey);
     }
 

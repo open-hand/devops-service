@@ -9,6 +9,7 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.ws.PipeRequest;
 
 
 
@@ -46,5 +47,7 @@ public interface AgentCommandService {
                              String type, String namespace,
                              Long commandId, Long envId,
                              Long clusterId);
+
+    void startLogOrExecConnection(String type,String key, PipeRequest pipeRequest, Long clusterId);
 
 }
