@@ -1,13 +1,13 @@
-import React, { useContext, useState, memo, Fragment } from 'react';
-import { inject } from 'mobx-react';
+import React, { useContext, useMemo, useState, memo, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 import toUpper from 'lodash/toUpper';
-import { Select } from 'choerodon-ui/pro';
+import { Select, DataSet } from 'choerodon-ui/pro';
 import SidebarHeading from './header';
+import TreeDataSet from './stores/TreeDataSet';
 import TreeView from '../../../components/tree-view';
 import { TreeItemIcon } from '../components/TreeItemIcon';
-import Stores from '../stores';
+import Store from '../stores';
 
 import './index.less';
 
@@ -44,8 +44,14 @@ const getViewOptions = formatMessage => ([
   </Option>,
 ]);
 
-const Sidebar = memo(({ navBounds, intl: { formatMessage }, AppState: { currentMenuType } }) => {
-  const { treeDataSet } = useContext(Stores);
+const Sidebar = memo(({ navBounds }) => {
+  const {
+    intl: { formatMessage },
+    AppState: { currentMenuType: { id } },
+    changeSelected,
+  } = useContext(Store);
+  const treeDataSet = useMemo(() => new DataSet(TreeDataSet(id, changeSelected)), [changeSelected, id]);
+
   const [value, setValue] = useState(DEFAULT_VIEW_TYPE);
 
   const handleChoose = (choose) => {
@@ -70,4 +76,4 @@ Sidebar.propTypes = {
   navBounds: PropTypes.shape({}),
 };
 
-export default inject('AppState')(injectIntl(Sidebar));
+export default Sidebar;

@@ -36,7 +36,7 @@ const formatData = (value) => {
   return flatted;
 };
 
-export default projectId => ({
+export default (projectId, callback) => ({
   autoQuery: true,
   paging: false,
   selection: 'single',
@@ -51,11 +51,15 @@ export default projectId => ({
     { name: 'itemType', type: 'string' },
   ],
   events: {
-    select: ({ record, dataSet }) => {
+    select: ({ record }) => {
       const currentId = record.get('id');
       const currentType = record.get('itemType');
-
-      // console.log(currentId, currentType);
+      callback(currentId, currentType);
+    },
+    unSelect: ({ record }) => {
+      // 禁用取消选中
+      // 实际上依然会取消只是又重新选中
+      record.isSelected = true;
     },
   },
   transport: {

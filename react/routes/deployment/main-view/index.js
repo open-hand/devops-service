@@ -1,11 +1,10 @@
-import React, { useContext, useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { memo, useContext, useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import { inject } from 'mobx-react';
-import { observer } from 'mobx-react-lite';
 import _ from 'lodash';
 import LayoutPage from '../components/layout';
 import { IST_ITEM, APP_ITEM, ENV_ITEM } from '../components/TreeItemIcon';
 import Sidebar from '../sidebar';
-import Stores from '../stores';
+import Store from '../stores';
 
 import './index.less';
 
@@ -18,32 +17,19 @@ const AppContent = lazy(() => import('../contents/instance-view/application'));
 const IstContent = lazy(() => import('../contents/instance-view/instance'));
 
 const getContent = (type) => {
-  let content;
-  switch (type) {
-    case ENV_ITEM:
-      content = () => <Suspense fallback={<div>Error</div>}>
-        <EnvContent />
-      </Suspense>;
-      break;
-    case APP_ITEM:
-      content = () => <Suspense fallback={<div>Error</div>}>
-        <AppContent />
-      </Suspense>;
-      break;
-    case IST_ITEM:
-      content = () => <Suspense fallback={<div>Error</div>}>
-        <IstContent />
-      </Suspense>;
-      break;
-    default:
-      content = () => null;
-  }
+  const cmMaps = {
+    [ENV_ITEM]: <EnvContent />,
+    [APP_ITEM]: <AppContent />,
+    [IST_ITEM]: <IstContent />,
+  };
 
-  return content;
+  return cmMaps[type]
+    ? () => <Suspense fallback={<div>loading</div>}>{cmMaps[type]}</Suspense>
+    : () => <div>加载错误</div>;
 };
 
-const MainView = observer(({ MenuStore }) => {
-  const { store } = useContext(Stores);
+const MainView = memo(({ MenuStore }) => {
+  const { selectedMenu: { menuType } } = useContext(Store);
 
   const rootRef = useRef(null);
   const [bounds, setBounds] = useState(null);
@@ -89,13 +75,11 @@ const MainView = observer(({ MenuStore }) => {
     return computedBounds;
   }, [MenuStore.collapsed, bounds, defaultCollapsed]);
 
-  // const { viewType } = store.getPreviewData;
-  // const content = useMemo(() => getContent(viewType), [viewType]);
+  const content = useMemo(() => getContent(menuType), [menuType]);
 
   const realProps = {
     Nav: getNav,
-    // Content: content,
-    Content: getContent(ENV_ITEM),
+    Content: content,
     options: { showNav: true },
     ...realBounds,
   };

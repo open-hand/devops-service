@@ -4,27 +4,6 @@ import _ from 'lodash';
 import { axios, store } from '@choerodon/boot';
 import { handlePromptError } from '../../../utils';
 
-const generateList = (tree) => {
-  const dataList = [];
-
-  const flatData = (data, prevKey) => {
-    for (let i = 0; i < data.length; i++) {
-      const node = data[i];
-      const key = prevKey ? `${prevKey}-${node.id}` : String(node.id);
-      dataList.push({ key, prevKey, ...node });
-
-      const children = node.apps || node.instances;
-
-      if (children) {
-        flatData(children, key);
-      }
-    }
-  };
-  flatData(tree);
-
-  return dataList;
-};
-
 @store('InstanceMasterStore')
 class DeploymentStore {
   @observable linkLoading = false;

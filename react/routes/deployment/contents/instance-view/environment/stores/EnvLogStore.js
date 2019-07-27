@@ -1,6 +1,6 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
-import { handlePromptError } from '../../../utils';
+import { handlePromptError } from '../../../../../../utils';
 
 @store('LogStore')
 export default class EnvLogStore {

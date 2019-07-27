@@ -28,9 +28,8 @@ export default class SyncSituation extends Component {
           id: envId,
         },
       },
-      EnvLogStore,
     } = this.context;
-    EnvLogStore.loadSync(id, envId);
+    // EnvLogStore.loadSync(id, envId);
   }
 
   /**

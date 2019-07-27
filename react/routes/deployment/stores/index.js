@@ -1,10 +1,6 @@
-import React, { createContext, useMemo } from 'react';
+import React, { createContext, useState, useCallback } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
-import { DataSet } from 'choerodon-ui/pro';
-import DeploymentStore from './DeploymentStore';
-import TreeDataSet from './TreeDataSet';
-import EnvLogStore from './EnvLogStore';
 
 const Store = createContext();
 
@@ -13,7 +9,15 @@ export default Store;
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const { AppState: { currentMenuType: { type, id } }, intl, children } = props;
-    const treeDataSet = useMemo(() => new DataSet(TreeDataSet(id)), [id]);
+
+    const [selectedMenu, setSelectedMenu] = useState({});
+    const changeSelected = useCallback((menuId, menuType) => {
+      setSelectedMenu({
+        menuId,
+        menuType,
+      });
+    }, []);
+
     const value = {
       ...props,
       prefixCls: 'c7ncd-deployment',
@@ -21,9 +25,8 @@ export const StoreProvider = injectIntl(inject('AppState')(
       permissions: [
         'devops-service.application-instance.pageByOptions',
       ],
-      store: new DeploymentStore(),
-      treeDataSet,
-      EnvLogStore: new EnvLogStore(),
+      selectedMenu,
+      changeSelected,
     };
     return (
       <Store.Provider value={value}>

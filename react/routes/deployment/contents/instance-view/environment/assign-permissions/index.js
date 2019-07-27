@@ -1,5 +1,4 @@
-import React, { Fragment, useContext, useMemo } from 'react';
-import { FormattedMessage } from 'react-intl';
+import React, { useContext, useMemo, useCallback } from 'react';
 import { Permission, Action } from '@choerodon/boot';
 import {
   Table,
@@ -21,28 +20,19 @@ export default function AssignPermissions() {
         id,
       },
     },
-    store: {
-      getPreviewData: {
-        id: envId,
-      },
-    },
+    selectedMenu: { menuId },
   } = useContext(Store);
   const tableDs = useMemo(() => new DataSet(TableDataSet({
     intl,
     intlPrefix,
     projectId: id,
-    envId,
-  })));
+    envId: menuId,
+  })), [id, intl, intlPrefix, menuId]);
 
-  function refresh() {
-    tableDs.query();
-  }
-
-  function handleDelete(data) {
-    tableDs.delete(data);
-  }
-
-  function renderActions({ record }) {
+  const renderActions = useCallback(({ record }) => {
+    const handleDelete = (data) => {
+      tableDs.delete(data);
+    };
     const actionData = [
       {
         service: [],
@@ -51,10 +41,11 @@ export default function AssignPermissions() {
       },
     ];
     return (<Action data={actionData} />);
-  }
+  }, [intl, tableDs]);
+  const renderDate = useCallback(({ value }) => <TimePopover content={value} />, []);
 
-  function renderDate({ value }) {
-    return <TimePopover content={value} />;
+  function refresh() {
+    tableDs.query();
   }
 
   return (
