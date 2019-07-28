@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 

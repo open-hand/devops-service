@@ -215,8 +215,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
         //生成验证码，存放在redis
         String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
-        String Captcha = String.valueOf(new Random().nextInt(899999) + 100000);
-        redisTemplate.opsForValue().set(resendKey, Captcha, timeout, TimeUnit.SECONDS);
+        String captcha = String.valueOf(new Random().nextInt(899999) + 100000);
+        redisTemplate.opsForValue().set(resendKey, captcha, timeout, TimeUnit.SECONDS);
 
 
         //生成发送消息需要的模板对象
@@ -236,7 +236,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         params.put("env", devopsEnvironmentDTO.getName());
         params.put("object", getObjectType(objectType));
         params.put("objectName", objectCode);
-        params.put("captcha", Captcha);
+        params.put("captcha", captcha);
         params.put("timeout", "10");
         //由于短信模板内容的问题，暂时需要传入此instance,后续统一改成object和objectType
         params.put("instance", objectCode);
@@ -341,8 +341,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         Map<String, Object> map = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(map.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(map.get(TypeUtil.PARAM));
-        PageInfo<DevopsNotificationDTO> notificationDOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsNotificationMapper.listByOptions(projectId, envId, searchParamMap, paramMap));
-        return notificationDOPage;
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsNotificationMapper.listByOptions(projectId, envId, searchParamMap, paramMap));
     }
 
     public List<DevopsNotificationDTO> baseListByEnvId(Long projectId, Long envId) {

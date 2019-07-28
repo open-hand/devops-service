@@ -641,7 +641,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     initBranch(devOpsAppImportPayload, applicationDTO, branchName);
                 }
             } catch (GitAPIException e) {
-                e.printStackTrace();
+                LOGGER.error("GitAPIException: {}", e);
             }
 
             releaseResources(templateWorkDir, applicationWorkDir, templateGit, repositoryGit);
@@ -649,7 +649,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 
         try {
-            // 设置appliation的属性
+            // 设置application的属性
             String applicationToken = getApplicationToken(gitlabProjectDO.getId(), devOpsAppImportPayload.getUserId());
             applicationDTO.setGitlabProjectId(TypeUtil.objToInteger(devOpsAppImportPayload.getGitlabProjectId()));
             applicationDTO.setToken(applicationToken);
@@ -1079,7 +1079,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (sonarComponentResponse.body() == null) {
                 return new SonarContentsVO();
             }
-            if (sonarComponentResponse.body().getPeriods() != null && sonarComponentResponse.body().getPeriods().size() > 0) {
+            if (sonarComponentResponse.body().getPeriods() != null && !sonarComponentResponse.body().getPeriods().isEmpty()) {
                 sonarContentsVO.setDate(sonarComponentResponse.body().getPeriods().get(0).getDate());
                 sonarContentsVO.setMode(sonarComponentResponse.body().getPeriods().get(0).getMode());
                 sonarContentsVO.setParameter(sonarComponentResponse.body().getPeriods().get(0).getParameter());
@@ -1090,13 +1090,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
                 //查询上一次的分析时间
                 Response<SonarAnalyses> sonarAnalyses = sonarClient.getAnalyses(analyseMap).execute();
-                if (sonarAnalyses.raw().code() == 200 && sonarAnalyses.body().getAnalyses() != null && sonarAnalyses.body().getAnalyses().size() > 0) {
+                if (sonarAnalyses.raw().code() == 200 && sonarAnalyses.body().getAnalyses() != null && !sonarAnalyses.body().getAnalyses().isEmpty()) {
                     sonarContentsVO.setDate(sonarAnalyses.body().getAnalyses().get(0).getDate());
                 }
             }
 
             //分类型对sonarqube project查询返回的结果进行处理
-            sonarComponentResponse.body().getComponent().getMeasures().stream().forEach(measure -> {
+            sonarComponentResponse.body().getComponent().getMeasures().forEach(measure -> {
                 SonarQubeType sonarQubeType = SonarQubeType.forValue(String.valueOf(measure.getMetric()));
                 switch (sonarQubeType) {
                     case BUGS:
@@ -1196,7 +1196,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             if (TypeUtil.objToLong(measure.getValue()) % 1000 == 0) {
                                 codeSmells.setValue(String.format("%sK", result));
                             } else {
-                                BigDecimal codeSmellDecimal = new BigDecimal(result);
+                                BigDecimal codeSmellDecimal = BigDecimal.valueOf(result);
                                 codeSmells.setValue(String.format("%sK", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
                             }
                         } else {
@@ -1223,12 +1223,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                     case NEW_CODE_SMELLS:
                         SonarContentVO newCodeSmells = new SonarContentVO();
                         newCodeSmells.setKey(measure.getMetric());
-                        double newResult = TypeUtil.objToLong(measure.getPeriods().get(0).getValue()) / 1000;
+                        double newResult = TypeUtil.objToLong(measure.getPeriods().get(0).getValue()) / 1000.0;
                         if (newResult > 0) {
                             if (TypeUtil.objToLong(measure.getPeriods().get(0).getValue()) % 1000 == 0) {
                                 newCodeSmells.setValue(String.format("%sK", newResult));
                             } else {
-                                BigDecimal codeSmellDecimal = new BigDecimal(newResult);
+                                BigDecimal codeSmellDecimal = BigDecimal.valueOf(newResult);
                                 newCodeSmells.setValue(String.format("%sK", codeSmellDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
                             }
                         } else {
@@ -1281,7 +1281,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         if (TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()) == 0) {
                             newDuplicated.setValue("0");
                         } else {
-                            BigDecimal b = new BigDecimal(TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()));
+                            BigDecimal b = BigDecimal.valueOf(TypeUtil.objTodouble(measure.getPeriods().get(0).getValue()));
                             newDuplicated.setValue(TypeUtil.objToString(b.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
                         }
                         newDuplicated.setUrl(String.format("%scomponent_measures?id=%s&metric=new_duplicated_lines_density", sonarqubeUrl, key));
@@ -1295,7 +1295,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             if (TypeUtil.objToLong(measure.getValue()) % 1000 == 0) {
                                 ncloc.setValue(String.format("%sK", nclocResult));
                             } else {
-                                BigDecimal nclocDecimal = new BigDecimal(nclocResult);
+                                BigDecimal nclocDecimal = BigDecimal.valueOf(nclocResult);
                                 ncloc.setValue(String.format("%sK", nclocDecimal.setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue()));
                             }
                         } else {
@@ -1381,29 +1381,27 @@ public class ApplicationServiceImpl implements ApplicationService {
                 List<String> vulnerabilities = new ArrayList<>();
                 sonarTablesResponse.body().getMeasures().stream().forEach(sonarTableMeasure -> {
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.BUGS.getType())) {
-                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                        ).forEach(sonarHistroy -> {
-                            bugs.add(sonarHistroy.getValue());
-                            dates.add(sonarHistroy.getDate());
+                        sonarTableMeasure.getHistory().stream().filter(sonarHistory ->
+                                getHistory(startTime, tomorrow, sdf, sonarHistory)
+                        ).forEach(sonarHistory -> {
+                            bugs.add(sonarHistory.getValue());
+                            dates.add(sonarHistory.getDate());
                         });
                         sonarTableVO.setDates(dates);
                         sonarTableVO.setBugs(bugs);
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.CODE_SMELLS.getType())) {
-                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                        ).forEach(sonarHistroy -> {
-                            codeSmells.add(sonarHistroy.getValue());
-                        });
+                        sonarTableMeasure.getHistory()
+                                .stream()
+                                .filter(sonarHistory -> getHistory(startTime, tomorrow, sdf, sonarHistory))
+                                .forEach(sonarHistory -> codeSmells.add(sonarHistory.getValue()));
                         sonarTableVO.setCodeSmells(codeSmells);
                     }
                     if (sonarTableMeasure.getMetric().equals(SonarQubeType.VULNERABILITIES.getType())) {
-                        sonarTableMeasure.getHistory().stream().filter(sonarHistroy ->
-                                getHistory(startTime, tomorrow, sdf, sonarHistroy)
-                        ).forEach(sonarHistroy -> {
-                            vulnerabilities.add(sonarHistroy.getValue());
-                        });
+                        sonarTableMeasure.getHistory()
+                                .stream()
+                                .filter(sonarHistory -> getHistory(startTime, tomorrow, sdf, sonarHistory))
+                                .forEach(sonarHistory -> vulnerabilities.add(sonarHistory.getValue()));
                         sonarTableVO.setVulnerabilities(vulnerabilities);
                     }
                 });
@@ -2084,7 +2082,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private void initApplicationParams(ProjectDTO projectDTO, OrganizationDTO organizationDTO, List<ApplicationDTO> applicationDTOS, String urlSlash) {
         List<String> projectKeys = new ArrayList<>();
         if (!sonarqubeUrl.equals("")) {
-            SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, "sonar", userName, password);
+            SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
             try {
                 Response<Projects> projectsResponse = sonarClient.listProject().execute();
                 if (projectsResponse != null && projectsResponse.raw().code() == 200) {

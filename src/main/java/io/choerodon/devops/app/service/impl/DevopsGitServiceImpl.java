@@ -382,7 +382,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void fileResourceSyncSaga(PushWebHookVO pushWebHookVO, String token) {
         LOGGER.info(String.format("````````````````````````````` %s", pushWebHookVO.getCheckoutSha()));
         pushWebHookVO.setToken(token);
-        String input;
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByToken(pushWebHookVO.getToken());
         pushWebHookVO.getCommits().forEach(commitDTO -> {
             DevopsEnvCommitDTO devopsEnvCommitDTO = new DevopsEnvCommitDTO();

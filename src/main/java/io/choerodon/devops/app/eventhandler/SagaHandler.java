@@ -260,7 +260,7 @@ public class SagaHandler {
                 new TypeToken<List<GitlabGroupMemberVO>>() {
                 }.getType());
         loggerInfo(gitlabGroupMemberVOList);
-        if (gitlabGroupMemberVOList.size() > 0) {
+        if (!gitlabGroupMemberVOList.isEmpty()) {
             List<Long> envIds = devopsEnvironmentService.baseListByProjectIdAndActive(gitlabGroupMemberVOList.get(0).getResourceId(), null)
                     .stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
             if (!envIds.isEmpty()) {

@@ -79,9 +79,8 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
 
     @Override
     public PageInfo<DevopsEnvCommandDTO> basePageByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
-        PageInfo<DevopsEnvCommandDTO> devopsEnvCommandDTOPageInfo = PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        return PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
-        return devopsEnvCommandDTOPageInfo;
     }
 
     @Override

@@ -249,7 +249,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
                         if (projectMembers.raw().code() != 200) {
                             throw new CommonException(projectMembers.errorBody().string());
                         }
-                        harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMembers.body().get(0).getId().intValue()).execute();
+                        harborClient.deleteMember(projects.body().get(0).getProjectId(), projectMembers.body().get(0).getId()).execute();
                     }
                     DevopsProjectConfigDTO devopsProjectConfigDTO = baseQueryByName(projectId, "project_harbor_default");
                     DevopsProjectConfigDTO newDevopsProjectConfigDTO = baseQueryByName(null, "harbor_default");
@@ -333,11 +333,10 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     public PageInfo<DevopsProjectConfigDTO> basePageByOptions(Long projectId, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
 
-        PageInfo<DevopsProjectConfigDTO> devopsProjectConfigDTOPageInfo = PageHelper
-                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsProjectConfigMapper.listByOptions(projectId,
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+                .doSelectPageInfo(() -> devopsProjectConfigMapper.listByOptions(projectId,
                         (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
                         (String) mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
-        return devopsProjectConfigDTOPageInfo;
     }
 
     public void baseDelete(Long id) {

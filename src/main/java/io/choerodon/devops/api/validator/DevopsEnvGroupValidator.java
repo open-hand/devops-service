@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsEnvGroupService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
 
 /**
  * Creator: Runge

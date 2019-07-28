@@ -1,16 +1,10 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-import java.util.Map;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
-import io.choerodon.devops.infra.util.PageRequestUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Created by Sheep on 2019/7/11.

@@ -11,7 +11,6 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
-import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
@@ -171,7 +170,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
         devopsDeployValueDTO.setProjectId(projectId);
         devopsDeployValueDTO.setName(name);
-        if (devopsDeployValueMapper.select(devopsDeployValueDTO).size() > 0) {
+        if (!devopsDeployValueMapper.select(devopsDeployValueDTO).isEmpty()) {
             throw new CommonException("error.devops.pipeline.value.name.exit");
         }
     }

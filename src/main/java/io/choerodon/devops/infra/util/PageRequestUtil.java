@@ -12,6 +12,9 @@ import io.choerodon.base.domain.Sort;
  * Description:
  */
 public class PageRequestUtil {
+    private PageRequestUtil() {
+    }
+
     public static String checkSortIsEmpty(PageRequest pageRequest) {
         String index = "";
         if (pageRequest.getSort() == null) {
@@ -31,7 +34,7 @@ public class PageRequestUtil {
         return "";
     }
 
-    public static String getOrderByStr(PageRequest pageRequest){
+    public static String getOrderByStr(PageRequest pageRequest) {
         Sort sort = pageRequest.getSort();
         if (sort != null) {
             return Lists.newArrayList(pageRequest.getSort().iterator()).stream()

@@ -83,14 +83,6 @@ public class DevopsDeployValueVO {
         this.envStatus = envStatus;
     }
 
-    public Long getCreateBy() {
-        return createdBy;
-    }
-
-    public void setCreateBy(Long createBy) {
-        this.createdBy = createBy;
-    }
-
     public String getCreateUserUrl() {
         return createUserUrl;
     }

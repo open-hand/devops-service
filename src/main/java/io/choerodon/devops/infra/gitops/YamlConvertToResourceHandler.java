@@ -23,7 +23,7 @@ public class YamlConvertToResourceHandler<T> {
                           Map<String, String> objectPath) {
         JSON json = new JSON();
         try {
-            t = (T) json.deserialize(yamlContent, t.getClass());
+            t = json.deserialize(yamlContent, t.getClass());
         } catch (Exception e) {
             throw new GitOpsExplainException(e.getMessage(), filePath);
         }

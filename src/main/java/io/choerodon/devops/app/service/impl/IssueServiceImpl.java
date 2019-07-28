@@ -128,9 +128,9 @@ public class IssueServiceImpl implements IssueService {
                 });
             }
             if (assigneeId != null) {
-                assignees.stream().filter(userE -> userE.getId().equals(assigneeId)).forEach(assigneeUser -> {
-                    customMergeRequestVO.setAssigneeName(assigneeUser.getLoginName());
-                });
+                assignees.stream()
+                        .filter(userE -> userE.getId().equals(assigneeId))
+                        .forEach(assigneeUser -> customMergeRequestVO.setAssigneeName(assigneeUser.getLoginName()));
             }
             BeanUtils.copyProperties(devopsMergeRequestE, customMergeRequestVO);
             mergeRequests.add(customMergeRequestVO);

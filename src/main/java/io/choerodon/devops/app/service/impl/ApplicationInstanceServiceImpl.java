@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -506,7 +505,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //以app为维度给实例分组
         Map<Long, List<ApplicationInstanceVO>> resultMaps = applicationInstanceVOS.stream()
-                .collect(Collectors.groupingBy(t -> t.getAppId()));
+                .collect(Collectors.groupingBy(ApplicationInstanceVO::getAppId));
         DevopsEnvPreviewVO devopsEnvPreviewVO = new DevopsEnvPreviewVO();
         List<DevopsEnvPreviewAppVO> devopsEnvPreviewAppVOS = new ArrayList<>();
         resultMaps.forEach((key, value) -> {

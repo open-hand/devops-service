@@ -3,8 +3,6 @@ package io.choerodon.devops.infra.feign.operator;
 import io.choerodon.devops.infra.dto.agile.IssueDTO;
 import io.choerodon.devops.infra.dto.agile.ProjectInfoDTO;
 import io.choerodon.devops.infra.feign.AgileServiceClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

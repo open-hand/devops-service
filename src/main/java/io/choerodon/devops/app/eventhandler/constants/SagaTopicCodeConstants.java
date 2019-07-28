@@ -178,4 +178,8 @@ public class SagaTopicCodeConstants {
      * IAM禁用用户
      */
     public static final String IAM_DISABLE_USER = "iam-disable-user";
+
+
+    private SagaTopicCodeConstants() {
+    }
 }

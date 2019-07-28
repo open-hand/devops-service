@@ -19,7 +19,9 @@ import java.util.HashMap;
  * Date:  17:24 2019/3/1
  * Description:
  */
-public class CutomerContextUtil {
+public class CustomContextUtil {
+    private CustomContextUtil() {
+    }
 
     public static void setUserId(Long uesrId) {
         try {

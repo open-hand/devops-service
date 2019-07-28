@@ -6,7 +6,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
 import io.choerodon.devops.app.service.DevopsMergeRequestService;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
