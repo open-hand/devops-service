@@ -9,7 +9,7 @@ import MouserOverWrapper from '../../../../../../components/MouseOverWrapper';
 import TimePopover from '../../../../../../components/timePopover';
 import TableDataSet from './stores/TableDataSet';
 import Store from '../../../../stores';
-// import SyncSituation from './SyncSituation';
+import SyncSituation from './SyncSituation';
 
 import './index.less';
 
@@ -78,7 +78,7 @@ export default function EnvLog() {
 
   return (
     <div className={`${prefixCls}-environment-sync`}>
-      {/* <SyncSituation loadData={refresh} /> */}
+      <SyncSituation refresh={refresh} />
       <div className={`${prefixCls}-environment-sync-table-title`}>
         <FormattedMessage id={`${intlPrefix}.environment.error.logs`} />
       </div>
