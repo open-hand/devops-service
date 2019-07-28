@@ -46,32 +46,46 @@ const EnvPage = observer(() => {
     setActiveKey(key);
   }, []);
 
-  const getPanes = useMemo(() => {
-    const cmMap = {
-      [SYNC_TAB]: <SyncSituation />,
-      [ASSIGN_TAB]: <AssignPermissions />,
-    };
-
-    return <Suspense fallback={<div>loading</div>}>
-      {cmMap[activeKey]}
-    </Suspense>;
-  }, [activeKey]);
+  // const getPanes = useMemo(() => {
+  //   const cmMap = {
+  //     [SYNC_TAB]: <SyncSituation />,
+  //     [ASSIGN_TAB]: <AssignPermissions />,
+  //   };
+  //
+  //   return <Suspense fallback={<div>loading</div>}>
+  //     {cmMap[activeKey]}
+  //   </Suspense>;
+  // }, [activeKey]);
 
   return (
     <div className={`${prefixCls}-environment`}>
       <div className={`${prefixCls}-environment-info`}>
         {getTitle}
       </div>
+
       <Tabs
         className={`${prefixCls}-environment-tabs`}
         animated={false}
         activeKey={activeKey}
         onChange={handleChange}
       >
-        <TabPane key={SYNC_TAB} tab={formatMessage({ id: `${intlPrefix}.environment.tabs.sync` })} />
-        <TabPane key={ASSIGN_TAB} tab={formatMessage({ id: `${intlPrefix}.environment.tabs.assignPermissions` })} />
+        <TabPane
+          key={SYNC_TAB}
+          tab={formatMessage({ id: `${intlPrefix}.environment.tabs.sync` })}
+        >
+          <Suspense fallback={<div>loading</div>}>
+            <SyncSituation />
+          </Suspense>
+        </TabPane>
+        <TabPane
+          key={ASSIGN_TAB}
+          tab={formatMessage({ id: `${intlPrefix}.environment.tabs.assignPermissions` })}
+        >
+          <Suspense fallback={<div>loading</div>}>
+            <AssignPermissions />
+          </Suspense>
+        </TabPane>
       </Tabs>
-      {getPanes}
     </div>
   );
 });
