@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
-import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.app.service.ApplicationSeviceService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
@@ -31,13 +31,13 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     private JSON json = new JSON();
 
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private DevopsEnvApplicationMapper devopsEnvApplicationMapper;
 
     @Override
     public List<DevopsEnvApplicationVO> batchCreate(DevopsEnvApplicationCreationVO devopsEnvApplicationCreationVO) {
-        return Stream.of(devopsEnvApplicationCreationVO.getAppIds())
+        return Stream.of(devopsEnvApplicationCreationVO.getAppServiceIds())
                 .map(appId -> new DevopsEnvApplicationDTO(devopsEnvApplicationCreationVO.getEnvId(), appId))
                 .peek(e -> devopsEnvApplicationMapper.insertIgnore(e))
                 .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))
@@ -45,11 +45,11 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     }
 
     @Override
-    public List<ApplicationRepVO> listAppByEnvId(Long envId) {
+    public List<ApplicationServiceRepVO> listAppByEnvId(Long envId) {
         List<Long> appIds = baseListAppByEnvId(envId);
-        List<ApplicationRepVO> applicationRepVOS = new ArrayList<>();
+        List<ApplicationServiceRepVO> applicationRepVOS = new ArrayList<>();
         appIds.forEach(v ->
-                applicationRepVOS.add(ConvertUtils.convertObject(applicationService.baseQuery(v), ApplicationRepVO.class))
+                applicationRepVOS.add(ConvertUtils.convertObject(applicationService.baseQuery(v), ApplicationServiceRepVO.class))
         );
         return applicationRepVOS;
     }

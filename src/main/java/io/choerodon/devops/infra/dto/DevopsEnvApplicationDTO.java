@@ -4,23 +4,23 @@ import javax.persistence.Table;
 
 @Table(name = "devops_env_application")
 public class DevopsEnvApplicationDTO {
-    private Long appId;
+    private Long appServiceId;
     private Long envId;
 
     public DevopsEnvApplicationDTO() {
     }
 
-    public DevopsEnvApplicationDTO(Long appId, Long envId) {
-        this.appId = appId;
+    public DevopsEnvApplicationDTO(Long appServiceId, Long envId) {
+        this.appServiceId = appServiceId;
         this.envId = envId;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Long getEnvId() {

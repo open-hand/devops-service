@@ -7,8 +7,8 @@
         <result property="name" column="env_name"/>
         <result property="clusterId" column="cluster_id"/>
         <result property="synchronize" column="synchronize"/>
-        <collection property="apps" ofType="io.choerodon.devops.infra.dto.DevopsApplicationViewDTO" notNullColumn="app_id">
-            <id property="id" column="app_id"/>
+        <collection property="apps" ofType="io.choerodon.devops.infra.dto.DevopsApplicationViewDTO" notNullColumn="app_service_id">
+            <id property="id" column="app_service_id"/>
             <result property="name" column="app_name"/>
             <collection property="instances" ofType="io.choerodon.devops.infra.dto.DevopsAppInstanceViewDTO" notNullColumn="ins_id">
                 <id property="id" column="ins_id"/>
@@ -59,7 +59,7 @@
     <select id="listEnvTree" resultMap="envTree">
         SELECT env.id         as           env_id,
                env.name       as           env_name,
-               app.id         as           app_id,
+               app.id         as           app_service_id,
                app.name       as           app_name,
                ins.id         as           ins_id,
                ins.code       as           ins_code,
@@ -79,8 +79,8 @@
                   AND env.id = ins.env_id) pod_running_count
         FROM devops_env env
                  LEFT JOIN devops_env_application env_app ON env.id = env_app.env_id
-                 LEFT JOIN devops_application app ON env_app.app_id = app.id
-                 LEFT JOIN devops_app_instance ins ON app.id = ins.app_id
+                 LEFT JOIN devops_application_service app ON env_app.app_service_id = app.id
+                 LEFT JOIN devops_app_instance ins ON app.id = ins.app_service_id
                                                           AND env.id = ins.env_id
         WHERE env.project_id = #{projectId}
           AND env.is_active = TRUE

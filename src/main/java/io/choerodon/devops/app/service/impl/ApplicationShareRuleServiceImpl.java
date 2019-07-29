@@ -22,7 +22,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 import io.choerodon.devops.infra.dto.ApplicationShareRuleDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsMarketConnectInfoDTO;
@@ -71,7 +71,7 @@ public class ApplicationShareRuleServiceImpl implements ApplicationShareRuleServ
     @Autowired
     private ApplicationVersionService applicationVersionService;
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private DevopsProjectConfigService devopsProjectConfigService;
 
@@ -129,7 +129,7 @@ public class ApplicationShareRuleServiceImpl implements ApplicationShareRuleServ
             versionRemoteDTO.setVersion(applicationVersionDTO.getVersion());
             versionRemoteDTO.setImage(applicationVersionDTO.getImage());
             versionRemoteDTO.setReadMeValue(applicationVersionReadmeMapper.selectByPrimaryKey(applicationVersionDTO.getReadmeValueId()).getReadme());
-            ApplicationDTO applicationDTO = applicationService.baseQuery(applicationVersionDTO.getAppId());
+            ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationVersionDTO.getAppServiceId());
             if (applicationDTO.getHarborConfigId() == null) {
                 appVersionAndValueVO.setHarbor(gson.fromJson(devopsProjectConfigService.baseQueryByName(null, "harbor_default").getConfig(), ProjectConfigVO.class));
                 appVersionAndValueVO.setChart(gson.fromJson(devopsProjectConfigService.baseQueryByName(null, "chart_default").getConfig(), ProjectConfigVO.class));

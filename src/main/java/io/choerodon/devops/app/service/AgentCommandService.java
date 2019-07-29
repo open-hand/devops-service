@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.api.vo.ProjectConfigVO;
-import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
@@ -15,7 +15,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 public interface AgentCommandService {
     void sendCommand(DevopsEnvironmentDTO devopsEnvironmentDTO);
 
-    void deploy(ApplicationDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO,
+    void deploy(ApplicationServiceDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO,
                 String releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values,
                 Long commandId, String secretCode);
 
@@ -25,7 +25,7 @@ public interface AgentCommandService {
 
     void initEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, Long clusterId);
 
-    void deployTestApp(ApplicationDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, String secretName, Long clusterId, String values);
+    void deployTestApp(ApplicationServiceDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, String secretName, Long clusterId, String values);
 
     void getTestAppStatus(Map<Long, List<String>> testReleases);
 

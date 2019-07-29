@@ -61,7 +61,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private ApplicationInstanceService applicationInstanceService;
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private DevopsServiceInstanceService devopsServiceInstanceService;
     @Autowired
@@ -130,9 +130,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             for (DevopsServiceAppInstanceDTO devopsServiceAppInstanceDTO : devopsServiceAppInstanceDTOS) {
                 ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.baseQuery(devopsServiceAppInstanceDTO.getAppInstanceId());
                 if (applicationInstanceDTO != null) {
-                    ApplicationDTO applicationDTO = applicationService.baseQuery(applicationInstanceDTO.getAppId());
+                    ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationInstanceDTO.getAppServiceId());
                     DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
-                    devopsServiceQueryDTO.setAppId(applicationDTO.getId());
+                    devopsServiceQueryDTO.setAppServiceId(applicationDTO.getId());
                     devopsServiceQueryDTO.setAppName(applicationDTO.getName());
                     devopsServiceQueryDTO.setAppProjectId(applicationDTO.getProjectId());
                     return queryDtoToVo(devopsServiceQueryDTO);
@@ -173,14 +173,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceDTO, devopsServiceAppInstanceDTOS, beforeDevopsServiceAppInstanceDTOS, devopsEnvCommandDTO, userAttrDTO);
 
         //创建应用资源关系
-        if (devopsServiceReqVO.getAppId() != null) {
+        if (devopsServiceReqVO.getAppServiceId() != null) {
 
             // 应用下不能创建endpoints类型网络
             if (devopsServiceReqVO.getEndPoints().size() != 0) {
                 throw new CommonException("error.app.create.endpoints.service");
             }
             DevopsApplicationResourceDTO devopsApplicationResourceDTO = new DevopsApplicationResourceDTO();
-            devopsApplicationResourceDTO.setAppId(devopsServiceReqVO.getAppId());
+            devopsApplicationResourceDTO.getAppServiceId(devopsServiceReqVO.getAppServiceId());
             devopsApplicationResourceDTO.setResourceType(ObjectType.SERVICE.getType());
             devopsApplicationResourceDTO.setResourceId(devopsServiceDTO.getId());
             devopsApplicationResourceService.baseCreate(devopsApplicationResourceDTO);
@@ -655,8 +655,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     private DevopsServiceDTO initDevopsService(DevopsServiceDTO devopsServiceDTO, DevopsServiceReqVO devopsServiceReqVO, List<DevopsServiceAppInstanceDTO> devopsServiceAppInstanceDTOS, List<String> beforeDevopsServiceAppInstanceDTOS) {
-        devopsServiceDTO.setAppId(devopsServiceReqVO.getAppId());
-        ApplicationDTO applicationDTO = applicationService.baseQuery(devopsServiceReqVO.getAppId());
+        devopsServiceDTO.getAppServiceId(devopsServiceReqVO.getAppServiceId());
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(devopsServiceReqVO.getAppServiceId());
         if (devopsServiceReqVO.getLabel() != null) {
             if (devopsServiceReqVO.getLabel().size() == 1 && devopsServiceReqVO.getLabel().containsKey(SERVICE_LABLE)) {
                 baseUpdateLables(devopsServiceDTO.getId());
@@ -714,17 +714,17 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         List<PortMapVO> oldPort = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
         }.getType());
         boolean isUpdate = false;
-        if (devopsServiceReqVO.getAppId() != null && devopsServiceDTO.getAppId() != null && devopsServiceReqVO.getAppInstance() != null) {
+        if (devopsServiceReqVO.getAppServiceId() != null && devopsServiceDTO.getAppServiceId() != null && devopsServiceReqVO.getAppInstance() != null) {
             isUpdate = !devopsServiceReqVO.getAppInstance().stream()
                     .sorted().collect(Collectors.toList())
                     .equals(oldDevopsServiceAppInstanceDTOS.stream()
                             .map(DevopsServiceAppInstanceDTO::getCode).sorted()
                             .collect(Collectors.toList()));
         }
-        if ((devopsServiceReqVO.getAppId() == null && devopsServiceDTO.getAppId() != null) || (devopsServiceReqVO.getAppId() != null && devopsServiceDTO.getAppId() == null)) {
+        if ((devopsServiceReqVO.getAppServiceId() == null && devopsServiceDTO.getAppServiceId() != null) || (devopsServiceReqVO.getAppServiceId() != null && devopsServiceDTO.getAppServiceId() == null)) {
             isUpdate = true;
         }
-        if (devopsServiceReqVO.getAppId() == null && devopsServiceDTO.getAppId() == null) {
+        if (devopsServiceReqVO.getAppServiceId() == null && devopsServiceDTO.getAppServiceId() == null) {
             if (devopsServiceReqVO.getLabel() != null && devopsServiceDTO.getLabels() != null) {
                 if (!gson.toJson(devopsServiceReqVO.getLabel()).equals(devopsServiceDTO.getLabels())) {
                     isUpdate = true;

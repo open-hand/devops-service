@@ -4,7 +4,7 @@ package io.choerodon.devops.api.vo;
  * @author younger
  * @date 2018/3/30
  */
-public class ApplicationRepVO {
+public class ApplicationServiceRepVO {
 
     private Long id;
     private String name;
@@ -25,6 +25,15 @@ public class ApplicationRepVO {
     private Long objectVersionNumber;
     private Long harborConfigId;
     private Long chartConfigId;
+    private String imgUrl;
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+    }
 
     public Long getId() {
         return id;

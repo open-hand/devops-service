@@ -10,13 +10,13 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
 import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
-import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 
 /**
  * Created by younger on 2018/3/28.
  */
-public interface ApplicationService {
+public interface ApplicationSeviceService {
 
     /**
      * 项目下创建应用
@@ -25,7 +25,7 @@ public interface ApplicationService {
      * @param applicationReqDTO 应用信息
      * @return ApplicationTemplateDTO
      */
-    ApplicationRepVO create(Long projectId, ApplicationReqVO applicationReqDTO);
+    ApplicationServiceRepVO create(Long projectId, ApplicationServiceReqVO applicationReqDTO);
 
 
     /**
@@ -35,7 +35,7 @@ public interface ApplicationService {
      * @param applicationId 应用Id
      * @return ApplicationRepDTO
      */
-    ApplicationRepVO query(Long projectId, Long applicationId);
+    ApplicationServiceRepVO query(Long projectId, Long applicationId);
 
     /**
      * 项目下删除创建失败应用
@@ -75,20 +75,20 @@ public interface ApplicationService {
      * @param params      参数
      * @return Page
      */
-    PageInfo<ApplicationRepVO> pageByOptions(Long projectId,
-                                             Boolean isActive,
-                                             Boolean hasVersion,
-                                             Boolean appMarket,
-                                             String type,
-                                             Boolean doPage,
-                                             PageRequest pageRequest,
-                                             String params);
+    PageInfo<ApplicationServiceRepVO> pageByOptions(Long projectId,
+                                                    Boolean isActive,
+                                                    Boolean hasVersion,
+                                                    Boolean appMarket,
+                                                    String type,
+                                                    Boolean doPage,
+                                                    PageRequest pageRequest,
+                                                    String params);
 
 
-    PageInfo<ApplicationRepVO> pageByOptionsAppMarket(Long projectId, Boolean isActive, Boolean hasVersion,
-                                                      Boolean appMarket,
-                                                      String type, Boolean doPage,
-                                                      PageRequest pageRequest, String params);
+    PageInfo<ApplicationServiceRepVO> pageByOptionsAppMarket(Long projectId, Boolean isActive, Boolean hasVersion,
+                                                             Boolean appMarket,
+                                                             String type, Boolean doPage,
+                                                             PageRequest pageRequest, String params);
 
     /**
      * 处理应用创建逻辑
@@ -129,7 +129,7 @@ public interface ApplicationService {
      * @param status    环境状态
      * @return baseList of ApplicationRepDTO
      */
-    List<ApplicationCodeVO> listByEnvId(Long projectId, Long envId, String status, Long appId);
+    List<ApplicationServiceCodeVO> listByEnvId(Long projectId, Long envId, String status, Long appId);
 
     /**
      * 根据环境id获取已部署正在运行实例的应用
@@ -139,7 +139,7 @@ public interface ApplicationService {
      * @param pageRequest 分页参数
      * @return baseList of ApplicationRepDTO
      */
-    PageInfo<ApplicationCodeVO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest);
+    PageInfo<ApplicationServiceCodeVO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest);
 
     /**
      * 项目下查询所有已经启用的应用
@@ -147,7 +147,7 @@ public interface ApplicationService {
      * @param projectId 项目id
      * @return baseList of ApplicationRepDTO
      */
-    List<ApplicationRepVO> listByActive(Long projectId);
+    List<ApplicationServiceRepVO> listByActive(Long projectId);
 
     /**
      * 项目下查询所有可选已经启用的应用
@@ -155,7 +155,7 @@ public interface ApplicationService {
      * @param projectId 项目id
      * @return baseList of ApplicationRepDTO
      */
-    List<ApplicationRepVO> listAll(Long projectId);
+    List<ApplicationServiceRepVO> listAll(Long projectId);
 
     /**
      * 创建应用校验名称是否存在
@@ -190,7 +190,7 @@ public interface ApplicationService {
      * @param params      查询参数
      * @return baseList of ApplicationRepDTO
      */
-    PageInfo<ApplicationReqVO> pageByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<ApplicationServiceReqVO> pageByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
 
     /**
      * 项目下分页查询代码仓库
@@ -200,7 +200,7 @@ public interface ApplicationService {
      * @param params      查询参数
      * @return page of ApplicationRepDTO
      */
-    PageInfo<ApplicationRepVO> pageCodeRepository(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<ApplicationServiceRepVO> pageCodeRepository(Long projectId, PageRequest pageRequest, String params);
 
     /**
      * 获取应用下所有用户权限
@@ -208,7 +208,7 @@ public interface ApplicationService {
      * @param appId 应用id
      * @return List
      */
-    List<AppUserPermissionRespVO> listAllUserPermission(Long appId);
+    List<AppServiceUserPermissionRespVO> listAllUserPermission(Long appId);
 
     /**
      * valid the repository url and access token
@@ -227,7 +227,7 @@ public interface ApplicationService {
      * @param applicationImportVO 导入操作的相关信息
      * @return response
      */
-    ApplicationRepVO importApp(Long projectId, ApplicationImportVO applicationImportVO);
+    ApplicationServiceRepVO importApp(Long projectId, ApplicationImportVO applicationImportVO);
 
 
     /**
@@ -237,15 +237,15 @@ public interface ApplicationService {
      * @param code      应用code
      * @return ApplicationRepDTO
      */
-    ApplicationRepVO queryByCode(Long projectId, String code);
+    ApplicationServiceRepVO queryByCode(Long projectId, String code);
 
 
     /**
      * 处理iam服务创建应用
      *
-     * @param iamAppPayLoad 应用相关信息
+     * @param devOpsAppPayload 应用相关信息
      */
-    void createIamApplication(IamAppPayLoad iamAppPayLoad);
+    void createGitlabProject(Long projectId, DevOpsAppPayload devOpsAppPayload);
 
 
     /**
@@ -317,7 +317,7 @@ public interface ApplicationService {
      * @param params
      * @return
      */
-    PageInfo<RemoteApplicationVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<RemoteApplicationServiceVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params);
 
     /**
      * 获取共享应用
@@ -326,60 +326,60 @@ public interface ApplicationService {
      * @param params
      * @return
      */
-    PageInfo<ApplicationRepVO> pageShareApps(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<ApplicationServiceRepVO> pageShareApps(Long projectId, PageRequest pageRequest, String params);
 
     void baseCheckApp(Long projectId, Long appId);
 
-    int baseUpdate(ApplicationDTO applicationDTO);
+    int baseUpdate(ApplicationServiceDTO applicationDTO);
 
-    void updateApplicationStatus(ApplicationDTO applicationDTO);
+    void updateApplicationStatus(ApplicationServiceDTO applicationDTO);
 
-    ApplicationDTO baseQuery(Long applicationId);
+    ApplicationServiceDTO baseQuery(Long applicationId);
 
-    PageInfo<ApplicationDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
+    PageInfo<ApplicationServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
             appMarket,
-                                               String type, Boolean doPage, PageRequest pageRequest, String params);
+                                                      String type, Boolean doPage, PageRequest pageRequest, String params);
 
-    PageInfo<ApplicationDTO> basePageCodeRepository(Long projectId, PageRequest pageRequest, String params,
-                                                    Boolean isProjectOwner, Long userId);
+    PageInfo<ApplicationServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageRequest, String params,
+                                                           Boolean isProjectOwner, Long userId);
 
 
-    ApplicationDTO baseQueryByCode(String code, Long projectId);
+    ApplicationServiceDTO baseQueryByCode(String code, Long projectId);
 
-    ApplicationDTO baseQueryByCodeWithNullProject(String code);
+    ApplicationServiceDTO baseQueryByCodeWithNullProject(String code);
 
-    List<ApplicationDTO> baseListByEnvId(Long projectId, Long envId, String status);
+    List<ApplicationServiceDTO> baseListByEnvId(Long projectId, Long envId, String status);
 
-    PageInfo<ApplicationDTO> basePageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest);
+    PageInfo<ApplicationServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest);
 
-    List<ApplicationDTO> baseListByActive(Long projectId);
+    List<ApplicationServiceDTO> baseListByActive(Long projectId);
 
-    List<ApplicationDTO> baseListDeployedApp(Long projectId);
+    List<ApplicationServiceDTO> baseListDeployedApp(Long projectId);
 
-    PageInfo<ApplicationDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
-                                                                 PageRequest pageRequest, String params);
+    PageInfo<ApplicationServiceDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
+                                                                        PageRequest pageRequest, String params);
 
-    ApplicationDTO baseQueryByToken(String token);
+    ApplicationServiceDTO baseQueryByToken(String token);
 
     void baseCheckAppCanDisable(Long applicationId);
 
-    List<ApplicationDTO> baseListByCode(String code);
+    List<ApplicationServiceDTO> baseListByCode(String code);
 
-    List<ApplicationDTO> baseListByGitLabProjectIds(List<Long> gitLabProjectIds);
+    List<ApplicationServiceDTO> baseListByGitLabProjectIds(List<Long> gitLabProjectIds);
 
     void baseDelete(Long appId);
 
-    List<ApplicationDTO> baseListByProjectIdAndSkipCheck(Long projectId);
+    List<ApplicationServiceDTO> baseListByProjectIdAndSkipCheck(Long projectId);
 
-    List<ApplicationDTO> baseListByProjectId(Long projectId);
+    List<ApplicationServiceDTO> baseListByProjectId(Long projectId);
 
     void baseUpdateHarborConfig(Long projectId, Long newConfigId, Long oldConfigId, boolean harborPrivate);
 
-    ApplicationDTO getApplicationDTO(Long projectId, ApplicationReqVO applicationReqDTO);
+    ApplicationServiceDTO getApplicationDTO(Long projectId, ApplicationServiceReqVO applicationReqDTO);
 
     void baseCheckName(Long projectId, String appName);
 
-    void baseCheckCode(ApplicationDTO applicationDTO);
+    void baseCheckCode(ApplicationServiceDTO applicationDTO);
 
-    ApplicationDTO baseCreate(ApplicationDTO applicationDTO);
+    ApplicationServiceDTO baseCreate(ApplicationServiceDTO applicationDTO);
 }

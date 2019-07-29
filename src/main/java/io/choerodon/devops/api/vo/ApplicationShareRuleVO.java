@@ -7,7 +7,7 @@ package io.choerodon.devops.api.vo;
  */
 public class ApplicationShareRuleVO {
     private Long id;
-    private Long appId;
+    private Long appServiceId;
     private String shareLevel;
     private String versionType;
     private String version;
@@ -30,12 +30,12 @@ public class ApplicationShareRuleVO {
         this.id = id;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public String getShareLevel() {

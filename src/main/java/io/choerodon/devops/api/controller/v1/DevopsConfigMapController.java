@@ -122,7 +122,7 @@ public class DevopsConfigMapController {
      * @param envId       环境id
      * @param pageRequest 分页参数
      * @param searchParam 查询参数
-     * @param appId       应用id
+     * @param appServiceId       应用id
      * @return Page of DevopsServiceVO
      */
     @Permission(type = ResourceType.PROJECT,
@@ -137,13 +137,13 @@ public class DevopsConfigMapController {
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "应用id")
-            @RequestParam(value = "app_id", required = false) Long appId,
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsConfigMapService.pageByOptions(projectId, envId, pageRequest, searchParam, appId))
+        return Optional.ofNullable(devopsConfigMapService.pageByOptions(projectId, envId, pageRequest, searchParam, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.configMap.query"));
     }

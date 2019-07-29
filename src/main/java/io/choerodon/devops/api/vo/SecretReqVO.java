@@ -15,7 +15,7 @@ public class SecretReqVO {
     private Long id;
 
     @ApiModelProperty(value = "应用id/非必填")
-    private Long appId;
+    private Long appServiceId;
 
     @ApiModelProperty(value = "环境id/必填")
     private Long envId;
@@ -42,12 +42,12 @@ public class SecretReqVO {
         this.id = id;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Long getEnvId() {

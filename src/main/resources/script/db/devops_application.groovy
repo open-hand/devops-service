@@ -85,4 +85,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
             column(name: 'chart_config_id', type: 'BIGINT UNSIGNED', remarks: 'chart配置信息', afterColumn: 'harbor_config_id')
         }
     }
+
+    changeSet(author: 'scp', id: '2019-7-29-rename-table') {
+        addColumn(tableName: 'devops_application') {
+            column(name: 'img_url', type:  'VARCHAR(200)', remarks: '图标url', afterColumn: 'is_failed')
+        }
+        renameTable(newTableName: 'devops_application_service', oldTableName: 'devops_application')
+
+    }
+
 }

@@ -12,7 +12,7 @@ import io.choerodon.devops.api.vo.CustomMergeRequestVO;
 import io.choerodon.devops.api.vo.DevopsBranchVO;
 import io.choerodon.devops.api.vo.IssueVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
@@ -35,7 +35,7 @@ public class IssueServiceImpl implements IssueService {
     @Autowired
     private DevopsBranchService devopsBranchService;
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private DevopsMergeRequestService devopsMergeRequestService;
     @Autowired
@@ -84,21 +84,21 @@ public class IssueServiceImpl implements IssueService {
         List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchService.baseListDevopsBranchesByIssueId(issueId);
         List<DevopsBranchVO> devopsBranchVOS = new ArrayList<>();
         devopsBranchDTOS.forEach(devopsBranchDO -> {
-            Integer gitLabProjectId = getGitLabId(devopsBranchDO.getAppId());
+            Integer gitLabProjectId = getGitLabId(devopsBranchDO.getAppServiceId());
 
-            List<DevopsGitlabCommitDTO> devopsGitlabCommitES = devopsGitlabCommitService.baseListByAppIdAndBranch(devopsBranchDO.getAppId(), devopsBranchDO.getBranchName(), devopsBranchDO.getCheckoutDate());
+            List<DevopsGitlabCommitDTO> devopsGitlabCommitES = devopsGitlabCommitService.baseListByAppIdAndBranch(devopsBranchDO.getAppServiceId(), devopsBranchDO.getBranchName(), devopsBranchDO.getCheckoutDate());
 
             devopsGitlabCommitES = devopsGitlabCommitES.stream().filter(devopsGitlabCommitE ->
                     !devopsGitlabCommitE.getCommitSha().equals(devopsBranchDO.getCheckoutCommit()))
                     .collect(Collectors.toList());
             DevopsBranchVO devopsBranchVO = ConvertHelper.convert(devopsBranchDO, DevopsBranchVO.class);
             devopsBranchVO.setCommits(devopsGitlabCommitES);
-            ApplicationDTO applicationDTO = applicationService.baseQuery(devopsBranchDO.getAppId());
+            ApplicationServiceDTO applicationDTO = applicationService.baseQuery(devopsBranchDO.getAppServiceId());
             devopsBranchVO.setAppName(applicationDTO.getName());
             List<DevopsMergeRequestDTO> mergeRequests = devopsMergeRequestService.baseListBySourceBranch(
                     devopsBranchDO.getBranchName(), (long) gitLabProjectId);
             devopsBranchVO.setMergeRequests(addAuthorNameAndAssigneeName(
-                    mergeRequests, devopsBranchDO.getAppId()));
+                    mergeRequests, devopsBranchDO.getAppServiceId()));
             devopsBranchVOS.add(devopsBranchVO);
         });
         return devopsBranchVOS;
@@ -143,17 +143,17 @@ public class IssueServiceImpl implements IssueService {
         List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchService.baseListDevopsBranchesByIssueId(issueId);
         List<CustomMergeRequestVO> mergeRequests = new ArrayList<>();
         devopsBranchDTOS.forEach(devopsBranchDO -> {
-            Integer gitLabProjectId = getGitLabId(devopsBranchDO.getAppId());
+            Integer gitLabProjectId = getGitLabId(devopsBranchDO.getAppServiceId());
             List<DevopsMergeRequestDTO> devopsMergeRequestDTOS = devopsMergeRequestService.baseListBySourceBranch(
                     devopsBranchDO.getBranchName(), (long) gitLabProjectId);
             mergeRequests.addAll(addAuthorNameAndAssigneeName(
-                    devopsMergeRequestDTOS, devopsBranchDO.getAppId()));
+                    devopsMergeRequestDTOS, devopsBranchDO.getAppServiceId()));
         });
         return mergeRequests;
     }
 
     private Integer getGitLabId(Long applicationId) {
-        ApplicationDTO applicationDO = applicationMapper.selectByPrimaryKey(applicationId);
+        ApplicationServiceDTO applicationDO = applicationMapper.selectByPrimaryKey(applicationId);
         if (applicationDO != null) {
             return applicationDO.getGitlabProjectId();
         } else {

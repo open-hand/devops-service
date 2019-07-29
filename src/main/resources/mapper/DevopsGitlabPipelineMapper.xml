@@ -5,7 +5,7 @@
     <select id="listDevopsGitlabPipeline" resultType="io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO">
         select
         dgp.pipeline_id,
-        dgp.app_id,
+        dgp.app_service_id,
         dgp.pipeline_create_user_id,
         dgp.commit_id,
         dgp.status,
@@ -17,7 +17,7 @@
         dgc.ref
         from devops_gitlab_pipeline dgp
         LEFT JOIN devops_gitlab_commit dgc on dgp.commit_id = dgc.id
-        where dgp.app_id = #{appId}
+        where dgp.app_service_id = #{appServiceId}
         <if test="startTime != null">
             AND dgp.pipeline_creation_date >= CONCAT('','${startTime}',' 00:00:00')
         </if>
@@ -36,7 +36,7 @@
     <select id="listByBranch" resultType="io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO">
         SELECT
         dgp.pipeline_id,
-        dgp.app_id,
+        dgp.app_service_id,
         dgp.pipeline_create_user_id,
         dgp.commit_id,
         dgp.status,
@@ -51,7 +51,7 @@
         LEFT JOIN devops_gitlab_commit dgc ON dgp.commit_id = dgc.id
         WHERE
         dgc.ref = #{branch}
-        AND dgp.app_id = #{appId}
+        AND dgp.app_service_id = #{appServiceId}
         ORDER BY
         dgp.id DESC
         LIMIT 10

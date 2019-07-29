@@ -79,9 +79,9 @@ import io.choerodon.websocket.tool.UUIDTool;
  */
 @Service
 @EnableConfigurationProperties(HarborConfigurationProperties.class)
-public class ApplicationServiceImpl implements ApplicationService {
+public class ApplicationServiceServiceImpl implements ApplicationSeviceService {
     public static final String SEVERITIES = "severities";
-    public static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceServiceImpl.class);
     public static final String NODELETED = "nodeleted";
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
     private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
@@ -171,11 +171,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION,
             description = "Devops创建应用", inputSchema = "{}")
     @Transactional
-    public ApplicationRepVO create(Long projectId, ApplicationReqVO applicationReqVO) {
+    public ApplicationServiceRepVO create(Long projectId, ApplicationServiceReqVO applicationReqVO) {
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationReqVO);
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
-        OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         // 查询创建应用所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
         MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
@@ -185,7 +184,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new CommonException("error.user.not.owner");
         }
 
-        ApplicationDTO applicationDTO = getApplicationDTO(projectId, applicationReqVO);
+        ApplicationServiceDTO applicationDTO = getApplicationDTO(projectId, applicationReqVO);
         applicationDTO = baseCreate(applicationDTO);
 
         Long appId = applicationDTO.getId();
@@ -198,26 +197,31 @@ public class ApplicationServiceImpl implements ApplicationService {
             userIds.forEach(e -> applicationUserPermissionService.baseCreate(e, appId));
         }
 
-        IamAppDTO iamAppDTO = new IamAppDTO();
-        iamAppDTO.setApplicationCategory(APPLICATION);
-        iamAppDTO.setApplicationType(applicationReqVO.getType());
-        iamAppDTO.setCode(applicationReqVO.getCode());
-        iamAppDTO.setName(applicationReqVO.getName());
-        iamAppDTO.setEnabled(true);
-        iamAppDTO.setOrganizationId(organizationDTO.getId());
-        iamAppDTO.setProjectId(projectId);
-        iamAppDTO.setFrom(applicationName);
+        //创建saga payload
+        DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
+        devOpsAppPayload.setType(APPLICATION);
+        devOpsAppPayload.setPath(applicationDTO.getCode());
+        devOpsAppPayload.setOrganizationId(projectDTO.getOrganizationId());
+        devOpsAppPayload.setUserId(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
+        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
+        devOpsAppPayload.setUserIds(userIds);
+        devOpsAppPayload.setSkipCheckPermission(applicationDTO.getIsSkipCheckPermission());
+        devOpsAppPayload.setAppId(applicationDTO.getId());
+        devOpsAppPayload.setIamProjectId(applicationDTO.getProjectId());
+        //0.14.0-0.15.0的时候，同步已有的app到iam，此时app已经存在gitlab project,不需要再创建
+        if (applicationDTO.getGitlabProjectId() == null) {
+            createGitlabProject(projectId, devOpsAppPayload);
+        }
 
-        iamService.createIamApp(organizationDTO.getId(), iamAppDTO);
-        return ConvertUtils.convertObject(baseQueryByCode(applicationDTO.getCode(), applicationDTO.getProjectId()), ApplicationRepVO.class);
+        return ConvertUtils.convertObject(baseQueryByCode(applicationDTO.getCode(), applicationDTO.getProjectId()), ApplicationServiceRepVO.class);
     }
 
     @Override
-    public ApplicationRepVO query(Long projectId, Long applicationId) {
+    public ApplicationServiceRepVO query(Long projectId, Long applicationId) {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
-        ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(applicationId);
-        ApplicationRepVO applicationRepVO = ConvertUtils.convertObject(applicationDTO, ApplicationRepVO.class);
+        ApplicationServiceDTO applicationDTO = applicationMapper.selectByPrimaryKey(applicationId);
+        ApplicationServiceRepVO applicationRepVO = ConvertUtils.convertObject(applicationDTO, ApplicationServiceRepVO.class);
         //url地址拼接
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         if (applicationDTO.getGitlabProjectId() != null) {
@@ -242,7 +246,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         applicationUserPermissionService.baseDeleteByAppId(appId);
         //删除gitlab project
-        ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(appId);
+        ApplicationServiceDTO applicationDTO = applicationMapper.selectByPrimaryKey(appId);
         if (applicationDTO.getGitlabProjectId() != null) {
             Integer gitlabProjectId = applicationDTO.getGitlabProjectId();
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);
@@ -253,20 +257,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
         }
         //删除iam应用
-        DevOpsAppSyncPayload appSyncPayload = new DevOpsAppSyncPayload();
-        appSyncPayload.setProjectId(projectId);
-        appSyncPayload.setOrganizationId(projectDTO.getOrganizationId());
-        appSyncPayload.setCode(applicationDTO.getCode());
-        producer.applyAndReturn(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("app")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_DELETE),
-                builder -> builder
-                        .withPayloadAndSerialize(appSyncPayload)
-                        .withRefId(String.valueOf(appId))
-                        .withSourceId(projectId));
         applicationMapper.deleteByPrimaryKey(appId);
     }
 
@@ -276,28 +266,20 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     public Boolean update(Long projectId, ApplicationUpdateVO applicationUpdateVO) {
 
-        ApplicationDTO applicationDTO = ConvertUtils.convertObject(applicationUpdateVO, ApplicationDTO.class);
+        ApplicationServiceDTO applicationDTO = ConvertUtils.convertObject(applicationUpdateVO, ApplicationServiceDTO.class);
         applicationDTO.setIsSkipCheckPermission(applicationUpdateVO.getIsSkipCheckPermission());
         applicationDTO.setProjectId(projectId);
         applicationDTO.setHarborConfigId(applicationUpdateVO.getHarborConfigId());
         applicationDTO.setChartConfigId(applicationUpdateVO.getChartConfigId());
 
         Long appId = applicationUpdateVO.getId();
-        ApplicationDTO oldApplicationDTO = applicationMapper.selectByPrimaryKey(appId);
+        ApplicationServiceDTO oldApplicationDTO = applicationMapper.selectByPrimaryKey(appId);
 
         if (!oldApplicationDTO.getName().equals(applicationUpdateVO.getName())) {
             baseCheckName(applicationDTO.getProjectId(), applicationDTO.getName());
         }
         if (baseUpdate(applicationDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_APP);
-        }
-
-        if (!oldApplicationDTO.getName().equals(applicationUpdateVO.getName())) {
-            ProjectDTO projectDTO = iamService.queryIamProject(oldApplicationDTO.getProjectId());
-            OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
-            IamAppDTO iamAppDTO = iamService.queryIamAppByCode(organizationDTO.getId(), applicationDTO.getCode());
-            iamAppDTO.setName(applicationUpdateVO.getName());
-            iamService.updateIamApp(organizationDTO.getId(), iamAppDTO.getId(), iamAppDTO);
         }
 
         // 创建gitlabUserPayload
@@ -339,36 +321,20 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public Boolean updateActive(Long appId, Boolean active) {
-        ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(appId);
+        ApplicationServiceDTO applicationDTO = applicationMapper.selectByPrimaryKey(appId);
         applicationDTO.setActive(active);
         if (baseUpdate(applicationDTO) != 1) {
             throw new CommonException("error.application.active");
         }
-        ProjectDTO projectDTO = iamService.queryIamProject(applicationDTO.getId());
-        DevOpsAppSyncPayload opsAppSyncPayload = new DevOpsAppSyncPayload();
-        opsAppSyncPayload.setActive(active);
-        opsAppSyncPayload.setOrganizationId(projectDTO.getOrganizationId());
-        opsAppSyncPayload.setProjectId(applicationDTO.getId());
-        opsAppSyncPayload.setCode(applicationDTO.getCode());
-        producer.applyAndReturn(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("app")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_SYNC_APP_ACTIVE),
-                builder -> builder
-                        .withPayloadAndSerialize(opsAppSyncPayload)
-                        .withRefId(String.valueOf(appId))
-                        .withSourceId(applicationDTO.getId()));
         return true;
     }
 
     @Override
-    public PageInfo<ApplicationRepVO> pageByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
-                                                    Boolean appMarket,
-                                                    String type, Boolean doPage,
-                                                    PageRequest pageRequest, String params) {
-        PageInfo<ApplicationDTO> applicationDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
+    public PageInfo<ApplicationServiceRepVO> pageByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
+                                                           Boolean appMarket,
+                                                           String type, Boolean doPage,
+                                                           PageRequest pageRequest, String params) {
+        PageInfo<ApplicationServiceDTO> applicationDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
@@ -376,22 +342,22 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         initApplicationParams(projectDTO, organizationDTO, applicationDTOS.getList(), urlSlash);
 
-        PageInfo<ApplicationRepVO> resultDTOPage = ConvertUtils.convertPage(applicationDTOS, this::dtoToRepVo);
+        PageInfo<ApplicationServiceRepVO> resultDTOPage = ConvertUtils.convertPage(applicationDTOS, this::dtoToRepVo);
         resultDTOPage.setList(setApplicationRepVOPermission(applicationDTOS.getList(), userAttrDTO, projectDTO));
         return resultDTOPage;
     }
 
     @Override
-    public PageInfo<ApplicationRepVO> pageByOptionsAppMarket(Long projectId, Boolean isActive, Boolean hasVersion,
-                                                             Boolean appMarket,
-                                                             String type, Boolean doPage,
-                                                             PageRequest pageRequest, String params) {
-        PageInfo<ApplicationDTO> applicationDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
+    public PageInfo<ApplicationServiceRepVO> pageByOptionsAppMarket(Long projectId, Boolean isActive, Boolean hasVersion,
+                                                                    Boolean appMarket,
+                                                                    String type, Boolean doPage,
+                                                                    PageRequest pageRequest, String params) {
+        PageInfo<ApplicationServiceDTO> applicationDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
         return ConvertUtils.convertPage(applicationDTOS, this::dtoToRepVo);
     }
 
     @Override
-    public PageInfo<ApplicationRepVO> pageCodeRepository(Long projectId, PageRequest pageRequest, String params) {
+    public PageInfo<ApplicationServiceRepVO> pageCodeRepository(Long projectId, PageRequest pageRequest, String params) {
 
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
@@ -399,19 +365,19 @@ public class ApplicationServiceImpl implements ApplicationService {
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
 
         Map maps = gson.fromJson(params, Map.class);
-        PageInfo<ApplicationDTO> applicationDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listCodeRepository(projectId,
+        PageInfo<ApplicationServiceDTO> applicationDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                 TypeUtil.cast(maps.get(TypeUtil.PARAM)), isProjectOwner, userAttrDTO.getIamUserId()));
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
         initApplicationParams(projectDTO, organizationDTO, applicationDTOPageInfo.getList(), urlSlash);
 
-        return ConvertUtils.convertPage(applicationDTOPageInfo, ApplicationRepVO.class);
+        return ConvertUtils.convertPage(applicationDTOPageInfo, ApplicationServiceRepVO.class);
     }
 
     @Override
-    public List<ApplicationRepVO> listByActive(Long projectId) {
-        List<ApplicationDTO> applicationDTOList = baseListByActive(projectId);
+    public List<ApplicationServiceRepVO> listByActive(Long projectId) {
+        List<ApplicationServiceDTO> applicationDTOList = baseListByActive(projectId);
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
@@ -423,8 +389,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<ApplicationRepVO> listAll(Long projectId) {
-        return ConvertUtils.convertList(baseListAll(projectId), ApplicationRepVO.class);
+    public List<ApplicationServiceRepVO> listAll(Long projectId) {
+        return ConvertUtils.convertList(baseListAll(projectId), ApplicationServiceRepVO.class);
     }
 
     @Override
@@ -434,7 +400,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public void checkCode(Long projectId, String code) {
-        ApplicationDTO applicationDTO = new ApplicationDTO();
+        ApplicationServiceDTO applicationDTO = new ApplicationServiceDTO();
         applicationDTO.setProjectId(projectId);
         applicationDTO.setCode(code);
         baseCheckCode(applicationDTO);
@@ -456,7 +422,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public void operationApplication(DevOpsAppPayload gitlabProjectPayload) {
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByGitlabAppGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
-        ApplicationDTO applicationDTO = baseQueryByCode(gitlabProjectPayload.getPath(),
+        ApplicationServiceDTO applicationDTO = baseQueryByCode(gitlabProjectPayload.getPath(),
                 devopsProjectDTO.getIamProjectId());
         ProjectDTO projectDTO = iamService.queryIamProject(devopsProjectDTO.getIamProjectId());
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
@@ -540,7 +506,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         // 准备相关的数据
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByGitlabAppGroupId(
                 TypeUtil.objToInteger(devOpsAppImportPayload.getGroupId()));
-        ApplicationDTO applicationDTO = baseQueryByCode(devOpsAppImportPayload.getPath(),
+        ApplicationServiceDTO applicationDTO = baseQueryByCode(devOpsAppImportPayload.getPath(),
                 devopsProjectDTO.getIamProjectId());
         ProjectDTO projectDTO = iamService.queryIamProject(devopsProjectDTO.getIamProjectId());
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
@@ -685,7 +651,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public String queryFile(String token, String type) {
-        ApplicationDTO applicationDTO = baseQueryByToken(token);
+        ApplicationServiceDTO applicationDTO = baseQueryByToken(token);
         if (applicationDTO == null) {
             return null;
         }
@@ -733,13 +699,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<ApplicationCodeVO> listByEnvId(Long projectId, Long envId, String status, Long appId) {
-        List<ApplicationCodeVO> applicationCodeVOS = ConvertUtils
+    public List<ApplicationServiceCodeVO> listByEnvId(Long projectId, Long envId, String status, Long appId) {
+        List<ApplicationServiceCodeVO> applicationCodeVOS = ConvertUtils
                 .convertList(baseListByEnvId(projectId, envId, status),
-                        ApplicationCodeVO.class);
+                        ApplicationServiceCodeVO.class);
         if (appId != null) {
-            ApplicationDTO applicationDTO = baseQuery(appId);
-            ApplicationCodeVO applicationCodeVO = new ApplicationCodeVO();
+            ApplicationServiceDTO applicationDTO = baseQuery(appId);
+            ApplicationServiceCodeVO applicationCodeVO = new ApplicationServiceCodeVO();
             BeanUtils.copyProperties(applicationDTO, applicationCodeVO);
 //            ApplicationShareRuleDTO applicationShareDTO = applicationShareService.baseQueryByAppId(appId);
 //            if (applicationShareDTO != null) {
@@ -758,25 +724,25 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public PageInfo<ApplicationCodeVO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
+    public PageInfo<ApplicationServiceCodeVO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
         return ConvertUtils.convertPage(basePageByEnvId(projectId, envId, appId, pageRequest),
-                ApplicationCodeVO.class);
+                ApplicationServiceCodeVO.class);
     }
 
     @Override
-    public PageInfo<ApplicationReqVO> pageByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest,
-                                                                   String params) {
-        return ConvertUtils.convertPage(basePageByActiveAndPubAndHasVersion(projectId, true, pageRequest, params), ApplicationReqVO.class);
+    public PageInfo<ApplicationServiceReqVO> pageByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest,
+                                                                          String params) {
+        return ConvertUtils.convertPage(basePageByActiveAndPubAndHasVersion(projectId, true, pageRequest, params), ApplicationServiceReqVO.class);
     }
 
     @Override
-    public List<AppUserPermissionRespVO> listAllUserPermission(Long appId) {
+    public List<AppServiceUserPermissionRespVO> listAllUserPermission(Long appId) {
         List<Long> userIds = applicationUserPermissionService.baseListByAppId(appId).stream().map(ApplicationUserPermissionDTO::getIamUserId)
                 .collect(Collectors.toList());
         List<IamUserDTO> userEList = iamService.listUsersByIds(userIds);
-        List<AppUserPermissionRespVO> resultList = new ArrayList<>();
+        List<AppServiceUserPermissionRespVO> resultList = new ArrayList<>();
         userEList.forEach(
-                e -> resultList.add(new AppUserPermissionRespVO(e.getId(), e.getLoginName(), e.getRealName())));
+                e -> resultList.add(new AppServiceUserPermissionRespVO(e.getId(), e.getLoginName(), e.getRealName())));
         return resultList;
     }
 
@@ -793,9 +759,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT, description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
-    public ApplicationRepVO importApp(Long projectId, ApplicationImportVO applicationImportVO) {
+    public ApplicationServiceRepVO importApp(Long projectId, ApplicationImportVO applicationImportVO) {
         // 获取当前操作的用户的信息
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         // 校验application信息的格式
         ApplicationValidator.checkApplication(applicationImportVO);
@@ -804,7 +770,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         baseCheckName(projectId, applicationImportVO.getName());
 
         // 校验code唯一性
-        ApplicationDTO applicationDTO = new ApplicationDTO();
+        ApplicationServiceDTO applicationDTO = new ApplicationServiceDTO();
         applicationDTO.setProjectId(projectId);
         applicationDTO.setCode(applicationImportVO.getCode());
         baseCheckCode(applicationDTO);
@@ -829,7 +795,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(applicationDTO.getProjectId());
         MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
-                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
 
         // 校验用户的gitlab权限
         if (memberDTO == null || memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
@@ -839,131 +805,63 @@ public class ApplicationServiceImpl implements ApplicationService {
         // 创建应用
         applicationDTO = baseCreate(applicationDTO);
         Long appId = applicationDTO.getId();
-
-        IamAppDTO iamAppDTO = new IamAppDTO();
-        iamAppDTO.setApplicationCategory(APPLICATION);
-        iamAppDTO.setApplicationType(applicationImportVO.getType());
-        iamAppDTO.setCode(applicationImportVO.getCode());
-        iamAppDTO.setName(applicationImportVO.getName());
-        iamAppDTO.setEnabled(true);
-        iamAppDTO.setOrganizationId(organizationDTO.getId());
-        iamAppDTO.setProjectId(projectId);
-        iamAppDTO.setFrom(applicationName);
-        //iam创建应用
-        iamService.createIamApp(organizationDTO.getId(), iamAppDTO);
-
-        // 创建saga payload
-        DevOpsAppImportPayload devOpsAppImportPayload = new DevOpsAppImportPayload();
-        devOpsAppImportPayload.setType(APPLICATION);
-        devOpsAppImportPayload.setPath(applicationImportVO.getCode());
-        devOpsAppImportPayload.setOrganizationId(organizationDTO.getId());
-        devOpsAppImportPayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        devOpsAppImportPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
-        devOpsAppImportPayload.setUserIds(applicationImportVO.getUserIds());
-        devOpsAppImportPayload.setSkipCheckPermission(applicationImportVO.getIsSkipCheckPermission());
-        devOpsAppImportPayload.setAppId(appId);
-        devOpsAppImportPayload.setIamProjectId(projectId);
-        devOpsAppImportPayload.setPlatformType(gitPlatformType);
-        devOpsAppImportPayload.setRepositoryUrl(applicationImportVO.getRepositoryUrl());
-        devOpsAppImportPayload.setAccessToken(applicationImportVO.getAccessToken());
-        devOpsAppImportPayload.setGitlabUserId(userAttrDTO.getGitlabUserId());
-
         // 如果不跳过权限检查
         List<Long> userIds = applicationImportVO.getUserIds();
         if (!applicationImportVO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
             userIds.forEach(e -> applicationUserPermissionService.baseCreate(e, appId));
         }
 
-        producer.applyAndReturn(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT),
-                builder -> builder
-                        .withPayloadAndSerialize(devOpsAppImportPayload)
-                        .withRefId("")
-                        .withSourceId(projectId));
-        return ConvertUtils.convertObject(baseQuery(appId), ApplicationRepVO.class);
+        //创建saga payload
+        DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
+        devOpsAppPayload.setType(APPLICATION);
+        devOpsAppPayload.setPath(applicationDTO.getCode());
+        devOpsAppPayload.setOrganizationId(projectDTO.getOrganizationId());
+        devOpsAppPayload.setUserId(TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
+        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
+        devOpsAppPayload.setUserIds(userIds);
+        devOpsAppPayload.setSkipCheckPermission(applicationDTO.getIsSkipCheckPermission());
+        devOpsAppPayload.setAppId(applicationDTO.getId());
+        devOpsAppPayload.setIamProjectId(applicationDTO.getProjectId());
+        //0.14.0-0.15.0的时候，同步已有的app到iam，此时app已经存在gitlab project,不需要再创建
+        if (applicationDTO.getGitlabProjectId() == null) {
+            createGitlabProject(projectId, devOpsAppPayload);
+        }
+
+        return ConvertUtils.convertObject(baseQuery(appId), ApplicationServiceRepVO.class);
     }
 
     @Override
-    public ApplicationRepVO queryByCode(Long projectId, String code) {
-        return ConvertUtils.convertObject(baseQueryByCode(code, projectId), ApplicationRepVO.class);
+    public ApplicationServiceRepVO queryByCode(Long projectId, String code) {
+        return ConvertUtils.convertObject(baseQueryByCode(code, projectId), ApplicationServiceRepVO.class);
     }
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT,
             description = "Devops创建gitlab项目", inputSchema = "{}")
-    public void createIamApplication(IamAppPayLoad iamAppPayLoad) {
-
-        List<Long> userIds = new ArrayList<>();
-        ApplicationDTO applicationDTO = baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
-        if (applicationDTO == null) {
-            applicationDTO = new ApplicationDTO();
-            applicationDTO.setIsSkipCheckPermission(true);
-            applicationDTO.setName(iamAppPayLoad.getName());
-            applicationDTO.setCode(iamAppPayLoad.getCode());
-            applicationDTO.setActive(true);
-            applicationDTO.setSynchro(false);
-            applicationDTO.setProjectId(iamAppPayLoad.getProjectId());
-            applicationDTO.setType("normal");
-            if (iamAppPayLoad.getApplicationType().equals(TEST)) {
-                applicationDTO.setType("test");
-            }
-            applicationDTO = baseCreate(applicationDTO);
-        } else {
-            //创建iam入口过来的应用直接跳过权限校验，从devops入口过来的应用选择了特定用户权限，需要给特定用户分配该用户权限
-            if (!applicationDTO.getIsSkipCheckPermission()) {
-                userIds = applicationUserPermissionService.baseListByAppId(applicationDTO.getId()).stream().map(ApplicationUserPermissionDTO::getIamUserId).collect(Collectors.toList());
-            }
-        }
-
-        //创建iam入口过来的应用直接用管理员去gitlab创建对应的project,避免没有对应项目的权限导致创建失败
-        Long gitlabUserId = 1L;
-        if (applicationName.equals(iamAppPayLoad.getFrom())) {
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            gitlabUserId = userAttrDTO.getGitlabUserId();
-        }
-
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(iamAppPayLoad.getProjectId());
-
-        //创建saga payload
-        DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
-        devOpsAppPayload.setType(APPLICATION);
-        devOpsAppPayload.setPath(iamAppPayLoad.getCode());
-        devOpsAppPayload.setOrganizationId(iamAppPayLoad.getOrganizationId());
-        devOpsAppPayload.setUserId(TypeUtil.objToInteger(gitlabUserId));
-        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
-        devOpsAppPayload.setUserIds(userIds);
-        devOpsAppPayload.setSkipCheckPermission(applicationDTO.getIsSkipCheckPermission());
-        devOpsAppPayload.setAppId(applicationDTO.getId());
-        devOpsAppPayload.setIamProjectId(iamAppPayLoad.getProjectId());
+    public void createGitlabProject(Long projectId, DevOpsAppPayload devOpsAppPayload) {
         //0.14.0-0.15.0的时候，同步已有的app到iam，此时app已经存在gitlab project,不需要再创建
-        if (applicationDTO.getGitlabProjectId() == null) {
-            producer.applyAndReturn(
-                    StartSagaBuilder
-                            .newBuilder()
-                            .withLevel(ResourceLevel.PROJECT)
-                            .withRefType("")
-                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT),
-                    builder -> builder
-                            .withPayloadAndSerialize(devOpsAppPayload)
-                            .withRefId("")
-                            .withSourceId(iamAppPayLoad.getProjectId()));
-        }
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT),
+                builder -> builder
+                        .withPayloadAndSerialize(devOpsAppPayload)
+                        .withRefId("")
+                        .withSourceId(projectId));
     }
 
     @Override
     public void updateIamApplication(IamAppPayLoad iamAppPayLoad) {
-        ApplicationDTO applicationDTO = baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        ApplicationServiceDTO applicationDTO = baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
         applicationDTO.setName(iamAppPayLoad.getName());
         baseUpdate(applicationDTO);
     }
 
     @Override
     public void deleteIamApplication(IamAppPayLoad iamAppPayLoad) {
-        ApplicationDTO applicationDTO = baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        ApplicationServiceDTO applicationDTO = baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
         if (applicationDTO.getGitlabProjectId() != null) {
             gitlabServiceClientOperator.deleteProjectById(applicationDTO.getGitlabProjectId(), 1);
         }
@@ -1047,7 +945,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         SonarContentsVO sonarContentsVO = new SonarContentsVO();
         List<SonarContentVO> sonarContentVOS = new ArrayList<>();
-        ApplicationDTO applicationDTO = baseQuery(appId);
+        ApplicationServiceDTO applicationDTO = baseQuery(appId);
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         OrganizationDTO organization = iamService.queryOrganizationById(projectDTO.getOrganizationId());
 
@@ -1352,7 +1250,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Date tomorrow = c.getTime();
         SonarTableVO sonarTableVO = new SonarTableVO();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
-        ApplicationDTO applicationDTO = baseQuery(appId);
+        ApplicationServiceDTO applicationDTO = baseQuery(appId);
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
@@ -1510,7 +1408,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 
     @Override
-    public PageInfo<RemoteApplicationVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params) {
+    public PageInfo<RemoteApplicationServiceVO> pageRemoteApps(Long projectId, PageRequest pageRequest, String params) {
         DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
@@ -1523,7 +1421,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         map.put("access_token", marketConnectInfoDO.getAccessToken());
         params = params == null ? "" : params;
         map.put("params", params);
-        Response<PageInfo<RemoteApplicationVO>> pageInfoResponse = null;
+        Response<PageInfo<RemoteApplicationServiceVO>> pageInfoResponse = null;
         try {
             pageInfoResponse = shareClient.getAppShares(map).execute();
             if (!pageInfoResponse.isSuccessful()) {
@@ -1536,23 +1434,23 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public PageInfo<ApplicationRepVO> pageShareApps(Long projectId, PageRequest pageRequest, String params) {
+    public PageInfo<ApplicationServiceRepVO> pageShareApps(Long projectId, PageRequest pageRequest, String params) {
         Long organizationId = iamService.queryIamProject(projectId).getOrganizationId();
-        PageInfo<ApplicationDTO> applicationDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listShareApplications(organizationId, projectId, params));
-        return ConvertUtils.convertPage(applicationDTOPageInfo, ApplicationRepVO.class);
+        PageInfo<ApplicationServiceDTO> applicationDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listShareApplications(organizationId, projectId, params));
+        return ConvertUtils.convertPage(applicationDTOPageInfo, ApplicationServiceRepVO.class);
     }
 
     @Override
     public void baseCheckApp(Long projectId, Long appId) {
-        ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(appId);
+        ApplicationServiceDTO applicationDTO = applicationMapper.selectByPrimaryKey(appId);
         if (applicationDTO == null || !applicationDTO.getProjectId().equals(projectId)) {
             throw new CommonException("error.app.project.notMatch");
         }
     }
 
     @Override
-    public int baseUpdate(ApplicationDTO applicationDTO) {
-        ApplicationDTO oldApplicationDTO = applicationMapper.selectByPrimaryKey(applicationDTO.getId());
+    public int baseUpdate(ApplicationServiceDTO applicationDTO) {
+        ApplicationServiceDTO oldApplicationDTO = applicationMapper.selectByPrimaryKey(applicationDTO.getId());
         if (applicationDTO.getFailed() != null && !applicationDTO.getFailed()) {
             applicationMapper.updateAppToSuccess(applicationDTO.getId());
         }
@@ -1561,20 +1459,20 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public void updateApplicationStatus(ApplicationDTO applicationDTO) {
+    public void updateApplicationStatus(ApplicationServiceDTO applicationDTO) {
         applicationMapper.updateApplicationStatus(applicationDTO.getId(), applicationDTO.getToken(),
                 applicationDTO.getGitlabProjectId(), applicationDTO.getHookId(), applicationDTO.getSynchro());
     }
 
     @Override
-    public ApplicationDTO baseQuery(Long applicationId) {
+    public ApplicationServiceDTO baseQuery(Long applicationId) {
         return applicationMapper.selectByPrimaryKey(applicationId);
     }
 
     @Override
-    public PageInfo<ApplicationDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
+    public PageInfo<ApplicationServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean
             appMarket, String type, Boolean doPage, PageRequest pageRequest, String params) {
-        PageInfo<ApplicationDTO> applicationDTOPageInfo = new PageInfo<>();
+        PageInfo<ApplicationServiceDTO> applicationDTOPageInfo = new PageInfo<>();
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         //是否需要分页
@@ -1592,8 +1490,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public PageInfo<ApplicationDTO> basePageCodeRepository(Long projectId, PageRequest pageRequest, String params,
-                                                           Boolean isProjectOwner, Long userId) {
+    public PageInfo<ApplicationServiceDTO> basePageCodeRepository(Long projectId, PageRequest pageRequest, String params,
+                                                                  Boolean isProjectOwner, Long userId) {
         Map maps = gson.fromJson(params, Map.class);
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
@@ -1601,42 +1499,42 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public ApplicationDTO baseQueryByCode(String code, Long projectId) {
-        ApplicationDTO applicationDTO = new ApplicationDTO();
+    public ApplicationServiceDTO baseQueryByCode(String code, Long projectId) {
+        ApplicationServiceDTO applicationDTO = new ApplicationServiceDTO();
         applicationDTO.setProjectId(projectId);
         applicationDTO.setCode(code);
         return applicationMapper.selectOne(applicationDTO);
     }
 
     @Override
-    public ApplicationDTO baseQueryByCodeWithNullProject(String code) {
+    public ApplicationServiceDTO baseQueryByCodeWithNullProject(String code) {
         return applicationMapper.queryByCodeWithNoProject(code);
     }
 
     @Override
-    public List<ApplicationDTO> baseListByEnvId(Long projectId, Long envId, String status) {
+    public List<ApplicationServiceDTO> baseListByEnvId(Long projectId, Long envId, String status) {
         return applicationMapper.listByEnvId(projectId, envId, null, status);
     }
 
     @Override
-    public PageInfo<ApplicationDTO> basePageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
+    public PageInfo<ApplicationServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listByEnvId(projectId, envId, appId, NODELETED));
 
     }
 
     @Override
-    public List<ApplicationDTO> baseListByActive(Long projectId) {
+    public List<ApplicationServiceDTO> baseListByActive(Long projectId) {
         return applicationMapper.listByActive(projectId);
     }
 
     @Override
-    public List<ApplicationDTO> baseListDeployedApp(Long projectId) {
+    public List<ApplicationServiceDTO> baseListDeployedApp(Long projectId) {
         return applicationMapper.listDeployedApp(projectId);
     }
 
     @Override
-    public PageInfo<ApplicationDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
-                                                                        PageRequest pageRequest, String params) {
+    public PageInfo<ApplicationServiceDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
+                                                                               PageRequest pageRequest, String params) {
         Map<String, Object> searchParam = null;
         String param = null;
         if (!StringUtils.isEmpty(params)) {
@@ -1652,7 +1550,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public ApplicationDTO baseQueryByToken(String token) {
+    public ApplicationServiceDTO baseQueryByToken(String token) {
         return applicationMapper.queryByToken(token);
     }
 
@@ -1664,12 +1562,12 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<ApplicationDTO> baseListByCode(String code) {
+    public List<ApplicationServiceDTO> baseListByCode(String code) {
         return applicationMapper.listByCode(code);
     }
 
     @Override
-    public List<ApplicationDTO> baseListByGitLabProjectIds(List<Long> gitLabProjectIds) {
+    public List<ApplicationServiceDTO> baseListByGitLabProjectIds(List<Long> gitLabProjectIds) {
         return applicationMapper.listByGitLabProjectIds(gitLabProjectIds);
     }
 
@@ -1679,16 +1577,16 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<ApplicationDTO> baseListByProjectIdAndSkipCheck(Long projectId) {
-        ApplicationDTO applicationDTO = new ApplicationDTO();
+    public List<ApplicationServiceDTO> baseListByProjectIdAndSkipCheck(Long projectId) {
+        ApplicationServiceDTO applicationDTO = new ApplicationServiceDTO();
         applicationDTO.setProjectId(projectId);
         applicationDTO.setIsSkipCheckPermission(true);
         return applicationMapper.select(applicationDTO);
     }
 
     @Override
-    public List<ApplicationDTO> baseListByProjectId(Long projectId) {
-        ApplicationDTO applicationDTO = new ApplicationDTO();
+    public List<ApplicationServiceDTO> baseListByProjectId(Long projectId) {
+        ApplicationServiceDTO applicationDTO = new ApplicationServiceDTO();
         applicationDTO.setProjectId(projectId);
         return applicationMapper.select(applicationDTO);
     }
@@ -1700,7 +1598,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public String getGitlabUrl(Long projectId, Long appId) {
-        ApplicationDTO applicationDTO = baseQuery(appId);
+        ApplicationServiceDTO applicationDTO = baseQuery(appId);
         if (applicationDTO.getGitlabProjectId() != null) {
             ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
             OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
@@ -1713,7 +1611,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     private Integer getGitLabId(Long applicationId) {
-        ApplicationDTO applicationDTO = applicationMapper.selectByPrimaryKey(applicationId);
+        ApplicationServiceDTO applicationDTO = applicationMapper.selectByPrimaryKey(applicationId);
         if (applicationDTO != null) {
             return applicationDTO.getGitlabProjectId();
         } else {
@@ -1771,8 +1669,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public ApplicationDTO getApplicationDTO(Long projectId, ApplicationReqVO applicationReqDTO) {
-        ApplicationDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, ApplicationDTO.class);
+    public ApplicationServiceDTO getApplicationDTO(Long projectId, ApplicationServiceReqVO applicationReqDTO) {
+        ApplicationServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, ApplicationServiceDTO.class);
         baseCheckName(projectId, applicationDTO.getName());
         baseCheckCode(applicationDTO);
         applicationDTO.setActive(true);
@@ -1785,7 +1683,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public void baseCheckName(Long projectId, String appName) {
-        ApplicationDTO applicationDTO = new ApplicationDTO();
+        ApplicationServiceDTO applicationDTO = new ApplicationServiceDTO();
         applicationDTO.setProjectId(projectId);
         applicationDTO.setName(appName);
         if (applicationMapper.selectOne(applicationDTO) != null) {
@@ -1794,26 +1692,26 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public void baseCheckCode(ApplicationDTO applicationDTO) {
+    public void baseCheckCode(ApplicationServiceDTO applicationDTO) {
         if (!applicationMapper.select(applicationDTO).isEmpty()) {
             throw new CommonException("error.code.exist");
         }
     }
 
     @Override
-    public ApplicationDTO baseCreate(ApplicationDTO applicationDTO) {
+    public ApplicationServiceDTO baseCreate(ApplicationServiceDTO applicationDTO) {
         if (applicationMapper.insert(applicationDTO) != 1) {
             throw new CommonException("error.application.create.insert");
         }
         return applicationDTO;
     }
 
-    private List<ApplicationDTO> baseListAll(Long projectId) {
+    private List<ApplicationServiceDTO> baseListAll(Long projectId) {
         return applicationMapper.listAll(projectId);
     }
 
-    private ApplicationDTO fromImportDtoToEntity(ApplicationImportVO applicationImportVO) {
-        ApplicationDTO applicationDTO = new ApplicationDTO();
+    private ApplicationServiceDTO fromImportDtoToEntity(ApplicationImportVO applicationImportVO) {
+        ApplicationServiceDTO applicationDTO = new ApplicationServiceDTO();
         applicationDTO.setProjectId(applicationImportVO.getProjectId());
         BeanUtils.copyProperties(applicationImportVO, applicationDTO);
         if (applicationImportVO.getApplicationTemplateId() != null) {
@@ -1841,11 +1739,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
     }
 
-    private void initBranch(DevOpsAppPayload gitlabProjectPayload, ApplicationDTO applicationDTO, String branchName) {
+    private void initBranch(DevOpsAppPayload gitlabProjectPayload, ApplicationServiceDTO applicationDTO, String branchName) {
         CommitDTO commitDTO = gitlabServiceClientOperator.queryCommit(gitlabProjectPayload.getGitlabProjectId(), branchName, gitlabProjectPayload.getUserId());
         DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
         devopsBranchDTO.setUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
-        devopsBranchDTO.setAppId(applicationDTO.getId());
+        devopsBranchDTO.getAppServiceId(applicationDTO.getId());
         devopsBranchDTO.setBranchName(branchName);
         devopsBranchDTO.setCheckoutCommit(commitDTO.getId());
         devopsBranchDTO.setCheckoutDate(commitDTO.getCommittedDate());
@@ -1856,7 +1754,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devopsBranchService.baseCreate(devopsBranchDTO);
     }
 
-    private void replaceParams(ApplicationDTO applicationDTO,
+    private void replaceParams(ApplicationServiceDTO applicationDTO,
                                ProjectDTO projectDTO,
                                OrganizationDTO organizationDTO,
                                String applicationDir) {
@@ -2025,7 +1923,7 @@ public class ApplicationServiceImpl implements ApplicationService {
      * @param token          the token for project hook
      * @param userId         the gitlab user id
      */
-    private void setProjectHook(ApplicationDTO applicationDTO, Integer projectId, String token, Integer userId) {
+    private void setProjectHook(ApplicationServiceDTO applicationDTO, Integer projectId, String token, Integer userId) {
         ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
         projectHookDTO.setEnableSslVerification(true);
         projectHookDTO.setProjectId(projectId);
@@ -2055,9 +1953,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         templateDockerfileMap.putIfAbsent(applicationTemplateId, df.map(f -> f.getAbsolutePath().replace(templateWorkDir.getAbsolutePath() + System.getProperty("file.separator"), "")).orElse(DOCKER_FILE_NAME));
     }
 
-    private List<ApplicationRepVO> setApplicationRepVOPermission(List<ApplicationDTO> applicationDTOList,
-                                                                 UserAttrDTO userAttrDTO, ProjectDTO projectDTO) {
-        List<ApplicationRepVO> resultDTOList = ConvertUtils.convertList(applicationDTOList, this::dtoToRepVo);
+    private List<ApplicationServiceRepVO> setApplicationRepVOPermission(List<ApplicationServiceDTO> applicationDTOList,
+                                                                        UserAttrDTO userAttrDTO, ProjectDTO projectDTO) {
+        List<ApplicationServiceRepVO> resultDTOList = ConvertUtils.convertList(applicationDTOList, this::dtoToRepVo);
         if (userAttrDTO == null) {
             throw new CommonException("error.gitlab.user.sync.failed");
         }
@@ -2065,7 +1963,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             ApplicationUserPermissionDTO appUserPermissionDO = new ApplicationUserPermissionDTO();
             appUserPermissionDO.setIamUserId(userAttrDTO.getIamUserId());
             List<Long> appIds = applicationUserPermissionMapper.select(appUserPermissionDO).stream()
-                    .map(ApplicationUserPermissionDTO::getAppId).collect(Collectors.toList());
+                    .map(ApplicationUserPermissionDTO::getAppServiceId).collect(Collectors.toList());
 
             resultDTOList.stream().filter(e -> e != null && !e.getPermission()).forEach(e -> {
                 if (appIds.contains(e.getId())) {
@@ -2078,7 +1976,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         return resultDTOList;
     }
 
-    private void initApplicationParams(ProjectDTO projectDTO, OrganizationDTO organizationDTO, List<ApplicationDTO> applicationDTOS, String urlSlash) {
+    private void initApplicationParams(ProjectDTO projectDTO, OrganizationDTO organizationDTO, List<ApplicationServiceDTO> applicationDTOS, String urlSlash) {
         List<String> projectKeys = new ArrayList<>();
         if (!sonarqubeUrl.equals("")) {
             SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
@@ -2092,7 +1990,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
         }
 
-        for (ApplicationDTO t : applicationDTOS) {
+        for (ApplicationServiceDTO t : applicationDTOS) {
             if (t.getGitlabProjectId() != null) {
                 t.setRepoUrl(
                         gitlabUrl + urlSlash + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/" +
@@ -2105,8 +2003,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
     }
 
-    private ApplicationRepVO dtoToRepVo(ApplicationDTO applicationDTO) {
-        ApplicationRepVO applicationRepVO = new ApplicationRepVO();
+    private ApplicationServiceRepVO dtoToRepVo(ApplicationServiceDTO applicationDTO) {
+        ApplicationServiceRepVO applicationRepVO = new ApplicationServiceRepVO();
         BeanUtils.copyProperties(applicationDTO, applicationRepVO);
         applicationRepVO.setApplicationTemplateId(applicationDTO.getAppTemplateId());
         applicationRepVO.setGitlabProjectId(TypeUtil.objToLong(applicationDTO.getGitlabProjectId()));

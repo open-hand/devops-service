@@ -14,7 +14,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class MarketAppPublishVersionVO {
     private Long id;
 
-    private Long appId;
+    private Long appServiceId;
 
     @ApiModelProperty("应用的版本的ID")
     @NotNull(message = "error.versionId.cannot.be.null")
@@ -53,12 +53,12 @@ public class MarketAppPublishVersionVO {
         this.id = id;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Long getVersionId() {

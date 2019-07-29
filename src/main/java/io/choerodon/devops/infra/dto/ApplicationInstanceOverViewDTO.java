@@ -9,7 +9,7 @@ import java.util.Date;
  * Description:
  */
 public class ApplicationInstanceOverViewDTO {
-    private Long appId;
+    private Long appServiceId;
     private String publishLevel;
     private String appCode;
     private String appName;
@@ -22,12 +22,12 @@ public class ApplicationInstanceOverViewDTO {
     private String instanceStatus;
     private Long projectId;
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public String getAppCode() {

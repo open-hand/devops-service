@@ -89,7 +89,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             applicationInstanceDTOS.stream().distinct().forEach(v -> {
                 CheckLog checkLog = new CheckLog();
                 checkLog.setContent(String.format(
-                        "Sync environment application relationship,envId: %s, appId: %s", v.getEnvId(), v.getAppId()));
+                        "Sync environment application relationship,envId: %s, appId: %s", v.getEnvId(), v.getAppServiceId()));
                 try {
                     devopsEnvApplicationService.baseCreate(v);
                     checkLog.setResult("success");

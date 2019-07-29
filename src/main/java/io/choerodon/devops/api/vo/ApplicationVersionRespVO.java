@@ -11,7 +11,7 @@ public class ApplicationVersionRespVO implements Serializable {
     private String commit;
     private String appName;
     private String appCode;
-    private Long appId;
+    private Long appServiceId;
     private Boolean appStatus;
     private Date creationDate;
     private Date publishTime;
@@ -65,12 +65,12 @@ public class ApplicationVersionRespVO implements Serializable {
         this.appCode = appCode;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Boolean getAppStatus() {

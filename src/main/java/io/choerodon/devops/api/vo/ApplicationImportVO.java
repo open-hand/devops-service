@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * @author zmf
  */
-public class ApplicationImportVO extends ApplicationReqVO {
+public class ApplicationImportVO extends ApplicationServiceReqVO {
     @ApiModelProperty("外部代码库的clone地址")
     private String repositoryUrl;
 

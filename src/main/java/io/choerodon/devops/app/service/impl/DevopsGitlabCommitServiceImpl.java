@@ -13,10 +13,10 @@ import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.CommitFormUserVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
-import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.app.service.ApplicationSeviceService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
-import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -41,7 +41,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
@@ -51,7 +51,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
 
     @Override
     public void create(PushWebHookVO pushWebHookVO, String token) {
-        ApplicationDTO applicationDTO = applicationService.baseQueryByToken(token);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
         String ref = pushWebHookVO.getRef().split("/")[2];
         if (!pushWebHookVO.getCommits().isEmpty()) {
             pushWebHookVO.getCommits().forEach(commitDTO -> {
@@ -59,7 +59,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
 
                 if (devopsGitlabCommitDTO == null) {
                     devopsGitlabCommitDTO = new DevopsGitlabCommitDTO();
-                    devopsGitlabCommitDTO.setAppId(applicationDTO.getId());
+                    devopsGitlabCommitDTO.getAppServiceId(applicationDTO.getId());
                     devopsGitlabCommitDTO.setCommitContent(commitDTO.getMessage());
                     devopsGitlabCommitDTO.setCommitSha(commitDTO.getId());
                     devopsGitlabCommitDTO.setRef(ref);
@@ -83,7 +83,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             if (devopsGitlabCommitDTO == null) {
                 CommitDTO commitDTO = gitlabServiceClientOperator.queryCommit(TypeUtil.objToInteger(applicationDTO.getGitlabProjectId()), pushWebHookVO.getCheckoutSha(), ADMIN);
                 devopsGitlabCommitDTO = new DevopsGitlabCommitDTO();
-                devopsGitlabCommitDTO.setAppId(applicationDTO.getId());
+                devopsGitlabCommitDTO.getAppServiceId(applicationDTO.getId());
                 devopsGitlabCommitDTO.setCommitContent(commitDTO.getMessage());
                 devopsGitlabCommitDTO.setCommitSha(commitDTO.getId());
                 devopsGitlabCommitDTO.setRef(ref);

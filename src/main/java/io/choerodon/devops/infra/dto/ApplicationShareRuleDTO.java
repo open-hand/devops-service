@@ -1,8 +1,5 @@
 package io.choerodon.devops.infra.dto;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
 import javax.persistence.*;
 
 import io.choerodon.mybatis.entity.BaseDTO;
@@ -16,7 +13,7 @@ public class ApplicationShareRuleDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long appId;
+    private Long appServiceId;
     private String shareLevel;
     private String versionType;
     private String version;
@@ -39,12 +36,12 @@ public class ApplicationShareRuleDTO extends BaseDTO {
         this.id = id;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public String getShareLevel() {

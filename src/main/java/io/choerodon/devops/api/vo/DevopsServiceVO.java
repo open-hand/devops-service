@@ -14,7 +14,7 @@ public class DevopsServiceVO {
     private String envName;
     private String type;
     private Boolean envStatus;
-    private Long appId;
+    private Long appServiceId;
     private Long appProjectId;
     private String appName;
     private DevopsServiceTargetVO target;
@@ -57,12 +57,12 @@ public class DevopsServiceVO {
         this.envName = envName;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public String getAppName() {

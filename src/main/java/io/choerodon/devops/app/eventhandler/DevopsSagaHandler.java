@@ -52,7 +52,7 @@ public class DevopsSagaHandler {
     @Autowired
     private ApplicationTemplateService applicationTemplateService;
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private DevopsGitlabPipelineService devopsGitlabPipelineService;
     @Autowired
@@ -168,7 +168,7 @@ public class DevopsSagaHandler {
                 applicationService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
                 throw e;
             }
-            ApplicationDTO applicationDTO = applicationService.baseQuery(devOpsAppImportPayload.getAppId());
+            ApplicationServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppImportPayload.getAppId());
             if (applicationDTO.getFailed() != null && applicationDTO.getFailed()) {
                 applicationDTO.setFailed(false);
                 if (1 != applicationService.baseUpdate(applicationDTO)) {
@@ -211,7 +211,7 @@ public class DevopsSagaHandler {
             seq = 1)
     public String setAppErr(String data) {
         DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
-        ApplicationDTO applicationDTO = applicationService.baseQuery(devOpsAppPayload.getAppId());
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppPayload.getAppId());
         applicationDTO.setFailed(true);
         if (1 != applicationService.baseUpdate(applicationDTO)) {
             LOGGER.error("update application {} set create failed status error", applicationDTO.getCode());

@@ -8,7 +8,7 @@
         FROM
         devops_branch db
         WHERE
-        db.app_id = #{appId}
+        db.app_service_id = #{appServiceId}
         and db.branch_name = #{branchName}
         and db.is_deleted = FALSE
         ORDER BY
@@ -22,7 +22,7 @@
         FROM
         devops_branch db
         WHERE
-        db.app_id = #{appId}
+        db.app_service_id = #{appServiceId}
         and db.is_deleted = FALSE
         <if test='searchParam != null'>
             <if test='searchParam.branchName != null and searchParam.branchName.size > 0'>

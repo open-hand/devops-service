@@ -109,7 +109,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         // 在gitops库处理secret文件
         operateEnvGitLabFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), v1Secret, devopsSecretDTO,
-                devopsEnvCommandE, CREATE.equals(secretReqVO.getType()), userAttrDTO, secretReqVO.getAppId());
+                devopsEnvCommandE, CREATE.equals(secretReqVO.getType()), userAttrDTO, secretReqVO.getAppServiceId());
         return ConvertUtils.convertObject(baseQuery(devopsSecretDTO.getId()), SecretRespVO.class);
     }
 
@@ -154,7 +154,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             //创建应用资源关系
             if (appId != null) {
                 DevopsApplicationResourceDTO applicationResourceDTO = new DevopsApplicationResourceDTO();
-                applicationResourceDTO.setAppId(appId);
+                applicationResourceDTO.getAppServiceId(appId);
                 applicationResourceDTO.setResourceType(ObjectType.SERVICE.getType());
                 applicationResourceDTO.setResourceId(secretId);
                 devopsApplicationResourceService.baseCreate(applicationResourceDTO);

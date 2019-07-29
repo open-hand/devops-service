@@ -216,7 +216,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 List<String> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel().map(t -> {
                     ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.baseQueryByCodeAndEnv(t, envId);
                     if (applicationInstanceDTO != null) {
-                        devopsServiceReqVO.setAppId(applicationInstanceDTO.getAppId());
+                        devopsServiceReqVO.getAppServiceId(applicationInstanceDTO.getAppServiceId());
                     }
                     return t;
                 }).collect(Collectors.toList());
@@ -245,7 +245,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         List<DevopsServiceAppInstanceDTO> devopsServiceAppInstanceDTOS =
                 devopsServiceInstanceService.baseListByServiceId(devopsServiceDTO.getId());
         Boolean isUpdate = false;
-        if (devopsServiceReqVO.getAppId() != null && devopsServiceDTO.getAppId() != null && devopsServiceReqVO.getAppInstance() != null) {
+        if (devopsServiceReqVO.getAppServiceId() != null && devopsServiceDTO.getAppServiceId() != null && devopsServiceReqVO.getAppInstance() != null) {
             List<String> newInstanceCode = devopsServiceReqVO.getAppInstance();
             List<String> oldInstanceCode = devopsServiceAppInstanceDTOS.stream().map(DevopsServiceAppInstanceDTO::getCode).collect(Collectors.toList());
             for (String instanceCode : newInstanceCode) {
@@ -255,7 +255,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
             }
         }
 
-        if (devopsServiceReqVO.getAppId() == null && devopsServiceDTO.getAppId() == null) {
+        if (devopsServiceReqVO.getAppServiceId() == null && devopsServiceDTO.getAppServiceId() == null) {
             if (devopsServiceReqVO.getLabel() != null && devopsServiceDTO.getLabels() != null) {
                 if (!gson.toJson(devopsServiceReqVO.getLabel()).equals(devopsServiceDTO.getLabels())) {
                     isUpdate = true;
@@ -268,7 +268,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 isUpdate = true;
             }
         }
-        if ((devopsServiceReqVO.getAppId() == null && devopsServiceDTO.getAppId() != null) || (devopsServiceReqVO.getAppId() != null && devopsServiceDTO.getAppId() == null)) {
+        if ((devopsServiceReqVO.getAppServiceId() == null && devopsServiceDTO.getAppServiceId() != null) || (devopsServiceReqVO.getAppServiceId() != null && devopsServiceDTO.getAppServiceId() == null)) {
             isUpdate = true;
         }
         return !isUpdate && oldPort.stream().sorted().collect(Collectors.toList())

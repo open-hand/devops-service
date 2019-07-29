@@ -9,8 +9,8 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * @date 2018/3/28
  */
 
-@Table(name = "devops_application")
-public class ApplicationDTO extends BaseDTO {
+@Table(name = "devops_application_service")
+public class ApplicationServiceDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +30,7 @@ public class ApplicationDTO extends BaseDTO {
     private Boolean isFailed;
     private String type;
     private Boolean isSkipCheckPermission;
+    private String imgUrl;
 
     @Transient
     private String publishLevel;
@@ -43,6 +44,14 @@ public class ApplicationDTO extends BaseDTO {
     private String sonarUrl;
     @Transient
     private String gitlabProjectUrl;
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public void setImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+    }
 
     public String getGitlabProjectUrl() {
         return gitlabProjectUrl;

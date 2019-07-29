@@ -38,7 +38,7 @@
         ) instanceStatus
         FROM
         devops_pipeline_task_record dptr
-        LEFT JOIN devops_application da ON da.id = dptr.application_id
+        LEFT JOIN devops_application_service da ON da.id = dptr.application_id
         LEFT JOIN devops_env de ON de.id = dptr.env_id
         LEFT JOIN devops_app_version dav ON dav.id = dptr.version_id
         LEFT JOIN devops_app_instance dai ON dai.id = dptr.instance_id

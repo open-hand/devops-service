@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
 import io.choerodon.devops.api.vo.ApplicationDeployVO;
-import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 
@@ -13,7 +13,7 @@ public class InstanceSagaPayload {
     private Long projectId;
     private Long gitlabUserId;
     private String secretCode;
-    private ApplicationDTO applicationDTO;
+    private ApplicationServiceDTO applicationDTO;
     private ApplicationVersionDTO applicationVersionDTO;
     private DevopsEnvironmentDTO devopsEnvironmentDTO;
     private ApplicationDeployVO applicationDeployVO;
@@ -54,11 +54,11 @@ public class InstanceSagaPayload {
         this.secretCode = secretCode;
     }
 
-    public ApplicationDTO getApplicationDTO() {
+    public ApplicationServiceDTO getApplicationDTO() {
         return applicationDTO;
     }
 
-    public void setApplicationDTO(ApplicationDTO applicationDTO) {
+    public void setApplicationDTO(ApplicationServiceDTO applicationDTO) {
         this.applicationDTO = applicationDTO;
     }
 

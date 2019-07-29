@@ -69,7 +69,7 @@ public class ApplicationInstanceController {
      * @param pageRequest 分页参数
      * @param envId       环境id
      * @param versionId   版本id
-     * @param appId       应用id
+     * @param appServiceId       应用id
      * @param params      搜索参数
      * @return page of DevopsEnvPreviewInstanceVO
      */
@@ -89,13 +89,13 @@ public class ApplicationInstanceController {
             @ApiParam(value = "版本ID")
             @RequestParam(value = "version_id", required = false) Long versionId,
             @ApiParam(value = "应用ID")
-            @RequestParam(value = "app_id", required = false) Long appId,
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "实例ID")
             @RequestParam(value = "instance_id", required = false) Long instanceId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(applicationInstanceService.pageByOptions(
-                projectId, pageRequest, envId, versionId, appId, instanceId, params))
+                projectId, pageRequest, envId, versionId, appServiceId, instanceId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.version.query"));
     }
@@ -104,7 +104,7 @@ public class ApplicationInstanceController {
      * 查询部署总览
      *
      * @param projectId 项目id
-     * @param appId     应用id
+     * @param appServiceId     应用id
      * @return page of ApplicationInstancesVO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
@@ -116,8 +116,8 @@ public class ApplicationInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID")
-            @RequestParam(value = "app_id", required = false) Long appId) {
-        return Optional.ofNullable(applicationInstanceService.listApplicationInstanceOverView(projectId, appId))
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
+        return Optional.ofNullable(applicationInstanceService.listApplicationInstanceOverView(projectId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.version.query"));
     }
@@ -394,7 +394,7 @@ public class ApplicationInstanceController {
      * 查询运行中的实例
      *
      * @param projectId    项目id
-     * @param appId        应用id
+     * @param appServiceId        应用id
      * @param appVersionId 应用版本id
      * @param envId        环境id
      * @return baseList of AppInstanceCodeDTO
@@ -409,10 +409,10 @@ public class ApplicationInstanceController {
             @ApiParam(value = "环境 ID")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "应用Id")
-            @RequestParam(value = "app_id", required = false) Long appId,
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "应用版本 ID")
             @RequestParam(value = "version_id", required = false) Long appVersionId) {
-        return Optional.ofNullable(applicationInstanceService.listRunningInstance(projectId, appId, appVersionId, envId))
+        return Optional.ofNullable(applicationInstanceService.listRunningInstance(projectId, appServiceId, appVersionId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_QUERY));
     }
@@ -421,22 +421,22 @@ public class ApplicationInstanceController {
      * 环境下某应用运行中或失败的实例
      *
      * @param projectId 项目id
-     * @param appId     应用id
+     * @param appServiceId     应用id
      * @param envId     环境id
      * @return baseList of AppInstanceCodeDTO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境下某应用运行中或失败的实例")
-    @GetMapping("/listByAppIdAndEnvId")
-    public ResponseEntity<List<RunningInstanceVO>> listByAppIdAndEnvId(
+    @GetMapping("/listByappServiceIdAndEnvId")
+    public ResponseEntity<List<RunningInstanceVO>> listByappServiceIdAndEnvId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID")
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "应用 Id")
-            @RequestParam(value = "app_id") Long appId) {
-        return Optional.ofNullable(applicationInstanceService.listByAppIdAndEnvId(projectId, appId, envId))
+            @RequestParam(value = "app_service_id") Long appServiceId) {
+        return Optional.ofNullable(applicationInstanceService.listByAppIdAndEnvId(projectId, appServiceId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_QUERY));
     }
@@ -614,7 +614,7 @@ public class ApplicationInstanceController {
      *
      * @param projectId 项目id
      * @param envId     环境id
-     * @param appIds    应用id
+     * @param appServiceIds    应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return List
@@ -629,13 +629,13 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "envId")
             @RequestParam(value = "env_id", required = false) Long envId,
-            @ApiParam(value = "appIds")
-            @RequestBody(required = false) Long[] appIds,
+            @ApiParam(value = "appServiceIds")
+            @RequestBody(required = false) Long[] appServiceIds,
             @ApiParam(value = "startTime")
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(applicationInstanceService.listDeployTime(projectId, envId, appIds, startTime, endTime))
+        return Optional.ofNullable(applicationInstanceService.listDeployTime(projectId, envId, appServiceIds, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.time.get"));
     }
@@ -645,7 +645,7 @@ public class ApplicationInstanceController {
      *
      * @param projectId 项目id
      * @param envIds    环境id
-     * @param appId     应用id
+     * @param appServiceId     应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return List
@@ -658,15 +658,15 @@ public class ApplicationInstanceController {
     public ResponseEntity<DeployFrequencyVO> listDeployFrequencyReport(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "appId")
-            @RequestParam(value = "app_id", required = false) Long appId,
+            @ApiParam(value = "appServiceId")
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "envIds")
             @RequestBody(required = false) Long[] envIds,
             @ApiParam(value = "startTime")
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(applicationInstanceService.listDeployFrequency(projectId, envIds, appId, startTime, endTime))
+        return Optional.ofNullable(applicationInstanceService.listDeployFrequency(projectId, envIds, appServiceId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.frequency.get"));
     }
@@ -677,7 +677,7 @@ public class ApplicationInstanceController {
      *
      * @param projectId 项目id
      * @param envIds    环境id
-     * @param appId     应用id
+     * @param appServiceId     应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return List
@@ -692,15 +692,15 @@ public class ApplicationInstanceController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数") PageRequest pageRequest,
-            @ApiParam(value = "appId")
-            @RequestParam(value = "app_id", required = false) Long appId,
+            @ApiParam(value = "appServiceId")
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "envIds")
             @RequestBody(required = false) Long[] envIds,
             @ApiParam(value = "startTime")
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(applicationInstanceService.pageDeployFrequencyTable(projectId, pageRequest, envIds, appId, startTime, endTime))
+        return Optional.ofNullable(applicationInstanceService.pageDeployFrequencyTable(projectId, pageRequest, envIds, appServiceId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.frequency.get"));
     }
@@ -711,7 +711,7 @@ public class ApplicationInstanceController {
      *
      * @param projectId 项目id
      * @param envId     环境id
-     * @param appIds    应用id
+     * @param appServiceIds    应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return PageInfo
@@ -729,13 +729,13 @@ public class ApplicationInstanceController {
                     PageRequest pageRequest,
             @ApiParam(value = "envId")
             @RequestParam(value = "env_id", required = false) Long envId,
-            @ApiParam(value = "appIds")
-            @RequestBody(required = false) Long[] appIds,
+            @ApiParam(value = "appServiceIds")
+            @RequestBody(required = false) Long[] appServiceIds,
             @ApiParam(value = "startTime")
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(applicationInstanceService.pageDeployTimeTable(projectId, pageRequest, appIds, envId, startTime, endTime))
+        return Optional.ofNullable(applicationInstanceService.pageDeployTimeTable(projectId, pageRequest, appServiceIds, envId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.time.get"));
     }

@@ -6,15 +6,15 @@ package io.choerodon.devops.api.vo;
  * Time: 10:06
  * Description:
  */
-public class AppUserPermissionRespVO {
+public class AppServiceUserPermissionRespVO {
     private Long iamUserId;
     private String loginName;
     private String realName;
 
-    public AppUserPermissionRespVO() {
+    public AppServiceUserPermissionRespVO() {
     }
 
-    public AppUserPermissionRespVO(Long iamUserId, String loginName, String realName) {
+    public AppServiceUserPermissionRespVO(Long iamUserId, String loginName, String realName) {
         this.iamUserId = iamUserId;
         this.loginName = loginName;
         this.realName = realName;

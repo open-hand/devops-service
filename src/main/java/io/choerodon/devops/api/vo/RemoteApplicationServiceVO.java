@@ -9,13 +9,13 @@ import io.swagger.annotations.ApiModelProperty;
  * @author Eugen
  * 此 VO 用于 Paas平台 应用部署 的 远程应用市场
  */
-public class RemoteApplicationVO {
+public class RemoteApplicationServiceVO {
 
     @ApiModelProperty(value = "主键")
     private Long id; // f:db 来自 数据库
 
     @ApiModelProperty(value = "应用ID")
-    private Long appId; // f:db
+    private Long appServiceId; // f:db
 
     @ApiModelProperty(value = "应用名称")
     private String name; // f:db
@@ -54,17 +54,17 @@ public class RemoteApplicationVO {
         return id;
     }
 
-    public RemoteApplicationVO setId(Long id) {
+    public RemoteApplicationServiceVO setId(Long id) {
         this.id = id;
         return this;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public String getName() {
@@ -87,7 +87,7 @@ public class RemoteApplicationVO {
         return imgUrl;
     }
 
-    public RemoteApplicationVO setImgUrl(String imgUrl) {
+    public RemoteApplicationServiceVO setImgUrl(String imgUrl) {
         this.imgUrl = imgUrl;
         return this;
     }
@@ -96,7 +96,7 @@ public class RemoteApplicationVO {
         return category;
     }
 
-    public RemoteApplicationVO setCategory(String category) {
+    public RemoteApplicationServiceVO setCategory(String category) {
         this.category = category;
         return this;
     }
@@ -105,7 +105,7 @@ public class RemoteApplicationVO {
         return description;
     }
 
-    public RemoteApplicationVO setDescription(String description) {
+    public RemoteApplicationServiceVO setDescription(String description) {
         this.description = description;
         return this;
     }
@@ -114,7 +114,7 @@ public class RemoteApplicationVO {
         return contributor;
     }
 
-    public RemoteApplicationVO setContributor(String contributor) {
+    public RemoteApplicationServiceVO setContributor(String contributor) {
         this.contributor = contributor;
         return this;
     }
@@ -123,7 +123,7 @@ public class RemoteApplicationVO {
         return free;
     }
 
-    public RemoteApplicationVO setFree(Boolean free) {
+    public RemoteApplicationServiceVO setFree(Boolean free) {
         this.free = free;
         return this;
     }
@@ -132,7 +132,7 @@ public class RemoteApplicationVO {
         return bought;
     }
 
-    public RemoteApplicationVO setBought(Boolean bought) {
+    public RemoteApplicationServiceVO setBought(Boolean bought) {
         this.bought = bought;
         return this;
     }

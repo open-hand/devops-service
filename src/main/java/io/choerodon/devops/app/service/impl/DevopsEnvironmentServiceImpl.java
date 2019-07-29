@@ -593,7 +593,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     applicationInstanceService.baseListByEnvId(t.getId()).stream()
                             .anyMatch(applicationInstanceDTO ->
                                     applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())
-                                            && applicationInstanceDTO.getAppId().equals(appId)))
+                                            && applicationInstanceDTO.getAppServiceId().equals(appId)))
                     .collect(Collectors.toList());
         }
     }

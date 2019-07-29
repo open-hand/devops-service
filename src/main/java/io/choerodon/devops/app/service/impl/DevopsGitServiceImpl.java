@@ -87,7 +87,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
@@ -149,21 +149,21 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void createTag(Long projectId, Long appId, String tag, String ref, String msg, String releaseNotes) {
         applicationService.baseCheckApp(projectId, appId);
-        ApplicationDTO applicationDTO = applicationService.baseQuery(appId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(appId);
         gitlabServiceClientOperator.createTag(applicationDTO.getGitlabProjectId(), tag, ref, msg, releaseNotes, getGitlabUserId());
     }
 
     @Override
     public TagVO updateTag(Long projectId, Long appId, String tag, String releaseNotes) {
         applicationService.baseCheckApp(projectId, appId);
-        ApplicationDTO applicationDTO = applicationService.baseQuery(appId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(appId);
         return ConvertUtils.convertObject(gitlabServiceClientOperator.updateTag(applicationDTO.getGitlabProjectId(), tag, releaseNotes, getGitlabUserId()), TagVO.class);
     }
 
     @Override
     public void deleteTag(Long projectId, Long appId, String tag) {
         applicationService.baseCheckApp(projectId, appId);
-        ApplicationDTO applicationDTO = applicationService.baseQuery(appId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(appId);
         gitlabServiceClientOperator.deleteTag(applicationDTO.getGitlabProjectId(), tag, getGitlabUserId());
     }
 
@@ -178,9 +178,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
         devopsBranchDTO.setUserId(gitLabUser);
-        devopsBranchDTO.setAppId(applicationId);
+        devopsBranchDTO.getAppServiceId(applicationId);
         devopsBranchDTO.setStatus(CommandStatus.OPERATING.getStatus());
-        ApplicationDTO applicationDTO = applicationService.baseQuery(applicationId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
         devopsBranchDTO = devopsBranchService.baseCreate(devopsBranchDTO);
         Long devopsBranchId = devopsBranchDTO.getId();
 
@@ -246,7 +246,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public PageInfo<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        ApplicationDTO applicationDTO = applicationService.baseQuery(applicationId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
         // 查询用户是否在该gitlab project下
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (!iamServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
@@ -291,7 +291,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void deleteBranch(Long applicationId, String branchName) {
-        ApplicationDTO applicationDTO = applicationService.baseQuery(applicationId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(applicationDTO.getGitlabProjectId(),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -306,7 +306,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public MergeRequestTotalVO listMergeRequest(Long projectId, Long applicationId, String state, PageRequest pageRequest) {
         applicationService.baseCheckApp(projectId, applicationId);
-        ApplicationDTO applicationDTO = new ApplicationDTO();
+        ApplicationServiceDTO applicationDTO = new ApplicationServiceDTO();
         if (applicationDTO.getGitlabProjectId() == null) {
             throw new CommonException("error.gitlabProjectId.not.exists");
         }
@@ -343,7 +343,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public PageInfo<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size) {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-        ApplicationDTO applicationDTO = applicationService.baseQuery(applicationId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
         OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
@@ -353,13 +353,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public List<TagVO> listTags(Long projectId, Long applicationId) {
-        ApplicationDTO applicationDTO = applicationService.baseQuery(applicationId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
         return ConvertUtils.convertList(gitlabServiceClientOperator.listTag(applicationDTO.getGitlabProjectId().intValue(), getGitlabUserId()), TagVO.class);
     }
 
     @Override
     public Boolean checkTag(Long projectId, Long applicationId, String tagName) {
-        ApplicationDTO applicationDTO = applicationService.baseQuery(applicationId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
         return gitlabServiceClientOperator.listTag(applicationDTO.getGitlabProjectId().intValue(), getGitlabUserId()).stream()
                 .noneMatch(t -> tagName.equals(t.getName()));
     }
@@ -367,7 +367,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void branchSync(PushWebHookVO pushWebHookVO, String token) {
-        ApplicationDTO applicationDTO = applicationService.baseQueryByToken(token);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
         if (NO_COMMIT_SHA.equals(pushWebHookVO.getBefore())) {
             createBranchSync(pushWebHookVO, applicationDTO.getId());
         } else if (NO_COMMIT_SHA.equals(pushWebHookVO.getAfter())) {
@@ -556,7 +556,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void checkBranchName(Long projectId, Long applicationId, String branchName) {
-        ApplicationDTO applicationDTO = applicationService.baseQuery(applicationId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(applicationDTO.getGitlabProjectId(),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -926,7 +926,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             if (!branchExist) {
                 DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
                 devopsBranchDTO.setUserId(userId);
-                devopsBranchDTO.setAppId(appId);
+                devopsBranchDTO.getAppServiceId(appId);
 
                 devopsBranchDTO.setCheckoutDate(commitDTO.getCommittedDate());
                 devopsBranchDTO.setCheckoutCommit(lastCommit);
