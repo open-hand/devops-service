@@ -4,7 +4,7 @@ public class ApplicationDeployVO {
     private Long appVersionId;
     private Long environmentId;
     private String values;
-    private Long appId;
+    private Long appServiceId;
     private String type;
     private Long appInstanceId;
     private Long commandId;
@@ -16,11 +16,11 @@ public class ApplicationDeployVO {
     public ApplicationDeployVO() {
     }
 
-    public ApplicationDeployVO(Long appVersionId, Long environmentId, String values, Long appId, String type, Long appInstanceId, String instanceName, Long recordId, Long valueId) {
+    public ApplicationDeployVO(Long appVersionId, Long environmentId, String values, Long appServiceId, String type, Long appInstanceId, String instanceName, Long recordId, Long valueId) {
         this.appVersionId = appVersionId;
         this.environmentId = environmentId;
         this.values = values;
-        this.appId = appId;
+        this.appServiceId = appServiceId;
         this.type = type;
         this.appInstanceId = appInstanceId;
         this.instanceName = instanceName;
@@ -52,12 +52,12 @@ public class ApplicationDeployVO {
         this.values = values;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public String getType() {

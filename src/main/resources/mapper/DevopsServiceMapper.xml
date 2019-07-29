@@ -7,9 +7,9 @@
         count(1)
         FROM
         devops_service ds,
-        devops_application da
+        devops_application_service da
         WHERE
-        ds.app_id = da.id
+        ds.app_service_id = da.id
         AND ds.`name` = #{name}
         AND da.project_id = #{projectId}
         AND ds.env_id = #{envId}
@@ -38,10 +38,10 @@
         </if>
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
-        <if test="appId != null">
+        <if test="appServiceId != null">
             LEFT JOIN devops_app_resource das ON ds.id = das.resource_id
         </if>
-        LEFT JOIN devops_application da ON da.id = ds.app_id
+        LEFT JOIN devops_application_service da ON da.id = ds.app_service_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
         WHERE
@@ -49,8 +49,8 @@
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
         </if>
-        <if test="appId != null">
-            AND das.app_id = #{appId}
+        <if test="appServiceId != null">
+            AND das.app_service_id = #{appServiceId}
             AND das.resource_type='service'
         </if>
         <include refid="sqlparam"/>
@@ -82,7 +82,7 @@
         ds.`type`,
         ds.labels,
         ds.end_points,
-        da.id AS app_id,
+        da.id AS app_service_id,
         da.`name` AS app_name,
         de.id AS env_id,
         de.`name` AS env_name,
@@ -112,19 +112,19 @@
         </if>
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
-        <if test="appId != null">
+        <if test="appServiceId != null">
             LEFT JOIN devops_app_resource das ON ds.id = das.resource_id
         </if>
         LEFT JOIN devops_env_command cmd ON ds.command_id = cmd.id
-        LEFT JOIN devops_application da ON da.id = ds.app_id
+        LEFT JOIN devops_application_service da ON da.id = ds.app_service_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
         WHERE 1
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
         </if>
-        <if test="appId != null">
-            AND das.app_id = #{appId}
+        <if test="appServiceId != null">
+            AND das.app_service_id = #{appServiceId}
             AND das.resource_type='service'
         </if>
         <include refid="sqlparam"/>
@@ -141,7 +141,7 @@
         ds.end_points,
         ds.`status`,
         ds.`type`,
-        da.id AS app_id,
+        da.id AS app_service_id,
         da.`name` AS app_name,
         de.id AS env_id,
         de.`name` AS env_name,
@@ -153,7 +153,7 @@
         INNER JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
-        LEFT JOIN devops_application da ON da.id = dai.app_id
+        LEFT JOIN devops_application_service da ON da.id = dai.app_service_id
         WHERE
         ds.id = #{id}
         AND ds.`status` != 'deleted'
@@ -174,7 +174,7 @@
         <result property="externalIp" column="external_ip"/>
         <result property="ports" column="ports"/>
         <result property="status" column="status"/>
-        <result property="appId" column="app_id"/>
+        <result property="appServiceId" column="app_service_id"/>
         <result property="appName" column="app_name"/>
         <result property="appProjectId" column="appProjectId"/>
         <result property="loadBalanceIp" column="load_balance_ip"/>

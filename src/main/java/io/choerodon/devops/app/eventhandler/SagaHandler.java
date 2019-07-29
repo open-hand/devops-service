@@ -13,7 +13,7 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
@@ -46,7 +46,7 @@ public class SagaHandler {
     @Autowired
     private GitlabUserService gitlabUserService;
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
@@ -152,23 +152,6 @@ public class SagaHandler {
         return payload;
     }
 
-
-    /**
-     * Iam创建应用事件
-     */
-    @SagaTask(code = SagaTaskCodeConstants.IAM_CREATE_APPLICATION,
-            description = "Iam创建应用事件",
-            sagaCode = SagaTopicCodeConstants.IAM_CREATE_APPLICATION,
-            maxRetryCount = 3,
-            seq = 1)
-    public String handleIamCreateApplication(String payload) {
-        IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
-        loggerInfo(iamAppPayLoad);
-        applicationService.createIamApplication(iamAppPayLoad);
-        return payload;
-    }
-
-
     /**
      * GitOps 事件处理
      */
@@ -211,7 +194,7 @@ public class SagaHandler {
     public String handleIamEnableApplication(String payload) {
         IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
         loggerInfo(iamAppPayLoad);
-        ApplicationDTO applicationDTO = applicationService.baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        ApplicationServiceDTO applicationDTO = applicationService.baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
         applicationService.updateActive(applicationDTO.getId(), true);
         return payload;
     }
@@ -227,7 +210,7 @@ public class SagaHandler {
     public String handleIamDisableApplication(String payload) {
         IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
         loggerInfo(iamAppPayLoad);
-        ApplicationDTO applicationDTO = applicationService.baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        ApplicationServiceDTO applicationDTO = applicationService.baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
         applicationService.updateActive(applicationDTO.getId(), false);
         return payload;
     }

@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo;
 /**
  * Created by younger on 2018/3/30.
  */
-public class ApplicationCodeVO {
+public class ApplicationServiceCodeVO {
 
     private Long id;
     private String name;

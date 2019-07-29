@@ -12,7 +12,7 @@ import io.choerodon.devops.api.vo.kubernetes.Payload;
 import io.choerodon.devops.app.eventhandler.payload.OperationPodPayload;
 import io.choerodon.devops.app.eventhandler.payload.SecretPayLoad;
 import io.choerodon.devops.app.service.AgentCommandService;
-import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
@@ -82,7 +82,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
 
     @Override
-    public void deploy(ApplicationDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values, Long commandId, String secretCode) {
+    public void deploy(ApplicationServiceDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values, Long commandId, String secretCode) {
         Msg msg = new Msg();
         List<ImagePullSecret> imagePullSecrets = null;
         if (secretCode != null) {
@@ -244,7 +244,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void deployTestApp(ApplicationDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, String secretName, Long clusterId, String values) {
+    public void deployTestApp(ApplicationServiceDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, String secretName, Long clusterId, String values) {
         Msg msg = new Msg();
         List<ImagePullSecret> imagePullSecrets = Arrays.asList(new ImagePullSecret(secretName));
         Payload payload = new Payload(

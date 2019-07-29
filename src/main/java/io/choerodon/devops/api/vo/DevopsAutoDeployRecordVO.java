@@ -16,7 +16,7 @@ public class DevopsAutoDeployRecordVO {
     private String instanceName;
     private Date lastUpdateDate;
     private Long envId;
-    private Long appId;
+    private Long appServiceId;
     private Boolean envStatus;
     private String instanceStatus;
     private String status;
@@ -85,12 +85,12 @@ public class DevopsAutoDeployRecordVO {
         this.envId = envId;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Boolean getEnvStatus() {

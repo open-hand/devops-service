@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -20,7 +19,7 @@ import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
 import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
@@ -61,7 +60,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Autowired
     private DevopsProjectConfigService projectConfigService;
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
@@ -104,11 +103,11 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     public void initialDemoEnv(OrganizationRegisterEventPayload organizationRegisterEventPayload) {
         Long projectId = organizationRegisterEventPayload.getProject().getId();
         // 1. 创建应用
-        ApplicationReqVO app = demoDataVO.getApplicationInfo();
+        ApplicationServiceReqVO app = demoDataVO.getApplicationInfo();
         app.setApplicationTemplateId(getMicroServiceTemplateId());
         app.setIsSkipCheckPermission(Boolean.TRUE);
 
-        ApplicationRepVO applicationRepDTO = createDemoApp(projectId, app);
+        ApplicationServiceRepVO applicationRepDTO = createDemoApp(projectId, app);
 
         gitlabUserId = TypeUtil.objToInteger(userAttrService.baseQueryById(organizationRegisterEventPayload.getUser().getId()).getGitlabUserId());
 
@@ -145,7 +144,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         // 7. 发布应用
 //        ApplicationReleasingVO applicationReleasingDTO = demoDataVO.getApplicationRelease();
-//        applicationReleasingDTO.setAppId(applicationRepDTO.getId());
+//        applicationReleasingDTO.getAppServiceId(applicationRepDTO.getId());
 //        applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
 //        applicationMarketService.create(projectId, applicationReleasingDTO);
     }
@@ -158,12 +157,12 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param applicationReqDTO 应用创建的数据
      * @return 应用创建的纪录
      */
-    private ApplicationRepVO createDemoApp(Long projectId, ApplicationReqVO applicationReqDTO) {
+    private ApplicationServiceRepVO createDemoApp(Long projectId, ApplicationServiceReqVO applicationReqDTO) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationReqDTO);
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        ApplicationDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, ApplicationDTO.class);
+        ApplicationServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, ApplicationServiceDTO.class);
         applicationDTO.setProjectId(projectId);
         applicationService.checkName(projectId, applicationDTO.getName());
         applicationService.checkCode(projectId, applicationDTO.getCode());
@@ -217,7 +216,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devopsSagaHandler.createApp(input);
 
         return ConvertUtils.convertObject(applicationService.baseQueryByCode(applicationReqDTO.getCode(),
-                applicationDTO.getProjectId()), ApplicationRepVO.class);
+                applicationDTO.getProjectId()), ApplicationServiceRepVO.class);
     }
 
 

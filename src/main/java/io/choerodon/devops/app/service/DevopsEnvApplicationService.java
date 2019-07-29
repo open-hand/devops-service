@@ -20,7 +20,7 @@ public interface DevopsEnvApplicationService {
      * @param envId
      * @return
      */
-    List<ApplicationRepVO> listAppByEnvId(Long envId);
+    List<ApplicationServiceRepVO> listAppByEnvId(Long envId);
 
     /**
      * 查询应用在环境下的所有label

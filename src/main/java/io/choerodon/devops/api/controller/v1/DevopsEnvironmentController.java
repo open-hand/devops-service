@@ -265,8 +265,8 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id")
-            @RequestParam(required = false) Long appId) {
-        return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId, appId))
+            @RequestParam(required = false) Long appServiceId) {
+        return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.running.get"));
     }

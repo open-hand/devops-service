@@ -10,20 +10,20 @@
         da.code appCode,
         da.name appName,
         da.is_active appStatus,
-        da.id appId,
+        da.id appServiceId,
         dav.creation_date
         FROM
-        devops_application da
-        RIGHT JOIN devops_app_version dav ON da.id = dav.app_id
+        devops_application_service da
+        RIGHT JOIN devops_app_version dav ON da.id = dav.app_service_id
         WHERE da.project_id = #{projectId}
-        <if test='appId != null'>
-            AND da.id= #{appId}
+        <if test='appServiceId != null'>
+            AND da.id= #{appServiceId}
         </if>
         <if test='isProjectOwner != null'>
             <if test='isProjectOwner == false'>
                 AND (da.is_skip_check_permission = 1 OR (
                 da.is_skip_check_permission = 0
-                AND ( da.id IN ( SELECT daur.app_id FROM devops_app_user_rel daur WHERE daur.iam_user_id = #{userId}
+                AND ( da.id IN ( SELECT daur.app_service_id FROM devops_app_user_rel daur WHERE daur.iam_user_id = #{userId}
                 ))))
             </if>
         </if>
@@ -44,20 +44,20 @@
         SELECT
         dap.version,
         dap.id versionId,
-        lv.app_id
+        lv.app_service_id
         FROM
         devops_app_version dap
         JOIN (
         SELECT
         MAX( dappv.id ) id,
-        dappv.app_id
+        dappv.app_service_id
         FROM
         devops_app_version dappv
         GROUP BY
-        dappv.app_id
+        dappv.app_service_id
         ) lv ON lv.id = dap.id
-        JOIN devops_application da ON lv.app_id = da.id
-        LEFT JOIN devops_app_share dam on dam.app_id = da.id
+        JOIN devops_application_service da ON lv.app_service_id = da.id
+        LEFT JOIN devops_app_share dam on dam.app_service_id = da.id
         WHERE
         da.project_id = #{projectId}
         OR (
@@ -75,7 +75,7 @@
         FROM
             devops_app_version dav
         WHERE
-            dav.app_id = #{appId}
+            dav.app_service_id = #{appServiceId}
         AND dav.version LIKE CONCAT(CONCAT('%', #{ref}))
         AND dav.`commit` = #{commit}
     </select>
@@ -85,18 +85,18 @@
         dav.id,
         dav.version
         FROM
-        devops_application da,
+        devops_application_service da,
         devops_app_instance dai,
         devops_env de,
         devops_app_version dav
         WHERE
-        da.id = dai.app_id
+        da.id = dai.app_service_id
         AND de.id = dai.env_id
         AND dai.`status` = 'running'
         AND dai.app_version_id = dav.id
         AND de.project_id = #{projectId}
         AND de.id = #{envId}
-        AND da.id = #{appId}
+        AND da.id = #{appServiceId}
         GROUP BY
         dav.id,dav.version
     </select>
@@ -120,7 +120,7 @@
         FROM
         devops_app_version dav
         WHERE
-        dav.app_id = #{appId}
+        dav.app_service_id = #{appServiceId}
         <if test="isPublish != null">
             <if test="isPublish == true">
                 AND dav.is_publish = TRUE
@@ -142,7 +142,7 @@
         FROM
         devops_app_version dav
         WHERE
-        dav.app_id = #{appId}
+        dav.app_service_id = #{appServiceId}
         <if test="isPublish != null">
             <if test="isPublish == true">
                 AND dav.is_publish = TRUE
@@ -170,7 +170,7 @@
         JOIN devops_env de ON de.id = dai.env_id
         WHERE
         de.project_id = #{projectId}
-        AND dav.app_id = #{appId}
+        AND dav.app_service_id = #{appServiceId}
         ORDER BY
         dav.id DESC
     </select>
@@ -181,7 +181,7 @@
         dav.version,
         dav.creation_date
         from devops_app_version dav
-        where dav.app_id=#{applicationId}
+        where dav.app_service_id=#{applicationId}
         and dav.is_publish=1
     </select>
 
@@ -190,20 +190,20 @@
         dav.id
         FROM
         devops_app_version dav
-        JOIN devops_application da ON da.is_active = TRUE
-        AND da.id = dav.app_id
+        JOIN devops_application_service da ON da.is_active = TRUE
+        AND da.id = dav.app_service_id
         WHERE
-        dav.app_id = #{applicationId}
+        dav.app_service_id = #{applicationId}
     </select>
 
     <select id="selectUpgradeVersions" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
-        SELECT id, app_id, version,creation_date
+        SELECT id, app_service_id, version,creation_date
         FROM
         devops_app_version
         WHERE
-        app_id = (
+        app_service_id = (
         SELECT
-        app_id
+        app_service_id
         FROM
         devops_app_version
         WHERE
@@ -216,8 +216,8 @@
         SELECT
         COUNT(0)
         FROM
-        devops_application da
-        JOIN devops_app_version dav ON dav.app_id = da.id
+        devops_application_service da
+        JOIN devops_app_version dav ON dav.app_service_id = da.id
         WHERE
         da.project_id = #{projectId}
         AND dav.id = #{appVersionId}
@@ -225,7 +225,7 @@
 
 
     <select id="getLatestVersion" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
-        select * from devops_app_version where app_id = #{appId} order by id desc limit 1
+        select * from devops_app_version where app_service_id = #{appServiceId} order by id desc limit 1
     </select>
 
 
@@ -249,7 +249,7 @@
         FROM
         devops_app_version
         WHERE
-        app_id = #{appId} and commit is not null and version LIKE CONCAT(CONCAT('%', #{branch, jdbcType=VARCHAR}),'%')
+        app_service_id = #{appServiceId} and commit is not null and version LIKE CONCAT(CONCAT('%', #{branch, jdbcType=VARCHAR}),'%')
         order by id desc limit
         10
     </select>
@@ -261,7 +261,7 @@
         FROM
         devops_gitlab_pipeline dgp
         LEFT JOIN devops_gitlab_commit dgc ON dgp.commit_id = dgc.id
-        LEFT JOIN devops_app_version dav ON dav.`commit` = dgc.commit_sha and dav.app_id=#{appId}
+        LEFT JOIN devops_app_version dav ON dav.`commit` = dgc.commit_sha and dav.app_service_id=#{appServiceId}
         WHERE
         dgp.pipeline_id = #{pipelineId}
         and dav.version LIKE CONCAT('%', #{branch, jdbcType=VARCHAR})
@@ -275,7 +275,7 @@
         LEFT JOIN devops_app_version_value davv
         ON davv.id = dav.value_id
         WHERE
-        dav.app_id = #{appId}
+        dav.app_service_id = #{appServiceId}
         ORDER BY dav.id DESC
         LIMIT 1
     </select>
@@ -298,14 +298,14 @@
     <select id="listShareVersionByAppId" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT DISTINCT
             davall.id,
-            davall.app_id,
+            davall.app_service_id,
             davall.`commit`,
             davall.image,
             davall.version
         FROM
             (
                 SELECT
-                    dav.app_id,
+                    dav.app_service_id,
                     dav.`commit`,
                     dav.version,
                     dav.id,
@@ -318,15 +318,15 @@
                     FROM
                         devops_app_share_rule dasr
                     WHERE
-                        dasr.app_id = #{appId}
+                        dasr.app_service_id = #{appServiceId}
                     AND dasr.version IS NULL
                 ) dasr1 ON dav.version LIKE CONCAT(
                     CONCAT('%', dasr1.version_type, '%')
                 )
-                AND dav.app_id =  #{appId}
+                AND dav.app_service_id =  #{appServiceId}
                 UNION
                     SELECT
-                        dav.app_id,
+                        dav.app_service_id,
                         dav.`commit`,
                         dav.version,
                         dav.id,
@@ -339,10 +339,10 @@
                         FROM
                             devops_app_share_rule dasr
                         WHERE
-                            dasr.app_id =  #{appId}
+                            dasr.app_service_id =  #{appServiceId}
                         AND dasr.version IS NOT NULL
                     ) dasr2 ON dav.version = dasr2.version
-                    AND dav.app_id =  #{appId}
+                    AND dav.app_service_id =  #{appServiceId}
             ) davall
             <if test="params !=null">
                 WHEREdavall.version LIKE CONCAT(CONCAT('%', #{params}, '%'))

@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,6 +10,16 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import retrofit2.Response;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.exception.CommonException;
@@ -29,15 +38,6 @@ import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
 import io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper;
 import io.choerodon.devops.infra.util.*;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import retrofit2.Response;
 
 @Service
 public class ApplicationVersionServiceImpl implements ApplicationVersionService {
@@ -52,7 +52,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private String helmUrl;
 
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
@@ -108,14 +108,14 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     private void doCreate(String image, String token, String version, String commit, MultipartFile files) {
-        ApplicationDTO applicationDTO = applicationMapper.queryByToken(token);
+        ApplicationServiceDTO applicationDTO = applicationMapper.queryByToken(token);
 
         ApplicationVersionValueDTO applicationVersionValueDTO = new ApplicationVersionValueDTO();
         ApplicationVersionDTO applicationVersionDTO = new ApplicationVersionDTO();
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         ApplicationVersionDTO newApplicationVersion = baseQueryByAppIdAndVersion(applicationDTO.getId(), version);
-        applicationVersionDTO.setAppId(applicationDTO.getId());
+        applicationVersionDTO.getAppServiceId(applicationDTO.getId());
         applicationVersionDTO.setImage(image);
         applicationVersionDTO.setCommit(commit);
         applicationVersionDTO.setVersion(version);
@@ -176,10 +176,10 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
      * @param applicationVersionDTO 版本
      */
     private void checkAutoDeploy(ApplicationVersionDTO applicationVersionDTO) {
-        ApplicationVersionDTO insertApplicationVersionDTO = baseQueryByAppIdAndVersion(applicationVersionDTO.getAppId(), applicationVersionDTO.getVersion());
+        ApplicationVersionDTO insertApplicationVersionDTO = baseQueryByAppIdAndVersion(applicationVersionDTO.getAppServiceId(), applicationVersionDTO.getVersion());
 
         if (insertApplicationVersionDTO != null && insertApplicationVersionDTO.getVersion() != null) {
-            List<PipelineAppDeployDTO> appDeployDTOList = pipelineAppDeployService.baseQueryByAppId(insertApplicationVersionDTO.getAppId())
+            List<PipelineAppDeployDTO> appDeployDTOList = pipelineAppDeployService.baseQueryByAppId(insertApplicationVersionDTO.getAppServiceId())
                     .stream()
                     .filter(deployDTO -> filterAppDeploy(deployDTO, insertApplicationVersionDTO.getVersion()))
                     .collect(Collectors.toList());
@@ -330,7 +330,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Override
     public List<ApplicationVersionAndCommitVO> listByAppIdAndBranch(Long appId, String branch) {
         List<ApplicationVersionDTO> applicationVersionDTOS = baseListByAppIdAndBranch(appId, branch);
-        ApplicationDTO applicationDTO = applicationService.baseQuery(appId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(appId);
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<ApplicationVersionAndCommitVO> applicationVersionAndCommitVOS = new ArrayList<>();
@@ -388,7 +388,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public PageInfo<ApplicationVersionRespVO> pageVersionByAppId(Long appId, PageRequest pageRequest, String params) {
+    public PageInfo<MarketAppPublishVersionVO> pageVersionByAppId(Long appId, PageRequest pageRequest, String params) {
         DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
@@ -402,7 +402,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             map.put("params", params);
         }
         map.put("access_token", marketConnectInfoDO.getAccessToken());
-        Response<PageInfo<ApplicationVersionRespVO>> pageInfoResponse = null;
+        Response<PageInfo<MarketAppPublishVersionVO>> pageInfoResponse = null;
         try {
             pageInfoResponse = shareClient.listVersionByAppId(appId, map).execute();
             if (!pageInfoResponse.isSuccessful()) {
@@ -492,7 +492,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
     public ApplicationVersionDTO baseQueryByAppIdAndVersion(Long appId, String version) {
         ApplicationVersionDTO applicationVersionDTO = new ApplicationVersionDTO();
-        applicationVersionDTO.setAppId(appId);
+        applicationVersionDTO.getAppServiceId(appId);
         applicationVersionDTO.setVersion(version);
         List<ApplicationVersionDTO> applicationVersionDTOS = applicationVersionMapper.select(applicationVersionDTO);
         if (applicationVersionDTOS.isEmpty()) {

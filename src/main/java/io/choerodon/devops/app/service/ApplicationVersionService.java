@@ -4,10 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.AppVersionAndValueVO;
-import io.choerodon.devops.api.vo.ApplicationVersionAndCommitVO;
-import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
-import io.choerodon.devops.api.vo.DeployVersionVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.ApplicationLatestVersionDTO;
 import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
 import org.springframework.web.multipart.MultipartFile;
@@ -136,7 +133,7 @@ public interface ApplicationVersionService {
      * @param params
      * @return
      */
-    PageInfo<ApplicationVersionRespVO> pageVersionByAppId(Long appId, PageRequest pageRequest, String params);
+    PageInfo<MarketAppPublishVersionVO> pageVersionByAppId(Long appId, PageRequest pageRequest, String params);
 
     /**
      * 获取共享应用版本

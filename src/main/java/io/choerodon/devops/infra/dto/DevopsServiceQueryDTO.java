@@ -18,7 +18,7 @@ public class DevopsServiceQueryDTO {
     private String envName;
     private String namespace;
     private String endPoints;
-    private Long appId;
+    private Long appServiceId;
     private String appName;
     private String labels;
     private List<ServiceInstanceDO> appInstance;
@@ -77,12 +77,12 @@ public class DevopsServiceQueryDTO {
         this.envName = envName;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public String getAppName() {

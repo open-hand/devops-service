@@ -47,7 +47,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     private String gitlabUrl;
 
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
@@ -67,7 +67,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Saga(code = DEVOPS_GITLAB_PIPELINE, description = "gitlab pipeline创建到数据库", inputSchemaClass = PipelineWebHookVO.class)
     public void create(PipelineWebHookVO pipelineWebHookVO, String token) {
         pipelineWebHookVO.setToken(token);
-        ApplicationDTO applicationDTO = applicationService.baseQueryByToken(token);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
         try {
             String input = objectMapper.writeValueAsString(pipelineWebHookVO);
             transactionalProducer.apply(
@@ -85,7 +85,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
     @Override
     public void handleCreate(PipelineWebHookVO pipelineWebHookVO) {
-        ApplicationDTO applicationDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
+        ApplicationServiceDTO applicationDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
         DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = baseQueryByGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
         if ("admin1".equals(pipelineWebHookVO.getUser().getUsername()) || "root".equals(pipelineWebHookVO.getUser().getUsername())) {
             pipelineWebHookVO.getUser().setUsername("admin");
@@ -123,7 +123,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         //pipeline不存在则创建,存在则更新状态和阶段信息
         if (devopsGitlabPipelineDTO == null) {
             devopsGitlabPipelineDTO = new DevopsGitlabPipelineDTO();
-            devopsGitlabPipelineDTO.setAppId(applicationDTO.getId());
+            devopsGitlabPipelineDTO.getAppServiceId(applicationDTO.getId());
             devopsGitlabPipelineDTO.setPipelineCreateUserId(userAttrE == null ? null : userAttrE.getIamUserId());
             devopsGitlabPipelineDTO.setPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
             devopsGitlabPipelineDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
@@ -306,7 +306,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             refWithPipelineIds.put(key, pipeLineId);
         });
 
-        ApplicationDTO applicationDTO = applicationService.baseQuery(appId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(appId);
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 

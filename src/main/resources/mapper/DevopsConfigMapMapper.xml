@@ -17,15 +17,15 @@
         devops_config_map dcm
         LEFT JOIN devops_env de ON dcm.env_id = de.id
         LEFT JOIN devops_env_command dc ON dcm.command_id = dc.id
-        <if test="appId != null">
+        <if test="appServiceId != null">
             LEFT JOIN devops_app_resource das ON dcm.id = das.resource_id
         </if>
         where 1
         <if test="envId != null">
             AND dcm.env_id = #{envId}
         </if>
-        <if test="appId != null">
-            AND das.app_id = #{appId}
+        <if test="appServiceId != null">
+            AND das.app_service_id = #{appServiceId}
             AND das.resource_type='configMap'
         </if>
         <include refid="sqlparam"/>

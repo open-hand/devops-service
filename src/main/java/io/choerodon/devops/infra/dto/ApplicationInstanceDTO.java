@@ -14,7 +14,7 @@ public class ApplicationInstanceDTO extends BaseDTO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String code;
-    private Long appId;
+    private Long appServiceId;
     private Long appVersionId;
     private Long envId;
     private Long commandId;
@@ -84,12 +84,12 @@ public class ApplicationInstanceDTO extends BaseDTO {
         this.code = code;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Long getAppVersionId() {

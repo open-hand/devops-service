@@ -103,7 +103,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(devopsEnvironmentDTO.getProjectId(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getEnvIdRsa());
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapVO.getType().equals(CREATE_TYPE), filePath, devopsConfigMapDTO, userAttrDTO, devopsEnvCommandDTO, devopsConfigMapVO.getAppId());
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapVO.getType().equals(CREATE_TYPE), filePath, devopsConfigMapDTO, userAttrDTO, devopsEnvCommandDTO, devopsConfigMapVO.getAppServiceId());
     }
 
 
@@ -330,7 +330,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             Long configMapId = baseCreate(devopsConfigMapDTO).getId();
             if (appId != null) {
                 DevopsApplicationResourceDTO devopsApplicationResourceDTO = new DevopsApplicationResourceDTO();
-                devopsApplicationResourceDTO.setAppId(appId);
+                devopsApplicationResourceDTO.getAppServiceId(appId);
                 devopsApplicationResourceDTO.setResourceType(ObjectType.CONFIGMAP.getType());
                 devopsApplicationResourceDTO.setResourceId(configMapId);
                 devopsApplicationResourceService.baseCreate(devopsApplicationResourceDTO);

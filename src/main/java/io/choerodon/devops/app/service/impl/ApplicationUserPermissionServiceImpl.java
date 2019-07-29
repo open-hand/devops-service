@@ -33,7 +33,7 @@ public class ApplicationUserPermissionServiceImpl implements ApplicationUserPerm
     @Override
     public void baseDeleteByAppId(Long appId) {
         ApplicationUserPermissionDTO applicationUserPermissionDTO = new ApplicationUserPermissionDTO();
-        applicationUserPermissionDTO.setAppId(appId);
+        applicationUserPermissionDTO.getAppServiceId(appId);
         applicationUserPermissionMapper.delete(applicationUserPermissionDTO);
     }
 

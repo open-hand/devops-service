@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by younger on 2018/3/28.
  */
-public class ApplicationReqVO {
+public class ApplicationServiceReqVO {
 
     private Long id;
     private String name;

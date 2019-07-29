@@ -21,7 +21,7 @@ public class ApplicationVersionDTO extends BaseDTO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String version;
-    private Long appId;
+    private Long appServiceId;
     private Long valueId;
     private Long readmeValueId;
     private String image;
@@ -71,12 +71,12 @@ public class ApplicationVersionDTO extends BaseDTO {
         this.version = version;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public String getImage() {

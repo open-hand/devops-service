@@ -95,7 +95,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private ApplicationService applicationService;
+    private ApplicationSeviceService applicationService;
     @Autowired
     private ApplicationVersionService applicationVersionService;
     @Autowired
@@ -1059,7 +1059,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (devopsServiceService.baseQueryByNameAndEnvId(
                     v1Service.getMetadata().getName(), devopsEnvironmentDTO.getId()) == null) {
                 devopsServiceDTO.setEnvId(devopsEnvironmentDTO.getId());
-                devopsServiceDTO.setAppId(applicationInstanceDTO.getAppId());
+                devopsServiceDTO.getAppServiceId(applicationInstanceDTO.getAppServiceId());
                 devopsServiceDTO.setName(v1Service.getMetadata().getName());
                 devopsServiceDTO.setType(v1Service.getSpec().getType());
                 devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
@@ -1137,15 +1137,15 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
 
     @Override
-    public List<ApplicationDTO> getApplication(String appName, Long projectId, Long orgId) {
-        List<ApplicationDTO> applications = new ArrayList<>();
-        ApplicationDTO applicationDTO = applicationService
+    public List<ApplicationServiceDTO> getApplication(String appName, Long projectId, Long orgId) {
+        List<ApplicationServiceDTO> applications = new ArrayList<>();
+        ApplicationServiceDTO applicationDTO = applicationService
                 .baseQueryByCode(appName, projectId);
         if (applicationDTO != null) {
             applications.add(applicationDTO);
         }
-        List<ApplicationDTO> applicationDTOS = applicationService.baseListByCode(appName);
-        List<ApplicationDTO> applicationList = applicationDTOS.stream()
+        List<ApplicationServiceDTO> applicationDTOS = applicationService.baseListByCode(appName);
+        List<ApplicationServiceDTO> applicationList = applicationDTOS.stream()
                 .filter(result ->
                         iamServiceClientOperator.queryIamProjectById(result.getProjectId()).getOrganizationId().equals(orgId))
                 .collect(Collectors.toList());
@@ -1153,8 +1153,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         return applications;
     }
 
-    private List<ApplicationDTO> findAppInAppMarket(List<ApplicationDTO> applicationDTOS, List<ApplicationDTO> applicationList) {
-        List<ApplicationDTO> applications = new ArrayList<>();
+    private List<ApplicationServiceDTO> findAppInAppMarket(List<ApplicationServiceDTO> applicationDTOS, List<ApplicationServiceDTO> applicationList) {
+        List<ApplicationServiceDTO> applications = new ArrayList<>();
 //        if (!applicationList.isEmpty()) {
 //            applicationList.forEach(applicationDTO -> {
 //                if (applicationShareService.baseCountByAppId(applicationDTO.getId()) != 0) {

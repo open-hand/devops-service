@@ -14,7 +14,7 @@ public class DevopsBranchDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long appId;
+    private Long appServiceId;
     private Long userId;
     private Long issueId;
     private String originBranch;
@@ -38,12 +38,12 @@ public class DevopsBranchDTO extends BaseDTO {
         this.id = id;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Long getUserId() {

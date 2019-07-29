@@ -39,7 +39,7 @@ public class DevopsGitlabCommitController {
      * 应用下commit记录报表
      *
      * @param projectId 项目id
-     * @param appIds    应用id
+     * @param appServiceIds    应用id
      * @return DevopsGitlabCommitDTO
      */
     @Permission(type= ResourceType.PROJECT,
@@ -50,12 +50,12 @@ public class DevopsGitlabCommitController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ids", required = true)
-            @RequestBody String appIds,
+            @RequestBody String appServiceIds,
             @ApiParam(value = "开始时间start_date", required = true)
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
             @RequestParam(value = "end_date") Date endDate) {
-        return Optional.ofNullable(devopsGitlabCommitService.queryCommits(projectId, appIds, startDate, endDate))
+        return Optional.ofNullable(devopsGitlabCommitService.queryCommits(projectId, appServiceIds, startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.commits.get"));
     }
@@ -64,7 +64,7 @@ public class DevopsGitlabCommitController {
      * 应用获取下最近的commit记录
      *
      * @param projectId   项目id
-     * @param appIds      应用id
+     * @param appServiceIds      应用id
      * @param pageRequest 分页参数
      * @return List
      */
@@ -77,14 +77,14 @@ public class DevopsGitlabCommitController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ids", required = true)
-            @RequestBody String appIds,
+            @RequestBody String appServiceIds,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "开始时间start_date", required = true)
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
             @RequestParam(value = "end_date") Date endDate) {
-        return Optional.ofNullable(devopsGitlabCommitService.pageRecordCommits(projectId, appIds, pageRequest,
+        return Optional.ofNullable(devopsGitlabCommitService.pageRecordCommits(projectId, appServiceIds, pageRequest,
                 startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.record.commit.get"));

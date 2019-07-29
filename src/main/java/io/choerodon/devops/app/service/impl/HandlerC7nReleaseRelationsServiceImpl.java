@@ -185,14 +185,14 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
-        List<ApplicationDTO> applications = agentMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
+        List<ApplicationServiceDTO> applications = agentMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
 
         if (applications.isEmpty()) {
             throw new GitOpsExplainException("app.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartName());
         }
         ApplicationVersionDTO applicationVersionDTO = null;
-        ApplicationDTO applicationDTO = null;
-        for (ApplicationDTO application : applications) {
+        ApplicationServiceDTO applicationDTO = null;
+        for (ApplicationServiceDTO application : applications) {
             applicationVersionDTO = applicationVersionService
                     .baseQueryByAppIdAndVersion(application.getId(), c7nHelmRelease.getSpec().getChartVersion());
             if (applicationVersionDTO != null) {
@@ -210,7 +210,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         applicationDeployVO.setEnvironmentId(envId);
         applicationDeployVO.setType(type);
         applicationDeployVO.setValues(applicationInstanceService.getReplaceResult(versionValue, c7nHelmRelease.getSpec().getValues()).getYaml());
-        applicationDeployVO.setAppId(applicationDTO.getId());
+        applicationDeployVO.getAppServiceId(applicationDTO.getId());
         applicationDeployVO.setAppVersionId(applicationVersionDTO.getId());
         applicationDeployVO.setInstanceName(c7nHelmRelease.getMetadata().getName());
         if (type.equals("update")) {

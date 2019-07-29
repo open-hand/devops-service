@@ -14,7 +14,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class MarketAppDeployRecordDTO {
     private Long id;
     @NotNull(message = "error.market.app.deploy.record.create.app.id.cannot.be.null")
-    private Long appId;
+    private Long appServiceId;
     @ApiModelProperty("组织Id")
     private Long organizationId;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -57,11 +57,11 @@ public class MarketAppDeployRecordDTO {
         this.versionId = versionId;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 }

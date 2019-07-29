@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.dto.ApplicationDTO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -49,7 +49,7 @@ public interface AgentMsgHandlerService {
 
     void gitOpsSyncEvent(String key, String msg, Long clusterId);
 
-    List<ApplicationDTO> getApplication(String appName, Long projectId, Long orgId);
+    List<ApplicationServiceDTO> getApplication(String appName, Long projectId, Long orgId);
 
     void gitOpsCommandSyncEvent(String key, Long clusterId);
 

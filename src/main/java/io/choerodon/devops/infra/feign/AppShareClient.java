@@ -18,10 +18,10 @@ import retrofit2.http.*;
 public interface AppShareClient {
 
     @GET("v1/public/app_publishes/by_token")
-    Call<PageInfo<RemoteApplicationVO>> getAppShares(@QueryMap Map<String, Object> map);
+    Call<PageInfo<RemoteApplicationServiceVO>> getAppShares(@QueryMap Map<String, Object> map);
 
     @GET("v1/public/app_publishes/{app_id}/list_versions")
-    Call<PageInfo<ApplicationVersionRespVO>> listVersionByAppId(@Path("app_id") Long appId,
+    Call<PageInfo<MarketAppPublishVersionVO>> listVersionByAppId(@Path("app_id") Long appId,
                                                                 @QueryMap Map<String, Object> map);
 
     @GET("v1/public/app_publishes/{app_id}/versions/{version_id}/config_info")

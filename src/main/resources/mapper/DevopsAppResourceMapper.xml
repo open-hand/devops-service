@@ -6,7 +6,7 @@
         SELECT dar.resource_id
         FROM devops_app_resource dar
         WHERE dar.resource_type = #{resourceType}
-        AND dar.app_id = #{appId}
+        AND dar.app_service_id = #{appServiceId}
         AND dar.resource_id IN
         <foreach collection="resourceIds" item="resourceId" open="(" close=")" separator=",">
             #{resourceId}

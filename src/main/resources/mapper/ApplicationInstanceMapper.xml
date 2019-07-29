@@ -14,7 +14,7 @@
                 WHERE dp.app_instance_id = ins.id
                   AND dp.`status` = 'Running'
                   AND dp.is_ready = TRUE) pod_running_count,
-               ins.app_id,
+               ins.app_service_id,
                ins.app_version_id,
                version.version as          version_name
         FROM devops_app_instance ins
@@ -29,7 +29,7 @@
         dam.publish_level publishLevel,
         dam.contributor,
         dam.description,
-        da.id appId,
+        da.id appServiceId,
         da.project_id projectId,
         da.code as appCode,
         da.`name` appName,
@@ -87,10 +87,10 @@
         FROM
         devops_app_instance dai
         JOIN devops_env de ON dai.env_id = de.id
-        JOIN devops_application da ON da.id = dai.app_id
+        JOIN devops_application_service da ON da.id = dai.app_service_id
         LEFT JOIN devops_app_version dav ON dai.app_version_id = dav.id
         LEFT JOIN devops_env_command cmd ON cmd.id = dai.command_id
-        LEFT JOIN devops_app_share dam ON dam.app_id = da.id
+        LEFT JOIN devops_app_share dam ON dam.app_service_id = da.id
         WHERE de.project_id = #{projectId}
         AND dai.`status` != 'deleted'
         <include refid="sqlparam"/>
@@ -112,11 +112,11 @@
         dav.version appVersion
         FROM
         devops_app_instance dai,
-        devops_application da,
+        devops_application_service da,
         devops_env de,
         devops_app_version dav
         WHERE
-        dai.app_id = da.id
+        dai.app_service_id = da.id
         AND dai.env_id = de.id
         AND dai.`status` = 'running'
         AND de.project_id = #{projectId}
@@ -127,8 +127,8 @@
         <if test="versionId != null">
             AND dai.app_version_id = #{versionId}
         </if>
-        <if test="appId != null">
-            AND dai.app_id = #{appId}
+        <if test="appServiceId != null">
+            AND dai.app_service_id = #{appServiceId}
         </if>
         ORDER BY
         dai.id DESC
@@ -142,12 +142,12 @@
         dav.id appVersionId
         FROM
         devops_app_instance dai,
-        devops_application da,
+        devops_application_service da,
         devops_env de,
         devops_app_version dav,
         devops_env_command dc
         WHERE
-        dai.app_id = da.id
+        dai.app_service_id = da.id
         AND dai.command_id = dc.id
         AND dai.env_id = de.id
         AND dai.`status` in ('running','failed')
@@ -156,8 +156,8 @@
         <if test="envId != null">
             AND dai.env_id = #{envId}
         </if>
-        <if test="appId != null">
-            AND dai.app_id = #{appId}
+        <if test="appServiceId != null">
+            AND dai.app_service_id = #{appServiceId}
         </if>
         ORDER BY
         dai.id DESC
@@ -173,8 +173,8 @@
         <if test="envId != null">
             AND dai.env_id = #{envId}
         </if>
-        <if test="appId != null">
-            AND dai.app_id = #{appId}
+        <if test="appServiceId != null">
+            AND dai.app_service_id = #{appServiceId}
         </if>
         <if test="appInstanceCode != null">
             AND dai.code = #{appInstanceCode}
@@ -197,7 +197,7 @@
         devops_app_instance dai
         WHERE
         de.object_id = dai.id
-        AND dai.app_id = #{appId}
+        AND dai.app_service_id = #{appServiceId}
         AND dai.env_id = #{envId}
         AND de.object = 'instance'
         ORDER BY
@@ -243,8 +243,8 @@
         <if test="versionId != null">
             AND dav.id = #{versionId}
         </if>
-        <if test="appId != null">
-            AND da.id = #{appId}
+        <if test="appServiceId != null">
+            AND da.id = #{appServiceId}
         </if>
         <if test='searchParam != null'>
             <if test='searchParam.code != null and searchParam.code.size > 0'>
@@ -309,7 +309,7 @@
 
     <select id="listApplicationInstanceOverView" resultType="io.choerodon.devops.infra.dto.ApplicationInstanceOverViewDTO">
         SELECT
-        da.id appId,
+        da.id appServiceId,
         dam.publish_level publishLevel,
         da.`code` appCode,
         da.`name` appName,
@@ -322,16 +322,16 @@
         dav.creation_date versionCreationDate,
         de.id envId
         FROM
-        devops_application da
-        JOIN devops_app_version dav ON dav.app_id = da.id
+        devops_application_service da
+        JOIN devops_app_version dav ON dav.app_service_id = da.id
         JOIN devops_app_instance dai ON dai.app_version_id = dav.id
         AND dai.status != 'deleted'
         JOIN devops_env de ON de.id = dai.env_id
-        LEFT JOIN devops_app_share dam ON dam.app_id = da.id
+        LEFT JOIN devops_app_share dam ON dam.app_service_id = da.id
         WHERE
         de.project_id = #{projectId}
-        <if test="appId != null">
-            AND da.id = #{appId}
+        <if test="appServiceId != null">
+            AND da.id = #{appServiceId}
         </if>
         <if test="envIds != null">
             AND de.id in
@@ -363,7 +363,7 @@
         cmd.last_updated_by,
         cmd.created_by
         from devops_app_instance dai
-        JOIN devops_application da ON dai.app_id = da.id
+        JOIN devops_application_service da ON dai.app_service_id = da.id
         JOIN devops_app_version dav ON dai.app_version_id = dav.id
         JOIN devops_env de ON de.id = dai.env_id
         LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
@@ -408,7 +408,7 @@
         cmd.last_updated_by,
         cmd.created_by
         from devops_app_instance dai
-        JOIN devops_application da ON dai.app_id = da.id
+        JOIN devops_application_service da ON dai.app_service_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
         LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
         where cmd.command_type in ('create','update')
@@ -421,8 +421,8 @@
         <if test="endTime != null">
             AND cmd.creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
         </if>
-        <if test="appId != null">
-            AND da.id = #{appId}
+        <if test="appServiceId != null">
+            AND da.id = #{appServiceId}
         </if>
         <if test="envIds != null">
             AND de.id in

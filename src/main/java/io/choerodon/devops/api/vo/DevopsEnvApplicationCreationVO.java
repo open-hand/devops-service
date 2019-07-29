@@ -11,7 +11,7 @@ public class DevopsEnvApplicationCreationVO {
     private Long envId;
 
     @ApiModelProperty(value = "该环境对应的应用id")
-    private Long[] appIds;
+    private Long[] appServiceIds;
 
     public Long getEnvId() {
         return envId;
@@ -21,11 +21,11 @@ public class DevopsEnvApplicationCreationVO {
         this.envId = envId;
     }
 
-    public Long[] getAppIds() {
-        return appIds;
+    public Long[] getAppServiceIds() {
+        return appServiceIds;
     }
 
-    public void setAppIds(Long[] appIds) {
-        this.appIds = appIds;
+    public void getAppServiceIds(Long[] appServiceIds) {
+        this.appServiceIds = appServiceIds;
     }
 }

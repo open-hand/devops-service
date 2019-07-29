@@ -106,9 +106,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         });
 
         // 校验创建应用下域名时，所选的网络是否都是同一个应用下的
-        if (devopsIngressVO.getAppId() != null) {
+        if (devopsIngressVO.getAppServiceId() != null) {
             List<Long> serviceIds = devopsIngressVO.getPathList().stream().map(DevopsIngressPathVO::getServiceId).collect(Collectors.toList());
-            if (!isAllServiceInApp(devopsIngressVO.getAppId(), serviceIds)) {
+            if (!isAllServiceInApp(devopsIngressVO.getAppServiceId(), serviceIds)) {
                 throw new CommonException("error.ingress.service.application");
             }
         }
@@ -124,7 +124,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         // 在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), false, v1beta1Ingress, true, null, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO, devopsIngressVO.getAppId());
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), false, v1beta1Ingress, true, null, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO, devopsIngressVO.getAppServiceId());
     }
 
 
@@ -210,9 +210,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         });
 
         // 校验创建应用下域名时，所选的网络是否都是同一个应用下的
-        if (devopsIngressVO.getAppId() != null) {
+        if (devopsIngressVO.getAppServiceId() != null) {
             List<Long> serviceIds = devopsIngressVO.getPathList().stream().map(DevopsIngressPathVO::getServiceId).collect(Collectors.toList());
-            if (!isAllServiceInApp(devopsIngressVO.getAppId(), serviceIds)) {
+            if (!isAllServiceInApp(devopsIngressVO.getAppServiceId(), serviceIds)) {
                 throw new CommonException("error.ingress.service.application");
             }
         }
@@ -480,7 +480,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             Long ingressId = baseCreateIngressAndPath(devopsIngressDTO).getId();
             if (appId != null) {
                 DevopsApplicationResourceDTO resourceDTO = new DevopsApplicationResourceDTO();
-                resourceDTO.setAppId(appId);
+                resourceDTO.getAppServiceId(appId);
                 resourceDTO.setResourceType(ObjectType.INSTANCE.getType());
                 resourceDTO.setResourceId(ingressId);
                 devopsApplicationResourceService.baseCreate(resourceDTO);

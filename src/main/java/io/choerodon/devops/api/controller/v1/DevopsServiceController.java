@@ -244,11 +244,11 @@ public class DevopsServiceController {
             @ApiParam(value = "实例id")
             @RequestParam(value = "instance_id",required = false) Long instanceId,
             @ApiParam(value = "应用id")
-            @RequestParam(value = "app_id",required = false) Long appId,
+            @RequestParam(value = "app_service_id",required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(devopsServiceService.pageByInstance(projectId, instanceId, pageRequest, appId))
+        return Optional.ofNullable(devopsServiceService.pageByInstance(projectId, instanceId, pageRequest, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
     }

@@ -47,14 +47,14 @@ public class DevopsDeployValueController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = false)
-            @RequestParam(value = "app_id", required = false) Long appId,
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "环境Id", required = false)
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsDeployValueService.pageByOptions(projectId, appId, envId, pageRequest, params))
+        return Optional.ofNullable(devopsDeployValueService.pageByOptions(projectId, appServiceId, envId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.list"));
     }
@@ -162,7 +162,7 @@ public class DevopsDeployValueController {
      * 根据应用Id和环境Id获取配置
      *
      * @param projectId
-     * @param appId
+     * @param appServiceId
      * @param envId
      * @return
      */
@@ -173,10 +173,10 @@ public class DevopsDeployValueController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = true)
-            @RequestParam(value = "app_id") Long appId,
+            @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "环境Id", required = true)
             @RequestParam(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsDeployValueService.listByEnvAndApp(projectId, appId, envId))
+        return Optional.ofNullable(devopsDeployValueService.listByEnvAndApp(projectId, appServiceId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.queryByIds"));
     }

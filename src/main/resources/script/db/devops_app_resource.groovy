@@ -26,4 +26,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_resource.groovy') {
         }
 
     }
+
+    changeSet(author: 'scp', id: '2019-07-29-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_app_resource')
+    }
+
 }

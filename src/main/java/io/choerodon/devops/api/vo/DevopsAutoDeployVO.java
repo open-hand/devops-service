@@ -12,7 +12,7 @@ import java.util.List;
 public class DevopsAutoDeployVO {
     private Long id;
     private String taskName;
-    private Long appId;
+    private Long appServiceId;
     private List<String> triggerVersion;
     private Long envId;
     @NotNull(message = "error.value.is.empty")
@@ -44,12 +44,12 @@ public class DevopsAutoDeployVO {
         this.taskName = taskName;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public List<String> getTriggerVersion() {

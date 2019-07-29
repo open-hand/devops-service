@@ -34,7 +34,7 @@ public class DevopsGitlabPipelineController {
      * 获取pipeline时长报表
      *
      * @param projectId 项目id
-     * @param appId     应用id
+     * @param appServiceId     应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return List
@@ -47,13 +47,13 @@ public class DevopsGitlabPipelineController {
     public ResponseEntity<PipelineTimeVO> listPipelineTime(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "app_id")
-            @RequestParam(value = "app_id",required = false) Long appId,
+            @ApiParam(value = "app_service_id")
+            @RequestParam(value = "app_service_id",required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
             @RequestParam(value = "end_time") Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.getPipelineTime(appId, startTime, endTime))
+        return Optional.ofNullable(devopsGitlabPipelineService.getPipelineTime(appServiceId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.time.get"));
     }
@@ -63,7 +63,7 @@ public class DevopsGitlabPipelineController {
      * 获取pipeline次数报表
      *
      * @param projectId 项目id
-     * @param appId     应用id
+     * @param appServiceId     应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return 次数报表
@@ -76,13 +76,13 @@ public class DevopsGitlabPipelineController {
     public ResponseEntity<PipelineFrequencyVO> listPipelineFrequency(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "app_id")
-            @RequestParam(value = "app_id",required = false) Long appId,
+            @ApiParam(value = "app_service_id")
+            @RequestParam(value = "app_service_id",required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
             @RequestParam(value = "end_time") Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.getPipelineFrequency(appId, startTime, endTime))
+        return Optional.ofNullable(devopsGitlabPipelineService.getPipelineFrequency(appServiceId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
     }
@@ -92,7 +92,7 @@ public class DevopsGitlabPipelineController {
      * 分页获取pipeline
      *
      * @param projectId 项目id
-     * @param appId     应用id
+     * @param appServiceId     应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return List
@@ -110,13 +110,13 @@ public class DevopsGitlabPipelineController {
                     PageRequest pageRequest,
             @ApiParam(value = "branch")
             @RequestParam(required = false) String branch,
-            @ApiParam(value = "app_id")
-            @RequestParam(value = "app_id",required = false) Long appId,
+            @ApiParam(value = "app_service_id")
+            @RequestParam(value = "app_service_id",required = false) Long appServiceId,
             @ApiParam(value = "start_time")
             @RequestParam(value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
             @RequestParam(value = "end_time") Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.pageByOptions(appId, branch, pageRequest, startTime, endTime))
+        return Optional.ofNullable(devopsGitlabPipelineService.pageByOptions(appServiceId, branch, pageRequest, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
     }

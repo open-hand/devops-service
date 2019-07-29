@@ -6,7 +6,7 @@
         SELECT
         dgc.id,
         dgc.user_id,
-        dgc.app_id,
+        dgc.app_service_id,
         dgc.ref,
         dgc.commit_date,
         dgc.commit_sha,
@@ -15,13 +15,13 @@
         da.`name` appName
         FROM
         devops_gitlab_commit dgc
-        JOIN devops_application da ON dgc.app_id = da.id
+        JOIN devops_application_service da ON dgc.app_service_id = da.id
         WHERE
         da.project_id = #{projectId}
         <if test="appIds != null">
-           AND dgc.app_id IN
-            <foreach collection="appIds" item="appId" open="(" close=")" separator=",">
-                #{appId}
+           AND dgc.app_service_id IN
+            <foreach collection="appIds" item="appServiceId" open="(" close=")" separator=",">
+                #{appServiceId}
             </foreach>
         </if>
         <if test="appIds == null">
@@ -34,7 +34,7 @@
             AND dgc.commit_date <![CDATA[<=]]>  CONCAT('','${endDate}',' 23:59:59')
         </if>
         AND da.is_active = 1
-        AND dgc.app_id = da.id
+        AND dgc.app_service_id = da.id
         AND da.project_id = #{projectId}
         <if test="startDate != null">
             AND dgc.commit_date >= CONCAT('','${startDate}',' 00:00:00')
@@ -50,7 +50,7 @@
         SELECT
         dgc.id,
         dgc.user_id,
-        dgc.app_id,
+        dgc.app_service_id,
         dgc.ref,
         dgc.commit_date,
         dgc.commit_sha,
@@ -59,7 +59,7 @@
         FROM
         devops_gitlab_commit dgc
         WHERE
-        dgc.app_id = #{appId}
+        dgc.app_service_id = #{appServiceId}
         AND dgc.ref = #{branchName}
         <if test="startDate != null">
             AND dgc.commit_date >= CONCAT('','${startDate}',' 00:00:00')

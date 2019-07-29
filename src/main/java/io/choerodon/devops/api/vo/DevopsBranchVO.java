@@ -6,7 +6,7 @@ import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 
 public class DevopsBranchVO {
 
-    private Long appId;
+    private Long appServiceId;
     private String appName;
     private String originBranch;
     private Long issueId;
@@ -38,12 +38,12 @@ public class DevopsBranchVO {
         this.issueId = issueId;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void getAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public String getAppName() {
