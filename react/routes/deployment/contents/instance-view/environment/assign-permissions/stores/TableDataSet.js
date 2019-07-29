@@ -17,37 +17,34 @@ export default ({ intl, intlPrefix, projectId, envId }) => ({
     {
       name: 'realName',
       type: 'string',
-      // label: intl.formatMessage({ id: `${intlPrefix}.environment.error.info` }),
-      label: intl.formatMessage({ id: '用户名' }),
+      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.user` }),
     },
     {
       name: 'loginName',
       type: 'string',
-      label: intl.formatMessage({ id: '登录名' }),
+      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.name` }),
     },
     {
       name: 'role',
       type: 'string',
-      label: intl.formatMessage({ id: '项目角色' }),
+      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.role` }),
     },
     {
       name: 'createDate',
       type: 'dateTime',
-      // label: intl.formatMessage({ id: `${intlPrefix}.environment.error.time` }),
-      label: intl.formatMessage({ id: '添加时间' }),
+      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.addTime` }),
     },
   ],
   queryFields: [
     {
       name: 'realName',
       type: 'string',
-      // label: intl.formatMessage({ id: `${intlPrefix}.environment.error.info` }),
-      label: intl.formatMessage({ id: '用户名' }),
+      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.user` }),
     },
     {
       name: 'loginName',
       type: 'string',
-      label: intl.formatMessage({ id: '登录名' }),
+      label: intl.formatMessage({ id: `${intlPrefix}.environment.permission.name` }),
     },
   ],
 });

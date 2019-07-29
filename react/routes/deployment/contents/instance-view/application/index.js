@@ -37,14 +37,14 @@ const AppContent = observer(() => {
     <div className={`${prefixCls}-application`}>
       <AppTitle records={baseInfo} prefixCls={prefixCls} />
       <Tabs
-        className={`${prefixCls}-environment-tabs`}
+        className={`${prefixCls}-application-tabs`}
         animated={false}
         activeKey={activeKey}
         onChange={handleChange}
       >
         <TabPane
           key={NET_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
+          tab={formatMessage({ id: `${intlPrefix}.application.tabs.networking` })}
         >
           <Suspense fallback={<div>loading</div>}>
             <NetContent />
@@ -52,7 +52,7 @@ const AppContent = observer(() => {
         </TabPane>
         <TabPane
           key={MAPPING_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
+          tab={formatMessage({ id: `${intlPrefix}.application.tabs.configMap` })}
         >
           <Suspense fallback={<div>loading</div>}>
             <MappingContent />
@@ -60,7 +60,7 @@ const AppContent = observer(() => {
         </TabPane>
         <TabPane
           key={CIPHER_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
+          tab={formatMessage({ id: `${intlPrefix}.application.tabs.secret` })}
         >
           <Suspense fallback={<div>loading</div>}>
             <CipherContent />
