@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -1522,10 +1521,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         map.put("size", pageRequest.getSize());
         map.put("sort", PageRequestUtil.getOrderByStr(pageRequest));
         map.put("access_token", marketConnectInfoDO.getAccessToken());
-        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+        params = params == null ? "" : params;
+        map.put("params", params);
         Response<PageInfo<RemoteApplicationVO>> pageInfoResponse = null;
         try {
-            map.put("params", URLEncoder.encode(mapParams.get("param").toString(), "UTF-8"));
             pageInfoResponse = shareClient.getAppShares(map).execute();
             if (!pageInfoResponse.isSuccessful()) {
                 throw new CommonException("error.get.app.shares");

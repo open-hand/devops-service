@@ -124,6 +124,7 @@ public class ApplicationShareRuleServiceImpl implements ApplicationShareRuleServ
         versionRemoteDTO.setValues(versionValue);
         ApplicationVersionDTO applicationVersionDTO = applicationVersionService.baseQuery(versionId);
         if (applicationVersionDTO != null) {
+            versionRemoteDTO.setId(versionId);
             versionRemoteDTO.setRepository(applicationVersionDTO.getRepository());
             versionRemoteDTO.setVersion(applicationVersionDTO.getVersion());
             versionRemoteDTO.setImage(applicationVersionDTO.getImage());

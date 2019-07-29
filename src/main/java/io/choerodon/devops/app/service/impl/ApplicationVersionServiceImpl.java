@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,6 +10,16 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import retrofit2.Response;
+
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.exception.CommonException;
@@ -29,6 +38,7 @@ import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
 import io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper;
 import io.choerodon.devops.infra.util.*;
+<<<<<<< HEAD
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -38,6 +48,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import retrofit2.Response;
+=======
+>>>>>>> [IMP] 修改部署远程应用接口
 
 @Service
 public class ApplicationVersionServiceImpl implements ApplicationVersionService {
@@ -388,7 +400,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public PageInfo<ApplicationVersionRespVO> pageVersionByAppId(Long appId, PageRequest pageRequest, String params) {
+    public PageInfo<MarketAppPublishVersionVO> pageVersionByAppId(Long appId, PageRequest pageRequest, String params) {
         DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
@@ -402,7 +414,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             map.put("params", params);
         }
         map.put("access_token", marketConnectInfoDO.getAccessToken());
-        Response<PageInfo<ApplicationVersionRespVO>> pageInfoResponse = null;
+        Response<PageInfo<MarketAppPublishVersionVO>> pageInfoResponse = null;
         try {
             pageInfoResponse = shareClient.listVersionByAppId(appId, map).execute();
             if (!pageInfoResponse.isSuccessful()) {

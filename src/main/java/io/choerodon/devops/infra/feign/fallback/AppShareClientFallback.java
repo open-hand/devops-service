@@ -23,7 +23,7 @@ public class AppShareClientFallback implements AppShareClient {
     }
 
     @Override
-    public Call<PageInfo<ApplicationVersionRespVO>> listVersionByAppId(Long appId, Map<String, Object> map) {
+    public Call<PageInfo<MarketAppPublishVersionVO>> listVersionByAppId(Long appId, Map<String, Object> map) {
         return null;
     }
 

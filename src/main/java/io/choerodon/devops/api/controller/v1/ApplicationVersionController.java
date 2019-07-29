@@ -7,8 +7,8 @@ import java.util.Optional;
 import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.Sort;
-import io.choerodon.devops.api.vo.AppVersionAndValueVO;
-import io.choerodon.devops.api.vo.ApplicationVersionRespVO;
+import io.choerodon.devops.api.vo.*;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +28,6 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.vo.ApplicationVersionAndCommitVO;
-import io.choerodon.devops.api.vo.DeployVersionVO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -355,7 +353,7 @@ public class ApplicationVersionController {
     @ApiOperation(value = "项目下查询远程应用版本")
     @CustomPageRequest
     @PostMapping(value = "/page_remote/versions")
-    public ResponseEntity<PageInfo<ApplicationVersionRespVO>> pageVersionByAppId(
+    public ResponseEntity<PageInfo<MarketAppPublishVersionVO>> pageVersionByAppId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = true)

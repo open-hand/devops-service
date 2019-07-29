@@ -9,15 +9,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.base.annotation.Permission;
@@ -69,7 +61,7 @@ public class ApplicationController {
     /**
      * 项目下从外部代码库导入应用
      *
-     * @param projectId            项目id
+     * @param projectId           项目id
      * @param applicationImportVO 应用信息
      * @return ApplicationRepDTO
      */
@@ -234,7 +226,6 @@ public class ApplicationController {
 
 
     /**
-     *
      * @param projectId
      * @param isActive
      * @param hasVersion
@@ -262,7 +253,7 @@ public class ApplicationController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-        applicationService.pageByOptionsAppMarket(projectId, isActive, hasVersion, null, null, doPage, pageRequest, params))
+                applicationService.pageByOptionsAppMarket(projectId, isActive, hasVersion, null, null, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appTemplate.get"));
     }
@@ -591,16 +582,16 @@ public class ApplicationController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询远程应用")
     @CustomPageRequest
-    @PostMapping(value = "/page_remote_apps")
+    @GetMapping(value = "/page_remote_apps")
     public ResponseEntity<PageInfo<RemoteApplicationVO>> pageRemoteApps(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String searchParam) {
+            @RequestParam(value = "params", required = false) String params) {
         return Optional.ofNullable(
-                applicationService.pageRemoteApps(projectId, pageRequest, searchParam))
+                applicationService.pageRemoteApps(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.remote.applications.get"));
     }
