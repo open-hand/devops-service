@@ -2,7 +2,7 @@ import React, { memo, useContext, useState, useRef, useEffect, useMemo, lazy, Su
 import { inject } from 'mobx-react';
 import _ from 'lodash';
 import LayoutPage from '../components/layout';
-import { IST_ITEM, APP_ITEM, ENV_ITEM } from '../components/TreeItemIcon';
+import { IST_ITEM, APP_ITEM, ENV_ITEM } from '../Constants';
 import Sidebar from '../sidebar';
 import Store from '../stores';
 
@@ -25,7 +25,7 @@ const getContent = (type) => {
 
   return cmMaps[type]
     ? () => <Suspense fallback={<div>loading</div>}>{cmMaps[type]}</Suspense>
-    : () => <div>加载错误</div>;
+    : () => <div>加载数据中</div>;
 };
 
 const MainView = memo(({ MenuStore }) => {

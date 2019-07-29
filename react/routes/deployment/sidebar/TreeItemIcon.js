@@ -1,16 +1,10 @@
-import React from 'react';
+import React from 'react/index';
 import { Icon } from 'choerodon-ui/pro';
-import StatusDot from './status-dot';
-import PodCircle from './pod-circle';
+import StatusDot from '../components/status-dot';
+import PodCircle from '../components/pod-circle';
+import { ENV_ITEM, APP_ITEM, IST_ITEM, PADDING_COLOR, RUNNING_COLOR } from '../Constants';
 
-const RUNNING_COLOR = '#0bc2a8';
-const PADDING_COLOR = '#fbb100';
-
-export const ENV_ITEM = 'environment';
-export const APP_ITEM = 'application';
-export const IST_ITEM = 'instance';
-
-export const TreeItemIcon = React.memo(({ type, record = {} }) => {
+const TreeItemIcon = React.memo(({ type, record = {} }) => {
   let prefix;
   switch (type) {
     case ENV_ITEM: {
@@ -48,3 +42,5 @@ export const TreeItemIcon = React.memo(({ type, record = {} }) => {
 
   return prefix;
 });
+
+export default TreeItemIcon;

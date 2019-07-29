@@ -5,6 +5,7 @@ import { Tabs } from 'choerodon-ui';
 import BaseInfoDataSet from './stores/BaseInfoDataSet';
 import Store from '../../../stores';
 import StatusDot from '../../../components/status-dot';
+import { getEnvInfo } from '../../../util';
 
 import './index.less';
 
@@ -15,7 +16,7 @@ const ASSIGN_TAB = 'assign';
 const AssignPermissions = lazy(() => import('./assign-permissions'));
 const SyncSituation = lazy(() => import('./sync-situation'));
 
-const EnvPage = observer(() => {
+const EnvContent = observer(() => {
   const {
     selectedMenu: { menuId },
     intl: { formatMessage },
@@ -30,10 +31,7 @@ const EnvPage = observer(() => {
   const getTitle = useMemo(() => {
     if (baseInfo.length) {
       const record = baseInfo[0];
-
-      const name = record.get('name');
-      const connect = record.get('connect');
-      const synchronize = record.get('synchronize');
+      const { name, connect, synchronize } = getEnvInfo(record);
 
       return <Fragment>
         <StatusDot connect={connect} synchronize={synchronize} width="0.12rem" />
@@ -45,17 +43,6 @@ const EnvPage = observer(() => {
   const handleChange = useCallback((key) => {
     setActiveKey(key);
   }, []);
-
-  // const getPanes = useMemo(() => {
-  //   const cmMap = {
-  //     [SYNC_TAB]: <SyncSituation />,
-  //     [ASSIGN_TAB]: <AssignPermissions />,
-  //   };
-  //
-  //   return <Suspense fallback={<div>loading</div>}>
-  //     {cmMap[activeKey]}
-  //   </Suspense>;
-  // }, [activeKey]);
 
   return (
     <div className={`${prefixCls}-environment`}>
@@ -90,4 +77,4 @@ const EnvPage = observer(() => {
   );
 });
 
-export default EnvPage;
+export default EnvContent;

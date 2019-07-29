@@ -1,12 +1,11 @@
 import React, { useContext, useMemo, useState, memo, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import toUpper from 'lodash/toUpper';
 import { Select, DataSet } from 'choerodon-ui/pro';
 import SidebarHeading from './header';
 import TreeDataSet from './stores/TreeDataSet';
 import TreeView from '../../../components/tree-view';
-import { TreeItemIcon } from '../components/TreeItemIcon';
+import TreeItemIcon from './TreeItemIcon';
 import Store from '../stores';
 
 import './index.less';

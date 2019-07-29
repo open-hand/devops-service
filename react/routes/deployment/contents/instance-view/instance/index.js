@@ -5,6 +5,8 @@ import { Tabs } from 'choerodon-ui';
 import BaseInfoDataSet from './stores/BaseInfoDataSet';
 import Store from '../../../stores';
 import PodCircle from '../../../components/pod-circle';
+import { PADDING_COLOR, RUNNING_COLOR } from '../../../Constants';
+import { getPodsInfo } from '../../../util';
 
 import './index.less';
 
@@ -12,9 +14,6 @@ const { TabPane } = Tabs;
 const CASES_TAB = 'cases';
 const DETAILS_TAB = 'details';
 const PODS_TAB = 'pods';
-
-const RUNNING_COLOR = '#0bc2a8';
-const PADDING_COLOR = '#fbb100';
 
 const Cases = lazy(() => import('./cases'));
 const Details = lazy(() => import('./details'));
@@ -35,10 +34,7 @@ const InstanceContent = observer(() => {
   const getTitle = useMemo(() => {
     if (baseInfo.length) {
       const record = baseInfo[0];
-      const name = record.get('name');
-      const podRunningCount = record.get('podRunningCount');
-      const podCount = record.get('podCount');
-      const podUnlinkCount = podCount - podRunningCount;
+      const { name, podRunningCount, podUnlinkCount } = getPodsInfo(record);
 
       return <Fragment>
         <PodCircle
@@ -61,17 +57,6 @@ const InstanceContent = observer(() => {
   const handleChange = useCallback((key) => {
     setActiveKey(key);
   }, []);
-
-  // const getPanes = useMemo(() => {
-  //   const cmMap = {
-  //     [SYNC_TAB]: <SyncSituation />,
-  //     [ASSIGN_TAB]: <AssignPermissions />,
-  //   };
-  //
-  //   return <Suspense fallback={<div>loading</div>}>
-  //     {cmMap[activeKey]}
-  //   </Suspense>;
-  // }, [activeKey]);
 
   return (
     <div className={`${prefixCls}-environment`}>
