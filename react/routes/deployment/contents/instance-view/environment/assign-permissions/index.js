@@ -55,10 +55,10 @@ export default function AssignPermissions() {
       queryBar="bar"
     >
       <Column name="realName" />
-      <Column name="action" render={renderActions} />
+      <Column renderer={renderActions} />
       <Column name="loginName" />
       <Column name="role" />
-      <Column name="createDate" render={renderDate} />
+      <Column name="createDate" renderer={renderDate} />
     </Table>
   );
 }

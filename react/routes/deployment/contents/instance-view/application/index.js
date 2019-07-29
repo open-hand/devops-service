@@ -35,7 +35,7 @@ const AppContent = observer(() => {
 
       return <Fragment>
         <Icon type="widgets" />
-        <span className={`${prefixCls}-environment-title`}>{name}</span>
+        <span className={`${prefixCls}-application-title`}>{name}</span>
       </Fragment>;
     }
     return null;
@@ -45,19 +45,19 @@ const AppContent = observer(() => {
   }, []);
 
   return (
-    <div className={`${prefixCls}-environment`}>
-      <div className={`${prefixCls}-environment-info`}>
+    <div className={`${prefixCls}-application`}>
+      <div className={`${prefixCls}-application-info`}>
         {getTitle}
       </div>
       <Tabs
-        className={`${prefixCls}-environment-tabs`}
+        className={`${prefixCls}-application-tabs`}
         animated={false}
         activeKey={activeKey}
         onChange={handleChange}
       >
         <TabPane
           key={NET_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
+          tab={formatMessage({ id: `${intlPrefix}.application.tabs.networking` })}
         >
           <Suspense fallback={<div>loading</div>}>
             <NetContent />
@@ -65,7 +65,7 @@ const AppContent = observer(() => {
         </TabPane>
         <TabPane
           key={MAPPING_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
+          tab={formatMessage({ id: `${intlPrefix}.application.tabs.configMap` })}
         >
           <Suspense fallback={<div>loading</div>}>
             <MappingContent />
@@ -73,7 +73,7 @@ const AppContent = observer(() => {
         </TabPane>
         <TabPane
           key={CIPHER_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.cases` })}
+          tab={formatMessage({ id: `${intlPrefix}.application.tabs.secret` })}
         >
           <Suspense fallback={<div>loading</div>}>
             <CipherContent />
