@@ -58,15 +58,15 @@ const InstanceContent = observer(() => {
             <Details />
           </Suspense>
         </TabPane>
+        <TabPane
+          key={PODS_TAB}
+          tab={formatMessage({ id: `${intlPrefix}.instance.tabs.pods` })}
+        >
+          <Suspense fallback={<div>loading</div>}>
+            <PodsDetails />
+          </Suspense>
+        </TabPane>
       </Tabs>
-      <TabPane
-        key={PODS_TAB}
-        tab={formatMessage({ id: `${intlPrefix}.instance.tabs.pods` })}
-      >
-        <Suspense fallback={<div>loading</div>}>
-          <PodsDetails />
-        </Suspense>
-      </TabPane>
     </div>
   );
 });

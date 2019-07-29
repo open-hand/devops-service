@@ -1,11 +1,18 @@
+import getTablePostData from '../../../../../../../utils/getTablePostData';
+
 export default ({ intl, intlPrefix, projectId, envId }) => ({
   autoQuery: true,
   selection: false,
   pageSize: 10,
   transport: {
-    read: {
-      url: `/devops/v1/projects/${projectId}/envs/page_by_options?env_id=${envId}`,
-      method: 'post',
+    read: ({ data }) => {
+      const postData = getTablePostData(data);
+
+      return {
+        url: `/devops/v1/projects/${projectId}/envs/page_by_options?env_id=${envId}`,
+        method: 'post',
+        data: postData,
+      };
     },
     destroy: ({ data: [data] }) => ({
       url: `/devops/v1/projects/${projectId}/envs/permission/${data.iamUserId}`,

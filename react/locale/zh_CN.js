@@ -133,23 +133,7 @@ const commonField = {
   container: '容器',
 };
 
-const deploymentPre = 'c7ncd.deployment';
 const deployment = {
-  // 环境
-  // 已连接 icon-check_circle #0BC2A8
-  // 未连接 icon-cancel #FF9915
-  // 处理中 icon-timelapse #4D90FE
-  //
-  // 应用
-  // 停用 icon-remove_circle #D3D3D3
-  // 启用 icon-check_circle #0BC2A8
-  //
-  // 实例状态
-  // 已停用 icon-remove_circle #D3D3D3
-  // 处理中 icon-timelapse #4D90FE
-  // 运行中 icon-finished #0BC2A8
-  // 部署成功 icon-check_circle #0BC2A8
-  // 部署失败 icon-cancel #F44336
   'deployment.header': '部署管理',
   'deployment.viewer.instance': '实例视图',
   'deployment.viewer.resource': '资源识图',
@@ -188,40 +172,43 @@ const deployment = {
   'deployment.pod.log': '容器日志',
   'deployment.pod.term': '运行命令',
   'deployment.operation.ports': '端口号',
-  [`${deploymentPre}.environment.tabs.sync`]: '提交同步情况',
-  [`${deploymentPre}.environment.tabs.assignPermissions`]: '已分配权限人员',
-  [`${deploymentPre}.environment.error.logs`]: '错误日志',
-  [`${deploymentPre}.environment.error.info`]: '错误信息',
-  [`${deploymentPre}.environment.error.time`]: '错误时间',
-  [`${deploymentPre}.environment.gitlab`]: 'GitLab',
-  [`${deploymentPre}.environment.analysis`]: '解析',
-  [`${deploymentPre}.environment.agent`]: 'Agent',
-  [`${deploymentPre}.environment.help`]: '由于 GitOps 对部署信息进行异步处理，提交同步情况用于查看当前对部署信息的解析进度。点击配置库可以查看对应的 GitOps环境库。',
-  [`${deploymentPre}.environment.config`]: '配置库',
-  [`${deploymentPre}.environment.config.des`]: '即 GitOps 环境库',
-  [`${deploymentPre}.environment.parsed`]: '已解析',
-  [`${deploymentPre}.environment.parsed.des`]: 'DevOps 平台会对部署文件进行解析，并在平台上生成相应的对象',
-  [`${deploymentPre}.environment.executed`]: '已执行',
-  [`${deploymentPre}.environment.executed.des`]: '执行后，k8s 平台也会生成相应的对象',
-  [`${deploymentPre}.environment.retry`]: '重试GitOps',
-  [`${deploymentPre}.environment.retry.des`]: '确定要重试GitOps吗？',
-  [`${deploymentPre}.environment.permission.user`]: '用户名',
-  [`${deploymentPre}.environment.permission.name`]: '登录名',
-  [`${deploymentPre}.environment.permission.role`]: '项目角色',
-  [`${deploymentPre}.environment.permission.addTime`]: '添加时间',
-  [`${deploymentPre}.application.tabs.networking`]: '网络与域名',
-  [`${deploymentPre}.application.tabs.configMap`]: '配置映射',
-  [`${deploymentPre}.application.tabs.secret`]: '密文',
-  [`${deploymentPre}.application.net.name`]: '网络名称',
-  [`${deploymentPre}.application.net.ingress`]: '域名名称',
-  [`${deploymentPre}.application.net.configType`]: '配置类型',
-  [`${deploymentPre}.application.net.target`]: '目标对象',
-  [`${deploymentPre}.application.net.targetType`]: '目标对象类型',
-  [`${deploymentPre}.application.net.empty`]: '暂无关联域名',
-  [`${deploymentPre}.application.net.ip`]: '外部IP',
-  [`${deploymentPre}.application.net.port`]: '端口/目标端口',
-  [`${deploymentPre}.application.net.nport`]: '节点端口/端口/目标端口',
-  [`${deploymentPre}.application.net.deleted`]: '实例已删除',
+  'c7ncd.deployment.environment.tabs.sync': '提交同步情况',
+  'c7ncd.deployment.environment.tabs.assignPermissions': '已分配权限人员',
+  'c7ncd.deployment.environment.error.logs': '错误日志',
+  'c7ncd.deployment.environment.error.info': '错误信息',
+  'c7ncd.deployment.environment.error.time': '错误时间',
+  'c7ncd.deployment.environment.gitlab': 'GitLab',
+  'c7ncd.deployment.environment.analysis': '解析',
+  'c7ncd.deployment.environment.agent': 'Agent',
+  'c7ncd.deployment.environment.help': '由于 GitOps 对部署信息进行异步处理，提交同步情况用于查看当前对部署信息的解析进度。点击配置库可以查看对应的 GitOps环境库。',
+  'c7ncd.deployment.environment.config': '配置库',
+  'c7ncd.deployment.environment.config.des': '即 GitOps 环境库',
+  'c7ncd.deployment.environment.parsed': '已解析',
+  'c7ncd.deployment.environment.parsed.des': 'DevOps 平台会对部署文件进行解析，并在平台上生成相应的对象',
+  'c7ncd.deployment.environment.executed': '已执行',
+  'c7ncd.deployment.environment.executed.des': '执行后，k8s 平台也会生成相应的对象',
+  'c7ncd.deployment.environment.retry': '重试GitOps',
+  'c7ncd.deployment.environment.retry.des': '确定要重试GitOps吗？',
+  'c7ncd.deployment.environment.permission.user': '用户名',
+  'c7ncd.deployment.environment.permission.name': '登录名',
+  'c7ncd.deployment.environment.permission.role': '项目角色',
+  'c7ncd.deployment.environment.permission.addTime': '添加时间',
+  'c7ncd.deployment.application.tabs.networking': '网络与域名',
+  'c7ncd.deployment.application.tabs.configMap': '配置映射',
+  'c7ncd.deployment.application.tabs.secret': '密文',
+  'c7ncd.deployment.application.net.name': '网络名称',
+  'c7ncd.deployment.application.net.ingress': '域名名称',
+  'c7ncd.deployment.application.net.configType': '配置类型',
+  'c7ncd.deployment.application.net.target': '目标对象',
+  'c7ncd.deployment.application.net.targetType': '目标对象类型',
+  'c7ncd.deployment.application.net.empty': '暂无关联域名',
+  'c7ncd.deployment.application.net.ip': '外部IP',
+  'c7ncd.deployment.application.net.port': '端口/目标端口',
+  'c7ncd.deployment.application.net.nport': '节点端口/端口/目标端口',
+  'c7ncd.deployment.application.net.deleted': '实例已删除',
+  'c7ncd.deployment.instance.tabs.cases': '实例事件',
+  'c7ncd.deployment.instance.tabs.details': '运行详情',
+  'c7ncd.deployment.instance.tabs.pods': 'Pod 详情',
 
 };
 

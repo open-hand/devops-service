@@ -38,7 +38,7 @@ export const EnvTitle = ({ prefixCls, records }) => {
 
 EnvTitle.propTypes = {
   prefixCls: PropTypes.string,
-  records: PropTypes.array.isRequired,
+  records: PropTypes.any.isRequired,
 };
 
 export const AppTitle = ({ prefixCls, records }) => {
@@ -55,7 +55,7 @@ export const AppTitle = ({ prefixCls, records }) => {
 
 AppTitle.propTypes = {
   prefixCls: PropTypes.string,
-  records: PropTypes.array.isRequired,
+  records: PropTypes.any.isRequired,
 };
 
 export const IstTitle = ({ prefixCls, records }) => {
@@ -86,7 +86,7 @@ export const IstTitle = ({ prefixCls, records }) => {
 
 IstTitle.propTypes = {
   prefixCls: PropTypes.string,
-  records: PropTypes.array.isRequired,
+  records: PropTypes.any.isRequired,
 };
 
 export const ResourceTitle = ({ record }) => {
