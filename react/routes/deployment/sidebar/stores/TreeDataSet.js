@@ -54,7 +54,8 @@ export default (projectId, callback) => ({
     select: ({ record }) => {
       const currentId = record.get('id');
       const currentType = record.get('itemType');
-      callback(currentId, currentType);
+      const parentId = record.get('parentId');
+      callback(currentId, currentType, parentId);
     },
     unSelect: ({ record }) => {
       // 禁用取消选中

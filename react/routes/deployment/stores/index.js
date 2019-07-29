@@ -11,10 +11,11 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const { AppState: { currentMenuType: { type, id } }, intl, children } = props;
 
     const [selectedMenu, setSelectedMenu] = useState({});
-    const changeSelected = useCallback((menuId, menuType) => {
+    const changeSelected = useCallback((menuId, menuType, parentId) => {
       setSelectedMenu({
         menuId,
         menuType,
+        parentId,
       });
     }, []);
 

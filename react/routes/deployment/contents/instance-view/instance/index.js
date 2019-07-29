@@ -1,12 +1,10 @@
-import React, { Fragment, useContext, useMemo, useState, lazy, Suspense, useCallback } from 'react';
+import React, { useContext, useMemo, useState, lazy, Suspense, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { DataSet } from 'choerodon-ui/pro';
 import { Tabs } from 'choerodon-ui';
 import BaseInfoDataSet from './stores/BaseInfoDataSet';
 import Store from '../../../stores';
-import PodCircle from '../../../components/pod-circle';
-import { PADDING_COLOR, RUNNING_COLOR } from '../../../Constants';
-import { getPodsInfo } from '../../../util';
+import { IstTitle } from '../../../components/prefix-title';
 
 import './index.less';
 
@@ -31,39 +29,13 @@ const InstanceContent = observer(() => {
   const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet(id, menuId)), [id, menuId]);
   const baseInfo = baseInfoDs.data;
 
-  const getTitle = useMemo(() => {
-    if (baseInfo.length) {
-      const record = baseInfo[0];
-      const { name, podRunningCount, podUnlinkCount } = getPodsInfo(record);
-
-      return <Fragment>
-        <PodCircle
-          size="small"
-          dataSource={[{
-            name: 'running',
-            value: podRunningCount,
-            stroke: RUNNING_COLOR,
-          }, {
-            name: 'unlink',
-            value: podUnlinkCount,
-            stroke: PADDING_COLOR,
-          }]}
-        />
-        <span className={`${prefixCls}-environment-title`}>{name}</span>
-      </Fragment>;
-    }
-    return null;
-  }, [baseInfo, prefixCls]);
   const handleChange = useCallback((key) => {
     setActiveKey(key);
   }, []);
 
   return (
-    <div className={`${prefixCls}-environment`}>
-      <div className={`${prefixCls}-environment-info`}>
-        {getTitle}
-      </div>
-
+    <div className={`${prefixCls}-instance`}>
+      <IstTitle prefixCls={prefixCls} records={baseInfo} />
       <Tabs
         className={`${prefixCls}-environment-tabs`}
         animated={false}

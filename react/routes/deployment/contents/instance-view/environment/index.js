@@ -1,11 +1,10 @@
-import React, { Fragment, useContext, useMemo, useState, lazy, Suspense, useCallback } from 'react';
+import React, { useContext, useMemo, useState, lazy, Suspense, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { DataSet } from 'choerodon-ui/pro';
 import { Tabs } from 'choerodon-ui';
 import BaseInfoDataSet from './stores/BaseInfoDataSet';
 import Store from '../../../stores';
-import StatusDot from '../../../components/status-dot';
-import { getEnvInfo } from '../../../util';
+import { EnvTitle } from '../../../components/prefix-title';
 
 import './index.less';
 
@@ -25,33 +24,20 @@ const EnvContent = observer(() => {
     AppState: { currentMenuType: { id } },
   } = useContext(Store);
   const [activeKey, setActiveKey] = useState(SYNC_TAB);
-  const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet(id, menuId)), [id, menuId]);
-  const baseInfo = baseInfoDs.data;
-
-  const getTitle = useMemo(() => {
-    if (baseInfo.length) {
-      const record = baseInfo[0];
-      const { name, connect, synchronize } = getEnvInfo(record);
-
-      return <Fragment>
-        <StatusDot connect={connect} synchronize={synchronize} width="0.12rem" />
-        <span className={`${prefixCls}-environment-title`}>{name}</span>
-      </Fragment>;
-    }
-    return null;
-  }, [baseInfo, prefixCls]);
   const handleChange = useCallback((key) => {
     setActiveKey(key);
   }, []);
 
+  const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet(id, menuId)), [id, menuId]);
+  const baseInfo = baseInfoDs.data;
+
   return (
     <div className={`${prefixCls}-environment`}>
-      <div className={`${prefixCls}-environment-info`}>
-        {getTitle}
-      </div>
-
+      <EnvTitle
+        prefixCls={prefixCls}
+        records={baseInfo}
+      />
       <Tabs
-        className={`${prefixCls}-environment-tabs`}
         animated={false}
         activeKey={activeKey}
         onChange={handleChange}

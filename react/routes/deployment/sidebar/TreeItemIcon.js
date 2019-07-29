@@ -3,13 +3,13 @@ import { Icon } from 'choerodon-ui/pro';
 import StatusDot from '../components/status-dot';
 import PodCircle from '../components/pod-circle';
 import { ENV_ITEM, APP_ITEM, IST_ITEM, PADDING_COLOR, RUNNING_COLOR } from '../Constants';
+import { getEnvInfo, getPodsInfo } from '../util';
 
 const TreeItemIcon = React.memo(({ type, record = {} }) => {
   let prefix;
   switch (type) {
     case ENV_ITEM: {
-      const connect = record.get('connect');
-      const synchronize = record.get('synchronize');
+      const { connect, synchronize } = getEnvInfo(record);
 
       prefix = <StatusDot connect={connect} synchronize={synchronize} />;
       break;
@@ -18,9 +18,7 @@ const TreeItemIcon = React.memo(({ type, record = {} }) => {
       prefix = <Icon type="widgets" />;
       break;
     case IST_ITEM: {
-      const podRunningCount = record.get('podRunningCount');
-      const podCount = record.get('podCount');
-      const podUnlinkCount = podCount - podRunningCount;
+      const { podUnlinkCount, podRunningCount } = getPodsInfo(record);
 
       prefix = <PodCircle
         size="small"
