@@ -2,7 +2,6 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 import java.util.Optional;
-
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
@@ -333,6 +332,22 @@ public class DevopsEnvironmentController {
                 .pageUserPermissionByEnvId(projectId, pageRequest, params, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
+    }
+
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询项目下所有与该环境未分配权限的项目成员")
+    @GetMapping(value = "/{env_id}/permission/list_non_related")
+    public ResponseEntity<List<DevopsEnvUserVO>> listAllNonRelatedMembers(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id")
+            @PathVariable(value = "env_id") Long envId,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsEnvironmentService.listNonRelatedMembers(projectId, envId, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.get.env.non.related.users"));
     }
 
     /**

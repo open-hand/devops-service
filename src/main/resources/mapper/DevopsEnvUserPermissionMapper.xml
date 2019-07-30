@@ -38,6 +38,13 @@
         WHERE deup.env_id = #{envId}
     </select>
 
+    <select id="listUserIdsByEnvId" resultType="java.lang.Long">
+        SELECT deup.iam_user_id
+        FROM devops_env_user_permission deup
+        WHERE deup.env_id = #{envId}
+        AND deup.is_permitted = TRUE
+    </select>
+
     <sql id="sqlparam">
         <if test='searchParam != null'>
             <if test='searchParam.loginName != null and searchParam.loginName.size > 0'>

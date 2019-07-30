@@ -139,7 +139,18 @@ public interface DevopsEnvironmentService {
      * @return page
      */
     PageInfo<DevopsEnvUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                        String params, Long envId);
+                                                                  String params, Long envId);
+
+    /**
+     * 查询项目下所有与该环境未分配权限的项目成员
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param params    搜索参数
+     * @return 所有项目成员
+     */
+    List<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, String params);
+
 
     /**
      * 获取环境下所有用户权限
@@ -193,7 +204,6 @@ public interface DevopsEnvironmentService {
     void retryGitOps(Long envId);
 
     /**
-     *
      * @param devopsEnvironmentDTO
      * @param userAttrDTO
      */
