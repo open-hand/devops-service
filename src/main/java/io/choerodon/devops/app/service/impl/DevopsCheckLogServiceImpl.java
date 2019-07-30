@@ -10,9 +10,15 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
+import io.choerodon.devops.infra.dto.ApplicationShareRuleDTO;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
@@ -20,10 +26,6 @@ import io.choerodon.devops.infra.mapper.ApplicationShareRuleMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 
 @Service
@@ -72,7 +74,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsCheckLogDTO.setBeginCheckDate(new Date());
             if ("0.19.0".equals(version)) {
                 syncEnvAppRelevance(logs);
-                syncAppShare();
+                syncAppShare(logs);
             } else {
                 LOGGER.info("version not matched");
             }
@@ -101,13 +103,31 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             });
         }
 
-        private void syncAppShare() {
-            LOGGER.info("update publish level to organization.");
-            applicationShareMapper.updatePublishLevel();
-            LOGGER.info("update publish level success.");
+        private void syncAppShare(List<CheckLog> logs) {
+            LOGGER.info("delete application market data.");
+            applicationShareMapper.deleteAll();
+            LOGGER.info("insert application share rule.");
+            applicationVersionMapper.selectAll().stream()
+                    .filter(versionDTO -> versionDTO.getIsPublish() != null && versionDTO.getIsPublish().equals(1L))
+                    .forEach(versionDTO -> {
+                        CheckLog checkLog = new CheckLog();
+                        checkLog.setContent(String.format(
+                                "Sync application share rule,versionId: %s, appServiceId: %s", versionDTO.getId(), versionDTO.getAppServiceId()));
+                        ApplicationShareRuleDTO applicationShareRuleDTO = new ApplicationShareRuleDTO();
+                        applicationShareRuleDTO.setShareLevel("organization");
+                        applicationShareRuleDTO.setVersion(versionDTO.getVersion());
+                        applicationShareRuleDTO.setAppServiceId(versionDTO.getAppServiceId());
+                        if (applicationShareMapper.insert(applicationShareRuleDTO) != 1) {
+                            checkLog.setResult("failed");
+                        } else {
+                            checkLog.setResult("success");
+                        }
+                        logs.add(checkLog);
+                    });
             LOGGER.info("update publish Time.");
             applicationVersionMapper.updatePublishTime();
-            LOGGER.info("update publish time success.");
         }
+
+
     }
 }

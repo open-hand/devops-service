@@ -116,14 +116,14 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
     public List<DevopsBranchDTO> baseListByAppId(Long appId) {
         DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
-        devopsBranchDTO.getAppServiceId(appId);
+        devopsBranchDTO.setAppServiceId(appId);
         return devopsBranchMapper.select(devopsBranchDTO);
     }
 
 
     public List<DevopsBranchDTO> baseListByAppIdAndBranchName(Long appId, String branchName) {
         DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
-        devopsBranchDTO.getAppServiceId(appId);
+        devopsBranchDTO.setAppServiceId(appId);
         devopsBranchDTO.setBranchName(branchName);
         return devopsBranchMapper.select(devopsBranchDTO);
     }

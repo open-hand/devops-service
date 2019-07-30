@@ -331,7 +331,10 @@
             devops_app_share_rule_rule dasr
         JOIN devops_application_service da ON da.id = dasr.app_service_id
         WHERE
-            dasr.organization_id = #{organizationId}
+            dasr.app_service_id in
+        <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
+            #{appServiceId}
+        </foreach>
         AND (
             dasr.share_level = 'organization'
             OR dasr.project_id = #{projectId}

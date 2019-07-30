@@ -87,7 +87,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
-    private ApplicationSeviceService applicationService;
+    private ApplicationSevriceService applicationService;
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
@@ -178,7 +178,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
         devopsBranchDTO.setUserId(gitLabUser);
-        devopsBranchDTO.getAppServiceId(applicationId);
+        devopsBranchDTO.setAppServiceId(applicationId);
         devopsBranchDTO.setStatus(CommandStatus.OPERATING.getStatus());
         ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
         devopsBranchDTO = devopsBranchService.baseCreate(devopsBranchDTO);
@@ -926,7 +926,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             if (!branchExist) {
                 DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
                 devopsBranchDTO.setUserId(userId);
-                devopsBranchDTO.getAppServiceId(appId);
+                devopsBranchDTO.setAppServiceId(appId);
 
                 devopsBranchDTO.setCheckoutDate(commitDTO.getCommittedDate());
                 devopsBranchDTO.setCheckoutCommit(lastCommit);

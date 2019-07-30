@@ -18,15 +18,6 @@ public class ApplicationShareRuleDTO extends BaseDTO {
     private String versionType;
     private String version;
     private Long projectId;
-    private Long organizationId;
-
-    public Long getOrganizationId() {
-        return organizationId;
-    }
-
-    public void setOrganizationId(Long organizationId) {
-        this.organizationId = organizationId;
-    }
 
     public Long getId() {
         return id;
@@ -40,7 +31,7 @@ public class ApplicationShareRuleDTO extends BaseDTO {
         return appServiceId;
     }
 
-    public void getAppServiceId(Long appServiceId) {
+    public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
     }
 

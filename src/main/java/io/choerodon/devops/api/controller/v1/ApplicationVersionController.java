@@ -369,7 +369,7 @@ public class ApplicationVersionController {
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下查询远程应用版本")
+    @ApiOperation(value = "项目下查询共享应用版本")
     @CustomPageRequest
     @PostMapping(value = "/page_share/versions")
     public ResponseEntity<PageInfo<ApplicationVersionRespVO>> pageShareVersionByappServiceId(

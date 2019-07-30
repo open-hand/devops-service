@@ -19,4 +19,6 @@ public interface ApplicationShareRuleMapper extends Mapper<ApplicationShareRuleD
 
 
     void updatePublishLevel();
+
+    void deleteAll();
 }

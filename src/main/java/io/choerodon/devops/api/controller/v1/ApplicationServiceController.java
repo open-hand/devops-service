@@ -19,7 +19,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.ApplicationSeviceService;
+import io.choerodon.devops.app.service.ApplicationSevriceService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -32,9 +32,9 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 public class ApplicationServiceController {
 
     private static final String ERROR_APPLICATION_GET = "error.application.get";
-    private ApplicationSeviceService applicationService;
+    private ApplicationSevriceService applicationService;
 
-    public ApplicationServiceController(ApplicationSeviceService applicationService) {
+    public ApplicationServiceController(ApplicationSevriceService applicationService) {
         this.applicationService = applicationService;
     }
 

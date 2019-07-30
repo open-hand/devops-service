@@ -109,7 +109,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
-    private ApplicationSeviceService applicationService;
+    private ApplicationSevriceService applicationService;
     @Autowired
     private DevopsProjectConfigService devopsProjectConfigService;
     @Autowired
@@ -663,7 +663,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
      */
     private void createEnvAppRelationShipIfNon(Long appId, Long envId) {
         DevopsEnvApplicationDTO devopsEnvApplicationDTO = new DevopsEnvApplicationDTO();
-        devopsEnvApplicationDTO.getAppServiceId(appId);
+        devopsEnvApplicationDTO.setAppServiceId(appId);
         devopsEnvApplicationDTO.setEnvId(envId);
         devopsEnvApplicationMapper.insertIgnore(devopsEnvApplicationDTO);
     }
@@ -942,7 +942,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //初始化部署所需数据
         ApplicationDeployVO applicationDeployVO = ConvertUtils.convertObject(applicationRemoteDeployVO, ApplicationDeployVO.class);
-        applicationDeployVO.getAppServiceId(applicationDTO.getId());
+        applicationDeployVO.setAppServiceId(applicationDTO.getId());
         applicationDeployVO.setAppVersionId(applicationVersionDTO.getId());
         applicationDeployVO.setValues(applicationRemoteDeployVO.getApplicationVersionRemoteVO().getValues());
         ApplicationInstanceVO applicationInstanceVO = createOrUpdate(applicationDeployVO);
@@ -1087,7 +1087,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public List<ApplicationInstanceDTO> baseListByAppId(Long appId) {
         ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
-        applicationInstanceDTO.getAppServiceId(appId);
+        applicationInstanceDTO.setAppServiceId(appId);
         return applicationInstanceMapper.select(applicationInstanceDTO);
     }
 
@@ -1261,7 +1261,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             versionReadmeDTO.setReadme(versionRemoteVO.getReadMeValue());
             versionReadmeDTO = applicationVersionReadmeService.baseCreate(versionReadmeDTO);
             versionDTO = new ApplicationVersionDTO();
-            versionDTO.getAppServiceId(applicationDTO.getId());
+            versionDTO.setAppServiceId(applicationDTO.getId());
             versionDTO.setValueId(versionValueDTO.getId());
             versionDTO.setReadmeValueId(versionReadmeDTO.getId());
             return applicationVersionService.baseCreate(versionDTO);
@@ -1359,7 +1359,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private ApplicationInstanceDTO initApplicationInstanceDTO(ApplicationDeployVO applicationDeployVO) {
 
         ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
-        applicationInstanceDTO.getAppServiceId(applicationDeployVO.getAppServiceId());
+        applicationInstanceDTO.setAppServiceId(applicationDeployVO.getAppServiceId());
         applicationInstanceDTO.setEnvId(applicationDeployVO.getEnvironmentId());
         applicationInstanceDTO.setStatus(InstanceStatus.OPERATIING.getStatus());
         applicationDeployVO.setValueId(applicationDeployVO.getValueId());

@@ -95,7 +95,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private ApplicationSeviceService applicationService;
+    private ApplicationSevriceService applicationService;
     @Autowired
     private ApplicationVersionService applicationVersionService;
     @Autowired
@@ -1059,7 +1059,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             if (devopsServiceService.baseQueryByNameAndEnvId(
                     v1Service.getMetadata().getName(), devopsEnvironmentDTO.getId()) == null) {
                 devopsServiceDTO.setEnvId(devopsEnvironmentDTO.getId());
-                devopsServiceDTO.getAppServiceId(applicationInstanceDTO.getAppServiceId());
+                devopsServiceDTO.setAppServiceId(applicationInstanceDTO.getAppServiceId());
                 devopsServiceDTO.setName(v1Service.getMetadata().getName());
                 devopsServiceDTO.setType(v1Service.getSpec().getType());
                 devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());

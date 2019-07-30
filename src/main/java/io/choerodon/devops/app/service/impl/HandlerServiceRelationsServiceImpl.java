@@ -216,7 +216,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 List<String> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel().map(t -> {
                     ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.baseQueryByCodeAndEnv(t, envId);
                     if (applicationInstanceDTO != null) {
-                        devopsServiceReqVO.getAppServiceId(applicationInstanceDTO.getAppServiceId());
+                        devopsServiceReqVO.setAppServiceId(applicationInstanceDTO.getAppServiceId());
                     }
                     return t;
                 }).collect(Collectors.toList());

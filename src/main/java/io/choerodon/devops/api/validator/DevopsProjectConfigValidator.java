@@ -3,7 +3,7 @@ package io.choerodon.devops.api.validator;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
 import io.choerodon.devops.api.vo.ProjectConfigVO;
-import io.choerodon.devops.app.service.ApplicationSeviceService;
+import io.choerodon.devops.app.service.ApplicationSevriceService;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 public class DevopsProjectConfigValidator {
 
     @Autowired
-    ApplicationSeviceService applicationService;
+    ApplicationSevriceService applicationService;
 
     public void checkConfigType(DevopsProjectConfigVO devopsProjectConfigVO) {
         ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigVO.getType().toUpperCase());

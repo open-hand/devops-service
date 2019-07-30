@@ -71,7 +71,7 @@ public class ApplicationShareRuleServiceImpl implements ApplicationShareRuleServ
     @Autowired
     private ApplicationVersionService applicationVersionService;
     @Autowired
-    private ApplicationSeviceService applicationService;
+    private ApplicationSevriceService applicationService;
     @Autowired
     private DevopsProjectConfigService devopsProjectConfigService;
 
@@ -79,7 +79,6 @@ public class ApplicationShareRuleServiceImpl implements ApplicationShareRuleServ
     @Transactional
     public ApplicationShareRuleVO createOrUpdate(Long projectId, ApplicationShareRuleVO applicationShareRuleVO) {
         ApplicationShareRuleDTO applicationShareRuleDTO = ConvertUtils.convertObject(applicationShareRuleVO, ApplicationShareRuleDTO.class);
-        applicationShareRuleDTO.setOrganizationId(iamService.queryIamProject(projectId).getOrganizationId());
         if (applicationShareRuleDTO.getId() == null) {
             if (applicationShareRuleMapper.insert(applicationShareRuleDTO) != 1) {
                 throw new CommonException("error.insert.application.share.rule.insert");

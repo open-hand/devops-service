@@ -52,7 +52,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private String helmUrl;
 
     @Autowired
-    private ApplicationSeviceService applicationService;
+    private ApplicationSevriceService applicationService;
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
@@ -115,7 +115,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         ApplicationVersionDTO newApplicationVersion = baseQueryByAppIdAndVersion(applicationDTO.getId(), version);
-        applicationVersionDTO.getAppServiceId(applicationDTO.getId());
+        applicationVersionDTO.setAppServiceId(applicationDTO.getId());
         applicationVersionDTO.setImage(image);
         applicationVersionDTO.setCommit(commit);
         applicationVersionDTO.setVersion(version);
@@ -492,7 +492,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
     public ApplicationVersionDTO baseQueryByAppIdAndVersion(Long appId, String version) {
         ApplicationVersionDTO applicationVersionDTO = new ApplicationVersionDTO();
-        applicationVersionDTO.getAppServiceId(appId);
+        applicationVersionDTO.setAppServiceId(appId);
         applicationVersionDTO.setVersion(version);
         List<ApplicationVersionDTO> applicationVersionDTOS = applicationVersionMapper.select(applicationVersionDTO);
         if (applicationVersionDTOS.isEmpty()) {

@@ -52,7 +52,7 @@ public class DevopsSagaHandler {
     @Autowired
     private ApplicationTemplateService applicationTemplateService;
     @Autowired
-    private ApplicationSeviceService applicationService;
+    private ApplicationSevriceService applicationService;
     @Autowired
     private DevopsGitlabPipelineService devopsGitlabPipelineService;
     @Autowired

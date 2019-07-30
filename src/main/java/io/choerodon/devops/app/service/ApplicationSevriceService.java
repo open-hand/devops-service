@@ -16,7 +16,7 @@ import io.choerodon.devops.infra.enums.GitPlatformType;
 /**
  * Created by younger on 2018/3/28.
  */
-public interface ApplicationSeviceService {
+public interface ApplicationSevriceService {
 
     /**
      * 项目下创建应用

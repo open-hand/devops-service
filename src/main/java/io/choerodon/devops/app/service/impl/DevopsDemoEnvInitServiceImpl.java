@@ -60,7 +60,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Autowired
     private DevopsProjectConfigService projectConfigService;
     @Autowired
-    private ApplicationSeviceService applicationService;
+    private ApplicationSevriceService applicationService;
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
@@ -144,7 +144,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         // 7. 发布应用
 //        ApplicationReleasingVO applicationReleasingDTO = demoDataVO.getApplicationRelease();
-//        applicationReleasingDTO.getAppServiceId(applicationRepDTO.getId());
+//        applicationReleasingDTO.setAppServiceId(applicationRepDTO.getId());
 //        applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
 //        applicationMarketService.create(projectId, applicationReleasingDTO);
     }

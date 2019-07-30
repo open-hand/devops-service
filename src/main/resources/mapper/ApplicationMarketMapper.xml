@@ -45,4 +45,8 @@
         WHERE
             das.share_level = 'public'
     </update>
+
+    <delete id="deleteAll">
+        DELETE FROM devops_app_share_rule
+    </delete>
 </mapper>
