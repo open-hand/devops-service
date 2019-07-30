@@ -658,6 +658,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public PageInfo<DevopsEnvUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest, String params, Long envId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
+
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         Map<String, Object> searchParamMap = null;
         String param = null;
@@ -676,19 +678,40 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 roleAssignmentSearchVO.setRealName(realName);
             }
         }
-        // 先根据搜索参数查询数据库中所有的环境权限分配数据
-        List<DevopsEnvUserPermissionDTO> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, param);
 
-        // 再根据搜索参数查询所有的项目所有者
+        // 根据搜索参数查询所有的项目所有者
         Long ownerId = iamService.queryRoleIdByCode(PROJECT_OWNER);
         PageInfo<IamUserDTO> projectOwners = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
                 new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false);
 
-        List<DevopsEnvUserPermissionVO> members = permissions
-                .stream()
-                .map(p -> ConvertUtils.convertObject(p, DevopsEnvUserPermissionVO.class))
-                .peek(p -> p.setRole(MEMBER))
-                .collect(Collectors.toList());
+        List<DevopsEnvUserPermissionVO> members;
+        if(!devopsEnvironmentDTO.getSkipCheckPermission()) {
+            // 根据搜索参数查询数据库中所有的环境权限分配数据
+            List<DevopsEnvUserPermissionDTO> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, param);
+            members = permissions
+                    .stream()
+                    .map(p -> ConvertUtils.convertObject(p, DevopsEnvUserPermissionVO.class))
+                    .peek(p -> p.setRole(MEMBER))
+                    .collect(Collectors.toList());
+        } else {
+            // 搜索所有的项目成员，并过滤其中的项目所有者
+            Long memberRoleId = iamService.queryRoleIdByCode(PROJECT_MEMBER);
+            List<Long> ownerIds = projectOwners
+                    .getList()
+                    .stream()
+                    .map(IamUserDTO::getId)
+                    .collect(Collectors.toList());
+            members = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+                    new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false)
+                    .getList()
+                    .stream()
+                    .filter(u -> !ownerIds.contains(u.getId()))
+                    .map(iamUser -> new DevopsEnvUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
+                    .peek(p -> p.setRole(MEMBER))
+                    .collect(Collectors.toList());
+        }
+
+        // 项目成员加上项目所有者
         List<DevopsEnvUserPermissionVO> owners = projectOwners.getList()
                 .stream()
                 .map(iamUser -> new DevopsEnvUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
