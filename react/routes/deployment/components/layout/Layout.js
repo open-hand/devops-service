@@ -8,8 +8,8 @@ import './layout.less';
 
 const MARGIN = 10;
 const X_AXIS_WIDTH = 220;
-const X_AXIS_WIDTH_MAX = 400;
-const MAIN_WIDTH_MIN = 500;
+const X_AXIS_WIDTH_MAX = 320;
+const MAIN_WIDTH_MIN = 200;
 
 export const Pane = ({ isPane = true, hidden, animate, border, children, style, className = '' }) => {
   const styled = classnames({
@@ -97,6 +97,7 @@ export class Layout extends Component {
 
   state = {
     isDragging: false,
+    draggable: true,
     resizeNav: { x: X_AXIS_WIDTH, y: 0 },
   };
 
@@ -106,10 +107,21 @@ export class Layout extends Component {
 
     const isNavHidden = !options.showNav;
 
+    /*
+     * NOTE: 设置左侧导航栏的可拖动边界
+     *
+     * MAIN_WIDTH_MIN 是左边内容区域的最小宽度，为内容可见时的最小宽度
+     * 整个 layout 的宽度（通过外层组件传入的 bounds）减去内容区域就可得到左侧导航栏可用宽度
+     *
+     * 当左侧可用宽度小于导航栏初始宽度 X_AXIS_WIDTH，或者拖拽控件x坐标小于 X_AXIS_WIDTH，则不允许进行拖拽
+     * 当左侧可用宽度大于导航栏最大允许宽度 X_AXIS_WIDTH_MAX，则不允许进行拖拽
+     *
+     * 如果出现拖拽控件单独显示的情况和拖拽时页面跳动，请调整此处的值
+     */
     const navX = resizeNav.x;
     const computedLeft = bounds.width - MAIN_WIDTH_MIN;
-
     const mutation = {};
+    let draggable = true;
 
     if (!isNavHidden) {
       if (computedLeft < X_AXIS_WIDTH || navX < X_AXIS_WIDTH) {
@@ -128,9 +140,15 @@ export class Layout extends Component {
           y: 0,
         };
       }
+
+      if (computedLeft <= X_AXIS_WIDTH) {
+        draggable = false;
+      }
+    } else {
+      draggable = false;
     }
 
-    return mutation.resizeNav ? { ...state, ...mutation } : state;
+    return mutation.resizeNav ? { ...state, ...mutation, draggable } : { ...state, draggable };
   }
 
   setResizeNav = (e, data) => {
@@ -158,6 +176,7 @@ export class Layout extends Component {
     const {
       isDragging,
       resizeNav,
+      draggable,
     } = this.state;
 
     const isNavHidden = !showNav;
@@ -172,25 +191,27 @@ export class Layout extends Component {
 
     return bounds ? (
       <Fragment>
-        {isNavHidden ? null : (
-          <Draggable
-            disabled={isNavHidden}
-            axis="x"
-            position={resizeNav}
-            bounds={{
-              left: X_AXIS_WIDTH,
-              top: 0,
-              right: navX >= X_AXIS_WIDTH_MAX ? X_AXIS_WIDTH_MAX : bounds.width - X_AXIS_WIDTH,
-              bottom: 0,
-            }}
-            onStart={this.setDragNav}
-            onDrag={this.setResizeNav}
-            onStop={this.unsetDrag}
-          >
-            <div className={draggableClass} />
-          </Draggable>
+        {!draggable ? null : (
+          <Fragment>
+            <Draggable
+              // disabled={!draggable}
+              axis="x"
+              position={resizeNav}
+              bounds={{
+                left: X_AXIS_WIDTH,
+                top: 0,
+                right: navX >= X_AXIS_WIDTH_MAX ? X_AXIS_WIDTH_MAX : bounds.width - X_AXIS_WIDTH,
+                bottom: 0,
+              }}
+              onStart={this.setDragNav}
+              onDrag={this.setResizeNav}
+              onStop={this.unsetDrag}
+            >
+              <div className={draggableClass} />
+            </Draggable>
+            {isDragging ? <div className="c7n-draggers-blocker" /> : null}
+          </Fragment>
         )}
-        {isDragging && showNav ? <div className="c7n-draggers-blocker" /> : null}
         {children({
           mainProps: {
             animate: !isDragging,

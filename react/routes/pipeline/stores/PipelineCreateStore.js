@@ -1,3 +1,5 @@
+/* eslint-disable no-plusplus */
+
 import { observable, action, computed, set, remove } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import _ from 'lodash';
@@ -40,7 +42,7 @@ class PipelineCreateStore {
     const { tempId } = this.stageList[0];
     const tasks = (tempId || tempId === 0) ? this.getTaskList[tempId] : [];
 
-    this.canSubmit = this.getTrigger !== TRIGGER_TYPE_AUTO || tasks && tasks.length;
+    this.canSubmit = this.getTrigger !== TRIGGER_TYPE_AUTO || (tasks && tasks.length);
   };
 
   @computed get getCanSubmit() {
@@ -69,7 +71,7 @@ class PipelineCreateStore {
     return this.trigger;
   }
 
-  /******************阶段相关设置*******************/
+  /** ****************阶段相关设置****************** */
   @observable stageIndex = INIT_INDEX;
 
   @action setStageIndex(index) {
@@ -134,7 +136,8 @@ class PipelineCreateStore {
 
   @action removeStage(id) {
     const index = _.findIndex(this.stageList, ['tempId', id]);
-    if (!~index) return;
+    if (index === -1) return;
+
     remove(this.stageList, index);
     set(this.taskList, { [id]: null });
     set(this.taskSettings, { [id]: null });
@@ -149,8 +152,8 @@ class PipelineCreateStore {
       if (tasks && tasks.length) {
         tasks[0].isHead = true;
         this.setIsDisabled(
-          tasks[0].type === TASK_TYPE_MANUAL &&
-          this.trigger === TRIGGER_TYPE_AUTO,
+          tasks[0].type === TASK_TYPE_MANUAL
+          && this.trigger === TRIGGER_TYPE_AUTO,
         );
       }
     }
@@ -181,9 +184,9 @@ class PipelineCreateStore {
     return this.stageList.slice();
   }
 
-  /************task 相关****************/
+  /** **********task 相关*************** */
 
-    // 缓存不同阶段的task的序号
+  // 缓存不同阶段的task的序号
   @observable taskIndex = {
     0: INIT_INDEX,
   };
@@ -248,8 +251,8 @@ class PipelineCreateStore {
 
       // 类型错误，禁止创建
       this.setIsDisabled(
-        newTaskList[0].type === TASK_TYPE_MANUAL &&
-        this.trigger === TRIGGER_TYPE_AUTO,
+        newTaskList[0].type === TASK_TYPE_MANUAL
+        && this.trigger === TRIGGER_TYPE_AUTO,
       );
     }
 
@@ -264,7 +267,7 @@ class PipelineCreateStore {
     return this.taskList;
   }
 
-  /*************task相关结束**************/
+  /** ***********task相关结束************* */
 
   @observable envData = [];
 
@@ -357,7 +360,7 @@ class PipelineCreateStore {
     const { pipelineStageDTOS, triggerType } = data;
     const taskList = {};
     let stageIndex = INIT_INDEX;
-    let taskIndex = { 0: INIT_INDEX };
+    const taskIndex = { 0: INIT_INDEX };
 
     const stageList = _.map(pipelineStageDTOS, ({ pipelineTaskDTOS, ...item }) => {
       let index = 1;
@@ -422,7 +425,7 @@ class PipelineCreateStore {
     this.setLoading('env', true);
     const response = await axios
       .get(`/devops/v1/projects/${projectId}/envs?active=${true}`)
-      .catch(e => {
+      .catch((e) => {
         this.setLoading('env', false);
         Choerodon.handleResponseError(e);
       });
@@ -444,7 +447,7 @@ class PipelineCreateStore {
           param: '',
         }),
       )
-      .catch(e => {
+      .catch((e) => {
         this.setLoading('app', false);
         Choerodon.handleResponseError(e);
       });
@@ -457,11 +460,11 @@ class PipelineCreateStore {
 
   async loadInstances(projectId, envId, appId) {
     this.setLoading('instance', true);
-    let response = await axios
+    const response = await axios
       .get(
         `/devops/v1/projects/${projectId}/app_instances/getByAppIdAndEnvId?envId=${envId}&appId=${appId}`,
       )
-      .catch(e => {
+      .catch((e) => {
         this.setLoading('instance', false);
         Choerodon.handleResponseError(e);
       });
@@ -481,11 +484,11 @@ class PipelineCreateStore {
    */
   async loadConfig(projectId, envId, appId) {
     this.setLoading('config', true);
-    let response = await axios
+    const response = await axios
       .get(
-        `/devops/v1/projects/${projectId}/pipeline_value/list?app_id=${appId}&env_id=${envId}`,
+        `/devops/v1/projects/${projectId}/pipeline_value/list?app_service_id=${appId}&env_id=${envId}`,
       )
-      .catch(e => {
+      .catch((e) => {
         this.setLoading('config', false);
         Choerodon.handleResponseError(e);
       });
@@ -504,11 +507,11 @@ class PipelineCreateStore {
    */
   async loadValue(projectId, valueId) {
     this.setLoading('value', true);
-    let response = await axios
+    const response = await axios
       .get(
         `/devops/v1/projects/${projectId}/pipeline_value?value_id=${valueId}`,
       )
-      .catch(e => {
+      .catch((e) => {
         this.setLoading('value', false);
         Choerodon.handleResponseError(e);
       });
@@ -517,7 +520,6 @@ class PipelineCreateStore {
     if (data) {
       return data;
     }
-    return;
   }
 
   /**
@@ -526,8 +528,7 @@ class PipelineCreateStore {
    * @param data
    * @returns {Promise<void>}
    */
-  editConfigValue = (projectId, data) =>
-    axios.post(`/devops/v1/projects/${projectId}/pipeline_value`, JSON.stringify(data));
+  editConfigValue = (projectId, data) => axios.post(`/devops/v1/projects/${projectId}/pipeline_value`, JSON.stringify(data));
 
   /**
    * 项目所有者和项目成员
@@ -536,9 +537,9 @@ class PipelineCreateStore {
    */
   async loadUser(projectId) {
     this.setLoading('user', true);
-    let response = await axios
+    const response = await axios
       .get(`/devops/v1/projects/${projectId}/pipeline/all_users`)
-      .catch(e => {
+      .catch((e) => {
         this.setLoading('user', false);
         Choerodon.handleResponseError(e);
       });
@@ -573,9 +574,9 @@ class PipelineCreateStore {
 
   async loadDetail(projectId, id) {
     this.setDetailLoading(true);
-    let response = await axios
+    const response = await axios
       .get(`/devops/v1/projects/${projectId}/pipeline/${id}/detail`)
-      .catch(e => {
+      .catch((e) => {
         this.setPipeline(null);
         this.setDetailLoading(false);
         Choerodon.handleResponseError(e);
@@ -589,7 +590,6 @@ class PipelineCreateStore {
       this.checkCanSubmit();
     }
   }
-
 }
 
 const pipelineCreateStore = new PipelineCreateStore();

@@ -1,5 +1,6 @@
-import React, { memo, useContext, useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { useContext, useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
 import { inject } from 'mobx-react';
+import { observer } from 'mobx-react-lite';
 import _ from 'lodash';
 import LayoutPage from '../components/layout';
 import { IST_ITEM, APP_ITEM, ENV_ITEM } from '../Constants';
@@ -8,6 +9,7 @@ import Store from '../stores';
 
 import './index.less';
 
+// 此处非Site层菜单的宽度，而是折叠态和非折叠态的宽度差
 const LEFT_OFFSET = 200;
 const getNav = ({ navBounds }) => <Sidebar navBounds={navBounds} />;
 
@@ -28,7 +30,7 @@ const getContent = (type) => {
     : () => <div>加载数据中</div>;
 };
 
-const MainView = memo(({ MenuStore }) => {
+const MainView = observer(({ MenuStore }) => {
   const { selectedMenu: { menuType } } = useContext(Store);
 
   const rootRef = useRef(null);

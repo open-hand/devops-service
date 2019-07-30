@@ -4,7 +4,7 @@ export default ({ formatMessage, intlPrefix, projectId, id }) => ({
   pageSize: 10,
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/service/page_by_instance?app_id=${id}`,
+      url: `/devops/v1/projects/${projectId}/service/page_by_instance?app_service_id=${id}`,
       method: 'post',
     },
   },

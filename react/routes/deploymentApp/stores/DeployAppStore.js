@@ -189,10 +189,9 @@ class DeployAppStore {
       initId = '',
     },
   ) {
-
     return axios.get(
-      `/devops/v1/projects/${projectId}/app_versions/list_by_app/${appId}?is_publish=${isPublish ||
-      ''}&page=${page}&app_version_id=${initId}&version=${param}&size=15`,
+      `/devops/v1/projects/${projectId}/app_versions/list_by_app/${appId}?is_publish=${isPublish
+      || ''}&page=${page}&app_version_id=${initId}&version=${param}&size=15`,
 
     );
   }
@@ -214,7 +213,7 @@ class DeployAppStore {
   async loadValuesList(projectId, appId, envId) {
     this.setConfigLoading(true);
 
-    const response = await axios.get(`devops/v1/projects/${projectId}/pipeline_value/list?app_id=${appId}&env_id=${envId}`)
+    const response = await axios.get(`devops/v1/projects/${projectId}/pipeline_value/list?app_service_id=${appId}&env_id=${envId}`)
       .catch((error) => {
         Choerodon.handleResponseError(error);
       });

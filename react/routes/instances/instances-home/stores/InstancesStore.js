@@ -301,7 +301,7 @@ class InstancesStore {
   };
 
   loadAppNameByEnv = (projectId, envId, page, appPageSize, appId) => {
-    const param = appId ? `&app_id=${appId}` : '';
+    const param = appId ? `&app_service_id=${appId}` : '';
 
     return axios
       .get(

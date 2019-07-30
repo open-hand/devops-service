@@ -148,7 +148,6 @@ const deployment = {
   'deployment.environment.creator.map': '创建配置映射',
   'deployment.environment.creator.cipher': '创建密文',
   'deployment.environment.creator.detail': '服务详情',
-  // 'deployment.environment.creator.app.title': '关联环境{name}的应用',
   'deployment.app.status': '应用状态',
   'deployment.app.code': '应用编码',
   'deployment.app.repo': '仓库地址',
@@ -209,6 +208,8 @@ const deployment = {
   'c7ncd.deployment.instance.tabs.cases': '实例事件',
   'c7ncd.deployment.instance.tabs.details': '运行详情',
   'c7ncd.deployment.instance.tabs.pods': 'Pod 详情',
+  'c7ncd.deployment.instance.pod': 'Pod',
+  'c7ncd.deployment.instance.ip': 'Pod IP',
 
 };
 
