@@ -19,6 +19,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
+import io.choerodon.devops.app.eventhandler.DemoEnvSetupSagaHandler;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.app.service.*;
@@ -386,6 +387,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS, description = "devops同步gitops库相关操作", inputSchemaClass = PushWebHookVO.class)
     public void fileResourceSyncSaga(PushWebHookVO pushWebHookVO, String token) {
         LOGGER.info(String.format("````````````````````````````` %s", pushWebHookVO.getCheckoutSha()));
+
+        Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(pushWebHookVO.getUserId()));
+        IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(userId);
+
+        DemoEnvSetupSagaHandler.beforeInvoke(iamUserDTO.getLoginName(),userId, null);
+
+
         pushWebHookVO.setToken(token);
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByToken(pushWebHookVO.getToken());
         pushWebHookVO.getCommits().forEach(commitDTO -> {
