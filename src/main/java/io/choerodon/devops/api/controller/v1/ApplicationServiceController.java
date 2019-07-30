@@ -81,20 +81,20 @@ public class ApplicationServiceController {
     /**
      * 项目下查询单个应用信息
      *
-     * @param projectId     项目id
-     * @param applicationId 应用Id
+     * @param projectId    项目id
+     * @param appServiceId 应用Id
      * @return ApplicationRepDTO
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询单个应用信息")
-    @GetMapping("/{application_id}")
+    @GetMapping("/{app_service_id}")
     public ResponseEntity<ApplicationServiceRepVO> query(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable(value = "application_id") Long applicationId) {
-        return Optional.ofNullable(applicationService.query(projectId, applicationId))
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        return Optional.ofNullable(applicationService.query(projectId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.query"));
     }
@@ -122,22 +122,22 @@ public class ApplicationServiceController {
     /**
      * 项目下启用停用应用信息
      *
-     * @param projectId     项目id
-     * @param applicationId 应用id
-     * @param active        启用停用
+     * @param projectId    项目id
+     * @param appServiceId 应用id
+     * @param active       启用停用
      * @return Boolean
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下启用停用应用信息")
-    @PutMapping("/{application_id}")
+    @PutMapping("/{app_service_id}")
     public ResponseEntity<Boolean> updateActive(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable(value = "application_id") Long applicationId,
+            @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "启用停用", required = true)
             @RequestParam Boolean active) {
-        return Optional.ofNullable(applicationService.updateActive(applicationId, active))
+        return Optional.ofNullable(applicationService.updateActive(appServiceId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.active"));
     }
@@ -145,19 +145,19 @@ public class ApplicationServiceController {
     /**
      * 项目下删除创建失败应用
      *
-     * @param projectId     项目id
-     * @param applicationId 应用id
+     * @param projectId    项目id
+     * @param appServiceId 应用id
      * @return Boolean
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除创建失败应用")
-    @DeleteMapping("/{application_id}")
+    @DeleteMapping("/{app_service_id}")
     public ResponseEntity delete(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable(value = "application_id") Long applicationId) {
-        applicationService.delete(projectId, applicationId);
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        applicationService.delete(projectId, appServiceId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -536,8 +536,8 @@ public class ApplicationServiceController {
     /**
      * 查看sonarqube相关信息
      *
-     * @param projectId 项目Id
-     * @param appServiceId     应用id
+     * @param projectId    项目Id
+     * @param appServiceId 应用id
      * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -556,8 +556,8 @@ public class ApplicationServiceController {
     /**
      * 查看sonarqube相关报表
      *
-     * @param projectId 项目Id
-     * @param appServiceId     应用id
+     * @param projectId    项目Id
+     * @param appServiceId 应用id
      * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
