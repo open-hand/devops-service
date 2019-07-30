@@ -3,55 +3,73 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper">
     <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsDeployRecordDTO">
-        SELECT
-        dcm.id,
-        dcm.name,
-        dcm.value,
-        dcm.env_id,
-        dcm.description,
-        dcm.last_update_date,
-        de.code envCode,
-        dc.command_type commandType,
-        dc.status commandStatus
-        FROM
-        devops_config_map dcm
-        LEFT JOIN devops_env de ON dcm.env_id = de.id
-        LEFT JOIN devops_env_command dc ON dcm.command_id = dc.id
-        <if test="appId != null">
-            LEFT JOIN devops_app_resource das ON dcm.id = das.resource_id
-        </if>
-        where 1
-        <if test="envId != null">
-            AND dcm.env_id = #{envId}
-        </if>
-        <if test="appId != null">
-            AND das.app_id = #{appId}
-            AND das.resource_type='configMap'
-        </if>
-        <include refid="sqlparam"/>
+SELECT
+	* from (
+SELECT
+	ddr.id,
+	ddr.project_id,
+	ddr.env,
+	ddr.deploy_type,
+	ddr.deploy_id,
+	ddr.deploy_time,
+	dc.`status` deployStatus,
+	dc.created_by deployCreatedBy,
+	NULL pipelineName,
+	NULL pipelineTriggerType
+FROM
+	devops_deploy_record ddr
+	LEFT JOIN devops_env_command dc ON ddr.deploy_id = dc.id
+WHERE
+	ddr.deploy_type = "manual" UNION
+SELECT
+	ddr.id,
+	ddr.project_id,
+	ddr.env,
+	ddr.deploy_type,
+	ddr.deploy_id,
+	ddr.deploy_time,
+	dpc.`status` deployStatus,
+	dpc.created_by deployCreatedBy,
+	dpc.pipeline_name pipelineName,
+	dpc.trigger_type pipelineTriggerType
+FROM
+	devops_deploy_record ddr
+	LEFT JOIN devops_pipeline_record dpc ON ddr.deploy_id = dpc.id
+WHERE
+	ddr.deploy_type = "auto"
+	) t
+	where t.project_id=#{projectId}
+	<include refid="sqlparam"/>
     </select>
 
+	<sql id="sqlparam">
+		<if test='searchParam != null'>
+			<if test='searchParam.deployType != null and searchParam.deployType.size > 0'>
+				AND
+				<foreach collection="searchParam.deployType" item="deployType" open="(" separator=" OR " close=")">
+					t.deploy_type LIKE CONCAT(CONCAT('%', #{deployType, jdbcType=VARCHAR}),'%')
+				</foreach>
+			</if>
+			<if test='searchParam.deployStatus != null and searchParam.deployStatus.size > 0'>
+				AND
+				<foreach collection="searchParam.deployStatus" item="deployStatus" open="(" separator=" OR " close=")">
+					t.deployStatus LIKE CONCAT(CONCAT('%', #{deployStatus, jdbcType=VARCHAR}),'%')
+				</foreach>
+			</if>
+			<if test='searchParam.pipelineName != null and searchParam.pipelineName.size > 0'>
+				AND
+				<foreach collection="searchParam.pipelineName" item="pipelineName" open="(" separator=" OR " close=")">
+					t.pipelineName LIKE CONCAT(CONCAT('%', #{pipelineName, jdbcType=VARCHAR}),'%')
+				</foreach>
+			</if>
+			<if test='searchParam.env != null and searchParam.env.size > 0'>
+				AND
+				<foreach collection="searchParam.env" item="env" open="(" separator=" OR " close=")">
+					t.env LIKE CONCAT(CONCAT('%', #{env, jdbcType=VARCHAR}),'%')
+				</foreach>
+			</if>
+		</if>
 
-    <sql id="sqlparam">
-        <if test='searchParam != null'>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
-                AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    dcm.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.description != null and searchParam.description.size > 0'>
-                AND
-                <foreach collection="searchParam.description" item="type">
-                    dcm.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-        </if>
-        <if test='param != null and param != ""'>
-            AND (dcm.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dcm.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            )
-        </if>
-    </sql>
+	</sql>
 
 </mapper>

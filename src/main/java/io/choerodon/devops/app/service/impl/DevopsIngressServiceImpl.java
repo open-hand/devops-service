@@ -99,7 +99,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_INGRESS,
             description = "Devops创建域名", inputSchema = "{}")
-    public void createIngress(DevopsIngressVO devopsIngressVO, Long projectId) {
+    public void createIngress(Long projectId, DevopsIngressVO devopsIngressVO) {
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressVO.getEnvId());
 
@@ -513,7 +513,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         resourceConvertToYamlHandler.operationEnvGitlabFile(INGRESS_PREFIX + devopsIngressDTO.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
                 userAttrDTO.getGitlabUserId(), devopsIngressDTO.getId(), INGRESS, null, deleteCert, devopsIngressDTO.getEnvId(), path);
 
-        IngressSagaPayload ingressSagaPayload = new IngressSagaPayload(devopsEnvironmentDTO.getProjectId(),userAttrDTO.getGitlabUserId());
+        IngressSagaPayload ingressSagaPayload = new IngressSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         ingressSagaPayload.setDevopsIngressDTO(devopsIngressDTO);
         ingressSagaPayload.setCreated(isCreate);
         ingressSagaPayload.setV1beta1Ingress(ingress);
@@ -528,7 +528,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 builder -> builder
                         .withPayloadAndSerialize(ingressSagaPayload)
                         .withRefId(devopsEnvironmentDTO.getId().toString()));
-
 
 
     }
@@ -560,7 +559,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
         }
     }
-
 
 
     private DevopsIngressDTO handlerIngress(DevopsIngressVO devopsIngressVO, Long projectId, V1beta1Ingress v1beta1Ingress) {
@@ -704,7 +702,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     })
                     .collect(Collectors.joining(","));
         }
-
 
         PageInfo<DevopsIngressDTO> devopsIngressDTOPageInfo =
                 PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(

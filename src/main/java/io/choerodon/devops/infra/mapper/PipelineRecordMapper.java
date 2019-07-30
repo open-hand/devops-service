@@ -25,4 +25,5 @@ public interface PipelineRecordMapper extends Mapper<PipelineRecordDTO> {
 
     List<Long> queryAllRecordUserIds(@Param("pipelineRecordId") Long pipelineRecordId);
 
+    List<PipelineRecordDTO> listAllPipelineRecordAndEnv(@Param("pipelineRecordId") Long pipelineRecordId);
 }

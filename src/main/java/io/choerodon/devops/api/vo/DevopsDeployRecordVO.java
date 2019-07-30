@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.vo;
 
-import javax.persistence.Transient;
+import java.util.Date;
 
 /**
  * Created by Sheep on 2019/7/29.
@@ -11,9 +11,15 @@ public class DevopsDeployRecordVO {
     private Long projectId;
     private String deployType;
     private Long deployId;
+    private String env;
     private String deployStatus;
     private String pipelineName;
     private String pipelineTriggerType;
+    private Long deployCreatedBy;
+    private String userName;
+    private String userImage;
+    private Date deployTime;
+
 
     public Long getId() {
         return id;
@@ -69,5 +75,46 @@ public class DevopsDeployRecordVO {
 
     public void setPipelineTriggerType(String pipelineTriggerType) {
         this.pipelineTriggerType = pipelineTriggerType;
+    }
+
+    public String getEnv() {
+        return env;
+    }
+
+    public void setEnv(String env) {
+        this.env = env;
+    }
+
+
+    public Date getDeployTime() {
+        return deployTime;
+    }
+
+    public void setDeployTime(Date deployTime) {
+        this.deployTime = deployTime;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserImage() {
+        return userImage;
+    }
+
+    public void setUserImage(String userImage) {
+        this.userImage = userImage;
+    }
+
+    public Long getDeployCreatedBy() {
+        return deployCreatedBy;
+    }
+
+    public void setDeployCreatedBy(Long deployCreatedBy) {
+        this.deployCreatedBy = deployCreatedBy;
     }
 }

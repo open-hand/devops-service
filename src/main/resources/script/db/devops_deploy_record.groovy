@@ -5,8 +5,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
                 constraints(primaryKey: true)
             }
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目ID')
+            column(name: 'env', type: 'VARCHAR(32)', remarks: '部署关联环境')
             column(name: 'deploy_id', type: 'BIGINT UNSIGNED', remarks: '部署ID')
             column(name: 'deploy_type', type: 'VARCHAR(32)', remarks: '部署类型')
+            column(name: "deploy_time", type: "DATETIME")
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")

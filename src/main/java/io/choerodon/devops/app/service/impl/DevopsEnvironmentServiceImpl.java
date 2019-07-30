@@ -149,16 +149,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException("error.user.not.owner");
         }
 
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, true);
-        //创建环境没有选环境组，序列从默认组环境递增，创建环境选了环境组，序列从该环境组环境递增
-        if (devopsEnviromentVO.getDevopsEnvGroupId() == null) {
-            devopsEnvironmentDTO.setSequence(initSequence(devopsEnvironmentDTOS.stream().filter(devopsEnvironmentE1 ->
-                    devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList())));
-        } else {
-            devopsEnvironmentDTO.setSequence(initSequence(devopsEnvironmentDTOS.stream().filter(devopsEnvironmentE1 ->
-                    devopsEnviromentVO.getDevopsEnvGroupId().equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
-                    .collect(Collectors.toList())));
-        }
         List<String> sshKeys = FileUtil.getSshKey(
                 organizationDTO.getCode() + "/" + projectDTO.getCode() + "/" + devopsEnviromentVO.getCode());
         devopsEnvironmentDTO.setEnvIdRsa(sshKeys.get(0));
@@ -344,44 +334,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (!active && devopsEnvironmentDTO.getConnected()) {
             devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
         }
-        List<DevopsEnvironmentDTO> devopsEnvironmentES = baseListByProjectIdAndActive(projectId, true);
+
         devopsEnvironmentDTO.setActive(active);
-        //启用环境，原环境不在环境组内或者原环境所在环境组被删除，则序列在默认组内环境递增，原环境在环境组内，则序列在环境组内环境递增
-        if (active) {
-            DevopsEnvGroupDTO devopsEnvGroupDTO = devopsEnvGroupService.baseQuery(devopsEnvironmentDTO.getDevopsEnvGroupId());
-            if (devopsEnvironmentDTO.getDevopsEnvGroupId() == null || devopsEnvGroupDTO == null) {
-                devopsEnvironmentDTO.setDevopsEnvGroupId(null);
-                baseUpdate(devopsEnvironmentDTO);
-                devopsEnvironmentDTO.setSequence(initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
-                        devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList())));
-            } else {
-                devopsEnvironmentDTO.setSequence(initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
-                        (devopsEnvironmentDTO.getDevopsEnvGroupId()).equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
-                        .collect(Collectors.toList())));
-            }
-        } else {
-            // 停用环境，环境停用后，原组sequence重新排序
-            List<Long> environmentIds;
-            if (devopsEnvironmentDTO.getDevopsEnvGroupId() == null) {
-                environmentIds = devopsEnvironmentES.stream()
-                        .filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null)
-                        .sorted(Comparator.comparing(DevopsEnvironmentDTO::getSequence))
-                        .collect(Collectors.toList()).stream()
-                        .map(DevopsEnvironmentDTO::getId)
-                        .collect(Collectors.toList());
-            } else {
-                environmentIds = devopsEnvironmentES.stream()
-                        .filter(devopsEnvironmentE1 -> (devopsEnvironmentDTO.getDevopsEnvGroupId())
-                                .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
-                        .sorted(Comparator.comparing(DevopsEnvironmentDTO::getSequence))
-                        .collect(Collectors.toList()).stream()
-                        .map(DevopsEnvironmentDTO::getId)
-                        .collect(Collectors.toList());
-            }
-            environmentIds.remove(environmentId);
-            Long[] ids = new Long[environmentIds.size()];
-            sort(environmentIds.toArray(ids));
-        }
         baseUpdate(devopsEnvironmentDTO);
         return true;
     }
@@ -439,88 +393,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Long clusterId = baseQueryById(devopsEnvironmentUpdateDTO.getId()).getClusterId();
         environmentDTO.setClusterId(clusterId);
         environmentDTO.setProjectId(projectId);
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, true);
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(devopsEnvironmentUpdateDTO.getId());
-        List<Long> ids = new ArrayList<>();
-        //更新环境,默认组到环境组,此时将默认组sequence重新排列,环境在所选新环境组中环境sequence递增
-        if (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId() != null) {
-            if (!devopsEnvironmentUpdateDTO.getDevopsEnvGroupId().equals(devopsEnvironmentDTO.getDevopsEnvGroupId())) {
-                if (devopsEnvironmentDTO.getDevopsEnvGroupId() == null) {
-                    ids = devopsEnvironmentDTOS.stream().filter(devopsEnvironmentE1 ->
-                            devopsEnvironmentE1.getDevopsEnvGroupId() == null)
-                            .sorted(Comparator.comparing(DevopsEnvironmentDTO::getSequence)).map(
-                                    DevopsEnvironmentDTO::getId)
-                            .collect(Collectors.toList());
-                }
-                //更新环境,环境组到环境组,此时将初始环境组sequence重新排列,环境在所选新环境组中环境sequence递增
-                else if (devopsEnvironmentDTO.getDevopsEnvGroupId() != null) {
-                    ids = devopsEnvironmentDTOS.stream().filter(devopsEnvironmentE1 ->
-                            devopsEnvironmentDTO.getDevopsEnvGroupId()
-                                    .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
-                            .sorted(Comparator.comparing(DevopsEnvironmentDTO::getSequence)).map(
-                                    DevopsEnvironmentDTO::getId)
-                            .collect(Collectors.toList());
-                }
-                ids.remove(devopsEnvironmentUpdateDTO.getId());
-                sort(ids.toArray(new Long[ids.size()]));
-                environmentDTO.setSequence(initSequence(devopsEnvironmentDTOS.stream().filter(devopsEnvironmentE1 ->
-                        (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId())
-                                .equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList())));
-            }
-        } else {
-            //更新环境,环境组到默认组
-            if (devopsEnvironmentDTO.getDevopsEnvGroupId() != null) {
-                ids = devopsEnvironmentDTOS.stream().filter(devopsEnvironmentE1 ->
-                        devopsEnvironmentDTO.getDevopsEnvGroupId()
-                                .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
-                        .sorted(Comparator.comparing(DevopsEnvironmentDTO::getSequence)).map(
-                                DevopsEnvironmentDTO::getId)
-                        .collect(Collectors.toList());
-                ids.remove(devopsEnvironmentUpdateDTO.getId());
-                //此时将初始环境组sequence重新排列
-                sort(ids.toArray(new Long[ids.size()]));
-                //环境默认环境组中环境sequence递增
-                environmentDTO.setSequence(initSequence(devopsEnvironmentDTOS.stream().filter(devopsEnvironmentE1 ->
-                        devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList())));
-            }
-        }
+
         if (devopsEnvironmentUpdateDTO.getClusterId() != null && !devopsEnvironmentUpdateDTO.getClusterId()
                 .equals(devopsEnvironmentDTO.getClusterId())) {
             agentCommandService.initCluster(devopsEnvironmentUpdateDTO.getClusterId());
         }
         return ConvertUtils.convertObject(baseUpdate(
                 environmentDTO), DevopsEnvironmentUpdateVO.class);
-    }
-
-    @Override
-    public DevopsEnvGroupEnvsVO sort(Long[] environmentIds) {
-        DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = Arrays.stream(environmentIds)
-                .map(this::baseQueryById)
-                .collect(Collectors.toList());
-        long sequence = 1L;
-        for (DevopsEnvironmentDTO devopsEnvironmentDTO : devopsEnvironmentDTOS) {
-            devopsEnvironmentDTO.setSequence(sequence);
-            baseUpdate(devopsEnvironmentDTO);
-            sequence = sequence + 1;
-        }
-        List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
-
-        devopsEnvironmentDTOS.forEach(t ->
-                setEnvStatus(connectedEnvList, upgradeClusterList, t)
-        );
-        if (!devopsEnvironmentDTOS.isEmpty()) {
-            DevopsEnvGroupDTO devopsEnvGroupE = new DevopsEnvGroupDTO();
-            if (devopsEnvironmentDTOS.get(0).getDevopsEnvGroupId() != null) {
-                devopsEnvGroupE = devopsEnvGroupService.baseQuery(devopsEnvironmentDTOS.get(0).getDevopsEnvGroupId());
-            }
-            devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(ConvertUtils.convertList(devopsEnvironmentDTOS,
-                    DevopsEnviromentRepVO.class));
-            devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
-            devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
-        }
-        return devopsEnvGroupEnvsDTO;
     }
 
     private void setEnvStatus(List<Long> connectedEnvList, List<Long> upgradeEnvList, DevopsEnvironmentDTO t) {
@@ -1020,6 +900,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentDTO devopsEnvironmentDO = new DevopsEnvironmentDTO();
         devopsEnvironmentDO.setClusterId(clusterId);
         return devopsEnvironmentMapper.select(devopsEnvironmentDO);
+    }
+
+    @Override
+    public List<DevopsEnvironmentDTO> baseListByIds(List<Long> envIds) {
+        return devopsEnvironmentMapper.listByIds(envIds);
     }
 
 }

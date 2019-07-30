@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
 import javax.persistence.*;
 
 import io.choerodon.mybatis.entity.BaseDTO;
@@ -17,6 +18,8 @@ public class DevopsDeployRecordDTO extends BaseDTO {
     private Long projectId;
     private String deployType;
     private Long deployId;
+    private String env;
+    private Date deployTime;
 
     @Transient
     private String deployStatus;
@@ -24,6 +27,21 @@ public class DevopsDeployRecordDTO extends BaseDTO {
     private String pipelineName;
     @Transient
     private String pipelineTriggerType;
+    @Transient
+    private Long deployCreatedBy;
+
+    public DevopsDeployRecordDTO() {
+    }
+
+
+    public DevopsDeployRecordDTO(Long projectId, String deployType, Long deployId, String env, Date deployTime) {
+        this.projectId = projectId;
+        this.deployType = deployType;
+        this.deployId = deployId;
+        this.env = env;
+        this.deployTime = deployTime;
+    }
+
 
     public Long getId() {
         return id;
@@ -79,5 +97,29 @@ public class DevopsDeployRecordDTO extends BaseDTO {
 
     public void setPipelineTriggerType(String pipelineTriggerType) {
         this.pipelineTriggerType = pipelineTriggerType;
+    }
+
+    public String getEnv() {
+        return env;
+    }
+
+    public void setEnv(String env) {
+        this.env = env;
+    }
+
+    public Long getDeployCreatedBy() {
+        return deployCreatedBy;
+    }
+
+    public void setDeployCreatedBy(Long deployCreatedBy) {
+        this.deployCreatedBy = deployCreatedBy;
+    }
+
+    public Date getDeployTime() {
+        return deployTime;
+    }
+
+    public void setDeployTime(Date deployTime) {
+        this.deployTime = deployTime;
     }
 }

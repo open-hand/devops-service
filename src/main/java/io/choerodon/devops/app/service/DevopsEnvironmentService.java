@@ -92,13 +92,6 @@ public interface DevopsEnvironmentService {
      */
     DevopsEnvironmentUpdateVO update(DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO, Long projectId);
 
-    /**
-     * 项目下环境流水线排序
-     *
-     * @param environmentIds 环境列表
-     * @return List
-     */
-    DevopsEnvGroupEnvsVO sort(Long[] environmentIds);
 
     /**
      * 创建环境校验编码是否存在
@@ -227,4 +220,6 @@ public interface DevopsEnvironmentService {
     void baseDeleteById(Long id);
 
     List<DevopsEnvironmentDTO> baseListByClusterId(Long clusterId);
+
+    List<DevopsEnvironmentDTO> baseListByIds(List<Long> envIds);
 }

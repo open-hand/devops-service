@@ -125,4 +125,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
                 addUniqueConstraint(tableName: 'devops_env',
                         constraintName: 'devops_envs_uk_cluster_and_project_code', columnNames: 'cluster_id,project_id,code')
             }
+
+    changeSet(author: 'younger', id: '2019-07-30-drop-column')
+            {
+                dropColumn(columnName: "sequence", tableName: "devops_env")
+            }
 }

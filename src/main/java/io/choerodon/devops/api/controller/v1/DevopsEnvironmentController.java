@@ -172,7 +172,7 @@ public class DevopsEnvironmentController {
 
 
     /**
-     * 项目下查询单个环境
+     * 实例视图查询单个环境信息
      *
      * @param projectId     项目id
      * @param environmentId 环境id
@@ -212,25 +212,6 @@ public class DevopsEnvironmentController {
                 .orElseThrow(() -> new CommonException("error.environment.update"));
     }
 
-    /**
-     * 项目下环境流水线排序
-     *
-     * @param projectId      项目id
-     * @param environmentIds 环境列表
-     * @return List
-     */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下环境流水线排序")
-    @PostMapping("/sort")
-    public ResponseEntity<DevopsEnvGroupEnvsVO> sort(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境列表", required = true)
-            @RequestBody Long[] environmentIds) {
-        return Optional.ofNullable(devopsEnvironmentService.sort(environmentIds))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.sort"));
-    }
 
 
     /**

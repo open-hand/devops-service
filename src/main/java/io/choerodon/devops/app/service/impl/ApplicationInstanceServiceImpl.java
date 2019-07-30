@@ -141,6 +141,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsServiceService devopsServiceService;
     @Autowired
     private IamService iamService;
+    @Autowired
+    private DevopsDeployRecordService devopsDeployRecordService;
 
     @Override
     public AppInstanceInfoVO queryInfoById(Long instanceId) {
@@ -638,6 +640,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 baseUpdate(applicationInstanceDTO);
             }
         }
+
+        //插入部署记录
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+        devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
+
         applicationDeployVO.setAppInstanceId(applicationInstanceDTO.getId());
         applicationDeployVO.setInstanceName(code);
         InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(applicationDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode);
@@ -712,6 +719,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }
     }
 
+    @Override
+    public ApplicationInstanceRepVO queryByCommandId(Long commandId) {
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(commandId);
+        ApplicationInstanceDTO applicationInstanceDTO = baseQuery(devopsEnvCommandDTO.getObjectId());
+        ApplicationInstanceRepVO applicationInstanceRepVO = new ApplicationInstanceRepVO();
+        applicationInstanceRepVO.setAppServiceName(applicationService.baseQuery(applicationInstanceDTO.getAppId()).getName());
+        applicationInstanceRepVO.setAppServiceVersion(applicationVersionService.baseQuery(devopsEnvCommandDTO.getObjectVersionId()).getVersion());
+        applicationInstanceRepVO.setEnvName(devopsEnvironmentService.baseQueryById(applicationInstanceDTO.getEnvId()).getName());
+        applicationInstanceRepVO.setInstanceName(applicationInstanceDTO.getCode());
+        applicationInstanceRepVO.setInstanceId(applicationInstanceDTO.getId());
+        return applicationInstanceRepVO;
+    }
+
 
     @Override
     public ApplicationInstanceVO createOrUpdateByGitOps(ApplicationDeployVO applicationDeployVO, Long userId) {
@@ -739,6 +759,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
         applicationInstanceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         baseUpdate(applicationInstanceDTO);
+
+
+        //插入部署记录
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+        devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
+
+
         return ConvertUtils.convertObject(applicationInstanceDTO, ApplicationInstanceVO.class);
     }
 

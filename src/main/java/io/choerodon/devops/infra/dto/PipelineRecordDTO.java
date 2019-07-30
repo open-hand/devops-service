@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
@@ -27,6 +24,10 @@ public class PipelineRecordDTO extends BaseDTO {
     private Boolean edited;
     private String auditUser;
     private String errorInfo;
+
+
+    @Transient
+    private String env;
 
     public PipelineRecordDTO(Long pipelineId, String triggerType, Long projectId, String status, String pipelineName) {
         this.pipelineId = pipelineId;
@@ -125,5 +126,13 @@ public class PipelineRecordDTO extends BaseDTO {
 
     public void setBpmDefinition(String bpmDefinition) {
         this.bpmDefinition = bpmDefinition;
+    }
+
+    public String getEnv() {
+        return env;
+    }
+
+    public void setEnv(String env) {
+        this.env = env;
     }
 }
