@@ -17,6 +17,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -46,7 +47,7 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     public List<DevopsEnvFileErrorVO> listByEnvId(Long envId) {
         String gitlabProjectPath = getGitlabUrl(envId);
         List<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOS = devopsEnvFileErrorService.baseListByEnvId(envId);
-        List<DevopsEnvFileErrorVO> devopsEnvFileErrorVOS = ConvertUtils.convertList(devopsEnvFileErrorDTOS, DevopsEnvFileErrorVO.class);
+        List<DevopsEnvFileErrorVO> devopsEnvFileErrorVOS = ConvertUtils.convertList(devopsEnvFileErrorDTOS, this::dtoToVo);
         devopsEnvFileErrorVOS.forEach(devopsEnvFileErrorVO -> setCommitAndFileUrl(devopsEnvFileErrorVO, gitlabProjectPath));
         return devopsEnvFileErrorVOS;
     }
@@ -55,10 +56,20 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     public PageInfo<DevopsEnvFileErrorVO> pageByEnvId(Long envId, PageRequest pageRequest) {
         String gitlabProjectPath = getGitlabUrl(envId);
         PageInfo<DevopsEnvFileErrorDTO> devopsEnvFileErrorDTOPageInfo = devopsEnvFileErrorService.basePageByEnvId(envId, pageRequest);
-        PageInfo<DevopsEnvFileErrorVO> devopsEnvFileErrorVOPageInfo = ConvertUtils.convertPage(devopsEnvFileErrorDTOPageInfo, DevopsEnvFileErrorVO.class);
+        PageInfo<DevopsEnvFileErrorVO> devopsEnvFileErrorVOPageInfo = ConvertUtils.convertPage(devopsEnvFileErrorDTOPageInfo, this::dtoToVo);
         devopsEnvFileErrorVOPageInfo.getList().stream().forEach(devopsEnvFileErrorVO -> setCommitAndFileUrl(devopsEnvFileErrorVO, gitlabProjectPath));
         return devopsEnvFileErrorVOPageInfo;
     }
+
+    private DevopsEnvFileErrorVO dtoToVo(DevopsEnvFileErrorDTO devopsEnvFileErrorDTO){
+        DevopsEnvFileErrorVO devopsEnvFileErrorVO = new DevopsEnvFileErrorVO();
+        BeanUtils.copyProperties(devopsEnvFileErrorDTO,devopsEnvFileErrorVO);
+        devopsEnvFileErrorVO.setErrorTime(devopsEnvFileErrorDTO.getLastUpdateDate());
+        return devopsEnvFileErrorVO;
+    }
+
+
+
 
 
     @Override

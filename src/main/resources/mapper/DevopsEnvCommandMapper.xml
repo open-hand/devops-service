@@ -30,7 +30,7 @@
         ORDER BY d.id DESC
     </select>
 
-    <select id="queryInstanceCommand" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
+    <select id="listInstanceCommand" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
         SELECT
         d.*
         FROM
