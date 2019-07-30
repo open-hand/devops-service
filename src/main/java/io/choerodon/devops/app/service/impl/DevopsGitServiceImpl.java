@@ -391,7 +391,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(pushWebHookVO.getUserId()));
         IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(userId);
 
-        DemoEnvSetupSagaHandler.beforeInvoke(iamUserDTO.getLoginName(),userId, null);
+        DemoEnvSetupSagaHandler.beforeInvoke(iamUserDTO.getLoginName(),userId, iamUserDTO.getOrganizationId());
 
 
         pushWebHookVO.setToken(token);
