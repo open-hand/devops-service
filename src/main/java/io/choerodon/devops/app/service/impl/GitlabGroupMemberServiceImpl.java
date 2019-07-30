@@ -412,7 +412,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
                         MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(gitlabProjectId.intValue(), gitlabUserId);
                         if (gitlabMemberDTO == null || gitlabMemberDTO.getUserId() == null) {
-                            gitlabServiceClientOperator.createProjectMember(gitlabProjectId.intValue(), new MemberDTO(gitlabUserId, AccessLevel.DEVELOPER.value, ""));
+                            gitlabServiceClientOperator.createProjectMember(gitlabProjectId.intValue(), new MemberDTO(gitlabUserId, AccessLevel.MASTER.value, ""));
                         }
                     }
                 });

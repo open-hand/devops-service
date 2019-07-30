@@ -141,10 +141,9 @@ public interface DevopsEnvironmentService {
     /**
      * 环境下为用户分配权限
      *
-     * @param envId   环境id
-     * @param userIds 有权限的用户ids
+     * @param devopsEnvPermissionUpdateVO 权限更新信息
      */
-    Boolean updateEnvUserPermission(Long envId, List<Long> userIds);
+    Boolean updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO);
 
     /**
      * 删除已停用的环境

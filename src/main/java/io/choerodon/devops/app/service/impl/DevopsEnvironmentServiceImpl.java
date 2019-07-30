@@ -16,6 +16,7 @@ import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
@@ -101,8 +102,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsEnvCommitService devopsEnvCommitService;
     @Autowired
     private ApplicationInstanceService applicationInstanceService;
-    @Autowired
-    private DevopsEnvironmentMapper environmentMapper;
     @Autowired
     private DevopsEnvFileErrorMapper devopsEnvFileErrorMapper;
     @Autowired
@@ -291,7 +290,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unSynchronizedEnvs = new ArrayList<>();
 
-        environmentMapper.listEnvTree(projectId).forEach(e -> {
+        devopsEnvironmentMapper.listEnvTree(projectId).forEach(e -> {
             // 将DTO层对象转为VO
             DevopsEnvironmentViewVO vo = new DevopsEnvironmentViewVO();
             BeanUtils.copyProperties(e, vo, "apps");
@@ -350,7 +349,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public DevopsEnvironmentInfoVO queryInfoById(Long environmentId) {
-        DevopsEnvironmentInfoDTO envInfo = environmentMapper.queryInfoById(environmentId);
+        DevopsEnvironmentInfoDTO envInfo = devopsEnvironmentMapper.queryInfoById(environmentId);
         if (envInfo == null) {
             return null;
         }
@@ -665,10 +664,101 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return ConvertUtils.convertList(devopsEnvUserPermissionService.baseListByEnvId(envId), DevopsEnvUserPermissionVO.class);
     }
 
+
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION, description = "更新环境的权限")
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public Boolean updateEnvUserPermission(Long envId, List<Long> userIds) {
-        UpdateUserPermissionService updateEnvUserPermissionService = new UpdateEnvUserPermissionServiceImpl();
-        return updateEnvUserPermissionService.updateUserPermission(null, envId, userIds, null);
+    public Boolean updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
+        DevopsEnvironmentDTO preEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvPermissionUpdateVO.getEnvId());
+
+        DevopsEnvUserPayload userPayload = new DevopsEnvUserPayload();
+        userPayload.setEnvId(preEnvironmentDTO.getId());
+        userPayload.setGitlabProjectId(preEnvironmentDTO.getGitlabEnvProjectId().intValue());
+        userPayload.setIamProjectId(preEnvironmentDTO.getProjectId());
+        userPayload.setIamUserIds(devopsEnvPermissionUpdateVO.getUserIds());
+
+        // 判断更新的情况
+        if (preEnvironmentDTO.getSkipCheckPermission()) {
+            if (devopsEnvPermissionUpdateVO.getSkipCheckPermission()) {
+                return Boolean.FALSE;
+            } else {
+                // 添加权限
+                List<IamUserDTO> addIamUsers = iamService.listUsersByIds(devopsEnvPermissionUpdateVO.getUserIds());
+                addIamUsers.forEach(e -> devopsEnvUserPermissionService.baseCreate(new DevopsEnvUserPermissionDTO(e.getLoginName(), e.getId(), e.getRealName(), preEnvironmentDTO.getId(), true)));
+
+                userPayload.setOption(1);
+
+                // 更新字段
+                preEnvironmentDTO.setSkipCheckPermission(devopsEnvPermissionUpdateVO.getSkipCheckPermission());
+                devopsEnvironmentMapper.updateByPrimaryKeySelective(preEnvironmentDTO);
+            }
+        } else {
+            if (devopsEnvPermissionUpdateVO.getSkipCheckPermission()) {
+                // 删除原先所有的分配情况
+                devopsEnvUserPermissionService.deleteByEnvId(preEnvironmentDTO.getId());
+                userPayload.setOption(2);
+            } else {
+                // 计算差集进行删除和插入操作
+                handlePermissions(preEnvironmentDTO.getId(), devopsEnvPermissionUpdateVO.getUserIds(), userPayload);
+                userPayload.setOption(3);
+
+                // 更新字段
+                preEnvironmentDTO.setSkipCheckPermission(devopsEnvPermissionUpdateVO.getSkipCheckPermission());
+                devopsEnvironmentMapper.updateByPrimaryKeySelective(preEnvironmentDTO);
+            }
+        }
+
+        // 发送saga进行相应的gitlab侧的数据处理
+        producer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withSourceId(preEnvironmentDTO.getProjectId())
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withPayloadAndSerialize(userPayload)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION),
+                builder -> {
+                });
+        return true;
+    }
+
+    /**
+     * 更新前后有变化的用户权限
+     *
+     * @param envId          环境id
+     * @param currentUserIds 待更新的有权限用户id
+     * @param userPayload    传至saga的消息载体，用于存放相应的gitlab项目成员关系变化
+     */
+    private void handlePermissions(Long envId, List<Long> currentUserIds, DevopsEnvUserPayload userPayload) {
+        // 获取以前所有有权限的用户与现在有权限的用户id进行比较
+        List<Long> previousUserIds = devopsEnvUserPermissionService.baseListAll(envId).stream()
+                .map(DevopsEnvUserPermissionDTO::getIamUserId).collect(Collectors.toList());
+
+        // 待添加的用户
+        List<Long> addIamUserIds = currentUserIds
+                .stream()
+                .filter(e -> !previousUserIds.contains(e))
+                .collect(Collectors.toList());
+
+        List<Integer> addGitlabUserIds = userAttrService.baseListByUserIds(addIamUserIds)
+                .stream()
+                .map(UserAttrDTO::getGitlabUserId)
+                .map(TypeUtil::objToInteger)
+                .collect(Collectors.toList());
+
+        // 待删除的用户
+        List<Long> deleteIamUserIds = previousUserIds.stream()
+                .filter(e -> !currentUserIds.contains(e))
+                .collect(Collectors.toList());
+
+        List<Integer> deleteGitlabUserIds = userAttrService.baseListByUserIds(deleteIamUserIds)
+                .stream()
+                .map(UserAttrDTO::getGitlabUserId)
+                .map(TypeUtil::objToInteger)
+                .collect(Collectors.toList());
+
+        userPayload.setAddGitlabUserIds(addGitlabUserIds);
+        userPayload.setDeleteGitlabUserIds(deleteGitlabUserIds);
+
+        devopsEnvUserPermissionService.baseUpdate(envId, addIamUserIds, deleteIamUserIds);
     }
 
     private PageInfo<UserVO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {

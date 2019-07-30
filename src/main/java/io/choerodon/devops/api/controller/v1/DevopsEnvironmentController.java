@@ -3,6 +3,8 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
@@ -328,7 +330,7 @@ public class DevopsEnvironmentController {
      * 环境下为用户分配权限
      *
      * @param envId   环境id
-     * @param userIds 有权限的用户ids
+     * @param devopsEnvPermissionUpdateVO 权限分配信息
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
@@ -340,8 +342,8 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "有权限的用户ids")
-            @RequestBody List<Long> userIds) {
-        return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(envId, userIds))
+            @RequestBody @Valid DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
+        return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(devopsEnvPermissionUpdateVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.update"));
     }

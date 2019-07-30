@@ -110,7 +110,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
     // 获取iam项目下所有的项目成员的gitlabUserId，过滤掉项目所有者
     private List<Integer> getAllGitlabMemberWithoutOwner(Long projectId) {
         return userAttrService.baseListByUserIds(iamService.getAllMemberIdsWithoutOwner(projectId)).stream()
-                .map(UserAttrDTO::getGitlabUserId).collect(Collectors.toList()).stream()
+                .map(UserAttrDTO::getGitlabUserId)
                 .map(TypeUtil::objToInteger).collect(Collectors.toList());
     }
 }

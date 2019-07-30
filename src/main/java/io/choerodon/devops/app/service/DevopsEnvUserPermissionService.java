@@ -17,6 +17,8 @@ public interface DevopsEnvUserPermissionService {
 
     PageInfo<DevopsEnvUserPermissionVO> pageByOptions(Long envId, PageRequest pageRequest, String params);
 
+    void deleteByEnvId(Long envId);
+
     List<DevopsEnvUserPermissionVO> listByEnvId(Long envId);
 
     List<DevopsEnvUserPermissionDTO> listByUserId(Long userId);

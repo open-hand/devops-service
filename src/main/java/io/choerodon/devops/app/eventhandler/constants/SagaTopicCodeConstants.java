@@ -188,6 +188,11 @@ public class SagaTopicCodeConstants {
      */
     public static final String IAM_DISABLE_USER = "iam-disable-user";
 
+    /**
+     * 更新环境的权限
+     */
+    public static final String DEVOPS_UPDATE_ENV_PERMISSION = "devops-update-env-permission";
+
 
     private SagaTopicCodeConstants() {
     }
