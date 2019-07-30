@@ -11,13 +11,19 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.api.vo.DevopsIngressPathVO;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
@@ -55,6 +61,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private static final String CERT_NOT_ACTIVE = "error.cert.notActive";
     private static final String INGRESS_NOT_EXIST = "ingress.not.exist";
     private static final Gson gson = new Gson();
+    public static final String INGRESS_PREFIX = "ing-";
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
     @Autowired
@@ -85,10 +92,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private DevopsIngressPathMapper devopsIngressPathMapper;
     @Autowired
     private DevopsApplicationResourceMapper devopsAppResourceMapper;
+    @Autowired
+    private TransactionalProducer producer;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createIngress(DevopsIngressVO devopsIngressVO, Long projectId) {
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_INGRESS,
+            description = "Devops创建域名", inputSchema = "{}")
+    public void createIngress(Long projectId, DevopsIngressVO devopsIngressVO) {
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressVO.getEnvId());
 
@@ -173,7 +184,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsEnvCommandDTO.setCreatedBy(userId);
         devopsIngressDO.setId(ingressId);
         devopsIngressDO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
-        baseUpdateIngress(devopsIngressDO);
+        baseUpdate(devopsIngressDO);
     }
 
     @Override
@@ -325,7 +336,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsIngressDTO devopsIngressDTO = baseQuery(ingressId);
         devopsIngressDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         devopsIngressDTO.setStatus(IngressStatus.OPERATING.getStatus());
-        baseUpdateIngress(devopsIngressDTO);
+        baseUpdate(devopsIngressDTO);
 
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
@@ -475,6 +486,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                                       DevopsEnvCommandDTO devopsEnvCommandDTO,
                                       Long appId) {
 
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
+
         //操作域名数据库
         if (isCreate) {
             Long ingressId = baseCreateIngressAndPath(devopsIngressDTO).getId();
@@ -488,7 +501,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsEnvCommandDTO.setObjectId(ingressId);
             devopsIngressDTO.setId(ingressId);
             devopsIngressDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
-            baseUpdateIngress(devopsIngressDTO);
+            baseUpdate(devopsIngressDTO);
         } else {
             devopsEnvCommandDTO.setObjectId(devopsIngressDTO.getId());
             devopsIngressDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
@@ -497,9 +510,54 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         ResourceConvertToYamlHandler<V1beta1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(ingress);
-        resourceConvertToYamlHandler.operationEnvGitlabFile("ing-" + devopsIngressDTO.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
+        resourceConvertToYamlHandler.operationEnvGitlabFile(INGRESS_PREFIX + devopsIngressDTO.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
                 userAttrDTO.getGitlabUserId(), devopsIngressDTO.getId(), INGRESS, null, deleteCert, devopsIngressDTO.getEnvId(), path);
 
+        IngressSagaPayload ingressSagaPayload = new IngressSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
+        ingressSagaPayload.setDevopsIngressDTO(devopsIngressDTO);
+        ingressSagaPayload.setCreated(isCreate);
+        ingressSagaPayload.setV1beta1Ingress(ingress);
+        ingressSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_INGRESS),
+                builder -> builder
+                        .withPayloadAndSerialize(ingressSagaPayload)
+                        .withRefId(devopsEnvironmentDTO.getId().toString()));
+
+
+    }
+
+    @Override
+    public void createIngressBySaga(IngressSagaPayload ingressSagaPayload) {
+        try {
+            //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+            String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(ingressSagaPayload.getProjectId(), ingressSagaPayload.getDevopsEnvironmentDTO().getCode(), ingressSagaPayload.getDevopsEnvironmentDTO().getEnvIdRsa());
+
+            //在gitops库处理instance文件
+            ResourceConvertToYamlHandler<V1beta1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(ingressSagaPayload.getV1beta1Ingress());
+
+            resourceConvertToYamlHandler.operationEnvGitlabFile(
+                    INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName(),
+                    ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
+                    ingressSagaPayload.getCreated() ? CREATE : UPDATE,
+                    ingressSagaPayload.getGitlabUserId(),
+                    ingressSagaPayload.getDevopsIngressDTO().getId(), INGRESS, null, false, ingressSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
+        } catch (Exception e) {
+            //有异常更新实例以及command的状态
+            DevopsIngressDTO devopsIngressDTO = baseQuery(ingressSagaPayload.getDevopsIngressDTO().getId());
+            devopsIngressDTO.setStatus(CommandStatus.FAILED.getStatus());
+            baseUpdate(devopsIngressDTO);
+            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsIngressDTO.getCommandId());
+            devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
+            devopsEnvCommandDTO.setError("create or update gitOps file failed!");
+            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+        }
     }
 
 
@@ -608,7 +666,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         }
     }
 
-    public void baseUpdateIngress(DevopsIngressDTO devopsIngressDTO) {
+    public void baseUpdate(DevopsIngressDTO devopsIngressDTO) {
         Long id = devopsIngressDTO.getId();
         DevopsIngressDTO ingressDTO = devopsIngressMapper.selectByPrimaryKey(id);
         if (ingressDTO == null) {
@@ -644,7 +702,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     })
                     .collect(Collectors.joining(","));
         }
-
 
         PageInfo<DevopsIngressDTO> devopsIngressDTOPageInfo =
                 PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(

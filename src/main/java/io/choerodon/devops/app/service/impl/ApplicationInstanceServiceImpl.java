@@ -13,16 +13,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import retrofit2.Response;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -55,6 +45,15 @@ import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import retrofit2.Response;
 
 
 /**
@@ -137,7 +136,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private MarketConnectInfoService marketConnectInfoService;
     @Autowired
+    private DevopsIngressService devopsIngressService;
+    @Autowired
+    private DevopsServiceService devopsServiceService;
+    @Autowired
     private IamService iamService;
+    @Autowired
+    private DevopsDeployRecordService devopsDeployRecordService;
 
     @Override
     public AppInstanceInfoVO queryInfoById(Long instanceId) {
@@ -635,6 +640,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 baseUpdate(applicationInstanceDTO);
             }
         }
+
+        //插入部署记录
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+        devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
+
         applicationDeployVO.setAppInstanceId(applicationInstanceDTO.getId());
         applicationDeployVO.setInstanceName(code);
         InstanceSagaPayload instanceSagaPayload = new InstanceSagaPayload(applicationDTO.getProjectId(), userAttrDTO.getGitlabUserId(), secretCode);
@@ -642,6 +652,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         instanceSagaPayload.setApplicationVersionDTO(applicationVersionDTO);
         instanceSagaPayload.setApplicationDeployVO(applicationDeployVO);
         instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+
 
         producer.apply(
                 StartSagaBuilder
@@ -652,6 +663,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 builder -> builder
                         .withPayloadAndSerialize(instanceSagaPayload)
                         .withRefId(devopsEnvironmentDTO.getId().toString()));
+
+        //如果部署时，也指定了创建网络和域名
+        if (applicationDeployVO.getDevopsServiceReqVO() != null) {
+            devopsServiceService.create(devopsEnvironmentDTO.getProjectId(), applicationDeployVO.getDevopsServiceReqVO());
+        }
+        if (applicationDeployVO.getDevopsIngressVO() != null) {
+            devopsIngressService.createIngress(devopsEnvironmentDTO.getProjectId(), applicationDeployVO.getDevopsIngressVO());
+        }
+
+
         return ConvertUtils.convertObject(applicationInstanceDTO, ApplicationInstanceVO.class);
     }
 
@@ -698,6 +719,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }
     }
 
+    @Override
+    public ApplicationInstanceRepVO queryByCommandId(Long commandId) {
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(commandId);
+        ApplicationInstanceDTO applicationInstanceDTO = baseQuery(devopsEnvCommandDTO.getObjectId());
+        ApplicationInstanceRepVO applicationInstanceRepVO = new ApplicationInstanceRepVO();
+        applicationInstanceRepVO.setAppServiceName(applicationService.baseQuery(applicationInstanceDTO.getAppId()).getName());
+        applicationInstanceRepVO.setAppServiceVersion(applicationVersionService.baseQuery(devopsEnvCommandDTO.getObjectVersionId()).getVersion());
+        applicationInstanceRepVO.setEnvName(devopsEnvironmentService.baseQueryById(applicationInstanceDTO.getEnvId()).getName());
+        applicationInstanceRepVO.setInstanceName(applicationInstanceDTO.getCode());
+        applicationInstanceRepVO.setInstanceId(applicationInstanceDTO.getId());
+        return applicationInstanceRepVO;
+    }
+
 
     @Override
     public ApplicationInstanceVO createOrUpdateByGitOps(ApplicationDeployVO applicationDeployVO, Long userId) {
@@ -725,6 +759,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandDTO.setValueId(devopsEnvCommandValueService.baseCreate(devopsEnvCommandValueDTO).getId());
         applicationInstanceDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
         baseUpdate(applicationInstanceDTO);
+
+
+        //插入部署记录
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvironmentDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvironmentDTO.getId().toString(), devopsEnvCommandDTO.getCreationDate());
+        devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
+
+
         return ConvertUtils.convertObject(applicationInstanceDTO, ApplicationInstanceVO.class);
     }
 

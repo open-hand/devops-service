@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
-
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.notify.NoticeSendDTO;
 import io.choerodon.devops.api.vo.*;
@@ -32,6 +31,8 @@ public interface PipelineService {
     PipelineReqVO queryById(Long projectId, Long pipelineId);
 
     void execute(Long projectId, Long pipelineId);
+
+    void batchExecute(Long projectId, Long[] pipelineIds);
 
     void autoDeploy(Long stageRecordId, Long taskId);
 

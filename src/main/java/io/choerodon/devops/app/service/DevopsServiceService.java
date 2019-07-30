@@ -6,6 +6,7 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
+import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
 
@@ -128,6 +129,7 @@ public interface DevopsServiceService {
      */
     PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appId);
 
+    void createServiceBySaga(ServiceSagaPayLoad serviceSagaPayLoad);
 
     DevopsServiceDTO baseQuery(Long id);
 

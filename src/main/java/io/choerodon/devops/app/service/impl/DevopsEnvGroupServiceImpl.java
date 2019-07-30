@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.LongSummaryStatistics;
 import java.util.stream.Collectors;
 
 import io.choerodon.devops.api.validator.DevopsEnvGroupValidator;
@@ -68,24 +67,13 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
     public void delete(Long id) {
         DevopsEnvGroupDTO devopsEnvGroupDTO = baseQuery(id);
         baseDelete(id);
-        //删除环境组，将原环境组内所有环境放到默认组内，环境sequence在默认组环境递增
+        //删除环境组，将原环境组内所有环境放到默认组内
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListByProjectIdAndActive(devopsEnvGroupDTO.getProjectId(), true);
 
-        List<DevopsEnvironmentDTO> defaultDevopsEnvironmentDTOS = devopsEnvironmentDTOS.stream().filter(devopsEnvironmentDTO -> devopsEnvironmentDTO.getDevopsEnvGroupId() == null).collect(Collectors.toList());
-        Long sequence = 1L;
-        if (!defaultDevopsEnvironmentDTOS.isEmpty()) {
-            LongSummaryStatistics stats = devopsEnvironmentDTOS
-                    .stream()
-                    .mapToLong(DevopsEnvironmentDTO::getSequence)
-                    .summaryStatistics();
-            sequence = stats.getMax() + 1;
-        }
         List<DevopsEnvironmentDTO> deletes = devopsEnvironmentDTOS.stream().filter(devopsEnvironmentDTO -> id.equals(devopsEnvironmentDTO.getDevopsEnvGroupId())).collect(Collectors.toList());
         for (DevopsEnvironmentDTO devopsEnvironmentDTO : deletes) {
             devopsEnvironmentDTO.setDevopsEnvGroupId(null);
-            devopsEnvironmentDTO.setSequence(sequence);
             devopsEnvironmentService.baseUpdate(devopsEnvironmentDTO);
-            sequence++;
         }
     }
 

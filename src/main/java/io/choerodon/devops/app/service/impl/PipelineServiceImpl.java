@@ -34,6 +34,7 @@ import io.choerodon.devops.infra.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.feign.NotifyClient;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
+import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
 import io.choerodon.devops.infra.util.*;
 import io.reactivex.Emitter;
 import io.reactivex.Observable;
@@ -99,6 +100,10 @@ public class PipelineServiceImpl implements PipelineService {
     private PipelineMapper pipelineMapper;
     @Autowired
     private TransactionalProducer producer;
+    @Autowired
+    private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private PipelineRecordMapper pipelineRecordMapper;
 
     @Override
     public PageInfo<PipelineVO> pageByOptions(Long projectId, Boolean creator, Boolean executor, List<String> envIds, PageRequest pageRequest, String params) {
@@ -284,34 +289,48 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public void execute(Long projectId, Long pipelineId) {
-        PipelineDTO pipelineE = baseQueryById(pipelineId);
-        if (AUTO.equals(pipelineE.getTriggerType()) || !checkTriggerPermission(pipelineId)) {
+        PipelineDTO pipelineDTO = baseQueryById(pipelineId);
+        if (AUTO.equals(pipelineDTO.getTriggerType()) || !checkTriggerPermission(pipelineId)) {
             throw new CommonException("error.permission.trigger.pipeline");
         }
-        PipelineRecordDTO pipelineRecordE = new PipelineRecordDTO(pipelineId, pipelineE.getTriggerType(), projectId, WorkFlowStatus.RUNNING.toValue(), pipelineE.getName());
-        pipelineRecordE.setBusinessKey(GenerateUUID.generateUUID());
-        if (pipelineE.getTriggerType().equals(MANUAL)) {
+        PipelineRecordDTO pipelineRecordDTO = new PipelineRecordDTO(pipelineId, pipelineDTO.getTriggerType(), projectId, WorkFlowStatus.RUNNING.toValue(), pipelineDTO.getName());
+        pipelineRecordDTO.setBusinessKey(GenerateUUID.generateUUID());
+        if (pipelineDTO.getTriggerType().equals(MANUAL)) {
             List<PipelineUserRelationshipDTO> taskRelEList = userRelationshipService.baseListByOptions(pipelineId, null, null);
-            pipelineRecordE.setAuditUser(StringUtils.join(taskRelEList.stream().map(PipelineUserRelationshipDTO::getUserId).toArray(), ","));
+            pipelineRecordDTO.setAuditUser(StringUtils.join(taskRelEList.stream().map(PipelineUserRelationshipDTO::getUserId).toArray(), ","));
         }
-        pipelineRecordE = pipelineRecordService.baseCreate(pipelineRecordE);
-        PipelineUserRecordRelationshipDTO userRecordRelE = new PipelineUserRecordRelationshipDTO();
-        userRecordRelE.setPipelineRecordId(pipelineRecordE.getId());
-        userRecordRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
-        pipelineUserRecordRelationshipService.baseCreate(userRecordRelE);
-        io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO = createWorkFlowDTO(pipelineRecordE.getId(), pipelineId, pipelineRecordE.getBusinessKey());
-        pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
-        pipelineRecordService.baseUpdate(pipelineRecordE);
+
+
+        pipelineRecordDTO = pipelineRecordService.baseCreate(pipelineRecordDTO);
+
+        //插入部署记录
+        createDeployRecord(pipelineRecordDTO);
+
+
+        PipelineUserRecordRelationshipDTO userRecordRelationshipDTO = new PipelineUserRecordRelationshipDTO();
+        userRecordRelationshipDTO.setPipelineRecordId(pipelineRecordDTO.getId());
+        userRecordRelationshipDTO.setUserId(DetailsHelper.getUserDetails().getUserId());
+        pipelineUserRecordRelationshipService.baseCreate(userRecordRelationshipDTO);
+        io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO devopsPipelineDTO = createWorkFlowDTO(pipelineRecordDTO.getId(), pipelineId, pipelineRecordDTO.getBusinessKey());
+        pipelineRecordDTO.setBpmDefinition(gson.toJson(devopsPipelineDTO));
+        pipelineRecordService.baseUpdate(pipelineRecordDTO);
         try {
             CustomUserDetails details = DetailsHelper.getUserDetails();
             createWorkFlow(projectId, devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
-            updateFirstStage(pipelineRecordE.getId());
+            updateFirstStage(pipelineRecordDTO.getId());
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
-            sendFailedSiteMessage(pipelineRecordE.getId(), GitUserNameUtil.getUserId().longValue());
-            pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
-            pipelineRecordE.setErrorInfo(e.getMessage());
-            pipelineRecordService.baseUpdate(pipelineRecordE);
+            sendFailedSiteMessage(pipelineRecordDTO.getId(), GitUserNameUtil.getUserId().longValue());
+            pipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
+            pipelineRecordDTO.setErrorInfo(e.getMessage());
+            pipelineRecordService.baseUpdate(pipelineRecordDTO);
+        }
+    }
+
+    @Override
+    public void batchExecute(Long projectId, Long[] pipelineIds) {
+        for (Long pipelineId : pipelineIds) {
+            execute(projectId, pipelineId);
         }
     }
 
@@ -772,17 +791,22 @@ public class PipelineServiceImpl implements PipelineService {
     public void executeAutoDeploy(Long pipelineId) {
         PipelineDTO pipelineDTO = baseQueryById(pipelineId);
         CustomContextUtil.setUserId(pipelineDTO.getCreatedBy());
-        PipelineRecordDTO pipelineRecordE = new PipelineRecordDTO(pipelineId, pipelineDTO.getTriggerType(), pipelineDTO.getProjectId(), WorkFlowStatus.RUNNING.toValue(), pipelineDTO.getName());
+        PipelineRecordDTO pipelineRecordDTO = new PipelineRecordDTO(pipelineId, pipelineDTO.getTriggerType(), pipelineDTO.getProjectId(), WorkFlowStatus.RUNNING.toValue(), pipelineDTO.getName());
         String uuid = GenerateUUID.generateUUID();
-        pipelineRecordE.setBusinessKey(uuid);
-        pipelineRecordE = pipelineRecordService.baseCreate(pipelineRecordE);
-        DevopsPipelineDTO devopsPipelineDTO = createWorkFlowDTO(pipelineRecordE.getId(), pipelineId, uuid);
-        pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
-        pipelineRecordE = pipelineRecordService.baseUpdate(pipelineRecordE);
+        pipelineRecordDTO.setBusinessKey(uuid);
+        pipelineRecordDTO = pipelineRecordService.baseCreate(pipelineRecordDTO);
+
+
+        //插入部署记录
+        createDeployRecord(pipelineRecordDTO);
+
+        DevopsPipelineDTO devopsPipelineDTO = createWorkFlowDTO(pipelineRecordDTO.getId(), pipelineId, uuid);
+        pipelineRecordDTO.setBpmDefinition(gson.toJson(devopsPipelineDTO));
+        pipelineRecordDTO = pipelineRecordService.baseUpdate(pipelineRecordDTO);
         try {
             CustomUserDetails details = DetailsHelper.getUserDetails();
             createWorkFlow(pipelineDTO.getProjectId(), devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
-            List<PipelineStageRecordDTO> stageRecordES = pipelineStageRecordService.baseListByRecordAndStageId(pipelineRecordE.getId(), null);
+            List<PipelineStageRecordDTO> stageRecordES = pipelineStageRecordService.baseListByRecordAndStageId(pipelineRecordDTO.getId(), null);
             if (stageRecordES != null && stageRecordES.size() > 0) {
                 PipelineStageRecordDTO stageRecordE = stageRecordES.get(0);
                 stageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
@@ -790,10 +814,19 @@ public class PipelineServiceImpl implements PipelineService {
                 pipelineStageRecordService.baseCreateOrUpdate(stageRecordE);
             }
         } catch (Exception e) {
-            pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
-            pipelineRecordService.baseUpdate(pipelineRecordE);
+            pipelineRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
+            pipelineRecordService.baseUpdate(pipelineRecordDTO);
             throw new CommonException(e);
         }
+    }
+
+    private void createDeployRecord(PipelineRecordDTO pipelineRecordDTO) {
+
+
+        List<PipelineRecordDTO> pipelineRecordDTOS = pipelineRecordMapper.listAllPipelineRecordAndEnv(pipelineRecordDTO.getId());
+
+        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(pipelineRecordDTOS.get(0).getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTOS.get(0).getEnv(), pipelineRecordDTO.getCreationDate());
+        devopsDeployRecordService.baseCreate(devopsDeployRecordDTO);
     }
 
     @Override

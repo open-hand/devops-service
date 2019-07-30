@@ -5,14 +5,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.pagehelper.PageInfo;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
@@ -23,6 +15,13 @@ import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 
 /**
@@ -806,6 +805,29 @@ public class ApplicationInstanceController {
         return Optional.ofNullable(applicationInstanceService.deployRemoteApp(projectId, appRemoteDeployDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.remote.deploy"));
+    }
+
+
+    /**
+     * 根据实例commandId查询实例信息
+     *
+     * @param projectId
+     * @param commandId
+     * @return
+     */
+    @ApiOperation(value = "根据实例commandId查询实例信息")
+    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @GetMapping(value = "/query_by_command/{command_id}")
+    public ResponseEntity<ApplicationInstanceRepVO> deployRemoteApp(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "commandId", required = true)
+            @PathVariable(value = "command_id") Long commandId) {
+        return Optional.ofNullable(applicationInstanceService.queryByCommandId(commandId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.application.instance.get"));
     }
 
 }

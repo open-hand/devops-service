@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
@@ -21,6 +18,11 @@ public class DevopsEnvCommandDTO extends BaseDTO {
     private String status;
     private String error;
     private String sha;
+
+    @Transient
+    private Long projectId;
+    @Transient
+    private Long envId;
 
     public Long getId() {
         return id;
@@ -92,5 +94,21 @@ public class DevopsEnvCommandDTO extends BaseDTO {
 
     public void setObjectVersionId(Long objectVersionId) {
         this.objectVersionId = objectVersionId;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }

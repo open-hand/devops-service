@@ -133,6 +133,26 @@
         WHERE dpr.id = #{pipelineRecordId}
     </select>
 
+
+    <select id="listAllPipelineRecordAndEnv" resultType="io.choerodon.devops.infra.dto.PipelineRecordDTO">
+        SELECT
+        dpr.id,
+        dpr.project_id,
+        dpr.`status`,
+        dpr.creation_date,
+        GROUP_CONCAT( DISTINCT dpad.env_id ) env
+        FROM
+        devops_pipeline_record dpr
+        LEFT JOIN devops_pipeline_stage dps ON dpr.id = dps.pipeline_id
+        LEFT JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
+        LEFT JOIN devops_pipeline_app_deploy dpad ON dpad.id = dpt.app_deploy_id
+        <if test="pipelineRecordId != null">
+            WHERE dpr.id = #{pipelineRecordId}
+        </if>
+        GROUP BY
+        dpr.id
+    </select>
+
     <sql id="sqlparam">
         <if test='searchParam != null'>
             <if test='searchParam.status != null and searchParam.status.size > 0'>

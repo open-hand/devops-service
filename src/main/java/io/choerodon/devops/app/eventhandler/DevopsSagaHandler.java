@@ -38,8 +38,6 @@ import org.springframework.stereotype.Component;
 public class DevopsSagaHandler {
     private static final String TEMPLATE = "template";
     private static final String APPLICATION = "application";
-    private static final String STATUS_FIN = "finished";
-    private static final String STATUS_FAILED = "failed";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsSagaHandler.class);
 
     private final Gson gson = new Gson();
@@ -65,6 +63,10 @@ public class DevopsSagaHandler {
     private PipelineService pipelineService;
     @Autowired
     private PipelineRecordService pipelineRecordService;
+    @Autowired
+    private DevopsServiceService devopsServiceService;
+    @Autowired
+    private DevopsIngressService devopsIngressService;
 
 
     /**
@@ -345,12 +347,42 @@ public class DevopsSagaHandler {
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_INSTANCE,
             description = "devops创建实例",
-            sagaCode = DEVOPS_CREATE_INSTANCE,
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE,
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateInstance(String data) {
         InstanceSagaPayload instanceSagaPayload = gson.fromJson(data, InstanceSagaPayload.class);
         applicationInstanceService.createInstanceBySaga(instanceSagaPayload);
+        return data;
+    }
+
+
+    /**
+     * devops创建网络
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_SERVICE,
+            description = "devops创建网络",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_SERVICE,
+            maxRetryCount = 3,
+            seq = 1)
+    public String devopsCreateService(String data) {
+        ServiceSagaPayLoad serviceSagaPayLoad = gson.fromJson(data, ServiceSagaPayLoad.class);
+        devopsServiceService.createServiceBySaga(serviceSagaPayLoad);
+        return data;
+    }
+
+
+    /**
+     * devops创建域名
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_INGRESS,
+            description = "devops创建域名",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_INGRESS,
+            maxRetryCount = 3,
+            seq = 1)
+    public String devopsCreateIngress(String data) {
+        IngressSagaPayload ingressSagaPayload = gson.fromJson(data, IngressSagaPayload.class);
+        devopsIngressService.createIngressBySaga(ingressSagaPayload);
         return data;
     }
 }

@@ -135,6 +135,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     @Qualifier("handlerCustomResourceServiceImpl")
     private HandlerObjectFileRelationsService handlerCustomResourceService;
+    @Autowired
+    private DevopsGitlabCommitService devopsGitlabCommitService;
 
     private Integer getGitlabUserId() {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -370,10 +372,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         ApplicationServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
         if (NO_COMMIT_SHA.equals(pushWebHookVO.getBefore())) {
             createBranchSync(pushWebHookVO, applicationDTO.getId());
+            devopsGitlabCommitService.create(pushWebHookVO, token);
         } else if (NO_COMMIT_SHA.equals(pushWebHookVO.getAfter())) {
             deleteBranchSync(pushWebHookVO, applicationDTO.getId());
         } else {
             commitBranchSync(pushWebHookVO, applicationDTO.getId());
+            devopsGitlabCommitService.create(pushWebHookVO, token);
+
         }
     }
 

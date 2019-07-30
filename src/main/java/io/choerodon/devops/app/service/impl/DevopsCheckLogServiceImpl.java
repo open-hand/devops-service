@@ -1,31 +1,30 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
+import io.choerodon.devops.api.vo.kubernetes.CheckLog;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.ApplicationShareRuleDTO;
+import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
+import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.api.vo.kubernetes.CheckLog;
-import io.choerodon.devops.app.service.DevopsCheckLogService;
-import io.choerodon.devops.app.service.DevopsEnvApplicationService;
-import io.choerodon.devops.infra.dto.ApplicationShareRuleDTO;
-import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
-import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
-import io.choerodon.devops.infra.mapper.ApplicationShareRuleMapper;
-import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
-import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
 
 
 @Service
@@ -46,6 +45,22 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private ApplicationInstanceMapper applicationInstanceMapper;
     @Autowired
     private DevopsEnvApplicationService devopsEnvApplicationService;
+    @Autowired
+    private DevopsEnvCommandService devopsEnvCommandService;
+    @Autowired
+    private DevopsEnvCommandMapper devopsEnvCommandMapper;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private PipelineRecordMapper pipelineRecordMapper;
+    @Autowired
+    private PipelineStageService pipelineStageService;
+    @Autowired
+    private PipelineTaskService pipelineTaskService;
+    @Autowired
+    private PipelineAppDeployService pipelineAppDeployService;
+    @Autowired
+    private DevopsDeployRecordService devopsDeployRecordService;
 
     @Override
     public void checkLog(String version) {
@@ -73,8 +88,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             List<CheckLog> logs = new ArrayList<>();
             devopsCheckLogDTO.setBeginCheckDate(new Date());
             if ("0.19.0".equals(version)) {
-                syncEnvAppRelevance(logs);
-                syncAppShare(logs);
+//                syncEnvAppRelevance(logs);
+//                syncAppShare();
+                syncDeployRecord(logs);
+
             } else {
                 LOGGER.info("version not matched");
             }
@@ -126,6 +143,31 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     });
             LOGGER.info("update publish Time.");
             applicationVersionMapper.updatePublishTime();
+        }
+
+
+        private void syncDeployRecord(List<CheckLog> checkLogs) {
+            LOGGER.info("修复部署记录数据开始");
+            //部署实例的记录
+            List<DevopsDeployRecordDTO> devopsDeployRecordDTOS = devopsEnvCommandMapper.listAllInstanceCommand()
+                    .stream()
+                    .filter(devopsEnvCommandDTO -> devopsEnvCommandDTO.getProjectId() != null)
+                    .map(devopsEnvCommandDTO -> {
+                        DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(devopsEnvCommandDTO.getProjectId(), "manual", devopsEnvCommandDTO.getId(), devopsEnvCommandDTO.getEnvId().toString(), devopsEnvCommandDTO.getCreationDate());
+                        return devopsDeployRecordDTO;
+                    }).collect(Collectors.toList());
+
+
+            //流水线内部署实例的记录
+            devopsDeployRecordDTOS.addAll(pipelineRecordMapper.listAllPipelineRecordAndEnv(null).stream().map(pipelineRecordDTO -> {
+                DevopsDeployRecordDTO devopsDeployRecordDTO = new DevopsDeployRecordDTO(pipelineRecordDTO.getProjectId(), "auto", pipelineRecordDTO.getId(), pipelineRecordDTO.getEnv(), pipelineRecordDTO.getCreationDate());
+                return devopsDeployRecordDTO;
+            }).collect(Collectors.toList()));
+
+            devopsDeployRecordDTOS.stream().sorted(Comparator.comparing(DevopsDeployRecordDTO::getDeployTime)).forEach(devopsDeployRecordDTO -> devopsDeployRecordService.baseCreate(devopsDeployRecordDTO));
+
+            LOGGER.info("修复部署记录数据结束");
+
         }
 
 

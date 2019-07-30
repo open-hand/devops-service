@@ -41,5 +41,22 @@
         ORDER BY d.id DESC
     </select>
 
+    <select id="listAllInstanceCommand" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
+   SELECT
+	dc.id,
+	dc.STATUS,
+	de.id envId,
+	de.project_id projectId,
+	dc.creation_date
+FROM
+	devops_env_command dc
+	LEFT JOIN devops_app_instance dai ON dc.object_id = dai.id
+	LEFT JOIN devops_env de ON de.id = dai.env_id
+WHERE
+	dc.object = 'instance'
+	AND command_type IN ( 'update', 'create' )
+    </select>
+
+
 
 </mapper>

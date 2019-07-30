@@ -103,4 +103,16 @@
         LEFT JOIN devops_cluster cluster ON env.cluster_id = cluster.id
         WHERE env.id = #{envId};
     </select>
+
+
+    <select id="listByIds" resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
+        SELECT
+        *
+        FROM devops_env
+        where id IN
+        <foreach collection="envIds" item="envId" open="(" close=")" separator=",">
+            #{envId}
+        </foreach>
+    </select>
+
 </mapper>

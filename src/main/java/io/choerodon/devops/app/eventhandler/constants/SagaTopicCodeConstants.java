@@ -20,6 +20,15 @@ public class SagaTopicCodeConstants {
      */
     public static final String DEVOPS_CREATE_INSTANCE = "devops-create-instance";
 
+    /**
+     * Devops创建网络
+     */
+    public static final String DEVOPS_CREATE_SERVICE = "devops-create-service";
+
+    /**
+     * Devops创建域名
+     */
+    public static final String DEVOPS_CREATE_INGRESS = "devops-create-ingress";
 
     /**
      * Devops创建应用
