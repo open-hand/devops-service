@@ -22,6 +22,15 @@ public class IamUserDTO {
     private Boolean isLocked; //连续登录错误次数超出规定次数后是否锁定账户
     private Date lockedUntilAt;
     private Integer passwordAttempt;
+    private Boolean projectOwner;
+
+    public Boolean getProjectOwner() {
+        return projectOwner;
+    }
+
+    public void setProjectOwner(Boolean projectOwner) {
+        this.projectOwner = projectOwner;
+    }
 
     public Long getId() {
         return id;
@@ -165,5 +174,17 @@ public class IamUserDTO {
 
     public void setLocked(Boolean locked) {
         isLocked = locked;
+    }
+
+    @Override
+    public int hashCode() {
+        String in = id + loginName + realName;
+        return in.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        IamUserDTO s = (IamUserDTO) obj;
+        return id.equals(s.id) && loginName.equals(s.loginName);
     }
 }

@@ -93,7 +93,7 @@ public class DevopsSecretController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "分页查询secret")
-    @PostMapping("/page_by_option")
+    @PostMapping("/page_by_options")
     public ResponseEntity<PageInfo<SecretRespVO>> pageByOption(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,

@@ -4,9 +4,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -19,10 +24,8 @@ import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
-import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.gitlab.ProjectHookDTO;
@@ -30,6 +33,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
+import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
 import io.choerodon.devops.infra.enums.HelmObjectKind;
 import io.choerodon.devops.infra.enums.InstanceStatus;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -37,11 +41,6 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.*;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by younger on 2018/4/9.
@@ -726,6 +725,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
                 devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
                 devopsEnvUserPermissionDTO.setRealName(e.getRealName());
+                devopsEnvUserPermissionDTO.setProjectOwner(e.getProjectOwner());
                 allProjectMemberList.add(devopsEnvUserPermissionDTO);
             });
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
@@ -740,6 +740,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
                 devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
                 devopsEnvUserPermissionDTO.setRealName(e.getRealName());
+                devopsEnvUserPermissionDTO.setProjectOwner(e.getProjectOwner());
                 retureUsersDTOList.add(devopsEnvUserPermissionDTO);
             });
             PageInfo<DevopsEnvUserPermissionVO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
@@ -782,39 +783,34 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Long ownerId = iamService.queryRoleIdByCode(PROJECT_OWNER);
         // 获取项目成员id
         Long memberId = iamService.queryRoleIdByCode(PROJECT_MEMBER);
-        // 所有项目成员，可能还带有项目所有者的角色，需要过滤
+        // 所有项目成员，可能还带有项目所有者的角色
         PageInfo<IamUserDTO> allMemberWithOtherUsersPage = iamService
                 .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchVO,
                         memberId, projectId, false);
-        // 如果项目成员查出来为空，则直接返回空列表
-        if (allMemberWithOtherUsersPage.getList().isEmpty()) {
-            return ConvertUtils.convertPage(allMemberWithOtherUsersPage, UserVO.class);
-        }
         // 所有项目所有者
         PageInfo<IamUserDTO> allOwnerUsersPage = iamService
                 .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchVO,
                         ownerId, projectId, false);
-        // 如果项目所有者查出来为空，则返回之前的项目成员列表
-        if (allOwnerUsersPage.getList().isEmpty()) {
+        //合并项目所有者和项目成员
+        Set<IamUserDTO> iamUserDTOS = new HashSet<>(allMemberWithOtherUsersPage.getList());
+        iamUserDTOS.addAll(allOwnerUsersPage.getList());
+        List<IamUserDTO> returnUserDTOList = null;
+
+        //没有任何项目成员和项目所有者
+        if (iamUserDTOS.isEmpty()) {
             return ConvertUtils.convertPage(allMemberWithOtherUsersPage, UserVO.class);
         } else {
-            // 否则过滤项目成员中含有项目所有者的人
-            List<IamUserDTO> returnUserDTOList = allMemberWithOtherUsersPage.getList().stream()
-                    .filter(e -> !allOwnerUsersPage.getList().contains(e)).collect(Collectors.toList());
-            // 设置过滤后的分页显示参数
-            allMemberWithOtherUsersPage.setList(returnUserDTOList);
-            allMemberWithOtherUsersPage.setPageSize(pageRequest.getSize());
-            allMemberWithOtherUsersPage.setTotal(returnUserDTOList.size());
-            allMemberWithOtherUsersPage.setPageNum(pageRequest.getPage());
-            if (returnUserDTOList.size() < pageRequest.getSize() * pageRequest.getPage()) {
-                allMemberWithOtherUsersPage.setSize(TypeUtil.objToInt(returnUserDTOList.size()) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
-            } else {
-                allMemberWithOtherUsersPage.setSize(pageRequest.getSize());
-            }
-
-            return ConvertUtils.convertPage(allMemberWithOtherUsersPage, UserVO.class);
+            returnUserDTOList = iamUserDTOS.stream()
+                    .peek(e -> {
+                        if (!allOwnerUsersPage.getList().contains(e)) {
+                            e.setProjectOwner(false);
+                        } else {
+                            e.setProjectOwner(true);
+                        }
+                    }).collect(Collectors.toList());
         }
-
+        allMemberWithOtherUsersPage.setList(returnUserDTOList);
+        return ConvertUtils.convertPage(allMemberWithOtherUsersPage, UserVO.class);
     }
 
     private void setPermission(DevopsEnvironmentDTO devopsEnvironmentDTO, List<Long> permissionEnvIds,
