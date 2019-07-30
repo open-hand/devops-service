@@ -21,7 +21,7 @@ public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDTO
     List<ApplicationInstanceDTO> listApplicationInstance(@Param("projectId") Long projectId,
                                                          @Param("envId") Long envId,
                                                          @Param("versionId") Long versionId,
-                                                         @Param("appId") Long appId,
+                                                         @Param("appServiceId") Long appServiceId,
                                                          @Param("instanceId") Long instanceId,
                                                          @Param("searchParam") Map<String, Object> searchParam,
                                                          @Param("param") String param);
@@ -30,26 +30,26 @@ public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDTO
     List<ApplicationInstanceDTO> listApplicationInstanceCode(@Param("projectId") Long projectId,
                                                              @Param("envId") Long envId,
                                                              @Param("versionId") Long versionId,
-                                                             @Param("appId") Long appId);
+                                                             @Param("appServiceId") Long appServiceId);
 
     List<ApplicationInstanceDTO> listRunningAndFailedInstance(@Param("projectId") Long projectId,
                                                               @Param("envId") Long envId,
-                                                              @Param("appId") Long appId);
+                                                              @Param("appServiceId") Long appServiceId);
 
 
     int countByOptions(@Param("envId") Long envId,
-                       @Param("appId") Long appId,
+                       @Param("appServiceId") Long appServiceId,
                        @Param("appInstanceCode") String appInstanceCode);
 
-    String queryValueByEnvIdAndAppId(@Param("envId") Long envId, @Param("appId") Long appId);
+    String queryValueByEnvIdAndAppId(@Param("envId") Long envId, @Param("appServiceId") Long appServiceId);
 
-    List<ApplicationInstanceOverViewDTO> listApplicationInstanceOverView(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("envIds") List<Long> envIds);
+    List<ApplicationInstanceOverViewDTO> listApplicationInstanceOverView(@Param("projectId") Long projectId, @Param("appServiceId") Long appServiceId, @Param("envIds") List<Long> envIds);
 
     String queryByInstanceId(@Param("instanceId") Long instanceId);
 
     List<DeployDTO> listDeployTime(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("appIds") Long[] appIds, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
-    List<DeployDTO> listDeployFrequency(@Param("projectId") Long projectId, @Param("envIds") Long[] envIds, @Param("appId") Long appId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+    List<DeployDTO> listDeployFrequency(@Param("projectId") Long projectId, @Param("envIds") Long[] envIds, @Param("appServiceId") Long appServiceId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
     String getInstanceResourceDetailJson(@Param("instanceId") Long instanceId, @Param("resourceName") String resourceName, @Param("resourceType") String resourceType);
 

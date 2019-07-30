@@ -59,7 +59,7 @@
         da.id,
         da.`code`,
         da.`name` ,
-        dam.publish_level,
+        dam.share_level,
         da.project_id projectId,
         dam.contributor contributor,
         dam.description description
@@ -67,7 +67,7 @@
         devops_application_service da
         JOIN devops_app_instance dai ON dai.app_service_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
-        left join devops_app_share dam on dam.app_service_id = da.id
+        left join devops_app_share_rule dam on dam.app_service_id = da.id
         WHERE
         de.project_id = #{projectId}
         AND de.id = #{envId}
@@ -90,7 +90,7 @@
 
     <select id="listDeployedApp" resultType="io.choerodon.devops.infra.dto.ApplicationServiceDTO">
         SELECT DISTINCT
-        dam.publish_level publishLevel,
+        dam.share_level publishLevel,
         dam.contributor,
         dam.description,
         da.*
@@ -99,18 +99,18 @@
         JOIN devops_app_instance dai ON dai.app_service_id = da.id
         AND dai.`status` != 'deleted'
         JOIN devops_env de ON dai.env_id = de.id
-        LEFT JOIN devops_app_share dam ON dam.app_service_id = da.id
+        LEFT JOIN devops_app_share_rule dam ON dam.app_service_id = da.id
         WHERE
         da.is_active
         AND de.project_id = #{projectId}
         ORDER BY
-        dam.publish_level ASC,
+        dam.share_level ASC,
         da.id DESC
     </select>
 
     <select id="listAll" resultType="io.choerodon.devops.infra.dto.ApplicationServiceDTO">
         SELECT DISTINCT
-        dam.publish_level publishLevel,
+        dam.share_level publishLevel,
         dam.contributor,
         dam.description,
         da.*
@@ -119,12 +119,12 @@
         JOIN devops_app_instance dai ON dai.app_service_id = da.id
         AND dai.`status` != 'deleted'
         JOIN devops_env de ON dai.env_id = de.id
-        LEFT JOIN devops_app_share dam ON dam.app_service_id = da.id
+        LEFT JOIN devops_app_share_rule dam ON dam.app_service_id = da.id
         WHERE
         da.is_active
         AND de.project_id = #{projectId}
         ORDER BY
-        dam.publish_level ASC,
+        dam.share_level ASC,
         da.id DESC
     </select>
 
@@ -191,7 +191,7 @@
         WHERE
         da.project_id = #{projectId}
         AND da.is_active = #{active}
-        AND ((select count(1) from devops_app_share dam where da.id=dam.app_service_id)=0)
+        AND ((select count(1) from devops_app_share_rule dam where da.id=dam.app_service_id)=0)
         AND ((select count(1) from devops_app_version dav where da.id=dav.app_service_id)>0)
         AND da.type = 'normal'
         <include refid="sqlparam"/>
@@ -224,7 +224,7 @@
         FROM
         devops_application_service da
         WHERE
-        NOT EXISTS ( SELECT 1 FROM devops_app_share dam WHERE dam.app_service_id = da.id )
+        NOT EXISTS ( SELECT 1 FROM devops_app_share_rule dam WHERE dam.app_service_id = da.id )
         AND NOT EXISTS ( SELECT 1 FROM devops_app_instance dai JOIN devops_app_version dav ON dav.id =
         dai.app_version_id WHERE dai.`status` != 'deleted' AND dav.app_service_id = da.id )
         AND da.id = #{applicationId}
@@ -236,7 +236,7 @@
         da.project_id
         FROM
         devops_application_service da
-        JOIN devops_app_share dam ON da.id = dam.app_service_id
+        JOIN devops_app_share_rule dam ON da.id = dam.app_service_id
         WHERE
         da.code = #{code}
     </select>
@@ -328,7 +328,7 @@
             da.chart_config_id,
             da.harbor_config_id
         FROM
-            devops_app_share_rule dasr
+            devops_app_share_rule_rule dasr
         JOIN devops_application_service da ON da.id = dasr.app_service_id
         WHERE
             dasr.organization_id = #{organizationId}

@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public interface DevopsDeployValueMapper extends Mapper<DevopsDeployValueDTO> {
     List<DevopsDeployValueDTO> listByOptions(@Param("projectId") Long projectId,
-                                             @Param("appId") Long appId,
+                                             @Param("appServiceId") Long appServiceId,
                                              @Param("envId") Long envId,
                                              @Param("userId") Long userId,
                                              @Param("searchParam") Map<String, Object> searchParam,

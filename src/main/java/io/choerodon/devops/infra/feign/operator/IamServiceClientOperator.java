@@ -96,17 +96,17 @@ public class IamServiceClientOperator {
     }
 
     public List<IamUserDTO> listUsersByIds(List<Long> ids) {
-        List<IamUserDTO> userES = new ArrayList<>();
+        List<IamUserDTO> userDTOS = new ArrayList<>();
         if (ids != null && !ids.isEmpty()) {
             Long[] newIds = new Long[ids.size()];
             try {
-                userES = ConvertHelper.convertList(iamServiceClient
-                        .listUsersByIds(ids.toArray(newIds)).getBody(), IamUserDTO.class);
+                userDTOS = iamServiceClient
+                        .listUsersByIds(ids.toArray(newIds)).getBody();
             } catch (Exception e) {
                 throw new CommonException("error.users.get", e);
             }
         }
-        return userES;
+        return userDTOS;
     }
 
     public IamUserDTO queryUserByUserId(Long id) {

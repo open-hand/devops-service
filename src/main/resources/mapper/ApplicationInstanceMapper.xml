@@ -26,7 +26,7 @@
         SELECT
         dai.id id,
         dai.`code` code,
-        dam.publish_level publishLevel,
+        dam.share_level publishLevel,
         dam.contributor,
         dam.description,
         da.id appServiceId,
@@ -90,7 +90,7 @@
         JOIN devops_application_service da ON da.id = dai.app_service_id
         LEFT JOIN devops_app_version dav ON dai.app_version_id = dav.id
         LEFT JOIN devops_env_command cmd ON cmd.id = dai.command_id
-        LEFT JOIN devops_app_share dam ON dam.app_service_id = da.id
+        LEFT JOIN devops_app_share_rule dam ON dam.app_service_id = da.id
         WHERE de.project_id = #{projectId}
         AND dai.`status` != 'deleted'
         <include refid="sqlparam"/>
@@ -310,7 +310,7 @@
     <select id="listApplicationInstanceOverView" resultType="io.choerodon.devops.infra.dto.ApplicationInstanceOverViewDTO">
         SELECT
         da.id appServiceId,
-        dam.publish_level publishLevel,
+        dam.share_level publishLevel,
         da.`code` appCode,
         da.`name` appName,
         da.project_id projectId,
@@ -327,7 +327,7 @@
         JOIN devops_app_instance dai ON dai.app_version_id = dav.id
         AND dai.status != 'deleted'
         JOIN devops_env de ON de.id = dai.env_id
-        LEFT JOIN devops_app_share dam ON dam.app_service_id = da.id
+        LEFT JOIN devops_app_share_rule dam ON dam.app_service_id = da.id
         WHERE
         de.project_id = #{projectId}
         <if test="appServiceId != null">

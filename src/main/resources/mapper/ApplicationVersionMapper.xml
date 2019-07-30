@@ -57,7 +57,7 @@
         dappv.app_service_id
         ) lv ON lv.id = dap.id
         JOIN devops_application_service da ON lv.app_service_id = da.id
-        LEFT JOIN devops_app_share dam on dam.app_service_id = da.id
+        LEFT JOIN devops_app_share_rule dam on dam.app_service_id = da.id
         WHERE
         da.project_id = #{projectId}
         OR (
@@ -65,9 +65,9 @@
         <foreach collection="projectIds" item="project" open="(" separator="," close=")">
             #{project}
         </foreach>
-        AND dam.publish_level = 'organization'
+        AND dam.share_level = 'organization'
         )
-        OR dam.publish_level = 'public'
+        OR dam.share_level = 'public'
     </select>
     <select id="queryByCommitSha" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT
@@ -316,7 +316,7 @@
                     SELECT
                         dasr.version_type
                     FROM
-                        devops_app_share_rule dasr
+                        devops_app_share_rule_rule dasr
                     WHERE
                         dasr.app_service_id = #{appServiceId}
                     AND dasr.version IS NULL
@@ -337,7 +337,7 @@
                         SELECT
                             dasr.version
                         FROM
-                            devops_app_share_rule dasr
+                            devops_app_share_rule_rule dasr
                         WHERE
                             dasr.app_service_id =  #{appServiceId}
                         AND dasr.version IS NOT NULL

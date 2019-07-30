@@ -15,7 +15,7 @@ import org.apache.ibatis.annotations.Param;
  */
 
 public interface ApplicationUserPermissionMapper extends Mapper<ApplicationUserPermissionDTO> {
-        List<ApplicationUserPermissionDTO> listAllUserPermissionByAppId(@Param("appId") Long appId);
+        List<ApplicationUserPermissionDTO> listAllUserPermissionByAppId(@Param("appServiceId") Long appServiceId);
 
         void deleteByUserIdWithAppIds(@Param("appIds") List<Long> appIds, @Param("userId") Long userId);
     }
