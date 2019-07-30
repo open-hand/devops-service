@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper">
+    <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsDeployRecordDTO">
+        SELECT
+        dcm.id,
+        dcm.name,
+        dcm.value,
+        dcm.env_id,
+        dcm.description,
+        dcm.last_update_date,
+        de.code envCode,
+        dc.command_type commandType,
+        dc.status commandStatus
+        FROM
+        devops_config_map dcm
+        LEFT JOIN devops_env de ON dcm.env_id = de.id
+        LEFT JOIN devops_env_command dc ON dcm.command_id = dc.id
+        <if test="appId != null">
+            LEFT JOIN devops_app_resource das ON dcm.id = das.resource_id
+        </if>
+        where 1
+        <if test="envId != null">
+            AND dcm.env_id = #{envId}
+        </if>
+        <if test="appId != null">
+            AND das.app_id = #{appId}
+            AND das.resource_type='configMap'
+        </if>
+        <include refid="sqlparam"/>
+    </select>
+
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.name != null and searchParam.name.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                    dcm.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.description != null and searchParam.description.size > 0'>
+                AND
+                <foreach collection="searchParam.description" item="type">
+                    dcm.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (dcm.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dcm.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+    </sql>
+
+</mapper>

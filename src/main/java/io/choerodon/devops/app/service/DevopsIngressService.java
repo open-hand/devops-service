@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
+import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
 import io.choerodon.devops.infra.dto.DevopsIngressPathDTO;
 
@@ -14,10 +15,10 @@ public interface DevopsIngressService {
     /**
      * 项目下创建域名
      *
-     * @param devopsIngressVO 域名参数
-     * @param projectId       项目Id
+     * @param projectId 域名参数
+     * @param devopsIngressVO 项目Id
      */
-    void createIngress(DevopsIngressVO devopsIngressVO, Long projectId);
+    void createIngress(Long projectId, DevopsIngressVO devopsIngressVO);
 
     /**
      * 项目下创建域名,GitOps
@@ -101,6 +102,7 @@ public interface DevopsIngressService {
      */
     PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
 
+    void createIngressBySaga(IngressSagaPayload ingressSagaPayload);
 
     DevopsIngressDTO baseQuery(Long ingressId);
 

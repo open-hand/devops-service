@@ -12,6 +12,8 @@ public class ApplicationDeployVO {
     private boolean isNotChange;
     private Long recordId;
     private Long valueId;
+    private DevopsServiceReqVO devopsServiceReqVO;
+    private DevopsIngressVO devopsIngressVO;
 
     public ApplicationDeployVO() {
     }
@@ -114,5 +116,21 @@ public class ApplicationDeployVO {
 
     public void setValueId(Long valueId) {
         this.valueId = valueId;
+    }
+
+    public DevopsServiceReqVO getDevopsServiceReqVO() {
+        return devopsServiceReqVO;
+    }
+
+    public void setDevopsServiceReqVO(DevopsServiceReqVO devopsServiceReqVO) {
+        this.devopsServiceReqVO = devopsServiceReqVO;
+    }
+
+    public DevopsIngressVO getDevopsIngressVO() {
+        return devopsIngressVO;
+    }
+
+    public void setDevopsIngressVO(DevopsIngressVO devopsIngressVO) {
+        this.devopsIngressVO = devopsIngressVO;
     }
 }

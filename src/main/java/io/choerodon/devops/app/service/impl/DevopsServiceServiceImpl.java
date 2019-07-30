@@ -7,11 +7,18 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
+import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
@@ -49,6 +56,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     public static final String DELETE = "delete";
+    public static final String SERVICE_RREFIX = "svc-";
     private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String SERVICE_LABLE_VALUE = "service";
     private Gson gson = new Gson();
@@ -82,6 +90,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsApplicationResourceService devopsApplicationResourceService;
     @Autowired
     private DevopsServiceMapper devopsServiceMapper;
+    @Autowired
+    private TransactionalProducer producer;
 
 
     @Override
@@ -144,6 +154,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_SERVICE,
+            description = "Devops创建网络", inputSchema = "{}")
     public Boolean create(Long projectId, DevopsServiceReqVO devopsServiceReqVO) {
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsServiceReqVO.getEnvId());
@@ -152,7 +164,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
-
 
         List<DevopsServiceAppInstanceDTO> devopsServiceAppInstanceDTOS = new ArrayList<>();
         List<String> beforeDevopsServiceAppInstanceDTOS = new ArrayList<>();
@@ -169,8 +180,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (devopsServiceReqVO.getEndPoints() != null) {
             v1Endpoints = initV1EndPoints(devopsServiceReqVO);
         }
-        //在gitops库处理service文件
-        operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceDTO, devopsServiceAppInstanceDTOS, beforeDevopsServiceAppInstanceDTOS, devopsEnvCommandDTO, userAttrDTO);
 
         //创建应用资源关系
         if (devopsServiceReqVO.getAppServiceId() != null) {
@@ -185,6 +194,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsApplicationResourceDTO.setResourceId(devopsServiceDTO.getId());
             devopsApplicationResourceService.baseCreate(devopsApplicationResourceDTO);
         }
+
+        //在gitops库处理service文件
+        operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceDTO, devopsServiceAppInstanceDTOS, beforeDevopsServiceAppInstanceDTOS, devopsEnvCommandDTO, userAttrDTO);
         return true;
     }
 
@@ -891,10 +903,52 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //处理文件
         ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
         resourceConvertToYamlHandler.setType(service);
-        resourceConvertToYamlHandler.operationEnvGitlabFile("svc-" + devopsServiceDTO.getName(), TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
+        resourceConvertToYamlHandler.operationEnvGitlabFile(SERVICE_RREFIX + devopsServiceDTO.getName(), TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
                 userAttrDTO.getGitlabUserId(), devopsServiceDTO.getId(), SERVICE, v1Endpoints, false, devopsServiceDTO.getEnvId(), path);
 
+        ServiceSagaPayLoad serviceSagaPayLoad = new ServiceSagaPayLoad(devopsEnvironmentDTO.getProjectId(),userAttrDTO.getGitlabUserId());
+        serviceSagaPayLoad.setDevopsServiceDTO(devopsServiceDTO);
+        serviceSagaPayLoad.setV1Service(service);
+        serviceSagaPayLoad.setCreated(serviceSagaPayLoad.getCreated());
+        serviceSagaPayLoad.setV1Endpoints(v1Endpoints);
+        serviceSagaPayLoad.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
 
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_SERVICE),
+                builder -> builder
+                        .withPayloadAndSerialize(serviceSagaPayLoad)
+                        .withRefId(devopsEnvironmentDTO.getId().toString()));
+    }
+
+    public void createServiceBySaga(ServiceSagaPayLoad serviceSagaPayLoad) {
+        try {
+            //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+            String filePath = clusterConnectionHandler.handDevopsEnvGitRepository(serviceSagaPayLoad.getProjectId(), serviceSagaPayLoad.getDevopsEnvironmentDTO().getCode(), serviceSagaPayLoad.getDevopsEnvironmentDTO().getEnvIdRsa());
+
+            //在gitops库处理instance文件
+            ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(serviceSagaPayLoad.getV1Service());
+
+            resourceConvertToYamlHandler.operationEnvGitlabFile(
+                    SERVICE_RREFIX + serviceSagaPayLoad.getDevopsServiceDTO().getName(),
+                    serviceSagaPayLoad.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
+                    serviceSagaPayLoad.getCreated() ? CREATE : UPDATE,
+                    serviceSagaPayLoad.getGitlabUserId(),
+                    serviceSagaPayLoad.getDevopsServiceDTO().getId(), SERVICE, serviceSagaPayLoad.getV1Endpoints(), false, serviceSagaPayLoad.getDevopsEnvironmentDTO().getId(), filePath);
+        } catch (Exception e) {
+            //有异常更新实例以及command的状态
+            DevopsServiceDTO devopsServiceDTO = baseQuery(serviceSagaPayLoad.getDevopsServiceDTO().getId());
+            devopsServiceDTO.setStatus(CommandStatus.FAILED.getStatus());
+            baseUpdate(devopsServiceDTO);
+            DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsServiceDTO.getCommandId());
+            devopsEnvCommandDTO.setStatus(CommandStatus.FAILED.getStatus());
+            devopsEnvCommandDTO.setError("create or update gitOps file failed!");
+            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+        }
     }
 
 

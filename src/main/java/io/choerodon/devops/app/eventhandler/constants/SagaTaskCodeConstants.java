@@ -73,6 +73,17 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_CREATE_INSTANCE = "devopsCreateInstance";
 
     /**
+     * devops创建网络
+     */
+    public static final String DEVOPS_CREATE_SERVICE = "devopsCreateService";
+
+    /**
+     * devops创建域名
+     */
+    public static final String DEVOPS_CREATE_INGRESS = "devopsCreateIngress";
+
+
+    /**
      * 注册组织事件
      */
     public static final String REGISTER_DEVOPS_INIT_ORG = "register-devops-init-org";

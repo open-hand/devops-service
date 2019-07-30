@@ -49,7 +49,7 @@ public class DevopsIngressController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
             @RequestBody DevopsIngressVO devopsIngressVO) {
-        devopsIngressService.createIngress(devopsIngressVO, projectId);
+        devopsIngressService.createIngress(projectId, devopsIngressVO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
