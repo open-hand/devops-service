@@ -322,9 +322,9 @@ public class DevopsEnvironmentController {
     public ResponseEntity<PageInfo<DevopsEnvUserPermissionVO>> pageEnvUserPermissions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id")
+            @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
-            @ApiParam(value = "分页参数")
+            @ApiParam(value = "分页参数", required = true)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
@@ -335,19 +335,48 @@ public class DevopsEnvironmentController {
     }
 
 
+    /**
+     * 列出项目下所有与该环境未分配权限的项目成员
+     *
+     * @param projectId 项目ID
+     * @param envId     环境ID
+     * @param params    搜索参数
+     * @return 所有与该环境未分配权限的项目成员
+     */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "查询项目下所有与该环境未分配权限的项目成员")
+    @ApiOperation(value = "列出项目下所有与该环境未分配权限的项目成员")
     @GetMapping(value = "/{env_id}/permission/list_non_related")
     public ResponseEntity<List<DevopsEnvUserVO>> listAllNonRelatedMembers(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id")
+            @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsEnvironmentService.listNonRelatedMembers(projectId, envId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.env.non.related.users"));
+    }
+
+    /**
+     * 删除该用户在该环境下的权限
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param userId    用户id
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "删除该用户在该环境下的权限")
+    @DeleteMapping(value = "/{env_id}/permission")
+    public ResponseEntity deletePermissionOfUser(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @PathVariable(value = "env_id") Long envId,
+            @ApiParam(value = "用户id", required = true)
+            @RequestParam(value = "user_id") Long userId) {
+        devopsEnvironmentService.deletePermissionOfUser(envId, userId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     /**

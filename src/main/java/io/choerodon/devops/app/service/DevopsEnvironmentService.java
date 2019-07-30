@@ -151,6 +151,14 @@ public interface DevopsEnvironmentService {
      */
     List<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, String params);
 
+    /**
+     * 删除环境下该用户的权限
+     *
+     * @param envId  环境id
+     * @param userId 用户id
+     */
+    void deletePermissionOfUser(Long envId, Long userId);
+
 
     /**
      * 获取环境下所有用户权限
