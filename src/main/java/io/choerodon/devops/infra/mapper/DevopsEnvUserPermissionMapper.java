@@ -16,7 +16,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
  */
 public interface DevopsEnvUserPermissionMapper extends Mapper<DevopsEnvUserPermissionDTO> {
 
-    List<DevopsEnvUserPermissionDTO> pageUserEnvPermissionByOption(@Param("envId") Long envId,
+    List<DevopsEnvUserPermissionDTO> listUserEnvPermissionByOption(@Param("envId") Long envId,
                                                                    @Param("searchParam") Map<String, Object> searchParam,
                                                                    @Param("param") String param);
 

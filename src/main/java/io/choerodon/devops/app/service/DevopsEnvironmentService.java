@@ -6,7 +6,6 @@ import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
-import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 
@@ -127,8 +126,20 @@ public interface DevopsEnvironmentService {
      * @param envId       环境id
      * @return page
      */
-    PageInfo<DevopsEnvUserPermissionVO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                                  String params, Long envId);
+    PageInfo<DevopsEnvUserVO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+                                                        String params, Long envId);
+
+
+    /**
+     * 分页查询环境下用户权限
+     *
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param envId       环境id
+     * @return page
+     */
+    PageInfo<DevopsEnvUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+                                                        String params, Long envId);
 
     /**
      * 获取环境下所有用户权限
@@ -136,7 +147,7 @@ public interface DevopsEnvironmentService {
      * @param envId 环境id
      * @return baseList
      */
-    List<DevopsEnvUserPermissionVO> listAllUserPermission(Long envId);
+    List<DevopsEnvUserVO> listAllUserPermission(Long envId);
 
     /**
      * 环境下为用户分配权限

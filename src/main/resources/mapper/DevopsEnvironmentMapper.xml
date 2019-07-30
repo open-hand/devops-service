@@ -29,6 +29,7 @@
         <result property="sagaSyncCommit" column="saga_sync_commit"/>
         <result property="devopsSyncCommit" column="devops_sync_commit"/>
         <result property="agentSyncCommit" column="agent_sync_commit"/>
+        <result property="isSkipCheckPermission" column="is_skip_check_permission"/>
     </resultMap>
 
     <update id="updateDevopsEnvGroupId" parameterType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
@@ -98,7 +99,8 @@
                env.devops_sync_commit,
                env.agent_sync_commit,
                env.cluster_id,
-               cluster.name as cluster_name
+               cluster.name as cluster_name,
+               env.is_skip_check_permission
         FROM devops_env env
         LEFT JOIN devops_cluster cluster ON env.cluster_id = cluster.id
         WHERE env.id = #{envId};

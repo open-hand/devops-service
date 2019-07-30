@@ -1,55 +1,34 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Date;
+
 /**
- * Created by n!Ck
- * Date: 2018/10/25
- * Time: 11:32
- * Description:
+ * @author zmf
  */
-public class DevopsEnvUserPermissionVO {
-    private Long iamUserId;
-    private String loginName;
-    private String realName;
-    private Boolean projectOwner;
-
-    public Boolean getProjectOwner() {
-        return projectOwner;
-    }
-
-    public void setProjectOwner(Boolean projectOwner) {
-        this.projectOwner = projectOwner;
-    }
+public class DevopsEnvUserPermissionVO extends DevopsEnvUserVO {
+    private String role;
+    private Date creationDate;
 
     public DevopsEnvUserPermissionVO() {
     }
 
-    public DevopsEnvUserPermissionVO(String loginName, Long iamUserId, String realName) {
-        this.loginName = loginName;
-        this.iamUserId = iamUserId;
-        this.realName = realName;
+    public DevopsEnvUserPermissionVO(Long iamUserId, String loginName, String realName) {
+        super(iamUserId, loginName, realName);
     }
 
-    public Long getIamUserId() {
-        return iamUserId;
+    public String getRole() {
+        return role;
     }
 
-    public void setIamUserId(Long iamUserId) {
-        this.iamUserId = iamUserId;
+    public void setRole(String role) {
+        this.role = role;
     }
 
-    public String getLoginName() {
-        return loginName;
+    public Date getCreationDate() {
+        return creationDate;
     }
 
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
-    }
-
-    public String getRealName() {
-        return realName;
-    }
-
-    public void setRealName(String realName) {
-        this.realName = realName;
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 }

@@ -290,7 +290,7 @@ public class DevopsEnvironmentController {
     @CustomPageRequest
     @ApiOperation(value = "分页查询项目下用户权限")
     @PostMapping(value = "/page_by_options")
-    public ResponseEntity<PageInfo<DevopsEnvUserPermissionVO>> listUserPermissionByEnvId(
+    public ResponseEntity<PageInfo<DevopsEnvUserVO>> listUserPermissionByEnvId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -301,6 +301,36 @@ public class DevopsEnvironmentController {
             @RequestParam(value = "env_id", required = false) Long envId) {
         return Optional.ofNullable(devopsEnvironmentService
                 .listUserPermissionByEnvId(projectId, pageRequest, params, envId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
+    }
+
+
+    /**
+     * 分页查询环境下用户权限
+     *
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param envId       环境id
+     * @param params      搜索参数
+     * @return page
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @CustomPageRequest
+    @ApiOperation(value = "分页查询环境下用户权限")
+    @PostMapping(value = "/{env_id}/permission/page_by_options")
+    public ResponseEntity<PageInfo<DevopsEnvUserPermissionVO>> pageEnvUserPermissions(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id")
+            @PathVariable(value = "env_id") Long envId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsEnvironmentService
+                .pageUserPermissionByEnvId(projectId, pageRequest, params, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
     }
@@ -316,7 +346,7 @@ public class DevopsEnvironmentController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取环境下所有用户权限")
     @GetMapping(value = "/{env_id}/list_all")
-    public ResponseEntity<List<DevopsEnvUserPermissionVO>> listAllUserPermission(
+    public ResponseEntity<List<DevopsEnvUserVO>> listAllUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
@@ -329,7 +359,7 @@ public class DevopsEnvironmentController {
     /**
      * 环境下为用户分配权限
      *
-     * @param envId   环境id
+     * @param envId                       环境id
      * @param devopsEnvPermissionUpdateVO 权限分配信息
      */
     @Permission(type = ResourceType.PROJECT,

@@ -34,6 +34,7 @@ import io.choerodon.devops.infra.enums.InstanceStatus;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.*;
 import org.springframework.beans.BeanUtils;
@@ -50,6 +51,8 @@ import org.springframework.util.StringUtils;
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     private static final Gson gson = new Gson();
+    private static final String MEMBER = "member";
+    private static final String OWNER = "owner";
     private static final String MASTER = "master";
     private static final String README = "README.md";
     private static final String README_CONTENT =
@@ -96,6 +99,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsClusterService devopsClusterService;
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    @Autowired
+    private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
@@ -623,45 +628,81 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public PageInfo<DevopsEnvUserPermissionVO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                                         String searchParams, Long envId) {
+    public PageInfo<DevopsEnvUserVO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+                                                               String searchParams, Long envId) {
         if (envId == null) {
             // 根据项目成员id查询项目下所有的项目成员
             PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
 
-            PageInfo<DevopsEnvUserPermissionVO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
-            List<DevopsEnvUserPermissionVO> allProjectMemberList = allProjectMemberPage.getList().stream().map(this::createFromIamUser).collect(Collectors.toList());
+            PageInfo<DevopsEnvUserVO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
+            List<DevopsEnvUserVO> allProjectMemberList = allProjectMemberPage.getList()
+                    .stream()
+                    .map(iamUser -> new DevopsEnvUserVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
+                    .collect(Collectors.toList());
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
             devopsEnvUserPermissionDTOPage.setList(allProjectMemberList);
             return devopsEnvUserPermissionDTOPage;
         } else {
             // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
             PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
-            List<DevopsEnvUserPermissionVO> retureUsersDTOList = allProjectMemberPage.getList().stream().map(this::createFromIamUser).collect(Collectors.toList());
-            PageInfo<DevopsEnvUserPermissionVO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
+            List<DevopsEnvUserVO> retureUsersDTOList = allProjectMemberPage.getList()
+                    .stream()
+                    .map(iamUser -> new DevopsEnvUserVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
+                    .collect(Collectors.toList());
+            PageInfo<DevopsEnvUserVO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
             devopsEnvUserPermissionDTOPage.setList(retureUsersDTOList);
             return devopsEnvUserPermissionDTOPage;
         }
     }
 
-    /**
-     * create env-user permission from iam user.
-     *
-     * @param iamUser iam user information
-     * @return the env-user permission
-     */
-    private DevopsEnvUserPermissionVO createFromIamUser(UserVO iamUser) {
-        DevopsEnvUserPermissionVO permissionVO = new DevopsEnvUserPermissionVO();
-        permissionVO.setIamUserId(iamUser.getId());
-        permissionVO.setLoginName(iamUser.getLoginName());
-        permissionVO.setRealName(iamUser.getRealName());
-        return permissionVO;
+    @Override
+    public PageInfo<DevopsEnvUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest, String params, Long envId) {
+        RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+        Map<String, Object> searchParamMap = null;
+        String param = null;
+        // 处理搜索参数
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+            roleAssignmentSearchVO.setParam(new String[]{param});
+            if (searchParamMap.get("loginName") != null) {
+                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                roleAssignmentSearchVO.setLoginName(loginName);
+            }
+            if (searchParamMap.get("realName") != null) {
+                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                roleAssignmentSearchVO.setRealName(realName);
+            }
+        }
+        // 先根据搜索参数查询数据库中所有的环境权限分配数据
+        List<DevopsEnvUserPermissionDTO> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, param);
+
+        // 再根据搜索参数查询所有的项目所有者
+        Long ownerId = iamService.queryRoleIdByCode(PROJECT_OWNER);
+        PageInfo<IamUserDTO> projectOwners = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+                new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false);
+
+        List<DevopsEnvUserPermissionVO> members = permissions
+                .stream()
+                .map(p -> ConvertUtils.convertObject(p, DevopsEnvUserPermissionVO.class))
+                .peek(p -> p.setRole(MEMBER))
+                .collect(Collectors.toList());
+        List<DevopsEnvUserPermissionVO> owners = projectOwners.getList()
+                .stream()
+                .map(iamUser -> new DevopsEnvUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
+                .peek(p -> p.setRole(OWNER))
+                .collect(Collectors.toList());
+        members.addAll(owners);
+
+        // 根据结果手动设置page的相关属性
+        return PageInfoUtil.createPageFromList(members, pageRequest);
     }
 
     @Override
-    public List<DevopsEnvUserPermissionVO> listAllUserPermission(Long envId) {
-        return ConvertUtils.convertList(devopsEnvUserPermissionService.baseListByEnvId(envId), DevopsEnvUserPermissionVO.class);
+    public List<DevopsEnvUserVO> listAllUserPermission(Long envId) {
+        return ConvertUtils.convertList(devopsEnvUserPermissionService.baseListByEnvId(envId), DevopsEnvUserVO.class);
     }
 
 
