@@ -33,7 +33,7 @@ public interface DevopsEnvApplicationMapper extends Mapper<DevopsEnvApplicationD
      * @param appId 应用Id
      * @return List 环境资源信息
      */
-    List<DevopsEnvMessageVO> listResourceByEnvAndApp(@Param("envId") Long envId, @Param("appId") Long appId);
+    List<DevopsEnvMessageVO> listResourceByEnvAndApp(@Param("envId") Long envId, @Param("appServiceId") Long appServiceId);
 
     /**
      * 查询项目下可用的且没有与该环境关联的应用

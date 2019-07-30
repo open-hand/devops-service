@@ -10,10 +10,10 @@ import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO;
 
 public interface DevopsGitlabPipelineMapper extends Mapper<DevopsGitlabPipelineDTO> {
 
-    List<DevopsGitlabPipelineDTO> listDevopsGitlabPipeline(@Param("appId") Long appId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+    List<DevopsGitlabPipelineDTO> listDevopsGitlabPipeline(@Param("appServiceId") Long appServiceId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
     void deleteWithoutCommit();
 
-    List<DevopsGitlabPipelineDTO> listByBranch(@Param("appId") Long appId, @Param("branch") String branch);
+    List<DevopsGitlabPipelineDTO> listByBranch(@Param("appServiceId") Long appServiceId, @Param("branch") String branch);
 
 }

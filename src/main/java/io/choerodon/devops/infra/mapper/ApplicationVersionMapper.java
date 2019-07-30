@@ -16,7 +16,7 @@ public interface ApplicationVersionMapper extends Mapper<ApplicationVersionDTO> 
 
     List<ApplicationVersionDTO> listApplicationVersion(
             @Param("projectId") Long projectId,
-            @Param("appId") Long appId,
+            @Param("appServiceId") Long appServiceId,
             @Param("searchParam") Map<String, Object> searchParam,
             @Param("param") String param,
             @Param("isProjectOwner") Boolean isProjectOwner,
@@ -26,24 +26,24 @@ public interface ApplicationVersionMapper extends Mapper<ApplicationVersionDTO> 
                                                            @Param("projectIds") List<Long> projectIds);
 
     List<ApplicationVersionDTO> listByAppIdAndEnvId(@Param("projectId") Long projectId,
-                                                    @Param("appId") Long appId,
+                                                    @Param("appServiceId") Long appServiceId,
                                                     @Param("envId") Long envId);
 
     String queryValue(@Param("versionId") Long versionId);
 
-    List<ApplicationVersionDTO> listByAppId(@Param("appId") Long appId,
+    List<ApplicationVersionDTO> listByAppId(@Param("appServiceId") Long appServiceId,
                                             @Param("isPublish") Boolean isPublish);
 
-    List<ApplicationVersionDTO> selectByAppIdAndParamWithPage(@Param("appId") Long appId,
+    List<ApplicationVersionDTO> selectByAppIdAndParamWithPage(@Param("appServiceId") Long appServiceId,
                                                               @Param("isPublish") Boolean isPublish,
                                                               @Param("version") String searchParam);
 
     List<ApplicationVersionDTO> listAppDeployedVersion(@Param("projectId") Long projectId,
-                                                       @Param("appId") Long appId);
+                                                       @Param("appServiceId") Long appServiceId);
 
     List<ApplicationVersionDTO> listApplicationVersionInApp(
             @Param("projectId") Long projectId,
-            @Param("appId") Long appId,
+            @Param("appServiceId") Long appServiceId,
             @Param("searchParam") Map<String, Object> searchParam,
             @Param("param") String param);
 
@@ -55,25 +55,25 @@ public interface ApplicationVersionMapper extends Mapper<ApplicationVersionDTO> 
 
     Integer checkByProjectAndVersionId(@Param("projectId") Long projectId, @Param("appVersionId") Long appVersionId);
 
-    ApplicationVersionDTO queryNewestVersion(@Param("appId") Long appId);
+    ApplicationVersionDTO queryNewestVersion(@Param("appServiceId") Long appServiceId);
 
     List<ApplicationVersionDTO> listByAppVersionIds(@Param("appVersionIds") List<Long> appVersionIds);
 
-    List<ApplicationVersionDTO> listByAppIdAndBranch(@Param("appId") Long appId, @Param("branch") String branch);
+    List<ApplicationVersionDTO> listByAppIdAndBranch(@Param("appServiceId") Long appServiceId, @Param("branch") String branch);
 
-    String queryByPipelineId(@Param("pipelineId") Long pipelineId, @Param("branch") String branch, @Param("appId") Long appId);
+    String queryByPipelineId(@Param("pipelineId") Long pipelineId, @Param("branch") String branch, @Param("appServiceId") Long appServiceId);
 
-    String queryValueByAppId(@Param("appId") Long appId);
+    String queryValueByAppId(@Param("appServiceId") Long appServiceId);
 
     void updateRepository(@Param("helmUrl") String url);
 
-    ApplicationVersionDTO queryByCommitSha(@Param("appId") Long appId, @Param("ref") String ref, @Param("commit") String commit);
+    ApplicationVersionDTO queryByCommitSha(@Param("appServiceId") Long appServiceId, @Param("ref") String ref, @Param("commit") String commit);
 
 
     void updateObJectVersionNumber(@Param("versionId") Long versionId);
 
     void updatePublishTime();
 
-    List<ApplicationVersionDTO> listShareVersionByAppId(@Param("appId") Long appId,
+    List<ApplicationVersionDTO> listShareVersionByAppId(@Param("appServiceId") Long appServiceId,
                                                         @Param("params") String params);
 }

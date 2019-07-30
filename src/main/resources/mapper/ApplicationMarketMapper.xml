@@ -11,7 +11,7 @@
         dasr.share_level,
         dasr.project_id
         FROM
-        devops_app_share_rule dasr
+        devops_app_share_rule_rule dasr
         WHERE
         app_service_id = #{app_service_id}
         <include refid="sqlparam"/>
@@ -40,9 +40,9 @@
     </sql>
 
     <update id="updatePublishLevel">
-        UPDATE devops_app_share das
-        SET das.publish_level = 'organization'
+        UPDATE devops_app_share_rule das
+        SET das.share_level = 'organization'
         WHERE
-            das.publish_level = 'public'
+            das.share_level = 'public'
     </update>
 </mapper>
