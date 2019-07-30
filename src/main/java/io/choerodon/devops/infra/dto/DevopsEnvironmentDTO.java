@@ -30,6 +30,7 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private Long agentSyncCommit;
     private Boolean isSynchro;
     private Boolean isFailed;
+    private Boolean isSkipCheckPermission;
     @Transient
     private Boolean connected;
     @Transient
@@ -203,5 +204,13 @@ public class DevopsEnvironmentDTO extends BaseDTO {
 
     public void setFailed(Boolean failed) {
         isFailed = failed;
+    }
+
+    public Boolean getSkipCheckPermission() {
+        return isSkipCheckPermission;
+    }
+
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        isSkipCheckPermission = skipCheckPermission;
     }
 }

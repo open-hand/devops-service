@@ -36,7 +36,7 @@ public class DevopsEnvironmentController {
      * 项目下创建环境
      *
      * @param projectId           项目id
-     * @param devopsEnviromentVO 环境信息
+     * @param devopsEnvironmentVO 环境信息
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境")
@@ -45,8 +45,8 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
-            @RequestBody DevopsEnviromentVO devopsEnviromentVO) {
-        devopsEnvironmentService.create(projectId, devopsEnviromentVO);
+            @RequestBody DevopsEnvironmentVO devopsEnvironmentVO) {
+        devopsEnvironmentService.create(projectId, devopsEnvironmentVO);
     }
 
     /**

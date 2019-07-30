@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -21,7 +22,7 @@ public interface DevopsEnvironmentService {
      * @param devopsEnviromentDTO 环境信息
      * @return String
      */
-    void create(Long projectId, DevopsEnviromentVO devopsEnviromentDTO);
+    void create(Long projectId, DevopsEnvironmentVO devopsEnviromentDTO);
 
     /**
      * 项目下环境流水线查询环境
@@ -114,7 +115,7 @@ public interface DevopsEnvironmentService {
      *
      * @param gitlabProjectPayload env saga payload
      */
-    void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload);
+    void handleCreateEnvSaga(EnvGitlabProjectPayload gitlabProjectPayload);
 
     EnvSyncStatusVO queryEnvSyncStatus(Long projectId, Long envId);
 
