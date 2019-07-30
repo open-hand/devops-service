@@ -17,7 +17,7 @@ public interface DevopsGitlabCommitMapper extends Mapper<DevopsGitlabCommitDTO> 
 
 
     List<DevopsGitlabCommitDTO> queryByAppIdAndBranch(
-            @Param("appId") Long appId,
+            @Param("appServiceId") Long appServiceId,
             @Param("branchName") String branchName,
             @Param("startDate") Date startDate);
 }

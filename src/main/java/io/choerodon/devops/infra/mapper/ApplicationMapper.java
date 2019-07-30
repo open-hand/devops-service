@@ -31,7 +31,7 @@ public interface ApplicationMapper extends Mapper<ApplicationServiceDTO> {
 
     List<ApplicationServiceDTO> listByEnvId(@Param("projectId") Long projectId,
                                             @Param("envId") Long envId,
-                                            @Param("appId") Long appId,
+                                            @Param("appServiceId") Long appServiceId,
                                             @Param("status") String status);
 
     List<ApplicationServiceDTO> basePageByActiveAndPubAndHasVersion(@Param("projectId") Long projectId,
@@ -53,9 +53,9 @@ public interface ApplicationMapper extends Mapper<ApplicationServiceDTO> {
 
     List<ApplicationServiceDTO> listByGitLabProjectIds(@Param("gitlabProjectIds") List<Long> gitlabProjectIds);
 
-    void updateAppToSuccess(@Param("appId") Long appId);
+    void updateAppToSuccess(@Param("appServiceId") Long appServiceId);
 
-    void updateApplicationStatus(@Param("appId") Long appId,
+    void updateApplicationStatus(@Param("appServiceId") Long appServiceId,
                                  @Param("token") String token,
                                  @Param("gitlabProjectId") Integer gitlabProjectId,
                                  @Param("hookId") Long hookId,

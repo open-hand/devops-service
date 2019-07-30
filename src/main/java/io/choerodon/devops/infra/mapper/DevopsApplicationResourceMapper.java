@@ -19,5 +19,5 @@ public interface DevopsApplicationResourceMapper extends Mapper<DevopsApplicatio
      * @param resourceIds  待查询的资源id
      * @return 存在的资源id
      */
-    List<Long> queryResourceIdsInApp(@Param("appId") Long appId, @Param("resourceType") String resourceType, @Param("resourceIds") List<Long> resourceIds);
+    List<Long> queryResourceIdsInApp(@Param("appServiceId") Long appServiceId, @Param("resourceType") String resourceType, @Param("resourceIds") List<Long> resourceIds);
 }

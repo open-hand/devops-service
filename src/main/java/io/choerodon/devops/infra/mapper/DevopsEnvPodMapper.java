@@ -3,9 +3,10 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.mybatis.common.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 /**
  * Creator: Runge
@@ -16,9 +17,9 @@ import org.apache.ibatis.annotations.Param;
 public interface DevopsEnvPodMapper extends Mapper<DevopsEnvPodDTO> {
 
     List<DevopsEnvPodDTO> listAppPod(@Param("projectId") Long projectId,
-                                             @Param("envId") Long envId,
-                                             @Param("appId") Long appId,
-                                             @Param("instanceId") Long instanceId,
-                                             @Param("searchParam") Map<String, Object> searchParam,
-                                             @Param("param") String param);
+                                     @Param("envId") Long envId,
+                                     @Param("appServiceId") Long appServiceId,
+                                     @Param("instanceId") Long instanceId,
+                                     @Param("searchParam") Map<String, Object> searchParam,
+                                     @Param("param") String param);
 }

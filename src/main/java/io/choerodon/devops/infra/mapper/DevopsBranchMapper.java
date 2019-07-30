@@ -10,9 +10,9 @@ import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 
 public interface DevopsBranchMapper extends Mapper<DevopsBranchDTO> {
 
-    DevopsBranchDTO queryByAppAndBranchName(@Param("appId") Long appId, @Param("branchName") String name);
+    DevopsBranchDTO queryByAppAndBranchName(@Param("appServiceId") Long appServiceId, @Param("branchName") String name);
 
-    List<DevopsBranchDTO> list(@Param("appId") Long appId,
+    List<DevopsBranchDTO> list(@Param("appServiceId") Long appServiceId,
                                @Param("searchParam") Map<String, Object> searchParam,
                                @Param("param") String param);
 }
