@@ -50,5 +50,4 @@ public class DevopsTask {
         devopsCheckLogService.checkLog("0.19.0");
     }
 
-
 }

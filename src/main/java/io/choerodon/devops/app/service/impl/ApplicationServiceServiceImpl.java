@@ -47,7 +47,10 @@ import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.*;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload;
+import io.choerodon.devops.app.eventhandler.payload.IamAppPayLoad;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
@@ -55,7 +58,6 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 import io.choerodon.devops.infra.dto.harbor.User;
-import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -79,7 +81,7 @@ import io.choerodon.websocket.tool.UUIDTool;
  */
 @Service
 @EnableConfigurationProperties(HarborConfigurationProperties.class)
-public class ApplicationServiceServiceImpl implements ApplicationSeviceService {
+public class ApplicationServiceServiceImpl implements ApplicationSevriceService {
     public static final String SEVERITIES = "severities";
     public static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceServiceImpl.class);
     public static final String NODELETED = "nodeleted";
@@ -163,8 +165,6 @@ public class ApplicationServiceServiceImpl implements ApplicationSeviceService {
     private DevopsBranchService devopsBranchService;
     @Autowired
     private MarketConnectInfoService marketConnectInfoService;
-    @Autowired
-    private ApplicationShareRuleService applicationShareRuleService;
 
 
     @Override
@@ -1436,7 +1436,12 @@ public class ApplicationServiceServiceImpl implements ApplicationSeviceService {
     @Override
     public PageInfo<ApplicationServiceRepVO> pageShareApps(Long projectId, PageRequest pageRequest, String params) {
         Long organizationId = iamService.queryIamProject(projectId).getOrganizationId();
-        PageInfo<ApplicationServiceDTO> applicationDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listShareApplications(organizationId, projectId, params));
+        List<Long> appServiceIds = new ArrayList<>();
+        iamService.listIamProjectByOrgId(organizationId, null, null).forEach(proId -> {
+                    baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()));
+                }
+        );
+        PageInfo<ApplicationServiceDTO> applicationDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> applicationMapper.listShareApplications(appServiceIds, projectId, params));
         return ConvertUtils.convertPage(applicationDTOPageInfo, ApplicationServiceRepVO.class);
     }
 
@@ -1743,7 +1748,7 @@ public class ApplicationServiceServiceImpl implements ApplicationSeviceService {
         CommitDTO commitDTO = gitlabServiceClientOperator.queryCommit(gitlabProjectPayload.getGitlabProjectId(), branchName, gitlabProjectPayload.getUserId());
         DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
         devopsBranchDTO.setUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
-        devopsBranchDTO.getAppServiceId(applicationDTO.getId());
+        devopsBranchDTO.setAppServiceId(applicationDTO.getId());
         devopsBranchDTO.setBranchName(branchName);
         devopsBranchDTO.setCheckoutCommit(commitDTO.getId());
         devopsBranchDTO.setCheckoutDate(commitDTO.getCommittedDate());

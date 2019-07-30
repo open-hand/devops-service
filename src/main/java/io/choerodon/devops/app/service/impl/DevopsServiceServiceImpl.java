@@ -61,7 +61,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private ApplicationInstanceService applicationInstanceService;
     @Autowired
-    private ApplicationSeviceService applicationService;
+    private ApplicationSevriceService applicationService;
     @Autowired
     private DevopsServiceInstanceService devopsServiceInstanceService;
     @Autowired
@@ -180,7 +180,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 throw new CommonException("error.app.create.endpoints.service");
             }
             DevopsApplicationResourceDTO devopsApplicationResourceDTO = new DevopsApplicationResourceDTO();
-            devopsApplicationResourceDTO.getAppServiceId(devopsServiceReqVO.getAppServiceId());
+            devopsApplicationResourceDTO.setAppServiceId(devopsServiceReqVO.getAppServiceId());
             devopsApplicationResourceDTO.setResourceType(ObjectType.SERVICE.getType());
             devopsApplicationResourceDTO.setResourceId(devopsServiceDTO.getId());
             devopsApplicationResourceService.baseCreate(devopsApplicationResourceDTO);
@@ -655,7 +655,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     private DevopsServiceDTO initDevopsService(DevopsServiceDTO devopsServiceDTO, DevopsServiceReqVO devopsServiceReqVO, List<DevopsServiceAppInstanceDTO> devopsServiceAppInstanceDTOS, List<String> beforeDevopsServiceAppInstanceDTOS) {
-        devopsServiceDTO.getAppServiceId(devopsServiceReqVO.getAppServiceId());
+        devopsServiceDTO.setAppServiceId(devopsServiceReqVO.getAppServiceId());
         ApplicationServiceDTO applicationDTO = applicationService.baseQuery(devopsServiceReqVO.getAppServiceId());
         if (devopsServiceReqVO.getLabel() != null) {
             if (devopsServiceReqVO.getLabel().size() == 1 && devopsServiceReqVO.getLabel().containsKey(SERVICE_LABLE)) {

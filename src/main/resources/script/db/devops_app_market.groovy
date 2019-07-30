@@ -87,4 +87,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_app_share_rule')
     }
 
+    changeSet(id: '2019-07-26-drop-column', author: 'scp') {
+        dropColumn(columnName: "organization_id", tableName: "devops_app_share_rule")
+    }
+
+    changeSet(id: '2019-07-26-drop-constraint', author: 'scp') {
+        dropUniqueConstraint(constraintName: "uk_app_id",tableName: "devops_app_share_rule")
+    }
+
 }

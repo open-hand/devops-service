@@ -179,7 +179,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     public List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
         DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
         devopsDeployValueDTO.setProjectId(projectId);
-        devopsDeployValueDTO.getAppServiceId(appId);
+        devopsDeployValueDTO.setAppServiceId(appId);
         devopsDeployValueDTO.setEnvId(envId);
         return devopsDeployValueMapper.select(devopsDeployValueDTO);
     }

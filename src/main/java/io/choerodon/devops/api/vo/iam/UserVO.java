@@ -64,6 +64,16 @@ public class UserVO {
     @JsonIgnore
     private String param;
 
+    private Boolean projectOwner;
+
+    public Boolean getProjectOwner() {
+        return projectOwner;
+    }
+
+    public void setProjectOwner(Boolean projectOwner) {
+        this.projectOwner = projectOwner;
+    }
+
     public String getParam() {
         return param;
     }

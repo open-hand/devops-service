@@ -480,7 +480,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             Long ingressId = baseCreateIngressAndPath(devopsIngressDTO).getId();
             if (appId != null) {
                 DevopsApplicationResourceDTO resourceDTO = new DevopsApplicationResourceDTO();
-                resourceDTO.getAppServiceId(appId);
+                resourceDTO.setAppServiceId(appId);
                 resourceDTO.setResourceType(ObjectType.INSTANCE.getType());
                 resourceDTO.setResourceId(ingressId);
                 devopsApplicationResourceService.baseCreate(resourceDTO);

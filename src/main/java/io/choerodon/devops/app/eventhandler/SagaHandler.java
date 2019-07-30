@@ -46,7 +46,7 @@ public class SagaHandler {
     @Autowired
     private GitlabUserService gitlabUserService;
     @Autowired
-    private ApplicationSeviceService applicationService;
+    private ApplicationSevriceService applicationService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired

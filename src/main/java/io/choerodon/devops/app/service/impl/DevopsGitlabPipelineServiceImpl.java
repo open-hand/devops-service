@@ -47,7 +47,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     private String gitlabUrl;
 
     @Autowired
-    private ApplicationSeviceService applicationService;
+    private ApplicationSevriceService applicationService;
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
@@ -123,7 +123,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         //pipeline不存在则创建,存在则更新状态和阶段信息
         if (devopsGitlabPipelineDTO == null) {
             devopsGitlabPipelineDTO = new DevopsGitlabPipelineDTO();
-            devopsGitlabPipelineDTO.getAppServiceId(applicationDTO.getId());
+            devopsGitlabPipelineDTO.setAppServiceId(applicationDTO.getId());
             devopsGitlabPipelineDTO.setPipelineCreateUserId(userAttrE == null ? null : userAttrE.getIamUserId());
             devopsGitlabPipelineDTO.setPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
             devopsGitlabPipelineDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());

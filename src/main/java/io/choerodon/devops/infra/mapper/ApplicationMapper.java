@@ -64,7 +64,7 @@ public interface ApplicationMapper extends Mapper<ApplicationServiceDTO> {
     void updateHarborConfig(@Param("projectId") Long projectId, @Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId, @Param("harborPrivate") boolean harborPrivate);
 
 
-    List<ApplicationServiceDTO> listShareApplications(@Param("organizationId") Long organizationId,
+    List<ApplicationServiceDTO> listShareApplications(@Param("appServiceIds") List<Long> appServiceIds,
                                                       @Param("projectId") Long projectId,
                                                       @Param("params") String params);
 }

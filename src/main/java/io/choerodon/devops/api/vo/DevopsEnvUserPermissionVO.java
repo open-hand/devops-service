@@ -10,6 +10,15 @@ public class DevopsEnvUserPermissionVO {
     private Long iamUserId;
     private String loginName;
     private String realName;
+    private Boolean projectOwner;
+
+    public Boolean getProjectOwner() {
+        return projectOwner;
+    }
+
+    public void setProjectOwner(Boolean projectOwner) {
+        this.projectOwner = projectOwner;
+    }
 
     public DevopsEnvUserPermissionVO() {
     }

@@ -56,7 +56,7 @@ public class ApplicationDeployVO {
         return appServiceId;
     }
 
-    public void getAppServiceId(Long appServiceId) {
+    public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
     }
 

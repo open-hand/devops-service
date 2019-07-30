@@ -154,7 +154,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             //创建应用资源关系
             if (appId != null) {
                 DevopsApplicationResourceDTO applicationResourceDTO = new DevopsApplicationResourceDTO();
-                applicationResourceDTO.getAppServiceId(appId);
+                applicationResourceDTO.setAppServiceId(appId);
                 applicationResourceDTO.setResourceType(ObjectType.SERVICE.getType());
                 applicationResourceDTO.setResourceId(secretId);
                 devopsApplicationResourceService.baseCreate(applicationResourceDTO);
