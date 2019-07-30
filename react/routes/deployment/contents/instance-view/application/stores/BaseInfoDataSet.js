@@ -9,7 +9,7 @@ export default (projectId, id) => ({
   ],
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/apps/${id}`,
+      url: `/devops/v1/projects/${projectId}/apps_service/${id}`,
       method: 'get',
     },
   },

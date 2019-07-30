@@ -52,18 +52,18 @@ const AppContent = observer(() => {
         </TabPane>
         <TabPane
           key={MAPPING_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.application.tabs.configMap` })}
+          tab={formatMessage({ id: `${intlPrefix}.application.tabs.mapping` })}
         >
           <Suspense fallback={<div>loading</div>}>
-            <MappingContent />
+            <MappingContent type={MAPPING_TAB} />
           </Suspense>
         </TabPane>
         <TabPane
           key={CIPHER_TAB}
-          tab={formatMessage({ id: `${intlPrefix}.application.tabs.secret` })}
+          tab={formatMessage({ id: `${intlPrefix}.application.tabs.cipher` })}
         >
           <Suspense fallback={<div>loading</div>}>
-            <CipherContent />
+            <MappingContent type={CIPHER_TAB} />
           </Suspense>
         </TabPane>
       </Tabs>

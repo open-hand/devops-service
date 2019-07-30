@@ -1,0 +1,71 @@
+.c7ncd-deployment-instance-detail {
+
+  .cases-operation-content {
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.20),
+    0 2px 2px 0 rgba(0, 0, 0, 0.14),
+    0 1px 5px 0 rgba(0, 0, 0, 0.12);
+
+    .operation-content-step {
+
+      .content-step-title {
+        display: flex;
+        align-items: center;
+
+        .content-step-icon {
+
+          &-fail {
+            color: #fd6f7b;
+          }
+
+          &-success {
+            color: #00bfa5;
+          }
+
+          &-null {
+            color: #00bfa5;
+          }
+        }
+
+        .content-step-title-text {
+          font-size: 14px;
+          line-height: 20px;
+          font-weight: 500;
+          margin: 0 11px 0 5px;
+        }
+      }
+
+      .content-step-des {
+        font-size: 12px;
+        color: rgba(0, 0, 0, 0.65);
+        line-height: 18px;
+        border-left: 1px solid rgba(0, 0, 0, 0.26);
+        margin-left: 8px;
+        padding: 10px 0 10px 13px;
+
+        .content-step-des-hidden {
+          height: 54px;
+          overflow: hidden;
+        }
+      }
+
+      &:last-child {
+
+        .content-step-des {
+          border-left: none;
+        }
+      }
+    }
+  }
+
+  .cases-content-empty {
+
+    &-icon {
+      margin-right: 12px;
+      color: #a9a9a9;
+      font-size: 20px;
+      vertical-align: bottom;
+    }
+  }
+}
