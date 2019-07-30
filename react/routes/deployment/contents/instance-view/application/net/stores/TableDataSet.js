@@ -1,11 +1,18 @@
+import getTablePostData from '../../../../../../../utils/getTablePostData';
+
 export default ({ formatMessage, intlPrefix, projectId, id }) => ({
   autoQuery: true,
   selection: false,
   pageSize: 10,
   transport: {
-    read: {
-      url: `/devops/v1/projects/${projectId}/service/page_by_instance?app_id=${id}`,
-      method: 'post',
+    read: ({ data }) => {
+      const postData = getTablePostData(data);
+
+      return ({
+        url: `/devops/v1/projects/${projectId}/service/page_by_instance?app_service_id=${id}`,
+        method: 'post',
+        data: postData,
+      });
     },
   },
   fields: [
