@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { Button, Tooltip, Select } from 'choerodon-ui';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
@@ -120,7 +120,7 @@ class ConfigMap extends Component {
                   envId
                     ? 'c7n-header-select'
                     : 'c7n-header-select c7n-select_min100'
-                  }`}
+                }`}
                 dropdownClassName="c7n-header-env_drop"
                 placeholder={formatMessage({ id: 'envoverview.noEnv' })}
                 value={envData && envData.length ? envId : undefined}
@@ -172,7 +172,7 @@ class ConfigMap extends Component {
               </Permission>
               <RefreshBtn name="configMap" onFresh={this.reload} />
             </Header>
-            <Content code={'configMap'} values={{ name: title ? title.name : name }}>
+            <Content code="configMap" values={{ name: title ? title.name : name }}>
               <KeyValueTable
                 title="configMap"
                 store={ConfigMapStore}

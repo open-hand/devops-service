@@ -1,5 +1,5 @@
 /* eslint-disable react/sort-comp */
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { observable, action, configure } from 'mobx';
 import { withRouter } from 'react-router-dom';
@@ -113,7 +113,7 @@ class EnvOverviewHome extends Component {
    * @param key
    */
   @action
-  tabChange = key => {
+  tabChange = (key) => {
     EnvOverviewStore.setTabKey(key);
     const envId = EnvOverviewStore.getTpEnvId;
     const sort = { field: 'id', order: 'desc' };
@@ -124,7 +124,7 @@ class EnvOverviewHome extends Component {
     const { pageSize } = EnvOverviewStore.getPageInfo;
     EnvOverviewStore.setPageInfo({
       pageNum: 1,
-      pageSize: pageSize,
+      pageSize,
       total: 0,
     });
     if (this.env.length && envId) {
@@ -163,7 +163,7 @@ class EnvOverviewHome extends Component {
    * @param value
    */
   @action
-  handleEnvSelect = value => {
+  handleEnvSelect = (value) => {
     EnvOverviewStore.setTpEnvId(value);
     this.loadAllDate(value);
   };
@@ -174,7 +174,7 @@ class EnvOverviewHome extends Component {
   @action
   loadEnvCards = () => {
     const projectId = AppState.currentMenuType.id;
-    EnvOverviewStore.loadActiveEnv(projectId).then(env => {
+    EnvOverviewStore.loadActiveEnv(projectId).then((env) => {
       if (env.length) {
         const envId = EnvOverviewStore.getTpEnvId;
         this.env = env;
@@ -245,7 +245,7 @@ class EnvOverviewHome extends Component {
    * 按环境加载同步状态
    * @param envId
    */
-  loadSync = envId => {
+  loadSync = (envId) => {
     const projectId = AppState.currentMenuType.id;
     EnvOverviewStore.loadSync(projectId, envId);
   };
@@ -307,7 +307,7 @@ class EnvOverviewHome extends Component {
    * 关闭域名侧边栏
    */
   @action
-  closeDomain = isLoad => {
+  closeDomain = (isLoad) => {
     this.props.form.resetFields();
     this.showDomain = false;
     this.domainId = null;
@@ -327,7 +327,7 @@ class EnvOverviewHome extends Component {
    * 关闭网络侧边栏
    */
   @action
-  closeNetwork = isLoad => {
+  closeNetwork = (isLoad) => {
     this.props.form.resetFields();
     this.showNetwork = false;
     if (isLoad) {
@@ -353,7 +353,7 @@ class EnvOverviewHome extends Component {
   /**
    * 关闭证书侧边栏
    */
-  closeCreateModal = isLoad => {
+  closeCreateModal = (isLoad) => {
     this.setState({ createDisplay: false });
     this.props.form.resetFields();
     if (isLoad) {
@@ -372,7 +372,7 @@ class EnvOverviewHome extends Component {
    * 处理页面跳转
    * @param url 跳转地址
    */
-  linkToChange = url => {
+  linkToChange = (url) => {
     const { history } = this.props;
     history.push(url);
   };
@@ -402,15 +402,13 @@ class EnvOverviewHome extends Component {
    * @param state
    * @returns {number}
    */
-  getIstCount = state => {
+  getIstCount = (state) => {
     const ist = EnvOverviewStore.getIst;
     const stateArr = ist
-      ? _.map(ist.devopsEnvPreviewAppDTOS, i =>
-        _.filter(i.applicationInstanceDTOS, a => a.status === state),
-      )
+      ? _.map(ist.devopsEnvPreviewAppDTOS, i => _.filter(i.applicationInstanceDTOS, a => a.status === state),)
       : [];
     let length = 0;
-    _.map(stateArr, l => {
+    _.map(stateArr, (l) => {
       length += l.length;
     });
     return length;
@@ -598,11 +596,11 @@ class EnvOverviewHome extends Component {
         </div>
       );
     } else if (
-      sync &&
-      (sync.devopsSyncCommit !== sync.sagaSyncCommit ||
-        sync.sagaSyncCommit !== sync.agentSyncCommit) &&
-      envState &&
-      envState.connect
+      sync
+      && (sync.devopsSyncCommit !== sync.sagaSyncCommit
+        || sync.sagaSyncCommit !== sync.agentSyncCommit)
+      && envState
+      && envState.connect
     ) {
       syncDom = (
         <div className="c7n-envow-sync-wrap">
@@ -665,7 +663,7 @@ class EnvOverviewHome extends Component {
                   envId
                     ? 'c7n-header-select'
                     : 'c7n-header-select c7n-select_min100'
-                  }`}
+                }`}
                 dropdownClassName="c7n-header-env_drop"
                 placeholder={formatMessage({ id: 'envoverview.noEnv' })}
                 value={envData && envData.length ? envId : undefined}
@@ -819,7 +817,7 @@ class EnvOverviewHome extends Component {
                 animated={false}
                 onChange={this.tabChange}
               >
-                {_.map(tabOption, item => {
+                {_.map(tabOption, (item) => {
                   const { key, component, msg } = item;
                   return (
                     <TabPane tab={formatMessage({ id: msg })} key={key}>

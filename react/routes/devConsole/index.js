@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter, Link } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
@@ -223,21 +223,19 @@ class DevConsole extends Component {
           const ciPipelineOne = res.length ? res[0] : null;
           this.setState({ versionState: ciPipelineOne ? ciPipelineOne.version : false });
         });
-    } else {
-      if (appId) {
-        CiPipelineStore.loadPipelines(true, appId)
-          .then((res) => {
-            const ciPipelineOne = res.length ? res[0] : null;
-            this.setState({ versionState: ciPipelineOne ? ciPipelineOne.version : false });
-          });
-      }
+    } else if (appId) {
+      CiPipelineStore.loadPipelines(true, appId)
+        .then((res) => {
+          const ciPipelineOne = res.length ? res[0] : null;
+          this.setState({ versionState: ciPipelineOne ? ciPipelineOne.version : false });
+        });
     }
   };
 
   /**
    * 获取CI pipeline
    */
-  loadPipelineThrottle = _.throttle((branch) => this.loadPipeline(branch), 20000);
+  loadPipelineThrottle = _.throttle(branch => this.loadPipeline(branch), 20000);
 
   /**
    * 分页器
@@ -470,12 +468,13 @@ class DevConsole extends Component {
           <Tooltip
             title={(stages[i].name === 'sonarqube' && stages[i].status === 'failed') ? `${stages[i].name} : ${stages[i].description}` : `${stages[i].name} : ${stages[i].status}`}
           >
-            {stages[i].name === 'sonarqube' ?
-              <i
+            {stages[i].name === 'sonarqube'
+              ? <i
                 className={`icon ${ICONS[stages[i].status || 'skipped'].icon || ''} c7n-icon-${stages[i].status}`}
-              /> :
-              <a
-                className="" href={record.gitlabUrl ? `${record.gitlabUrl.slice(0, -4)}/-/jobs/${stages[i].id}` : null}
+              />
+              : <a
+                className=""
+                href={record.gitlabUrl ? `${record.gitlabUrl.slice(0, -4)}/-/jobs/${stages[i].id}` : null}
                 target="_blank"
                 rel="nofollow me noopener noreferrer"
               >
@@ -579,8 +578,8 @@ class DevConsole extends Component {
     const branchOne = _.filter(branchList, ['branchName', branchIssue]).length ? _.filter(branchList, ['branchName', branchIssue])[0] : {
       branchName: <FormattedMessage id="devCs.allBranch" />,
     };
-    const issueDom = branchOne && (<div className='c7n-dc-branch-issue'>{branchOne.typeCode ?
-      this.getOptionContent(branchOne, 'line') : null}</div>);
+    const issueDom = branchOne && (<div className="c7n-dc-branch-issue">{branchOne.typeCode
+      ? this.getOptionContent(branchOne, 'line') : null}</div>);
     const verContent = versionState ? (<div className="c7n-env-card-content">
       <div className="c7n-env-state c7n-env-state-running">
         {formatMessage({ id: 'ci_passed' })}
@@ -599,8 +598,10 @@ class DevConsole extends Component {
         <FormattedMessage id="app.pipeline" />
       </div>
       <div className="c7n-dc-line">
-        <div className={lineKey === 1 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'}
-             onClick={this.cardChecked.bind(this, 1)}>
+        <div
+          className={lineKey === 1 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'}
+          onClick={this.cardChecked.bind(this, 1)}
+        >
           <div className="c7n-dc-line_card-arrow" />
           <div className="c7n-dc-line_card-content">
             <div className="c7n-dc-line_card-title">
@@ -628,7 +629,7 @@ class DevConsole extends Component {
               onChange={this.branchChange}
               value={branchOne ? branchOne.branchName : null}
             >
-              <Option key={'ALL'}><FormattedMessage id="devCs.allBranch" /></Option>
+              <Option key="ALL"><FormattedMessage id="devCs.allBranch" /></Option>
               {branchOption}
             </Select>
           </div>
@@ -636,8 +637,10 @@ class DevConsole extends Component {
         <div className="c7n-dc-line-arrow">
           {issueDom}
         </div>
-        <div className={lineKey === 2 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'}
-             onClick={this.cardChecked.bind(this, 2)}>
+        <div
+          className={lineKey === 2 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'}
+          onClick={this.cardChecked.bind(this, 2)}
+        >
           <div className="c7n-dc-line_card-arrow" />
           <div className="c7n-dc-line_card-content">
             <div className="c7n-dc-line_card-title">
@@ -653,20 +656,22 @@ class DevConsole extends Component {
                 />
               </Tooltip>
             </div>
-            {CiPipelineStore.loading && loadingFlag ?
-              <Progress className="c7n-dc-card-loading" type="loading" /> : this.getCardContent(ciPipelineOne)}
+            {CiPipelineStore.loading && loadingFlag
+              ? <Progress className="c7n-dc-card-loading" type="loading" /> : this.getCardContent(ciPipelineOne)}
           </div>
         </div>
         <div className="c7n-dc-line-arrow" />
-        <div className={lineKey === 3 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'}
-             onClick={this.cardChecked.bind(this, 3)}>
+        <div
+          className={lineKey === 3 ? 'c7n-dc-line_card-active' : 'c7n-dc-line_card'}
+          onClick={this.cardChecked.bind(this, 3)}
+        >
           <div className="c7n-dc-line_card-arrow" />
           <div className="c7n-dc-line_card-content">
             <div className="c7n-dc-line_card-title">
               <FormattedMessage id="app.version" />
             </div>
-            {CiPipelineStore.loading && loadingFlag ?
-              <Progress className="c7n-dc-card-loading" type="loading" /> : verContent}
+            {CiPipelineStore.loading && loadingFlag
+              ? <Progress className="c7n-dc-card-loading" type="loading" /> : verContent}
           </div>
         </div>
       </div>
@@ -719,8 +724,10 @@ class DevConsole extends Component {
             <Tooltip title={commitUserName}>
               {commitUserUrl
                 ? <Avatar size="small" src={commitUserUrl} className="c7n-branch-avatar" />
-                : <Avatar size="small"
-                          className="c7n-branch-avatar">{commitUserName ? commitUserName.toString().slice(0, 1).toUpperCase() : '?'}</Avatar>
+                : <Avatar
+                  size="small"
+                  className="c7n-branch-avatar"
+                >{commitUserName ? commitUserName.toString().slice(0, 1).toUpperCase() : '?'}</Avatar>
               }
             </Tooltip>
             <MouserOverWrapper text={commitContent} width={0.3}>{commitContent}</MouserOverWrapper>
@@ -735,8 +742,12 @@ class DevConsole extends Component {
                 service={['devops-service.devops-git.update']}
               >
                 <Tooltip title={<FormattedMessage id="branch.edit" />}>
-                  <Button size="small" shape="circle" icon="mode_edit"
-                          onClick={this.displayModal.bind(this, 'editBranch', branchName)} />
+                  <Button
+                    size="small"
+                    shape="circle"
+                    icon="mode_edit"
+                    onClick={this.displayModal.bind(this, 'editBranch', branchName)}
+                  />
                 </Tooltip>
               </Permission>
               <Tooltip title={<FormattedMessage id="branch.request" />}>
@@ -755,8 +766,12 @@ class DevConsole extends Component {
                 service={['devops-service.devops-git.delete']}
               >
                 <Tooltip title={<FormattedMessage id="delete" />}>
-                  <Button size="small" shape="circle" icon="delete_forever"
-                          onClick={this.displayModal.bind(this, 'deleteBranch', branchName)} />
+                  <Button
+                    size="small"
+                    shape="circle"
+                    icon="delete_forever"
+                    onClick={this.displayModal.bind(this, 'deleteBranch', branchName)}
+                  />
                 </Tooltip>
               </Permission>
             </div> : null}
@@ -821,8 +836,10 @@ class DevConsole extends Component {
               <Tooltip title={author ? author.name : null}>
                 {author && author.webUrl
                   ? <Avatar size="small" src={author.webUrl} className="c7n-branch-avatar" />
-                  : <Avatar size="small"
-                            className="c7n-branch-avatar">{author ? author.name.toString().slice(0, 1).toUpperCase() : '?'}</Avatar>
+                  : <Avatar
+                    size="small"
+                    className="c7n-branch-avatar"
+                  >{author ? author.name.toString().slice(0, 1).toUpperCase() : '?'}</Avatar>
                 }
               </Tooltip>
               <span>{author ? author.name : 'unknown'}</span>
@@ -960,14 +977,14 @@ class DevConsole extends Component {
           url,
         },
         commitUserImage,
-        tagName,
+        tagName: itemTagName,
         release,
       } = item;
       const header = (<div className="c7n-tag-panel">
         <div className="c7n-tag-panel-info">
           <div className="c7n-tag-panel-name">
             <Icon type="local_offer" />
-            <span>{tagName}</span>
+            <span>{itemTagName}</span>
           </div>
           <div className="c7n-tag-panel-detail">
             <Icon className="c7n-tag-icon-point" type="point" />
@@ -1002,7 +1019,7 @@ class DevConsole extends Component {
                 shape="circle"
                 size="small"
                 icon="mode_edit"
-                onClick={this.displayModal.bind(this, 'editTag', tagName, release)}
+                onClick={this.displayModal.bind(this, 'editTag', itemTagName, release)}
               />
             </Tooltip>
           </Permission>
@@ -1022,7 +1039,7 @@ class DevConsole extends Component {
                 shape="circle"
                 size="small"
                 icon="delete_forever"
-                onClick={this.displayModal.bind(this, 'deleteTag', tagName)}
+                onClick={this.displayModal.bind(this, 'deleteTag', itemTagName)}
               />
             </Tooltip>
           </Permission>
@@ -1030,7 +1047,7 @@ class DevConsole extends Component {
       </div>);
       tagList.push(<Panel
         header={header}
-        key={tagName}
+        key={itemTagName}
       >
         <div className="c7n-tag-release">{release ? <div className="c7n-md-parse">
           <ReactMarkdown
@@ -1126,7 +1143,8 @@ class DevConsole extends Component {
             <div className="c7n-dc-page-content-header">
               <div className="page-content-header">
                 <div
-                  className="title">{appData.length && appId ? `应用"${titleName}"的开发控制台` : `项目"${titleName}"的开发控制台`}</div>
+                  className="title"
+                >{appData.length && appId ? `应用"${titleName}"的开发控制台` : `项目"${titleName}"的开发控制台`}</div>
                 {appData && appData.length ? <Fragment>
                   <div className="c7n-dc-app-code">
                     <FormattedMessage id="ciPipeline.appCode" />：{currentApp ? currentApp.code : ''}
@@ -1139,8 +1157,8 @@ class DevConsole extends Component {
                           {`../${currentApp.repoUrl.split('/')[currentApp.repoUrl.split('/').length - 1]}`}
                         </Tooltip>
                       </a>) : ''}
-                    {currentApp && currentApp.repoUrl ?
-                      <Tooltip title={<FormattedMessage id="repository.copyUrl" />} placement="bottom">
+                    {currentApp && currentApp.repoUrl
+                      ? <Tooltip title={<FormattedMessage id="repository.copyUrl" />} placement="bottom">
                         <CopyToClipboard
                           text={currentApp.repoUrl || noRepoUrl}
                           onCopy={this.handleCopy}
@@ -1160,7 +1178,7 @@ class DevConsole extends Component {
                 <div className="commit-number">
                   <Link
                     to={{
-                      pathname: `/devops/reports/submission`,
+                      pathname: '/devops/reports/submission',
                       search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(name)}&organizationId=${orgId}`,
                       state: {
                         backPath: `/devops/dev-console?type=${type}&id=${projectId}&name=${name}&organizationId=${orgId}`,
@@ -1176,7 +1194,7 @@ class DevConsole extends Component {
               <div className="c7n-dc-data-wrap">
                 <table>
                   <tbody>
-                  {
+                    {
                     _.map(numberData, item => (<tr className="c7n-data-number" key={item.name}>
                       <td className="c7n-data-number_link">
                         <Link
@@ -1236,7 +1254,7 @@ class DevConsole extends Component {
               </Fragment>}
             </div>
           </Content>
-          {/*tag delete modal*/}
+          {/* tag delete modal */}
           <Modal
             confirmLoading={deleteLoading}
             visible={modalDisplay === 'deleteTag'}
@@ -1245,7 +1263,8 @@ class DevConsole extends Component {
             footer={[
               <Button key="back" onClick={this.displayModal.bind(this, 'close')} disabled={deleteLoading}>{
                 <FormattedMessage
-                  id="cancel" />}</Button>,
+                  id="cancel"
+                />}</Button>,
               <Button key="submit" type="danger" onClick={this.deleteTag} loading={deleteLoading}>
                 {formatMessage({ id: 'delete' })}
               </Button>,

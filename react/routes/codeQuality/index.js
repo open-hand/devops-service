@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter, Link } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
@@ -6,17 +6,17 @@ import { Page, Header, Content } from '@choerodon/boot';
 import { Select, Button, Tooltip, Icon, Card } from 'choerodon-ui';
 import _ from 'lodash';
 import LoadingBar from '../../components/loadingBar/LoadingBar';
-import DevPipelineStore from "../../stores/project/devPipeline";
-import DepPipelineEmpty from "../../components/DepPipelineEmpty/DepPipelineEmpty";
-import Percentage from "../../components/percentage/Percentage";
-import Rating from "../../components/rating/Rating";
-import { QUALITY_LIST, OBJECT_TYPE } from "./components/Constants";
+import DevPipelineStore from '../../stores/project/devPipeline';
+import DepPipelineEmpty from '../../components/DepPipelineEmpty/DepPipelineEmpty';
+import Percentage from '../../components/percentage/Percentage';
+import Rating from '../../components/rating/Rating';
+import { QUALITY_LIST, OBJECT_TYPE } from './components/Constants';
 import CodeQualityStore from './stores';
 
 import './index.scss';
 import '../main.scss';
 
-const { Option, OptGroup} = Select;
+const { Option, OptGroup } = Select;
 
 @injectIntl
 @withRouter
@@ -35,7 +35,7 @@ class CodeQuality extends Component {
       location: { state },
     } = this.props;
     const { appId } = state || {};
-    DevPipelineStore.queryAppData(projectId, "quality", appId);
+    DevPipelineStore.queryAppData(projectId, 'quality', appId);
   }
 
   handleRefresh = () => {
@@ -55,7 +55,7 @@ class CodeQuality extends Component {
     } = this.props;
     DevPipelineStore.setSelectApp(value);
     DevPipelineStore.setRecentApp(value);
-    CodeQualityStore.loadData(projectId, value)
+    CodeQualityStore.loadData(projectId, value);
   };
 
   getDetail = () => {
@@ -71,7 +71,7 @@ class CodeQuality extends Component {
 
     // 合并数据，生成{key, value, icon, url, rate, hasReport}对象数组
     const qualityList = [];
-    _.map(QUALITY_LIST, item => {
+    _.map(QUALITY_LIST, (item) => {
       const data = _.find(sonarContents, ({ key }) => item.key === key) || {};
       qualityList.push(Object.assign({}, item, data));
     });
@@ -86,36 +86,36 @@ class CodeQuality extends Component {
       date || status ? (
         <div className="c7n-codeQuality-content">
           <div className="c7n-codeQuality-content-head">
-            <span className="codeQuality-head-title">{formatMessage({ id: "codeQuality.content.title" })}</span>
+            <span className="codeQuality-head-title">{formatMessage({ id: 'codeQuality.content.title' })}</span>
             <span className={`codeQuality-head-status codeQuality-head-status-${status}`}>{formatMessage({ id: `codeQuality.status.${status}` })}</span>
-            <span className="codeQuality-head-date">{formatMessage({ id: "codeQuality.analysis"})}：{date.split('+')[0].replace(/T/g, ' ')}</span>
+            <span className="codeQuality-head-date">{formatMessage({ id: 'codeQuality.analysis' })}：{date.split('+')[0].replace(/T/g, ' ')}</span>
           </div>
           {_.map(quality, (value, objKey) => (
             <div className="c7n-codeQuality-detail" key={objKey}>
               <div className="codeQuality-detail-title"><FormattedMessage id={`codeQuality.detail.${objKey}`} /></div>
               <div className="codeQuality-detail-content">
                 {
-                  _.map(value, ({ icon, key, hasReport, isPercent, value, rate, url }) => (
+                  _.map(value, ({ icon, key, hasReport, isPercent, value: innerValue, rate, url }) => (
                     <div className="detail-content-block" key={key}>
                       <Icon type={icon} />
-                      <span className="detail-content-block-title">{formatMessage({ id: `codeQuality.${key}`})}：</span>
+                      <span className="detail-content-block-title">{formatMessage({ id: `codeQuality.${key}` })}：</span>
                       {url ? (
                         <a href={url} target="_blank" rel="nofollow me noopener noreferrer">
-                          <span className="block-number-link">{value.match(/\d+(\.\d+)?/g)}</span>
-                          <span className="block-number-percentage">{value.replace(/\d+(\.\d+)?/g, '')}</span>
+                          <span className="block-number-link">{innerValue.match(/\d+(\.\d+)?/g)}</span>
+                          <span className="block-number-percentage">{innerValue.replace(/\d+(\.\d+)?/g, '')}</span>
                           {isPercent && <span className="block-number-percentage">%</span>}
                         </a>) : (
-                        <span className={`block-number ${!value && "block-number-noValue"}`}>{value || formatMessage({ id: "nodata" })}</span>
+                          <span className={`block-number ${!innerValue && 'block-number-noValue'}`}>{innerValue || formatMessage({ id: 'nodata' })}</span>
                       )}
-                      {rate && key !== "duplicated_lines_density" && <Rating rating={rate} />}
-                      {key === "coverage" && <Percentage data={Number(value)} />}
-                      {key === "duplicated_lines_density" && <Rating rating={rate} size="18px" type="pie" />}
+                      {rate && key !== 'duplicated_lines_density' && <Rating rating={rate} />}
+                      {key === 'coverage' && <Percentage data={Number(innerValue)} />}
+                      {key === 'duplicated_lines_density' && <Rating rating={rate} size="18px" type="pie" />}
                       {hasReport && (
                         <Link
                           to={{
-                            pathname: "/devops/reports/code-quality",
+                            pathname: '/devops/reports/code-quality',
                             search,
-                            state: { appId: getSelectApp, type: OBJECT_TYPE[objKey]},
+                            state: { appId: getSelectApp, type: OBJECT_TYPE[objKey] },
                           }}
                         >
                           <Icon type="timeline" className="reports-icon" />
@@ -130,14 +130,15 @@ class CodeQuality extends Component {
         </div>
       ) : (
         <div className="c7n-codeQuality-empty">
-          <Card title={formatMessage({ id: "codeQuality.empty.title"})}>
-            <span className="codeQuality-empty-content">{formatMessage({ id: "codeQuality.empty.content"})}</span>
+          <Card title={formatMessage({ id: 'codeQuality.empty.title' })}>
+            <span className="codeQuality-empty-content">{formatMessage({ id: 'codeQuality.empty.content' })}</span>
             <a
               href={formatMessage({ id: 'codeQuality.link' })}
               target="_blank"
+              rel="nofollow me noopener noreferrer"
               className="codeQuality-empty-link"
             >
-              <span className="codeQuality-empty-more" >{formatMessage({ id: "learnmore" })}</span>
+              <span className="codeQuality-empty-more">{formatMessage({ id: 'learnmore' })}</span>
               <Icon type="open_in_new" />
             </a>
           </Card>
@@ -159,16 +160,16 @@ class CodeQuality extends Component {
     const {
       getLoading,
     } = CodeQualityStore;
-    const backPath = state && state.backPath ? state.backPath : "";
+    const backPath = state && state.backPath ? state.backPath : '';
     const { getAppData, getRecentApp, getSelectApp } = DevPipelineStore;
     const app = _.find(getAppData, ['id', getSelectApp]);
-    const titleName =  app? app.name : name;
+    const titleName = app ? app.name : name;
     return (
       <Page
         className="c7n-region c7n-codeQuality-wrapper"
         service={[
-          "devops-service.application.listByActive",
-          "devops-service.application.getSonarQube",
+          'devops-service.application.listByActive',
+          'devops-service.application.getSonarQube',
         ]}
       >
         {getAppData && getAppData.length && getSelectApp ? <Fragment>
@@ -189,28 +190,28 @@ class CodeQuality extends Component {
             >
               <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
                 {
-                  _.map(getRecentApp, ({ id, permission, code, name }) => (
+                  _.map(getRecentApp, ({ id, permission, code, name: opName }) => (
                     <Option
                       key={`recent-${id}`}
                       value={id}
                       disabled={!permission}
                     >
                       <Tooltip title={code}>
-                        <span className="c7n-ib-width_100">{name}</span>
+                        <span className="c7n-ib-width_100">{opName}</span>
                       </Tooltip>
                     </Option>))
                 }
               </OptGroup>
               <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
                 {
-                  _.map(getAppData, ({ id, code, name, permission }, index) => (
+                  _.map(getAppData, ({ id, code, name: opName, permission }, index) => (
                     <Option
                       value={id}
                       key={index}
                       disabled={!permission}
                     >
                       <Tooltip title={code}>
-                        <span className="c7n-ib-width_100">{name}</span>
+                        <span className="c7n-ib-width_100">{opName}</span>
                       </Tooltip>
                     </Option>))
                 }
@@ -226,7 +227,7 @@ class CodeQuality extends Component {
           <Content code="codeQuality" values={{ name: titleName }}>
             {getLoading ? <LoadingBar display /> : this.getDetail()}
           </Content>
-        </Fragment> : <DepPipelineEmpty title={formatMessage({ id: "codeQuality.head" })} type="app" />}
+        </Fragment> : <DepPipelineEmpty title={formatMessage({ id: 'codeQuality.head' })} type="app" />}
       </Page>
     );
   }

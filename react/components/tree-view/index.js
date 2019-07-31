@@ -33,7 +33,7 @@ const TreeView = ({ dataSource, nodesRender, searchAble }) => {
     const treeData = dataSource.data;
     const realValue = value || '';
 
-    // NOTE: 让多个 action 只执行一次，设置 isExpanded 就是一次action
+    // NOTE: 让多个 action 只执行一次
     runInAction(() => {
       // eslint-disable-next-line no-plusplus
       for (let i = 0; i < treeData.length; i++) {

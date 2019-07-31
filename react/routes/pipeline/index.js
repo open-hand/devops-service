@@ -1,4 +1,4 @@
-import React from 'react/index';
+import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { asyncRouter, nomatch } from '@choerodon/boot';
 

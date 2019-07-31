@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Button, Tooltip, Modal, Table, Popover, Select, Icon } from 'choerodon-ui';
@@ -195,7 +195,8 @@ class Branch extends Component {
         render: (text, record) => (<div>
           {record.typeCode ? this.getOptionContent(record) : null}
           <a onClick={this.showIssue.bind(this, record.issueId, record.branchName)} role="none"><Tooltip
-            title={record.issueName}>{record.issueCode}</Tooltip></a>
+            title={record.issueName}
+          >{record.issueCode}</Tooltip></a>
         </div>),
       },
       {
@@ -206,8 +207,12 @@ class Branch extends Component {
           <div>
             {record.branchName !== 'master'
               ? <React.Fragment>
-                <Permission projectId={this.state.projectId} organizationId={orgId} type={type}
-                            service={['devops-service.devops-git.update']}>
+                <Permission
+                  projectId={this.state.projectId}
+                  organizationId={orgId}
+                  type={type}
+                  service={['devops-service.devops-git.update']}
+                >
                   <Tooltip
                     placement="bottom"
                     title={<FormattedMessage id="branch.edit" />}
@@ -223,14 +228,20 @@ class Branch extends Component {
                 >
                   <a
                     href={record.commitUrl && `${record.commitUrl.split('/commit')[0]}/merge_requests/new?change_branches=true&merge_request[source_branch]=${record.branchName}&merge_request[target_branch]=master`}
-                    target="_blank" rel="nofollow me noopener noreferrer">
+                    target="_blank"
+                    rel="nofollow me noopener noreferrer"
+                  >
                     <Button size="small" shape="circle">
                       <i className="icon icon-merge_request" />
                     </Button>
                   </a>
                 </Tooltip>
-                <Permission projectId={this.state.projectId} organizationId={orgId} type={type}
-                            service={['devops-service.devops-git.delete']}>
+                <Permission
+                  projectId={this.state.projectId}
+                  organizationId={orgId}
+                  type={type}
+                  service={['devops-service.devops-git.delete']}
+                >
                   <Tooltip
                     placement="bottom"
                     title={<FormattedMessage id="delete" />}
@@ -546,7 +557,8 @@ class Branch extends Component {
             closable={false}
             footer={[
               <Button key="back" onClick={this.closeRemove} disabled={submitting}>{<FormattedMessage
-                id="cancel" />}</Button>,
+                id="cancel"
+              />}</Button>,
               <Button key="submit" type="danger" onClick={this.handleDelete} loading={submitting}>
                 {formatMessage({ id: 'delete' })}
               </Button>,

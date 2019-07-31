@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback } from 'react';
+import React, { createContext } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 
@@ -8,17 +8,7 @@ export default Store;
 
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
-    const { AppState: { currentMenuType: { type, id } }, intl, children } = props;
-
-    const [selectedMenu, setSelectedMenu] = useState({});
-    const changeSelected = useCallback((menuId, menuType, parentId) => {
-      setSelectedMenu({
-        menuId,
-        menuType,
-        parentId,
-      });
-    }, []);
-
+    const { children } = props;
     const value = {
       ...props,
       prefixCls: 'c7ncd-deployment',
@@ -26,8 +16,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       permissions: [
         'devops-service.application-instance.pageByOptions',
       ],
-      selectedMenu,
-      changeSelected,
     };
     return (
       <Store.Provider value={value}>

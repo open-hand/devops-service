@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
@@ -83,7 +83,7 @@ export default class Certificate extends Component {
    * 环境选择
    * @param value
    */
-  handleEnvSelect = value => {
+  handleEnvSelect = (value) => {
     EnvOverviewStore.setTpEnvId(value);
     this.loadCertData(true, value);
   };
@@ -107,7 +107,7 @@ export default class Certificate extends Component {
       'c7n-select_min100': !envId,
     });
 
-    const envOptions = _.map(envData, ({ connect, id, permission, name }) => {
+    const envOptions = _.map(envData, ({ connect, id, permission, name: envName }) => {
       const envOptionClass = classnames({
         'c7ncd-status': true,
         'c7ncd-status-success': connect,
@@ -118,12 +118,12 @@ export default class Certificate extends Component {
         key={id}
         value={id}
         disabled={!permission}
-        title={name}
+        title={envName}
       >
-        <Tooltip placement="right" title={name}>
+        <Tooltip placement="right" title={envName}>
           <span className="c7n-ib-width_100">
             <span className={envOptionClass} />
-            {name}
+            {envName}
           </span>
         </Tooltip>
       </Option>);

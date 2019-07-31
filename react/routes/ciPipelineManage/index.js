@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react/index';
+import React, { Component, Fragment } from 'react';
 import { observer } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Tooltip, Select } from 'choerodon-ui';
@@ -10,7 +10,6 @@ import DevPipelineStore from '../../stores/project/devPipeline';
 import DepPipelineEmpty from '../../components/DepPipelineEmpty/DepPipelineEmpty';
 import RefreshBtn from '../../components/refreshBtn';
 import DevopsStore from '../../stores/DevopsStore';
-import { getTableTitle } from '../../utils';
 import CiPipelineTable from './CiPipelineTable';
 
 import '../main.scss';
@@ -110,9 +109,9 @@ class CiPipelineHome extends Component {
           </Select>
           <RefreshBtn name="ci" onFresh={this.handleRefresh} />
         </Header>
-        <Content code={appData.length ? 'ciPipeline.app' : 'ciPipeline'} values={{ name: titleName }}>
-          <CiPipelineTable store={CiPipelineStore} loading={CiPipelineStore.loading}/>
-        </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="ciPipeline.head" />} type="app" />}
+          <Content code={appData.length ? 'ciPipeline.app' : 'ciPipeline'} values={{ name: titleName }}>
+            <CiPipelineTable store={CiPipelineStore} loading={CiPipelineStore.loading} />
+          </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="ciPipeline.head" />} type="app" />}
       </Page>
     );
   }
