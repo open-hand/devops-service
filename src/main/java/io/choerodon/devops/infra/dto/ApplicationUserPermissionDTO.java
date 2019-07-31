@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.Table;
 
+import io.choerodon.mybatis.entity.BaseDTO;
+
 /**
  * Created by n!Ck
  * Date: 2018/11/21
@@ -10,7 +12,7 @@ import javax.persistence.Table;
  */
 
 @Table(name = "devops_app_user_rel")
-public class ApplicationUserPermissionDTO {
+public class ApplicationUserPermissionDTO extends BaseDTO {
     private Long iamUserId;
     private Long appServiceId;
 

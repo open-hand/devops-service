@@ -613,4 +613,40 @@ public class ApplicationServiceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.shere.applications.get"));
     }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询拥有应用服务权限的项目成员及项目所有者")
+    @CustomPageRequest
+    @PostMapping(value = "/{app_service_id}/page_permission_users")
+    public ResponseEntity<PageInfo<DevopsUserPermissionVO>> pagePermissionUsers(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Id")
+            @PathVariable(value = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return Optional.ofNullable(
+                applicationService.pagePermissionUsers(projectId, appServiceId, pageRequest, searchParam))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.shere.applications.get"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询没有应用服务权限的项目成员")
+    @GetMapping(value = "/{app_service_id}/list_non_permission_users")
+    public ResponseEntity<List<DevopsUserPermissionVO>> listNonPermissionUsers(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Id")
+            @PathVariable(value = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "查询参数")
+            @RequestParam(value = "param", required = false) String params) {
+        return Optional.ofNullable(
+                applicationService.listMembers(projectId, appServiceId, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.shere.applications.get"));
+    }
+
 }

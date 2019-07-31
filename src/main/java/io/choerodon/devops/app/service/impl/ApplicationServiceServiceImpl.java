@@ -92,6 +92,10 @@ public class ApplicationServiceServiceImpl implements ApplicationSevriceService 
     private static final String COVERAGE = "coverage";
     private static final String CHART_DIR = "charts";
     private static final String SONAR = "sonar";
+    private static final String MEMBER = "member";
+    private static final String OWNER = "owner";
+    private static final String PROJECT_OWNER = "role/project/default/project-owner";
+    private static final String PROJECT_MEMBER = "role/project/default/project-member";
     private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
     private static final IOFileFilter filenameFilter = new IOFileFilter() {
         @Override
@@ -1446,6 +1450,96 @@ public class ApplicationServiceServiceImpl implements ApplicationSevriceService 
     }
 
     @Override
+    public PageInfo<DevopsUserPermissionVO> pagePermissionUsers(Long projectId, Long appServiceId, PageRequest pageRequest, String searchParam) {
+        ApplicationServiceDTO applicationServiceDTO = applicationMapper.selectByPrimaryKey(appServiceId);
+
+        RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+        Map<String, Object> searchParamMap = null;
+        String param = null;
+        // 处理搜索参数
+        if (!org.springframework.util.StringUtils.isEmpty(searchParam)) {
+            Map maps = gson.fromJson(searchParam, Map.class);
+            searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+            roleAssignmentSearchVO.setParam(new String[]{param});
+            if (searchParamMap.get("loginName") != null) {
+                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                roleAssignmentSearchVO.setLoginName(loginName);
+            }
+            if (searchParamMap.get("realName") != null) {
+                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                roleAssignmentSearchVO.setRealName(realName);
+            }
+        }
+
+
+        // 根据参数搜索所有的项目成员
+        Long memberRoleId = iamService.queryRoleIdByCode(PROJECT_MEMBER);
+        List<DevopsUserPermissionVO> allProjectMembers = ConvertUtils.convertList(
+                iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+                        new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false).getList(), iamUserDTO -> iamUserTOUserPermissionVO(iamUserDTO, MEMBER,  applicationServiceDTO.getCreationDate()));
+        // 获取项目下所有的项目所有者
+        Long ownerId = iamService.queryRoleIdByCode(PROJECT_OWNER);
+        List<DevopsUserPermissionVO> allProjectOwners = ConvertUtils.convertList(
+                iamService.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false).getList(), iamUserDTO -> iamUserTOUserPermissionVO(iamUserDTO, OWNER, applicationServiceDTO.getCreationDate()));
+
+        if (!applicationServiceDTO.getSkipCheckPermission()) {
+            List<ApplicationUserPermissionDTO> userPermissionDTOS = applicationUserPermissionMapper.listAllUserPermissionByAppId(appServiceId);
+            List<Long> assigned = userPermissionDTOS.stream().map(ApplicationUserPermissionDTO::getIamUserId).collect(Collectors.toList());
+            allProjectMembers = allProjectMembers.stream().filter(member -> assigned.contains(member.getIamUserId()))
+                    .peek(member -> {
+                        Optional<ApplicationUserPermissionDTO> optional = userPermissionDTOS.stream().filter(permissionDTO -> permissionDTO.getIamUserId().equals(member.getIamUserId())).findFirst();
+                        member.setCreationDate(optional.get().getLastUpdateDate());
+                    }).collect(Collectors.toList());
+        }
+
+
+        //合并项目所有者和项目成员
+        Set<DevopsUserPermissionVO> userPermissionVOS = new HashSet<>(allProjectMembers);
+        userPermissionVOS.addAll(allProjectOwners);
+
+        //没有任何项目成员和项目所有者
+        if (userPermissionVOS.isEmpty()) {
+            return ConvertUtils.convertPage(new PageInfo<>(), DevopsUserPermissionVO.class);
+        } else {
+            return PageInfoUtil.createPageFromList(new ArrayList<>(userPermissionVOS), pageRequest);
+        }
+    }
+
+    @Override
+    public List<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, String params) {
+        RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+        roleAssignmentSearchVO.setParam(new String[]{params});
+
+        // 根据参数搜索所有的项目成员
+        Long memberRoleId = iamService.queryRoleIdByCode(PROJECT_MEMBER);
+        PageInfo<IamUserDTO> allProjectMembers = iamService.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false);
+        if (allProjectMembers.getList().isEmpty()) {
+            return Collections.emptyList();
+        }
+        // 获取项目下所有的项目所有者
+        Long ownerId = iamService.queryRoleIdByCode(PROJECT_OWNER);
+        List<Long> allProjectOwnerIds = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+                new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false)
+                .getList()
+                .stream()
+                .map(IamUserDTO::getId)
+                .collect(Collectors.toList());
+        // 数据库中已被分配权限的
+        List<Long> assigned = applicationUserPermissionMapper.listAllUserPermissionByAppId(appServiceId).stream().map(ApplicationUserPermissionDTO::getIamUserId).collect(Collectors.toList());
+
+        // 过滤项目成员中的项目所有者和已被分配权限的
+        List<IamUserDTO> members = allProjectMembers.getList()
+                .stream()
+                .filter(member -> !allProjectOwnerIds.contains(member.getId()))
+                .filter(member -> !assigned.contains(member.getId()))
+                .collect(Collectors.toList());
+
+        return ConvertUtils.convertList(members,
+                iamUserDTO -> new DevopsUserPermissionVO(iamUserDTO.getId(), iamUserDTO.getLoginName(), iamUserDTO.getRealName()));
+    }
+
+    @Override
     public void baseCheckApp(Long projectId, Long appId) {
         ApplicationServiceDTO applicationDTO = applicationMapper.selectByPrimaryKey(appId);
         if (applicationDTO == null || !applicationDTO.getProjectId().equals(projectId)) {
@@ -2015,4 +2109,15 @@ public class ApplicationServiceServiceImpl implements ApplicationSevriceService 
         applicationRepVO.setGitlabProjectId(TypeUtil.objToLong(applicationDTO.getGitlabProjectId()));
         return applicationRepVO;
     }
+
+    private DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, String role, Date creationDate) {
+        DevopsUserPermissionVO devopsUserPermissionVO = new DevopsUserPermissionVO();
+        devopsUserPermissionVO.setIamUserId(iamUserDTO.getId());
+        devopsUserPermissionVO.setLoginName(iamUserDTO.getLoginName());
+        devopsUserPermissionVO.setRealName(iamUserDTO.getRealName());
+        devopsUserPermissionVO.setRole(role);
+        devopsUserPermissionVO.setCreationDate(creationDate);
+        return devopsUserPermissionVO;
+    }
+
 }

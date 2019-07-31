@@ -319,7 +319,7 @@ public class DevopsEnvironmentController {
     @CustomPageRequest
     @ApiOperation(value = "分页查询环境下用户权限")
     @PostMapping(value = "/{env_id}/permission/page_by_options")
-    public ResponseEntity<PageInfo<DevopsEnvUserPermissionVO>> pageEnvUserPermissions(
+    public ResponseEntity<PageInfo<DevopsUserPermissionVO>> pageEnvUserPermissions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)

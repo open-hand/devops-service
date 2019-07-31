@@ -328,6 +328,24 @@ public interface ApplicationSevriceService {
      */
     PageInfo<ApplicationServiceRepVO> pageShareApps(Long projectId, PageRequest pageRequest, String params);
 
+    /**
+     * 根据appServiceId查询应用服务有权限的项目成员和项目所有者
+     * @param projectId
+     * @param appServiceId
+     * @param pageRequest
+     * @param searchParam
+     */
+    PageInfo<DevopsUserPermissionVO> pagePermissionUsers(Long projectId,Long appServiceId,PageRequest pageRequest, String searchParam);
+
+    /**
+     * 根据appServiceId查询应用服务所有没有权限的项目成员
+     * @param projectId
+     * @param appServiceId
+     * @param par
+     * @return
+     */
+    List<DevopsUserPermissionVO> listMembers(Long projectId,Long appServiceId,String params);
+
     void baseCheckApp(Long projectId, Long appId);
 
     int baseUpdate(ApplicationServiceDTO applicationDTO);
