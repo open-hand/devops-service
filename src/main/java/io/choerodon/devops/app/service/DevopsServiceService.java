@@ -97,16 +97,17 @@ public interface DevopsServiceService {
     DevopsServiceVO query(Long id);
 
     /**
-     * /**
-     * 环境总览网络查询
+     *
+     * 分页查询网络（包含网络对应域名）
      *
      * @param projectId   项目id
      * @param envId       环境id
      * @param pageRequest 分页参数
      * @param searchParam 查询参数
+     * @param appServiceId 应用服务id（如果有就是查询应用下的网络域名）
      * @return Page of DevopsServiceVO
      */
-    PageInfo<DevopsServiceVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsServiceVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam, Long appServiceId);
 
 
     /**
