@@ -23,18 +23,23 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionService {
+    private final DevopsEnvironmentService devopsEnvironmentService;
+    private final DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    private final UserAttrService userAttrService;
+    private final DevopsProjectService devopsProjectService;
+    private final GitlabServiceClientOperator gitlabServiceClientOperator;
+    private final IamService iamService;
+
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
-    @Autowired
-    private UserAttrService userAttrService;
-    @Autowired
-    private DevopsProjectService devopsProjectService;
-    @Autowired
-    private GitlabServiceClientOperator gitlabServiceClientOperator;
-    @Autowired
-    private IamService iamService;
+    public UpdateEnvUserPermissionServiceImpl(DevopsEnvironmentService devopsEnvironmentService, DevopsEnvUserPermissionService devopsEnvUserPermissionService, UserAttrService userAttrService, DevopsProjectService devopsProjectService, GitlabServiceClientOperator gitlabServiceClientOperator, IamService iamService) {
+        super(gitlabServiceClientOperator);
+        this.devopsEnvironmentService = devopsEnvironmentService;
+        this.devopsEnvUserPermissionService = devopsEnvUserPermissionService;
+        this.userAttrService = userAttrService;
+        this.devopsProjectService = devopsProjectService;
+        this.gitlabServiceClientOperator = gitlabServiceClientOperator;
+        this.iamService = iamService;
+    }
 
     @Override
     public Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option) {

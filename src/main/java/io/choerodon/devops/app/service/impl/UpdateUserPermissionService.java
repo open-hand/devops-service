@@ -22,6 +22,10 @@ public abstract class UpdateUserPermissionService {
                 .getBean(GitlabServiceClientOperator.class);
     }
 
+    protected UpdateUserPermissionService(GitlabServiceClientOperator gitlabServiceClientOperator) {
+        this.gitlabServiceClientOperator = gitlabServiceClientOperator;
+    }
+
     public abstract Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option);
 
     public void updateGitlabUserPermission(String type, Integer gitlabGroupId, Integer gitlabProjectId, List<Integer> addGitlabUserIds,
