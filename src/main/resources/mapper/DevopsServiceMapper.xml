@@ -130,7 +130,7 @@
         <include refid="sqlparam"/>
     </select>
 
-    <select id="selectById" resultMap="devopsServiceResult">
+    <select id="queryById" resultMap="devopsServiceResult">
         SELECT
         ds.id,
         ds.`name`,
@@ -246,7 +246,7 @@
         AND `status` != 'deleted';
     </select>
 
-    <update id="setLablesToNull">
+    <update id="setLabelsToNull">
         UPDATE devops_service ds
         SET ds.labels = null
         WHERE ds.id = #{serviceId}
