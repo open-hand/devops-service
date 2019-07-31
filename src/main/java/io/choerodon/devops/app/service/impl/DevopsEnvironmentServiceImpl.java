@@ -814,6 +814,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 // 删除原先所有的分配情况
                 devopsEnvUserPermissionService.deleteByEnvId(preEnvironmentDTO.getId());
                 userPayload.setOption(2);
+
+                // 更新字段
+                preEnvironmentDTO.setSkipCheckPermission(devopsEnvPermissionUpdateVO.getSkipCheckPermission());
+                preEnvironmentDTO.setObjectVersionNumber(devopsEnvPermissionUpdateVO.getObjectVersionNumber());
+                devopsEnvironmentMapper.updateByPrimaryKeySelective(preEnvironmentDTO);
             } else {
                 // 待添加的用户
                 List<Long> addIamUserIds = devopsEnvPermissionUpdateVO.getUserIds();
@@ -829,11 +834,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionService.baseUpdate(devopsEnvPermissionUpdateVO.getEnvId(), addIamUserIds, Collections.emptyList());
 
                 userPayload.setOption(3);
-
-                // 更新字段
-                preEnvironmentDTO.setSkipCheckPermission(devopsEnvPermissionUpdateVO.getSkipCheckPermission());
-                preEnvironmentDTO.setObjectVersionNumber(devopsEnvPermissionUpdateVO.getObjectVersionNumber());
-                devopsEnvironmentMapper.updateByPrimaryKeySelective(preEnvironmentDTO);
             }
         }
 
