@@ -659,13 +659,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
             roleAssignmentSearchVO.setParam(new String[]{param});
-            if (searchParamMap.get("loginName") != null) {
-                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
-                roleAssignmentSearchVO.setLoginName(loginName);
-            }
-            if (searchParamMap.get("realName") != null) {
-                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
-                roleAssignmentSearchVO.setRealName(realName);
+            if (searchParamMap != null) {
+                if (searchParamMap.get("loginName") != null) {
+                    String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                    roleAssignmentSearchVO.setLoginName(loginName);
+                }
+                if (searchParamMap.get("realName") != null) {
+                    String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                    roleAssignmentSearchVO.setRealName(realName);
+                }
             }
         }
 
@@ -675,7 +677,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false);
 
         List<DevopsEnvUserPermissionVO> members;
-        if(!devopsEnvironmentDTO.getSkipCheckPermission()) {
+        if (!devopsEnvironmentDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
             List<DevopsEnvUserPermissionDTO> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, param);
             members = permissions
