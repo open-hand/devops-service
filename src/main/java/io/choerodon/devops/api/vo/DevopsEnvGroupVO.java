@@ -10,7 +10,6 @@ public class DevopsEnvGroupVO {
     private Long id;
     private Long projectId;
     private String name;
-    private Long sequence;
 
     public Long getId() {
         return id;
@@ -36,11 +35,4 @@ public class DevopsEnvGroupVO {
         this.name = name;
     }
 
-    public Long getSequence() {
-        return sequence;
-    }
-
-    public void setSequence(Long sequence) {
-        this.sequence = sequence;
-    }
 }

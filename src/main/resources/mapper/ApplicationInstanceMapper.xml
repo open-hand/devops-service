@@ -345,7 +345,6 @@
         </if>
         ORDER BY
         da.last_update_date DESC,
-        de.sequence ASC,
         dav.creation_date DESC,
         dai.last_update_date DESC;
     </select>

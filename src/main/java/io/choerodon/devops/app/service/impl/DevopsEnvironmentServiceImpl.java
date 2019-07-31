@@ -190,17 +190,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentVO.getClusterId());
     }
 
-    private Long initSequence(List<DevopsEnvironmentDTO> devopsEnvironmentDTOS) {
-        Long sequence = 1L;
-        if (!devopsEnvironmentDTOS.isEmpty()) {
-            LongSummaryStatistics stats = devopsEnvironmentDTOS
-                    .stream()
-                    .mapToLong(DevopsEnvironmentDTO::getSequence)
-                    .summaryStatistics();
-            sequence = stats.getMax() + 1;
-        }
-        return sequence;
-    }
 
     @Override
     public List<DevopsEnvGroupEnvsVO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
@@ -210,7 +199,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, active).stream().peek(t ->
                 setEnvStatus(connectedClusterList, upgradeClusterList, t)
         )
-                .sorted(Comparator.comparing(DevopsEnvironmentDTO::getSequence))
                 .collect(Collectors.toList());
         List<DevopsEnviromentRepVO> devopsEnviromentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
         if (!active) {
@@ -275,7 +263,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     // 项目成员返回拥有对应权限的环境，项目所有者返回所有环境
                     setPermission(t, permissionEnvIds, isProjectOwner);
                 })
-                .sorted(Comparator.comparing(DevopsEnvironmentDTO::getSequence))
                 .collect(Collectors.toList());
         return ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnviromentRepVO.class);
     }
