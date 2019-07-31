@@ -17,7 +17,6 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
@@ -520,7 +519,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public void baseUpdate(DevopsServiceDTO devopsServiceDTO) {
         DevopsServiceDTO oldDevopsServiceDTO = devopsServiceMapper.selectByPrimaryKey(devopsServiceDTO.getId());
         if (devopsServiceDTO.getLabels() == null) {
-            devopsServiceMapper.updateLables(devopsServiceDTO.getId());
+            devopsServiceMapper.setLabelsToNull(devopsServiceDTO.getId());
         }
         if (devopsServiceDTO.getExternalIp() == null) {
             devopsServiceMapper.setExternalIpNull(devopsServiceDTO.getId());
@@ -531,12 +530,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
     }
 
-    public void baseUpdateLables(Long id) {
-        devopsServiceMapper.updateLables(id);
+    public void baseUpdateLabels(Long id) {
+        devopsServiceMapper.setLabelsToNull(id);
     }
 
     public void baseUpdateEndPoint(Long id) {
-        devopsServiceMapper.updateEndPoint(id);
+        devopsServiceMapper.setEndPointToNull(id);
     }
 
     public List<Long> baseListEnvByRunningService() {
@@ -671,14 +670,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         ApplicationServiceDTO applicationDTO = applicationService.baseQuery(devopsServiceReqVO.getAppServiceId());
         if (devopsServiceReqVO.getLabel() != null) {
             if (devopsServiceReqVO.getLabel().size() == 1 && devopsServiceReqVO.getLabel().containsKey(SERVICE_LABLE)) {
-                baseUpdateLables(devopsServiceDTO.getId());
+                baseUpdateLabels(devopsServiceDTO.getId());
                 devopsServiceDTO.setLabels(null);
             } else {
                 devopsServiceReqVO.getLabel().remove(SERVICE_LABLE);
                 devopsServiceDTO.setLabels(gson.toJson(devopsServiceReqVO.getLabel()));
             }
         } else {
-            baseUpdateLables(devopsServiceDTO.getId());
+            baseUpdateLabels(devopsServiceDTO.getId());
             devopsServiceDTO.setLabels(null);
         }
         if (devopsServiceReqVO.getEndPoints() != null) {
