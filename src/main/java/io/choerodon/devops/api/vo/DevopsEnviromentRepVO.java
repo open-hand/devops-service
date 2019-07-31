@@ -14,7 +14,6 @@ public class DevopsEnviromentRepVO {
     private Long gitlabEnvProjectId;
     private String clusterName;
     private Long clusterId;
-    private Long sequence;
     private Long devopsEnvGroupId;
     private Boolean permission;
     private Boolean isSynchro;
@@ -59,15 +58,6 @@ public class DevopsEnviromentRepVO {
     public void setConnect(Boolean connect) {
         isConnected = connect;
     }
-
-    public Long getSequence() {
-        return sequence;
-    }
-
-    public void setSequence(Long sequence) {
-        this.sequence = sequence;
-    }
-
 
     public String getCode() {
         return code;

@@ -21,7 +21,6 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private String name;
     private String code;
     private String token;
-    private Long sequence;
     private String description;
     private Boolean isActive;
     private Long devopsEnvGroupId;
@@ -107,14 +106,6 @@ public class DevopsEnvironmentDTO extends BaseDTO {
 
     public void setActive(Boolean active) {
         isActive = active;
-    }
-
-    public Long getSequence() {
-        return sequence;
-    }
-
-    public void setSequence(Long sequence) {
-        this.sequence = sequence;
     }
 
     public Long getGitlabEnvProjectId() {
