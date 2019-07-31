@@ -898,7 +898,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         }
                     }).collect(Collectors.toList());
         }
-        allMemberWithOtherUsersPage.setList(returnUserDTOList);
+        allMemberWithOtherUsersPage.setPageSize(pageRequest.getSize());
+        allMemberWithOtherUsersPage.setTotal(returnUserDTOList.size());
+        allMemberWithOtherUsersPage.setPageNum(pageRequest.getPage());
+        if (returnUserDTOList.size() < pageRequest.getSize() * pageRequest.getPage()) {
+            allMemberWithOtherUsersPage.setSize(TypeUtil.objToInt(returnUserDTOList.size()) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
+            allMemberWithOtherUsersPage.setList(returnUserDTOList);
+        } else {
+            allMemberWithOtherUsersPage.setSize(pageRequest.getSize());
+            int fromIndex = pageRequest.getSize() * (pageRequest.getPage() - 1);
+            int toIndex = (pageRequest.getSize() * pageRequest.getPage()) > returnUserDTOList.size() ? returnUserDTOList.size() : pageRequest.getSize() * pageRequest.getPage();
+            allMemberWithOtherUsersPage.setList(returnUserDTOList.subList(fromIndex, toIndex));
+        }
+
         return ConvertUtils.convertPage(allMemberWithOtherUsersPage, UserVO.class);
     }
 
