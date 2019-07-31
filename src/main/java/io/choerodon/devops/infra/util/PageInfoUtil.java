@@ -21,13 +21,24 @@ public class PageInfoUtil {
      */
     public static <T> PageInfo<T> createPageFromList(List<T> all, PageRequest pageRequest) {
         PageInfo<T> result = new PageInfo<>();
-        result.setPageSize(pageRequest.getSize());
+        boolean queryAll = pageRequest.getPage() == 0 || pageRequest.getSize() == 0;
+        result.setPageSize(queryAll ? all.size() : pageRequest.getSize());
         result.setPageNum(pageRequest.getPage());
         result.setTotal(all.size());
-        result.setPages((int) (Math.ceil(all.size() / (pageRequest.getSize() * 1.0))));
+        result.setPages(queryAll ? 1 : (int) (Math.ceil(all.size() / (pageRequest.getSize() * 1.0))));
         int fromIndex = pageRequest.getSize() * (pageRequest.getPage() - 1);
-        result.setSize(all.size() < fromIndex ? (all.size() - fromIndex) : pageRequest.getSize());
-        result.setList(all.subList(fromIndex, result.getSize()));
+        int size;
+        if (all.size() <= fromIndex) {
+            if (all.size() <= fromIndex + pageRequest.getSize()) {
+                size = all.size() - fromIndex;
+            } else {
+                size = pageRequest.getSize();
+            }
+        } else {
+            size = 0;
+        }
+        result.setSize(queryAll ? all.size() : size);
+        result.setList(queryAll ? all : all.subList(fromIndex, result.getSize()));
         return result;
     }
 }
