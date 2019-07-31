@@ -16,6 +16,7 @@ public class DevopsEnvironmentInfoVO {
     private Long clusterId;
     private String clusterName;
     private Boolean isSkipCheckPermission;
+    private Long objectVersionNumber;
     /**
      * value from {@link EnvironmentGitopsStatus}
      */
@@ -91,5 +92,13 @@ public class DevopsEnvironmentInfoVO {
 
     public void setSkipCheckPermission(Boolean skipCheckPermission) {
         isSkipCheckPermission = skipCheckPermission;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }

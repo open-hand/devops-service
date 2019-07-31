@@ -804,6 +804,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
                 // 更新字段
                 preEnvironmentDTO.setSkipCheckPermission(devopsEnvPermissionUpdateVO.getSkipCheckPermission());
+                preEnvironmentDTO.setObjectVersionNumber(devopsEnvPermissionUpdateVO.getObjectVersionNumber());
                 devopsEnvironmentMapper.updateByPrimaryKeySelective(preEnvironmentDTO);
             }
         } else {
@@ -812,12 +813,24 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionService.deleteByEnvId(preEnvironmentDTO.getId());
                 userPayload.setOption(2);
             } else {
-                // 计算差集进行删除和插入操作
-                handlePermissions(preEnvironmentDTO.getId(), devopsEnvPermissionUpdateVO.getUserIds(), userPayload);
+                // 待添加的用户
+                List<Long> addIamUserIds = devopsEnvPermissionUpdateVO.getUserIds();
+
+                List<Integer> addGitlabUserIds = userAttrService.baseListByUserIds(addIamUserIds)
+                        .stream()
+                        .map(UserAttrDTO::getGitlabUserId)
+                        .map(TypeUtil::objToInteger)
+                        .collect(Collectors.toList());
+                userPayload.setAddGitlabUserIds(addGitlabUserIds);
+                userPayload.setDeleteGitlabUserIds(Collections.emptyList());
+
+                devopsEnvUserPermissionService.baseUpdate(devopsEnvPermissionUpdateVO.getEnvId(), addIamUserIds, Collections.emptyList());
+
                 userPayload.setOption(3);
 
                 // 更新字段
                 preEnvironmentDTO.setSkipCheckPermission(devopsEnvPermissionUpdateVO.getSkipCheckPermission());
+                preEnvironmentDTO.setObjectVersionNumber(devopsEnvPermissionUpdateVO.getObjectVersionNumber());
                 devopsEnvironmentMapper.updateByPrimaryKeySelective(preEnvironmentDTO);
             }
         }
@@ -834,46 +847,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return true;
     }
 
-    /**
-     * 更新前后有变化的用户权限
-     *
-     * @param envId          环境id
-     * @param currentUserIds 待更新的有权限用户id
-     * @param userPayload    传至saga的消息载体，用于存放相应的gitlab项目成员关系变化
-     */
-    private void handlePermissions(Long envId, List<Long> currentUserIds, DevopsEnvUserPayload userPayload) {
-        // 获取以前所有有权限的用户与现在有权限的用户id进行比较
-        List<Long> previousUserIds = devopsEnvUserPermissionService.baseListAll(envId).stream()
-                .map(DevopsEnvUserPermissionDTO::getIamUserId).collect(Collectors.toList());
-
-        // 待添加的用户
-        List<Long> addIamUserIds = currentUserIds
-                .stream()
-                .filter(e -> !previousUserIds.contains(e))
-                .collect(Collectors.toList());
-
-        List<Integer> addGitlabUserIds = userAttrService.baseListByUserIds(addIamUserIds)
-                .stream()
-                .map(UserAttrDTO::getGitlabUserId)
-                .map(TypeUtil::objToInteger)
-                .collect(Collectors.toList());
-
-        // 待删除的用户
-        List<Long> deleteIamUserIds = previousUserIds.stream()
-                .filter(e -> !currentUserIds.contains(e))
-                .collect(Collectors.toList());
-
-        List<Integer> deleteGitlabUserIds = userAttrService.baseListByUserIds(deleteIamUserIds)
-                .stream()
-                .map(UserAttrDTO::getGitlabUserId)
-                .map(TypeUtil::objToInteger)
-                .collect(Collectors.toList());
-
-        userPayload.setAddGitlabUserIds(addGitlabUserIds);
-        userPayload.setDeleteGitlabUserIds(deleteGitlabUserIds);
-
-        devopsEnvUserPermissionService.baseUpdate(envId, addIamUserIds, deleteIamUserIds);
-    }
 
     private PageInfo<UserVO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
