@@ -6,12 +6,6 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -22,7 +16,8 @@ import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
+import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
@@ -39,8 +34,15 @@ import io.choerodon.devops.infra.enums.InstanceStatus;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 /**
  * Created by younger on 2018/4/9.
@@ -49,6 +51,8 @@ import io.choerodon.devops.infra.util.*;
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     private static final Gson gson = new Gson();
+    private static final String MEMBER = "member";
+    private static final String OWNER = "owner";
     private static final String MASTER = "master";
     private static final String README = "README.md";
     private static final String README_CONTENT =
@@ -96,13 +100,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     @Autowired
+    private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
+    @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private DevopsEnvCommitService devopsEnvCommitService;
     @Autowired
     private ApplicationInstanceService applicationInstanceService;
-    @Autowired
-    private DevopsEnvironmentMapper environmentMapper;
     @Autowired
     private DevopsEnvFileErrorMapper devopsEnvFileErrorMapper;
     @Autowired
@@ -121,15 +125,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_ENV, description = "创建环境", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
-    public void create(Long projectId, DevopsEnviromentVO devopsEnviromentVO) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = ConvertUtils.convertObject(devopsEnviromentVO, DevopsEnvironmentDTO.class);
+    public void create(Long projectId, DevopsEnvironmentVO devopsEnvironmentVO) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = ConvertUtils.convertObject(devopsEnvironmentVO, DevopsEnvironmentDTO.class);
         devopsEnvironmentDTO.setProjectId(projectId);
-        checkCode(projectId, devopsEnviromentVO.getClusterId(), devopsEnviromentVO.getCode());
+        checkCode(projectId, devopsEnvironmentVO.getClusterId(), devopsEnvironmentVO.getCode());
         devopsEnvironmentDTO.setActive(true);
         devopsEnvironmentDTO.setConnected(false);
         devopsEnvironmentDTO.setSynchro(false);
         devopsEnvironmentDTO.setFailed(false);
-        devopsEnvironmentDTO.setClusterId(devopsEnviromentVO.getClusterId());
+        devopsEnvironmentDTO.setClusterId(devopsEnvironmentVO.getClusterId());
         devopsEnvironmentDTO.setToken(GenerateUUID.generateUUID());
         devopsEnvironmentDTO.setProjectId(projectId);
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
@@ -150,37 +154,40 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         List<String> sshKeys = FileUtil.getSshKey(
-                organizationDTO.getCode() + "/" + projectDTO.getCode() + "/" + devopsEnviromentVO.getCode());
+                organizationDTO.getCode() + "/" + projectDTO.getCode() + "/" + devopsEnvironmentVO.getCode());
         devopsEnvironmentDTO.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentDTO.setEnvIdRsaPub(sshKeys.get(1));
         Long envId = baseCreate(devopsEnvironmentDTO).getId();
         devopsEnvironmentDTO.setId(envId);
 
-        GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
+        EnvGitlabProjectPayload gitlabProjectPayload = new EnvGitlabProjectPayload();
         gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()));
         gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        gitlabProjectPayload.setPath(devopsEnviromentVO.getCode());
+        gitlabProjectPayload.setPath(devopsEnvironmentVO.getCode());
         gitlabProjectPayload.setOrganizationId(null);
         gitlabProjectPayload.setType(ENV);
         IamUserDTO iamUserDTO = iamService.queryUserByUserId(userAttrDTO.getIamUserId());
         gitlabProjectPayload.setLoginName(iamUserDTO.getLoginName());
         gitlabProjectPayload.setRealName(iamUserDTO.getRealName());
-        gitlabProjectPayload.setClusterId(devopsEnviromentVO.getClusterId());
+        gitlabProjectPayload.setClusterId(devopsEnvironmentVO.getClusterId());
         gitlabProjectPayload.setIamProjectId(projectId);
+        gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
 
         // 创建环境时将项目下所有用户装入payload以便于saga消费
-        gitlabProjectPayload.setUserIds(devopsEnviromentVO.getUserIds());
-        producer.applyAndReturn(
+        gitlabProjectPayload.setUserIds(devopsEnvironmentVO.getUserIds());
+        producer.apply(
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT),
-                builder -> builder
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_ENV)
                         .withPayloadAndSerialize(gitlabProjectPayload)
                         .withRefId("")
-                        .withSourceId(projectId));
-        agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnviromentVO.getClusterId());
+                        .withRefType("")
+                        .withSourceId(projectId),
+                builder -> {
+                }
+        );
+        agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentVO.getClusterId());
     }
 
     private Long initSequence(List<DevopsEnvironmentDTO> devopsEnvironmentDTOS) {
@@ -288,7 +295,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unSynchronizedEnvs = new ArrayList<>();
 
-        environmentMapper.listEnvTree(projectId).forEach(e -> {
+        devopsEnvironmentMapper.listEnvTree(projectId).forEach(e -> {
             // 将DTO层对象转为VO
             DevopsEnvironmentViewVO vo = new DevopsEnvironmentViewVO();
             BeanUtils.copyProperties(e, vo, "apps");
@@ -347,7 +354,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public DevopsEnvironmentInfoVO queryInfoById(Long environmentId) {
-        DevopsEnvironmentInfoDTO envInfo = environmentMapper.queryInfoById(environmentId);
+        DevopsEnvironmentInfoDTO envInfo = devopsEnvironmentMapper.queryInfoById(environmentId);
         if (envInfo == null) {
             return null;
         }
@@ -478,7 +485,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload) {
+    public void handleCreateEnvSaga(EnvGitlabProjectPayload gitlabProjectPayload) {
         DevopsProjectDTO gitlabGroupE = devopsProjectService.baseQueryByGitlabEnvGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
@@ -522,45 +529,74 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             gitlabServiceClientOperator.createFile(gitlabProjectDO.getId(),
                     README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
         }
+
         // 创建环境时初始化用户权限，分为gitlab权限和devops环境用户表权限
-        initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentDTO.getId(),
-                TypeUtil.objToLong(gitlabProjectDO.getId()), projectDTO.getId());
+        gitlabProjectPayload.setGitlabProjectId(gitlabProjectDO.getId());
+        initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentDTO.getId(), projectDTO.getId());
+
         devopsEnvironmentDTO.setSynchro(true);
         baseUpdate(devopsEnvironmentDTO);
     }
 
-    private void initUserPermissionWhenCreatingEnv(GitlabProjectPayload gitlabProjectPayload, Long envId,
-                                                   Long gitlabProjectId, Long projectId) {
+    private void initUserPermissionWhenCreatingEnv(EnvGitlabProjectPayload gitlabProjectPayload, Long envId, Long projectId) {
 
+        // 跳过权限检查，项目下所有成员自动分配权限
+        if (Boolean.TRUE.equals(gitlabProjectPayload.getSkipCheckPermission())) {
+            List<Long> iamUserIds = iamService.getAllMemberIdsWithoutOwner(gitlabProjectPayload.getIamProjectId());
+            userAttrService.baseListByUserIds(iamUserIds)
+                    .stream()
+                    .map(UserAttrDTO::getGitlabUserId)
+                    .map(TypeUtil::objToInteger)
+                    .forEach(userId -> updateGitlabMemberPermission(
+                            gitlabProjectPayload.getGroupId(),
+                            gitlabProjectPayload.getGitlabProjectId(),
+                            userId)
+                    );
+            return;
+        }
+
+        // 需要分配权限的用户id
         List<Long> userIds = gitlabProjectPayload.getUserIds();
-        // 获取项目下所有项目成员
+        if (userIds == null || userIds.isEmpty()) {
+            return;
+        }
 
+        // 获取项目下所有项目成员
         PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(new PageRequest(0, 0), projectId, "");
 
         // 所有项目成员中有权限的
-        if (userIds != null && !userIds.isEmpty()) {
-            allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
-                Long userId = e.getId();
-                String loginName = e.getLoginName();
-                String realName = e.getRealName();
-                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
-                Long gitlabUserId = userAttrDTO.getGitlabUserId();
+        allProjectMemberPage.getList().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
+            Long userId = e.getId();
+            String loginName = e.getLoginName();
+            String realName = e.getRealName();
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
 
+            updateGitlabMemberPermission(
+                    gitlabProjectPayload.getGroupId(),
+                    gitlabProjectPayload.getGitlabProjectId(),
+                    userAttrDTO.getGitlabUserId().intValue());
+            // 添加devops数据库记录
+            devopsEnvUserPermissionService.baseCreate(new DevopsEnvUserPermissionDTO(loginName, userId, realName, envId, true));
+        });
+    }
 
-                MemberDTO groupMember = gitlabServiceClientOperator.queryGroupMember(gitlabProjectPayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
-                if (groupMember != null) {
-                    gitlabServiceClientOperator.deleteGroupMember(gitlabProjectPayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
-                }
-
-                // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
-                MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(gitlabProjectId.intValue(), TypeUtil.objToInteger(gitlabUserId));
-                if (projectMember == null || projectMember.getUserId() == null) {
-                    MemberDTO memberDTO = new MemberDTO(TypeUtil.objToInteger(gitlabUserId), 40, "");
-                    gitlabServiceClientOperator.createProjectMember(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
-                }
-                // 添加devops数据库记录
-                devopsEnvUserPermissionService.baseCreate(new DevopsEnvUserPermissionDTO(loginName, userId, realName, envId, true));
-            });
+    /**
+     * update gitlab project member permission
+     *
+     * @param gitlabGroupId   gitlab group id
+     * @param gitlabProjectId gitlab project id
+     * @param gitlabUserId    gitlab user id
+     */
+    private void updateGitlabMemberPermission(Integer gitlabGroupId, Integer gitlabProjectId, Integer gitlabUserId) {
+        // 删除组和用户之间的关系，如果存在
+        MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(gitlabGroupId, TypeUtil.objToInteger(gitlabUserId));
+        if (memberDTO != null) {
+            gitlabGroupMemberService.delete(gitlabGroupId, TypeUtil.objToInteger(gitlabUserId));
+        }
+        // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
+        MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(gitlabProjectId, TypeUtil.objToInteger(gitlabUserId));
+        if (gitlabMemberDTO == null || gitlabMemberDTO.getUserId() == null) {
+            gitlabServiceClientOperator.createProjectMember(gitlabProjectId, new MemberDTO(TypeUtil.objToInteger(gitlabUserId), 40, ""));
         }
     }
 
@@ -592,38 +628,28 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public PageInfo<DevopsEnvUserPermissionVO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                                         String searchParams, Long envId) {
+    public PageInfo<DevopsEnvUserVO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+                                                               String searchParams, Long envId) {
         if (envId == null) {
             // 根据项目成员id查询项目下所有的项目成员
             PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
 
-            List<DevopsEnvUserPermissionVO> allProjectMemberList = new ArrayList<>();
-            PageInfo<DevopsEnvUserPermissionVO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
-            allProjectMemberPage.getList().forEach(e -> {
-                DevopsEnvUserPermissionVO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionVO();
-                devopsEnvUserPermissionDTO.setIamUserId(e.getId());
-                devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
-                devopsEnvUserPermissionDTO.setRealName(e.getRealName());
-                devopsEnvUserPermissionDTO.setProjectOwner(e.getProjectOwner());
-                allProjectMemberList.add(devopsEnvUserPermissionDTO);
-            });
+            PageInfo<DevopsEnvUserVO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
+            List<DevopsEnvUserVO> allProjectMemberList = allProjectMemberPage.getList()
+                    .stream()
+                    .map(iamUser -> new DevopsEnvUserVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
+                    .collect(Collectors.toList());
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
             devopsEnvUserPermissionDTOPage.setList(allProjectMemberList);
             return devopsEnvUserPermissionDTOPage;
         } else {
-            List<DevopsEnvUserPermissionVO> retureUsersDTOList = new ArrayList<>();
             // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
             PageInfo<UserVO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
-            allProjectMemberPage.getList().forEach(e -> {
-                DevopsEnvUserPermissionVO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionVO();
-                devopsEnvUserPermissionDTO.setIamUserId(e.getId());
-                devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
-                devopsEnvUserPermissionDTO.setRealName(e.getRealName());
-                devopsEnvUserPermissionDTO.setProjectOwner(e.getProjectOwner());
-                retureUsersDTOList.add(devopsEnvUserPermissionDTO);
-            });
-            PageInfo<DevopsEnvUserPermissionVO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
+            List<DevopsEnvUserVO> retureUsersDTOList = allProjectMemberPage.getList()
+                    .stream()
+                    .map(iamUser -> new DevopsEnvUserVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
+                    .collect(Collectors.toList());
+            PageInfo<DevopsEnvUserVO> devopsEnvUserPermissionDTOPage = new PageInfo<>();
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
             devopsEnvUserPermissionDTOPage.setList(retureUsersDTOList);
             return devopsEnvUserPermissionDTOPage;
@@ -631,19 +657,237 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvUserPermissionVO> listAllUserPermission(Long envId) {
-        return ConvertUtils.convertList(devopsEnvUserPermissionService.baseListByEnvId(envId), DevopsEnvUserPermissionVO.class);
+    public PageInfo<DevopsEnvUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest, String params, Long envId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
+
+        RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+        Map<String, Object> searchParamMap = null;
+        String param = null;
+        // 处理搜索参数
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+            roleAssignmentSearchVO.setParam(new String[]{param});
+            if (searchParamMap.get("loginName") != null) {
+                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                roleAssignmentSearchVO.setLoginName(loginName);
+            }
+            if (searchParamMap.get("realName") != null) {
+                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                roleAssignmentSearchVO.setRealName(realName);
+            }
+        }
+
+        // 根据搜索参数查询所有的项目所有者
+        Long ownerId = iamService.queryRoleIdByCode(PROJECT_OWNER);
+        PageInfo<IamUserDTO> projectOwners = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+                new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false);
+
+        List<DevopsEnvUserPermissionVO> members;
+        if(!devopsEnvironmentDTO.getSkipCheckPermission()) {
+            // 根据搜索参数查询数据库中所有的环境权限分配数据
+            List<DevopsEnvUserPermissionDTO> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, param);
+            members = permissions
+                    .stream()
+                    .map(p -> ConvertUtils.convertObject(p, DevopsEnvUserPermissionVO.class))
+                    .peek(p -> p.setRole(MEMBER))
+                    .collect(Collectors.toList());
+        } else {
+            // 搜索所有的项目成员，并过滤其中的项目所有者
+            Long memberRoleId = iamService.queryRoleIdByCode(PROJECT_MEMBER);
+            List<Long> ownerIds = projectOwners
+                    .getList()
+                    .stream()
+                    .map(IamUserDTO::getId)
+                    .collect(Collectors.toList());
+            members = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+                    new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false)
+                    .getList()
+                    .stream()
+                    .filter(u -> !ownerIds.contains(u.getId()))
+                    .map(iamUser -> new DevopsEnvUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
+                    .peek(p -> p.setRole(MEMBER))
+                    .collect(Collectors.toList());
+        }
+
+        // 项目成员加上项目所有者
+        List<DevopsEnvUserPermissionVO> owners = projectOwners.getList()
+                .stream()
+                .map(iamUser -> new DevopsEnvUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
+                .peek(p -> p.setRole(OWNER))
+                .collect(Collectors.toList());
+        members.addAll(owners);
+
+        // 根据结果手动设置page的相关属性
+        return PageInfoUtil.createPageFromList(members, pageRequest);
     }
 
     @Override
-    public Boolean updateEnvUserPermission(Long envId, List<Long> userIds) {
-        UpdateUserPermissionService updateEnvUserPermissionService = new UpdateEnvUserPermissionServiceImpl();
-        return updateEnvUserPermissionService.updateUserPermission(null, envId, userIds, null);
+    public List<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, String params) {
+        RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
+        // 处理搜索参数
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+
+            roleAssignmentSearchVO.setParam(new String[]{param});
+            if (searchParamMap.get("loginName") != null) {
+                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                roleAssignmentSearchVO.setLoginName(loginName);
+            }
+
+            if (searchParamMap.get("realName") != null) {
+                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                roleAssignmentSearchVO.setRealName(realName);
+            }
+        }
+
+        // 根据参数搜索所有的项目成员
+        Long memberRoleId = iamService.queryRoleIdByCode(PROJECT_MEMBER);
+        PageInfo<IamUserDTO> allProjectMembers = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+                new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false);
+        if (allProjectMembers.getList().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 获取项目下所有的项目所有者（带上搜索参数搜索可以获得更精确的结果）
+        Long ownerId = iamService.queryRoleIdByCode(PROJECT_OWNER);
+        List<Long> allProjectOwnerIds = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
+                new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false)
+                .getList()
+                .stream()
+                .map(IamUserDTO::getId)
+                .collect(Collectors.toList());
+
+        // 数据库中已被分配权限的
+        List<Long> assigned = devopsEnvUserPermissionMapper.listUserIdsByEnvId(envId);
+
+        // 过滤项目成员中的项目所有者和已被分配权限的
+        List<IamUserDTO> members = allProjectMembers.getList()
+                .stream()
+                .filter(member -> !allProjectOwnerIds.contains(member.getId()))
+                .filter(member -> !assigned.contains(member.getId()))
+                .collect(Collectors.toList());
+
+        return ConvertUtils.convertList(members,
+                iamUserDTO -> new DevopsEnvUserVO(iamUserDTO.getId(), iamUserDTO.getLoginName(), iamUserDTO.getRealName()));
+    }
+
+    @Override
+    public void deletePermissionOfUser(Long envId, Long userId) {
+        DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
+        devopsEnvUserPermissionDTO.setEnvId(envId);
+        devopsEnvUserPermissionDTO.setIamUserId(userId);
+        devopsEnvUserPermissionMapper.delete(devopsEnvUserPermissionDTO);
+    }
+
+    @Override
+    public List<DevopsEnvUserVO> listAllUserPermission(Long envId) {
+        return ConvertUtils.convertList(devopsEnvUserPermissionService.baseListByEnvId(envId), DevopsEnvUserVO.class);
+    }
+
+
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION, description = "更新环境的权限")
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Boolean updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
+        DevopsEnvironmentDTO preEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvPermissionUpdateVO.getEnvId());
+
+        DevopsEnvUserPayload userPayload = new DevopsEnvUserPayload();
+        userPayload.setEnvId(preEnvironmentDTO.getId());
+        userPayload.setGitlabProjectId(preEnvironmentDTO.getGitlabEnvProjectId().intValue());
+        userPayload.setIamProjectId(preEnvironmentDTO.getProjectId());
+        userPayload.setIamUserIds(devopsEnvPermissionUpdateVO.getUserIds());
+
+        // 判断更新的情况
+        if (preEnvironmentDTO.getSkipCheckPermission()) {
+            if (devopsEnvPermissionUpdateVO.getSkipCheckPermission()) {
+                return Boolean.FALSE;
+            } else {
+                // 添加权限
+                List<IamUserDTO> addIamUsers = iamService.listUsersByIds(devopsEnvPermissionUpdateVO.getUserIds());
+                addIamUsers.forEach(e -> devopsEnvUserPermissionService.baseCreate(new DevopsEnvUserPermissionDTO(e.getLoginName(), e.getId(), e.getRealName(), preEnvironmentDTO.getId(), true)));
+
+                userPayload.setOption(1);
+
+                // 更新字段
+                preEnvironmentDTO.setSkipCheckPermission(devopsEnvPermissionUpdateVO.getSkipCheckPermission());
+                devopsEnvironmentMapper.updateByPrimaryKeySelective(preEnvironmentDTO);
+            }
+        } else {
+            if (devopsEnvPermissionUpdateVO.getSkipCheckPermission()) {
+                // 删除原先所有的分配情况
+                devopsEnvUserPermissionService.deleteByEnvId(preEnvironmentDTO.getId());
+                userPayload.setOption(2);
+            } else {
+                // 计算差集进行删除和插入操作
+                handlePermissions(preEnvironmentDTO.getId(), devopsEnvPermissionUpdateVO.getUserIds(), userPayload);
+                userPayload.setOption(3);
+
+                // 更新字段
+                preEnvironmentDTO.setSkipCheckPermission(devopsEnvPermissionUpdateVO.getSkipCheckPermission());
+                devopsEnvironmentMapper.updateByPrimaryKeySelective(preEnvironmentDTO);
+            }
+        }
+
+        // 发送saga进行相应的gitlab侧的数据处理
+        producer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withSourceId(preEnvironmentDTO.getProjectId())
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withPayloadAndSerialize(userPayload)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION),
+                builder -> {
+                });
+        return true;
+    }
+
+    /**
+     * 更新前后有变化的用户权限
+     *
+     * @param envId          环境id
+     * @param currentUserIds 待更新的有权限用户id
+     * @param userPayload    传至saga的消息载体，用于存放相应的gitlab项目成员关系变化
+     */
+    private void handlePermissions(Long envId, List<Long> currentUserIds, DevopsEnvUserPayload userPayload) {
+        // 获取以前所有有权限的用户与现在有权限的用户id进行比较
+        List<Long> previousUserIds = devopsEnvUserPermissionService.baseListAll(envId).stream()
+                .map(DevopsEnvUserPermissionDTO::getIamUserId).collect(Collectors.toList());
+
+        // 待添加的用户
+        List<Long> addIamUserIds = currentUserIds
+                .stream()
+                .filter(e -> !previousUserIds.contains(e))
+                .collect(Collectors.toList());
+
+        List<Integer> addGitlabUserIds = userAttrService.baseListByUserIds(addIamUserIds)
+                .stream()
+                .map(UserAttrDTO::getGitlabUserId)
+                .map(TypeUtil::objToInteger)
+                .collect(Collectors.toList());
+
+        // 待删除的用户
+        List<Long> deleteIamUserIds = previousUserIds.stream()
+                .filter(e -> !currentUserIds.contains(e))
+                .collect(Collectors.toList());
+
+        List<Integer> deleteGitlabUserIds = userAttrService.baseListByUserIds(deleteIamUserIds)
+                .stream()
+                .map(UserAttrDTO::getGitlabUserId)
+                .map(TypeUtil::objToInteger)
+                .collect(Collectors.toList());
+
+        userPayload.setAddGitlabUserIds(addGitlabUserIds);
+        userPayload.setDeleteGitlabUserIds(deleteGitlabUserIds);
+
+        devopsEnvUserPermissionService.baseUpdate(envId, addIamUserIds, deleteIamUserIds);
     }
 
     private PageInfo<UserVO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
-        if (searchParams != null && !"".equals(searchParams)) {
+        if (!StringUtils.isEmpty(searchParams)) {
             Map maps = gson.fromJson(searchParams, Map.class);
             Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));

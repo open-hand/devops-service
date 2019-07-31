@@ -24,7 +24,7 @@ public abstract class UpdateUserPermissionService {
 
     public abstract Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option);
 
-    protected void updateGitlabUserPermission(String type, Integer gitlabGroupId, Integer gitlabProjectId, List<Integer> addGitlabUserIds,
+    public void updateGitlabUserPermission(String type, Integer gitlabGroupId, Integer gitlabProjectId, List<Integer> addGitlabUserIds,
                                               List<Integer> deleteGitlabUserIds) {
         addGitlabUserIds.forEach(e -> {
             MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(e));

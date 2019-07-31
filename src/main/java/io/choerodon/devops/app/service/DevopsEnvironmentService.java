@@ -5,7 +5,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
+import io.choerodon.devops.app.eventhandler.payload.EnvGitlabProjectPayload;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 
@@ -21,7 +21,7 @@ public interface DevopsEnvironmentService {
      * @param devopsEnviromentDTO 环境信息
      * @return String
      */
-    void create(Long projectId, DevopsEnviromentVO devopsEnviromentDTO);
+    void create(Long projectId, DevopsEnvironmentVO devopsEnviromentDTO);
 
     /**
      * 项目下环境流水线查询环境
@@ -114,7 +114,7 @@ public interface DevopsEnvironmentService {
      *
      * @param gitlabProjectPayload env saga payload
      */
-    void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload);
+    void handleCreateEnvSaga(EnvGitlabProjectPayload gitlabProjectPayload);
 
     EnvSyncStatusVO queryEnvSyncStatus(Long projectId, Long envId);
 
@@ -126,8 +126,39 @@ public interface DevopsEnvironmentService {
      * @param envId       环境id
      * @return page
      */
-    PageInfo<DevopsEnvUserPermissionVO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+    PageInfo<DevopsEnvUserVO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+                                                        String params, Long envId);
+
+
+    /**
+     * 分页查询环境下用户权限
+     *
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param envId       环境id
+     * @return page
+     */
+    PageInfo<DevopsEnvUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
                                                                   String params, Long envId);
+
+    /**
+     * 查询项目下所有与该环境未分配权限的项目成员
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param params    搜索参数
+     * @return 所有项目成员
+     */
+    List<DevopsEnvUserVO> listNonRelatedMembers(Long projectId, Long envId, String params);
+
+    /**
+     * 删除环境下该用户的权限
+     *
+     * @param envId  环境id
+     * @param userId 用户id
+     */
+    void deletePermissionOfUser(Long envId, Long userId);
+
 
     /**
      * 获取环境下所有用户权限
@@ -135,15 +166,14 @@ public interface DevopsEnvironmentService {
      * @param envId 环境id
      * @return baseList
      */
-    List<DevopsEnvUserPermissionVO> listAllUserPermission(Long envId);
+    List<DevopsEnvUserVO> listAllUserPermission(Long envId);
 
     /**
      * 环境下为用户分配权限
      *
-     * @param envId   环境id
-     * @param userIds 有权限的用户ids
+     * @param devopsEnvPermissionUpdateVO 权限更新信息
      */
-    Boolean updateEnvUserPermission(Long envId, List<Long> userIds);
+    Boolean updateEnvUserPermission(DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO);
 
     /**
      * 删除已停用的环境
@@ -182,7 +212,6 @@ public interface DevopsEnvironmentService {
     void retryGitOps(Long envId);
 
     /**
-     *
      * @param devopsEnvironmentDTO
      * @param userAttrDTO
      */

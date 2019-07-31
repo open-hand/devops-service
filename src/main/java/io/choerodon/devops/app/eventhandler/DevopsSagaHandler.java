@@ -11,12 +11,16 @@ import com.google.gson.Gson;
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.ApplicationDeployVO;
+import io.choerodon.devops.api.vo.ApplicationInstanceVO;
+import io.choerodon.devops.api.vo.PipelineWebHookVO;
+import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateAppUserPermissionServiceImpl;
+import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.app.service.impl.UpdateUserPermissionService;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.PipelineNoticeType;
@@ -67,6 +71,8 @@ public class DevopsSagaHandler {
     private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsIngressService devopsIngressService;
+    @Autowired
+    private UpdateEnvUserPermissionServiceImpl updateUserEnvPermissionService;
 
 
     /**
@@ -78,7 +84,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String devopsCreateEnv(String data) {
-        GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
+        EnvGitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, EnvGitlabProjectPayload.class);
         try {
             devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
         } catch (Exception e) {
@@ -201,6 +207,26 @@ public class DevopsSagaHandler {
             throw e;
         }
         return data;
+    }
+
+
+    /**
+     * devops处理环境权限分配相应的gitlab操作
+     */
+    @SagaTask(code = SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION,
+            description = "在gitlab更新环境的权限",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_UPDATE_ENV_PERMISSION,
+            maxRetryCount = 3,
+            seq = 1)
+    public String operateEnvPermissionInGitlab(String payload) {
+        DevopsEnvUserPayload devopsEnvUserPayload = gson.fromJson(payload, DevopsEnvUserPayload.class);
+        try {
+            updateUserEnvPermissionService.updateUserPermission(devopsEnvUserPayload);
+        } catch (Exception e) {
+            LOGGER.error("update environment gitlab permission for iam users {} error", devopsEnvUserPayload.getIamUserIds());
+            throw e;
+        }
+        return payload;
     }
 
     /**

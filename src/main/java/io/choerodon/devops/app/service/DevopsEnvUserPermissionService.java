@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.vo.DevopsEnvUserPermissionVO;
+import io.choerodon.devops.api.vo.DevopsEnvUserVO;
 import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
 
 /**
@@ -13,11 +13,13 @@ import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
 public interface DevopsEnvUserPermissionService {
 
 
-    void create(DevopsEnvUserPermissionVO devopsEnvUserPermissionE);
+    void create(DevopsEnvUserVO devopsEnvUserPermissionE);
 
-    PageInfo<DevopsEnvUserPermissionVO> pageByOptions(Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsEnvUserVO> pageByOptions(Long envId, PageRequest pageRequest, String params);
 
-    List<DevopsEnvUserPermissionVO> listByEnvId(Long envId);
+    void deleteByEnvId(Long envId);
+
+    List<DevopsEnvUserVO> listByEnvId(Long envId);
 
     List<DevopsEnvUserPermissionDTO> listByUserId(Long userId);
 

@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.eventhandler;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -14,7 +13,6 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +45,6 @@ public class SagaHandler {
     private GitlabUserService gitlabUserService;
     @Autowired
     private ApplicationSevriceService applicationService;
-    @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
 
 
     private void loggerInfo(Object o) {
@@ -243,13 +237,6 @@ public class SagaHandler {
                 new TypeToken<List<GitlabGroupMemberVO>>() {
                 }.getType());
         loggerInfo(gitlabGroupMemberVOList);
-        if (!gitlabGroupMemberVOList.isEmpty()) {
-            List<Long> envIds = devopsEnvironmentService.baseListByProjectIdAndActive(gitlabGroupMemberVOList.get(0).getResourceId(), null)
-                    .stream().map(DevopsEnvironmentDTO::getId).collect(Collectors.toList());
-            if (!envIds.isEmpty()) {
-                envIds.forEach(envId -> gitlabGroupMemberVOList.forEach(gitlabGroupMemberDTO -> devopsEnvUserPermissionService.baseDelete(envId, gitlabGroupMemberDTO.getUserId())));
-            }
-        }
         gitlabGroupMemberService.deleteGitlabGroupMemberRole(gitlabGroupMemberVOList);
         return gitlabGroupMemberVOList;
     }

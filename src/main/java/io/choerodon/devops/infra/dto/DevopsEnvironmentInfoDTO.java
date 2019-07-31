@@ -15,6 +15,7 @@ public class DevopsEnvironmentInfoDTO {
     private Long sagaSyncCommit;
     private Long devopsSyncCommit;
     private Long agentSyncCommit;
+    private Boolean isSkipCheckPermission;
 
     public Long getId() {
         return id;
@@ -86,5 +87,13 @@ public class DevopsEnvironmentInfoDTO {
 
     public void setAgentSyncCommit(Long agentSyncCommit) {
         this.agentSyncCommit = agentSyncCommit;
+    }
+
+    public Boolean getSkipCheckPermission() {
+        return isSkipCheckPermission;
+    }
+
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        isSkipCheckPermission = skipCheckPermission;
     }
 }

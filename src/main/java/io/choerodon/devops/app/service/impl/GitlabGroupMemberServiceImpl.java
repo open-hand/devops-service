@@ -18,6 +18,7 @@ import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private ApplicationUserPermissionService applicationUserPermissionService;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
+    @Autowired
+    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
 
 
     @Override
@@ -97,33 +102,16 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         memberDTO = gitlabServiceClientOperator.queryGroupMember(
                                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), gitlabUserId);
                         if (memberDTO != null && memberDTO.getUserId() != null) {
-                            deleteGilabRole(memberDTO, devopsProjectDTO, gitlabUserId, false);
+                            deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, false);
                         }
                         memberDTO = gitlabServiceClientOperator.queryGroupMember(
                                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), gitlabUserId);
                         if (memberDTO != null && memberDTO.getUserId() != null) {
-                            deleteGilabRole(memberDTO, devopsProjectDTO, gitlabUserId, true);
+                            deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, true);
                         }
-                        // 删除用户时同时清除gitlab的权限
-                        List<Integer> gitlabProjectIds = applicationService
-                                .baseListByProjectId(gitlabGroupMemberVO.getResourceId()).stream()
-                                .filter(e -> e.getGitlabProjectId() != null)
-                                .map(ApplicationServiceDTO::getGitlabProjectId).map(TypeUtil::objToInteger)
-                                .collect(Collectors.toList());
-                        // gitlab
 
-                        gitlabProjectIds.forEach(e -> {
-                            MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(e, gitlabUserId);
-                            if (projectMember != null && projectMember.getUserId() != null) {
-                                gitlabServiceClientOperator.deleteProjectMember(e, gitlabUserId);
-                            }
-                        });
-                        // devops
-                        applicationUserPermissionService.baseDeleteByUserIdAndAppIds(
-                                applicationService.baseListByProjectId(gitlabGroupMemberVO.getResourceId()).stream()
-                                        .filter(applicationE -> applicationE.getGitlabProjectId() != null)
-                                        .map(ApplicationServiceDTO::getId).collect(Collectors.toList()),
-                                userAttrDTO.getIamUserId());
+                        deleteAboutApplicationService(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
+                        deleteAboutEnvironment(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
                     } else {
                         OrganizationDTO organizationDTO =
                                 iamService.queryOrganizationById(gitlabGroupMemberVO.getResourceId());
@@ -136,8 +124,59 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         }
                         memberDTO = gitlabServiceClientOperator.queryGroupMember(
                                 TypeUtil.objToInteger(groupDTO.getId()), gitlabUserId);
-                        gitlabServiceClientOperator.deleteGroupMember(
-                                groupDTO.getId(), gitlabUserId);
+                        if (memberDTO != null && memberDTO.getUserId() != null) {
+                            gitlabServiceClientOperator.deleteGroupMember(
+                                    groupDTO.getId(), gitlabUserId);
+                        }
+                    }
+                });
+    }
+
+
+    /**
+     * 删除角色时处理应用相关的操作
+     *
+     * @param projectId    项目id
+     * @param gitlabUserId gitlab 用户id
+     * @param userId       用户id
+     */
+    private void deleteAboutApplicationService(Long projectId, Integer gitlabUserId, Long userId) {
+        List<ApplicationServiceDTO> applicationDTOS = applicationService.baseListByProjectId(projectId)
+                .stream()
+                .filter(app -> app.getGitlabProjectId() != null)
+                .collect(Collectors.toList());
+
+        // 删除角色时同时清除应用的gitlab的权限和在devops的应用-用户权限分配记录
+        applicationDTOS.forEach(app -> {
+            MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(app.getGitlabProjectId(), gitlabUserId);
+            if (projectMember != null && projectMember.getUserId() != null) {
+                gitlabServiceClientOperator.deleteProjectMember(app.getGitlabProjectId(), gitlabUserId);
+            }
+        });
+
+        applicationUserPermissionService.baseDeleteByUserIdAndAppIds(
+                applicationDTOS.stream().map(ApplicationServiceDTO::getId).collect(Collectors.toList()),
+                userId);
+    }
+
+    /**
+     * 删除角色时处理环境相关的操作
+     *
+     * @param projectId    项目id
+     * @param gitlabUserId gitlab 用户id
+     * @param userId       用户id
+     */
+    private void deleteAboutEnvironment(Long projectId, Integer gitlabUserId, Long userId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
+        devopsEnvironmentDTO.setProjectId(projectId);
+        devopsEnvironmentMapper.select(devopsEnvironmentDTO)
+                .stream()
+                .peek(env -> devopsEnvUserPermissionService.baseDelete(env.getId(), userId))
+                .filter(env -> env.getSynchro() != Boolean.FALSE)
+                .forEach(env -> {
+                    MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(env.getGitlabEnvProjectId().intValue(), gitlabUserId);
+                    if (projectMember != null && projectMember.getUserId() != null) {
+                        gitlabServiceClientOperator.deleteProjectMember(env.getGitlabEnvProjectId().intValue(), gitlabUserId);
                     }
                 });
     }
@@ -240,32 +279,18 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                     (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
             if (memberDTO != null && AccessLevel.OWNER.toValue().equals(memberDTO.getAccessLevel())) {
-                deleteGilabRole(memberDTO, devopsProjectDTO, gitlabUserId, false);
+                deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, false);
             }
             memberDTO = gitlabServiceClientOperator.queryGroupMember(
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
                     (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
             if (memberDTO != null && AccessLevel.OWNER.toValue().equals(memberDTO.getAccessLevel())) {
-                deleteGilabRole(memberDTO, devopsProjectDTO, gitlabUserId, true);
+                deleteGitlabRole(memberDTO, devopsProjectDTO, gitlabUserId, true);
             }
             // 为当前项目下所有跳过权限检查的应用加上gitlab用户权限
-            List<Integer> gitlabProjectIds = applicationService.baseListByProjectIdAndSkipCheck(resourceId).stream()
-                    .filter(e -> e.getGitlabProjectId() != null)
-                    .map(ApplicationServiceDTO::getGitlabProjectId).collect(Collectors.toList());
-            gitlabProjectIds.forEach(e -> {
-                GitlabProjectDTO gitlabProjectDO = new GitlabProjectDTO();
-                try {
-                    gitlabProjectDO = gitlabServiceClientOperator.queryProjectById(e);
-                } catch (CommonException exception) {
-                    LOGGER.info("project not found");
-                }
-                if (gitlabProjectDO.getId() != null) {
-                    MemberDTO groupMember = gitlabServiceClientOperator.queryGroupMember(e, gitlabUserId);
-                    if (groupMember == null || groupMember.getUserId() == null) {
-                        gitlabServiceClientOperator.createGroupMember(e, new MemberDTO(gitlabUserId, 30, ""));
-                    }
-                }
-            });
+            addRoleForSkipPermissionAppService(resourceId, gitlabUserId);
+            // 为当前项目下所有跳过权限检查的环境库加上gitlab用户权限
+            addRoleForSkipPermissionEnvironment(resourceId, gitlabUserId);
         } else if (AccessLevel.OWNER.equals(accessLevel)) {
             if (resourceType.equals(PROJECT)) {
                 try {
@@ -285,14 +310,14 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     memberDTO = gitlabServiceClientOperator.queryGroupMember(
                             TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                             (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
-                    addOrUpdateGilabRole(accessLevel, memberDTO,
+                    addOrUpdateGitlabRole(accessLevel, memberDTO,
                             TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()), userAttrDTO);
 
                     //给gitlab环境组分配owner角色
                     memberDTO = gitlabServiceClientOperator.queryGroupMember(
                             TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
                             (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
-                    addOrUpdateGilabRole(accessLevel, memberDTO,
+                    addOrUpdateGitlabRole(accessLevel, memberDTO,
                             TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()), userAttrDTO);
 
                 } catch (Exception e) {
@@ -311,14 +336,91 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 memberDTO = gitlabServiceClientOperator.queryGroupMember(
                         TypeUtil.objToInteger(groupDTO.getId()),
                         (TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
-                addOrUpdateGilabRole(accessLevel, memberDTO,
+                addOrUpdateGitlabRole(accessLevel, memberDTO,
                         TypeUtil.objToInteger(groupDTO.getId()), userAttrDTO);
             }
         }
     }
 
-    private void addOrUpdateGilabRole(AccessLevel level, MemberDTO memberDTO, Integer groupId,
-                                      UserAttrDTO userAttrDTO) {
+    /**
+     * add member roles in gitlab projects for developer and application services that skip permission check.
+     *
+     * @param projectId    member role project id
+     * @param gitlabUserId user's gitlab id
+     */
+    private void addRoleForSkipPermissionAppService(Long projectId, Integer gitlabUserId) {
+        applicationService.baseListByProjectIdAndSkipCheck(projectId)
+                .stream()
+                .filter(app -> app.getGitlabProjectId() != null)
+                .map(ApplicationServiceDTO::getGitlabProjectId)
+                .forEach(gitlabProjectId -> {
+                    DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+                    Integer groupId = devopsProjectDTO.getDevopsAppGroupId().intValue();
+                    GitlabProjectDTO gitlabProjectDO = null;
+                    try {
+                        gitlabProjectDO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId);
+                    } catch (CommonException exception) {
+                        LOGGER.info("project not found");
+                    }
+
+                    if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                        // 删除组和用户之间的关系，如果存在
+                        MemberDTO memberDTO = queryByUserId(groupId, gitlabUserId);
+                        if (memberDTO != null) {
+                            delete(groupId, TypeUtil.objToInteger(gitlabUserId));
+                        }
+                        // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
+                        MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(gitlabProjectId, gitlabUserId);
+                        if (gitlabMemberDTO == null || gitlabMemberDTO.getUserId() == null) {
+                            gitlabServiceClientOperator.createProjectMember(gitlabProjectId, new MemberDTO(gitlabUserId, 30, ""));
+                        }
+                    }
+                });
+    }
+
+
+    /**
+     * add member roles in gitlab projects for developer and environment gitlab projects that skip permission check.
+     *
+     * @param projectId    member role project id
+     * @param gitlabUserId user's gitlab id
+     */
+    private void addRoleForSkipPermissionEnvironment(Long projectId, Integer gitlabUserId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
+        devopsEnvironmentDTO.setProjectId(projectId);
+        devopsEnvironmentDTO.setSkipCheckPermission(Boolean.TRUE);
+        devopsEnvironmentMapper.select(devopsEnvironmentDTO)
+                .stream()
+                .filter(app -> app.getGitlabEnvProjectId() != null)
+                .map(DevopsEnvironmentDTO::getGitlabEnvProjectId)
+                .forEach(gitlabProjectId -> {
+                    DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+                    Integer groupId = devopsProjectDTO.getDevopsAppGroupId().intValue();
+                    GitlabProjectDTO gitlabProjectDO = null;
+                    try {
+                        gitlabProjectDO = gitlabServiceClientOperator.queryProjectById(gitlabProjectId.intValue());
+                    } catch (CommonException exception) {
+                        LOGGER.info("project not found");
+                    }
+
+                    if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                        // 删除组和用户之间的关系，如果存在
+                        MemberDTO memberDTO = queryByUserId(groupId, gitlabUserId);
+                        if (memberDTO != null) {
+                            delete(groupId, gitlabUserId);
+                        }
+                        // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
+                        MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(gitlabProjectId.intValue(), gitlabUserId);
+                        if (gitlabMemberDTO == null || gitlabMemberDTO.getUserId() == null) {
+                            gitlabServiceClientOperator.createProjectMember(gitlabProjectId.intValue(), new MemberDTO(gitlabUserId, AccessLevel.MASTER.value, ""));
+                        }
+                    }
+                });
+    }
+
+
+    private void addOrUpdateGitlabRole(AccessLevel level, MemberDTO memberDTO, Integer groupId,
+                                       UserAttrDTO userAttrDTO) {
         // 增删改用户
         switch (level) {
             case NONE:
@@ -348,8 +450,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         }
     }
 
-    private void deleteGilabRole(MemberDTO memberDTO, DevopsProjectDTO devopsProjectDTO,
-                                 Integer userId, Boolean isEnvDelete) {
+    private void deleteGitlabRole(MemberDTO memberDTO, DevopsProjectDTO devopsProjectDTO,
+                                  Integer userId, Boolean isEnvDelete) {
         if (memberDTO != null) {
             gitlabServiceClientOperator.deleteGroupMember(
                     isEnvDelete ? TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId())

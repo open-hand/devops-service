@@ -15,6 +15,7 @@ public class DevopsEnvironmentInfoVO {
     private Boolean synchronize;
     private Long clusterId;
     private String clusterName;
+    private Boolean isSkipCheckPermission;
     /**
      * value from {@link EnvironmentGitopsStatus}
      */
@@ -82,5 +83,13 @@ public class DevopsEnvironmentInfoVO {
 
     public void setGitopsStatus(String gitopsStatus) {
         this.gitopsStatus = gitopsStatus;
+    }
+
+    public Boolean getSkipCheckPermission() {
+        return isSkipCheckPermission;
+    }
+
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        isSkipCheckPermission = skipCheckPermission;
     }
 }

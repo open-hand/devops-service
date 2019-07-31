@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by younger on 2018/4/9.
  */
-public class DevopsEnviromentVO {
+public class DevopsEnvironmentVO {
 
     private Long projectId;
     private String name;
@@ -14,6 +14,7 @@ public class DevopsEnviromentVO {
     private String description;
     private Long devopsEnvGroupId;
     private List<Long> userIds;
+    private Boolean isSkipCheckPermission;
 
     public Long getProjectId() {
         return projectId;
@@ -69,5 +70,13 @@ public class DevopsEnviromentVO {
 
     public void setClusterId(Long clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public Boolean getSkipCheckPermission() {
+        return isSkipCheckPermission;
+    }
+
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        isSkipCheckPermission = skipCheckPermission;
     }
 }

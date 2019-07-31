@@ -9,7 +9,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsEnvUserPermissionVO;
+import io.choerodon.devops.api.vo.DevopsEnvUserVO;
 import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.IamService;
@@ -42,35 +42,43 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
 
 
     @Override
-    public void create(DevopsEnvUserPermissionVO devopsEnvUserPermissionVO) {
+    public void create(DevopsEnvUserVO devopsEnvUserVO) {
         DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO();
-        BeanUtils.copyProperties(devopsEnvUserPermissionVO, devopsEnvUserPermissionDO);
+        BeanUtils.copyProperties(devopsEnvUserVO, devopsEnvUserPermissionDO);
         if (devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO) != 1) {
             throw new CommonException("error.devops.env.user.permission.create");
         }
     }
 
     @Override
-    public PageInfo<DevopsEnvUserPermissionVO> pageByOptions(Long envId, PageRequest pageRequest,
-                                                             String params) {
+    public PageInfo<DevopsEnvUserVO> pageByOptions(Long envId, PageRequest pageRequest,
+                                                   String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-        PageInfo<DevopsEnvUserPermissionVO> devopsEnvUserPermissionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(),
+        PageInfo<DevopsEnvUserVO> devopsEnvUserPermissionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(),
                 pageRequest.getSize()).doSelectPageInfo(() -> devopsEnvUserPermissionMapper
-                .pageUserEnvPermissionByOption(envId, searchParamMap, paramMap));
+                .listUserEnvPermissionByOption(envId, searchParamMap, paramMap));
 
-        PageInfo<DevopsEnvUserPermissionVO> devopsEnvUserPermissionVOPageInfo = new PageInfo<>();
+        PageInfo<DevopsEnvUserVO> devopsEnvUserPermissionVOPageInfo = new PageInfo<>();
         BeanUtils.copyProperties(devopsEnvUserPermissionDTOPageInfo, devopsEnvUserPermissionVOPageInfo);
         return devopsEnvUserPermissionVOPageInfo;
     }
 
     @Override
-    public List<DevopsEnvUserPermissionVO> listByEnvId(Long envId) {
+    public void deleteByEnvId(Long envId) {
+        DevopsEnvUserPermissionDTO dto = new DevopsEnvUserPermissionDTO();
+        dto.setEnvId(envId);
+        devopsEnvUserPermissionMapper.delete(dto);
+    }
 
-        List<DevopsEnvUserPermissionVO> devopsEnvUserPermissionVOS = new ArrayList<>();
-        BeanUtils.copyProperties(devopsEnvUserPermissionMapper.listByEnvId(envId), devopsEnvUserPermissionVOS);
-        return devopsEnvUserPermissionVOS;
+
+    @Override
+    public List<DevopsEnvUserVO> listByEnvId(Long envId) {
+
+        List<DevopsEnvUserVO> devopsEnvUserVOS = new ArrayList<>();
+        BeanUtils.copyProperties(devopsEnvUserPermissionMapper.listByEnvId(envId), devopsEnvUserVOS);
+        return devopsEnvUserVOS;
     }
 
 
@@ -128,7 +136,7 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         return PageHelper.startPage(pageRequest.getPage(),
                 pageRequest.getSize()).doSelectPageInfo(() -> devopsEnvUserPermissionMapper
-                .pageUserEnvPermissionByOption(envId, searchParamMap, paramMap));
+                .listUserEnvPermissionByOption(envId, searchParamMap, paramMap));
     }
 
     @Override
