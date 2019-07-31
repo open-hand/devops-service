@@ -530,9 +530,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
     }
 
+    @Override
     public void baseUpdateLabels(Long id) {
         devopsServiceMapper.setLabelsToNull(id);
     }
+
 
     public void baseUpdateEndPoint(Long id) {
         devopsServiceMapper.setEndPointToNull(id);
