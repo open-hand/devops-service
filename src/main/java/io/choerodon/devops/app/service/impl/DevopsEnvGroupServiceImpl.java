@@ -53,8 +53,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
 
     @Override
     public List<DevopsEnvGroupVO> listByProject(Long projectId) {
-        return ConvertUtils.convertList(baseListByProjectId(projectId).stream()
-                        .sorted(Comparator.comparing(DevopsEnvGroupDTO::getSequence)).collect(Collectors.toList()),
+        return ConvertUtils.convertList(baseListByProjectId(projectId),
                 DevopsEnvGroupVO.class);
     }
 
@@ -79,7 +78,6 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
 
     @Override
     public DevopsEnvGroupDTO baseCreate(DevopsEnvGroupDTO devopsEnvGroupDTO) {
-        devopsEnvGroupDTO.setSequence(getMaxSequenceInProject(devopsEnvGroupDTO.getProjectId()) + 1);
         devopsEnvGroupMapper.insert(devopsEnvGroupDTO);
         return devopsEnvGroupDTO;
     }
@@ -127,10 +125,4 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
         devopsEnvGroupMapper.deleteByPrimaryKey(id);
     }
 
-    private Long getMaxSequenceInProject(Long projectId) {
-        DevopsEnvGroupDTO devopsEnvGroupDO = new DevopsEnvGroupDTO();
-        devopsEnvGroupDO.setProjectId(projectId);
-        List<DevopsEnvGroupDTO> devopsEnvGroupDOS = devopsEnvGroupMapper.select(devopsEnvGroupDO);
-        return devopsEnvGroupDOS.stream().map(DevopsEnvGroupDTO::getSequence).max(Long::compareTo).orElse(0L);
-    }
 }
