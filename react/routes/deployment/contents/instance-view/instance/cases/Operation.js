@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import {
@@ -10,7 +10,7 @@ import _ from 'lodash';
 import classnames from 'classnames';
 import Slider from 'react-slick';
 import UserInfo from '../../../../../../components/userInfo/UserInfo';
-import Store from '../../../../stores';
+import CasesContext from './stores';
 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -26,7 +26,7 @@ const SETTING = {
   slidesToScroll: 1,
   prevArrow: <div><Icon type="navigate_before" className="operation-slick-arrow" /></div>,
   nextArrow: <div><Icon type="navigate_next" className="operation-slick-arrow" /></div>,
-  className: 'event-operation-record-detail',
+  className: 'cases-record-detail',
 };
 
 const ICONS = {
@@ -35,34 +35,35 @@ const ICONS = {
   success: 'check_circle',
 };
 
-const Record = observer(({ record, handleClick }) => {
+const Operation = observer(({ handleClick }) => {
   const {
-    selectedMenu: { menuId },
     intl: { formatMessage },
     prefixCls,
     intlPrefix,
-    AppState: { currentMenuType: { id } },
-  } = useContext(Store);
+    casesDataSet,
+  } = useContext(CasesContext);
   const [cardActive, setCardActive] = useState('');
 
-  function handleRecordClick(createTime, podEventDTO) {
+  function handleRecordClick(createTime, podEventVO) {
     setCardActive(createTime);
-    handleClick(podEventDTO);
+    handleClick(podEventVO);
   }
 
-  function operationRecord() {
-    const time = record.length ? record[0].createTime : '';
+  const renderOperation = useMemo(() => {
+    const firstRecord = casesDataSet.get(0);
+    const time = firstRecord.get('createTime');
     const realActive = cardActive || time;
 
     return (
       <Slider {...SETTING}>
-        {_.map(record, ({ type, createTime, status, loginName, realName, userImage, podEventDTO }) => {
+        {casesDataSet.map((record) => {
+          const [type, createTime, status, loginName, realName, userImage, podEventVO] = _.map(['type', 'createTime', 'status', 'loginName', 'realName', 'userImage', 'podEventVO'], item => record.get(item));
           const cardClass = classnames({
             'operation-record-card': true,
             'operation-record-card-active': realActive === createTime,
           });
           const content = (
-            <ul>
+            <ul className={`${prefixCls}-cases-popover-card`}>
               <li>
                 <FormattedMessage id={`${intlPrefix}.instance.cases.result`} />：
                 <Icon type={ICONS[status]} className={`${prefixCls}-cases-status-${status}`} />
@@ -73,7 +74,7 @@ const Record = observer(({ record, handleClick }) => {
                 <span>{createTime}</span>
               </li>
               <li>
-                <FormattedMessage id={`${intlPrefix}.instance.case.operator`} />：
+                <FormattedMessage id={`${intlPrefix}.instance.cases.operator`} />：
                 <UserInfo name={realName} id={loginName} avatar={userImage} />
               </li>
             </ul>
@@ -83,14 +84,15 @@ const Record = observer(({ record, handleClick }) => {
               content={content}
               key={createTime}
               placement="bottomRight"
-              overlayClassName={`${prefixCls}-instance-cases-popover-card`}
             >
               <div
                 className={cardClass}
-                onClick={() => handleRecordClick(createTime, podEventDTO)}
+                onClick={() => handleRecordClick(createTime, podEventVO)}
               >
-                <Icon type={ICONS[status]} className={`${prefixCls}-cases-status-${status}`} />
-                <FormattedMessage id={`${intlPrefix}.instance.cases.status.${type}`} />
+                <div className="operation-record-title">
+                  <Icon type={ICONS[status]} className={`${prefixCls}-cases-status-${status}`} />
+                  <FormattedMessage id={`${intlPrefix}.instance.cases.${type}`} />
+                </div>
                 <div className="operation-record-step">
                   <Icon type="wait_circle" className="operation-record-icon" />
                 </div>
@@ -102,16 +104,16 @@ const Record = observer(({ record, handleClick }) => {
         })}
       </Slider>
     );
-  }
+  });
 
   return (
     <div className={`${prefixCls}-cases-record`}>
       <span className="cases-record-title">
         {formatMessage({ id: `${intlPrefix}.instance.cases.record` })}
       </span>
-      {operationRecord()}
+      {renderOperation}
     </div>
   );
 });
 
-export default Record;
+export default Operation;

@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 import { Action } from '@choerodon/boot';
 import {
   Tooltip,
-  Button,
   Icon,
   Popover,
 } from 'choerodon-ui';
@@ -28,23 +27,35 @@ const Networking = observer(() => {
     intlPrefix,
     AppState: { currentMenuType: { id } },
   } = useContext(Store);
-  const tableDs = useMemo(() => new DataSet(TableDataSet({ formatMessage, intlPrefix, projectId: id, id: menuId })));
+  const tableDs = useMemo(() => new DataSet(TableDataSet(
+    {
+      formatMessage,
+      intlPrefix,
+      projectId: id,
+      id: menuId,
+    }
+  )), [{ formatMessage, intlPrefix, projectId: id, id: menuId }]);
 
   function renderName({ record }) {
+    const name = record.get('name');
+    const status = record.get('status');
+    const error = record.get('error');
+
     return (
       <StatusIcon
-        name={record.name}
-        status={record.status || ''}
-        error={record.error || ''}
+        name={name}
+        status={status || ''}
+        error={error || ''}
       />
     );
   }
 
   function renderTargetType({ record }) {
-    const { appInstance, labels } = record.target || {};
+    const { appInstance, labels } = record.get('target') || {};
+    const appId = record.get('appId');
 
     let type = 'EndPoints';
-    if (record.appId && appInstance && appInstance.length) {
+    if (appId && appInstance && appInstance.length) {
       type = formatMessage({ id: 'instance' });
     } else if (labels) {
       type = formatMessage({ id: 'label' });
@@ -54,7 +65,7 @@ const Networking = observer(() => {
   }
 
   function renderTarget({ record }) {
-    const { appInstance, labels, endPoints } = record.target || {};
+    const { appInstance, labels, endPoints } = record.get('target') || {};
     const node = [];
     const port = [];
     const len = endPoints ? 2 : 1;
@@ -130,8 +141,9 @@ const Networking = observer(() => {
   }
 
   function renderConfigType({ record }) {
-    const { externalIps, ports } = record.config || {};
-    const { loadBalanceIp, type } = record;
+    const { externalIps, ports } = record.get('config') || {};
+    const loadBalanceIp = record.get('loadBalanceIp');
+    const type = record.get('type');
     const iPArr = [];
     const portArr = [];
     if (externalIps && externalIps.length) {
@@ -244,7 +256,7 @@ const Networking = observer(() => {
   }
 
   function renderExpandedRow({ record }) {
-    const devopsIngressDTOS = record.devopsIngressDTOS;
+    const devopsIngressDTOS = record.get('devopsIngressDTOS');
     const button = {
       shape: 'circle',
       size: 'small',

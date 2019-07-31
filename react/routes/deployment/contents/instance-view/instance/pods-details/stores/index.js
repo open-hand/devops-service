@@ -1,8 +1,7 @@
 import getTablePostData from '../../../../../../../utils/getTablePostData';
 
 export default ({ intl, intlPrefix, projectId, envId, appId, istId }) => ({
-  autoQuery: false,
-  autoCreate: true,
+  autoQuery: true,
   selection: false,
   pageSize: 10,
   transport: {
@@ -17,12 +16,16 @@ export default ({ intl, intlPrefix, projectId, envId, appId, istId }) => ({
   },
   fields: [
     {
-      name: 'pod',
+      name: 'status',
+      type: 'string',
+    },
+    {
+      name: 'name',
       type: 'string',
       label: intl.formatMessage({ id: `${intlPrefix}.instance.pod` }),
     },
     {
-      name: 'container',
+      name: 'containers',
       type: 'string',
       label: intl.formatMessage({ id: 'container' }),
     },
@@ -32,7 +35,7 @@ export default ({ intl, intlPrefix, projectId, envId, appId, istId }) => ({
       label: intl.formatMessage({ id: `${intlPrefix}.instance.ip` }),
     },
     {
-      name: 'createDate',
+      name: 'creationDate',
       type: 'dateTime',
       label: intl.formatMessage({ id: 'createDate' }),
     },

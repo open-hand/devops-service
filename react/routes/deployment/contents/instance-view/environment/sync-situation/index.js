@@ -30,7 +30,7 @@ export default function EnvLog() {
     intlPrefix,
     projectId: id,
     envId: menuId,
-  })), [id, intl, intlPrefix, menuId]);
+  })), [intl, intlPrefix, id, menuId]);
 
   const columns = useMemo(() => ([
     {
@@ -67,6 +67,7 @@ export default function EnvLog() {
     },
     {
       name: 'errorTime',
+      width: 80,
       sortable: true,
       renderer: ({ value }) => <TimePopover content={value} />,
     },
