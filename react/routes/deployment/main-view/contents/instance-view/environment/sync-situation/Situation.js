@@ -51,6 +51,7 @@ export default function Situation() {
     },
     {
       name: 'errorTime',
+      width: 80,
       sortable: true,
       renderer: ({ value }) => <TimePopover content={value} />,
     },

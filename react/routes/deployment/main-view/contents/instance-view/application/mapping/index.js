@@ -29,32 +29,26 @@ const ConfigMap = observer(({ type }) => {
     projectId: id,
     envId: parentId,
     appId: menuId,
-  })));
+  })), [{ formatMessage, intlPrefix, type, projectId: id, envId: parentId, appId: menuId }]);
 
   function renderName({ value, record }) {
+    const commandStatus = record.get('commandStatus');
     return (
       <div>
         <StatusTags
-          name={formatMessage({ id: record.commandStatus })}
-          colorCode={record.commandStatus}
-          style={{ minWidth: 40 }}
+          name={formatMessage({ id: commandStatus || 'null' })}
+          colorCode={commandStatus || 'success'}
+          style={{ minWidth: 40, marginRight: '0.08rem' }}
         />
         <span>{value}</span>
       </div>
     );
   }
 
-  function renderKey({ value, record }) {
+  function renderKey({ value = [], record }) {
     return (
       <MouserOverWrapper width={0.5}>
-        <Popover
-          content={record.value[value]}
-          placement="topLeft"
-          overlayStyle={{ maxWidth: '350px', wordBreak: 'break-word' }}
-          theme="light"
-        >
-          {value.join(',')}
-        </Popover>
+        {value.join(',')}
       </MouserOverWrapper>
     );
   }
