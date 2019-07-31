@@ -592,6 +592,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         ProjectDTO projectDTO = iamService.queryIamProject(projectId);
         OrganizationDTO organizationDTO = iamService.queryOrganizationById(projectDTO.getOrganizationId());
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        if (devopsEnvironmentDTO == null) {
+            return null;
+        }
         EnvSyncStatusVO envSyncStatusDTO = new EnvSyncStatusVO();
         if (devopsEnvironmentDTO.getAgentSyncCommit() != null) {
             envSyncStatusDTO.setAgentSyncCommit(devopsEnvCommitService
