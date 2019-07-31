@@ -101,9 +101,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     @Override
-    public PageInfo<DevopsServiceVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsServiceVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam, Long appServiceId) {
         PageInfo<DevopsServiceVO> devopsServiceByPage = ConvertUtils.convertPage(basePageByOptions(
-                projectId, envId, null, pageRequest, searchParam, null), this::queryDtoToVo);
+                projectId, envId, null, pageRequest, searchParam, appServiceId), this::queryDtoToVo);
         return devopsServiceByPage;
     }
 
@@ -449,7 +449,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         int start = getBegin(pageRequest.getPage(), pageRequest.getSize());
         int stop = start + pageRequest.getSize();
         //分页组件暂不支持级联查询，只能手写分页
-        PageInfo<DevopsServiceQueryDTO> result = new PageInfo();
+        PageInfo<DevopsServiceQueryDTO> result = new PageInfo<>();
         result.setPageSize(pageRequest.getSize());
         result.setPageNum(pageRequest.getPage());
         int count;

@@ -70,7 +70,7 @@ public class DevopsEnvApplicationController {
     /**
      * 查询应用在环境下的所有label
      *
-     * @param envId 环境id
+     * @param envId        环境id
      * @param appServiceId 应用id
      * @return List
      */
@@ -91,7 +91,7 @@ public class DevopsEnvApplicationController {
     /**
      * 查询应用在环境下的所有端口
      *
-     * @param envId 环境id
+     * @param envId        环境id
      * @param appServiceId 应用id
      * @return List
      */
