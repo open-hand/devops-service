@@ -39,7 +39,6 @@ const EnvContent = observer(() => {
       <StatusDot
         connect={connect}
         synchronize={synchronize}
-        style={{ width: '.12rem', height: '.12rem' }}
       />
       <span className={`${prefixCls}-title-text`}>{name}</span>
     </Fragment>;

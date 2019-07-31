@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Icon } from 'choerodon-ui/pro';
 import PodCircle from '../pod-circle';
-import { getEnvInfo, getPodsInfo } from '../../util';
 
 import './index.less';
 
@@ -38,28 +36,14 @@ PrefixTitle.propTypes = {
   fallback: PropTypes.bool,
 };
 
-export const AppTitle = ({ prefixCls, records }) => {
-  if (!records.length) return <FailBack prefixCls={prefixCls} />;
-
-  const record = records[0];
-  const { name } = getEnvInfo(record);
-
-  return <TitleWrap prefixCls={prefixCls}>
-    <Icon type="widgets" />
-    <span className={`${prefixCls}-title-text`}>{name}</span>
-  </TitleWrap>;
-};
-
-AppTitle.propTypes = {
-  prefixCls: PropTypes.string,
-  records: PropTypes.any.isRequired,
-};
-
 export const IstTitle = ({ prefixCls, records }) => {
   if (!records.length) return <FailBack prefixCls={prefixCls} />;
 
   const record = records[0];
-  const { name, podRunningCount, podUnlinkCount } = getPodsInfo(record);
+  const name = record.get('code');
+  const podRunningCount = record.get('podRunningCount');
+  const podCount = record.get('podCount');
+  const podUnlinkCount = podCount - podRunningCount;
 
   return <TitleWrap prefixCls={prefixCls}>
     <PodCircle

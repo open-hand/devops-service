@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { Page, Header } from '@choerodon/boot';
 import { FormattedMessage } from 'react-intl';
 import MainView from './main-view';

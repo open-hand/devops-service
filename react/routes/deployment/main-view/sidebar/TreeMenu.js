@@ -6,7 +6,6 @@ import { Select } from 'choerodon-ui/pro';
 import SidebarHeading from './header';
 import TreeView from '../../../../components/tree-view';
 import TreeItemIcon from './TreeItemIcon';
-import MenuStore from '../stores';
 import Store from './stores';
 
 import './index.less';
@@ -46,10 +45,10 @@ const getViewOptions = formatMessage => ([
 
 const TreeMenu = observer(() => {
   const {
+    treeDs,
     intl: { formatMessage },
     store,
-  } = useContext(MenuStore);
-  const { treeDs } = useContext(Store);
+  } = useContext(Store);
 
   const [value, setValue] = useState(DEFAULT_VIEW_TYPE);
 

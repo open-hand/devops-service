@@ -4,7 +4,7 @@ export default ({ intl, intlPrefix, projectId, envId }) => ({
   pageSize: 10,
   transport: {
     read: {
-      url: `/devops/v1/projects/${projectId}/envs/${envId}/error_file/pageByEnv`,
+      url: `/devops/v1/projects/${projectId}/envs/${envId}/error_file/page_by_env`,
       method: 'get',
     },
   },

@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useContext, useMemo } from 'react/index';
+import React, { Fragment, useState, useContext, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { FormattedMessage } from 'react-intl';
 import {

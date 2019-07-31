@@ -4,18 +4,17 @@ import { Select } from 'choerodon-ui/pro';
 
 import './index.less';
 
-const SidebarHeader = React.memo(({ value, options, onClick }) => (
-  <div className="c7n-deployment-sidebar-head">
-    <Select
-      className="c7n-deployment-sidebar-drop"
-      dropdownMatchSelectWidth
-      onChange={onClick}
-      value={value}
-      clearButton={false}
-    >
-      {options}
-    </Select>
-  </div>));
+const SidebarHeader = React.memo(({ value, options, onClick }) => <div className="c7n-deployment-sidebar-head">
+  <Select
+    className="c7n-deployment-sidebar-drop"
+    dropdownMatchSelectWidth
+    onChange={onClick}
+    value={value}
+    clearButton={false}
+  >
+    {options}
+  </Select>
+</div>);
 
 SidebarHeader.propTypes = {
   options: PropTypes.array.isRequired,

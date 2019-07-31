@@ -1,4 +1,4 @@
-import React, { createContext, useMemo, useContext } from 'react/index';
+import React, { createContext, useMemo, useContext } from 'react';
 import { DataSet } from 'choerodon-ui/pro';
 import Store from '../../../../../../stores';
 import CasesDataSet from './CasesDataSet';

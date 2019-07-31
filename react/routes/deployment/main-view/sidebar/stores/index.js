@@ -18,6 +18,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const value = {
       ...props,
       treeDs,
+      store,
     };
     return (
       <Store.Provider value={value}>
