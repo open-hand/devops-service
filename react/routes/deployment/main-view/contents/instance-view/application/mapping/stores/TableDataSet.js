@@ -3,7 +3,7 @@ import getTablePostData from '../../../../../../../../utils/getTablePostData';
 export default function ({ formatMessage, intlPrefix, type, projectId, envId, appId }) {
   const url = type === 'mapping'
     ? 'config_maps/page_by_options'
-    : 'secret/page_by_option';
+    : 'secret/page_by_options';
 
   return ({
     autoQuery: true,

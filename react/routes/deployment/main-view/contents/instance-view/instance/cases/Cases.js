@@ -23,11 +23,11 @@ const Cases = observer(() => {
   } = useContext(CasesContext);
   const [podEvent, setPodEvent] = useState([]);
   const [activeKey, setActiveKey] = useState([]);
-  const record = useMemo(() => casesDataSet.data);
+  const record = useMemo(() => casesDataSet.data, [casesDataSet.data]);
 
   /**
    * 展开更多
-   * @param index
+   * @param item
    */
   function showMore(item) {
     const data = [...activeKey];
@@ -43,7 +43,7 @@ const Cases = observer(() => {
 
   /**
    * 点击操作日志
-   * @param podEventDTO
+   * @param podEventVO
    */
   function changeEvent(podEventVO) {
     setPodEvent(podEventVO);

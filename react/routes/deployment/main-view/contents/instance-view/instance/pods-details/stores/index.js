@@ -1,43 +1,34 @@
-import getTablePostData from '../../../../../../../../utils/getTablePostData';
+import React, { createContext, useMemo, useContext } from 'react';
+import { DataSet } from 'choerodon-ui/pro';
+import InstanceContext from '../../stores';
+import TableDataSet from './TableDataSet';
 
-export default ({ intl, intlPrefix, projectId, envId, appId, istId }) => ({
-  autoQuery: true,
-  selection: false,
-  pageSize: 10,
-  transport: {
-    read: ({ data }) => {
-      const postData = getTablePostData(data);
-      return {
-        url: `devops/v1/projects/${projectId}/pods/page_by_options?env_id=${envId}&app_service_id=${appId}&instance_id=${istId}`,
-        method: 'post',
-        data: postData,
-      };
-    },
-  },
-  fields: [
-    {
-      name: 'status',
-      type: 'string',
-    },
-    {
-      name: 'name',
-      type: 'string',
-      label: intl.formatMessage({ id: `${intlPrefix}.instance.pod` }),
-    },
-    {
-      name: 'containers',
-      type: 'string',
-      label: intl.formatMessage({ id: 'container' }),
-    },
-    {
-      name: 'ip',
-      type: 'string',
-      label: intl.formatMessage({ id: `${intlPrefix}.instance.ip` }),
-    },
-    {
-      name: 'creationDate',
-      type: 'dateTime',
-      label: intl.formatMessage({ id: 'createDate' }),
-    },
-  ],
-});
+const PodDetailsContext = createContext();
+
+export default PodDetailsContext;
+
+export function StoreProvider(props) {
+  const { children } = props;
+  const {
+    intl,
+    intlPrefix,
+
+    AppState: { currentMenuType: { id } },
+    store,
+  } = useContext(InstanceContext);
+  const tableDs = useMemo(() => {
+    const { menuId, parentId } = store.getSelectedMenu;
+    const [envId, appId] = parentId.split('-');
+    return new DataSet(TableDataSet({ intl, intlPrefix, projectId: id, envId, appId, istId: menuId }));
+  }, [id, intl, intlPrefix, store.getSelectedMenu]);
+  const value = {
+    ...useContext(PodDetailsContext),
+    ...props,
+    tableDs,
+  };
+  return (
+    <PodDetailsContext.Provider value={value}>
+      {children}
+    </PodDetailsContext.Provider>
+  );
+}

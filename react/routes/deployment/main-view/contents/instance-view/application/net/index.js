@@ -34,7 +34,7 @@ const Networking = observer(() => {
       projectId: id,
       id: menuId,
     }
-  )), [{ formatMessage, intlPrefix, projectId: id, id: menuId }]);
+  )), [formatMessage, id, intlPrefix, menuId]);
 
   function renderName({ record }) {
     const name = record.get('name');

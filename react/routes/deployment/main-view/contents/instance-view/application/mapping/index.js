@@ -29,8 +29,8 @@ const ConfigMap = observer(({ type }) => {
     projectId: id,
     envId: parentId,
     appId: menuId,
-  })), [{ formatMessage, intlPrefix, type, projectId: id, envId: parentId, appId: menuId }]);
-
+  })), [formatMessage, id, intlPrefix, menuId, parentId, type]);
+  
   function renderName({ value, record }) {
     const commandStatus = record.get('commandStatus');
     return (
