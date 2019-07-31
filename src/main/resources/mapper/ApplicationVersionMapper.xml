@@ -2,6 +2,30 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.ApplicationVersionMapper">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
+        SELECT
+        dav.id,
+        dav.version,
+        dav.creation_date
+        FROM
+        devops_app_version dav
+        WHERE
+        dav.app_service_id = #{appServiceId}
+        <if test='searchParam != null'>
+            <if test='searchParam.version != null and searchParam.version.size > 0'>
+                AND
+                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
+                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='params != null and params.size > 0'>
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            </foreach>
+        </if>
+    </select>
+
     <select id="listApplicationVersion" resultType="io.choerodon.devops.infra.dto.ApplicationVersionDTO">
         SELECT
         dav.id,

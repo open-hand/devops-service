@@ -22,6 +22,11 @@ public interface ApplicationVersionMapper extends Mapper<ApplicationVersionDTO> 
             @Param("isProjectOwner") Boolean isProjectOwner,
             @Param("userId") Long userId);
 
+    List<ApplicationVersionDTO> listByOptions(
+            @Param("appServiceId") Long appServiceId,
+            @Param("searchParam") Map<String, Object> searchParam,
+            @Param("params") List<String> params);
+
     List<ApplicationLatestVersionDTO> listAppNewestVersion(@Param("projectId") Long projectId,
                                                            @Param("projectIds") List<Long> projectIds);
 

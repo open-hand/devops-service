@@ -249,13 +249,15 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public PageInfo<ApplicationVersionRespVO> pageApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String searchParams) {
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
-        Boolean isProjectOwner = iamServiceClientOperator.isProjectOwner(userAttrDTO.getIamUserId(), projectDTO);
-        PageInfo<ApplicationVersionDTO> applicationVersionDTOPageInfo = basePageByOptions(
-                projectId, appId, pageRequest, searchParams, isProjectOwner, userAttrDTO.getIamUserId());
-        return ConvertUtils.convertPage(applicationVersionDTOPageInfo, ApplicationVersionRespVO.class);
+    public PageInfo<ApplicationVersionVO> pageByOptions(Long projectId, Long appId, PageRequest pageRequest, String searchParams) {
+        Map<String, Object> searchParamMap = json.deserialize(searchParams, Map.class);
+        PageInfo<ApplicationVersionDTO> applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+                .doSelectPageInfo(() ->
+                        applicationVersionMapper.listByOptions(
+                                appId,
+                                TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                                TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
+        return ConvertUtils.convertPage(applicationVersionDTOPageInfo, ApplicationVersionVO.class);
     }
 
     @Override

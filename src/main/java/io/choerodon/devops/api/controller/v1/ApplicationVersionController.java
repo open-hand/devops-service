@@ -60,7 +60,7 @@ public class ApplicationVersionController {
     @ApiOperation(value = "分页查询应用版本")
     @CustomPageRequest
     @PostMapping(value = "/page_by_options")
-    public ResponseEntity<PageInfo<ApplicationVersionRespVO>> pageByOptions(
+    public ResponseEntity<PageInfo<ApplicationVersionVO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
@@ -69,7 +69,7 @@ public class ApplicationVersionController {
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(applicationVersionService.pageApplicationVersionInApp(
+        return Optional.ofNullable(applicationVersionService.pageByOptions(
                 projectId, appServiceId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));

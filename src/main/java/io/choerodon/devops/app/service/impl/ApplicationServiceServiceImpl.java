@@ -271,7 +271,6 @@ public class ApplicationServiceServiceImpl implements ApplicationSevriceService 
     public Boolean update(Long projectId, ApplicationUpdateVO applicationUpdateVO) {
 
         ApplicationServiceDTO applicationDTO = ConvertUtils.convertObject(applicationUpdateVO, ApplicationServiceDTO.class);
-        applicationDTO.setIsSkipCheckPermission(applicationUpdateVO.getIsSkipCheckPermission());
         applicationDTO.setProjectId(projectId);
         applicationDTO.setHarborConfigId(applicationUpdateVO.getHarborConfigId());
         applicationDTO.setChartConfigId(applicationUpdateVO.getChartConfigId());
@@ -285,37 +284,6 @@ public class ApplicationServiceServiceImpl implements ApplicationSevriceService 
         if (baseUpdate(applicationDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_APP);
         }
-
-        // 创建gitlabUserPayload
-        DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
-        devOpsUserPayload.setIamProjectId(projectId);
-        devOpsUserPayload.setAppId(appId);
-        devOpsUserPayload.setGitlabProjectId(oldApplicationDTO.getGitlabProjectId());
-        devOpsUserPayload.setIamUserIds(applicationUpdateVO.getUserIds());
-
-        if (oldApplicationDTO.getIsSkipCheckPermission() && applicationUpdateVO.getIsSkipCheckPermission()) {
-            return false;
-        } else if (oldApplicationDTO.getIsSkipCheckPermission() && !applicationUpdateVO.getIsSkipCheckPermission()) {
-            applicationUpdateVO.getUserIds().forEach(e -> applicationUserPermissionService.baseCreate(e, appId));
-            devOpsUserPayload.setOption(1);
-        } else if (!oldApplicationDTO.getIsSkipCheckPermission() && applicationUpdateVO.getIsSkipCheckPermission()) {
-            applicationUserPermissionService.baseDeleteByAppId(appId);
-            devOpsUserPayload.setOption(2);
-        } else {
-            applicationUserPermissionService.baseDeleteByAppId(appId);
-            applicationUpdateVO.getUserIds().forEach(e -> applicationUserPermissionService.baseCreate(e, appId));
-            devOpsUserPayload.setOption(3);
-        }
-        producer.applyAndReturn(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("app")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS),
-                builder -> builder
-                        .withPayloadAndSerialize(devOpsUserPayload)
-                        .withRefId(String.valueOf(appId))
-                        .withSourceId(projectId));
         return true;
     }
 
@@ -1477,7 +1445,7 @@ public class ApplicationServiceServiceImpl implements ApplicationSevriceService 
         Long memberRoleId = iamService.queryRoleIdByCode(PROJECT_MEMBER);
         List<DevopsUserPermissionVO> allProjectMembers = ConvertUtils.convertList(
                 iamService.pagingQueryUsersByRoleIdOnProjectLevel(
-                        new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false).getList(), iamUserDTO -> iamUserTOUserPermissionVO(iamUserDTO, MEMBER,  applicationServiceDTO.getCreationDate()));
+                        new PageRequest(0, 0), roleAssignmentSearchVO, memberRoleId, projectId, false).getList(), iamUserDTO -> iamUserTOUserPermissionVO(iamUserDTO, MEMBER, applicationServiceDTO.getCreationDate()));
         // 获取项目下所有的项目所有者
         Long ownerId = iamService.queryRoleIdByCode(PROJECT_OWNER);
         List<DevopsUserPermissionVO> allProjectOwners = ConvertUtils.convertList(
@@ -1537,6 +1505,67 @@ public class ApplicationServiceServiceImpl implements ApplicationSevriceService 
 
         return ConvertUtils.convertList(members,
                 iamUserDTO -> new DevopsUserPermissionVO(iamUserDTO.getId(), iamUserDTO.getLoginName(), iamUserDTO.getRealName()));
+    }
+
+    @Override
+    public void updatePermission(Long projectId, Long appServiceId, ApplicationPermissionVO applicationPermissionVO) {
+        // 创建gitlabUserPayload
+        ApplicationServiceDTO applicationServiceDTO = applicationMapper.selectByPrimaryKey(appServiceId);
+
+        DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
+        devOpsUserPayload.setIamProjectId(projectId);
+        devOpsUserPayload.setAppId(appServiceId);
+        devOpsUserPayload.setGitlabProjectId(applicationServiceDTO.getGitlabProjectId());
+
+        //原来不跳，现在跳
+        if (applicationPermissionVO.getSkipCheckPermission()) {
+            applicationServiceDTO.setId(appServiceId);
+            applicationServiceDTO.setIsSkipCheckPermission(true);
+            applicationMapper.updateByPrimaryKeySelective(applicationServiceDTO);
+            applicationUserPermissionService.baseDeleteByAppId(appServiceId);
+            devOpsUserPayload.setOption(2);
+        } else {
+            //原来不跳，现在也不跳，新增用户权限
+            applicationPermissionVO.getUserIds().forEach(u -> {
+                applicationUserPermissionService.baseCreate(u, appServiceId);
+            });
+            devOpsUserPayload.setIamUserIds(applicationPermissionVO.getUserIds());
+            devOpsUserPayload.setOption(3);
+
+        }
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("app")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS),
+                builder -> builder
+                        .withPayloadAndSerialize(devOpsUserPayload)
+                        .withRefId(String.valueOf(appServiceId))
+                        .withSourceId(projectId));
+    }
+
+    @Override
+    public void deletePermission(Long projectId, Long appServiceId, Long userId) {
+        ApplicationServiceDTO applicationServiceDTO = applicationMapper.selectByPrimaryKey(appServiceId);
+        applicationUserPermissionService.baseDeleteByUserIdAndAppIds(Arrays.asList(appServiceId), userId);
+        //原来不跳，现在也不跳，删除用户在gitlab权限
+        DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
+        devOpsUserPayload.setIamProjectId(projectId);
+        devOpsUserPayload.setAppId(appServiceId);
+        devOpsUserPayload.setGitlabProjectId(applicationServiceDTO.getGitlabProjectId());
+        devOpsUserPayload.setIamUserIds(Arrays.asList(userId));
+        devOpsUserPayload.setOption(4);
+        producer.applyAndReturn(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("app")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS),
+                builder -> builder
+                        .withPayloadAndSerialize(devOpsUserPayload)
+                        .withRefId(String.valueOf(appServiceId))
+                        .withSourceId(projectId));
     }
 
     @Override

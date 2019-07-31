@@ -1,31 +1,21 @@
 package io.choerodon.devops.api.vo;
 
-import java.io.File;
+import java.util.Date;
 
 /**
  * Created by younger on 2018/4/14.
  */
 public class ApplicationVersionVO {
-
-    private String image;
-    private String token;
+    private Long id;
     private String version;
-    private File file;
+    private Date creationDate;
 
-    public String getImage() {
-        return image;
+    public Long getId() {
+        return id;
     }
 
-    public void setImage(String image) {
-        this.image = image;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getVersion() {
@@ -36,11 +26,11 @@ public class ApplicationVersionVO {
         this.version = version;
     }
 
-    public File getFile() {
-        return file;
+    public Date getCreationDate() {
+        return creationDate;
     }
 
-    public void setFile(File file) {
-        this.file = file;
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 }

@@ -75,7 +75,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
 
                 super.updateGitlabUserPermission("app", gitlabGroupId, gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
                 return true;
-            // 原来不跳过，现在跳过，需要删除权限表中的所有人，然后把项目下所有项目成员加入gitlab权限
+            // 原来不跳过，现在跳过，把项目下所有项目成员加入gitlab权限
             case 2:
                 // 获取项目下所有项目成员的gitlabUserIds，过滤掉项目所有者
                 allMemberGitlabIdsWithoutOwner = getAllGitlabMemberWithoutOwner(projectId);
@@ -87,20 +87,17 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
 
                 super.updateGitlabUserPermission("app", gitlabGroupId, gitlabProjectId, addGitlabUserIds, new ArrayList<>());
                 return true;
-            // 原来不跳过，现在也不跳过，需要更新权限表
+            // 原来不跳过，现在也不跳过，新增用户
             case 3:
-                updateGitlabUserIds = userAttrService.baseListByUserIds(userIds).stream()
+                addGitlabUserIds = userAttrService.baseListByUserIds(userIds).stream()
                         .map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
-                List<Integer> currentGitlabUserIds = gitlabServiceClientOperator.listMemberByProject(gitlabProjectId)
-                        .stream().map(MemberDTO::getUserId).collect(Collectors.toList());
-
-                addGitlabUserIds = new ArrayList<>(updateGitlabUserIds);
-                addGitlabUserIds.removeAll(currentGitlabUserIds);
-
-                deleteGitlabUserIds = new ArrayList<>(currentGitlabUserIds);
-                deleteGitlabUserIds.removeAll(updateGitlabUserIds);
-
-                super.updateGitlabUserPermission("app", gitlabGroupId, gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
+                super.updateGitlabUserPermission("app", gitlabGroupId, gitlabProjectId, addGitlabUserIds, new ArrayList<>());
+                return true;
+            // 原来不跳过，现在也不跳过，删除用户
+            case 4:
+                deleteGitlabUserIds = userAttrService.baseListByUserIds(userIds).stream()
+                        .map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
+                super.updateGitlabUserPermission("app", gitlabGroupId, gitlabProjectId, new ArrayList<>(), deleteGitlabUserIds);
                 return true;
             default:
                 return true;

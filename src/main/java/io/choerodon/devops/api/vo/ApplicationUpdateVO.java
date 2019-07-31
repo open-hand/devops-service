@@ -10,8 +10,6 @@ public class ApplicationUpdateVO {
 
     private Long id;
     private String name;
-    private List<Long> userIds;
-    private Boolean isSkipCheckPermission;
     private Long harborConfigId;
     private Long chartConfigId;
 
@@ -29,22 +27,6 @@ public class ApplicationUpdateVO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public List<Long> getUserIds() {
-        return userIds;
-    }
-
-    public void setUserIds(List<Long> userIds) {
-        this.userIds = userIds;
-    }
-
-    public Boolean getIsSkipCheckPermission() {
-        return isSkipCheckPermission;
-    }
-
-    public void setIsSkipCheckPermission(Boolean skipCheckPermission) {
-        isSkipCheckPermission = skipCheckPermission;
     }
 
     public Long getHarborConfigId() {

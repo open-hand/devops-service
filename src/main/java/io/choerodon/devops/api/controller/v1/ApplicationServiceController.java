@@ -649,4 +649,32 @@ public class ApplicationServiceController {
                 .orElseThrow(() -> new CommonException("error.shere.applications.get"));
     }
 
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "应用服务权限更新")
+    @PostMapping(value = "/{app_service_id}/update_permission")
+    public ResponseEntity updatePermission(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Id")
+            @PathVariable(value = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "权限信息", required = true)
+            @RequestBody ApplicationPermissionVO applicationPermissionVO) {
+        applicationService.updatePermission(projectId, appServiceId, applicationPermissionVO);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "应用服务权限更新")
+    @DeleteMapping(value = "/{app_service_id}/delete_pemission")
+    public ResponseEntity deletePermission(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Id")
+            @PathVariable(value = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "user Id", required = true)
+            @RequestParam(value = "user_id") Long userId) {
+        applicationService.deletePermission(projectId, appServiceId, userId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
 }
