@@ -275,14 +275,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvironmentViewVO> listEnvTree(Long projectId) {
+    public List<DevopsEnvironmentViewVO> listInstanceEnvTree(Long projectId) {
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
 
         List<DevopsEnvironmentViewVO> connectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unConnectedEnvs = new ArrayList<>();
         List<DevopsEnvironmentViewVO> unSynchronizedEnvs = new ArrayList<>();
 
-        devopsEnvironmentMapper.listEnvTree(projectId).forEach(e -> {
+        devopsEnvironmentMapper.listInstanceEnvTree(projectId).forEach(e -> {
             // 将DTO层对象转为VO
             DevopsEnvironmentViewVO vo = new DevopsEnvironmentViewVO();
             BeanUtils.copyProperties(e, vo, "apps");
@@ -304,7 +304,39 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             if (connected) {
                 connectedEnvs.add(vo);
             } else {
-                if (vo.getSynchronize()) {
+                if (Boolean.TRUE.equals(vo.getSynchronize())) {
+                    unConnectedEnvs.add(vo);
+                } else {
+                    unSynchronizedEnvs.add(vo);
+                }
+            }
+        });
+
+        // 为了将环境按照状态排序: 连接（运行中） > 未连接 > 处理中（未同步完成的）
+        connectedEnvs.addAll(unConnectedEnvs);
+        connectedEnvs.addAll(unSynchronizedEnvs);
+        return connectedEnvs;
+    }
+
+    @Override
+    public List<DevopsResourceEnvOverviewVO> listResourceEnvTree(Long projectId) {
+        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
+
+        List<DevopsResourceEnvOverviewVO> connectedEnvs = new ArrayList<>();
+        List<DevopsResourceEnvOverviewVO> unConnectedEnvs = new ArrayList<>();
+        List<DevopsResourceEnvOverviewVO> unSynchronizedEnvs = new ArrayList<>();
+
+        devopsEnvironmentMapper.listResourceEnvTree(projectId).forEach(e -> {
+            // 将DTO层对象转为VO
+            DevopsResourceEnvOverviewVO vo = new DevopsResourceEnvOverviewVO();
+            BeanUtils.copyProperties(e, vo);
+            boolean connected = upgradeClusterList.contains(e.getClusterId());
+            vo.setConnect(connected);
+
+            if (connected) {
+                connectedEnvs.add(vo);
+            } else {
+                if (Boolean.TRUE.equals(vo.getSynchronize())) {
                     unConnectedEnvs.add(vo);
                 } else {
                     unSynchronizedEnvs.add(vo);
