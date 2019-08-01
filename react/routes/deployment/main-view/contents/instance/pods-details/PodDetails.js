@@ -3,8 +3,9 @@ import { FormattedMessage } from 'react-intl';
 import { Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import { Icon, Popover, Tooltip } from 'choerodon-ui';
-import _ from 'lodash';
-import PodDetailsContext from './stores';
+import map from 'lodash/map';
+import { usePodsDetailStore } from './stores';
+import { useDeploymentStore } from '../../../../stores';
 import MouserOverWrapper from '../../../../../../components/MouseOverWrapper';
 import TimePopover from '../../../../../../components/timePopover/TimePopover';
 import StatusTags from '../../../../../../components/StatusTags';
@@ -17,9 +18,11 @@ const PodDetail = memo(() => {
   const {
     prefixCls,
     intlPrefix,
-    intl,
+  } = useDeploymentStore();
+  const {
     tableDs,
-  } = useContext(PodDetailsContext);
+    intl,
+  } = usePodsDetailStore();
 
   const renderName = useCallback(({ value, record }) => {
     const status = record.get('status');
@@ -64,7 +67,7 @@ const PodDetail = memo(() => {
     let item;
     if (value && value.length) {
       item = value[0];
-      _.map(value, ({ ready, name }, index) => {
+      map(value, ({ ready, name }, index) => {
         node.push(
           <div className="column-container-mt" key={index}>
             <Tooltip title={<FormattedMessage id={`ist.${ready ? 'y' : 'n'}`} />}>

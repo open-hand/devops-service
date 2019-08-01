@@ -9,7 +9,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId, appId }) => ({
       const postData = getTablePostData(data);
 
       return ({
-        url: `/devops/v1/projects/${projectId}/config_maps/page_by_options?env_id=${envId}`,
+        url: `/devops/v1/projects/${projectId}/secret/page_by_options?env_id=${envId}`,
         method: 'post',
         data: postData,
       });
@@ -20,7 +20,7 @@ export default ({ formatMessage, intlPrefix, projectId, envId, appId }) => ({
       data,
     }),
     destroy: ({ data: [data] }) => ({
-      url: `/devops/v1/projects/${projectId}/config_maps/${data.id}`,
+      url: `/devops/v1/projects/${projectId}/secret/${data.id}`,
       method: 'delete',
       data,
     }),

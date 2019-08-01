@@ -1,7 +1,8 @@
 import React, { useContext, Fragment, useState, lazy, Suspense, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs, Icon } from 'choerodon-ui';
-import Store from './stores';
+import { useApplicationStore } from './stores';
+import { useDeploymentStore } from '../../../stores';
 import PrefixTitle from '../../components/prefix-title';
 
 import './index.less';
@@ -18,10 +19,12 @@ const NetContent = lazy(() => import('./net'));
 const AppContent = observer(() => {
   const {
     intl: { formatMessage },
+    baseInfoDs,
+  } = useApplicationStore();
+  const {
     prefixCls,
     intlPrefix,
-    baseInfoDs,
-  } = useContext(Store);
+  } = useDeploymentStore();
   const [activeKey, setActiveKey] = useState(NET_TAB);
   const handleChange = useCallback((key) => {
     setActiveKey(key);
@@ -67,7 +70,7 @@ const AppContent = observer(() => {
           tab={formatMessage({ id: `${intlPrefix}.application.tabs.mapping` })}
         >
           <Suspense fallback={<div>loading</div>}>
-            <MappingContent type={MAPPING_TAB} />
+            <MappingContent />
           </Suspense>
         </TabPane>
         <TabPane
@@ -75,7 +78,7 @@ const AppContent = observer(() => {
           tab={formatMessage({ id: `${intlPrefix}.application.tabs.cipher` })}
         >
           <Suspense fallback={<div>loading</div>}>
-            <MappingContent type={CIPHER_TAB} />
+            <CipherContent />
           </Suspense>
         </TabPane>
       </Tabs>
