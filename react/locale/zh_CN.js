@@ -135,8 +135,6 @@ const commonField = {
 
 const deployment = {
   'deployment.header': '部署管理',
-  'deployment.viewer.instance': '实例视图',
-  'deployment.viewer.resource': '资源识图',
   'deployment.create.resource': '创建资源',
   'deployment.environment.card.code': '环境编码',
   'deployment.environment.card.status': '环境状态',
@@ -156,6 +154,8 @@ const deployment = {
   'deployment.instance.pods': 'Pods 状态',
   'deployment.instance.version': '版本',
   'deployment.operation.ports': '端口号',
+  'c7ncd.deployment.viewer.instance': '实例视图',
+  'c7ncd.deployment.viewer.resource': '资源识图',
   'c7ncd.deployment.environment.tabs.sync': '提交同步情况',
   'c7ncd.deployment.environment.tabs.assignPermissions': '已分配权限人员',
   'c7ncd.deployment.environment.error.logs': '错误日志',

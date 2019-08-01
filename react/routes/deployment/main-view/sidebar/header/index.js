@@ -1,6 +1,6 @@
-import React, { useContext, useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Select } from 'choerodon-ui/pro';
-import { useSidebarStore } from '../stores';
+import { useDeploymentStore } from '../../../stores';
 
 import './index.less';
 
@@ -8,15 +8,18 @@ const { Option } = Select;
 
 const SidebarHeader = () => {
   const {
-    viewType: { IST_VIEW_TYPE },
+    viewType: {
+      IST_VIEW_TYPE,
+      RES_VIEW_TYPE,
+    },
+    intlPrefix,
     intl: { formatMessage },
-  } = useSidebarStore();
-
-  const [value, setValue] = useState(IST_VIEW_TYPE);
+    deploymentStore,
+  } = useDeploymentStore();
 
   const handleChoose = useCallback((choose) => {
-    setValue(choose);
-  }, []);
+    deploymentStore.changeViewType(choose);
+  }, [deploymentStore]);
 
 
   return <div className="c7n-deployment-sidebar-head">
@@ -24,14 +27,14 @@ const SidebarHeader = () => {
       className="c7n-deployment-sidebar-drop"
       dropdownMatchSelectWidth
       onChange={handleChoose}
-      value={value}
+      value={deploymentStore.getViewType}
       clearButton={false}
     >
-      <Option value="instance" key="instance">
-        {formatMessage({ id: 'deployment.viewer.instance' })}
+      <Option value={IST_VIEW_TYPE} key={IST_VIEW_TYPE}>
+        {formatMessage({ id: `${intlPrefix}.viewer.${IST_VIEW_TYPE}` })}
       </Option>,
-      <Option value="resource" key="resource">
-        {formatMessage({ id: 'deployment.viewer.resource' })}
+      <Option value={RES_VIEW_TYPE} key={RES_VIEW_TYPE}>
+        {formatMessage({ id: `${intlPrefix}.viewer.${RES_VIEW_TYPE}` })}
       </Option>,
     </Select>
   </div>;
