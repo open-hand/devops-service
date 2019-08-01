@@ -1,5 +1,9 @@
 import React from 'react';
+import { StoreProvider } from './stores';
+import CipherContent from './CipherContent';
 
-export default function CasesPage() {
-  return (<div>cipher</div>);
-}
+export default props => (
+  <StoreProvider value={props}>
+    <CipherContent />
+  </StoreProvider>
+);

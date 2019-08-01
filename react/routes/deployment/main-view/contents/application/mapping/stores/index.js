@@ -7,30 +7,36 @@ import { useDeploymentStore } from '../../../../../stores';
 
 const Store = createContext();
 
-export function useNetStore() {
+export function useMappingStore() {
   return useContext(Store);
 }
 
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
-    const { AppState: { currentMenuType: { id } }, children } = props;
     const {
+      deploymentStore: { getSelectedMenu: { parentId } },
       intlPrefix,
-      intl: { formatMessage },
-      deploymentStore: { getSelectedMenu: { menuId } },
     } = useDeploymentStore();
-    const tableDs = useMemo(() => new DataSet(TableDataSet({
-      formatMessage,
-      intlPrefix,
-      projectId: id,
-      id: menuId,
-    })), [formatMessage, id, intlPrefix, menuId]);
-  
+    const {
+      AppState: { currentMenuType: { id } },
+      intl: { formatMessage },
+      children,
+    } = props;
+
+    const tableDs = useMemo(() => {
+      const [envId, appId] = parentId.split('-');
+      return new DataSet(TableDataSet({
+        formatMessage,
+        intlPrefix,
+        projectId: id,
+        envId,
+        appId,
+      }));
+    }, [formatMessage, id, intlPrefix, parentId]);
     const value = {
       ...props,
       tableDs,
     };
-  
     return (
       <Store.Provider value={value}>
         {children}

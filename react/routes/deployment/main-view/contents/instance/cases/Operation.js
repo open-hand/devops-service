@@ -6,11 +6,12 @@ import {
   Icon,
 } from 'choerodon-ui/pro';
 import { Popover } from 'choerodon-ui';
-import _ from 'lodash';
+import map from 'lodash/map';
 import classnames from 'classnames';
 import Slider from 'react-slick';
 import UserInfo from '../../../../../../components/userInfo/UserInfo';
-import CasesContext from './stores';
+import { useCasesStore } from './stores';
+import { useDeploymentStore } from '../../../../stores';
 
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
@@ -37,11 +38,13 @@ const ICONS = {
 
 const Operation = observer(({ handleClick }) => {
   const {
-    intl: { formatMessage },
     prefixCls,
     intlPrefix,
-    casesDataSet,
-  } = useContext(CasesContext);
+  } = useDeploymentStore();
+  const {
+    intl: { formatMessage },
+    casesDs,
+  } = useCasesStore();
   const [cardActive, setCardActive] = useState('');
 
   const handleRecordClick = useCallback((createTime, podEventVO) => {
@@ -50,14 +53,14 @@ const Operation = observer(({ handleClick }) => {
   }, [handleClick]);
 
   const renderOperation = useMemo(() => {
-    const firstRecord = casesDataSet.get(0);
+    const firstRecord = casesDs.get(0);
     const time = firstRecord.get('createTime');
     const realActive = cardActive || time;
 
     return (
       <Slider {...SETTING}>
-        {casesDataSet.map((record) => {
-          const [type, createTime, status, loginName, realName, userImage, podEventVO] = _.map(['type', 'createTime', 'status', 'loginName', 'realName', 'userImage', 'podEventVO'], item => record.get(item));
+        {casesDs.map((record) => {
+          const [type, createTime, status, loginName, realName, userImage, podEventVO] = map(['type', 'createTime', 'status', 'loginName', 'realName', 'userImage', 'podEventVO'], item => record.get(item));
           const cardClass = classnames({
             'operation-record-card': true,
             'operation-record-card-active': realActive === createTime,
@@ -104,7 +107,7 @@ const Operation = observer(({ handleClick }) => {
         })}
       </Slider>
     );
-  }, [cardActive, casesDataSet, handleRecordClick, intlPrefix, prefixCls]);
+  }, [cardActive, casesDs, handleRecordClick, intlPrefix, prefixCls]);
 
   return (
     <div className={`${prefixCls}-cases-record`}>

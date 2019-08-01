@@ -8,22 +8,25 @@ import {
 } from 'choerodon-ui/pro';
 import _ from 'lodash';
 import classnames from 'classnames';
-import CasesContext from './stores';
+import { useCasesStore } from './stores';
 import Operation from './Operation';
+import { useDeploymentStore } from '../../../../stores';
 
 import './style/index.less';
 
 
 const Cases = observer(() => {
   const {
-    intl: { formatMessage },
     prefixCls,
     intlPrefix,
-    casesDataSet,
-  } = useContext(CasesContext);
+  } = useDeploymentStore();
+  const {
+    intl: { formatMessage },
+    casesDs,
+  } = useCasesStore();
   const [podEvent, setPodEvent] = useState([]);
   const [activeKey, setActiveKey] = useState([]);
-  const record = useMemo(() => casesDataSet.data, [casesDataSet.data]);
+  const record = useMemo(() => casesDs.data, [casesDs.data]);
 
   /**
    * 展开更多

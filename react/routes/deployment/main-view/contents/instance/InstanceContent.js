@@ -1,7 +1,8 @@
 import React, { useContext, useMemo, useState, lazy, Suspense, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui';
-import InstanceContext from './stores';
+import { useInstanceStore } from './stores';
+import { useDeploymentStore } from '../../../stores';
 import PrefixTitle from '../../components/prefix-title';
 import PodCircle from '../../components/pod-circle';
 
@@ -46,11 +47,13 @@ const PodsDetails = lazy(() => import('./pods-details'));
 
 const InstanceContent = observer(() => {
   const {
-    intl: { formatMessage },
     prefixCls,
     intlPrefix,
+  } = useDeploymentStore();
+  const {
+    intl: { formatMessage },
     baseInfoDs,
-  } = useContext(InstanceContext);
+  } = useInstanceStore();
   const [activeKey, setActiveKey] = useState(CASES_TAB);
   const baseInfo = baseInfoDs.data;
 

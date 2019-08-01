@@ -21,11 +21,13 @@ const { Column } = Table;
 
 const Networking = observer(() => {
   const {
-    intl: { formatMessage },
     prefixCls,
     intlPrefix,
   } = useDeploymentStore();
-  const { tableDs } = useNetStore();
+  const {
+    tableDs,
+    intl: { formatMessage },
+  } = useNetStore();
 
   function renderName({ record }) {
     const name = record.get('name');
