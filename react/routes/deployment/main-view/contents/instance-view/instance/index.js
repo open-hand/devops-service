@@ -4,9 +4,13 @@ import { DataSet } from 'choerodon-ui/pro';
 import { Tabs } from 'choerodon-ui';
 import BaseInfoDataSet from './stores/BaseInfoDataSet';
 import Store from '../../../../stores';
-import { IstTitle } from '../../../components/prefix-title';
+import PrefixTitle from '../../../components/prefix-title';
+import PodCircle from '../../../components/pod-circle';
 
 import './index.less';
+
+const RUNNING_COLOR = '#0bc2a8';
+const PADDING_COLOR = '#fbb100';
 
 const { TabPane } = Tabs;
 const CASES_TAB = 'cases';
@@ -33,9 +37,34 @@ const InstanceContent = observer(() => {
     setActiveKey(key);
   }, []);
 
+  // const record = records[0];
+  // const name = record.get('code');
+  // const podRunningCount = record.get('podRunningCount');
+  // const podCount = record.get('podCount');
+  // const podUnlinkCount = podCount - podRunningCount;
+  //
+  // return <TitleWrap prefixCls={prefixCls}>
+  //   <PodCircle
+  //     style={{
+  //       width: 22,
+  //       height: 22,
+  //     }}
+  //     dataSource={[{
+  //       name: 'running',
+  //       value: podRunningCount,
+  //       stroke: RUNNING_COLOR,
+  //     }, {
+  //       name: 'unlink',
+  //       value: podUnlinkCount,
+  //       stroke: PADDING_COLOR,
+  //     }]}
+  //   />
+  //   <span className={`${prefixCls}-title-text`}>{name}</span>
+  // </TitleWrap>;
+
   return (
     <div className={`${prefixCls}-instance`}>
-      <IstTitle prefixCls={prefixCls} records={baseInfo} />
+
       <Tabs
         className={`${prefixCls}-environment-tabs`}
         animated={false}

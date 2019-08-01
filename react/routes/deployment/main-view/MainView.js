@@ -1,14 +1,13 @@
-import React, { Fragment, useContext, useState, useRef, useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { Fragment, useRef, useMemo, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
 import classnames from 'classnames';
 import Draggable from 'react-draggable';
 import Sidebar from './sidebar';
-import Store from './stores';
-import DeploymentStore from '../stores';
+import { useMainStore } from './stores';
+import { useDeploymentStore } from '../stores';
 import { useResize, X_AXIS_WIDTH, X_AXIS_WIDTH_MAX } from './useResize';
 
 import './styles/index.less';
-import './styles/draggers.less';
 
 // 实例视图
 const EnvContent = lazy(() => import('./contents/instance-view/environment'));
@@ -16,27 +15,27 @@ const AppContent = lazy(() => import('./contents/instance-view/application'));
 const IstContent = lazy(() => import('./contents/instance-view/instance'));
 
 const MainView = observer(() => {
-  const { prefixCls } = useContext(DeploymentStore);
+  const { prefixCls, deploymentStore } = useDeploymentStore();
   const {
     instanceView: {
       ENV_ITEM,
       APP_ITEM,
       IST_ITEM,
     },
-    store,
-  } = useContext(Store);
+    mainStore,
+  } = useMainStore();
+
   const content = useMemo(() => {
-    const { menuType } = store.getSelectedMenu;
+    const { menuType } = deploymentStore.getSelectedMenu;
     const cmMaps = {
       [ENV_ITEM]: <EnvContent />,
       [APP_ITEM]: <AppContent />,
       [IST_ITEM]: <IstContent />,
     };
-
     return cmMaps[menuType]
       ? <Suspense fallback={<div>loading</div>}>{cmMaps[menuType]}</Suspense>
       : <div>加载数据中</div>;
-  }, [APP_ITEM, ENV_ITEM, IST_ITEM, store.getSelectedMenu]);
+  }, [APP_ITEM, ENV_ITEM, IST_ITEM, deploymentStore.getSelectedMenu]);
 
   const rootRef = useRef(null);
 
@@ -48,12 +47,14 @@ const MainView = observer(() => {
     handleUnsetDrag,
     handleStartDrag,
     handleDrag,
-  } = useResize(rootRef, store);
+  } = useResize(rootRef, mainStore);
+
+  const dragPrefixCls = `${prefixCls}-draggers`;
 
   const draggableClass = useMemo(() => classnames({
-    'c7n-draggers-handle': true,
-    'c7n-draggers-handle-dragged': isDragging,
-  }), [isDragging]);
+    [`${dragPrefixCls}-handle`]: true,
+    [`${dragPrefixCls}-handle-dragged`]: isDragging,
+  }), [dragPrefixCls, isDragging]);
 
   return (<div
     ref={rootRef}
@@ -76,12 +77,12 @@ const MainView = observer(() => {
         >
           <div className={draggableClass} />
         </Draggable>
-        {isDragging ? <div className="c7n-draggers-blocker" /> : null}
+        {isDragging ? <div className={`${dragPrefixCls}-blocker`} /> : null}
       </Fragment>
     )}
     <Fragment>
       <Sidebar />
-      <div className={`${prefixCls}-main c7n-draggers-animate`}>
+      <div className={`${prefixCls}-main ${dragPrefixCls}-animate`}>
         {content}
       </div>
     </Fragment>

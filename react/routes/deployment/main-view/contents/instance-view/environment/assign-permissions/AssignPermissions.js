@@ -1,16 +1,16 @@
-import React, { useContext, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Permission, Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import TimePopover from '../../../../../../../components/timePopover';
-import Store from './stores';
+import { useAssignStore } from './stores';
 
 const { Column } = Table;
 
 export default function AssignPermissions() {
   const {
-    intl,
+    intl: { formatMessage },
     tableDs,
-  } = useContext(Store);
+  } = useAssignStore();
 
   const renderActions = useCallback(({ record }) => {
     const handleDelete = (data) => {
@@ -19,12 +19,12 @@ export default function AssignPermissions() {
     const actionData = [
       {
         service: [],
-        text: intl.formatMessage({ id: 'delete' }),
+        text: formatMessage({ id: 'delete' }),
         action: () => handleDelete(record),
       },
     ];
     return (<Action data={actionData} />);
-  }, [intl, tableDs]);
+  }, [formatMessage, tableDs]);
   const renderDate = useCallback(({ value }) => <TimePopover content={value} />, []);
 
   function refresh() {

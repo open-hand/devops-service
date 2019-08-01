@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useMemo } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Permission } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
@@ -9,17 +9,20 @@ import {
   Modal,
 } from 'choerodon-ui/pro';
 import { Popover } from 'choerodon-ui';
-import Store from './stores';
+import { useSyncStore } from './stores';
+import { useDeploymentStore } from '../../../../../stores';
 
 const SyncSituation = observer(() => {
   const {
-    intl: { formatMessage },
     prefixCls,
     intlPrefix,
+  } = useDeploymentStore();
+  const {
+    intl: { formatMessage },
     tableDs,
     logDs,
     retryDs,
-  } = useContext(Store);
+  } = useSyncStore();
 
   const content = useMemo(() => (
     <Fragment>
@@ -45,7 +48,7 @@ const SyncSituation = observer(() => {
         <FormattedMessage id={`${intlPrefix}.environment.executed.des`} />
       </p>
     </Fragment>
-  ));
+  ), [intlPrefix]);
 
   /**
    * 打开重试弹窗
@@ -154,7 +157,7 @@ const SyncSituation = observer(() => {
       );
     }
     return null;
-  });
+  }, [intlPrefix, logDs.data, showRetry]);
 
   return (
     <div className={`${prefixCls}-environment-sync-detail`}>

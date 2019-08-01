@@ -1,34 +1,40 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext, useState, useCallback } from 'react';
 import { Select } from 'choerodon-ui/pro';
+import { useSidebarStore } from '../stores';
 
 import './index.less';
 
-const SidebarHeader = React.memo(({ value, options, onClick }) => <div className="c7n-deployment-sidebar-head">
-  <Select
-    className="c7n-deployment-sidebar-drop"
-    dropdownMatchSelectWidth
-    onChange={onClick}
-    value={value}
-    clearButton={false}
-  >
-    {options}
-  </Select>
-</div>);
+const { Option } = Select;
 
-SidebarHeader.propTypes = {
-  options: PropTypes.array.isRequired,
-  value: PropTypes.string,
-  onClick: PropTypes.func,
-  bounds: PropTypes.shape({
-    width: PropTypes.number,
-  }),
-};
+const SidebarHeader = () => {
+  const {
+    viewType: { IST_VIEW_TYPE },
+    intl: { formatMessage },
+  } = useSidebarStore();
 
-SidebarHeader.defaultProps = {
-  bounds: {
-    width: 230,
-  },
+  const [value, setValue] = useState(IST_VIEW_TYPE);
+
+  const handleChoose = useCallback((choose) => {
+    setValue(choose);
+  }, []);
+
+
+  return <div className="c7n-deployment-sidebar-head">
+    <Select
+      className="c7n-deployment-sidebar-drop"
+      dropdownMatchSelectWidth
+      onChange={handleChoose}
+      value={value}
+      clearButton={false}
+    >
+      <Option value="instance" key="instance">
+        {formatMessage({ id: 'deployment.viewer.instance' })}
+      </Option>,
+      <Option value="resource" key="resource">
+        {formatMessage({ id: 'deployment.viewer.resource' })}
+      </Option>,
+    </Select>
+  </div>;
 };
 
 export default SidebarHeader;

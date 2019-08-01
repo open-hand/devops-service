@@ -1,7 +1,8 @@
-import React, { Fragment, useContext, useState, lazy, Suspense, useCallback } from 'react';
+import React, { Fragment, useState, lazy, Suspense, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui';
-import Store from './stores';
+import { useEnvironmentStore } from './stores';
+import { useDeploymentStore } from '../../../../stores';
 import StatusDot from '../../../components/status-dot';
 import PrefixTitle from '../../../components/prefix-title';
 
@@ -18,9 +19,12 @@ const EnvContent = observer(() => {
   const {
     prefixCls,
     intlPrefix,
+  } = useDeploymentStore();
+  const {
     intl: { formatMessage },
     baseInfoDs,
-  } = useContext(Store);
+  } = useEnvironmentStore();
+
   const [activeKey, setActiveKey] = useState(SYNC_TAB);
   const handleChange = useCallback((key) => {
     setActiveKey(key);

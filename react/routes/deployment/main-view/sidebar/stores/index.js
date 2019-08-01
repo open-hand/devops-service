@@ -3,22 +3,27 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import TreeDataSet from './TreeDataSet';
-import MainStore from '../../stores';
+import { useDeploymentStore } from '../../../stores';
 
 const Store = createContext();
 
-export default Store;
+export function useSidebarStore() {
+  return useContext(Store);
+}
 
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
-    const { store } = useContext(MainStore);
     const { AppState: { currentMenuType: { id } }, children } = props;
-    const treeDs = useMemo(() => new DataSet(TreeDataSet(id, store)), [id, store]);
+    const { deploymentStore } = useDeploymentStore();
+    const treeDs = useMemo(() => new DataSet(TreeDataSet(id, deploymentStore)), [deploymentStore, id]);
 
     const value = {
       ...props,
       treeDs,
-      store,
+      viewType: {
+        IST_VIEW_TYPE: 'instance',
+        RES_VIEW_TYPE: 'resource',
+      },
     };
     return (
       <Store.Provider value={value}>

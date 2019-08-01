@@ -1,15 +1,18 @@
-import React, { createContext } from 'react';
+import React, { createContext, useContext } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
-import MainViewStore from './MainViewStore';
+import useStore from './useStore';
 
 const Store = createContext();
 
-export default Store;
+export function useMainStore() {
+  return useContext(Store);
+}
 
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const { children } = props;
+    const mainStore = useStore();
 
     const value = {
       ...props,
@@ -24,11 +27,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
         APP_ITEM: 'application',
         IST_ITEM: 'instance',
       },
-      viewType: {
-        IST_VIEW_TYPE: 'instance',
-        RES_VIEW_TYPE: 'resource',
-      },
-      store: new MainViewStore(),
+      mainStore,
     };
     return (
       <Store.Provider value={value}>

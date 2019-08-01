@@ -1,11 +1,12 @@
-import React, { Fragment, useContext, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Permission } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
 import MouserOverWrapper from '../../../../../../../components/MouseOverWrapper';
 import TimePopover from '../../../../../../../components/timePopover';
-import Store from './stores';
 import SyncSituation from './SyncSituation';
+import { useSyncStore } from './stores';
+import { useDeploymentStore } from '../../../../../stores';
 
 import './index.less';
 
@@ -13,8 +14,8 @@ export default function Situation() {
   const {
     prefixCls,
     intlPrefix,
-    tableDs,
-  } = useContext(Store);
+  } = useDeploymentStore();
+  const { tableDs } = useSyncStore();
 
   const columns = useMemo(() => ([
     {

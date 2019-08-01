@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { inject } from 'mobx-react';
-import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import BaseInfoDataSet from './BaseInfoDataSet';
 import MainStore from '../../../../stores';
@@ -9,7 +7,7 @@ const Store = createContext();
 
 export default Store;
 
-export const StoreProvider = injectIntl(inject('AppState')(
+export const StoreProvider = (
   (props) => {
     const {
       prefixCls,
@@ -35,4 +33,4 @@ export const StoreProvider = injectIntl(inject('AppState')(
       </Store.Provider>
     );
   }
-));
+);

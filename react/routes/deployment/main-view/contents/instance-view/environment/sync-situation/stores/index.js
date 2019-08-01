@@ -2,14 +2,16 @@ import React, { createContext, useMemo, useContext } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
-import EnvStore from '../../stores';
 import TableDataSet from './TableDataSet';
 import GitopsLogDataSet from './GitopsLogDataSet';
 import RetryDataSet from './RetryDataSet';
+import { useDeploymentStore } from '../../../../../../stores';
 
 const Store = createContext();
 
-export default Store;
+export function useSyncStore() {
+  return useContext(Store);
+}
 
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
@@ -17,10 +19,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       prefixCls,
       intlPrefix,
-      store: {
+      deploymentStore: {
         getSelectedMenu: { menuId },
       },
-    } = useContext(EnvStore);
+    } = useDeploymentStore();
 
     const tableDs = useMemo(() => new DataSet(TableDataSet({
       intl,
@@ -36,8 +38,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
       tableDs,
       logDs,
       retryDs,
-      prefixCls,
-      intlPrefix,
     };
     return (
       <Store.Provider value={value}>

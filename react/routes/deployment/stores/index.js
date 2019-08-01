@@ -1,14 +1,19 @@
-import React, { createContext } from 'react';
+import React, { createContext, useContext } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
+import useStore from './useStore';
 
 const Store = createContext();
 
-export default Store;
+export function useDeploymentStore() {
+  return useContext(Store);
+}
 
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const { children } = props;
+    const deploymentStore = useStore();
+
     const value = {
       ...props,
       prefixCls: 'c7ncd-deployment',
@@ -16,6 +21,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
       permissions: [
         'devops-service.application-instance.pageByOptions',
       ],
+      deploymentStore,
     };
     return (
       <Store.Provider value={value}>

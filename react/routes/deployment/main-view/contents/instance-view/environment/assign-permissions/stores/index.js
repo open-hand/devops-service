@@ -3,11 +3,13 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import TableDataSet from './TableDataSet';
-import EnvStore from '../../stores';
+import { useDeploymentStore } from '../../../../../../stores';
 
 const Store = createContext();
 
-export default Store;
+export function useAssignStore() {
+  return useContext(Store);
+}
 
 export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
@@ -15,14 +17,14 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const {
       prefixCls,
       intlPrefix,
-      store: { getSelectedMenu },
-    } = useContext(EnvStore);
+      deploymentStore: { getSelectedMenu: { menuId } },
+    } = useDeploymentStore();
     const tableDs = useMemo(() => new DataSet(TableDataSet({
       intl,
       intlPrefix,
       projectId: id,
-      envId: getSelectedMenu.menuId,
-    })), [getSelectedMenu.menuId, id, intl, intlPrefix]);
+      envId: menuId,
+    })), [id, intl, intlPrefix, menuId]);
 
     const value = {
       ...props,
