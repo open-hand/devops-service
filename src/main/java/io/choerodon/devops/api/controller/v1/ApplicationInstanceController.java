@@ -62,14 +62,43 @@ public class ApplicationInstanceController {
 
 
     /**
-     * 分页查询应用部署
+     * 分页查询环境下实例信息（基本信息）
      *
      * @param projectId   项目id
      * @param pageRequest 分页参数
      * @param envId       环境id
-     * @param versionId   版本id
-     * @param appServiceId       应用id
      * @param params      搜索参数
+     * @return page of AppInstanceInfoVO
+     */
+    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "分页查询环境下实例信息（基本信息）")
+    @CustomPageRequest
+    @PostMapping(value = "/info/page_by_options")
+    public ResponseEntity<PageInfo<AppInstanceInfoVO>> pageInstanceInfoByOptions(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiIgnore
+            @ApiParam(value =  "分页参数") PageRequest pageRequest,
+            @ApiParam(value = "环境ID")
+            @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return new ResponseEntity<>(
+                applicationInstanceService.pageInstanceInfoByOptions(projectId, envId, pageRequest, params), HttpStatus.OK);
+    }
+
+
+    /**
+     * 分页查询应用部署
+     *
+     * @param projectId    项目id
+     * @param pageRequest  分页参数
+     * @param envId        环境id
+     * @param versionId    版本id
+     * @param appServiceId 应用id
+     * @param params       搜索参数
      * @return page of DevopsEnvPreviewInstanceVO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
@@ -102,8 +131,8 @@ public class ApplicationInstanceController {
     /**
      * 查询部署总览
      *
-     * @param projectId 项目id
-     * @param appServiceId     应用id
+     * @param projectId    项目id
+     * @param appServiceId 应用id
      * @return page of ApplicationInstancesVO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
@@ -393,7 +422,7 @@ public class ApplicationInstanceController {
      * 查询运行中的实例
      *
      * @param projectId    项目id
-     * @param appServiceId        应用id
+     * @param appServiceId 应用id
      * @param appVersionId 应用版本id
      * @param envId        环境id
      * @return baseList of AppInstanceCodeDTO
@@ -419,9 +448,9 @@ public class ApplicationInstanceController {
     /**
      * 环境下某应用运行中或失败的实例
      *
-     * @param projectId 项目id
-     * @param appServiceId     应用id
-     * @param envId     环境id
+     * @param projectId    项目id
+     * @param appServiceId 应用id
+     * @param envId        环境id
      * @return baseList of AppInstanceCodeDTO
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
@@ -611,11 +640,11 @@ public class ApplicationInstanceController {
     /**
      * 获取部署时长报表
      *
-     * @param projectId 项目id
-     * @param envId     环境id
-     * @param appServiceIds    应用id
-     * @param startTime 开始时间
-     * @param endTime   结束时间
+     * @param projectId     项目id
+     * @param envId         环境id
+     * @param appServiceIds 应用id
+     * @param startTime     开始时间
+     * @param endTime       结束时间
      * @return List
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
@@ -642,11 +671,11 @@ public class ApplicationInstanceController {
     /**
      * 获取部署次数报表
      *
-     * @param projectId 项目id
-     * @param envIds    环境id
-     * @param appServiceId     应用id
-     * @param startTime 开始时间
-     * @param endTime   结束时间
+     * @param projectId    项目id
+     * @param envIds       环境id
+     * @param appServiceId 应用id
+     * @param startTime    开始时间
+     * @param endTime      结束时间
      * @return List
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
@@ -674,11 +703,11 @@ public class ApplicationInstanceController {
     /**
      * 分页获取部署次数列表
      *
-     * @param projectId 项目id
-     * @param envIds    环境id
-     * @param appServiceId     应用id
-     * @param startTime 开始时间
-     * @param endTime   结束时间
+     * @param projectId    项目id
+     * @param envIds       环境id
+     * @param appServiceId 应用id
+     * @param startTime    开始时间
+     * @param endTime      结束时间
      * @return List
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
@@ -708,11 +737,11 @@ public class ApplicationInstanceController {
     /**
      * 分页获取部署时长列表
      *
-     * @param projectId 项目id
-     * @param envId     环境id
-     * @param appServiceIds    应用id
-     * @param startTime 开始时间
-     * @param endTime   结束时间
+     * @param projectId     项目id
+     * @param envId         环境id
+     * @param appServiceIds 应用id
+     * @param startTime     开始时间
+     * @param endTime       结束时间
      * @return PageInfo
      */
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,

@@ -18,6 +18,10 @@ import org.apache.ibatis.annotations.Param;
 public interface ApplicationInstanceMapper extends Mapper<ApplicationInstanceDTO> {
     AppInstanceInfoDTO queryInfoById(@Param("instanceId") Long instanceId);
 
+    List<AppInstanceInfoDTO> listInstanceInfoByEnvAndOptions(@Param("envId") Long envId,
+                                                             @Param("searchParam") Map<String, Object> searchParam,
+                                                             @Param("param") String param);
+
     List<ApplicationInstanceDTO> listApplicationInstance(@Param("projectId") Long projectId,
                                                          @Param("envId") Long envId,
                                                          @Param("versionId") Long versionId,

@@ -16,11 +16,66 @@
                   AND dp.is_ready = TRUE) pod_running_count,
                ins.app_service_id,
                ins.app_version_id,
-               version.version as          version_name
+               version.version as version_name,
+               das.name as app_service_name
         FROM devops_app_instance ins
                  LEFT JOIN devops_app_version version ON ins.app_version_id = version.id
-        WHERE ins.id = #{instanceId};
+                 LEFT JOIN devops_application_service das ON ins.app_service_id = das.id
+        WHERE ins.id = #{instanceId}
     </select>
+
+    <select id="listInstanceInfoByEnvAndOptions" resultType="io.choerodon.devops.infra.dto.AppInstanceInfoDTO">
+        SELECT ins.id,
+               ins.code,
+               ins.status,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.app_instance_id = ins.id) pod_count,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.app_instance_id = ins.id
+                  AND dp.`status` = 'Running'
+                  AND dp.is_ready = TRUE) pod_running_count,
+               ins.app_service_id,
+               ins.app_version_id,
+               version.version as version_name,
+               das.name as app_service_name
+        FROM devops_app_instance ins
+                 LEFT JOIN devops_app_version version ON ins.app_version_id = version.id
+                 LEFT JOIN devops_application_service das ON ins.app_service_id = das.id
+        WHERE ins.env_id = #{envId}
+        <include refid="infoSqlParam"/>
+    </select>
+
+    <sql id="infoSqlParam">
+        <if test='searchParam != null'>
+            <if test='searchParam.code != null'>
+                AND ins.`code` LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.appServiceName != null'>
+                AND das.`name` LIKE CONCAT(CONCAT('%', #{searchParam.appServiceName, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.appVersionName != null'>
+                AND version.version LIKE CONCAT(CONCAT('%', #{searchParam.appVersionName, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='searchParam.podCount != null'>
+                AND
+                    (
+                    SELECT
+                    count(1)
+                    FROM
+                    devops_env_pod dp
+                    WHERE
+                    dp.app_instance_id = ins.id
+                    ) = #{searchParam.podCount, jdbcType=BIGINT}
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (ins.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR das.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR version.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        </if>
+    </sql>
 
     <select id="listApplicationInstance" resultType="io.choerodon.devops.infra.dto.ApplicationInstanceDTO">
         SELECT

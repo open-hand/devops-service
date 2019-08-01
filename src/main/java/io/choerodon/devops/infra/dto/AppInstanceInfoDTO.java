@@ -10,8 +10,9 @@ public class AppInstanceInfoDTO {
     private String status;
     private Long podCount;
     private Long podRunningCount;
-    private Long appId;
+    private Long appServiceId;
     private Long appVersionId;
+    private String appServiceName;
     private String versionName;
 
     public Long getId() {
@@ -54,12 +55,12 @@ public class AppInstanceInfoDTO {
         this.podRunningCount = podRunningCount;
     }
 
-    public Long getAppId() {
-        return appId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Long getAppVersionId() {
@@ -76,5 +77,13 @@ public class AppInstanceInfoDTO {
 
     public void setVersionName(String versionName) {
         this.versionName = versionName;
+    }
+
+    public String getAppServiceName() {
+        return appServiceName;
+    }
+
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 }
