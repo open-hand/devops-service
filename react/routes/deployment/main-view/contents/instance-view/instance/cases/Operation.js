@@ -1,4 +1,4 @@
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useState, useContext, useMemo, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { observer } from 'mobx-react-lite';
 import {
@@ -44,10 +44,10 @@ const Operation = observer(({ handleClick }) => {
   } = useContext(CasesContext);
   const [cardActive, setCardActive] = useState('');
 
-  function handleRecordClick(createTime, podEventVO) {
+  const handleRecordClick = useCallback((createTime, podEventVO) => {
     setCardActive(createTime);
     handleClick(podEventVO);
-  }
+  }, [handleClick]);
 
   const renderOperation = useMemo(() => {
     const firstRecord = casesDataSet.get(0);
@@ -104,7 +104,7 @@ const Operation = observer(({ handleClick }) => {
         })}
       </Slider>
     );
-  });
+  }, [cardActive, casesDataSet, handleRecordClick, intlPrefix, prefixCls]);
 
   return (
     <div className={`${prefixCls}-cases-record`}>
