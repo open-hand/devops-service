@@ -55,7 +55,15 @@ public interface DevopsEnvironmentService {
      * @param projectId 项目id
      * @return 实例视图树形目录层次数据
      */
-    List<DevopsEnvironmentViewVO> listEnvTree(Long projectId);
+    List<DevopsEnvironmentViewVO> listInstanceEnvTree(Long projectId);
+
+    /**
+     * 资源视图查询项目下环境及其下各种资源的基本信息
+     *
+     * @param projectId 项目id
+     * @return 资源视图树形目录层次数据
+     */
+    List<DevopsResourceEnvOverviewVO> listResourceEnvTree(Long projectId);
 
     /**
      * 项目下启用停用环境

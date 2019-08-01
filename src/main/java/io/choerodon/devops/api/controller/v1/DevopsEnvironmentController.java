@@ -81,7 +81,23 @@ public class DevopsEnvironmentController {
     public ResponseEntity<List<DevopsEnvironmentViewVO>> listEnvTree(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return new ResponseEntity<>(devopsEnvironmentService.listEnvTree(projectId), HttpStatus.OK);
+        return new ResponseEntity<>(devopsEnvironmentService.listInstanceEnvTree(projectId), HttpStatus.OK);
+    }
+
+    /**
+     * 资源视图查询项目下环境及其下各种资源的基本信息
+     *
+     * @param projectId 项目id
+     * @return 资源视图树形目录所需目录
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "资源视图查询项目下环境及其下各种资源的基本信息")
+    @GetMapping(value = "/resource_tree_menu")
+    public ResponseEntity<List<DevopsResourceEnvOverviewVO>> listResourceEnvTree(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return new ResponseEntity<>(devopsEnvironmentService.listResourceEnvTree(projectId), HttpStatus.OK);
     }
 
     /**

@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentViewDTO;
+import io.choerodon.devops.infra.dto.DevopsResourceEnvOverviewDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -31,7 +32,15 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
      * @param projectId 项目id
      * @return 树形目录
      */
-    List<DevopsEnvironmentViewDTO> listEnvTree(@Param("projectId") Long projectId);
+    List<DevopsEnvironmentViewDTO> listInstanceEnvTree(@Param("projectId") Long projectId);
+
+    /**
+     * 项目下，查询资源视图的环境及其下资源作为树形目录
+     *
+     * @param projectId 项目id
+     * @return 树形目录
+     */
+    List<DevopsResourceEnvOverviewDTO> listResourceEnvTree(@Param("projectId") Long projectId);
 
     /**
      * 查询单个环境及其集群信息
