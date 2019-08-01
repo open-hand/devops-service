@@ -11,6 +11,7 @@ public class AppInstanceInfoVO {
     private Long podCount;
     private Long podRunningCount;
     private Long appServiceId;
+    private String appServiceName;
     private Long appVersionId;
     private String versionName;
 
@@ -76,5 +77,13 @@ public class AppInstanceInfoVO {
 
     public void setVersionName(String versionName) {
         this.versionName = versionName;
+    }
+
+    public String getAppServiceName() {
+        return appServiceName;
+    }
+
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 }

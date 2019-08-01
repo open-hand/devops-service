@@ -156,6 +156,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
+    public PageInfo<AppInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
+        Map maps = gson.fromJson(params, Map.class);
+        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+        String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        return ConvertUtils.convertPage(PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+                .doSelectPageInfo(() -> applicationInstanceMapper.listInstanceInfoByEnvAndOptions(envId, searchParamMap, param)), AppInstanceInfoVO.class);
+    }
+
+    @Override
     public PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, PageRequest pageRequest,
                                                               Long envId, Long versionId, Long appId, Long instanceId, String params) {
 

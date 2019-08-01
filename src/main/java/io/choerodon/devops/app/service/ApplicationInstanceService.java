@@ -26,6 +26,17 @@ public interface ApplicationInstanceService {
      */
     AppInstanceInfoVO queryInfoById(Long instanceId);
 
+
+    /**
+     * 分页查询环境下实例信息（基本信息）
+     *
+     * @param projectId 项目id
+     * @param envId 环境id
+     * @param params 查询参数
+     * @return 环境下实例基本信息
+     */
+    PageInfo<AppInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params);
+
     /**
      * 分页查询应用部署
      *
