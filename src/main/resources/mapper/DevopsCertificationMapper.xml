@@ -12,6 +12,7 @@
         dc.organization_id,
         dc.valid_until,
         dc.command_id,
+        dc.object_version_number,
         cmd.`status` commandStatus,
         cmd.command_type commandType,
         cmd.error error,
