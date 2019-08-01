@@ -159,9 +159,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             }
         }
         DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
-        if (devopsServiceQueryDTO != null) {
+        if(devopsServiceQueryDTO!=null) {
             return queryDtoToVo(baseQueryById(id));
-        } else {
+        }else {
             return null;
         }
     }
