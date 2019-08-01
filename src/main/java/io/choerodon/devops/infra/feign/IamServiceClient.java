@@ -6,12 +6,15 @@ import javax.validation.Valid;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.constant.PageConstant;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
+import io.choerodon.devops.api.vo.ProjectCreateVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
 import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.api.vo.iam.RoleSearchVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
+import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -112,7 +115,7 @@ public interface IamServiceClient {
 
     @PostMapping("/v1/organizations/{organization_id}/projects")
     ResponseEntity<ProjectDTO> createProject(@PathVariable(name = "organization_id") Long organizationId,
-                                             @RequestBody @Valid ProjectDTO projectDTO);
+                                             @RequestBody @Valid ProjectCreateDTO projectCreateDTO);
 
     @PostMapping("/v1/organizations/all")
     ResponseEntity<PageInfo<OrganizationSimplifyVO>> getAllOrgs(

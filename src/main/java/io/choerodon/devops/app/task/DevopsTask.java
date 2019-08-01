@@ -29,7 +29,7 @@ public class DevopsTask {
             repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void syncEnvAppRelevance(Map<String, Object> map) {
         logger.info("begin to upgrade 0.18.0 to 0.19.0");
-        devopsCheckLogService.checkLog("0.19.0");
+        devopsCheckLogService.checkLog("0.18.0");
     }
 
 }
