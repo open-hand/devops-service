@@ -82,8 +82,6 @@
         dai.id id,
         dai.`code` code,
         dam.share_level publishLevel,
-        dam.contributor,
-        dam.description,
         da.id appServiceId,
         da.project_id projectId,
         da.code as appCode,
