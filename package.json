@@ -72,7 +72,7 @@
     "react/**/*.{js,jsx}": [
       "npm run lint-staged:es"
     ],
-    "react/**/*.{scss,less}": "stylelint --syntax scss"
+    "react/**/*.{scss,less}": "stylelint --syntax less"
   },
   "husky": {
     "hooks": {
