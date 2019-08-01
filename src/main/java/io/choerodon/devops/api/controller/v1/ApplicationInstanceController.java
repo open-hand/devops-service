@@ -365,7 +365,7 @@ public class ApplicationInstanceController {
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询预览value")
-    @PostMapping("/previewValue")
+    @PostMapping("/preview_value")
     public ResponseEntity<InstanceValueVO> previewValues(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -456,8 +456,8 @@ public class ApplicationInstanceController {
     @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境下某应用运行中或失败的实例")
-    @GetMapping("/listByappServiceIdAndEnvId")
-    public ResponseEntity<List<RunningInstanceVO>> listByappServiceIdAndEnvId(
+    @GetMapping("/list_running_and_failed")
+    public ResponseEntity<List<RunningInstanceVO>> listByAppServiceIdAndEnvId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID")

@@ -468,6 +468,7 @@ public class CertificationServiceImpl implements CertificationService {
                     CertificationDTO certificationDTO = new CertificationDTO();
                     certificationDTO.setId(dto.getId());
                     certificationDTO.setStatus(CertificationStatus.OVERDUE.getStatus());
+                    certificationDTO.setObjectVersionNumber(dto.getObjectVersionNumber());
                     devopsCertificationMapper.updateByPrimaryKeySelective(certificationDTO);
                 }
             }
