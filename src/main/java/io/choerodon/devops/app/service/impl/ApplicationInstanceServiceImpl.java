@@ -731,6 +731,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
             } else {
                 code = applicationDeployDTO.getInstanceName();
+                checkName(code, applicationDeployDTO.getEnvironmentId());
             }
         } else {
             code = applicationInstanceE.getCode();
