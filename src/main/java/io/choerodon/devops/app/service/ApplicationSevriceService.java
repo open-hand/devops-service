@@ -312,6 +312,7 @@ public interface ApplicationSevriceService {
 
     /**
      * 获取远程应用
+     *
      * @param projectId
      * @param pageRequest
      * @param params
@@ -321,12 +322,49 @@ public interface ApplicationSevriceService {
 
     /**
      * 获取共享应用
+     *
      * @param projectId
      * @param pageRequest
      * @param params
      * @return
      */
     PageInfo<ApplicationServiceRepVO> pageShareApps(Long projectId, PageRequest pageRequest, String params);
+
+    /**
+     * 根据appServiceId查询应用服务有权限的项目成员和项目所有者
+     *
+     * @param projectId
+     * @param appServiceId
+     * @param pageRequest
+     * @param searchParam
+     */
+    PageInfo<DevopsUserPermissionVO> pagePermissionUsers(Long projectId, Long appServiceId, PageRequest pageRequest, String searchParam);
+
+    /**
+     * 根据appServiceId查询应用服务所有没有权限的项目成员
+     *
+     * @param projectId
+     * @param appServiceId
+     * @param params
+     * @return
+     */
+    List<DevopsUserPermissionVO> listMembers(Long projectId, Long appServiceId, String params);
+
+    /**
+     * 更新应用服务权限
+     *
+     * @param appServiceId
+     * @param applicationPermissionVO
+     */
+    void updatePermission(Long projectId, Long appServiceId, ApplicationPermissionVO applicationPermissionVO);
+
+    /**
+     * 删除用户应用服务权限
+     *
+     * @param appServiceId
+     * @param userId
+     */
+    void deletePermission(Long projectId, Long appServiceId, Long userId);
 
     void baseCheckApp(Long projectId, Long appId);
 

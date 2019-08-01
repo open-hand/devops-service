@@ -270,19 +270,19 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param projectId     the project id
      * @param applicationId the application id
      * @return the version
-     */
-    private AppMarketVersionVO getApplicationVersion(Long projectId, Long applicationId) {
-        PageRequest pageRequest = new PageRequest(0, 1);
-        PageInfo<ApplicationVersionRespVO> versions = applicationVersionService.pageApplicationVersionInApp(projectId, applicationId, pageRequest, null);
-        if (!versions.getList().isEmpty()) {
-            AppMarketVersionVO appMarketVersionVO = new AppMarketVersionVO();
-            BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionVO);
-            return appMarketVersionVO;
-        } else {
-            logger.error("Error: can not find a version with name {}", demoDataVO.getTagInfo().getTag());
-            return null;
-        }
-    }
+//     */
+//    private AppMarketVersionVO getApplicationVersion(Long projectId, Long applicationId) {
+//        PageRequest pageRequest = new PageRequest(0, 1);
+//        PageInfo<ApplicationVersionRespVO> versions = applicationVersionService.pageByOptions(projectId, applicationId, pageRequest, null);
+//        if (!versions.getList().isEmpty()) {
+//            AppMarketVersionVO appMarketVersionVO = new AppMarketVersionVO();
+//            BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionVO);
+//            return appMarketVersionVO;
+//        } else {
+//            logger.error("Error: can not find a version with name {}", demoDataVO.getTagInfo().getTag());
+//            return null;
+//        }
+//    }
 
     /**
      * 手动制造一个应用版本

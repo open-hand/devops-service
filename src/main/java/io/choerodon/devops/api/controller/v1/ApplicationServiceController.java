@@ -81,20 +81,20 @@ public class ApplicationServiceController {
     /**
      * 项目下查询单个应用信息
      *
-     * @param projectId     项目id
-     * @param applicationId 应用Id
+     * @param projectId    项目id
+     * @param appServiceId 应用Id
      * @return ApplicationRepDTO
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询单个应用信息")
-    @GetMapping("/{application_id}")
+    @GetMapping("/{app_service_id}")
     public ResponseEntity<ApplicationServiceRepVO> query(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable(value = "application_id") Long applicationId) {
-        return Optional.ofNullable(applicationService.query(projectId, applicationId))
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        return Optional.ofNullable(applicationService.query(projectId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.query"));
     }
@@ -122,22 +122,22 @@ public class ApplicationServiceController {
     /**
      * 项目下启用停用应用信息
      *
-     * @param projectId     项目id
-     * @param applicationId 应用id
-     * @param active        启用停用
+     * @param projectId    项目id
+     * @param appServiceId 应用id
+     * @param active       启用停用
      * @return Boolean
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下启用停用应用信息")
-    @PutMapping("/{application_id}")
+    @PutMapping("/{app_service_id}")
     public ResponseEntity<Boolean> updateActive(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable(value = "application_id") Long applicationId,
+            @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "启用停用", required = true)
             @RequestParam Boolean active) {
-        return Optional.ofNullable(applicationService.updateActive(applicationId, active))
+        return Optional.ofNullable(applicationService.updateActive(appServiceId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.active"));
     }
@@ -145,19 +145,19 @@ public class ApplicationServiceController {
     /**
      * 项目下删除创建失败应用
      *
-     * @param projectId     项目id
-     * @param applicationId 应用id
+     * @param projectId    项目id
+     * @param appServiceId 应用id
      * @return Boolean
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除创建失败应用")
-    @DeleteMapping("/{application_id}")
+    @DeleteMapping("/{app_service_id}")
     public ResponseEntity delete(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable(value = "application_id") Long applicationId) {
-        applicationService.delete(projectId, applicationId);
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        applicationService.delete(projectId, appServiceId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -536,8 +536,8 @@ public class ApplicationServiceController {
     /**
      * 查看sonarqube相关信息
      *
-     * @param projectId 项目Id
-     * @param appServiceId     应用id
+     * @param projectId    项目Id
+     * @param appServiceId 应用id
      * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -556,8 +556,8 @@ public class ApplicationServiceController {
     /**
      * 查看sonarqube相关报表
      *
-     * @param projectId 项目Id
-     * @param appServiceId     应用id
+     * @param projectId    项目Id
+     * @param appServiceId 应用id
      * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -613,4 +613,68 @@ public class ApplicationServiceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.shere.applications.get"));
     }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询拥有应用服务权限的项目成员及项目所有者")
+    @CustomPageRequest
+    @PostMapping(value = "/{app_service_id}/page_permission_users")
+    public ResponseEntity<PageInfo<DevopsUserPermissionVO>> pagePermissionUsers(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Id")
+            @PathVariable(value = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return Optional.ofNullable(
+                applicationService.pagePermissionUsers(projectId, appServiceId, pageRequest, searchParam))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.shere.applications.get"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "查询没有应用服务权限的项目成员")
+    @GetMapping(value = "/{app_service_id}/list_non_permission_users")
+    public ResponseEntity<List<DevopsUserPermissionVO>> listNonPermissionUsers(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Id")
+            @PathVariable(value = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "查询参数")
+            @RequestParam(value = "param", required = false) String params) {
+        return Optional.ofNullable(
+                applicationService.listMembers(projectId, appServiceId, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.shere.applications.get"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "应用服务权限更新")
+    @PostMapping(value = "/{app_service_id}/update_permission")
+    public ResponseEntity updatePermission(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Id")
+            @PathVariable(value = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "权限信息", required = true)
+            @RequestBody ApplicationPermissionVO applicationPermissionVO) {
+        applicationService.updatePermission(projectId, appServiceId, applicationPermissionVO);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "应用服务权限更新")
+    @DeleteMapping(value = "/{app_service_id}/delete_pemission")
+    public ResponseEntity deletePermission(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Id")
+            @PathVariable(value = "app_service_id", required = false) Long appServiceId,
+            @ApiParam(value = "user Id", required = true)
+            @RequestParam(value = "user_id") Long userId) {
+        applicationService.deletePermission(projectId, appServiceId, userId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
 }

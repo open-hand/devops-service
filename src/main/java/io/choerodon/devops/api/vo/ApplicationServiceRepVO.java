@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.Date;
+
 /**
  * @author younger
  * @date 2018/3/30
@@ -26,6 +28,15 @@ public class ApplicationServiceRepVO {
     private Long harborConfigId;
     private Long chartConfigId;
     private String imgUrl;
+    private Date creationDate;
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
 
     public String getImgUrl() {
         return imgUrl;

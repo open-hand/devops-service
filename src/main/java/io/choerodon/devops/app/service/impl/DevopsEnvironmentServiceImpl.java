@@ -647,7 +647,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public PageInfo<DevopsEnvUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest, String params, Long envId) {
+    public PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest, String params, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
@@ -676,13 +676,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         PageInfo<IamUserDTO> projectOwners = iamService.pagingQueryUsersByRoleIdOnProjectLevel(
                 new PageRequest(0, 0), roleAssignmentSearchVO, ownerId, projectId, false);
 
-        List<DevopsEnvUserPermissionVO> members;
-        if (!devopsEnvironmentDTO.getSkipCheckPermission()) {
+        List<DevopsUserPermissionVO> members;
+        if(!devopsEnvironmentDTO.getSkipCheckPermission()) {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
             List<DevopsEnvUserPermissionDTO> permissions = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, param);
             members = permissions
                     .stream()
-                    .map(p -> ConvertUtils.convertObject(p, DevopsEnvUserPermissionVO.class))
+                    .map(p -> ConvertUtils.convertObject(p, DevopsUserPermissionVO.class))
                     .peek(p -> p.setRole(MEMBER))
                     .collect(Collectors.toList());
         } else {
@@ -698,15 +698,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     .getList()
                     .stream()
                     .filter(u -> !ownerIds.contains(u.getId()))
-                    .map(iamUser -> new DevopsEnvUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
+                    .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
                     .peek(p -> p.setRole(MEMBER))
                     .collect(Collectors.toList());
         }
 
         // 项目成员加上项目所有者
-        List<DevopsEnvUserPermissionVO> owners = projectOwners.getList()
+        List<DevopsUserPermissionVO> owners = projectOwners.getList()
                 .stream()
-                .map(iamUser -> new DevopsEnvUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
+                .map(iamUser -> new DevopsUserPermissionVO(iamUser.getId(), iamUser.getLoginName(), iamUser.getRealName()))
                 .peek(p -> p.setRole(OWNER))
                 .collect(Collectors.toList());
         members.addAll(owners);
@@ -898,7 +898,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         }
                     }).collect(Collectors.toList());
         }
-        allMemberWithOtherUsersPage.setList(returnUserDTOList);
+        allMemberWithOtherUsersPage.setPageSize(pageRequest.getSize());
+        allMemberWithOtherUsersPage.setTotal(returnUserDTOList.size());
+        allMemberWithOtherUsersPage.setPageNum(pageRequest.getPage());
+        if (returnUserDTOList.size() < pageRequest.getSize() * pageRequest.getPage()) {
+            allMemberWithOtherUsersPage.setSize(TypeUtil.objToInt(returnUserDTOList.size()) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
+            allMemberWithOtherUsersPage.setList(returnUserDTOList);
+        } else {
+            allMemberWithOtherUsersPage.setSize(pageRequest.getSize());
+            int fromIndex = pageRequest.getSize() * (pageRequest.getPage() - 1);
+            int toIndex = (pageRequest.getSize() * pageRequest.getPage()) > returnUserDTOList.size() ? returnUserDTOList.size() : pageRequest.getSize() * pageRequest.getPage();
+            allMemberWithOtherUsersPage.setList(returnUserDTOList.subList(fromIndex, toIndex));
+        }
+
         return ConvertUtils.convertPage(allMemberWithOtherUsersPage, UserVO.class);
     }
 

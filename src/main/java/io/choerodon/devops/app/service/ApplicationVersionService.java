@@ -74,7 +74,7 @@ public interface ApplicationVersionService {
      * @param searchParam 模糊搜索参数
      * @return ApplicationVersionRespVO
      */
-    PageInfo<ApplicationVersionRespVO> pageApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String searchParam);
+    PageInfo<ApplicationVersionVO> pageByOptions(Long projectId, Long appId, PageRequest pageRequest, String searchParam);
 
     /**
      * 根据应用id查询需要升级的应用版本

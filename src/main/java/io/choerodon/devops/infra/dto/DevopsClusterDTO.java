@@ -25,7 +25,15 @@ public class DevopsClusterDTO extends BaseDTO {
     private String namespaces;
     private Boolean isInit;
     private Long createdBy;
+    private Long projectId;
 
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
 
     public Long getId() {
         return id;

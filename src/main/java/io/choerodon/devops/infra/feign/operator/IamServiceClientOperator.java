@@ -17,6 +17,7 @@ import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
 import io.choerodon.devops.api.vo.iam.RoleSearchVO;
 import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
+import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.infra.dto.iam.IamAppDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
@@ -258,10 +259,10 @@ public class IamServiceClientOperator {
         return pageInfoResponseEntity.getBody().getList().isEmpty() ? null : pageInfoResponseEntity.getBody().getList().get(0);
     }
 
-    public ProjectDTO createProject(Long organizationId, ProjectDTO projectDTO) {
+    public ProjectDTO createProject(Long organizationId, ProjectCreateDTO projectCreateDTO) {
         try {
             ResponseEntity<ProjectDTO> projectDTOResponseEntity = iamServiceClient
-                    .createProject(organizationId, projectDTO);
+                    .createProject(organizationId, projectCreateDTO);
             return projectDTOResponseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("error.create.iam.project");

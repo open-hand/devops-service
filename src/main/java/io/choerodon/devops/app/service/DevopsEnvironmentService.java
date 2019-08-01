@@ -138,8 +138,8 @@ public interface DevopsEnvironmentService {
      * @param envId       环境id
      * @return page
      */
-    PageInfo<DevopsEnvUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                                  String params, Long envId);
+    PageInfo<DevopsUserPermissionVO> pageUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+                                                               String params, Long envId);
 
     /**
      * 查询项目下所有与该环境未分配权限的项目成员

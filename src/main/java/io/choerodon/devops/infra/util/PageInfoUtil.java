@@ -28,7 +28,7 @@ public class PageInfoUtil {
         result.setPages(queryAll ? 1 : (int) (Math.ceil(all.size() / (pageRequest.getSize() * 1.0))));
         int fromIndex = pageRequest.getSize() * (pageRequest.getPage() - 1);
         int size;
-        if (all.size() <= fromIndex) {
+        if (all.size() >= fromIndex) {
             if (all.size() <= fromIndex + pageRequest.getSize()) {
                 size = all.size() - fromIndex;
             } else {
