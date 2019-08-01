@@ -7,7 +7,7 @@ package io.choerodon.devops.infra.enums;
  * Description:
  */
 public enum InstanceStatus {
-    OPERATIING("operating"),
+    OPERATING("operating"),
     RUNNING("running"),
     FAILED("failed"),
     STOPPED("stopped"),

@@ -92,6 +92,14 @@ public interface DevopsEnvironmentService {
     DevopsEnvironmentInfoVO queryInfoById(Long environmentId);
 
     /**
+     * 查询环境下相关资源的数量
+     *
+     * @param environmentId 环境id
+     * @return 环境下相关资源的数量
+     */
+    DevopsEnvResourceCountVO queryEnvResourceCount(Long environmentId);
+
+    /**
      * 项目下更新环境
      *
      * @param devopsEnvironmentUpdateDTO 环境信息
