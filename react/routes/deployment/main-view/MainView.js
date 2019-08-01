@@ -10,9 +10,9 @@ import { useResize, X_AXIS_WIDTH, X_AXIS_WIDTH_MAX } from './useResize';
 import './styles/index.less';
 
 // 实例视图
-const EnvContent = lazy(() => import('./contents/instance-view/environment'));
-const AppContent = lazy(() => import('./contents/instance-view/application'));
-const IstContent = lazy(() => import('./contents/instance-view/instance'));
+const EnvContent = lazy(() => import('./contents/environment'));
+const AppContent = lazy(() => import('./contents/application'));
+const IstContent = lazy(() => import('./contents/instance'));
 
 const MainView = observer(() => {
   const { prefixCls, deploymentStore } = useDeploymentStore();

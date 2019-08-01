@@ -21,6 +21,10 @@ export const StoreProvider = injectIntl(inject('AppState')(
       permissions: [
         'devops-service.application-instance.pageByOptions',
       ],
+      viewType: {
+        IST_VIEW_TYPE: 'instance',
+        RES_VIEW_TYPE: 'resource',
+      },
       deploymentStore,
     };
     return (
