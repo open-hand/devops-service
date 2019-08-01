@@ -13,7 +13,7 @@ import io.choerodon.mybatis.common.Mapper;
  */
 public interface ApplicationShareRuleMapper extends Mapper<ApplicationShareRuleDTO> {
 
-    List<ApplicationShareRuleDTO> listByOptions(@Param("projectId") Long projectId,
+    List<ApplicationShareRuleDTO> listByOptions(@Param("appServiceId") Long appServiceId,
                                                 @Param("searchParam") Map<String, Object> searchParam,
                                                 @Param("param") String param);
 

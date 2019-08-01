@@ -113,7 +113,7 @@ public class ApplicationServiceController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
-            @RequestBody ApplicationUpdateVO applicationUpdateDTO) {
+            @RequestBody ApplicationServiceUpdateVO applicationUpdateDTO) {
         return Optional.ofNullable(applicationService.update(projectId, applicationUpdateDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.update"));
@@ -646,7 +646,7 @@ public class ApplicationServiceController {
         return Optional.ofNullable(
                 applicationService.listMembers(projectId, appServiceId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.shere.applications.get"));
+                .orElseThrow(() -> new CommonException("error.share.applications.get"));
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -677,4 +677,20 @@ public class ApplicationServiceController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询组织下所有项目，除当前项目")
+    @GetMapping(value = "/{organization_id}/list_projects")
+    public ResponseEntity<List<ProjectVO>> listProjects(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Id")
+            @PathVariable(value = "organization_id", required = false) Long organizationId,
+            @ApiParam(value = "查询参数", required = true)
+            @RequestParam(value = "params",required = false) String params) {
+        return Optional.ofNullable(
+                applicationService.listProjects(organizationId, projectId, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.list.projects"));
+    }
 }

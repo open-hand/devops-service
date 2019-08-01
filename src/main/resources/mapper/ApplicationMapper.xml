@@ -329,7 +329,7 @@
             da.chart_config_id,
             da.harbor_config_id
         FROM
-            devops_app_share_rule_rule dasr
+            devops_app_share_rule dasr
         JOIN devops_application_service da ON da.id = dasr.app_service_id
         WHERE
             dasr.app_service_id in

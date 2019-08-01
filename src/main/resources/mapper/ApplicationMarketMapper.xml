@@ -5,15 +5,16 @@
 
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.ApplicationShareRuleDTO">
         SELECT
+        dasr.id,
         dasr.app_service_id,
         dasr.version_type,
         dasr.version,
         dasr.share_level,
         dasr.project_id
         FROM
-        devops_app_share_rule_rule dasr
+        devops_app_share_rule dasr
         WHERE
-        app_service_id = #{app_service_id}
+        app_service_id = #{appServiceId}
         <include refid="sqlparam"/>
     </select>
 
