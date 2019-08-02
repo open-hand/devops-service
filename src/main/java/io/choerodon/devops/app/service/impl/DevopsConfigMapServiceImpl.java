@@ -7,6 +7,7 @@ import java.util.Map;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
@@ -17,6 +18,7 @@ import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -62,6 +64,8 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private IamServiceClientOperator iamServiceClientOperator;
 
 
     @Override
@@ -137,7 +141,18 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     public DevopsConfigMapRespVO query(Long configMapId) {
         DevopsConfigMapDTO devopsConfigMapDTO = baseQueryById(configMapId);
         DevopsConfigMapRespVO devopsConfigMapRespVO = ConvertUtils.convertObject(devopsConfigMapDTO, DevopsConfigMapRespVO.class);
-        devopsConfigMapRespVO.setValue(gson.fromJson(devopsConfigMapDTO.getValue(), Map.class));
+
+        if (devopsConfigMapRespVO == null) {
+            return null;
+        }
+
+        devopsConfigMapRespVO.setValue(gson.fromJson(devopsConfigMapDTO.getValue(), new TypeToken<Map<String, String>>() {
+        }.getType()));
+
+        if (devopsConfigMapDTO.getCreatedBy() != 0) {
+            devopsConfigMapRespVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsConfigMapDTO.getCreatedBy()).getRealName());
+        }
+
         return devopsConfigMapRespVO;
     }
 

@@ -1,10 +1,9 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class DevopsConfigMapRespVO {
+public class DevopsConfigMapRespVO extends DevopsResourceDataInfoVO {
 
     private Long id;
     private Long envId;
@@ -17,7 +16,6 @@ public class DevopsConfigMapRespVO {
     private List<String> key;
     private Map<String, String> value;
     private String description;
-    private Date lastUpdateDate;
 
     public Long getId() {
         return id;
@@ -81,14 +79,6 @@ public class DevopsConfigMapRespVO {
 
     public void setValue(Map<String, String> value) {
         this.value = value;
-    }
-
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
     }
 
     public String getCommandType() {

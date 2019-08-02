@@ -102,13 +102,13 @@ public class DevopsConfigMapController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建配置映射")
-    @GetMapping("/{configMap_id}")
+    @ApiOperation(value = "配置映射查询")
+    @GetMapping("/{config_map_id}")
     public ResponseEntity<DevopsConfigMapRespVO> query(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "域名信息", required = true)
-            @PathVariable(value = "configMap_id") Long configMapId) {
+            @ApiParam(value = "configMap的ID", required = true)
+            @PathVariable(value = "config_map_id") Long configMapId) {
         return Optional.ofNullable(devopsConfigMapService.query(configMapId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.configMap.query"));

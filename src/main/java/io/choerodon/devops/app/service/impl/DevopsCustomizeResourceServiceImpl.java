@@ -213,9 +213,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     public DevopsCustomizeResourceVO queryDevopsCustomizeResourceDetail(Long resourceId) {
         DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.queryDetail(resourceId);
         DevopsCustomizeResourceVO resource = ConvertUtils.convertObject(devopsCustomizeResourceDTO, DevopsCustomizeResourceVO.class);
-        if(devopsCustomizeResourceDTO.getCreatedBy() == 0) {
-            resource.setCreatorName("修改环境配置库创建");
-        } else {
+        if(devopsCustomizeResourceDTO.getCreatedBy() != 0) {
             resource.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsCustomizeResourceDTO.getId()).getRealName());
         }
 
