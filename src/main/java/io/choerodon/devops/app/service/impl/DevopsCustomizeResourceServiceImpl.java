@@ -211,8 +211,15 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
     @Override
     public DevopsCustomizeResourceVO queryDevopsCustomizeResourceDetail(Long resourceId) {
-        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = queryDetail(resourceId);
-        return ConvertUtils.convertObject(devopsCustomizeResourceDTO, DevopsCustomizeResourceVO.class);
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.queryDetail(resourceId);
+        DevopsCustomizeResourceVO resource = ConvertUtils.convertObject(devopsCustomizeResourceDTO, DevopsCustomizeResourceVO.class);
+        if(devopsCustomizeResourceDTO.getCreatedBy() == 0) {
+            resource.setCreatorName("修改环境配置库创建");
+        } else {
+            resource.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsCustomizeResourceDTO.getId()).getRealName());
+        }
+
+        return resource;
     }
 
 
@@ -391,11 +398,6 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         devopsCustomizeResourceDO.setName(name);
         devopsCustomizeResourceDO.setK8sKind(kind);
         return devopsCustomizeResourceMapper.selectOne(devopsCustomizeResourceDO);
-    }
-
-    @Override
-    public DevopsCustomizeResourceDTO queryDetail(Long resourceId) {
-        return devopsCustomizeResourceMapper.queryDetail(resourceId);
     }
 
     @Override

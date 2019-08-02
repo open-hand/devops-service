@@ -79,9 +79,9 @@ public class DevopsCustomizeResourceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取资源详情")
-    @GetMapping
+    @GetMapping("/{resource_id}")
     public ResponseEntity<DevopsCustomizeResourceVO> getResource(@PathVariable(value = "project_id") Long projectId,
-                                                                 @RequestParam(value = "resource_id") Long resourceId) {
+                                                                 @PathVariable(value = "resource_id") Long resourceId) {
         devopsCustomizeResourceService.queryDevopsCustomizeResourceDetail(resourceId);
         return Optional.ofNullable(devopsCustomizeResourceService.queryDevopsCustomizeResourceDetail(resourceId))
                 .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
