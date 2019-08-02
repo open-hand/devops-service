@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
@@ -265,7 +264,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public DevopsClusterRepVO query(Long clusterId) {
-        return ConvertHelper.convert(baseQuery(clusterId), DevopsClusterRepVO.class);
+        return ConvertUtils.convertObject(baseQuery(clusterId), DevopsClusterRepVO.class);
     }
 
     @Override

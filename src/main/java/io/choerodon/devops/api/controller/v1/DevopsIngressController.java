@@ -99,6 +99,29 @@ public class DevopsIngressController {
                 .orElseThrow(() -> new CommonException("error.IngressName.query"));
     }
 
+
+    /**
+     * 项目下查询域名详情
+     *
+     * @param projectId 项目ID
+     * @param id        域名ID
+     * @return DevopsIngressVO
+     */
+    @Permission(type= ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下查询域名详情")
+    @GetMapping(value = "/{id}/detail")
+    public ResponseEntity<DevopsIngressVO> queryIngressDetailById(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "域名ID", required = true)
+            @PathVariable Long id) {
+        return Optional.ofNullable(devopsIngressService.queryIngressDetailById(projectId, id))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.query.by.id"));
+    }
+
     /**
      * 项目下删除域名
      *
