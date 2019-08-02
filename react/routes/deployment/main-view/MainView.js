@@ -15,9 +15,12 @@ const AppContent = lazy(() => import('./contents/application'));
 const IstContent = lazy(() => import('./contents/instance'));
 
 const MainView = observer(() => {
-  const { prefixCls, deploymentStore } = useDeploymentStore();
   const {
-    instanceView: {
+    prefixCls,
+    deploymentStore,
+  } = useDeploymentStore();
+  const {
+    itemType: {
       ENV_ITEM,
       APP_ITEM,
       IST_ITEM,
@@ -56,6 +59,8 @@ const MainView = observer(() => {
     [`${dragPrefixCls}-handle-dragged`]: isDragging,
   }), [dragPrefixCls, isDragging]);
 
+  const dragRight = resizeNav.x >= X_AXIS_WIDTH_MAX ? X_AXIS_WIDTH_MAX : bounds.width - X_AXIS_WIDTH;
+
   return (<div
     ref={rootRef}
     className={`${prefixCls}-wrap`}
@@ -68,7 +73,7 @@ const MainView = observer(() => {
           bounds={{
             left: X_AXIS_WIDTH,
             top: 0,
-            right: resizeNav.x >= X_AXIS_WIDTH_MAX ? X_AXIS_WIDTH_MAX : bounds.width - X_AXIS_WIDTH,
+            right: dragRight,
             bottom: 0,
           }}
           onStart={handleStartDrag}

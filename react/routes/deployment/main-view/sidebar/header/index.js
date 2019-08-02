@@ -21,7 +21,6 @@ const SidebarHeader = () => {
     deploymentStore.changeViewType(choose);
   }, [deploymentStore]);
 
-
   return <div className="c7n-deployment-sidebar-head">
     <Select
       className="c7n-deployment-sidebar-drop"

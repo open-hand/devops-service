@@ -1,9 +1,9 @@
 import React from 'react';
 import { StoreProvider } from './stores';
-import AssignPermissions from './AssignPermissions';
+import Permissions from './Permissions';
 
 export default props => (
   <StoreProvider {...props}>
-    <AssignPermissions />
+    <Permissions />
   </StoreProvider>
 );
