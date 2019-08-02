@@ -63,17 +63,19 @@ public class ApplicationShareRuleController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用共享规则")
-    @PostMapping(value = "page_by_options")
+    @PostMapping(value = "/{app_service_id}/page_by_options")
     @CustomPageRequest
     public ResponseEntity<PageInfo<ApplicationShareRuleVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam
+            @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "过滤参数")
             @RequestBody(required = false) String param) {
         return Optional.ofNullable(
-                applicationShareService.pageByOptions(projectId, pageRequest, param))
+                applicationShareService.pageByOptions(appServiceId, pageRequest, param))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.share.rule.page"));
     }

@@ -340,7 +340,7 @@
                     SELECT
                         dasr.version_type
                     FROM
-                        devops_app_share_rule_rule dasr
+                        devops_app_share_rule dasr
                     WHERE
                         dasr.app_service_id = #{appServiceId}
                     AND dasr.version IS NULL
@@ -361,7 +361,7 @@
                         SELECT
                             dasr.version
                         FROM
-                            devops_app_share_rule_rule dasr
+                            devops_app_share_rule dasr
                         WHERE
                             dasr.app_service_id =  #{appServiceId}
                         AND dasr.version IS NOT NULL

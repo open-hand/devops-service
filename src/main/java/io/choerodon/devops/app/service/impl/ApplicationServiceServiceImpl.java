@@ -268,7 +268,7 @@ public class ApplicationServiceServiceImpl implements ApplicationSevriceService 
             description = "Devops更新gitlab用户", inputSchema = "{}")
     @Override
     @Transactional
-    public Boolean update(Long projectId, ApplicationUpdateVO applicationUpdateVO) {
+    public Boolean update(Long projectId, ApplicationServiceUpdateVO applicationUpdateVO) {
 
         ApplicationServiceDTO applicationDTO = ConvertUtils.convertObject(applicationUpdateVO, ApplicationServiceDTO.class);
         applicationDTO.setProjectId(projectId);
@@ -1566,6 +1566,17 @@ public class ApplicationServiceServiceImpl implements ApplicationSevriceService 
                         .withPayloadAndSerialize(devOpsUserPayload)
                         .withRefId(String.valueOf(appServiceId))
                         .withSourceId(projectId));
+    }
+
+    @Override
+    public List<ProjectVO> listProjects(Long organizationId, Long projectId, String params) {
+        String[] paramsArr = null;
+        if (params != null && !params.isEmpty()) {
+            paramsArr = new String[1];
+            paramsArr[0] = params;
+        }
+        PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(iamServiceClientOperator.listProject(organizationId, new PageRequest(0, 0), paramsArr), ProjectVO.class);
+        return pageInfo.getList().stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
     }
 
     @Override

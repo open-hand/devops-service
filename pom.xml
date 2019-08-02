@@ -17,7 +17,7 @@
 
 
     <properties>
-        <choerodon.starters.version>0.11.2.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.12.0.RELEASE</choerodon.starters.version>
         <!--use powermock-->
         <powermock.version>2.0.0-beta.5</powermock.version>
         <choerodon.serviceBuild>true</choerodon.serviceBuild>
@@ -37,12 +37,12 @@
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-swagger</artifactId>
+            <artifactId>choerodon-starter-core</artifactId>
             <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-core</artifactId>
+            <artifactId>choerodon-starter-swagger</artifactId>
             <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>

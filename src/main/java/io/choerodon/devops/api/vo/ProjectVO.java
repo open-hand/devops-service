@@ -13,7 +13,6 @@ public class ProjectVO {
     private String name;
     private Long organizationId;
     private String code;
-    private DevopsProjectVO devopsProjectE;
 
     public ProjectVO() {
     }
@@ -52,14 +51,6 @@ public class ProjectVO {
 
     public void setCode(String code) {
         this.code = code;
-    }
-
-    public DevopsProjectVO getDevopsProjectE() {
-        return devopsProjectE;
-    }
-
-    public void setDevopsProjectE(DevopsProjectVO devopsProjectE) {
-        this.devopsProjectE = devopsProjectE;
     }
 
 }

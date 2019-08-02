@@ -52,7 +52,7 @@ public interface ApplicationSevriceService {
      * @param applicationUpdateDTO 应用信息
      * @return Boolean
      */
-    Boolean update(Long projectId, ApplicationUpdateVO applicationUpdateDTO);
+    Boolean update(Long projectId, ApplicationServiceUpdateVO applicationUpdateDTO);
 
 
     /**
@@ -365,6 +365,15 @@ public interface ApplicationSevriceService {
      * @param userId
      */
     void deletePermission(Long projectId, Long appServiceId, Long userId);
+
+    /**
+     * 项目下查询所在组织所有项目
+     * @param organizationId
+     * @param projectId
+     * @param params
+     * @return
+     */
+    List<ProjectVO> listProjects(Long organizationId,Long projectId,String params);
 
     void baseCheckApp(Long projectId, Long appId);
 

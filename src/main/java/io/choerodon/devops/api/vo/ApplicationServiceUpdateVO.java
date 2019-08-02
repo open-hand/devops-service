@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Created by younger on 2018/4/10.
  */
-public class ApplicationUpdateVO {
+public class ApplicationServiceUpdateVO {
 
     private Long id;
     private String name;

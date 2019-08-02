@@ -1,9 +1,12 @@
 package io.choerodon.devops.infra.feign.fallback;
 
 import java.util.List;
+import java.util.Map;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+
+import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.ProjectCreateVO;
@@ -140,6 +143,10 @@ public class IamServiceClientFallback implements IamServiceClient {
         throw new CommonException("error.iam.project.create");
     }
 
+    @Override
+    public ResponseEntity<PageInfo<ProjectDTO>> listProject(Long organizationId,   Map<String, Object> pageRequest, String name, String code, String typeName, Boolean enabled, String category, String[] params) {
+        return null;
+    }
 
     @Override
     public ResponseEntity<PageInfo<OrganizationSimplifyVO>> getAllOrgs(int page, int size) {
