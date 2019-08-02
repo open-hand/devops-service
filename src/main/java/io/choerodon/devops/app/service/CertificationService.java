@@ -5,6 +5,7 @@ import java.util.List;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.C7nCertificationVO;
+import io.choerodon.devops.api.vo.CertificationRespVO;
 import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.OrgCertificationVO;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
@@ -51,6 +52,13 @@ public interface CertificationService {
      * @return CertificationVO
      */
     CertificationVO queryByName(Long envId, String certName);
+
+    /**
+     * 根据证书ID查询证书
+     * @param certId 证书ID
+     * @return 证书信息
+     */
+    CertificationRespVO queryByCertId(Long certId);
 
     Long createCertCommand(String type, Long certId, Long userId);
 

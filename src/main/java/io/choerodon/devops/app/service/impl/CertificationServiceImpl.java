@@ -11,10 +11,10 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.C7nCertificationVO;
+import io.choerodon.devops.api.vo.CertificationRespVO;
 import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.OrgCertificationVO;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
@@ -30,6 +30,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
+import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.util.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +76,8 @@ public class CertificationServiceImpl implements CertificationService {
     private DevopsCertificationMapper devopsCertificationMapper;
     @Autowired
     private DevopsCertificationFileMapper devopsCertificationFileMapper;
+    @Autowired
+    private DevopsIngressMapper devopsIngressMapper;
 
     private Gson gson = new Gson();
 
@@ -372,6 +375,33 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public CertificationVO queryByName(Long envId, String certName) {
         return dtoToVo(baseQueryByEnvAndName(envId, certName));
+    }
+
+    @Override
+    public CertificationRespVO queryByCertId(Long certId) {
+        CertificationDTO certificationDTO = devopsCertificationMapper.selectByPrimaryKey(certId);
+        if (certificationDTO == null) {
+            return null;
+        }
+
+        CertificationRespVO respVO = new CertificationRespVO();
+        BeanUtils.copyProperties(certificationDTO, respVO);
+        List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
+        }.getType());
+        respVO.setCommonName(domains.isEmpty() ? null : domains.remove(0));
+        respVO.setDNSNames(domains);
+        respVO.setIngresses(listIngressNamesByCertId(certId));
+        if (certificationDTO.getCreatedBy() != 0) {
+            respVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(certificationDTO.getCreatedBy()).getRealName());
+        }
+        return respVO;
+    }
+
+
+    private List<String> listIngressNamesByCertId(Long certId) {
+        DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
+        devopsIngressDTO.setCertId(certId);
+        return devopsIngressMapper.select(devopsIngressDTO).stream().map(DevopsIngressDTO::getName).collect(Collectors.toList());
     }
 
 

@@ -42,7 +42,7 @@ public class CertificationDTO extends BaseDTO {
      * Certification constructor
      *
      * @param name    Certification's name
-     * @param envId   Certification's enviroment ID
+     * @param envId   Certification's environment ID
      * @param domains Certification's domains json format
      * @param status  Certification's status
      */
