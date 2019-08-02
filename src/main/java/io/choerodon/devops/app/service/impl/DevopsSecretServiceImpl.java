@@ -9,7 +9,6 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
 import io.choerodon.devops.api.vo.SecretReqVO;
@@ -21,6 +20,7 @@ import io.choerodon.devops.infra.enums.HelmObjectKind;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.SecretStatus;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -28,6 +28,7 @@ import io.choerodon.devops.infra.mapper.DevopsSecretMapper;
 import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1Secret;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,8 +59,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
-    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
-    @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
@@ -71,6 +70,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private DevopsApplicationResourceService devopsApplicationResourceService;
     @Autowired
     private DevopsSecretMapper devopsSecretMapper;
+    @Autowired
+    private IamServiceClientOperator iamServiceClientOperator;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -102,7 +103,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             }
             if (oldMap.equals(secretReqVO.getValue())) {
                 baseUpdate(devopsSecretDTO);
-                return ConvertHelper.convert(devopsSecretDTO, SecretRespVO.class);
+                return dtoToVO(devopsSecretDTO, true);
             }
         }
         DevopsEnvCommandDTO devopsEnvCommandE = initDevopsEnvCommandDTO(secretReqVO.getType());
@@ -124,11 +125,28 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             DevopsSecretValidator.checkKeyName(secretReqVO.getValue().keySet());
         }
 
-        DevopsSecretDTO devopsSecretDTO = ConvertHelper.convert(secretReqVO, DevopsSecretDTO.class);
+        DevopsSecretDTO devopsSecretDTO = voToDto(secretReqVO);
         devopsSecretDTO.setValueMap(secretReqVO.getValue());
         devopsSecretDTO.setStatus(SecretStatus.OPERATING.getStatus());
 
         return devopsSecretDTO;
+    }
+
+    private DevopsSecretDTO voToDto(SecretReqVO reqVO) {
+        DevopsSecretDTO dto = new DevopsSecretDTO();
+        Map<String, String> encodedSecretMaps = new HashMap<>();
+        BeanUtils.copyProperties(reqVO, dto);
+        if (!reqVO.getValue().isEmpty()) {
+            for (Map.Entry<String, String> e : reqVO.getValue().entrySet()) {
+                if (!e.getKey().equals(".dockerconfigjson")) {
+                    encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
+                } else {
+                    encodedSecretMaps.put(e.getKey(), e.getValue());
+                }
+            }
+            dto.setValue(gson.toJson(encodedSecretMaps));
+        }
+        return dto;
     }
 
     private V1Secret initV1Secret(DevopsSecretDTO devopsSecretDTO) {
@@ -313,13 +331,33 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public PageInfo<SecretRespVO> pageByOption(Long envId, PageRequest pageRequest, String params, Long appId) {
-        return ConvertUtils.convertPage(basePageByOption(envId, pageRequest, params, appId), SecretRespVO.class);
+    public PageInfo<SecretRespVO> pageByOption(Long envId, PageRequest pageRequest, String params, Long appId, boolean toDecode) {
+        return ConvertUtils.convertPage(basePageByOption(envId, pageRequest, params, appId), dto -> dtoToVO(dto, toDecode));
+    }
+
+    private SecretRespVO dtoToVO(DevopsSecretDTO devopsSecretDTO, boolean toDecode) {
+        if (devopsSecretDTO == null) {
+            return null;
+        }
+        SecretRespVO secretRespVO = new SecretRespVO();
+        BeanUtils.copyProperties(devopsSecretDTO, secretRespVO);
+        Map<String, String> secretMaps = gson.fromJson(devopsSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
+        }.getType());
+
+        if (toDecode) {
+            secretMaps.forEach((k, v) -> secretMaps.put(k, Base64Util.getBase64DecodedString(v)));
+        }
+
+        secretRespVO.setValue(secretMaps);
+        if (devopsSecretDTO.getCreatedBy() != 0) {
+            secretRespVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsSecretDTO.getCreatedBy()).getRealName());
+        }
+        return secretRespVO;
     }
 
     @Override
-    public SecretRespVO querySecret(Long secretId) {
-        return ConvertUtils.convertObject(baseQuery(secretId), SecretRespVO.class);
+    public SecretRespVO querySecret(Long secretId, boolean toDecode) {
+        return dtoToVO(baseQuery(secretId), toDecode);
     }
 
     @Override
