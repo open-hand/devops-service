@@ -103,9 +103,11 @@ public class DevopsSecretController {
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "是否解码值")
+            @RequestParam(value = "to_decode", required = false, defaultValue = "false") boolean toDecode,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsSecretService.pageByOption(envId, pageRequest, params, appServiceId))
+        return Optional.ofNullable(devopsSecretService.pageByOption(envId, pageRequest, params, appServiceId, toDecode))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.list"));
     }
@@ -124,8 +126,10 @@ public class DevopsSecretController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "密钥id", required = true)
-            @PathVariable(value = "secret_id") Long secretId) {
-        return Optional.ofNullable(devopsSecretService.querySecret(secretId))
+            @PathVariable(value = "secret_id") Long secretId,
+            @ApiParam(value = "是否解码值")
+            @RequestParam(value = "to_decode", required = false, defaultValue = "false") boolean toDecode) {
+        return Optional.ofNullable(devopsSecretService.querySecret(secretId, toDecode))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.query"));
     }

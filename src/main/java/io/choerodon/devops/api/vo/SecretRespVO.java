@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +9,7 @@ import java.util.Map;
  * Time: 上午9:47
  * Description:
  */
-public class SecretRespVO {
+public class SecretRespVO extends DevopsResourceDataInfoVO {
 
     private Long id;
     private String name;
@@ -18,7 +17,6 @@ public class SecretRespVO {
     private String description;
     private List<String> key;
     private Map<String, String> value;
-    private Date lastUpdateDate;
     private String commandStatus;
     private String commandType;
 
@@ -68,14 +66,6 @@ public class SecretRespVO {
 
     public void setValue(Map<String, String> value) {
         this.value = value;
-    }
-
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
     }
 
     public String getCommandStatus() {

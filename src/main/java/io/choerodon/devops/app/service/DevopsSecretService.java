@@ -50,8 +50,8 @@ public interface DevopsSecretService {
     /**
      * 更新密钥,GitOps
      *
-     * @param projectId    项目id
-     * @param id           网络Id
+     * @param projectId   项目id
+     * @param id          网络Id
      * @param secretReqVO 请求体
      */
     void updateDevopsSecretByGitOps(Long projectId, Long id, SecretReqVO secretReqVO, Long userId);
@@ -59,20 +59,23 @@ public interface DevopsSecretService {
     /**
      * 分页查询secret
      *
-     * @param envId       环境id
-     * @param pageRequest 分页参数
-     * @param params      查询参数
+     * @param envId        环境id
+     * @param pageRequest  分页参数
+     * @param params       查询参数
+     * @param appServiceId 服务id
+     * @param toDecode     是否解码值
      * @return Page
      */
-    PageInfo<SecretRespVO> pageByOption(Long envId, PageRequest pageRequest, String params, Long appId);
+    PageInfo<SecretRespVO> pageByOption(Long envId, PageRequest pageRequest, String params, Long appServiceId, boolean toDecode);
 
     /**
      * 根据密钥id查询密钥
      *
      * @param secretId 密钥id
+     * @param toDecode 是否解码值
      * @return SecretRespVO
      */
-    SecretRespVO querySecret(Long secretId);
+    SecretRespVO querySecret(Long secretId, boolean toDecode);
 
     /**
      * 校验名字唯一性
