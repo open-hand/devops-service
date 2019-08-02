@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Objects;
  * Time: 14:56
  * Description:
  */
-public class DevopsIngressVO {
+public class DevopsIngressVO extends DevopsResourceDataInfoVO{
 
     private Long id;
     private Long appServiceId;
@@ -28,8 +29,10 @@ public class DevopsIngressVO {
     private String commandType;
     private String commandStatus;
     private String error;
+    private Map<String, String> annotations;
 
     public DevopsIngressVO() {
+        this.pathList = new ArrayList<>();
     }
 
     /**
@@ -181,6 +184,14 @@ public class DevopsIngressVO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Map<String, String> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(Map<String, String> annotations) {
+        this.annotations = annotations;
     }
 
     @Override

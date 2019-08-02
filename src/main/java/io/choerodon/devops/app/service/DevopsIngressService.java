@@ -58,6 +58,15 @@ public interface DevopsIngressService {
     DevopsIngressVO queryIngress(Long projectId, Long ingressId);
 
     /**
+     * 项目下查询域名详情
+     *
+     * @param projectId 项目Id
+     * @param ingressId 域名Id
+     * @return DevopsIngressVO
+     */
+    DevopsIngressVO queryIngressDetailById(Long projectId, Long ingressId);
+
+    /**
      * 项目下删除域名
      *
      * @param ingressId 域名Id

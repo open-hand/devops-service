@@ -28,6 +28,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -38,6 +39,7 @@ import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.BeanUtils;
@@ -45,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Component
 public class DevopsIngressServiceImpl implements DevopsIngressService {
@@ -94,6 +97,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private DevopsApplicationResourceMapper devopsAppResourceMapper;
     @Autowired
     private TransactionalProducer producer;
+    @Autowired
+    private IamServiceClientOperator iamServiceClientOperator;
+    private JSON json = new JSON();
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -298,6 +304,45 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public DevopsIngressVO queryIngress(Long projectId, Long ingressId) {
         return ConvertUtils.convertObject(baseQuery(ingressId), DevopsIngressVO.class);
+    }
+
+    @Override
+    public DevopsIngressVO queryIngressDetailById(Long projectId, Long ingressId) {
+        DevopsIngressDTO devopsIngressDTO = devopsIngressMapper.queryById(ingressId);
+        if (devopsIngressDTO == null) {
+            return null;
+        }
+
+        List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
+
+        DevopsIngressVO vo = new DevopsIngressVO();
+        BeanUtils.copyProperties(devopsIngressDTO, vo);
+        if (!StringUtils.isEmpty(devopsIngressDTO.getMessage())) {
+            V1beta1Ingress ingress = json.deserialize(devopsIngressDTO.getMessage(), V1beta1Ingress.class);
+            vo.setAnnotations(ingress.getMetadata().getAnnotations());
+        }
+
+        if (devopsIngressDTO.getCertId() != null) {
+            CertificationDTO certificationDTO = certificationService.baseQueryById(devopsIngressDTO.getCertId());
+            if (certificationDTO != null) {
+                vo.setCertName(certificationDTO.getName());
+                vo.setCertStatus(certificationDTO.getStatus());
+            }
+        }
+
+        DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(vo.getId());
+        devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(vo, e));
+
+        if (devopsIngressDTO.getCreatedBy() != 0) {
+            vo.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsIngressDTO.getCreatedBy()).getRealName());
+        }
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
+        if (updatedEnvList.contains(devopsEnvironmentDTO.getClusterId())) {
+            vo.setEnvStatus(true);
+        }
+
+        return vo;
     }
 
     @Override
@@ -716,7 +761,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsIngressVO.setError(t.getError());
             setIngressDTOCert(t.getCertId(), devopsIngressVO);
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(t.getId());
-            devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> getDevopsIngressDTO(devopsIngressVO, e));
+            devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> setDevopsIngressDTO(devopsIngressVO, e));
             devopsIngressVOS.add(devopsIngressVO);
         });
         PageInfo<DevopsIngressVO> ingressVOPageInfo = new PageInfo<>();
@@ -837,7 +882,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsIngressMapper.selectAll();
     }
 
-    private void getDevopsIngressDTO(DevopsIngressVO devopsIngressVO, DevopsIngressPathDTO devopsIngressPathDTO) {
+    private void setDevopsIngressDTO(DevopsIngressVO devopsIngressVO, DevopsIngressPathDTO devopsIngressPathDTO) {
         //待修改
         DevopsServiceVO devopsServiceVO = devopsServiceService.query(devopsIngressPathDTO.getServiceId());
         DevopsIngressPathVO devopsIngressPathVO = new DevopsIngressPathVO(

@@ -38,6 +38,8 @@ public class DevopsIngressDTO extends BaseDTO {
     private String commandStatus;
     @Transient
     private String error;
+    @Transient
+    private String message;
 
     public DevopsIngressDTO() {
     }
@@ -202,6 +204,14 @@ public class DevopsIngressDTO extends BaseDTO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     @Override
