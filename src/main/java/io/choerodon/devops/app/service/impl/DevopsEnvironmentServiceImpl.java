@@ -397,6 +397,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return vo;
     }
 
+    @Override
+    public DevopsEnvResourceCountVO queryEnvResourceCount(Long environmentId) {
+        return devopsEnvironmentMapper.queryEnvResourceCount(environmentId);
+    }
+
 
     @Override
     public void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, UserAttrDTO userAttrDTO) {

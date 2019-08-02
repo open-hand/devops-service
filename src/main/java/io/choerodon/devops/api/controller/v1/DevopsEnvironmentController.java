@@ -209,6 +209,29 @@ public class DevopsEnvironmentController {
                 .orElseThrow(() -> new CommonException("error.environment.query"));
     }
 
+
+    /**
+     * 查询环境下相关资源的数量
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return 环境下相关资源的数量
+     */
+    @Permission(type = ResourceType.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询环境下相关资源的数量")
+    @GetMapping("/{env_id}/resource_count")
+    public ResponseEntity<DevopsEnvResourceCountVO> queryEnvResourceCount(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @PathVariable(value = "env_id") Long envId) {
+        return Optional.ofNullable(devopsEnvironmentService.queryEnvResourceCount(envId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.environment.query"));
+    }
+
+
     /**
      * 项目下更新环境
      *
@@ -228,7 +251,6 @@ public class DevopsEnvironmentController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.update"));
     }
-
 
 
     /**

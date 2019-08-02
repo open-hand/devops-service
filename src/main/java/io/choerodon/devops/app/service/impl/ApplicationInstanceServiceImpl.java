@@ -824,7 +824,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
-        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATIING.getStatus());
+        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
 
         //获取授权secret
         String secretCode = getSecret(applicationDTO, null, devopsEnvironmentDTO);
@@ -854,7 +854,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandDTO.setId(null);
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
 
-        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATIING.getStatus());
+        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
 
         pipelineAppDeployService.baseUpdateWithInstanceId(instanceId);
 
@@ -1201,7 +1201,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandDTO.setId(null);
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
-        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATIING.getStatus());
+        updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
 
 
         //发送重启或停止实例的command
@@ -1411,7 +1411,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
         applicationInstanceDTO.setAppServiceId(applicationDeployVO.getAppServiceId());
         applicationInstanceDTO.setEnvId(applicationDeployVO.getEnvironmentId());
-        applicationInstanceDTO.setStatus(InstanceStatus.OPERATIING.getStatus());
+        applicationInstanceDTO.setStatus(InstanceStatus.OPERATING.getStatus());
         applicationDeployVO.setValueId(applicationDeployVO.getValueId());
         if (applicationDeployVO.getType().equals(UPDATE)) {
             ApplicationInstanceDTO oldApplicationInstanceDTO = baseQuery(

@@ -145,6 +145,22 @@
         </foreach>
     </select>
 
+    <select id="queryEnvResourceCount" resultType="io.choerodon.devops.api.vo.DevopsEnvResourceCountVO">
+        SELECT env.id as env_id,
+               (SELECT COUNT(1) FROM devops_app_instance ins WHERE ins.env_id = env.id) AS instance_count,
+               (SELECT COUNT(1) FROM devops_service service WHERE service.env_id = env.id) AS service_count,
+               (SELECT COUNT(1) FROM devops_ingress ingress WHERE ingress.env_id = env.id) AS ingress_count,
+               (SELECT COUNT(1) FROM devops_certification certification WHERE certification.env_id = env.id) AS certification_count,
+               (SELECT COUNT(1) FROM devops_config_map cm WHERE cm.env_id = env.id) AS config_map_count,
+               (SELECT COUNT(1) FROM devops_secret secret WHERE secret.env_id = env.id) AS secret_count,
+               (SELECT COUNT(1) FROM devops_app_instance ins WHERE ins.env_id = env.id AND status = 'running') AS running_instance_count,
+               (SELECT COUNT(1) FROM devops_app_instance ins WHERE ins.env_id = env.id AND status = 'stopped') AS stopped_instance_count,
+               (SELECT COUNT(1) FROM devops_app_instance ins WHERE ins.env_id = env.id AND status = 'operating') AS operating_instance_count,
+               (SELECT COUNT(1) FROM devops_app_instance ins WHERE ins.env_id = env.id AND status = 'failed') AS failed_instance_count
+        FROM devops_env env
+        WHERE env.id = #{envId};
+    </select>
+
     <select id="listResourceEnvTree" resultMap="resourceEnvTree">
         SELECT env.id         as           env_id,
                env.name       as           env_name,

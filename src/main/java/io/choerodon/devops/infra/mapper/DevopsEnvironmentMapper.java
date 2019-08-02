@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.DevopsEnvResourceCountVO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentViewDTO;
@@ -49,6 +50,15 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
      * @return 环境及其集群信息
      */
     DevopsEnvironmentInfoDTO queryInfoById(@Param("envId") Long envId);
+
+
+    /**
+     * 查询环境下相关资源的数量
+     *
+     * @param envId 环境id
+     * @return 环境下相关资源的数量
+     */
+    DevopsEnvResourceCountVO queryEnvResourceCount(@Param("envId") Long envId);
 
     List<DevopsEnvironmentDTO> listByIds(@Param("envIds") List<Long> envIds);
 }
