@@ -11,6 +11,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.C7nCertificationVO;
+import io.choerodon.devops.api.vo.CertificationRespVO;
 import io.choerodon.devops.api.vo.CertificationVO;
 import io.choerodon.devops.api.vo.OrgCertificationVO;
 import io.choerodon.devops.app.service.CertificationService;
@@ -45,7 +46,7 @@ public class CertificationController {
      * @param certification 证书名
      * @return 201, "Created"
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建证书")
     @PostMapping
@@ -69,7 +70,7 @@ public class CertificationController {
      * @param certId    证书id
      * @return 204, "No Content"
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除证书")
     @DeleteMapping
@@ -92,7 +93,7 @@ public class CertificationController {
      * @param params      查询参数
      * @return CertificationDTO page
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询")
@@ -120,7 +121,7 @@ public class CertificationController {
      * @param domain    域名
      * @return CertificationVO baseList
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "通过域名查询已生效的证书")
     @PostMapping("/active")
@@ -144,7 +145,7 @@ public class CertificationController {
      * @param certName  证书名称
      * @return Boolean
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验证书名称唯一性")
     @GetMapping("/unique")
@@ -169,7 +170,7 @@ public class CertificationController {
      * @param certName  证书名称
      * @return CertificationVO
      */
-    @Permission(type= ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据证书名称查询证书")
     @GetMapping("/query_by_name")
@@ -185,12 +186,34 @@ public class CertificationController {
                 .orElseThrow(() -> new CommonException("error.certification.queryByDomain"));
     }
 
+
+    /**
+     * 根据证书ID查询证书
+     *
+     * @param projectId 项目id
+     * @param certId    证书ID
+     * @return CertificationVO
+     */
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据证书ID查询证书")
+    @GetMapping("/{cert_id}")
+    public ResponseEntity<CertificationRespVO> queryById(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "证书ID", required = true)
+            @PathVariable(value = "cert_id") Long certId) {
+        return Optional.ofNullable(certificationService.queryByCertId(certId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.query.by.id"));
+    }
+
     /**
      * 查询项目下有权限的组织层证书
      *
      * @param projectId 项目id
      */
-    @Permission(type= ResourceType.PROJECT,
+    @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下有权限的组织层证书")
