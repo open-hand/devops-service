@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageHelper;
@@ -374,7 +371,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public CertificationVO queryByName(Long envId, String certName) {
-        return ConvertHelper.convert(baseQueryByEnvAndName(envId, certName), CertificationVO.class);
+        return dtoToVo(baseQueryByEnvAndName(envId, certName));
     }
 
 
@@ -385,7 +382,11 @@ public class CertificationServiceImpl implements CertificationService {
         return certificationDTO;
     }
 
-    public CertificationVO dtoToVo(CertificationDTO certificationDTO) {
+    private CertificationVO dtoToVo(CertificationDTO certificationDTO) {
+        if (certificationDTO == null) {
+            return null;
+        }
+
         CertificationVO certificationVO = new CertificationVO();
         BeanUtils.copyProperties(certificationDTO, certificationVO);
         certificationVO.setCertName(certificationDTO.getName());
@@ -393,8 +394,9 @@ public class CertificationServiceImpl implements CertificationService {
         }.getType()));
         certificationVO.setCommonName(certificationVO.getDomains().get(0));
         if (certificationDTO.getEnvId() != null) {
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
-            certificationVO.setEnvName(devopsEnvironmentDTO.getName());
+            Optional.ofNullable(devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId())).ifPresent(
+                    dto -> certificationVO.setEnvName(dto.getName())
+            );
         }
         return certificationVO;
     }

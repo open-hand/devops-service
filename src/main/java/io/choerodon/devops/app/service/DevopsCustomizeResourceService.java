@@ -68,8 +68,6 @@ public interface DevopsCustomizeResourceService {
 
     DevopsCustomizeResourceDTO queryByEnvIdAndKindAndName(Long envId, String kind, String name);
 
-    DevopsCustomizeResourceDTO queryDetail(Long resourceId);
-
     PageInfo<DevopsCustomizeResourceDTO> pageDevopsCustomizeResourceE(Long envId, PageRequest pageRequest, String params);
 
     void checkExist(Long envId, String kind, String name);

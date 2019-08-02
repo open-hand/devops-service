@@ -1,11 +1,9 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.Date;
-
 /**
  * Created by Sheep on 2019/7/2.
  */
-public class DevopsCustomizeResourceVO {
+public class DevopsCustomizeResourceVO extends DevopsResourceDataInfoVO{
 
     private Long id;
     private Long projectId;
@@ -17,7 +15,6 @@ public class DevopsCustomizeResourceVO {
     private String commandErrors;
     private String name;
     private String description;
-    private Date lastUpdateDate;
 
     public Long getId() {
         return id;
@@ -89,14 +86,6 @@ public class DevopsCustomizeResourceVO {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
     }
 
     public Long getEnvId() {
