@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
 import { Permission, Action } from '@choerodon/boot';
 import { Table } from 'choerodon-ui/pro';
-import TimePopover from '../../../../../../components/timePopover';
-import { useAssignStore } from './stores';
+import TimePopover from '../../../../../components/timePopover';
+import { usePermissionsStore } from './stores';
 
 const { Column } = Table;
 
@@ -10,7 +10,7 @@ export default function AssignPermissions() {
   const {
     intl: { formatMessage },
     tableDs,
-  } = useAssignStore();
+  } = usePermissionsStore();
 
   const renderActions = useCallback(({ record }) => {
     const handleDelete = (data) => {

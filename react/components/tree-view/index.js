@@ -28,7 +28,7 @@ const TreeView = ({ dataSource, nodesRender, searchAble }) => {
   }), [searchAble]);
   const nodeRenderer = useCallback(({ record }) => nodesRender(record, searchValue), [nodesRender, searchValue]);
 
-  const handleSearch = (value) => {
+  const handleSearch = useCallback((value) => {
     dataSource.reset();
     const treeData = dataSource.data;
     const realValue = value || '';
@@ -47,7 +47,7 @@ const TreeView = ({ dataSource, nodesRender, searchAble }) => {
     });
 
     setSearchValue(realValue);
-  };
+  }, [dataSource]);
 
   return (
     <Fragment>

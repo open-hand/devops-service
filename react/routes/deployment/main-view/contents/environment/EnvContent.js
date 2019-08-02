@@ -13,7 +13,7 @@ const SYNC_TAB = 'sync';
 const ASSIGN_TAB = 'assign';
 
 const SyncSituation = lazy(() => import('./sync-situation'));
-const AssignPermissions = lazy(() => import('./assign-permissions'));
+const Permissions = lazy(() => import('../../table-list/permissions'));
 
 const EnvContent = observer(() => {
   const {
@@ -74,7 +74,7 @@ const EnvContent = observer(() => {
           tab={formatMessage({ id: `${intlPrefix}.environment.tabs.assignPermissions` })}
         >
           <Suspense fallback={<div>loading</div>}>
-            <AssignPermissions />
+            <Permissions />
           </Suspense>
         </TabPane>
       </Tabs>

@@ -1,5 +1,6 @@
 import React, { Fragment, useMemo } from 'react';
 import PropTypes from 'prop-types';
+import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui/pro';
 import toUpper from 'lodash/toUpper';
 import StatusDot from '../../components/status-dot';
@@ -9,21 +10,30 @@ import { useDeploymentStore } from '../../../stores';
 
 import './index.less';
 
-const TreeItem = ({ record, search }) => {
+const TreeItem = observer(({ record, search }) => {
   const {
     podColor: {
       RUNNING_COLOR,
       PADDING_COLOR,
     },
-    instanceView: {
+    itemType: {
       ENV_ITEM,
       APP_ITEM,
       IST_ITEM,
+      GROUP_ITEM,
+      SERVICES_ITEM,
+      INGRESS_ITEM,
+      CERT_ITEM,
+      MAP_ITEM,
+      CIPHER_ITEM,
+      CUSTOM_ITEM,
     },
   } = useMainStore();
   const { prefixCls } = useDeploymentStore();
+
   const type = record.get('itemType');
   const name = record.get('name');
+  const isExpand = record.get('expand');
 
   const prefixIcon = useMemo(() => {
     let prefix;
@@ -40,8 +50,32 @@ const TreeItem = ({ record, search }) => {
         break;
       }
       case APP_ITEM:
-        prefix = <Icon type="widgets" />;
+      case GROUP_ITEM:
+      case SERVICES_ITEM:
+      case INGRESS_ITEM:
+      case CERT_ITEM:
+      case MAP_ITEM:
+      case CIPHER_ITEM:
+      case CUSTOM_ITEM: {
+        const iconMappings = {
+          [APP_ITEM]: 'widgets',
+          [GROUP_ITEM]: 'folder_open',
+          [SERVICES_ITEM]: 'router',
+          [INGRESS_ITEM]: 'language',
+          [CERT_ITEM]: 'class',
+          [MAP_ITEM]: 'compare_arrows',
+          [CIPHER_ITEM]: 'vpn_key',
+          [CUSTOM_ITEM]: 'filter_b_and_w',
+        };
+        let iconType = iconMappings[type];
+
+        if (type === GROUP_ITEM) {
+          iconType = isExpand ? 'folder_open2' : 'folder_open';
+        }
+
+        prefix = <Icon type={iconType} />;
         break;
+      }
       case IST_ITEM: {
         const podRunningCount = record.get('podRunningCount');
         const podCount = record.get('podCount');
@@ -66,7 +100,7 @@ const TreeItem = ({ record, search }) => {
     }
 
     return prefix;
-  }, [APP_ITEM, ENV_ITEM, IST_ITEM, PADDING_COLOR, RUNNING_COLOR, record, type]);
+  }, [APP_ITEM, CERT_ITEM, CIPHER_ITEM, CUSTOM_ITEM, ENV_ITEM, GROUP_ITEM, INGRESS_ITEM, IST_ITEM, MAP_ITEM, PADDING_COLOR, RUNNING_COLOR, SERVICES_ITEM, isExpand, record, type]);
 
   const text = useMemo(() => {
     const index = toUpper(name).indexOf(toUpper(search));
@@ -87,7 +121,7 @@ const TreeItem = ({ record, search }) => {
       {text}
     </span>
   </Fragment>;
-};
+});
 
 TreeItem.propTypes = {
   record: PropTypes.shape({}),

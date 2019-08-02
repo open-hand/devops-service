@@ -3,11 +3,11 @@ import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
 import { DataSet } from 'choerodon-ui/pro';
 import TableDataSet from './TableDataSet';
-import { useDeploymentStore } from '../../../../../stores';
+import { useDeploymentStore } from '../../../../stores';
 
 const Store = createContext();
 
-export function useAssignStore() {
+export function usePermissionsStore() {
   return useContext(Store);
 }
 
