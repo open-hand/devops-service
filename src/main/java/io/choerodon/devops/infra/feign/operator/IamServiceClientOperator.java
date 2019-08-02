@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
-import io.choerodon.core.util.FeignParamUtils;
 import io.choerodon.devops.api.vo.OrganizationSimplifyVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.api.vo.iam.ProjectWithRoleVO;
@@ -30,6 +29,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
+import io.choerodon.devops.infra.util.FeignParamUtils;
 
 /**
  * Created by Sheep on 2019/7/11.
