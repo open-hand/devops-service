@@ -70,7 +70,7 @@ const AppContent = observer(() => {
           tab={formatMessage({ id: `${intlPrefix}.application.tabs.mapping` })}
         >
           <Suspense fallback={<div>loading</div>}>
-            <MappingContent />
+            <MappingContent type={MAPPING_TAB} />
           </Suspense>
         </TabPane>
         <TabPane
@@ -78,7 +78,7 @@ const AppContent = observer(() => {
           tab={formatMessage({ id: `${intlPrefix}.application.tabs.cipher` })}
         >
           <Suspense fallback={<div>loading</div>}>
-            <CipherContent />
+            <MappingContent type={CIPHER_TAB} />
           </Suspense>
         </TabPane>
       </Tabs>
