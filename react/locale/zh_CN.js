@@ -112,6 +112,7 @@ const commonField = {
   expandAll: '全部展开',
   collapseAll: '全部折叠',
   checkNameExist: '名称已存在',
+  checkNameFailed: '名称重名校验失败，请稍后再试',
   checkNameFail: '网络错误，请稍后重试',
   formatError: '格式有误',
   checkEmailError: '请输入有效的邮箱地址',
@@ -208,6 +209,9 @@ const deployment = {
   'c7ncd.deployment.instance.cases.stop': '停止实例',
   'c7ncd.deployment.instance.cases.restart': '启用实例',
   'c7ncd.deployment.instance.cases.delete': '删除实例',
+  'c7ncd.deployment.mapping.create': '创建配置映射',
+  'c7ncd.deployment.mapping.yaml': '配置类型',
+  'c7ncd.deployment.mapping.name.failed': '名称只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
 
 };
 

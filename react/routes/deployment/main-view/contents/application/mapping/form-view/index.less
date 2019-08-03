@@ -1,0 +1,89 @@
+.editable-cell {
+  position: relative;
+}
+
+.editable-cell-value-wrap {
+  cursor: pointer;
+}
+
+.c7n-editable-table {
+  width: 512px;
+
+  .c7n-form-item-children {
+    .c7n-input-focus {
+      .c7n-input-label {
+        transition: none;
+      }
+    }
+  }
+
+  .c7n-form-explain {
+    position: absolute;
+  }
+
+  .c7n-table-empty {
+    display: none;
+  }
+
+  tr:hover > td {
+    background-color: transparent !important;
+  }
+
+  tr > td:focus {
+    background-color: transparent !important;
+  }
+
+  td {
+    border-bottom: none !important;
+    padding: 0 0 10px 0 !important;
+  }
+
+  textarea.c7n-input {
+    min-height: auto;
+  }
+
+  .del-btn {
+    font-size: 18px;
+    margin-left: 13px;
+    top: 6px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .icon-equal {
+    font-size: 28px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+}
+
+.c7n-cm-warning {
+  color: #d50000;
+}
+
+.c7n-sidebar-from-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, .87);
+  line-height: 24px;
+  margin-bottom: 10px;
+
+  i {
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.36);
+    padding-left: 5px;
+    height: 20px;
+  }
+
+  .c7n-config-mode-btn {
+    margin-left: 12px;
+  }
+}
+
+.c7n-config-editor {
+  width: 512px;
+
+  .c7ncd-config-yaml-tip {
+    margin-top: 20px;
+    color: #d50000;
+  }
+}
