@@ -18,15 +18,20 @@ const MainView = observer(() => {
   const {
     prefixCls,
     deploymentStore,
-  } = useDeploymentStore();
-  const {
     itemType: {
       ENV_ITEM,
       APP_ITEM,
       IST_ITEM,
+      GROUP_ITEM,
+      SERVICES_ITEM,
+      INGRESS_ITEM,
+      CERT_ITEM,
+      MAP_ITEM,
+      CIPHER_ITEM,
+      CUSTOM_ITEM,
     },
-    mainStore,
-  } = useMainStore();
+  } = useDeploymentStore();
+  const { mainStore } = useMainStore();
 
   const content = useMemo(() => {
     const { menuType } = deploymentStore.getSelectedMenu;

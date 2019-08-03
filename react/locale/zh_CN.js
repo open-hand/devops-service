@@ -212,7 +212,9 @@ const deployment = {
   'c7ncd.deployment.mapping.create': '创建配置映射',
   'c7ncd.deployment.mapping.yaml': '配置类型',
   'c7ncd.deployment.mapping.name.failed': '名称只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
-
+  'c7ncd.deployment.modal.link-service': '关联服务',
+  'c7ncd.deployment.modal.env-detail': '环境详情',
+  'c7ncd.deployment.modal.permission': '权限管理',
 };
 
 // 文档地址前缀

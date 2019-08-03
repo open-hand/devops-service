@@ -1,16 +1,14 @@
 import React from 'react';
-import { Page, Header } from '@choerodon/boot';
-import { Button } from 'choerodon-ui';
+import { Page } from '@choerodon/boot';
 import MainView from './main-view';
+import DeploymentHead from './modal-view';
 import { useDeploymentStore } from './stores';
 
 export default function Deployment() {
   const { permissions } = useDeploymentStore();
 
   return <Page service={permissions}>
-    <Header>
-      <Button funcType="flat">删除</Button>
-    </Header>
+    <DeploymentHead />
     <MainView />
   </Page>;
 }
