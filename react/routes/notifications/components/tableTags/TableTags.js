@@ -12,5 +12,5 @@ export default function TableTags({ value }) {
 }
 
 TableTags.propTypes = {
-  name: PropTypes.string,
+  value: PropTypes.string,
 };

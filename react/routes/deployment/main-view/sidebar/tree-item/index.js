@@ -12,10 +12,7 @@ import './index.less';
 
 const TreeItem = observer(({ record, search }) => {
   const {
-    podColor: {
-      RUNNING_COLOR,
-      PADDING_COLOR,
-    },
+    prefixCls,
     itemType: {
       ENV_ITEM,
       APP_ITEM,
@@ -28,12 +25,17 @@ const TreeItem = observer(({ record, search }) => {
       CIPHER_ITEM,
       CUSTOM_ITEM,
     },
+  } = useDeploymentStore();
+  const {
+    podColor: {
+      RUNNING_COLOR,
+      PADDING_COLOR,
+    },
   } = useMainStore();
-  const { prefixCls } = useDeploymentStore();
 
   const type = record.get('itemType');
   const name = record.get('name');
-  const isExpand = record.get('expand');
+  const isExpand = record.isExpanded;
 
   const prefixIcon = useMemo(() => {
     let prefix;

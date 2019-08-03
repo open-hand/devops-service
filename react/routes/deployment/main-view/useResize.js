@@ -18,11 +18,10 @@ export const useResize = (rootRef, store) => {
       const { current } = rootRef;
 
       if (current) {
-        const { offsetWidth, offsetHeight } = current;
+        const { offsetWidth } = current;
 
         setBounds({
           width: offsetWidth,
-          height: offsetHeight,
         });
       }
     };
@@ -73,13 +72,12 @@ export const useResize = (rootRef, store) => {
 
     const navBounds = {
       width: nextResize.x + MARGIN,
-      height: bounds.height,
     };
 
     setResizeNav(nextResize);
     setDraggable(computedLeft > X_AXIS_WIDTH);
     store.setNavBounds(navBounds);
-  }, [bounds.height, bounds.width, resizeNav, store]);
+  }, [bounds.width, resizeNav, store]);
 
   return {
     bounds,
