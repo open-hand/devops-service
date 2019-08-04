@@ -93,7 +93,10 @@ const MainView = observer(() => {
     <Fragment>
       <Sidebar />
       <div className={`${prefixCls}-main ${dragPrefixCls}-animate`}>
-        {content}
+        {/* content */}
+        <Suspense fallback={<div>loading</div>}>
+          <EnvContent />
+        </Suspense>
       </div>
     </Fragment>
   </div>);
