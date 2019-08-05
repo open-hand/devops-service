@@ -49,7 +49,7 @@ public class ProjectVO {
     public void setCode(String code) {
         this.code = code;
     }
-    
+
     public DevopsProjectVO getDevopsProjectVO() {
         return devopsProjectVO;
     }

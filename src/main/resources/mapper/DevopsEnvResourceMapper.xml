@@ -12,8 +12,7 @@
     </select>
 
 
-    <select id="queryResource"
-            resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
+    <select id="queryResource" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
         SELECT
         *
         FROM devops_env_resource dir where 1=1
@@ -42,8 +41,7 @@
         AND der.kind = #{type}
     </select>
 
-    <select id="queryLatestJob"
-            resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
+    <select id="queryLatestJob" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
         SELECT
         *
         FROM devops_env_resource dir where dir.kind = #{kind}

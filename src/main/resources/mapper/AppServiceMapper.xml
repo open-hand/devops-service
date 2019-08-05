@@ -325,13 +325,9 @@
             da.chart_config_id,
             da.harbor_config_id
         FROM
-<<<<<<< HEAD:src/main/resources/mapper/ApplicationMapper.xml
-            devops_app_share_rule dasr
-        JOIN devops_application_service da ON da.id = dasr.app_service_id
-=======
             devops_app_share_rule_rule dasr
         JOIN devops_app_service da ON da.id = dasr.app_service_id
->>>>>>> [IMP]重命名应用到应用服务:src/main/resources/mapper/AppServiceMapper.xml
+
         WHERE
             dasr.app_service_id in
         <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
