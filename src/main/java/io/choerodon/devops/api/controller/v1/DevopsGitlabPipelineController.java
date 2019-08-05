@@ -34,7 +34,7 @@ public class DevopsGitlabPipelineController {
      * 获取pipeline时长报表
      *
      * @param projectId 项目id
-     * @param appServiceId     应用id
+     * @param appServiceId     服务id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return List
@@ -63,7 +63,7 @@ public class DevopsGitlabPipelineController {
      * 获取pipeline次数报表
      *
      * @param projectId 项目id
-     * @param appServiceId     应用id
+     * @param appServiceId     服务id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return 次数报表
@@ -92,7 +92,7 @@ public class DevopsGitlabPipelineController {
      * 分页获取pipeline
      *
      * @param projectId 项目id
-     * @param appServiceId     应用id
+     * @param appServiceId     服务id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return List

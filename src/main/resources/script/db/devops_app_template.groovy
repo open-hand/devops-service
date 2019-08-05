@@ -51,4 +51,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_template.groovy') {
     changeSet(author: 'younger', id: '2018-12-17-delete-data') {
         sql("delete from devops_app_template  where `code` = 'ChoerodonMoChaTemplate'")
     }
+
+
+    changeSet(author: 'Sheep', id: '2019-08-02-delete-table') {
+        dropTable(tableName: "devops_app_template")
+    }
+
 }

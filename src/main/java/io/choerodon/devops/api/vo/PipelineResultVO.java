@@ -16,23 +16,23 @@ public class PipelineResultVO {
     private Date createdAt;
     private Long[] time;
     private String title;
-    private String appName;
-    private String appCode;
+    private String appServiceName;
+    private String appServiceCode;
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
-    public String getAppCode() {
-        return appCode;
+    public String getAppServiceCode() {
+        return appServiceCode;
     }
 
-    public void setAppCode(String appCode) {
-        this.appCode = appCode;
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
     }
 
     public Long getId() {

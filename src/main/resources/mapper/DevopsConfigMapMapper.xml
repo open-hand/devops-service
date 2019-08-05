@@ -18,7 +18,7 @@
         LEFT JOIN devops_env de ON dcm.env_id = de.id
         LEFT JOIN devops_env_command dc ON dcm.command_id = dc.id
         <if test="appServiceId != null">
-            LEFT JOIN devops_app_resource das ON dcm.id = das.resource_id
+            LEFT JOIN devops_app_service_resource das ON dcm.id = das.resource_id
         </if>
         where 1
         <if test="envId != null">

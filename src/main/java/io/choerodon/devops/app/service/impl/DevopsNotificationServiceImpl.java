@@ -56,7 +56,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Autowired
     private NotifyClient notifyClient;
     @Autowired
-    private ApplicationInstanceService applicationInstanceService;
+    private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
@@ -380,8 +380,8 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         ObjectType objectType = ObjectType.forValue(type);
         switch (objectType) {
             case INSTANCE:
-                ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.baseQuery(objectId);
-                code = applicationInstanceDTO.getCode();
+                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(objectId);
+                code = appServiceInstanceDTO.getCode();
                 break;
             case SERVICE:
                 DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQuery(objectId);

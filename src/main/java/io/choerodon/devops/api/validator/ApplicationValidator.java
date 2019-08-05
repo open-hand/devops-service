@@ -3,7 +3,7 @@ package io.choerodon.devops.api.validator;
 import java.util.regex.Pattern;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ApplicationServiceReqVO;
+import io.choerodon.devops.api.vo.AppServiceReqVO;
 
 /**
  * Created by younger on 2018/3/28.
@@ -18,7 +18,7 @@ public class ApplicationValidator {
     /**
      * 检查应用的name和code是否符合标准
      */
-    public static void checkApplication(ApplicationServiceReqVO applicationReqDTO) {
+    public static void checkApplicationService(AppServiceReqVO applicationReqDTO) {
         if (!Pattern.matches(SERVICE_PATTERN, applicationReqDTO.getCode())) {
             throw new CommonException("error.app.code.notMatch");
         }

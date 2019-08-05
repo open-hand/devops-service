@@ -45,7 +45,7 @@ public class DevopsEnvironmentController {
     public void create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用信息", required = true)
+            @ApiParam(value = "服务信息", required = true)
             @RequestBody DevopsEnvironmentVO devopsEnvironmentVO) {
         devopsEnvironmentService.create(projectId, devopsEnvironmentVO);
     }
@@ -69,14 +69,14 @@ public class DevopsEnvironmentController {
 
 
     /**
-     * 实例视图查询环境及其下应用及实例
+     * 实例视图查询环境及其下服务及实例
      *
      * @param projectId 项目id
      * @return 实例视图树形目录所需的数据
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "实例视图查询环境及其下应用及实例")
+    @ApiOperation(value = "实例视图查询环境及其下服务及实例")
     @GetMapping(value = "/ins_tree_menu")
     public ResponseEntity<List<DevopsEnvironmentViewVO>> listEnvTree(
             @ApiParam(value = "项目id", required = true)
@@ -257,7 +257,7 @@ public class DevopsEnvironmentController {
      * 创建环境校验编码是否存在
      *
      * @param projectId 项目ID
-     * @param code      应用code
+     * @param code      服务code
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建环境校验编码是否存在")
@@ -284,7 +284,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<List<DevopsEnviromentRepVO>> listByProjectId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用id")
+            @ApiParam(value = "服务id")
             @RequestParam(required = false) Long appServiceId) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.dto;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.DevopsAppInstanceViewVO;
+import io.choerodon.devops.api.vo.DevopsAppServiceInstanceViewVO;
 import io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO;
 
 /**
@@ -33,7 +33,7 @@ public class DevopsResourceEnvOverviewDTO {
     /**
      * 实例基本信息
      */
-    private List<DevopsAppInstanceViewVO> instances;
+    private List<DevopsAppServiceInstanceViewVO> instances;
     /**
      * 网络基本信息
      */
@@ -91,11 +91,11 @@ public class DevopsResourceEnvOverviewDTO {
         this.synchronize = synchronize;
     }
 
-    public List<DevopsAppInstanceViewVO> getInstances() {
+    public List<DevopsAppServiceInstanceViewVO> getInstances() {
         return instances;
     }
 
-    public void setInstances(List<DevopsAppInstanceViewVO> instances) {
+    public void setInstances(List<DevopsAppServiceInstanceViewVO> instances) {
         this.instances = instances;
     }
 

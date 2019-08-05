@@ -10,7 +10,7 @@ import java.util.Date;
 public class DevopsAutoDeployRecordVO {
     private Long id;
     private String taskName;
-    private String appName;
+    private String appServiceName;
     private String version;
     private String envName;
     private String instanceName;
@@ -37,12 +37,12 @@ public class DevopsAutoDeployRecordVO {
         this.taskName = taskName;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
     public String getVersion() {

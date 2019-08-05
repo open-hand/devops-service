@@ -7,7 +7,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitlabGroupMemberVO;
 import io.choerodon.devops.api.vo.kubernetes.MemberHelper;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -45,9 +45,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     @Autowired
     private IamService iamService;
     @Autowired
-    private ApplicationSevriceService applicationService;
+    private AppSevriceService applicationService;
     @Autowired
-    private ApplicationUserPermissionService applicationUserPermissionService;
+    private AppServiceUserPermissionService appServiceUserPermissionService;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
@@ -141,7 +141,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      * @param userId       用户id
      */
     private void deleteAboutApplicationService(Long projectId, Integer gitlabUserId, Long userId) {
-        List<ApplicationServiceDTO> applicationDTOS = applicationService.baseListByProjectId(projectId)
+        List<AppServiceDTO> applicationDTOS = applicationService.baseListByProjectId(projectId)
                 .stream()
                 .filter(app -> app.getGitlabProjectId() != null)
                 .collect(Collectors.toList());
@@ -154,8 +154,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             }
         });
 
-        applicationUserPermissionService.baseDeleteByUserIdAndAppIds(
-                applicationDTOS.stream().map(ApplicationServiceDTO::getId).collect(Collectors.toList()),
+        appServiceUserPermissionService.baseDeleteByUserIdAndAppIds(
+                applicationDTOS.stream().map(AppServiceDTO::getId).collect(Collectors.toList()),
                 userId);
     }
 
@@ -297,7 +297,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     // 删除用户时同时清除gitlab的权限
                     List<Integer> gitlabProjectIds = applicationService
                             .baseListByProjectId(resourceId).stream().filter(e -> e.getGitlabProjectId() != null)
-                            .map(ApplicationServiceDTO::getGitlabProjectId).map(TypeUtil::objToInteger)
+                            .map(AppServiceDTO::getGitlabProjectId).map(TypeUtil::objToInteger)
                             .collect(Collectors.toList());
                     gitlabProjectIds.forEach(e -> {
                         MemberDTO projectMember = gitlabServiceClientOperator.getProjectMember(e, gitlabUserId);
@@ -352,7 +352,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         applicationService.baseListByProjectIdAndSkipCheck(projectId)
                 .stream()
                 .filter(app -> app.getGitlabProjectId() != null)
-                .map(ApplicationServiceDTO::getGitlabProjectId)
+                .map(AppServiceDTO::getGitlabProjectId)
                 .forEach(gitlabProjectId -> {
                     DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
                     Integer groupId = devopsProjectDTO.getDevopsAppGroupId().intValue();

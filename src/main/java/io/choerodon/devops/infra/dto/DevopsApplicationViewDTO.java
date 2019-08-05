@@ -8,7 +8,7 @@ import java.util.List;
 public class DevopsApplicationViewDTO {
     private Long id;
     private String name;
-    private List<DevopsAppInstanceViewDTO> instances;
+    private List<AppServiceInstanceViewDTO> instances;
 
     public Long getId() {
         return id;
@@ -26,11 +26,11 @@ public class DevopsApplicationViewDTO {
         this.name = name;
     }
 
-    public List<DevopsAppInstanceViewDTO> getInstances() {
+    public List<AppServiceInstanceViewDTO> getInstances() {
         return instances;
     }
 
-    public void setInstances(List<DevopsAppInstanceViewDTO> instances) {
+    public void setInstances(List<AppServiceInstanceViewDTO> instances) {
         this.instances = instances;
     }
 }

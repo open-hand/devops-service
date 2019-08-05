@@ -11,7 +11,7 @@ public class DevopsEnvironmentViewVO {
     private String name;
     private Boolean connect;
     private Boolean synchronize;
-    private List<DevopsApplicationViewVO> apps;
+    private List<DevopsAppServiceViewVO> apps;
 
     public Long getId() {
         return id;
@@ -29,11 +29,11 @@ public class DevopsEnvironmentViewVO {
         this.name = name;
     }
 
-    public List<DevopsApplicationViewVO> getApps() {
+    public List<DevopsAppServiceViewVO> getApps() {
         return apps;
     }
 
-    public void setApps(List<DevopsApplicationViewVO> apps) {
+    public void setApps(List<DevopsAppServiceViewVO> apps) {
         this.apps = apps;
     }
 

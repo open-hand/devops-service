@@ -25,4 +25,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_version_value.groovy') {
         dropColumn(columnName: "last_update_date", tableName: "devops_app_version_value")
     }
 
+    changeSet(author: 'sheep', id: '2019-8-05-rename-table') {
+        renameTable(newTableName: 'devops_app_service_version_value', oldTableName: 'devops_app_version_value')
+    }
 }

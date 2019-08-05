@@ -15,7 +15,7 @@ public class DevopsEnvPodDTO extends BaseDTO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long appInstanceId;
+    private Long instanceId;
     private String name;
     private String ip;
     private String status;
@@ -26,11 +26,11 @@ public class DevopsEnvPodDTO extends BaseDTO {
     private Long restartCount;
 
     @Transient
-    private String appName;
+    private String appServiceName;
     @Transient
     private String publishLevel;
     @Transient
-    private String appVersion;
+    private String appServiceVersion;
     @Transient
     private String instanceCode;
     @Transient
@@ -52,8 +52,8 @@ public class DevopsEnvPodDTO extends BaseDTO {
         this.containers = containers;
     }
 
-    public DevopsEnvPodDTO(Long appInstanceId) {
-        this.appInstanceId = appInstanceId;
+    public DevopsEnvPodDTO(Long instanceId) {
+        this.instanceId = instanceId;
     }
 
     public DevopsEnvPodDTO() {
@@ -63,8 +63,8 @@ public class DevopsEnvPodDTO extends BaseDTO {
     /**
      * Devops Pod 数据库对象
      */
-    public DevopsEnvPodDTO(Long appInstanceId, String name, String ip, String status, Boolean ready) {
-        this.appInstanceId = appInstanceId;
+    public DevopsEnvPodDTO(Long instanceId, String name, String ip, String status, Boolean ready) {
+        this.instanceId = instanceId;
         this.name = name;
         this.ip = ip;
         this.status = status;
@@ -79,13 +79,6 @@ public class DevopsEnvPodDTO extends BaseDTO {
         this.id = id;
     }
 
-    public Long getAppInstanceId() {
-        return appInstanceId;
-    }
-
-    public void setAppInstanceId(Long appInstanceId) {
-        this.appInstanceId = appInstanceId;
-    }
 
     public String getName() {
         return name;
@@ -119,20 +112,28 @@ public class DevopsEnvPodDTO extends BaseDTO {
         isReady = ready;
     }
 
-    public String getAppName() {
-        return appName;
+    public Long getInstanceId() {
+        return instanceId;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 
-    public String getAppVersion() {
-        return appVersion;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
+    }
+
+    public String getAppServiceVersion() {
+        return appServiceVersion;
+    }
+
+    public void setAppServiceVersion(String appServiceVersion) {
+        this.appServiceVersion = appServiceVersion;
     }
 
     public String getResourceVersion() {

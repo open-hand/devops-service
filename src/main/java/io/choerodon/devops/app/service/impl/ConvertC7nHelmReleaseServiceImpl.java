@@ -5,9 +5,9 @@ import java.util.Map;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
-import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
@@ -16,11 +16,11 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7nHelmRelease> {
 
-    private ApplicationInstanceService applicationInstanceService;
+    private AppServiceInstanceService appServiceInstanceService;
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     public ConvertC7nHelmReleaseServiceImpl() {
-        this.applicationInstanceService = ApplicationContextHelper.getSpringFactory().getBean(ApplicationInstanceService.class);
+        this.appServiceInstanceService = ApplicationContextHelper.getSpringFactory().getBean(AppServiceInstanceService.class);
         this.devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
     }
 
@@ -57,9 +57,9 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
     public void checkIfExist(List<C7nHelmRelease> c7nHelmReleases, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, C7nHelmRelease c7nHelmRelease) {
         String filePath = objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode()));
         String instanceCode = c7nHelmRelease.getMetadata().getName();
-        ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.baseQueryByCodeAndEnv(instanceCode, envId);
-        if (applicationInstanceDTO != null) {
-            Long instanceId = applicationInstanceDTO.getId();
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(instanceCode, envId);
+        if (appServiceInstanceDTO != null) {
+            Long instanceId = appServiceInstanceDTO.getId();
             if (beforeSyncDelete.stream()
                     .filter(devopsEnvFileResourceDTO -> devopsEnvFileResourceDTO.getResourceType()
                             .equals(c7nHelmRelease.getKind()))

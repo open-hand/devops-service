@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.api.vo.ProjectVO;
 import io.choerodon.devops.infra.enums.Visibility;
 
 /**
@@ -13,7 +12,7 @@ public class DevopsProjectVO {
     private String path;
     private String name;
     private Visibility visibility;
-    private ProjectVO projectE;
+    private ProjectVO projectVO;
     private Boolean harborProjectIsPrivate;
     private String harborProjectUserName;
     private String harborProjectUserPassword;
@@ -52,12 +51,12 @@ public class DevopsProjectVO {
         this.name = name;
     }
 
-    public ProjectVO getProjectE() {
-        return projectE;
+    public ProjectVO getProjectVO() {
+        return projectVO;
     }
 
-    public void setProjectE(ProjectVO projectE) {
-        this.projectE = projectE;
+    public void setProjectVO(ProjectVO projectVO) {
+        this.projectVO = projectVO;
     }
 
     public Visibility getVisibility() {
@@ -69,7 +68,7 @@ public class DevopsProjectVO {
     }
 
     public void initProjectE(Long id) {
-        this.projectE = new ProjectVO(id);
+        this.projectVO = new ProjectVO(id);
     }
 
     public void initName(String name) {

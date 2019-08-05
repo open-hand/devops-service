@@ -11,8 +11,8 @@ import com.google.gson.Gson;
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.notify.NoticeSendDTO;
-import io.choerodon.devops.api.vo.ApplicationDeployVO;
-import io.choerodon.devops.api.vo.ApplicationInstanceVO;
+import io.choerodon.devops.api.vo.AppServiceDeployVO;
+import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
@@ -52,13 +52,11 @@ public class DevopsSagaHandler {
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
-    private ApplicationTemplateService applicationTemplateService;
-    @Autowired
-    private ApplicationSevriceService applicationService;
+    private AppSevriceService applicationService;
     @Autowired
     private DevopsGitlabPipelineService devopsGitlabPipelineService;
     @Autowired
-    private ApplicationInstanceService applicationInstanceService;
+    private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private PipelineTaskRecordService taskRecordRepository;
     @Autowired
@@ -141,18 +139,18 @@ public class DevopsSagaHandler {
     /**
      * 创建gitlab项目
      */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_OPERATE_GITLAB_PROJECT,
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
             description = "创建gitlab项目",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT,
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
             maxRetryCount = 3,
             seq = 1)
-    public String createApp(String data) {
-        DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
-        if (devOpsAppPayload.getType().equals(APPLICATION)) {
+    public String createAppService(String data) {
+        DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
+        if (devOpsAppServicePayload.getType().equals(APPLICATION)) {
             try {
-                applicationService.operationApplication(devOpsAppPayload);
+                applicationService.operationApplication(devOpsAppServicePayload);
             } catch (Exception e) {
-                applicationService.setAppErrStatus(data, devOpsAppPayload.getIamProjectId());
+                applicationService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId());
                 throw e;
             }
         }
@@ -168,7 +166,7 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String importApp(String data) {
-        DevOpsAppImportPayload devOpsAppImportPayload = gson.fromJson(data, DevOpsAppImportPayload.class);
+        DevOpsAppImportServicePayload devOpsAppImportPayload = gson.fromJson(data, DevOpsAppImportServicePayload.class);
         if (devOpsAppImportPayload.getType().equals(APPLICATION)) {
             try {
                 applicationService.operationApplicationImport(devOpsAppImportPayload);
@@ -176,7 +174,7 @@ public class DevopsSagaHandler {
                 applicationService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
                 throw e;
             }
-            ApplicationServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppImportPayload.getAppId());
+            AppServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppImportPayload.getAppId());
             if (applicationDTO.getFailed() != null && applicationDTO.getFailed()) {
                 applicationDTO.setFailed(false);
                 if (1 != applicationService.baseUpdate(applicationDTO)) {
@@ -238,8 +236,8 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String setAppErr(String data) {
-        DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
-        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppPayload.getAppId());
+        DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
+        AppServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppServicePayload.getAppId());
         applicationDTO.setFailed(true);
         if (1 != applicationService.baseUpdate(applicationDTO)) {
             LOGGER.error("update application {} set create failed status error", applicationDTO.getCode());
@@ -247,49 +245,7 @@ public class DevopsSagaHandler {
         return data;
     }
 
-    /**
-     * GitOps应用模板创建失败处理
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT_TEMPLATE_ERROR,
-            description = "GitOps应用模板创建失败处理",
-            sagaCode = DEVOPS_SET_APPLICATION_TEMPLATE_ERROR,
-            maxRetryCount = 3,
-            seq = 1)
-    public String setAppTemplateErr(String data) {
-        DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
-        ApplicationTemplateDTO applicationTemplateDTO = applicationTemplateService.baseQueryByCode(
-                devOpsAppPayload.getOrganizationId(), devOpsAppPayload.getPath());
-        applicationTemplateDTO.setFailed(true);
-        applicationTemplateService.baseUpdate(applicationTemplateDTO);
-        return data;
-    }
 
-    /**
-     * 模板事件处理
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_OPERATION_GITLAB_TEMPLATE_PROJECT,
-            description = "模板事件处理",
-            sagaCode = DEVOPS_CREATE_GITLAB_TEMPLATE_PROJECT,
-            maxRetryCount = 3,
-            seq = 1)
-    public String createTemplate(String data) {
-        GitlabProjectPayload gitlabProjectEventDTO = gson.fromJson(data, GitlabProjectPayload.class);
-        if (gitlabProjectEventDTO.getType().equals(TEMPLATE)) {
-            try {
-                applicationTemplateService.operationApplicationTemplate(gitlabProjectEventDTO);
-            } catch (Exception e) {
-                applicationTemplateService.setAppTemplateErrStatus(data, gitlabProjectEventDTO.getOrganizationId());
-                throw e;
-            }
-            ApplicationTemplateDTO applicationTemplateDTO = applicationTemplateService.baseQueryByCode(
-                    gitlabProjectEventDTO.getOrganizationId(), gitlabProjectEventDTO.getPath());
-            if (applicationTemplateDTO.getFailed() != null && applicationTemplateDTO.getFailed()) {
-                applicationTemplateDTO.setFailed(false);
-                applicationTemplateService.baseUpdate(applicationTemplateDTO);
-            }
-        }
-        return data;
-    }
 
     /**
      * gitlab pipeline事件
@@ -321,27 +277,27 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public void pipelineAutoDeployInstance(String data) {
-        ApplicationDeployVO applicationDeployVO = gson.fromJson(data, ApplicationDeployVO.class);
-        Long taskRecordId = applicationDeployVO.getRecordId();
+        AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
+        Long taskRecordId = appServiceDeployVO.getRecordId();
         Long stageRecordId = taskRecordRepository.baseQueryRecordById(taskRecordId).getStageRecordId();
         PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
         PipelineTaskRecordDTO taskRecordDTO = taskRecordRepository.baseQueryRecordById(taskRecordId);
         Long pipelineRecordId = stageRecordDTO.getPipelineRecordId();
         try {
-            ApplicationInstanceVO applicationInstanceVO = applicationInstanceService.createOrUpdate(applicationDeployVO);
+            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(appServiceDeployVO);
             if (!pipelineRecordService.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordDTO.getIsParallel() == 1) {
                 if (!taskRecordDTO.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                     PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
-                    pipelineTaskRecordDTO.setInstanceId(applicationInstanceVO.getId());
+                    pipelineTaskRecordDTO.setInstanceId(appServiceInstanceVO.getId());
                     pipelineTaskRecordDTO.setStatus(WorkFlowStatus.SUCCESS.toString());
-                    pipelineTaskRecordDTO.setId(applicationDeployVO.getRecordId());
+                    pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
                     taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
                     LOGGER.info("create pipeline auto deploy instance success");
                 }
             }
         } catch (Exception e) {
             PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
-            pipelineTaskRecordDTO.setId(applicationDeployVO.getRecordId());
+            pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
             pipelineTaskRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
             taskRecordRepository.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
             pipelineService.updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue(), e.getMessage());
@@ -378,7 +334,7 @@ public class DevopsSagaHandler {
             seq = 1)
     public String devopsCreateInstance(String data) {
         InstanceSagaPayload instanceSagaPayload = gson.fromJson(data, InstanceSagaPayload.class);
-        applicationInstanceService.createInstanceBySaga(instanceSagaPayload);
+        appServiceInstanceService.createInstanceBySaga(instanceSagaPayload);
         return data;
     }
 

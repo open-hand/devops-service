@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
  * @date 2019/7/1
  */
 public interface DevopsEnvApplicationService {
-    List<DevopsEnvApplicationVO> batchCreate(DevopsEnvApplicationCreationVO devopsEnvApplicationCreationVO);
+    List<DevopsEnvApplicationVO> batchCreate(DevopsEnvAppServiceVO devopsEnvAppServiceVO);
 
 
     /**
@@ -20,7 +20,7 @@ public interface DevopsEnvApplicationService {
      * @param envId
      * @return
      */
-    List<ApplicationServiceRepVO> listAppByEnvId(Long envId);
+    List<AppServiceRepVO> listAppByEnvId(Long envId);
 
     /**
      * 查询应用在环境下的所有label
@@ -53,5 +53,5 @@ public interface DevopsEnvApplicationService {
      * @param envId     环境id
      * @return 应用列表
      */
-    List<BaseApplicationVO> listNonRelatedApplications(Long projectId, Long envId);
+    List<BaseApplicationVO> listNonRelatedAppService(Long projectId, Long envId);
 }

@@ -18,7 +18,7 @@ import io.choerodon.devops.infra.feign.AppShareClient;
 @Component
 public class AppShareClientFallback implements AppShareClient {
     @Override
-    public Call<PageInfo<RemoteApplicationServiceVO>> getAppShares(Map<String, Object> map) {
+    public Call<PageInfo<RemoteAppServiceVO>> getAppShares(Map<String, Object> map) {
         return null;
     }
 
@@ -28,7 +28,7 @@ public class AppShareClientFallback implements AppShareClient {
     }
 
     @Override
-    public Call<AppVersionAndValueVO> getConfigInfoByVerionId(Long appId, Long versionId, Map<String, Object> map) {
+    public Call<AppServiceVersionAndValueVO> getConfigInfoByVerionId(Long appId, Long versionId, Map<String, Object> map) {
         return null;
     }
 

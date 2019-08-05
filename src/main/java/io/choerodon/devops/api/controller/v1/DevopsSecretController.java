@@ -86,7 +86,7 @@ public class DevopsSecretController {
      * @param envId       环境id
      * @param pageRequest 分页参数
      * @param params      查询参数
-     * @param params      应用id
+     * @param params      服务id
      * @return Page
      */
     @Permission(type = ResourceType.PROJECT,
@@ -99,7 +99,7 @@ public class DevopsSecretController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
-            @ApiParam(value = "应用id")
+            @ApiParam(value = "服务id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,

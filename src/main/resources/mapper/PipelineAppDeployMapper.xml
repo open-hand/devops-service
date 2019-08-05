@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
-<mapper namespace="io.choerodon.devops.infra.mapper.PipelineAppDeployMapper">
-    <select id="queryById" resultType="io.choerodon.devops.infra.dto.PipelineAppDeployDTO">
+<mapper namespace="io.choerodon.devops.infra.mapper.PipelineAppServiceDeployMapper">
+    <select id="queryById" resultType="io.choerodon.devops.infra.dto.PipelineAppServiceDeployDTO">
        SELECT
             dpt.type,
             dpt. NAME,
-            da. NAME AS applicationName,
-            dpad.application_id,
+            da. NAME AS appServiceName,
+            dpad.app_service_id,
             dpad.trigger_version,
             dpad.env_id,
             de. NAME AS envName,
@@ -17,7 +17,7 @@
                 SELECT
                     dai.id
                 FROM
-                    devops_app_instance dai
+                    devops_app_service_instance dai
                 WHERE
                     dai.env_id = dpad.env_id
                 AND dai. CODE = dpad.instance_name
@@ -33,8 +33,8 @@
             dpad.id,
             dpad.creation_date
         FROM
-            devops_pipeline_app_deploy dpad
-        JOIN devops_application_service da ON dpad.application_id = da.id
+            devops_pipeline_app_service_deploy dpad
+        JOIN devops_app_service da ON dpad.app_service_id = da.id
         JOIN devops_env de ON dpad.env_id = de.id
         JOIN devops_pipeline_task dpt ON dpt.app_deploy_id = dpad.id
         JOIN devops_deploy_value dadv ON dadv.id = dpad.value_id
@@ -43,7 +43,7 @@
     </select>
 
     <update id="updateInstanceId"  parameterType="java.lang.Long">
-         UPDATE devops_pipeline_app_deploy
+         UPDATE devops_pipeline_app_service_deploy
          SET instance_id = NULL
          WHERE instance_id = #{instanceId}
     </update>

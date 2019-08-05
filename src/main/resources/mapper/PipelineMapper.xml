@@ -28,7 +28,7 @@
                 <if test="classifyParam.envIds!=null and classifyParam.envIds.size>0">
                     JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
                     JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
-                    JOIN devops_pipeline_app_deploy dpad ON dpad.id = dpt.app_deploy_id
+                    JOIN devops_pipeline_app_service_deploy dpad ON dpad.id = dpt.app_service_deploy_id
                     AND dpad.env_id IN
                     <foreach collection="classifyParam.envIds" item="envId" open="(" separator="," close=")">
                         #{envId}
@@ -68,7 +68,7 @@
                 <if test="classifyParam.envIds!=null and classifyParam.envIds.size>0">
                     JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
                     JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
-                    JOIN devops_pipeline_app_deploy dpad ON dpad.id = dpt.app_deploy_id
+                    JOIN devops_pipeline_app_service_deploy dpad ON dpad.id = dpt.app_service_deploy_id
                     AND dpad.env_id IN
                     <foreach collection="classifyParam.envIds" item="envId" open="(" separator="," close=")">
                         #{envId}
@@ -137,7 +137,7 @@
         <if test="classifyParam.envIds!=null and classifyParam.envIds.size>0">
             JOIN devops_pipeline_stage dps ON dps.pipeline_id = dp.id
             JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
-            JOIN devops_pipeline_app_deploy dpad ON dpad.id = dpt.app_deploy_id
+            JOIN devops_pipeline_app_service_deploy dpad ON dpad.id = dpt.app_service_deploy_id
             AND dpad.env_id IN
             <foreach collection="classifyParam.envIds" item="envId" open="(" separator="," close=")">
                 #{envId}

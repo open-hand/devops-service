@@ -19,7 +19,7 @@ public class DevopsAutoDeployVO {
     private String value;
     private Long valueId;
     private Long projectId;
-    private String appName;
+    private String appServiceName;
     private String envName;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
@@ -92,12 +92,12 @@ public class DevopsAutoDeployVO {
         this.projectId = projectId;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
     public String getEnvName() {

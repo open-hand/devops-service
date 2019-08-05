@@ -9,10 +9,10 @@ import java.util.stream.Stream;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
-import io.choerodon.devops.app.service.ApplicationSevriceService;
+import io.choerodon.devops.app.service.AppSevriceService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
-import io.choerodon.devops.infra.mapper.DevopsEnvApplicationMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
@@ -31,25 +31,25 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     private JSON json = new JSON();
 
     @Autowired
-    private ApplicationSevriceService applicationService;
+    private AppSevriceService applicationService;
     @Autowired
-    private DevopsEnvApplicationMapper devopsEnvApplicationMapper;
+    private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
 
     @Override
-    public List<DevopsEnvApplicationVO> batchCreate(DevopsEnvApplicationCreationVO devopsEnvApplicationCreationVO) {
-        return Stream.of(devopsEnvApplicationCreationVO.getAppServiceIds())
-                .map(appId -> new DevopsEnvApplicationDTO(devopsEnvApplicationCreationVO.getEnvId(), appId))
-                .peek(e -> devopsEnvApplicationMapper.insertIgnore(e))
+    public List<DevopsEnvApplicationVO> batchCreate(DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
+        return Stream.of(devopsEnvAppServiceVO.getAppServiceIds())
+                .map(appId -> new DevopsEnvApplicationDTO(devopsEnvAppServiceVO.getEnvId(), appId))
+                .peek(e -> devopsEnvAppServiceMapper.insertIgnore(e))
                 .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ApplicationServiceRepVO> listAppByEnvId(Long envId) {
+    public List<AppServiceRepVO> listAppByEnvId(Long envId) {
         List<Long> appIds = baseListAppByEnvId(envId);
-        List<ApplicationServiceRepVO> applicationRepVOS = new ArrayList<>();
+        List<AppServiceRepVO> applicationRepVOS = new ArrayList<>();
         appIds.forEach(v ->
-                applicationRepVOS.add(ConvertUtils.convertObject(applicationService.baseQuery(v), ApplicationServiceRepVO.class))
+                applicationRepVOS.add(ConvertUtils.convertObject(applicationService.baseQuery(v), AppServiceRepVO.class))
         );
         return applicationRepVOS;
     }
@@ -96,7 +96,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
 
     @Override
     public DevopsEnvApplicationDTO baseCreate(DevopsEnvApplicationDTO devopsEnvApplicationDTO) {
-        if (devopsEnvApplicationMapper.insert(devopsEnvApplicationDTO) != 1) {
+        if (devopsEnvAppServiceMapper.insert(devopsEnvApplicationDTO) != 1) {
             throw new CommonException("error.insert.env.app");
         }
         return devopsEnvApplicationDTO;
@@ -104,16 +104,16 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
 
     @Override
     public List<Long> baseListAppByEnvId(Long envId) {
-        return devopsEnvApplicationMapper.queryAppByEnvId(envId);
+        return devopsEnvAppServiceMapper.queryAppByEnvId(envId);
     }
 
     @Override
     public List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appId) {
-        return devopsEnvApplicationMapper.listResourceByEnvAndApp(envId, appId);
+        return devopsEnvAppServiceMapper.listResourceByEnvAndApp(envId, appId);
     }
 
     @Override
-    public List<BaseApplicationVO> listNonRelatedApplications(Long projectId, Long envId) {
-        return devopsEnvApplicationMapper.listNonRelatedApplications(projectId, envId);
+    public List<BaseApplicationVO> listNonRelatedAppService(Long projectId, Long envId) {
+        return devopsEnvAppServiceMapper.listNonRelatedApplications(projectId, envId);
     }
 }

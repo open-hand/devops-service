@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.GitlabWebHookService;
 
 import io.swagger.annotations.ApiOperation;
@@ -25,7 +25,7 @@ public class GitlabWebHookController {
     @Autowired
     private GitlabWebHookService gitlabWebHookService;
     @Autowired
-    private ApplicationInstanceService applicationInstanceService;
+    private AppServiceInstanceService appServiceInstanceService;
 
     @Permission(permissionPublic = true)
     @ApiOperation(value = "webhook转发")
@@ -53,6 +53,6 @@ public class GitlabWebHookController {
     public void getTestStatus(
             @ApiParam(value = "releaseName", required = true)
             @RequestBody Map<Long, List<String>> testReleases) {
-        applicationInstanceService.getTestAppStatus(testReleases);
+        appServiceInstanceService.getTestAppStatus(testReleases);
     }
 }

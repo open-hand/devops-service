@@ -63,4 +63,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
             column(name: "stage_record_id")
         }
     }
+
+    changeSet(author: 'sheep', id: '2019-08-05-devops_pipeline_task-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'application_id', tableName: 'devops_pipeline_task_record')
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_deploy_id', oldColumnName: 'app_deploy_id', tableName: 'devops_pipeline_task_record')
+    }
+
 }

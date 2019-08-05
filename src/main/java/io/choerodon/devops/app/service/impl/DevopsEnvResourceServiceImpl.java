@@ -45,7 +45,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Autowired
     private DevopsEnvResourceDetailService  devopsEnvResourceDetailService;
     @Autowired
-    private ApplicationInstanceService  applicationInstanceService;
+    private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
@@ -55,7 +55,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {
-        ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.baseQuery(instanceId);
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(instanceId);
         List<DevopsEnvResourceDTO> devopsEnvResourceDTOS =
                 devopsEnvResourceService.baseListByInstanceId(instanceId);
         DevopsEnvResourceVO devopsEnvResourceDTO = new DevopsEnvResourceVO();
@@ -67,7 +67,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         devopsEnvResourceDTOS.forEach(envResourceDTO -> {
                     DevopsEnvResourceDetailDTO envResourceDetailDTO = devopsEnvResourceDetailService.baesQueryByMessageId(envResourceDTO.getResourceDetailId());
                     if (isReleaseGenerated(envResourceDetailDTO.getMessage())) {
-                        dealWithResource(envResourceDetailDTO, envResourceDTO, devopsEnvResourceDTO, applicationInstanceDTO.getEnvId());
+                        dealWithResource(envResourceDetailDTO, envResourceDTO, devopsEnvResourceDTO, appServiceInstanceDTO.getEnvId());
                     }
                 }
         );
@@ -155,7 +155,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 addServiceToResource(devopsEnvResourceVO, v1Service);
                 break;
             case INGRESS:
-                if (devopsEnvResourceDTO.getAppInstanceId() != null) {
+                if (devopsEnvResourceDTO.getInstanceId() != null) {
                     V1beta1Ingress v1beta1Ingress = json.deserialize(
                             devopsEnvResourceDetailDTO.getMessage(),
                             V1beta1Ingress.class);
@@ -514,7 +514,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Override
     public List<DevopsEnvResourceDTO> baseListByInstanceId(Long instanceId) {
         DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
-        devopsEnvResourceDTO.setAppInstanceId(instanceId);
+        devopsEnvResourceDTO.setInstanceId(instanceId);
         return devopsEnvResourceMapper.select(devopsEnvResourceDTO);
     }
 
@@ -559,7 +559,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
         devopsEnvResourceDTO.setKind(kind);
         devopsEnvResourceDTO.setName(name);
-        devopsEnvResourceDTO.setAppInstanceId(instanceId);
+        devopsEnvResourceDTO.setInstanceId(instanceId);
         devopsEnvResourceMapper.delete(devopsEnvResourceDTO);
     }
 

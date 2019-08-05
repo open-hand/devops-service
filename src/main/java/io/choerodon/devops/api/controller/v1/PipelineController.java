@@ -45,7 +45,7 @@ public class PipelineController {
     public ResponseEntity create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用信息", required = true)
+            @ApiParam(value = "服务信息", required = true)
             @RequestBody PipelineReqVO pipelineReqVO) {
         return Optional.ofNullable(pipelineService.create(projectId, pipelineReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -65,7 +65,7 @@ public class PipelineController {
     public ResponseEntity<PipelineReqVO> update(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用信息", required = true)
+            @ApiParam(value = "服务信息", required = true)
             @RequestBody PipelineReqVO pipelineReqVO) {
         return Optional.ofNullable(pipelineService.update(projectId, pipelineReqVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

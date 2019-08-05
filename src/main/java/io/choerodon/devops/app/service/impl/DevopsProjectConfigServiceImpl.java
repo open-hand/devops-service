@@ -15,7 +15,7 @@ import io.choerodon.devops.api.validator.DevopsProjectConfigValidator;
 import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
 import io.choerodon.devops.api.vo.ProjectConfigVO;
 import io.choerodon.devops.api.vo.ProjectDefaultConfigVO;
-import io.choerodon.devops.app.service.ApplicationSevriceService;
+import io.choerodon.devops.app.service.AppSevriceService;
 import io.choerodon.devops.app.service.DevopsProjectConfigService;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
@@ -69,7 +69,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     private DevopsProjectService devopsProjectService;
 
     @Autowired
-    private ApplicationSevriceService applicationService;
+    private AppSevriceService applicationService;
 
     @Override
     public DevopsProjectConfigVO create(Long projectId, DevopsProjectConfigVO devopsProjectConfigVO) {

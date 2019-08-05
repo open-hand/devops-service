@@ -28,7 +28,7 @@ public class DevopsResourceEnvOverviewVO {
     /**
      * 实例基本信息
      */
-    private List<DevopsAppInstanceViewVO> instances;
+    private List<DevopsAppServiceInstanceViewVO> instances;
     /**
      * 网络基本信息
      */
@@ -86,11 +86,11 @@ public class DevopsResourceEnvOverviewVO {
         this.synchronize = synchronize;
     }
 
-    public List<DevopsAppInstanceViewVO> getInstances() {
+    public List<DevopsAppServiceInstanceViewVO> getInstances() {
         return instances;
     }
 
-    public void setInstances(List<DevopsAppInstanceViewVO> instances) {
+    public void setInstances(List<DevopsAppServiceInstanceViewVO> instances) {
         this.instances = instances;
     }
 

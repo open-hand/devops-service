@@ -7,8 +7,8 @@ import java.io.InputStream;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
-import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
@@ -55,20 +55,20 @@ public class ChartUtil {
         }
     }
 
-    public void downloadChart(ApplicationVersionDTO applicationVersionDTO, OrganizationDTO organizationDTO, ProjectDTO projectDTO, ApplicationServiceDTO applicationDTO, String destpath) {
+    public void downloadChart(AppServiceVersionDTO appServiceVersionDTO, OrganizationDTO organizationDTO, ProjectDTO projectDTO, AppServiceDTO applicationDTO, String destpath) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setType(CHART);
-        configurationProperties.setBaseUrl(applicationVersionDTO.getRepository().split(organizationDTO.getCode() + "/" + projectDTO.getCode())[0]);
+        configurationProperties.setBaseUrl(appServiceVersionDTO.getRepository().split(organizationDTO.getCode() + "/" + projectDTO.getCode())[0]);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         ChartClient chartClient = retrofit.create(ChartClient.class);
-        Call<ResponseBody> getTaz = chartClient.downloadTaz(organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode(), applicationVersionDTO.getVersion());
+        Call<ResponseBody> getTaz = chartClient.downloadTaz(organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode(), appServiceVersionDTO.getVersion());
         try {
             Response<ResponseBody> response = getTaz.execute();
             try (FileOutputStream fos = new FileOutputStream(String.format("%s%s%s-%s.tgz",
                     destpath,
                     FILE_SEPARATOR,
                     applicationDTO.getCode(),
-                    applicationVersionDTO.getVersion()))) {
+                    appServiceVersionDTO.getVersion()))) {
                 if (response.body() != null) {
                     InputStream is = response.body().byteStream();
                     byte[] buffer = new byte[4096];

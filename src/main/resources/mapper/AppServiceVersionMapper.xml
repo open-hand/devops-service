@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.AppServiceVersionMapper">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT
+        dav.id,
+        dav.version,
+        dav.creation_date
+        FROM
+        devops_app_service_version dav
+        WHERE
+        dav.app_service_id = #{appServiceId}
+        <if test='searchParam != null'>
+            <if test='searchParam.version != null and searchParam.version.size > 0'>
+                AND
+                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
+                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='params != null and params.size > 0'>
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            </foreach>
+        </if>
+    </select>
+
+    <select id="listApplicationVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT
+        dav.id,
+        dav.version,
+        dav.commit,
+        da.code appCode,
+        da.name appName,
+        da.is_active appStatus,
+        da.id appServiceId,
+        dav.creation_date
+        FROM
+        devops_app_service da
+        RIGHT JOIN devops_app_service_version dav ON da.id = dav.app_service_id
+        WHERE da.project_id = #{projectId}
+        <if test='appServiceId != null'>
+            AND da.id= #{appServiceId}
+        </if>
+        <if test='isProjectOwner != null'>
+            <if test='isProjectOwner == false'>
+                AND (da.is_skip_check_permission = 1 OR (
+                da.is_skip_check_permission = 0
+                AND ( da.id IN ( SELECT daur.app_service_id FROM devops_app_user_rel daur WHERE daur.iam_user_id = #{userId}
+                ))))
+            </if>
+        </if>
+        <if test='searchParam != null'>
+            <if test='searchParam.version != null and searchParam.version.size > 0'>
+                AND
+                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
+                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+        </if>
+    </select>
+
+    <select id="listAppLatestVersion" resultType="io.choerodon.devops.infra.dto.AppServiceLatestVersionDTO">
+        SELECT
+        dap.version,
+        dap.id versionId,
+        lv.app_service_id
+        FROM
+        devops_app_service_version dap
+        JOIN (
+        SELECT
+        MAX( dappv.id ) id,
+        dappv.app_service_id
+        FROM
+        devops_app_service_version dappv
+        GROUP BY
+        dappv.app_service_id
+        ) lv ON lv.id = dap.id
+        JOIN devops_app_service da ON lv.app_service_id = da.id
+        LEFT JOIN devops_app_service_share_rule dam on dam.app_service_id = da.id
+        WHERE
+        da.project_id = #{projectId}
+        OR (
+        da.project_id IN
+        <foreach collection="projectIds" item="project" open="(" separator="," close=")">
+            #{project}
+        </foreach>
+        AND dam.share_level = 'organization'
+        )
+        OR dam.share_level = 'public'
+    </select>
+    <select id="queryByCommitSha" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT
+            dav.*
+        FROM
+            devops_app_service_version dav
+        WHERE
+            dav.app_service_id = #{appServiceId}
+        AND dav.version LIKE CONCAT(CONCAT('%', #{ref}))
+        AND dav.`commit` = #{commit}
+    </select>
+
+    <select id="listByAppIdAndEnvId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT
+        dav.id,
+        dav.version
+        FROM
+        devops_app_service da,
+        devops_app_service_instance dai,
+        devops_env de,
+        devops_app_service_version dav
+        WHERE
+        da.id = dai.app_service_id
+        AND de.id = dai.env_id
+        AND dai.`status` = 'running'
+        AND dai.app_version_id = dav.id
+        AND de.project_id = #{projectId}
+        AND de.id = #{envId}
+        AND da.id = #{appServiceId}
+        GROUP BY
+        dav.id,dav.version
+    </select>
+
+    <select id="queryValue" resultType="java.lang.String">
+        SELECT
+        davv.value
+        FROM
+        devops_app_service_version dav,
+        devops_app_service_version_value davv
+        WHERE
+        dav.value_id = davv.id
+        AND dav.id = #{versionId}
+    </select>
+
+    <select id="selectByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT
+        dav.id,
+        dav.version,
+        dav.creation_date
+        FROM
+        devops_app_service_version dav
+        WHERE
+        dav.app_service_id = #{appServiceId}
+        <if test="isPublish != null">
+            <if test="isPublish == true">
+                AND dav.is_publish = TRUE
+            </if>
+            <if test="isPublish != true">
+                AND ( is_publish != TRUE OR is_publish IS NULL )
+            </if>
+        </if>
+        ORDER BY
+        dav.id DESC
+    </select>
+
+    <select id="selectByAppIdAndParamWithPage" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT
+        dav.id,
+        dav.version,
+        dav.publish_time,
+        dav.creation_date
+        FROM
+        devops_app_service_version dav
+        WHERE
+        dav.app_service_id = #{appServiceId}
+        <if test="isPublish != null">
+            <if test="isPublish == true">
+                AND dav.is_publish = TRUE
+            </if>
+            <if test="isPublish != true">
+                AND ( is_publish != TRUE OR is_publish IS NULL )
+            </if>
+        </if>
+        <if test="version != null">
+            AND
+            dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
+        </if>
+        ORDER BY
+        dav.id DESC
+    </select>
+
+    <select id="selectDeployedByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT DISTINCT
+        dav.id,
+        dav.version
+        FROM
+        devops_app_service_version dav
+        JOIN devops_app_service_instance dai ON dai.app_version_id = dav.id
+        AND dai.`status` != 'deleted'
+        JOIN devops_env de ON de.id = dai.env_id
+        WHERE
+        de.project_id = #{projectId}
+        AND dav.app_service_id = #{appServiceId}
+        ORDER BY
+        dav.id DESC
+    </select>
+
+    <select id="getAllPublishedVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        select
+        dav.id,
+        dav.version,
+        dav.creation_date
+        from devops_app_service_version dav
+        where dav.app_service_id=#{applicationId}
+        and dav.is_publish=1
+    </select>
+
+    <select id="selectVersionsByAppId" resultType="java.lang.Long">
+        SELECT
+        dav.id
+        FROM
+        devops_app_service_version dav
+        JOIN devops_app_service da ON da.is_active = TRUE
+        AND da.id = dav.app_service_id
+        WHERE
+        dav.app_service_id = #{applicationId}
+    </select>
+
+    <select id="selectUpgradeVersions" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT id, app_service_id, version,creation_date
+        FROM
+        devops_app_service_version
+        WHERE
+        app_service_id = (
+        SELECT
+        app_service_id
+        FROM
+        devops_app_service_version
+        WHERE
+        id = #{appVersionId}
+        )
+        AND id > #{appVersionId}
+        ORDER BY id DESC
+    </select>
+    <select id="checkProIdAndVerId" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM
+        devops_app_service da
+        JOIN devops_app_service_version dav ON dav.app_service_id = da.id
+        WHERE
+        da.project_id = #{projectId}
+        AND dav.id = #{appVersionId}
+    </select>
+
+
+    <select id="getLatestVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        select * from devops_app_service_version where app_service_id = #{appServiceId} order by id desc limit 1
+    </select>
+
+
+    <select id="listByAppVersionIds" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT *
+        FROM
+        devops_app_service_version dav
+        where 1=1
+        <if test="appVersionIds != null">
+            AND dav.id in
+            <foreach collection="appVersionIds" item="appVersionIds" index="index"
+                     open="(" close=")" separator=",">
+                #{appVersionIds}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="listByAppIdAndBranch" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT
+        *
+        FROM
+        devops_app_service_version
+        WHERE
+        app_service_id = #{appServiceId} and commit is not null and version LIKE CONCAT(CONCAT('%', #{branch, jdbcType=VARCHAR}),'%')
+        order by id desc limit
+        10
+    </select>
+
+
+    <select id="queryByPipelineId" resultType="java.lang.String">
+        SELECT
+        dav.version
+        FROM
+        devops_gitlab_pipeline dgp
+        LEFT JOIN devops_gitlab_commit dgc ON dgp.commit_id = dgc.id
+        LEFT JOIN devops_app_service_version dav ON dav.`commit` = dgc.commit_sha and dav.app_service_id=#{appServiceId}
+        WHERE
+        dgp.pipeline_id = #{pipelineId}
+        and dav.version LIKE CONCAT('%', #{branch, jdbcType=VARCHAR})
+    </select>
+
+    <select id="queryValueById" resultType="java.lang.String">
+        SELECT
+        davv.value
+        FROM
+        devops_app_service_version dav
+        LEFT JOIN devops_app_service_version_value davv
+        ON davv.id = dav.value_id
+        WHERE
+        dav.app_service_id = #{appServiceId}
+        ORDER BY dav.id DESC
+        LIMIT 1
+    </select>
+
+    <update id="updateRepository">
+     update devops_app_service_version set repository = CONCAT(#{helmUrl},repository);
+    </update>
+
+    <update id="updateObJectVersionNumber">
+     update devops_app_service_version set object_version_number = 1 where id = #{versionId};
+    </update>
+
+    <update id="updatePublishTime">
+        UPDATE devops_app_service_version dav
+        SET dav.publish_time = dav.last_update_date
+        WHERE
+            dav.is_publish = 1
+    </update>
+
+    <select id="listShareVersionByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT DISTINCT
+            davall.id,
+            davall.app_service_id,
+            davall.`commit`,
+            davall.image,
+            davall.version
+        FROM
+            (
+                SELECT
+                    dav.app_service_id,
+                    dav.`commit`,
+                    dav.version,
+                    dav.id,
+                    dav.image
+                FROM
+                    devops_app_service_version dav
+                JOIN (
+                    SELECT
+                        dasr.version_type
+                    FROM
+                        devops_app_service_share_rule_rule dasr
+                    WHERE
+                        dasr.app_service_id = #{appServiceId}
+                    AND dasr.version IS NULL
+                ) dasr1 ON dav.version LIKE CONCAT(
+                    CONCAT('%', dasr1.version_type, '%')
+                )
+                AND dav.app_service_id =  #{appServiceId}
+                UNION
+                    SELECT
+                        dav.app_service_id,
+                        dav.`commit`,
+                        dav.version,
+                        dav.id,
+                        dav.image
+                    FROM
+                        devops_app_service_version dav
+                    JOIN (
+                        SELECT
+                            dasr.version
+                        FROM
+                            devops_app_service_share_rule_rule dasr
+                        WHERE
+                            dasr.app_service_id =  #{appServiceId}
+                        AND dasr.version IS NOT NULL
+                    ) dasr2 ON dav.version = dasr2.version
+                    AND dav.app_service_id =  #{appServiceId}
+            ) davall
+            <if test="params !=null">
+                WHERE davall.version LIKE CONCAT(CONCAT('%', #{params}, '%'))
+            </if>
+
+    </select>
+
+</mapper>

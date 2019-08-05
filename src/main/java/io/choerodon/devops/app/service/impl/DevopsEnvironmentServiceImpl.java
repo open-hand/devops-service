@@ -106,7 +106,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsEnvCommitService devopsEnvCommitService;
     @Autowired
-    private ApplicationInstanceService applicationInstanceService;
+    private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsEnvFileErrorMapper devopsEnvFileErrorMapper;
     @Autowired
@@ -290,10 +290,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             vo.setConnect(connected);
             vo.setApps(e.getApps().stream().map(app -> {
 
-                DevopsApplicationViewVO appVO = new DevopsApplicationViewVO();
+                DevopsAppServiceViewVO appVO = new DevopsAppServiceViewVO();
                 BeanUtils.copyProperties(app, appVO, "instances");
                 appVO.setInstances(app.getInstances().stream().map(ins -> {
-                    DevopsAppInstanceViewVO insVO = new DevopsAppInstanceViewVO();
+                    DevopsAppServiceInstanceViewVO insVO = new DevopsAppServiceInstanceViewVO();
                     BeanUtils.copyProperties(ins, insVO);
                     return insVO;
                 }).collect(Collectors.toList()));
@@ -494,13 +494,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         if (appId == null) {
             return devopsEnviromentRepDTOList.stream().filter(t ->
-                    applicationInstanceService.baseListByEnvId(t.getId()).stream()
+                    appServiceInstanceService.baseListByEnvId(t.getId()).stream()
                             .anyMatch(applicationInstanceDTO ->
                                     applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())))
                     .collect(Collectors.toList());
         } else {
             return devopsEnviromentRepDTOList.stream().filter(t ->
-                    applicationInstanceService.baseListByEnvId(t.getId()).stream()
+                    appServiceInstanceService.baseListByEnvId(t.getId()).stream()
                             .anyMatch(applicationInstanceDTO ->
                                     applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())
                                             && applicationInstanceDTO.getAppServiceId().equals(appId)))
@@ -965,9 +965,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public void deleteDeactivatedEnvironment(Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
         // 删除环境对应的实例
-        applicationInstanceService.baseListByEnvId(envId).forEach(instanceE ->
+        appServiceInstanceService.baseListByEnvId(envId).forEach(instanceE ->
                 devopsEnvCommandService.baseListByObject(HelmObjectKind.INSTANCE.toValue(), instanceE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));
-        applicationInstanceService.deleteByEnvId(envId);
+        appServiceInstanceService.deleteByEnvId(envId);
         // 删除环境对应的域名、域名路径
         devopsIngressService.baseListByEnvId(envId).forEach(ingressE ->
                 devopsEnvCommandService.baseListByObject(HelmObjectKind.INGRESS.toValue(), ingressE.getId()).forEach(t -> devopsEnvCommandService.baseDeleteByEnvCommandId(t)));

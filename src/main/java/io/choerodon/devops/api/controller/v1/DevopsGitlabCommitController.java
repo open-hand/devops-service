@@ -36,20 +36,20 @@ public class DevopsGitlabCommitController {
     private DevopsGitlabCommitService devopsGitlabCommitService;
 
     /**
-     * 应用下commit记录报表
+     * 服务下commit记录报表
      *
      * @param projectId 项目id
-     * @param appServiceIds    应用id
+     * @param appServiceIds    服务id
      * @return DevopsGitlabCommitDTO
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取应用下的代码提交")
+    @ApiOperation(value = "获取服务下的代码提交")
     @PostMapping
     public ResponseEntity<DevopsGitlabCommitVO> getCommits(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用ids", required = true)
+            @ApiParam(value = "服务ids", required = true)
             @RequestBody String appServiceIds,
             @ApiParam(value = "开始时间start_date", required = true)
             @RequestParam(value = "start_date") Date startDate,
@@ -61,22 +61,22 @@ public class DevopsGitlabCommitController {
     }
 
     /**
-     * 应用获取下最近的commit记录
+     * 服务获取下最近的commit记录
      *
      * @param projectId   项目id
-     * @param appServiceIds      应用id
+     * @param appServiceIds      服务id
      * @param pageRequest 分页参数
      * @return List
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
-    @ApiOperation(value = "获取应用下的代码提交历史记录")
+    @ApiOperation(value = "获取服务下的代码提交历史记录")
     @PostMapping("/record")
     public ResponseEntity<PageInfo<CommitFormRecordVO>> getRecordCommits(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用ids", required = true)
+            @ApiParam(value = "服务ids", required = true)
             @RequestBody String appServiceIds,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,

@@ -1,8 +1,8 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
-import io.choerodon.devops.api.vo.ApplicationDeployVO;
-import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
-import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
+import io.choerodon.devops.api.vo.AppServiceDeployVO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 
 /**
@@ -13,10 +13,10 @@ public class InstanceSagaPayload {
     private Long projectId;
     private Long gitlabUserId;
     private String secretCode;
-    private ApplicationServiceDTO applicationDTO;
-    private ApplicationVersionDTO applicationVersionDTO;
+    private AppServiceDTO applicationDTO;
+    private AppServiceVersionDTO appServiceVersionDTO;
     private DevopsEnvironmentDTO devopsEnvironmentDTO;
-    private ApplicationDeployVO applicationDeployVO;
+    private AppServiceDeployVO appServiceDeployVO;
 
 
     public InstanceSagaPayload() {
@@ -54,20 +54,20 @@ public class InstanceSagaPayload {
         this.secretCode = secretCode;
     }
 
-    public ApplicationServiceDTO getApplicationDTO() {
+    public AppServiceDTO getApplicationDTO() {
         return applicationDTO;
     }
 
-    public void setApplicationDTO(ApplicationServiceDTO applicationDTO) {
+    public void setApplicationDTO(AppServiceDTO applicationDTO) {
         this.applicationDTO = applicationDTO;
     }
 
-    public ApplicationVersionDTO getApplicationVersionDTO() {
-        return applicationVersionDTO;
+    public AppServiceVersionDTO getAppServiceVersionDTO() {
+        return appServiceVersionDTO;
     }
 
-    public void setApplicationVersionDTO(ApplicationVersionDTO applicationVersionDTO) {
-        this.applicationVersionDTO = applicationVersionDTO;
+    public void setAppServiceVersionDTO(AppServiceVersionDTO appServiceVersionDTO) {
+        this.appServiceVersionDTO = appServiceVersionDTO;
     }
 
     public DevopsEnvironmentDTO getDevopsEnvironmentDTO() {
@@ -78,11 +78,11 @@ public class InstanceSagaPayload {
         this.devopsEnvironmentDTO = devopsEnvironmentDTO;
     }
 
-    public ApplicationDeployVO getApplicationDeployVO() {
-        return applicationDeployVO;
+    public AppServiceDeployVO getAppServiceDeployVO() {
+        return appServiceDeployVO;
     }
 
-    public void setApplicationDeployVO(ApplicationDeployVO applicationDeployVO) {
-        this.applicationDeployVO = applicationDeployVO;
+    public void setAppServiceDeployVO(AppServiceDeployVO appServiceDeployVO) {
+        this.appServiceDeployVO = appServiceDeployVO;
     }
 }

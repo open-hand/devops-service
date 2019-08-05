@@ -8,7 +8,6 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
@@ -16,10 +15,10 @@ import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.MockMultipartFile;
 import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
@@ -35,7 +34,6 @@ import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -60,15 +58,13 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Autowired
     private DevopsProjectConfigService projectConfigService;
     @Autowired
-    private ApplicationSevriceService applicationService;
+    private AppSevriceService applicationService;
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
-    private ApplicationShareRuleService applicationMarketService;
+    private AppServiceShareRuleService applicationMarketService;
     @Autowired
-    private ApplicationVersionService applicationVersionService;
-    @Autowired
-    private ApplicationTemplateService applicationTemplateService;
+    private AppServiceVersionService appServiceVersionService;
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
@@ -78,7 +74,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
-    private ApplicationUserPermissionService applicationUserPermissionService;
+    private AppServiceUserPermissionService appServiceUserPermissionService;
     @Autowired
     private DevopsSagaHandler devopsSagaHandler;
     @Autowired
@@ -103,11 +99,10 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     public void initialDemoEnv(OrganizationRegisterEventPayload organizationRegisterEventPayload) {
         Long projectId = organizationRegisterEventPayload.getProject().getId();
         // 1. 创建应用
-        ApplicationServiceReqVO app = demoDataVO.getApplicationInfo();
-        app.setApplicationTemplateId(getMicroServiceTemplateId());
+        AppServiceReqVO app = demoDataVO.getApplicationInfo();
         app.setIsSkipCheckPermission(Boolean.TRUE);
 
-        ApplicationServiceRepVO applicationRepDTO = createDemoApp(projectId, app);
+        AppServiceRepVO applicationRepDTO = createDemoApp(projectId, app);
 
         gitlabUserId = TypeUtil.objToInteger(userAttrService.baseQueryById(organizationRegisterEventPayload.getUser().getId()).getGitlabUserId());
 
@@ -157,12 +152,12 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param applicationReqDTO 应用创建的数据
      * @return 应用创建的纪录
      */
-    private ApplicationServiceRepVO createDemoApp(Long projectId, ApplicationServiceReqVO applicationReqDTO) {
+    private AppServiceRepVO createDemoApp(Long projectId, AppServiceReqVO applicationReqDTO) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        ApplicationValidator.checkApplication(applicationReqDTO);
+        ApplicationValidator.checkApplicationService(applicationReqDTO);
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        ApplicationServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, ApplicationServiceDTO.class);
+        AppServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, AppServiceDTO.class);
         applicationDTO.setProjectId(projectId);
         applicationService.checkName(projectId, applicationDTO.getName());
         applicationService.checkCode(projectId, applicationDTO.getCode());
@@ -180,14 +175,14 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
             throw new CommonException("error.user.not.owner");
         }
         // 创建saga payload
-        DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
-        devOpsAppPayload.setType("application");
-        devOpsAppPayload.setPath(applicationReqDTO.getCode());
-        devOpsAppPayload.setOrganizationId(organization.getId());
-        devOpsAppPayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
-        devOpsAppPayload.setUserIds(applicationReqDTO.getUserIds());
-        devOpsAppPayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
+        DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
+        devOpsAppServicePayload.setType("application");
+        devOpsAppServicePayload.setPath(applicationReqDTO.getCode());
+        devOpsAppServicePayload.setOrganizationId(organization.getId());
+        devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        devOpsAppServicePayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
+        devOpsAppServicePayload.setUserIds(applicationReqDTO.getUserIds());
+        devOpsAppServicePayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
 
         //设置仓库Id
         List<DevopsProjectConfigVO> harborConfig = projectConfigService.listByIdAndType(null, "harbor");
@@ -202,38 +197,23 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
             throw new CommonException("error.application.create.insert");
         }
 
-        devOpsAppPayload.setAppId(applicationDTO.getId());
-        devOpsAppPayload.setIamProjectId(projectId);
+        devOpsAppServicePayload.setAppId(applicationDTO.getId());
+        devOpsAppServicePayload.setIamProjectId(projectId);
 
         // 如果不跳过权限检查
         List<Long> userIds = applicationReqDTO.getUserIds();
         if (!applicationReqDTO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
-            userIds.forEach(e -> applicationUserPermissionService.baseCreate(e, appId));
+            userIds.forEach(e -> appServiceUserPermissionService.baseCreate(e, appId));
         }
 
-        String input = gson.toJson(devOpsAppPayload);
+        String input = gson.toJson(devOpsAppServicePayload);
 
-        devopsSagaHandler.createApp(input);
+        devopsSagaHandler.createAppService(input);
 
         return ConvertUtils.convertObject(applicationService.baseQueryByCode(applicationReqDTO.getCode(),
-                applicationDTO.getProjectId()), ApplicationServiceRepVO.class);
+                applicationDTO.getProjectId()), AppServiceRepVO.class);
     }
 
-
-    /**
-     * get template id of template 'MicroService'
-     *
-     * @return the id
-     * @throws CommonException if there isn't a template named 'MicroService'
-     */
-    private Long getMicroServiceTemplateId() {
-        List<ApplicationTemplateRespVO> template = applicationTemplateService.listByOptions(new PageRequest(0, 1), null, demoDataVO.getTemplateSearchParam()).getList();
-
-        if (template != null && !template.isEmpty()) {
-            return template.get(0).getId();
-        }
-        throw new CommonException("Can not get template named 'Micro Service'.");
-    }
 
 
     /**
@@ -293,7 +273,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         try {
             byte[] bytes = StreamUtils.copyToByteArray(this.getClass().getClassLoader().getResourceAsStream(tgzFilePath));
             MockMultipartFile multipartFile = new MockMultipartFile("code-i.tgz", "code-i.tgz", "application/tgz", bytes);
-            applicationVersionService.create(demoDataVO.getAppVersion().getImage(), applicationService.baseQuery(appId).getToken(), demoDataVO.getAppVersion().getVersion(), demoDataVO.getAppVersion().getCommit(), multipartFile);
+            appServiceVersionService.create(demoDataVO.getAppVersion().getImage(), applicationService.baseQuery(appId).getToken(), demoDataVO.getAppVersion().getVersion(), demoDataVO.getAppVersion().getCommit(), multipartFile);
         } catch (IOException e) {
             logger.error("can not find file {}", tgzFilePath);
             throw new CommonException(e);

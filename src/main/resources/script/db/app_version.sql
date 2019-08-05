@@ -1,1 +1,0 @@
-	update devops_app_version A,devops_app_version_readme B set A.readme_value_id=B.id where A.id=B.version_id;

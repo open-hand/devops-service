@@ -95,4 +95,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
         dropUniqueConstraint(constraintName: "uk_app_id",tableName: "devops_app_share_rule")
     }
 
+    changeSet(id: '2019-08-05-rename-table', author: 'scp') {
+        renameTable(newTableName: 'devops_app_service_share_rule', oldTableName: 'devops_app_share_rule')
+    }
 }

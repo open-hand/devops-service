@@ -12,7 +12,6 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +43,7 @@ public class SagaHandler {
     @Autowired
     private GitlabUserService gitlabUserService;
     @Autowired
-    private ApplicationSevriceService applicationService;
+    private AppSevriceService applicationService;
 
 
     private void loggerInfo(Object o) {
@@ -143,69 +142,6 @@ public class SagaHandler {
         OrganizationEventPayload organizationEventPayload = gson.fromJson(payload, OrganizationEventPayload.class);
         loggerInfo(organizationEventPayload);
         organizationService.create(organizationEventPayload);
-        return payload;
-    }
-
-    /**
-     * GitOps 事件处理
-     */
-    @SagaTask(code = SagaTaskCodeConstants.IAM_DELETE_APPLICATION,
-            description = "iam delete application ",
-            sagaCode = SagaTopicCodeConstants.IAM_DELETE_APPLICATION,
-            maxRetryCount = 3,
-            seq = 1)
-    public String deleteApp(String payload) {
-        IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
-        loggerInfo(iamAppPayLoad);
-        applicationService.deleteIamApplication(iamAppPayLoad);
-        return payload;
-    }
-
-
-    /**
-     * Iam更新应用事件
-     */
-    @SagaTask(code = SagaTaskCodeConstants.IAM_UPDATE_APPLICATION,
-            description = "Iam更新应用事件",
-            sagaCode = SagaTopicCodeConstants.IAM_UPDATE_APPLICATION,
-            maxRetryCount = 3,
-            seq = 1)
-    public String handleIamUpdateApplication(String payload) {
-        IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
-        loggerInfo(iamAppPayLoad);
-        applicationService.updateIamApplication(iamAppPayLoad);
-        return payload;
-    }
-
-    /**
-     * Iam启用应用事件
-     */
-    @SagaTask(code = SagaTaskCodeConstants.IAM_ENABLE_APPLICATION,
-            description = "Iam启用应用事件",
-            sagaCode = SagaTopicCodeConstants.IAM_ENABLE_APPLICATION,
-            maxRetryCount = 3,
-            seq = 1)
-    public String handleIamEnableApplication(String payload) {
-        IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
-        loggerInfo(iamAppPayLoad);
-        ApplicationServiceDTO applicationDTO = applicationService.baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
-        applicationService.updateActive(applicationDTO.getId(), true);
-        return payload;
-    }
-
-    /**
-     * Iam停用应用事件
-     */
-    @SagaTask(code = SagaTaskCodeConstants.IAM_DISABLE_APPLICATION,
-            description = "Iam停用应用事件",
-            sagaCode = SagaTopicCodeConstants.IAM_DISABLE_APPLICATION,
-            maxRetryCount = 3,
-            seq = 1)
-    public String handleIamDisableApplication(String payload) {
-        IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
-        loggerInfo(iamAppPayLoad);
-        ApplicationServiceDTO applicationDTO = applicationService.baseQueryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
-        applicationService.updateActive(applicationDTO.getId(), false);
         return payload;
     }
 

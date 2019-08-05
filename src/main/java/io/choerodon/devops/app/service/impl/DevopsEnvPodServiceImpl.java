@@ -144,9 +144,9 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     @Override
     public List<DevopsEnvPodDTO> baseListByInstanceId(Long instanceId) {
-        DevopsEnvPodDTO devopsEnvPodDO = new DevopsEnvPodDTO();
-        devopsEnvPodDO.setAppInstanceId(instanceId);
-        return devopsEnvPodMapper.select(devopsEnvPodDO);
+        DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
+        devopsEnvPodDTO.setInstanceId(instanceId);
+        return devopsEnvPodMapper.select(devopsEnvPodDTO);
     }
 
     @Override

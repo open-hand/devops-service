@@ -13,9 +13,9 @@ public class DevopsEnvPodVO {
     private Boolean isReady;
     private String status;
     private Date creationDate;
-    private String appName;
+    private String appServiceName;
     private String namespace;
-    private String appVersion;
+    private String appServiceVersion;
     private String publishLevel;
     private String instanceCode;
     private Long envId;
@@ -77,20 +77,20 @@ public class DevopsEnvPodVO {
         this.creationDate = creationDate;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
-    public String getAppVersion() {
-        return appVersion;
+    public String getAppServiceVersion() {
+        return appServiceVersion;
     }
 
-    public void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
+    public void setAppServiceVersion(String appServiceVersion) {
+        this.appServiceVersion = appServiceVersion;
     }
 
     public String getInstanceCode() {
