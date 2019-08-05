@@ -1,0 +1,103 @@
+.c7ncd-deployment-application-net {
+
+  .net-expandedRow-content {
+    font-size: .14rem;
+    line-height: .2rem;
+    padding: .16rem 0;
+
+    .net-expandedRow-detail {
+      margin-bottom: .16rem;
+      display: flex;
+      align-items: flex-end;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .net-ingress-text {
+        color: rgba(0, 0, 0, .65);
+        min-width: 1rem;
+        margin-right: .23rem;
+      }
+    }
+
+    .net-no-ingress {
+      color: rgba(0, 0, 0, 0.45);
+      font-size: .13rem;
+    }
+
+    .net-ingress-button {
+      margin-left: auto;
+    }
+  }
+
+  .net-expend-icon {
+    line-height: .20rem;
+    font-size: .18rem;
+    font-weight: 600;
+    color: #3f51b5;
+  }
+
+  .net-target-wrap {
+    display: flex;
+
+    .net-target-item {
+      background: rgba(0, 0, 0, 0.08);
+      border-radius: .1rem;
+      padding: 0 .12rem;
+      height: .2rem;
+      line-height: .2rem;
+      margin-bottom: .08rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .net-target-item-failed {
+      color: #d50000;
+      background: rgba(244, 67, 54, 0.3) !important;
+    }
+
+    .net-target-ip {
+      margin-left: .08rem;
+    }
+
+    & > .net-target-item {
+      margin-bottom: 0;
+    }
+  }
+
+  .net-config-content {
+    display: flex;
+
+    .net-config-type {
+      line-height: .2rem;
+      width: .85rem;
+    }
+
+    .net-config-item {
+      margin-bottom: .06rem;
+      white-space: nowrap;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .net-config-wrap {
+      display: flex;
+
+      .net-type-title {
+        flex: none;
+        margin-right: .16rem;
+        min-width: .92rem;
+        margin-bottom: .06rem;
+      }
+    }
+
+    & > .net-config-item {
+      margin-bottom: 0;
+    }
+  }
+}

@@ -1,0 +1,35 @@
+.c7n-deployment-scroll {
+  height: ~"calc(100% - 90px)";
+  min-height: 1.9rem;
+}
+
+.c7n-deployment-tree {
+  &.c7n-tree {
+    li {
+      .c7n-tree-node-content-wrapper {
+        width: ~"calc(100% - 22px)";
+        padding: 4px 5px;
+        height: 32px;
+
+        .c7n-tree-title {
+          user-select: none;
+          display: flex;
+          align-items: center;
+          justify-content: start;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      span.c7n-tree-switcher {
+        height: 32px;
+        padding: 5px 0;
+      }
+
+      li {
+        padding: 0;
+      }
+    }
+  }
+}

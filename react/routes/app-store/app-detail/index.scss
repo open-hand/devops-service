@@ -1,0 +1,132 @@
+.c7n-store-content {
+  flex-grow: 1;
+  overflow: auto;
+  padding: 20px 24px;
+  margin: 0 !important;
+}
+
+.c7n-store-detail-head {
+  padding: 24px;
+  display: flex;
+  height: 200px;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.c7n-store-select {
+  width: 260px;
+
+  .c7n-select-underline {
+    display: none;
+  }
+}
+
+.c7n-store-img-wrap {
+  width: 120px;
+  border: white 24px solid;
+  border-radius: 120px;
+  height: 120px;
+  margin-right: 32px;
+  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+
+  .c7n-store-img {
+    height: 72px;
+    width: 72px;
+    border-radius: 72px;
+    background-image: url(../img/app.png);
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    -moz-background-size: 100% 100%;
+  }
+}
+
+.c7n-store-name {
+  font-size: 24px;
+  color: #000;
+  line-height: 28px;
+}
+
+.c7n-store-contributor {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.65);
+  text-align: left;
+  line-height: 20px;
+}
+
+.c7n-store-des {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.65);
+  text-align: left;
+  line-height: 20px;
+  margin-bottom: 24px;
+}
+
+.c7n-store-circle {
+  background: rgb(255, 177, 0);
+  height: 20px;
+  width: 20px;
+  font-size: 12px;
+  color: #fff;
+  line-height: 20px;
+  text-align: center;
+  padding: 1px;
+  border-radius: 50%;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+.c7n-store-deploy {
+  margin-left: 40px;
+}
+
+.c7n-store-detail-left {
+  width: 12%;
+  min-width: 152px;
+}
+
+.c7n-store-detail-right {
+  width: 100%;
+
+  .c7n-store-detail-overview {
+    margin-bottom: 40px;
+
+    div {
+      white-space: pre-wrap;
+      text-align: justify;
+      max-width: 830px;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.65);
+      line-height: 22px;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin-bottom: 16px;
+    }
+  }
+}
+
+.c7n-store-detail {
+  padding: 32px 24px;
+  display: flex;
+
+  .c7n-store-key {
+    font-size: 13px;
+    color: #000;
+    line-height: 20px;
+    font-weight: bolder;
+  }
+
+  .c7n-store-type {
+    font-size: 13px;
+    color: #3f51b5;
+    line-height: 20px;
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  .c7n-store-time {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.65);
+    line-height: 20px;
+  }
+}

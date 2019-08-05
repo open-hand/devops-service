@@ -1,0 +1,120 @@
+.c7ncd-deployment-cases-record {
+  background: #fafafa;
+  position: relative;
+  margin-bottom: .14rem;
+
+  .cases-record-title {
+    position: absolute;
+    top: .26rem;
+  }
+
+  .cases-record-detail {
+    margin: 0 .2rem 0 .85rem;
+    padding: 0 .03rem;
+
+    .operation-record-card {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      position: relative;
+      padding: .07rem 0;
+      text-align: center;
+
+      .operation-record-title {
+        font-size: .12rem;
+      }
+
+      .operation-record-time {
+        font-size: .12rem;
+        color: rgba(0, 0, 0, 0.65);
+        line-height: .2rem;
+        transform: scale(0.9);
+      }
+
+      .operation-record-line {
+        position: absolute;
+        left: 0;
+        top: .22rem;
+        width: 100%;
+
+        &:after {
+          height: 1px;
+          width: 100%;
+          background: rgba(0, 0, 0, 0.12);
+          content: "";
+          display: inline-block;
+        }
+      }
+
+      .operation-record-step {
+        z-index: 10;
+
+        .operation-record-icon {
+          color: #5266d4;
+          margin: .05rem 0;
+          font-size: .12rem;
+          transform: scale(0.8);
+          background: #fff;
+        }
+      }
+
+      &-active {
+
+        .operation-record-time,
+        .operation-record-title {
+          color: #5266d4;
+        }
+      }
+    }
+
+    .operation-slick-arrow {
+      color: #3f51b5;
+      font-size: .2rem;
+    }
+
+    .slick-prev:before,
+    .slick-next:before {
+      content: none;
+    }
+
+    .slick-disabled {
+      display: none !important;
+    }
+
+    .slick-track {
+      margin: 0;
+    }
+  }
+}
+
+.c7ncd-deployment-cases-popover-card {
+  padding: .1rem;
+  margin: 0;
+  list-style: none;
+
+  li {
+    margin-bottom: .1rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.c7ncd-deployment-cases-status {
+
+  &-failed {
+    color: #f44336;
+    vertical-align: text-bottom;
+  }
+
+  &-operating {
+    color: #4d90fe;
+    vertical-align: text-bottom;
+  }
+
+  &-success {
+    color: #00bfa5;
+    vertical-align: text-bottom;
+  }
+}
