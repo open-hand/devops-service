@@ -98,12 +98,12 @@
                env.is_synchro as           synchronize,
                (SELECT count(1)
                 FROM devops_env_pod dp
-                WHERE dp.app_instance_id = ins.id
+                WHERE dp.instance_id = ins.id
                   AND dp.namespace = env.code
                   AND env.id = ins.env_id) pod_count,
                (SELECT count(1)
                 FROM devops_env_pod dp
-                WHERE dp.app_instance_id = ins.id
+                WHERE dp.instance_id = ins.id
                   AND dp.`status` = 'Running'
                   AND dp.is_ready = TRUE
                   AND dp.namespace = env.code
@@ -174,12 +174,12 @@
                env.is_synchro as           synchronize,
                (SELECT count(1)
                 FROM devops_env_pod dp
-                WHERE dp.app_instance_id = ins.id
+                WHERE dp.instance_id = ins.id
                   AND dp.namespace = env.code
                   AND env.id = ins.env_id) pod_count,
                (SELECT count(1)
                 FROM devops_env_pod dp
-                WHERE dp.app_instance_id = ins.id
+                WHERE dp.instance_id = ins.id
                   AND dp.`status` = 'Running'
                   AND dp.is_ready = TRUE
                   AND dp.namespace = env.code

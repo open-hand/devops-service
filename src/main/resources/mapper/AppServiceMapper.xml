@@ -15,7 +15,7 @@
         da.uuid,
         da.is_failed,
         da.is_skip_check_permission,
-        da.create_date
+        da.creation_date
         FROM devops_app_service da
         where da.project_id = #{projectId}
         <if test="isActive != null">
