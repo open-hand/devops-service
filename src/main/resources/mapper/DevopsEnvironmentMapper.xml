@@ -13,6 +13,7 @@
             <collection property="instances" ofType="io.choerodon.devops.infra.dto.DevopsAppInstanceViewDTO" notNullColumn="ins_id">
                 <id property="id" column="ins_id"/>
                 <result property="code" column="ins_code"/>
+                <result property="status" column="ins_status"/>
                 <result property="podRunningCount" column="pod_running_count"/>
                 <result property="podCount" column="pod_count"/>
             </collection>
@@ -27,6 +28,7 @@
 
         <collection property="instances" ofType="io.choerodon.devops.api.vo.DevopsAppInstanceViewVO" notNullColumn="ins_id">
             <id property="id" column="ins_id"/>
+            <result property="status" column="ins_status"/>
             <result property="code" column="ins_code"/>
             <result property="podRunningCount" column="pod_running_count"/>
             <result property="podCount" column="pod_count"/>
@@ -91,6 +93,7 @@
                app.name       as           app_name,
                ins.id         as           ins_id,
                ins.code       as           ins_code,
+               ins.status     as           ins_status,
                env.cluster_id as           cluster_id,
                env.is_synchro as           synchronize,
                (SELECT count(1)
@@ -165,6 +168,7 @@
         SELECT env.id         as           env_id,
                env.name       as           env_name,
                ins.id         as           ins_id,
+               ins.status     as           ins_status,
                ins.code       as           ins_code,
                env.cluster_id as           cluster_id,
                env.is_synchro as           synchronize,
