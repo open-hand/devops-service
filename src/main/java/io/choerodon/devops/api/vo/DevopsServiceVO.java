@@ -1,11 +1,12 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Zenger on 2018/4/19.
  */
-public class DevopsServiceVO {
+public class DevopsServiceVO extends DevopsResourceDataInfoVO {
 
     private Long id;
     private String name;
@@ -17,6 +18,11 @@ public class DevopsServiceVO {
     private Long appServiceId;
     private Long appProjectId;
     private String appName;
+    private String dns;
+    /**
+     * 网络本身的标签
+     */
+    private Map<String, String> labels;
     private DevopsServiceTargetVO target;
     private DevopsServiceConfigVO config;
     private String commandType;
@@ -159,5 +165,21 @@ public class DevopsServiceVO {
 
     public void setDevopsIngressVOS(List<DevopsIngressVO> devopsIngressVOS) {
         this.devopsIngressVOS = devopsIngressVOS;
+    }
+
+    public String getDns() {
+        return dns;
+    }
+
+    public void setDns(String dns) {
+        this.dns = dns;
+    }
+
+    public Map<String, String> getLabels() {
+        return labels;
+    }
+
+    public void setLabels(Map<String, String> labels) {
+        this.labels = labels;
     }
 }

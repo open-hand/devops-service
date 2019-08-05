@@ -3,10 +3,12 @@ package io.choerodon.devops.infra.dto;
 import java.util.List;
 import javax.persistence.Transient;
 
+import io.choerodon.mybatis.entity.BaseDTO;
+
 /**
  * Created by Zenger on 2018/4/19.
  */
-public class DevopsServiceQueryDTO {
+public class DevopsServiceQueryDTO extends BaseDTO {
 
     private Long id;
     private String name;
@@ -16,13 +18,15 @@ public class DevopsServiceQueryDTO {
     private Long envId;
     private String type;
     private String envName;
+    private String envCode;
     private String namespace;
     private String endPoints;
     private Long appServiceId;
     private String appName;
     private String labels;
-    private List<ServiceInstanceDO> appInstance;
+    private List<AppInstanceInfoDTO> appInstance;
     private String loadBalanceIp;
+    private String message;
 
 
     @Transient
@@ -93,11 +97,11 @@ public class DevopsServiceQueryDTO {
         this.appName = appName;
     }
 
-    public List<ServiceInstanceDO> getAppInstance() {
+    public List<AppInstanceInfoDTO> getAppInstance() {
         return appInstance;
     }
 
-    public void setAppInstance(List<ServiceInstanceDO> appInstance) {
+    public void setAppInstance(List<AppInstanceInfoDTO> appInstance) {
         this.appInstance = appInstance;
     }
 
@@ -196,5 +200,21 @@ public class DevopsServiceQueryDTO {
 
     public void setInstanceStatus(String instanceStatus) {
         this.instanceStatus = instanceStatus;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getEnvCode() {
+        return envCode;
+    }
+
+    public void setEnvCode(String envCode) {
+        this.envCode = envCode;
     }
 }

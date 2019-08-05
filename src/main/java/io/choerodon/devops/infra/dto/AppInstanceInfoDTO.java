@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
+
 /**
  * 展示实例详情页面的单个实例的信息
  * @author zmf
@@ -14,6 +16,8 @@ public class AppInstanceInfoDTO {
     private Long appVersionId;
     private String appServiceName;
     private String versionName;
+    private Date lastUpdateDate;
+    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -85,5 +89,21 @@ public class AppInstanceInfoDTO {
 
     public void setAppServiceName(String appServiceName) {
         this.appServiceName = appServiceName;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
