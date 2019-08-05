@@ -5,59 +5,67 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.ApplicationDO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
 import io.choerodon.mybatis.common.Mapper;
 
 /**
  * Created by younger on 2018/3/28.
  */
-public interface ApplicationMapper extends Mapper<ApplicationDO> {
-    List<ApplicationDO> list(@Param("projectId") Long projectId,
-                             @Param("isActive") Boolean isActive,
-                             @Param("hasVersion") Boolean hasVersion,
-                             @Param("appMarket") Boolean appMarket,
-                             @Param("type") String type,
-                             @Param("searchParam") Map<String, Object> searchParam,
-                             @Param("param") String param,
-                             @Param("index") String index);
+public interface ApplicationMapper extends Mapper<ApplicationServiceDTO> {
+    List<ApplicationServiceDTO> list(@Param("projectId") Long projectId,
+                                     @Param("isActive") Boolean isActive,
+                                     @Param("hasVersion") Boolean hasVersion,
+                                     @Param("appMarket") Boolean appMarket,
+                                     @Param("type") String type,
+                                     @Param("searchParam") Map<String, Object> searchParam,
+                                     @Param("param") String param,
+                                     @Param("index") String index);
 
-    List<ApplicationDO> listCodeRepository(@Param("projectId") Long projectId,
-                                           @Param("searchParam") Map<String, Object> searchParam,
-                                           @Param("param") String param,
-                                           @Param("isProjectOwner") Boolean isProjectOwner,
-                                           @Param("userId") Long userId);
+    List<ApplicationServiceDTO> listAll(@Param("projectId") Long projectId);
 
-    List<ApplicationDO> listByEnvId(@Param("projectId") Long projectId,
-                                    @Param("envId") Long envId,
-                                    @Param("appId") Long appId,
-                                    @Param("status") String status);
+    List<ApplicationServiceDTO> listCodeRepository(@Param("projectId") Long projectId,
+                                                   @Param("searchParam") Map<String, Object> searchParam,
+                                                   @Param("param") String param,
+                                                   @Param("isProjectOwner") Boolean isProjectOwner,
+                                                   @Param("userId") Long userId);
 
-    List<ApplicationDO> listByActiveAndPubAndVersion(@Param("projectId") Long projectId,
-                                                     @Param("active") Boolean active,
-                                                     @Param("searchParam") Map<String, Object> searchParam,
-                                                     @Param("param") String param);
+    List<ApplicationServiceDTO> listByEnvId(@Param("projectId") Long projectId,
+                                            @Param("envId") Long envId,
+                                            @Param("appServiceId") Long appServiceId,
+                                            @Param("status") String status);
 
-    ApplicationDO queryByToken(@Param("token") String token);
+    List<ApplicationServiceDTO> basePageByActiveAndPubAndHasVersion(@Param("projectId") Long projectId,
+                                                                    @Param("active") Boolean active,
+                                                                    @Param("searchParam") Map<String, Object> searchParam,
+                                                                    @Param("param") String param);
 
-    List<ApplicationDO> listActive(@Param("projectId") Long projectId);
+    ApplicationServiceDTO queryByToken(@Param("token") String token);
 
-    List<ApplicationDO> listAll(@Param("projectId") Long projectId);
+    List<ApplicationServiceDTO> listByActive(@Param("projectId") Long projectId);
+
+    List<ApplicationServiceDTO> listDeployedApp(@Param("projectId") Long projectId);
 
     Integer checkAppCanDisable(@Param("applicationId") Long applicationId);
 
-    List<ApplicationDO> listByCode(@Param("code") String code);
+    List<ApplicationServiceDTO> listByCode(@Param("code") String code);
 
-    ApplicationDO queryByCodeWithNoProject(@Param("code") String code);
+    ApplicationServiceDTO queryByCodeWithNoProject(@Param("code") String code);
 
-    List<ApplicationDO> listByGitLabProjectIds(@Param("gitlabProjectIds") List<Long> gitlabProjectIds);
+    List<ApplicationServiceDTO> listByGitLabProjectIds(@Param("gitlabProjectIds") List<Long> gitlabProjectIds);
 
-    void updateAppToSuccess(@Param("appId") Long appId);
+    void updateAppToSuccess(@Param("appServiceId") Long appServiceId);
 
-    void updateSql(@Param("appId") Long appId,
-                   @Param("token") String token,
-                   @Param("gitlabProjectId") Integer gitlabProjectId,
-                   @Param("hookId") Long hookId,
-                   @Param("isSynchro") Boolean isSynchro);
+    void updateApplicationStatus(@Param("appServiceId") Long appServiceId,
+                                 @Param("token") String token,
+                                 @Param("gitlabProjectId") Integer gitlabProjectId,
+                                 @Param("hookId") Long hookId,
+                                 @Param("isSynchro") Boolean isSynchro);
 
-    void updateAppHarborConfig(@Param("projectId") Long projectId, @Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId, @Param("harborPrivate") boolean harborPrivate);
+    void updateHarborConfig(@Param("projectId") Long projectId, @Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId, @Param("harborPrivate") boolean harborPrivate);
+
+
+    List<ApplicationServiceDTO> listShareApplications(@Param("appServiceIds") List<Long> appServiceIds,
+                                                      @Param("projectId") Long projectId,
+                                                      @Param("params") String params);
 }
+

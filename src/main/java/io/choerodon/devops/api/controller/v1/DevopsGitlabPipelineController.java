@@ -10,9 +10,9 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.DevopsGitlabPipelineDTO;
-import io.choerodon.devops.api.dto.PipelineFrequencyDTO;
-import io.choerodon.devops.api.dto.PipelineTimeDTO;
+import io.choerodon.devops.api.vo.DevopsGitlabPipelineVO;
+import io.choerodon.devops.api.vo.PipelineFrequencyVO;
+import io.choerodon.devops.api.vo.PipelineTimeVO;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -34,7 +34,7 @@ public class DevopsGitlabPipelineController {
      * 获取pipeline时长报表
      *
      * @param projectId 项目id
-     * @param appId     应用id
+     * @param appServiceId     应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return List
@@ -44,16 +44,16 @@ public class DevopsGitlabPipelineController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取pipeline时长报表")
     @GetMapping(value = "/time")
-    public ResponseEntity<PipelineTimeDTO> listPipelineTime(
+    public ResponseEntity<PipelineTimeVO> listPipelineTime(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "appId")
-            @RequestParam(required = false) Long appId,
-            @ApiParam(value = "startTime")
-            @RequestParam(required = true) Date startTime,
-            @ApiParam(value = "endTime")
-            @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.getPipelineTime(appId, startTime, endTime))
+            @ApiParam(value = "app_service_id")
+            @RequestParam(value = "app_service_id",required = false) Long appServiceId,
+            @ApiParam(value = "start_time")
+            @RequestParam(value = "start_time") Date startTime,
+            @ApiParam(value = "end_time")
+            @RequestParam(value = "end_time") Date endTime) {
+        return Optional.ofNullable(devopsGitlabPipelineService.getPipelineTime(appServiceId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.time.get"));
     }
@@ -63,26 +63,26 @@ public class DevopsGitlabPipelineController {
      * 获取pipeline次数报表
      *
      * @param projectId 项目id
-     * @param appId     应用id
+     * @param appServiceId     应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
-     * @return
+     * @return 次数报表
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取pipeline次数报表")
     @GetMapping(value = "/frequency")
-    public ResponseEntity<PipelineFrequencyDTO> listPipelineFrequency(
+    public ResponseEntity<PipelineFrequencyVO> listPipelineFrequency(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "appId")
-            @RequestParam(required = false) Long appId,
-            @ApiParam(value = "startTime")
-            @RequestParam(required = true) Date startTime,
-            @ApiParam(value = "endTime")
-            @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.getPipelineFrequency(appId, startTime, endTime))
+            @ApiParam(value = "app_service_id")
+            @RequestParam(value = "app_service_id",required = false) Long appServiceId,
+            @ApiParam(value = "start_time")
+            @RequestParam(value = "start_time") Date startTime,
+            @ApiParam(value = "end_time")
+            @RequestParam(value = "end_time") Date endTime) {
+        return Optional.ofNullable(devopsGitlabPipelineService.getPipelineFrequency(appServiceId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
     }
@@ -92,7 +92,7 @@ public class DevopsGitlabPipelineController {
      * 分页获取pipeline
      *
      * @param projectId 项目id
-     * @param appId     应用id
+     * @param appServiceId     应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
      * @return List
@@ -102,21 +102,21 @@ public class DevopsGitlabPipelineController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页获取pipeline")
     @CustomPageRequest
-    @GetMapping(value = "/page")
-    public ResponseEntity<PageInfo<DevopsGitlabPipelineDTO>> pagePipeline(
+    @GetMapping(value = "/page_by_options")
+    public ResponseEntity<PageInfo<DevopsGitlabPipelineVO>> pageByOptions(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
                     PageRequest pageRequest,
-            @ApiParam(value = "appId")
-            @RequestParam(required = false) Long appId,
             @ApiParam(value = "branch")
             @RequestParam(required = false) String branch,
-            @ApiParam(value = "startTime")
-            @RequestParam(required = false) Date startTime,
-            @ApiParam(value = "endTime")
-            @RequestParam(required = false) Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.pagePipelines(appId, branch, pageRequest, startTime, endTime))
+            @ApiParam(value = "app_service_id")
+            @RequestParam(value = "app_service_id",required = false) Long appServiceId,
+            @ApiParam(value = "start_time")
+            @RequestParam(value = "start_time") Date startTime,
+            @ApiParam(value = "end_time")
+            @RequestParam(value = "end_time") Date endTime) {
+        return Optional.ofNullable(devopsGitlabPipelineService.pageByOptions(appServiceId, branch, pageRequest, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
     }

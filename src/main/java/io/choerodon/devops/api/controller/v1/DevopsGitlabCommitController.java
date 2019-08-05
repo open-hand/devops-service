@@ -9,8 +9,8 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.CommitFormRecordDTO;
-import io.choerodon.devops.api.dto.DevopsGitlabCommitDTO;
+import io.choerodon.devops.api.vo.CommitFormRecordVO;
+import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -39,23 +39,23 @@ public class DevopsGitlabCommitController {
      * 应用下commit记录报表
      *
      * @param projectId 项目id
-     * @param appIds    应用id
+     * @param appServiceIds    应用id
      * @return DevopsGitlabCommitDTO
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取应用下的代码提交")
     @PostMapping
-    public ResponseEntity<DevopsGitlabCommitDTO> getCommits(
+    public ResponseEntity<DevopsGitlabCommitVO> getCommits(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ids", required = true)
-            @RequestBody String appIds,
+            @RequestBody String appServiceIds,
             @ApiParam(value = "开始时间start_date", required = true)
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
             @RequestParam(value = "end_date") Date endDate) {
-        return Optional.ofNullable(devopsGitlabCommitService.getCommits(projectId, appIds, startDate, endDate))
+        return Optional.ofNullable(devopsGitlabCommitService.queryCommits(projectId, appServiceIds, startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.commits.get"));
     }
@@ -64,7 +64,7 @@ public class DevopsGitlabCommitController {
      * 应用获取下最近的commit记录
      *
      * @param projectId   项目id
-     * @param appIds      应用id
+     * @param appServiceIds      应用id
      * @param pageRequest 分页参数
      * @return List
      */
@@ -73,18 +73,18 @@ public class DevopsGitlabCommitController {
     @CustomPageRequest
     @ApiOperation(value = "获取应用下的代码提交历史记录")
     @PostMapping("/record")
-    public ResponseEntity<PageInfo<CommitFormRecordDTO>> getRecordCommits(
+    public ResponseEntity<PageInfo<CommitFormRecordVO>> getRecordCommits(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ids", required = true)
-            @RequestBody String appIds,
+            @RequestBody String appServiceIds,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "开始时间start_date", required = true)
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
             @RequestParam(value = "end_date") Date endDate) {
-        return Optional.ofNullable(devopsGitlabCommitService.getRecordCommits(projectId, appIds, pageRequest,
+        return Optional.ofNullable(devopsGitlabCommitService.pageRecordCommits(projectId, appServiceIds, pageRequest,
                 startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.record.commit.get"));

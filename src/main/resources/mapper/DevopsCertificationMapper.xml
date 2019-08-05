@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCertificationMapper">
-    <select id="selectCertification" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">
+    <select id="queryCertification" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
         SELECT
         dc.id,
         dc.`name`,
@@ -12,6 +12,7 @@
         dc.organization_id,
         dc.valid_until,
         dc.command_id,
+        dc.object_version_number,
         cmd.`status` commandStatus,
         cmd.command_type commandType,
         cmd.error error,
@@ -57,7 +58,7 @@
         </if>
     </select>
 
-    <select id="getActiveByDomain" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">
+    <select id="queryActiveByDomain" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
         SELECT
         *
         FROM
@@ -75,7 +76,7 @@
     </update>
 
 
-    <select id="listByProjectId" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">
+    <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.CertificationDTO">
         select dc.id,dc.`name`,dc.domains from devops_certification dc where dc.skip_check_project_permission is true
         and
         dc.organization_id = #{organizationId}

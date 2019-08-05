@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.repository.DevopsEnvGroupRepository;
+import io.choerodon.devops.app.service.DevopsEnvGroupService;
 
 /**
  * Creator: Runge
@@ -15,7 +15,7 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvGroupRepositor
 @Component
 public class DevopsEnvGroupValidator {
     @Autowired
-    private DevopsEnvGroupRepository devopsEnvGroupRepository;
+    private DevopsEnvGroupService devopsEnvGroupService;
 
     /**
      * check whether env group name exist or not
@@ -25,7 +25,7 @@ public class DevopsEnvGroupValidator {
      * @param projectId env project id
      */
     public void checkNameUnique(Long id, String name, Long projectId) {
-        if (!devopsEnvGroupRepository.checkUniqueInProject(id, name, projectId)) {
+        if (!devopsEnvGroupService.baseCheckUniqueInProject(id, name, projectId)) {
             throw new CommonException("error.envGroupName.exist");
         }
     }

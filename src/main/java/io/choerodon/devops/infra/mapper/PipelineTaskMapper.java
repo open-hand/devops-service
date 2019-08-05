@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.PipelineTaskDO;
+import io.choerodon.devops.infra.dto.PipelineTaskDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
  * Date:  14:39 2019/4/8
  * Description:
  */
-public interface PipelineTaskMapper extends Mapper<PipelineTaskDO> {
+public interface PipelineTaskMapper extends Mapper<PipelineTaskDTO> {
 
-    PipelineTaskDO queryByAppDeployId(@Param("appDeployId") Long appDeployId);
+    PipelineTaskDTO queryByAppDeployId(@Param("appDeployId") Long appDeployId);
 }

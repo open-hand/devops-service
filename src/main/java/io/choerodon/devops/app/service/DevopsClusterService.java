@@ -4,31 +4,99 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 
 public interface DevopsClusterService {
 
-    String createCluster(Long organizationId, DevopsClusterReqDTO devopsClusterReqDTO);
+    /**
+     * 创建集群
+     *
+     * @param organizationId 组织id
+     * @param devopsClusterReqVO 集群信息
+     * @return
+     */
+    String createCluster(Long organizationId, DevopsClusterReqVO devopsClusterReqVO);
 
-    void updateCluster(Long clusterId, DevopsClusterReqDTO devopsClusterReqDTO);
+    /**
+     * 更新集群
+     *
+     * @param clusterId 集群id
+     * @param devopsClusterReqVO 集群信息
+     */
+    void updateCluster(Long clusterId, DevopsClusterReqVO devopsClusterReqVO);
 
+    /**
+     * 校验集群名唯一性
+     *
+     * @param organizationId 组织id
+     * @param name 集群名称
+     */
     void checkName(Long organizationId, String name);
 
-    PageInfo<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest, String[] params);
+    /**
+     * 分页查询项目列表
+     *
+     * @param organizationId 组织id
+     * @param clusterId 集群id
+     * @param pageRequest 分页参数
+     * @param params 查询参数
+     * @return 项目信息
+     */
+    PageInfo<ProjectReqVO> pageProjects(Long organizationId, Long clusterId, PageRequest pageRequest, String[] params);
 
     String queryShell(Long clusterId);
 
+    /**
+     * 校验集群编码唯一性
+     *
+     * @param organizationId 组织id
+     * @param code 集群code
+     */
     void checkCode(Long organizationId, String code);
 
-    PageInfo<ClusterWithNodesDTO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
+    /**
+     * 集群列表查询
+     *
+     * @param organizationId 组织id
+     * @param doPage 是否分页
+     * @param pageRequest 分页参数
+     * @param params 查询参数
+     * @return 集群列表
+     */
+    PageInfo<ClusterWithNodesVO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
 
-    List<ProjectDTO> listClusterProjects(Long organizationId, Long clusterId);
+    /**
+     * 查询集群下已有权限的项目列表
+     *
+     * @param organizationId 组织id
+     * @param clusterId 集群id
+     * @return 项目
+     */
+    List<ProjectReqVO> listClusterProjects(Long organizationId, Long clusterId);
 
+    /**
+     * 删除集群
+     *
+     * @param clusterId 集群id
+     */
     void deleteCluster(Long clusterId);
 
-    DevopsClusterRepDTO getCluster(Long clusterId);
+    /**
+     * 查询单个集群信息
+     *
+     * @param clusterId 集群id
+     */
+    DevopsClusterRepVO query(Long clusterId);
 
-    Boolean IsClusterRelatedEnvs(Long clusterId);
+    /**
+     * 查询集群下是否关联已连接环境
+     *
+     * @param clusterId 集群id
+     * @return
+     */
+    Boolean checkConnectEnvs(Long clusterId);
 
     /**
      * 分页查询节点下的Pod
@@ -38,7 +106,7 @@ public interface DevopsClusterService {
      * @param searchParam 查询参数
      * @return pods
      */
-    PageInfo<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsClusterPodVO> pagePodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 
 
     /**
@@ -48,5 +116,40 @@ public interface DevopsClusterService {
      * @param code      the cluster code
      * @return the node information
      */
-    DevopsClusterRepDTO queryByCode(Long organizationId, String code);
+    DevopsClusterRepVO queryByCode(Long organizationId, String code);
+
+
+    DevopsClusterDTO baseCreateCluster(DevopsClusterDTO devopsClusterDTO);
+
+    void baseCheckName(DevopsClusterDTO devopsClusterDTO);
+
+    void baseCheckCode(DevopsClusterDTO devopsClusterDTO);
+
+    List<DevopsClusterDTO> baseListByProjectId(Long projectId, Long organizationId);
+
+    DevopsClusterDTO baseQuery(Long clusterId);
+
+    void baseUpdate(DevopsClusterDTO devopsClusterDTO);
+
+    PageInfo<DevopsClusterDTO> basePageClustersByOptions(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
+
+    void baseDelete(Long clusterId);
+
+    DevopsClusterDTO baseQueryByToken(String token);
+
+    List<DevopsClusterDTO> baseList();
+
+    /**
+     * 分页查询节点下的Pod
+     * @param clusterId 集群id
+     * @param nodeName 节点名称
+     * @param pageRequest 分页参数
+     * @param searchParam 查询参数
+     * @return pods
+     */
+    PageInfo<DevopsEnvPodDTO> basePageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
+
+    DevopsClusterDTO baseQueryByCode(Long organizationId, String code);
+
+    void baseUpdateProjectId(Long orgId, Long proId);
 }

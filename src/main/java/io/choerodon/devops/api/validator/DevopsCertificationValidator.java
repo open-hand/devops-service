@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.repository.CertificationRepository;
+import io.choerodon.devops.app.service.CertificationService;
 
 /**
  * Creator: Runge
@@ -18,11 +18,11 @@ import io.choerodon.devops.domain.application.repository.CertificationRepository
 public class DevopsCertificationValidator {
     private static final String NAME_PATTERN = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";
 
-    private CertificationRepository certificationRepository;
+    private CertificationService certificationService;
 
     @Autowired
-    public DevopsCertificationValidator(CertificationRepository certificationRepository) {
-        this.certificationRepository = certificationRepository;
+    public DevopsCertificationValidator(CertificationService certificationService) {
+        this.certificationService = certificationService;
     }
 
     /**
@@ -42,7 +42,7 @@ public class DevopsCertificationValidator {
     }
 
     private void checkCertificationExists(Long envId, String name) {
-        if (!certificationRepository.checkCertNameUniqueInEnv(envId, name)) {
+        if (!certificationService.baseCheckCertNameUniqueInEnv(envId, name)) {
             throw new CommonException("error.certNameInEnv.notUnique");
         }
     }

@@ -1,23 +1,23 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO;
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentViewDTO;
+import java.util.List;
+
+import io.choerodon.devops.api.vo.DevopsEnvResourceCountVO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentInfoDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentViewDTO;
+import io.choerodon.devops.infra.dto.DevopsResourceEnvOverviewDTO;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
-
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO;
-
-import java.util.List;
 
 /**
  * Created by younger on 2018/4/9.
  */
-public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDO> {
+public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDTO> {
 
     void updateDevopsEnvGroupId(@Param("envId") Long envId);
 
-    DevopsEnvironmentDO queryByToken(@Param("token") String token);
+    DevopsEnvironmentDTO queryByToken(@Param("token") String token);
 
     void updateSagaSyncEnvCommit(@Param("envId") Long envId, @Param("sagaSyncCommit") Long sagaSyncCommit);
 
@@ -29,15 +29,36 @@ public interface DevopsEnvironmentMapper extends Mapper<DevopsEnvironmentDO> {
 
     /**
      * 项目下，查询实例视图的环境及其应用及实例作为树形目录
+     *
      * @param projectId 项目id
      * @return 树形目录
      */
-    List<DevopsEnvironmentViewDTO> listEnvTree(@Param("projectId") Long projectId);
+    List<DevopsEnvironmentViewDTO> listInstanceEnvTree(@Param("projectId") Long projectId);
+
+    /**
+     * 项目下，查询资源视图的环境及其下资源作为树形目录
+     *
+     * @param projectId 项目id
+     * @return 树形目录
+     */
+    List<DevopsResourceEnvOverviewDTO> listResourceEnvTree(@Param("projectId") Long projectId);
 
     /**
      * 查询单个环境及其集群信息
+     *
      * @param envId 环境id
      * @return 环境及其集群信息
      */
     DevopsEnvironmentInfoDTO queryInfoById(@Param("envId") Long envId);
+
+
+    /**
+     * 查询环境下相关资源的数量
+     *
+     * @param envId 环境id
+     * @return 环境下相关资源的数量
+     */
+    DevopsEnvResourceCountVO queryEnvResourceCount(@Param("envId") Long envId);
+
+    List<DevopsEnvironmentDTO> listByIds(@Param("envIds") List<Long> envIds);
 }

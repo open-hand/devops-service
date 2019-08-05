@@ -6,14 +6,14 @@ import java.util.List;
 import io.choerodon.mybatis.common.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
+import io.choerodon.devops.infra.dto.DevopsGitlabPipelineDTO;
 
-public interface DevopsGitlabPipelineMapper extends Mapper<DevopsGitlabPipelineDO> {
+public interface DevopsGitlabPipelineMapper extends Mapper<DevopsGitlabPipelineDTO> {
 
-    List<DevopsGitlabPipelineDO> listDevopsGitlabPipeline(@Param("appId") Long appId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+    List<DevopsGitlabPipelineDTO> listDevopsGitlabPipeline(@Param("appServiceId") Long appServiceId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
     void deleteWithoutCommit();
 
-    List<DevopsGitlabPipelineDO> listByBranch(@Param("appId") Long appId, @Param("branch") String branch);
+    List<DevopsGitlabPipelineDTO> listByBranch(@Param("appServiceId") Long appServiceId, @Param("branch") String branch);
 
 }

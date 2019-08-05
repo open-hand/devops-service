@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
-<mapper namespace="io.choerodon.devops.infra.mapper.DevopsAppResourceMapper">
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsApplicationResourceMapper">
     <select id="queryResourceIdsInApp" resultType="Long">
         SELECT dar.resource_id
         FROM devops_app_resource dar
         WHERE dar.resource_type = #{resourceType}
-          AND dar.app_id = #{appId}
-          AND dar.resource_id IN
-          <foreach collection="resourceIds" item="resourceId" open="(" close=")" separator=",">
-              #{resourceId}
-          </foreach>
-        ;
+        AND dar.app_service_id = #{appServiceId}
+        AND dar.resource_id IN
+        <foreach collection="resourceIds" item="resourceId" open="(" close=")" separator=",">
+            #{resourceId}
+        </foreach>
     </select>
 </mapper>

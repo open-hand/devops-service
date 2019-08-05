@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineAppDeployMapper">
-    <select id="queryById" resultType="io.choerodon.devops.infra.dataobject.PipelineAppDeployDO">
+    <select id="queryById" resultType="io.choerodon.devops.infra.dto.PipelineAppDeployDTO">
        SELECT
             dpt.type,
             dpt. NAME,
@@ -34,7 +34,7 @@
             dpad.creation_date
         FROM
             devops_pipeline_app_deploy dpad
-        JOIN devops_application da ON dpad.application_id = da.id
+        JOIN devops_application_service da ON dpad.application_id = da.id
         JOIN devops_env de ON dpad.env_id = de.id
         JOIN devops_pipeline_task dpt ON dpt.app_deploy_id = dpad.id
         JOIN devops_deploy_value dadv ON dadv.id = dpad.value_id

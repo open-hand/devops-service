@@ -7,7 +7,7 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.DevopsEnvPodContainerLogDTO;
+import io.choerodon.devops.api.vo.DevopsEnvPodContainerLogVO;
 import io.choerodon.devops.app.service.DevopsEnvPodContainerService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Description:
  */
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/app_pod/{podId}/containers")
+@RequestMapping(value = "/v1/projects/{project_id}/app_pod/{pod_id}/containers")
 public class DevopsEnvPodContainerController {
     @Autowired
     private DevopsEnvPodContainerService containerService;
@@ -36,18 +36,18 @@ public class DevopsEnvPodContainerController {
      *
      * @param projectId 项目ID
      * @param podId     pod ID
-     * @return List of DevopsEnvPodContainerLogDTO
+     * @return List of DevopsEnvPodContainerLogVO
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取日志信息 By Pod")
     @GetMapping(value = "/logs")
-    public ResponseEntity<List<DevopsEnvPodContainerLogDTO>> queryLogByPod(
+    public ResponseEntity<List<DevopsEnvPodContainerLogVO>> queryLogByPod(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pod ID", required = true)
-            @PathVariable Long podId) {
+            @PathVariable(value = "pod_id") Long podId) {
         return Optional.ofNullable(containerService.logByPodId(podId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.pod.get"));
@@ -58,18 +58,18 @@ public class DevopsEnvPodContainerController {
      *
      * @param projectId 项目ID
      * @param podId     pod ID
-     * @return List of DevopsEnvPodContainerLogDTO
+     * @return List of DevopsEnvPodContainerLogVO
      */
     @Permission(type= ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取日志shell信息 By Pod")
     @GetMapping(value = "/logs/shell")
-    public ResponseEntity<List<DevopsEnvPodContainerLogDTO>> handleShellByPod(
+    public ResponseEntity<List<DevopsEnvPodContainerLogVO>> handleShellByPod(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pod ID", required = true)
-            @PathVariable Long podId) {
+            @PathVariable(value = "pod_id") Long podId) {
         return Optional.ofNullable(containerService.logByPodId(podId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.shell.get"));

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
-<mapper namespace="io.choerodon.devops.infra.mapper.AppUserPermissionMapper">
-    <select id="listAllUserPermissionByAppId" resultType="io.choerodon.devops.infra.dataobject.AppUserPermissionDO">
+<mapper namespace="io.choerodon.devops.infra.mapper.ApplicationUserPermissionMapper">
+    <select id="listAllUserPermissionByAppId" resultType="io.choerodon.devops.infra.dto.ApplicationUserPermissionDTO">
         SELECT
         daur.iam_user_id
         FROM devops_app_user_rel daur
-        WHERE daur.app_id = #{appId}
+        WHERE daur.app_service_id = #{appServiceId}
     </select>
 
     <delete id="deleteByUserIdWithAppIds">
@@ -14,13 +14,13 @@
         WHERE iam_user_id = #{userId}
         <choose>
             <when test="appIds !=null and appIds.size > 0">
-                and app_id IN
-                <foreach collection="appIds" item="appId" open="(" close=")" separator=",">
-                    #{appId}
+                and app_service_id IN
+                <foreach collection="appIds" item="appServiceId" open="(" close=")" separator=",">
+                    #{appServiceId}
                 </foreach>
             </when>
             <otherwise>
-                and app_id is null
+                and app_service_id is null
             </otherwise>
         </choose>
     </delete>

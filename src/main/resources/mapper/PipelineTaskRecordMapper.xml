@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineTaskRecordMapper">
-    <select id="queryByStageRecordId" resultType="io.choerodon.devops.infra.dataobject.PipelineTaskRecordDO">
+    <select id="queryByStageRecordId" resultType="io.choerodon.devops.infra.dto.PipelineTaskRecordDTO">
         SELECT
         dptr.id,
         dptr.`name`,
@@ -38,7 +38,7 @@
         ) instanceStatus
         FROM
         devops_pipeline_task_record dptr
-        LEFT JOIN devops_application da ON da.id = dptr.application_id
+        LEFT JOIN devops_application_service da ON da.id = dptr.application_id
         LEFT JOIN devops_env de ON de.id = dptr.env_id
         LEFT JOIN devops_app_version dav ON dav.id = dptr.version_id
         LEFT JOIN devops_app_instance dai ON dai.id = dptr.instance_id
@@ -48,7 +48,7 @@
         </if>
     </select>
 
-    <select id="queryAllAutoTaskRecord" resultType="io.choerodon.devops.infra.dataobject.PipelineTaskRecordDO">
+    <select id="queryAllAutoTaskRecord" resultType="io.choerodon.devops.infra.dto.PipelineTaskRecordDTO">
         SELECT
             dptr.id,
             dptr.`name`,

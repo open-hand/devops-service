@@ -3,7 +3,7 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsIngressPathMapper">
 
-    <select id="selectByEnvIdAndServiceName" resultType="io.choerodon.devops.infra.dataobject.DevopsIngressPathDO">
+    <select id="selectByEnvIdAndServiceName" resultType="io.choerodon.devops.infra.dto.DevopsIngressPathDTO">
         SELECT
         dip.*
         FROM
@@ -30,7 +30,7 @@
         AND di.env_id = #{envId}
     </select>
 
-    <select id="selectByEnvIdAndServiceId" resultType="io.choerodon.devops.infra.dataobject.DevopsIngressPathDO">
+    <select id="selectByEnvIdAndServiceId" resultType="io.choerodon.devops.infra.dto.DevopsIngressPathDTO">
         SELECT
         dip.*
         FROM

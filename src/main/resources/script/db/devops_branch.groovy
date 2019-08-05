@@ -74,4 +74,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_branch.groovy') {
             column(name: 'error_message', type: 'VARCHAR(5000)', remarks: '分支创建失败错误信息', afterColumn: 'status')
         }
     }
+
+    changeSet(author: 'scp', id: '2019-07-29-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_branch')
+    }
 }

@@ -1,54 +1,51 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.kubernetes.client.models.V1beta1HTTPIngressPath;
-import io.kubernetes.client.models.V1beta1Ingress;
+import io.choerodon.devops.api.vo.DevopsIngressVO;
+import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
+import io.choerodon.devops.infra.dto.DevopsIngressDTO;
+import io.choerodon.devops.infra.dto.DevopsIngressPathDTO;
 
-import io.choerodon.devops.api.dto.DevopsIngressDTO;
 
-/**
- * Creator: Runge
- * Date: 2018/4/20
- * Time: 16:01
- * Description:
- */
 public interface DevopsIngressService {
 
     /**
      * 项目下创建域名
      *
-     * @param devopsIngressDTO 域名参数
-     * @param projectId        项目Id
+     * @param projectId 域名参数
+     * @param devopsIngressVO 项目Id
      */
-    void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId);
+    void createIngress(Long projectId, DevopsIngressVO devopsIngressVO);
 
     /**
      * 项目下创建域名,GitOps
      *
-     * @param devopsIngressDTO 域名参数
-     * @param projectId        项目Id
+     * @param devopsIngressVO 域名参数
+     * @param projectId       项目Id
      */
-    void addIngressByGitOps(DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId);
+    void createIngressByGitOps(DevopsIngressVO devopsIngressVO, Long projectId, Long userId);
 
     /**
      * 项目下更新域名
      *
-     * @param id               域名Id
-     * @param devopsIngressDTO 域名参数
-     * @param projectId        项目Id
+     * @param id              域名Id
+     * @param devopsIngressVO 域名参数
+     * @param projectId       项目Id
      */
-    void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId);
+    void updateIngress(Long id, DevopsIngressVO devopsIngressVO, Long projectId);
 
 
     /**
      * 项目下更新域名,GitOps
      *
-     * @param id               域名Id
-     * @param devopsIngressDTO 域名参数
-     * @param projectId        项目Id
+     * @param id              域名Id
+     * @param devopsIngressVO 域名参数
+     * @param projectId       项目Id
      */
-    void updateIngressByGitOps(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId);
+    void updateIngressByGitOps(Long id, DevopsIngressVO devopsIngressVO, Long projectId, Long userId);
 
 
     /**
@@ -56,9 +53,18 @@ public interface DevopsIngressService {
      *
      * @param projectId 项目Id
      * @param ingressId 域名Id
-     * @return DevopsIngressDTO
+     * @return DevopsIngressVO
      */
-    DevopsIngressDTO getIngress(Long projectId, Long ingressId);
+    DevopsIngressVO queryIngress(Long projectId, Long ingressId);
+
+    /**
+     * 项目下查询域名详情
+     *
+     * @param projectId 项目Id
+     * @param ingressId 域名Id
+     * @return DevopsIngressVO
+     */
+    DevopsIngressVO queryIngressDetailById(Long projectId, Long ingressId);
 
     /**
      * 项目下删除域名
@@ -94,26 +100,6 @@ public interface DevopsIngressService {
      */
     Boolean checkDomainAndPath(Long envId, String domain, String path, Long id);
 
-    /**
-     * 项目下创建域名
-     *
-     * @param host     主机
-     * @param name     域名名称
-     * @param certName 证书名称
-     * @return V1beta1Ingress
-     */
-    V1beta1Ingress initV1beta1Ingress(String host, String name, String certName);
-
-
-    /**
-     * 项目下创建path
-     *
-     * @param hostPath  主机path
-     * @param serviceName 网络name
-     * @return V1beta1HTTPIngressPath
-     */
-    V1beta1HTTPIngressPath createPath(String hostPath, String serviceName, Long port);
-
 
     /**
      * 环境总览域名查询
@@ -123,5 +109,46 @@ public interface DevopsIngressService {
      * @param params      模糊查询参数
      * @return Page
      */
-    PageInfo<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsIngressVO> pageByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
+
+    void createIngressBySaga(IngressSagaPayload ingressSagaPayload);
+
+    DevopsIngressDTO baseQuery(Long ingressId);
+
+    PageInfo<DevopsIngressVO> basePageByOptions(Long projectId, Long envId, Long serviceId, PageRequest pageRequest, String params);
+
+    List<DevopsIngressDTO> baseListByEnvId(Long envId);
+
+    void deleteIngressAndIngressPathByEnvId(Long envId);
+
+    void baseDelete(Long ingressId);
+
+    Long baseUpdateStatus(Long envId, String name, String status);
+
+    List<String> baseListNameByServiceId(Long serviceId);
+
+    Boolean baseCheckName(Long envId, String name);
+
+    Boolean baseCheckPath(Long envId, String domain, String path, Long id);
+
+    DevopsIngressDTO baseCheckByEnvAndName(Long envId, String name);
+
+    DevopsIngressDTO baseCreateIngress(DevopsIngressDTO devopsIngressDTO);
+
+    void baseCreatePath(DevopsIngressPathDTO devopsIngressPathDTO);
+
+    List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceName(Long envId, String serviceName);
+
+    List<DevopsIngressPathDTO> baseListPathByEnvIdAndServiceId(Long envId, Long serviceId);
+
+    List<DevopsIngressPathDTO> baseListPathByIngressId(Long ingressId);
+
+    void baseUpdateIngressPath(DevopsIngressPathDTO devopsIngressPathDTO);
+
+    void baseDeletePathByIngressId(Long ingressId);
+
+    Boolean baseCheckByEnv(Long envId);
+
+    List<DevopsIngressDTO> baseList();
+
 }

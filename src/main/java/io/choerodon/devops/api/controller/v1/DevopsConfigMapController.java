@@ -18,8 +18,8 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.DevopsConfigMapDTO;
-import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO;
+import io.choerodon.devops.api.vo.DevopsConfigMapVO;
+import io.choerodon.devops.api.vo.DevopsConfigMapRespVO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -36,7 +36,7 @@ public class DevopsConfigMapController {
      * 项目下创建配置映射
      *
      * @param projectId          项目id
-     * @param devopsConfigMapDTO 配置映射信息
+     * @param devopsConfigMapVO 配置映射信息
      * @return ResponseEntity
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
@@ -47,8 +47,8 @@ public class DevopsConfigMapController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
-            @RequestBody DevopsConfigMapDTO devopsConfigMapDTO) {
-        devopsConfigMapService.createOrUpdate(projectId, false, devopsConfigMapDTO);
+            @RequestBody DevopsConfigMapVO devopsConfigMapVO) {
+        devopsConfigMapService.createOrUpdate(projectId, false, devopsConfigMapVO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -62,7 +62,7 @@ public class DevopsConfigMapController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "配置映射删除")
-    @DeleteMapping(value = "/{configMap_id}/delete")
+    @DeleteMapping(value = "/{configMap_id}")
     public ResponseEntity delete(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -76,7 +76,7 @@ public class DevopsConfigMapController {
      * 校验配置映射名唯一性
      *
      * @param projectId     项目id
-     * @param configMapName 配置映射名
+     * @param name 配置映射名
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
@@ -88,8 +88,8 @@ public class DevopsConfigMapController {
             @ApiParam(value = "环境ID", required = true)
             @RequestParam Long envId,
             @ApiParam(value = "实例ID", required = true)
-            @RequestParam String configMapName) {
-        devopsConfigMapService.checkName(envId, configMapName);
+            @RequestParam String name) {
+        devopsConfigMapService.checkName(envId, name);
     }
 
 
@@ -98,17 +98,17 @@ public class DevopsConfigMapController {
      *
      * @param projectId   项目id
      * @param configMapId 配置映射Id
-     * @return DevopsConfigMapRepDTO
+     * @return DevopsConfigMapRespVO
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下创建配置映射")
-    @GetMapping("/{configMap_id}")
-    public ResponseEntity<DevopsConfigMapRepDTO> query(
+    @ApiOperation(value = "配置映射查询")
+    @GetMapping("/{config_map_id}")
+    public ResponseEntity<DevopsConfigMapRespVO> query(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "域名信息", required = true)
-            @PathVariable(value = "configMap_id") Long configMapId) {
+            @ApiParam(value = "configMap的ID", required = true)
+            @PathVariable(value = "config_map_id") Long configMapId) {
         return Optional.ofNullable(devopsConfigMapService.query(configMapId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.configMap.query"));
@@ -122,28 +122,28 @@ public class DevopsConfigMapController {
      * @param envId       环境id
      * @param pageRequest 分页参数
      * @param searchParam 查询参数
-     * @param appId       应用id
-     * @return Page of DevopsServiceDTO
+     * @param appServiceId       应用id
+     * @return Page of DevopsServiceVO
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境配置映射查询")
     @CustomPageRequest
-    @PostMapping(value = "/listByEnv")
-    public ResponseEntity<PageInfo<DevopsConfigMapRepDTO>> listByEnv(
+    @PostMapping(value = "/page_by_options")
+    public ResponseEntity<PageInfo<DevopsConfigMapRespVO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "应用id")
-            @RequestParam(value = "app_id", required = false) Long appId,
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsConfigMapService.listByEnv(projectId, envId, pageRequest, searchParam, appId))
+        return Optional.ofNullable(devopsConfigMapService.pageByOptions(projectId, envId, pageRequest, searchParam, appServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.configMap.query"));
     }

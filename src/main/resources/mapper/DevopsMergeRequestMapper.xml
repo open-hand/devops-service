@@ -11,7 +11,7 @@
         project_id = #{projectId}
         AND gitlab_merge_request_id = #{gitlabMergeRequestId}
     </select>
-    <select id="getByProjectIdAndState" resultType="io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO">
+    <select id="getByProjectIdAndState" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
         SELECT
         *
         FROM
@@ -22,7 +22,7 @@
     </select>
 
 
-    <select id="listByProjectIdAndBranch" resultType="io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO">
+    <select id="listByProjectIdAndBranch" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
         SELECT
         *
         FROM
@@ -32,6 +32,20 @@
         AND source_branch = #{branchName}
         ORDER by id desc
     </select>
+
+
+
+    <select id="countMergeRequest" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
+     SELECT
+	count(id) total,
+	count( CASE WHEN dmr.state = 'merged' THEN 'merged' END ) merged,
+	count( CASE WHEN dmr.state = 'closed' THEN 'closed' END ) closed,
+	count( CASE WHEN dmr.state = 'opened' THEN 'opened' END ) opened
+    FROM
+	devops_merge_request dmr
+	where dmr.project_id = #{projectId}
+    </select>
+
 
 </mapper>
 

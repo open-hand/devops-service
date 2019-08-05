@@ -1,391 +1,53 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
-<mapper namespace="io.choerodon.devops.infra.mapper.ApplicationMarketMapper">
+<mapper namespace="io.choerodon.devops.infra.mapper.ApplicationShareRuleMapper">
 
-    <sql id="sqlparam">
-        <if test='searchParam != null'>
-            <if test='searchParam.code != null and searchParam.code.size > 0'>
-                AND
-                <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
-                    da.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
-                AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    da.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.category != null and searchParam.category.size > 0'>
-                AND
-                <foreach collection="searchParam.category" item="category" open="(" separator=" OR " close=")">
-                    dam.category LIKE CONCAT(CONCAT('%', #{category, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.description != null and searchParam.description.size > 0'>
-                AND
-                <foreach collection="searchParam.description" item="description" open="(" separator=" OR " close=")">
-                    dam.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.contributor != null and searchParam.contributor.size > 0'>
-                AND
-                <foreach collection="searchParam.contributor" item="contributor" open="(" separator=" OR " close=")">
-                    dam.contributor LIKE CONCAT(CONCAT('%', #{contributor, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.publishLevel != null and searchParam.publishLevel.size > 0'>
-                AND
-                <foreach collection="searchParam.publishLevel" item="publishLevel" open="(" separator=" OR " close=")">
-                    <if test='publishLevel == 1'>
-                        dam.publish_level = 'organization'
-                    </if>
-                    <if test='publishLevel == 2'>
-                        dam.publish_level = 'public'
-                    </if>
-                    <if test="publishLevel != 1 and publishLevel != 2">
-                        1 = 1
-                    </if>
-                </foreach>
-            </if>
-        </if>
-        <if test='param != null and param != ""'>
-            AND (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dam.category LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dam.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dam.contributor LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            )
-        </if>
-    </sql>
-
-    <sql id="nameOrCateParamSql">
-        <if test='searchParam != null'>
-            <if test='searchParam.code != null and searchParam.code.size > 0'>
-                AND
-                <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
-                    da.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
-                AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    da.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.category != null and searchParam.category.size > 0'>
-                AND
-                <foreach collection="searchParam.category" item="category" open="(" separator=" OR " close=")">
-                    dam.category LIKE CONCAT(CONCAT('%', #{category, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.description != null and searchParam.description.size > 0'>
-                AND
-                <foreach collection="searchParam.description" item="description" open="(" separator=" OR " close=")">
-                    dam.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.contributor != null and searchParam.contributor.size > 0'>
-                AND
-                <foreach collection="searchParam.contributor" item="contributor" open="(" separator=" OR " close=")">
-                    dam.contributor LIKE CONCAT(CONCAT('%', #{contributor, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.publishLevel != null and searchParam.publishLevel.size > 0'>
-                AND
-                <foreach collection="searchParam.publishLevel" item="publishLevel" open="(" separator=" OR " close=")">
-                    <if test='publishLevel == 1'>
-                        dam.publish_level = 'organization'
-                    </if>
-                    <if test='publishLevel == 2'>
-                        dam.publish_level = 'public'
-                    </if>
-                    <if test="publishLevel != 1 and publishLevel != 2">
-                        1 = 1
-                    </if>
-                </foreach>
-            </if>
-        </if>
-        <if test='param != null and param != ""'>
-            AND (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dam.category LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dam.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dam.contributor LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            )
-        </if>
-    </sql>
-
-    <select id="listMarketApplicationInProject" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.ApplicationShareRuleDTO">
         SELECT
-        dam.id,
-        dam.app_id,
-        da.`name`,
-        da.`code`,
-        dam.contributor,
-        dam.description,
-        dam.category,
-        dam.img_url,
-        dam.publish_level
+        dasr.id,
+        dasr.app_service_id,
+        dasr.version_type,
+        dasr.version,
+        dasr.share_level,
+        dasr.project_id
         FROM
-        devops_application da
-        JOIN devops_app_share dam ON da.id = dam.app_id
-        AND dam.is_active = 1
+        devops_app_share_rule dasr
         WHERE
-        da.project_id = #{projectId}
+        app_service_id = #{appServiceId}
         <include refid="sqlparam"/>
     </select>
 
-    <select id="listMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
-        select dam.id,
-        dam.app_id,
-        da.name,
-        da.code,
-        dam.publish_level,
-        dam.img_url,
-        dam.description,
-        dam.category,
-        dam.contributor
-        from devops_app_share dam,devops_application da
-        WHERE
-        da.id = dam.app_id
-        AND ( dam.publish_level = 'public' OR ( dam.publish_level = 'organization' AND da.project_id IN
-        <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
-            #{projectId}
-        </foreach>
-        ) )
-        <include refid="nameOrCateParamSql"/>
-    </select>
-
-    <select id="queryByShareIds" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
-        select dam.id,
-        dam.app_id,
-        da.name,
-        da.code,
-        dam.publish_level,
-        dam.img_url,
-        dam.description,
-        dam.category,
-        dam.contributor
-        from devops_app_share dam,devops_application da
-        WHERE
-        da.id = dam.app_id
-        AND dam.id IN
-        <foreach collection="shareIds" item="shareId" open="(" separator="," close=")">
-            #{shareId}
-        </foreach>
-        <include refid="nameOrCateParamSql"/>
-    </select>
-
-    <select id="getMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
-        SELECT
-        dam.id,
-        dam.app_id,
-        da.`name`,
-        da.`code`,
-        dam.last_update_date marketUpdatedDate,
-        dam.contributor,
-        dam.description,
-        dam.category,
-        dam.img_url,
-        dam.publish_level,
-        dam.is_free,
-        EXISTS (
-        SELECT
-        1
-        FROM
-        devops_app_instance dai
-        JOIN devops_env de ON dai.env_id =de.id
-        WHERE
-        dai.app_id = dam.app_id
-        AND de.project_id != da.project_id
-        <if test='projectIds != null'>
-            AND (de.project_id NOT IN
-            <foreach collection="projectIds" item="project" open="(" separator="," close=")">
-                #{project}
-            </foreach>)
-        </if>
-        ) is_deployed
-        FROM
-        devops_application da
-        JOIN devops_app_share dam ON da.id = dam.app_id
-        AND dam.is_active = 1
-        WHERE
-        dam.id = #{appMarketId}
-        <if test='projectId != null'>
-            AND da.project_id = #{projectId}
-        </if>
-    </select>
-
-    <select id="selectCountByAppId" resultType="java.lang.Integer">
-        SELECT
-        count(1)
-        FROM
-        devops_app_share dam
-        WHERE
-        dam.app_id = #{appId}
-        AND dam.is_active=1
-    </select>
-
-    <select id="getMarketIdByAppId" resultType="java.lang.Long">
-        SELECT
-        dam.id
-        FROM
-        devops_app_share dam
-        WHERE
-        dam.app_id = #{appId}
-    </select>
-
-    <select id="checkProject" resultType="java.lang.Integer">
-        SELECT
-        count( 1 )
-        FROM
-        devops_app_share dam
-        JOIN devops_application da ON da.id = dam.app_id
-        WHERE
-        dam.id = #{appMarketId}
-        AND da.project_id = #{projectId}
-    </select>
-    <select id="checkDeployed" resultType="java.lang.Integer">
-        SELECT
-        count( 1 )
-        FROM
-        devops_app_share dam
-        JOIN devops_app_instance dai ON dai.app_id = dam.app_id
-        JOIN devops_application da ON da.id = dam.app_id
-        JOIN devops_env de ON de.id = dai.env_id
-        WHERE
-        dam.id = #{appMarketId}
-        <if test='versionId != null'>
-            AND dai.app_version_id = #{versionId}
-        </if>
-        <if test='projectIds != null'>
-            AND da.project_id NOT IN
-            <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
-                #{projectId}
-            </foreach>
-        </if>
-        AND da.project_id != de.project_id
-        AND da.project_id = #{projectId}
-    </select>
-
-    <update id="changeApplicationVersions" parameterType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
-        UPDATE devops_app_version dav
-        SET dav.is_publish = #{isPublish}
-        WHERE
-        dav.app_id IN ( SELECT dam.app_id FROM devops_app_share dam WHERE dam.id = #{appMarketId} )
-        <if test='versionId != null'>
-            AND dav.id = #{versionId}
-        </if>
-    </update>
-
-    <select id="listAppVersions" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO">
-        SELECT
-        dav.id,
-        dav.version,
-        dav.creation_date,
-        dav.last_update_date updatedDate,
-        dav.is_publish
-        FROM
-        devops_app_version dav
-        JOIN devops_app_share dam ON dam.app_id = dav.app_id
-        JOIN devops_application da ON da.id = dam.app_id
-        WHERE
-        dam.id = #{appMarketId}
-        <if test='projectIds != null'>
-            AND ( dam.publish_level = 'public'
-            OR ( dam.publish_level = 'organization' AND da.project_id IN
-            <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
-                #{projectId}
-            </foreach>
-            ) )
-        </if>
-        <if test="isPublish != null">
-            <if test="isPublish == true">
-                AND dav.is_publish = TRUE
-            </if>
-            <if test="isPublish != true">
-                AND ( is_publish != TRUE OR is_publish IS NULL )
-            </if>
-        </if>
-
+    <sql id="sqlparam">
         <if test='searchParam != null'>
+            <if test='searchParam.version_type != null and searchParam.version_type.size > 0'>
+                AND
+                <foreach collection="searchParam.version_type" item="versionType" open="(" separator=" OR " close=")">
+                    dasr.version_type LIKE CONCAT(CONCAT('%', #{versionType, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
             <if test='searchParam.version != null and searchParam.version.size > 0'>
                 AND
                 <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
-                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.creationDate != null and searchParam.creationDate.size > 0'>
-                AND
-                <foreach collection="searchParam.creationDate" item="creationDate" open="(" separator=" OR " close=")">
-                    dav.creation_date LIKE CONCAT(CONCAT('%', #{creationDate, jdbcType=VARCHAR}),'%')
+                    dasr.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
         </if>
         <if test='param != null and param != ""'>
-            AND (dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dav.creation_date LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            AND (dasr.version_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dasr.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             )
         </if>
-    </select>
-
-    <select id="checkVersion" resultType="java.lang.Boolean">
-        SELECT
-        count( 0 ) = 1 exist
-        FROM
-        devops_app_share dam
-        JOIN devops_app_version dav ON dav.app_id = dam.app_id
-        WHERE
-        dav.id = #{versionId}
-        AND dam.id = #{appMarketId}
-        AND dav.is_publish = TRUE
-    </select>
-
-    <select id="listMarketAppsBySite" resultType="io.choerodon.devops.infra.dataobject.DevopsAppShareDO">
-        SELECT
-        dam.*, da.`name`,da.code
-        FROM
-        devops_app_share dam
-        JOIN devops_application da ON da.id = dam.app_id
-        WHERE
-        <choose>
-            <when test="isSite != null and isSite==true">
-                dam.is_site = 1
-            </when>
-            <otherwise>
-                dam.publish_level = 'organization'
-            </otherwise>
-        </choose>
-        <if test='isFree != null'>
-            and dam.is_free=#{isFree}
-        </if>
-        <if test='searchParam != null'>
-            <if test='searchParam.code != null and searchParam.code.size > 0'>
-                AND
-                <foreach collection="searchParam.code" item="code">
-                    da.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
-                AND
-                <foreach collection="searchParam.name" item="name">
-                    da.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-        </if>
-        <if test='param != null and param != ""'>
-            AND (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            )
-        </if>
-    </select>
+    </sql>
 
     <update id="updatePublishLevel">
-        UPDATE devops_app_share das
-        SET das.publish_level = 'organization'
+        UPDATE devops_app_share_rule das
+        SET das.share_level = 'organization'
         WHERE
-            das.publish_level = 'public'
+            das.share_level = 'public'
     </update>
+
+    <delete id="deleteAll">
+        DELETE FROM devops_app_share_rule
+    </delete>
 </mapper>

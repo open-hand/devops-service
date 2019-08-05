@@ -9,8 +9,8 @@ import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.DevopsCustomizeResourceDTO;
-import io.choerodon.devops.api.dto.DevopsCustomizeResourceReqDTO;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceVO;
+import io.choerodon.devops.api.vo.DevopsCustomizeResourceReqVO;
 import io.choerodon.devops.app.service.DevopsCustomizeResourceService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -31,32 +31,32 @@ import springfox.documentation.annotations.ApiIgnore;
 public class DevopsCustomizeResourceController {
 
     @Autowired
-    DevopsCustomizeResourceService devopsCustomizeResourceService;
+    private DevopsCustomizeResourceService devopsCustomizeResourceService;
 
     /**
      * 创建其他k8s资源
      *
-     * @param projectId
-     * @param contentFile
-     * @return
+     * @param projectId 项目id
+     * @param contentFile 内容文件
+     * @return 201状态码
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建其他k8s资源")
     @PostMapping
     public ResponseEntity createResource(@PathVariable(value = "project_id") Long projectId,
-                                         @ModelAttribute DevopsCustomizeResourceReqDTO devopsCustomizeResourceReqDTO,
+                                         @ModelAttribute DevopsCustomizeResourceReqVO devopsCustomizeResourceReqVO,
                                          @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
-        devopsCustomizeResourceService.createOrUpdateResource(projectId, devopsCustomizeResourceReqDTO, contentFile);
+        devopsCustomizeResourceService.createOrUpdateResource(projectId, devopsCustomizeResourceReqVO, contentFile);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
     /**
      * 删除其他k8s资源
      *
-     * @param projectId
-     * @param resourceId
-     * @return
+     * @param projectId 项目id
+     * @param resourceId 资源的id
+     * @return 204
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
@@ -71,19 +71,19 @@ public class DevopsCustomizeResourceController {
     /**
      * 获取资源详情
      *
-     * @param projectId
-     * @param resourceId
-     * @return
+     * @param projectId 项目id
+     * @param resourceId 资源id
+     * @return 资源
      */
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取资源详情")
-    @GetMapping
-    public ResponseEntity<DevopsCustomizeResourceDTO> getResource(@PathVariable(value = "project_id") Long projectId,
-                                                                  @RequestParam(value = "resource_id") Long resourceId) {
-        devopsCustomizeResourceService.getDevopsCustomizeResourceDetail(resourceId);
-        return Optional.ofNullable(devopsCustomizeResourceService.getDevopsCustomizeResourceDetail(resourceId))
+    @GetMapping("/{resource_id}")
+    public ResponseEntity<DevopsCustomizeResourceVO> getResource(@PathVariable(value = "project_id") Long projectId,
+                                                                 @PathVariable(value = "resource_id") Long resourceId) {
+        devopsCustomizeResourceService.queryDevopsCustomizeResourceDetail(resourceId);
+        return Optional.ofNullable(devopsCustomizeResourceService.queryDevopsCustomizeResourceDetail(resourceId))
                 .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.resource.get"));
     }
@@ -103,12 +103,12 @@ public class DevopsCustomizeResourceController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "其他K8S资源分页查询")
     @CustomPageRequest
-    @PostMapping(value = "/{envId}/pageByEnv")
-    public ResponseEntity<PageInfo<DevopsCustomizeResourceDTO>> pageByEnv(
+    @PostMapping(value = "/{env_id}/page_by_env")
+    public ResponseEntity<PageInfo<DevopsCustomizeResourceVO>> pageByEnv(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "envId") Long envId,
+            @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,

@@ -15,8 +15,8 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.SecretRepDTO;
-import io.choerodon.devops.api.dto.SecretReqDTO;
+import io.choerodon.devops.api.vo.SecretRespVO;
+import io.choerodon.devops.api.vo.SecretReqVO;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
@@ -40,19 +40,19 @@ public class DevopsSecretController {
     /**
      * 创建或更新密钥
      *
-     * @param secretReqDTO 请求体
-     * @return SecretRepDTO
+     * @param secretReqVO 请求体
+     * @return SecretRespVO
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建或更新密钥")
     @PutMapping
-    public ResponseEntity<SecretRepDTO> createOrUpdate(
+    public ResponseEntity<SecretRespVO> createOrUpdate(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "请求体", required = true)
-            @RequestBody SecretReqDTO secretReqDTO) {
-        return Optional.ofNullable(devopsSecretService.createOrUpdate(secretReqDTO))
+            @RequestBody SecretReqVO secretReqVO) {
+        return Optional.ofNullable(devopsSecretService.createOrUpdate(secretReqVO))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.create"));
     }
@@ -93,19 +93,21 @@ public class DevopsSecretController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "分页查询secret")
-    @PostMapping("/list_by_option")
-    public ResponseEntity<PageInfo<SecretRepDTO>> listByOption(
+    @PostMapping("/page_by_options")
+    public ResponseEntity<PageInfo<SecretRespVO>> pageByOption(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "应用id")
-            @RequestParam(value = "app_id", required = false) Long appId,
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "是否解码值")
+            @RequestParam(value = "to_decode", required = false, defaultValue = "false") boolean toDecode,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsSecretService.listByOption(envId, pageRequest, params, appId))
+        return Optional.ofNullable(devopsSecretService.pageByOption(envId, pageRequest, params, appServiceId, toDecode))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.list"));
     }
@@ -114,18 +116,20 @@ public class DevopsSecretController {
      * 根据密钥id查询密钥
      *
      * @param secretId 密钥id
-     * @return SecretRepDTO
+     * @return SecretRespVO
      */
     @Permission(type = ResourceType.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据密钥id查询密钥")
     @GetMapping("/{secret_id}")
-    public ResponseEntity<SecretRepDTO> querySecret(
+    public ResponseEntity<SecretRespVO> querySecret(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "密钥id", required = true)
-            @PathVariable(value = "secret_id") Long secretId) {
-        return Optional.ofNullable(devopsSecretService.querySecret(secretId))
+            @PathVariable(value = "secret_id") Long secretId,
+            @ApiParam(value = "是否解码值")
+            @RequestParam(value = "to_decode", required = false, defaultValue = "false") boolean toDecode) {
+        return Optional.ofNullable(devopsSecretService.querySecret(secretId, toDecode))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.query"));
     }

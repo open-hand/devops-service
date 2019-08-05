@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsDeployValueMapper">
-    <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.DevopsDeployValueDO">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.DevopsDeployValueDTO">
         SELECT
         dpv.id,
         dpv. NAME,
@@ -12,11 +12,11 @@
         de.`name` AS envName,
         da.`name` AS appName,
         dpv.env_id,
-        dpv.app_id
+        dpv.app_service_id
         FROM
         devops_deploy_value dpv
         JOIN devops_env de ON de.id = dpv.env_id
-        JOIN devops_application da ON da.id = dpv.app_id
+        JOIN devops_application_service da ON da.id = dpv.app_service_id
         <if test="userId !=null">
             JOIN devops_env_user_permission deup ON (
             deup.iam_user_id = #{userId}
@@ -26,8 +26,8 @@
         </if>
         WHERE
         dpv.project_id = #{projectId}
-        <if test='appId != null and appId !=""'>
-            AND dpv.app_id = #{appId}
+        <if test='appServiceId != null and appServiceId !=""'>
+            AND dpv.app_service_id = #{appServiceId}
         </if>
         <if test='envId != null and envId !=""'>
             AND dpv.env_id = #{envId}

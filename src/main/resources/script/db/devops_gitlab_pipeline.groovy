@@ -40,4 +40,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_gitlab_pipeline.groovyovy') {
             column(name: "commit_id")
         }
     }
+
+    changeSet(author: 'scp', id: '2019-07-29-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_gitlab_pipeline')
+    }
 }

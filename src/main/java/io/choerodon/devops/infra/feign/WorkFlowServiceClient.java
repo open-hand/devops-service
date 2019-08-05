@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.feign;
 
-import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
+import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.feign.fallback.WorkFlowServiceClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;

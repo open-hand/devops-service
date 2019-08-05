@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper">
-    <select id="listJobs" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
+    <select id="listJobs" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
         SELECT
         *
         FROM devops_env_resource dir
@@ -13,7 +13,7 @@
 
 
     <select id="queryResource"
-            resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
+            resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
         SELECT
         *
         FROM devops_env_resource dir where 1=1
@@ -35,7 +35,7 @@
     </select>
 
 
-    <select id="listByEnvAndType" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
+    <select id="listByEnvAndType" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
         SELECT * from devops_env_resource der
         LEFT JOIN devops_app_instance dai
         on der.app_instance_id = dai.id where dai.env_id = #{envId}
@@ -43,7 +43,7 @@
     </select>
 
     <select id="queryLatestJob"
-            resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
+            resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
         SELECT
         *
         FROM devops_env_resource dir where dir.kind = #{kind}

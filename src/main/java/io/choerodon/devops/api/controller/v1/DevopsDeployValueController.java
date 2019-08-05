@@ -9,7 +9,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.DevopsDeployValueDTO;
+import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
@@ -26,35 +26,35 @@ import springfox.documentation.annotations.ApiIgnore;
  * Description:
  */
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/pipeline_value")
+@RequestMapping(value = "/v1/projects/{project_id}/deploy_value")
 public class DevopsDeployValueController {
     @Autowired
-    private DevopsDeployValueService pipelineValueService;
+    private DevopsDeployValueService devopsDeployValueService;
 
     /**
-     * 项目下获取流水线配置
+     * 项目下获取部署配置
      *
      * @param projectId   项目Id
      * @param pageRequest 分页参数
      * @param params      查询参数
      * @return
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下获取流水线配置")
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下获取部署配置")
     @CustomPageRequest
-    @PostMapping("/list_by_options")
-    public ResponseEntity<PageInfo<DevopsDeployValueDTO>> listByOptions(
+    @PostMapping("/page_by_options")
+    public ResponseEntity<PageInfo<DevopsDeployValueVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = false)
-            @RequestParam(value = "app_id", required = false) Long appId,
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "环境Id", required = false)
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(pipelineValueService.listByOptions(projectId, appId, envId, pageRequest, params))
+        return Optional.ofNullable(devopsDeployValueService.pageByOptions(projectId, appServiceId, envId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.list"));
     }
@@ -62,19 +62,19 @@ public class DevopsDeployValueController {
     /**
      * 项目下创建流水线配置
      *
-     * @param projectId        项目Id
-     * @param pipelineValueDTO 配置信息
+     * @param projectId           项目Id
+     * @param devopsDeployValueVO 配置信息
      * @return
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建流水线配置")
     @PostMapping
-    public ResponseEntity<DevopsDeployValueDTO> createOrUpdate(
+    public ResponseEntity<DevopsDeployValueVO> createOrUpdate(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "PipelineValueDTO")
-            @RequestBody DevopsDeployValueDTO pipelineValueDTO) {
-        return Optional.ofNullable(pipelineValueService.createOrUpdate(projectId, pipelineValueDTO))
+            @ApiParam(value = "devopsDeployValueVO")
+            @RequestBody DevopsDeployValueVO devopsDeployValueVO) {
+        return Optional.ofNullable(devopsDeployValueService.createOrUpdate(projectId, devopsDeployValueVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.createOrUpdate"));
     }
@@ -86,15 +86,15 @@ public class DevopsDeployValueController {
      * @param valueId   配置Id
      * @return
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询配置详情")
     @GetMapping
-    public ResponseEntity<DevopsDeployValueDTO> queryById(
+    public ResponseEntity<DevopsDeployValueVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "valueId", required = true)
             @RequestParam(value = "value_id") Long valueId) {
-        return Optional.ofNullable(pipelineValueService.queryById(projectId, valueId))
+        return Optional.ofNullable(devopsDeployValueService.query(projectId, valueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.queryById"));
     }
@@ -106,7 +106,7 @@ public class DevopsDeployValueController {
      * @param valueId   配置Id
      * @return
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除配置")
     @DeleteMapping
     public ResponseEntity delete(
@@ -114,7 +114,7 @@ public class DevopsDeployValueController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "valueId", required = true)
             @RequestParam(value = "value_id") Long valueId) {
-        pipelineValueService.delete(projectId, valueId);
+        devopsDeployValueService.delete(projectId, valueId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -126,7 +126,7 @@ public class DevopsDeployValueController {
      * @param name
      * @return
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "名称校验")
     @GetMapping("/check_name")
     public ResponseEntity checkName(
@@ -134,7 +134,7 @@ public class DevopsDeployValueController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "名称", required = true)
             @RequestParam(value = "name") String name) {
-        pipelineValueService.checkName(projectId, name);
+        devopsDeployValueService.checkName(projectId, name);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -145,15 +145,15 @@ public class DevopsDeployValueController {
      * @param valueId
      * @return
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "能否删除")
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "检测能否删除")
     @GetMapping("/check_delete")
     public ResponseEntity<Boolean> checkDelete(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "valueId", required = true)
             @RequestParam(value = "value_id") Long valueId) {
-        return Optional.ofNullable(pipelineValueService.checkDelete(projectId, valueId))
+        return Optional.ofNullable(devopsDeployValueService.checkDelete(projectId, valueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.check.delete"));
     }
@@ -162,21 +162,21 @@ public class DevopsDeployValueController {
      * 根据应用Id和环境Id获取配置
      *
      * @param projectId
-     * @param appId
+     * @param appServiceId
      * @param envId
      * @return
      */
-    @Permission(type= ResourceType.PROJECT,roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据应用Id和环境Id获取配置")
-    @GetMapping("/list")
-    public ResponseEntity<List<DevopsDeployValueDTO>> queryByAppIdAndEnvId(
+    @GetMapping("/list_by_env_and_app")
+    public ResponseEntity<List<DevopsDeployValueVO>> listByEnvAndApp(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = true)
-            @RequestParam(value = "app_id") Long appId,
+            @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "环境Id", required = true)
             @RequestParam(value = "env_id") Long envId) {
-        return Optional.ofNullable(pipelineValueService.queryByAppIdAndEnvId(projectId, appId, envId))
+        return Optional.ofNullable(devopsDeployValueService.listByEnvAndApp(projectId, appServiceId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.queryByIds"));
     }

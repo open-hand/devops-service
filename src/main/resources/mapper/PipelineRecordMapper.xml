@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineRecordMapper">
-    <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.PipelineRecordDTO">
         <if test="classifyParam.executed ==null and classifyParam.pendingcheck == null and classifyParam.reviewed==null">
             <include refid="selectSql"/>
             <if test="pipelineId != null">
@@ -113,7 +113,7 @@
 
     </select>
 
-    <select id="queryById" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
+    <select id="queryById" resultType="io.choerodon.devops.infra.dto.PipelineRecordDTO">
         SELECT
         dpr.id,
         dpr. STATUS,
@@ -131,6 +131,26 @@
         FROM
         devops_pipeline_record dpr
         WHERE dpr.id = #{pipelineRecordId}
+    </select>
+
+
+    <select id="listAllPipelineRecordAndEnv" resultType="io.choerodon.devops.infra.dto.PipelineRecordDTO">
+        SELECT
+        dpr.id,
+        dpr.project_id,
+        dpr.`status`,
+        dpr.creation_date,
+        GROUP_CONCAT( DISTINCT dpad.env_id ) env
+        FROM
+        devops_pipeline_record dpr
+        LEFT JOIN devops_pipeline_stage dps ON dpr.id = dps.pipeline_id
+        LEFT JOIN devops_pipeline_task dpt ON dpt.stage_id = dps.id
+        LEFT JOIN devops_pipeline_app_deploy dpad ON dpad.id = dpt.app_deploy_id
+        <if test="pipelineRecordId != null">
+            WHERE dpr.id = #{pipelineRecordId}
+        </if>
+        GROUP BY
+        dpr.id
     </select>
 
     <sql id="sqlparam">

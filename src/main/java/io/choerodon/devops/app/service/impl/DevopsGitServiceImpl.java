@@ -8,47 +8,41 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInfo;
-import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
-import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
-import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
-import io.choerodon.devops.domain.application.handler.ResourceBundleHandler;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.C7nCertification;
-import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.domain.application.valueobject.Issue;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.domain.service.ConvertK8sObjectService;
-import io.choerodon.devops.domain.service.DeployService;
-import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
-import io.choerodon.devops.domain.service.impl.*;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.GitUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.CommandStatus;
-import io.choerodon.devops.infra.common.util.enums.GitOpsObjectError;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
+import io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease;
+import io.choerodon.devops.app.eventhandler.DemoEnvSetupSagaHandler;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.agile.IssueDTO;
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
+import io.choerodon.devops.infra.dto.gitlab.CompareResultDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.message.ResourceBundleHandler;
+import io.choerodon.devops.infra.util.*;
 import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,8 +78,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String GIT_SUFFIX = "/.git";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
     private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private Gson gson = new Gson();
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -94,33 +86,35 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private String gitlabSshUrl;
 
     @Autowired
-    private DevopsGitRepository devopsGitRepository;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
-    private ApplicationRepository applicationRepository;
+    private ApplicationSevriceService applicationService;
     @Autowired
-    private UserAttrRepository userAttrRepository;
+    private UserAttrService userAttrService;
     @Autowired
-    private IamRepository iamRepository;
+    private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
-    private AgileRepository agileRepository;
-    @Autowired
-    private GitlabProjectRepository gitlabProjectRepository;
-    @Autowired
-    private SagaClient sagaClient;
+    private AgileServiceClientOperator agileServiceClientOperator;
     @Autowired
     private GitUtil gitUtil;
     @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
-    private DeployService deployService;
+    private AgentCommandService agentCommandService;
     @Autowired
-    private DevopsEnvFileRepository devopsEnvFileRepository;
+    private DevopsEnvFileService devopsEnvFileService;
     @Autowired
-    private DevopsEnvCommitRepository devopsEnvCommitRepository;
+    private DevopsEnvCommitService devopsEnvCommitService;
     @Autowired
-    private DevopsEnvFileErrorRepository devopsEnvFileErrorRepository;
+    private DevopsEnvFileErrorService devopsEnvFileErrorService;
+    @Autowired
+    private DevopsBranchService devopsBranchService;
+    @Autowired
+    private TransactionalProducer producer;
+    @Autowired
+    private DevopsMergeRequestService devopsMergeRequestService;
     @Autowired
     @Qualifier("handlerC7nReleaseRelationsServiceImpl")
     private HandlerObjectFileRelationsService handlerC7nReleaseRelationsService;
@@ -143,329 +137,349 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Qualifier("handlerCustomResourceServiceImpl")
     private HandlerObjectFileRelationsService handlerCustomResourceService;
     @Autowired
-    private DevopsProjectRepository devopsProjectRepository;
-    @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository;
+    private DevopsGitlabCommitService devopsGitlabCommitService;
 
-    public Integer getGitlabUserId() {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
+    private Integer getGitlabUserId() {
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        return TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
     }
 
     @Override
-    public String getUrl(Long projectId, Long appId) {
-        return devopsGitRepository.getGitlabUrl(projectId, appId);
+    public String queryUrl(Long projectId, Long appId) {
+        return applicationService.getGitlabUrl(projectId, appId);
     }
 
     @Override
     public void createTag(Long projectId, Long appId, String tag, String ref, String msg, String releaseNotes) {
-        applicationRepository.checkApp(projectId, appId);
-        Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);
-        Integer gitLabUserId = devopsGitRepository.getGitlabUserId();
-        devopsGitRepository.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, gitLabUserId);
+        applicationService.baseCheckApp(projectId, appId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(appId);
+        gitlabServiceClientOperator.createTag(applicationDTO.getGitlabProjectId(), tag, ref, msg, releaseNotes, getGitlabUserId());
     }
 
     @Override
-    public TagDO updateTagRelease(Long projectId, Long appId, String tag, String releaseNotes) {
-        applicationRepository.checkApp(projectId, appId);
-        Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);
-        Integer gitLabUserId = devopsGitRepository.getGitlabUserId();
-        return devopsGitRepository.updateTag(gitLabProjectId, tag, releaseNotes, gitLabUserId);
+    public TagVO updateTag(Long projectId, Long appId, String tag, String releaseNotes) {
+        applicationService.baseCheckApp(projectId, appId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(appId);
+        return ConvertUtils.convertObject(gitlabServiceClientOperator.updateTag(applicationDTO.getGitlabProjectId(), tag, releaseNotes, getGitlabUserId()), TagVO.class);
     }
 
     @Override
     public void deleteTag(Long projectId, Long appId, String tag) {
-        applicationRepository.checkApp(projectId, appId);
-        Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);
-        Integer gitLabUserId = devopsGitRepository.getGitlabUserId();
-        devopsGitRepository.deleteTag(gitLabProjectId, tag, gitLabUserId);
+        applicationService.baseCheckApp(projectId, appId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(appId);
+        gitlabServiceClientOperator.deleteTag(applicationDTO.getGitlabProjectId(), tag, getGitlabUserId());
     }
 
     @Override
-    @Saga(code = "devops-create-branch",
-            description = "Devops创建分支", inputSchema = "{}")
-    public void createBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO) {
-        DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH,
+            description = "devops创建分支", inputSchema = "{}")
+    public void createBranch(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO) {
 
-        checkName(projectId, applicationId, devopsBranchDTO.getBranchName());
+        DevopsBranchDTO devopsBranchDTO = ConvertUtils.convertObject(devopsBranchVO, DevopsBranchDTO.class);
+
+        checkBranchName(projectId, applicationId, devopsBranchVO.getBranchName());
 
         Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
-        devopsBranchE.setUserId(gitLabUser);
-        devopsBranchE.initApplicationE(applicationId);
-        devopsBranchE.setStatus(CommandStatus.OPERATING.getStatus());
-        ApplicationE applicationE = applicationRepository.query(applicationId);
-        devopsBranchE = devopsGitRepository.createDevopsBranch(devopsBranchE);
-        Long devopsBranchId = devopsBranchE.getId();
+        devopsBranchDTO.setUserId(gitLabUser);
+        devopsBranchDTO.setAppServiceId(applicationId);
+        devopsBranchDTO.setStatus(CommandStatus.OPERATING.getStatus());
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
+        devopsBranchDTO = devopsBranchService.baseCreate(devopsBranchDTO);
+        Long devopsBranchId = devopsBranchDTO.getId();
 
-        BranchSagaDTO branchSagaDTO = new BranchSagaDTO(TypeUtil.objToLong(applicationE.getGitlabProjectE().getId()), devopsBranchId, devopsBranchDTO.getBranchName(), devopsBranchDTO.getOriginBranch());
-        String input = gson.toJson(branchSagaDTO);
+        BranchSagaPayLoad branchSagaPayLoad = new BranchSagaPayLoad(TypeUtil.objToLong(applicationDTO.getGitlabProjectId()), devopsBranchId, devopsBranchVO.getBranchName(), devopsBranchVO.getOriginBranch());
 
-
-        sagaClient.startSaga("devops-create-branch", new StartInstanceDTO(input, "project", projectId.toString(), ResourceLevel.PROJECT.value(), projectId));
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("project")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH),
+                builder -> builder
+                        .withPayloadAndSerialize(branchSagaPayLoad)
+                        .withRefId(projectId.toString()));
     }
 
     @Override
-    public void createBranchBySaga(BranchSagaDTO branchSagaDTO) {
-        BranchDO branchDO = null;
+    public void createBranchBySaga(BranchSagaPayLoad branchSagaPayLoad) {
         try {
-            branchDO = devopsGitRepository.getBranch(TypeUtil.objToInteger(branchSagaDTO.getGitlabProjectId()), branchSagaDTO.getBranchName());
-            if (branchDO.getName() == null) {
-                branchDO = devopsGitRepository.createBranch(
-                        TypeUtil.objToInteger(branchSagaDTO.getGitlabProjectId()),
-                        branchSagaDTO.getBranchName(),
-                        branchSagaDTO.getOriginBranch(),
+            BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(TypeUtil.objToInteger(branchSagaPayLoad.getGitlabProjectId()), branchSagaPayLoad.getBranchName());
+            if (branchDTO.getName() == null) {
+                //创建gitlab分支，并处理返回值
+                branchDTO = gitlabServiceClientOperator.createBranch(
+                        TypeUtil.objToInteger(branchSagaPayLoad.getGitlabProjectId()),
+                        branchSagaPayLoad.getBranchName(),
+                        branchSagaPayLoad.getOriginBranch(),
                         getGitlabUserId());
             }
-            if (branchDO.getCommit() == null) {
+
+            if (branchDTO.getCommit() == null) {
                 throw new CommonException("error.branch.exist");
             }
-            CommitE commitE = branchDO.getCommit();
-            Date checkoutDate = commitE.getCommittedDate();
-            String checkoutSha = commitE.getId();
-            DevopsBranchE devopsBranchECreate = devopsGitRepository.qureyBranchById(branchSagaDTO.getDevopsBranchId());
-            devopsBranchECreate.setStatus(CommandStatus.SUCCESS.getStatus());
-            devopsBranchECreate.setCheckoutDate(checkoutDate);
-            devopsBranchECreate.setCheckoutCommit(checkoutSha);
+            CommitDTO commitDTO = branchDTO.getCommit();
+            Date checkoutDate = commitDTO.getCommittedDate();
+            String checkoutSha = commitDTO.getId();
+            DevopsBranchDTO devopsBranchDTOCreate = devopsBranchService.baseQuery(branchSagaPayLoad.getDevopsBranchId());
+            devopsBranchDTOCreate.setStatus(CommandStatus.SUCCESS.getStatus());
+            devopsBranchDTOCreate.setCheckoutDate(checkoutDate);
+            devopsBranchDTOCreate.setCheckoutCommit(checkoutSha);
 
-            devopsBranchECreate.setLastCommitDate(checkoutDate);
-            devopsBranchECreate.setLastCommit(checkoutSha);
-            devopsBranchECreate.setLastCommitMsg(commitE.getMessage());
+            devopsBranchDTOCreate.setLastCommitDate(checkoutDate);
+            devopsBranchDTOCreate.setLastCommit(checkoutSha);
+            devopsBranchDTOCreate.setLastCommitMsg(commitDTO.getMessage());
             Long commitUserId = null;
-            if (commitE.getCommitterName().equals("root")) {
-                UserAttrE userAttrE = userAttrRepository.queryByGitlabUserName("admin");
-                if (userAttrE == null) {
-                    userAttrE = userAttrRepository.queryByGitlabUserName("admin1");
+            if (commitDTO.getCommitterName().equals("root")) {
+                UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserName("admin");
+                if (userAttrDTO == null) {
+                    userAttrDTO = userAttrService.baseQueryByGitlabUserName("admin1");
                 }
-                commitUserId = userAttrE.getGitlabUserId();
+                commitUserId = userAttrDTO.getGitlabUserId();
             }
-            devopsBranchECreate.setLastCommitUser(commitUserId);
-            devopsGitRepository.updateBranch(devopsBranchECreate);
+            devopsBranchDTOCreate.setLastCommitUser(commitUserId);
+            devopsBranchService.baseUpdateBranch(devopsBranchDTOCreate);
         } catch (Exception e) {
-            DevopsBranchE devopsBranchECreate = devopsGitRepository.qureyBranchById(branchSagaDTO.getDevopsBranchId());
-            devopsBranchECreate.setStatus(CommandStatus.FAILED.getStatus());
-            devopsBranchECreate.setErrorMessage(e.getMessage());
-            devopsGitRepository.updateBranch(devopsBranchECreate);
+            DevopsBranchDTO devopsBranchDTOCreate = devopsBranchService.baseQuery(branchSagaPayLoad.getDevopsBranchId());
+            devopsBranchDTOCreate.setStatus(CommandStatus.FAILED.getStatus());
+            devopsBranchDTOCreate.setErrorMessage(e.getMessage());
+            devopsBranchService.baseUpdateBranch(devopsBranchDTOCreate);
         }
     }
 
-
     @Override
-    public PageInfo<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        ApplicationE applicationE = applicationRepository.query(applicationId);
+    public PageInfo<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
         // 查询用户是否在该gitlab project下
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
-            GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-            if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        if (!iamServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
+            MemberDTO memberDTO = gitlabServiceClientOperator.getProjectMember(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            if (memberDTO == null) {
                 throw new CommonException("error.user.not.in.project");
             }
         }
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
-                gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
-        PageInfo<DevopsBranchE> branches =
-                devopsGitRepository.listBranches(applicationId, pageRequest, params);
-        PageInfo<BranchDTO> page = new PageInfo<>();
-        BeanUtils.copyProperties(branches, page);
-        page.setList(branches.getList().stream().map(t -> {
-            Issue issue = null;
+                gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
+        PageInfo<DevopsBranchDTO> devopsBranchDTOPageInfo =
+                devopsBranchService.basePageBranch(applicationId, pageRequest, params);
+        PageInfo<BranchVO> devopsBranchVOPageInfo = ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
+
+        devopsBranchVOPageInfo.setList(devopsBranchDTOPageInfo.getList().stream().map(t -> {
+            IssueDTO issueDTO = null;
             if (t.getIssueId() != null) {
-                issue = agileRepository.queryIssue(projectId, t.getIssueId(), organization.getId());
+                issueDTO = agileServiceClientOperator.queryIssue(projectId, t.getIssueId(), organizationDTO.getId());
             }
-            UserE userE = iamRepository.queryUserByUserId(
-                    devopsGitRepository.getUserIdByGitlabUserId(t.getUserId()));
-            UserE commitUserE = iamRepository.queryUserByUserId(
-                    devopsGitRepository.getUserIdByGitlabUserId(t.getLastCommitUser()));
+            IamUserDTO userDTO = iamServiceClientOperator.queryUserByUserId(
+                    userAttrService.getUserIdByGitlabUserId(t.getUserId()));
+            IamUserDTO commitUserDTO = iamServiceClientOperator.queryUserByUserId(
+                    userAttrService.getUserIdByGitlabUserId(t.getLastCommitUser()));
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
-            return getBranchDTO(t, commitUrl, commitUserE, userE, issue);
+            return getBranchVO(t, commitUrl, commitUserDTO, userDTO, issueDTO);
         }).collect(Collectors.toList()));
-        return page;
+        return devopsBranchVOPageInfo;
     }
 
     @Override
-    public DevopsBranchDTO queryBranch(Long projectId, Long applicationId, String branchName) {
-        return ConvertHelper.convert(devopsGitRepository
-                .queryByAppAndBranchName(applicationId, branchName), DevopsBranchDTO.class);
+    public DevopsBranchVO queryBranch(Long projectId, Long applicationId, String branchName) {
+        return ConvertUtils.convertObject(devopsBranchService.baseQueryByAppAndBranchName(applicationId, branchName), DevopsBranchVO.class);
     }
 
     @Override
-    public void updateBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO) {
-        DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
-        devopsGitRepository.updateBranchIssue(applicationId, devopsBranchE);
+    public void updateBranchIssue(Long projectId, Long applicationId, DevopsBranchVO devopsBranchVO) {
+        DevopsBranchDTO devopsBranchDTO = ConvertUtils.convertObject(devopsBranchVO, DevopsBranchDTO.class);
+        devopsBranchService.baseUpdateBranchIssue(applicationId, devopsBranchDTO);
     }
 
     @Override
     public void deleteBranch(Long applicationId, String branchName) {
-        ApplicationE applicationE = applicationRepository.query(applicationId);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<BranchDO> branchEList = devopsGitRepository.listBranches(applicationE.getGitlabProjectE().getId(),
-                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        Optional<BranchDO> branchEOptional = branchEList
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(applicationDTO.getGitlabProjectId(),
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        Optional<BranchDTO> branchDTO = branchDTOS
                 .stream().filter(e -> branchName.equals(e.getName())).findFirst();
-        branchEOptional.ifPresent(
-                e -> gitlabProjectRepository.deleteBranch(applicationE.getGitlabProjectE().getId(), branchName,
-                        TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-        devopsGitRepository.deleteDevopsBranch(applicationId, branchName);
+        branchDTO.ifPresent(e -> gitlabServiceClientOperator.deleteBranch(applicationDTO.getGitlabProjectId(), branchName,
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId())));
+        devopsBranchService.baseDelete(applicationId, branchName);
     }
 
-    private BranchDTO getBranchDTO(DevopsBranchE devopsBranchE, String lastCommitUrl, UserE commitUserE, UserE userE,
-                                   Issue issue) {
-        String createUserUrl = null;
-        String createUserName = null;
-        String createUserRealName = null;
-        if (userE != null) {
-            createUserName = userE.getLoginName();
-            createUserUrl = userE.getImageUrl();
-            createUserRealName = userE.getRealName();
-        }
-        if (commitUserE == null) {
-            commitUserE = new UserE();
-        }
-        return new BranchDTO(
-                devopsBranchE,
-                lastCommitUrl,
-                createUserUrl,
-                issue,
-                commitUserE,
-                createUserName,
-                createUserRealName,
-                devopsBranchE.getStatus(),
-                devopsBranchE.getErrorMessage());
-    }
 
     @Override
-    public Map<String, Object> getMergeRequestList(Long projectId, Long applicationId, String state, PageRequest pageRequest) {
-        applicationRepository.checkApp(projectId, applicationId);
-        Integer gitLabProjectId = devopsGitRepository.getGitLabId(applicationId);
-        if (gitLabProjectId == null) {
+    public MergeRequestTotalVO listMergeRequest(Long projectId, Long applicationId, String state, PageRequest pageRequest) {
+        applicationService.baseCheckApp(projectId, applicationId);
+        ApplicationServiceDTO applicationDTO = new ApplicationServiceDTO();
+        if (applicationDTO.getGitlabProjectId() == null) {
             throw new CommonException("error.gitlabProjectId.not.exists");
         }
-        return devopsGitRepository.getMergeRequestList(projectId, gitLabProjectId, state, pageRequest);
+
+        //查询某个应用代码仓库各种状态合并请求的数量
+        DevopsMergeRequestDTO devopsMergeRequestDTO = devopsMergeRequestService.baseCountMergeRequest(applicationDTO.getGitlabProjectId());
+
+        PageInfo<DevopsMergeRequestDTO> devopsMergeRequestDTOPageInfo = devopsMergeRequestService
+                .basePageByOptions(applicationDTO.getGitlabProjectId(), state, pageRequest);
+
+        List<MergeRequestVO> pageContent = new ArrayList<>();
+        List<DevopsMergeRequestDTO> devopsMergeRequestDTOS = devopsMergeRequestDTOPageInfo.getList();
+
+        //设置每个合并请求下关联的commit
+        if (devopsMergeRequestDTOS != null && !devopsMergeRequestDTOS.isEmpty()) {
+            devopsMergeRequestDTOS.forEach(content -> {
+                MergeRequestVO mergeRequestVO = devopsMergeRequestToMergeRequest(content);
+                pageContent.add(mergeRequestVO);
+            });
+        }
+        PageInfo<MergeRequestVO> mergeRequestVOPageInfo = ConvertUtils.convertPage(devopsMergeRequestDTOPageInfo, MergeRequestVO.class);
+        mergeRequestVOPageInfo.setList(pageContent);
+
+        MergeRequestTotalVO mergeRequestTotalVO = new MergeRequestTotalVO();
+        mergeRequestTotalVO.setMergeRequestVOPageInfo(mergeRequestVOPageInfo);
+        mergeRequestTotalVO.setTotalCount(devopsMergeRequestDTO.getTotal());
+        mergeRequestTotalVO.setCloseCount(devopsMergeRequestDTO.getClosed());
+        mergeRequestTotalVO.setMergeCount(devopsMergeRequestDTO.getMerged());
+        mergeRequestTotalVO.setOpenCount(devopsMergeRequestDTO.getOpened());
+
+        return mergeRequestTotalVO;
     }
 
     @Override
-    public PageInfo<TagDTO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        ApplicationE applicationE = applicationRepository.query(applicationId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+    public PageInfo<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size) {
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
+        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
-                gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
-        return devopsGitRepository.getTags(applicationId, path, page, params, size, getGitlabUserId());
+                gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
+        return ConvertUtils.convertPage(gitlabServiceClientOperator.pageTag(applicationDTO.getGitlabProjectId().intValue(), path, page, params, size, getGitlabUserId()), TagVO.class);
     }
 
     @Override
-    public List<TagDO> getTags(Long projectId, Long applicationId) {
-        return devopsGitRepository.getTagList(applicationId, getGitlabUserId());
+    public List<TagVO> listTags(Long projectId, Long applicationId) {
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
+        return ConvertUtils.convertList(gitlabServiceClientOperator.listTag(applicationDTO.getGitlabProjectId().intValue(), getGitlabUserId()), TagVO.class);
     }
 
     @Override
     public Boolean checkTag(Long projectId, Long applicationId, String tagName) {
-        return devopsGitRepository.getTagList(applicationId, getGitlabUserId()).stream()
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
+        return gitlabServiceClientOperator.listTag(applicationDTO.getGitlabProjectId().intValue(), getGitlabUserId()).stream()
                 .noneMatch(t -> tagName.equals(t.getName()));
     }
 
-    @Override
-    public void branchSync(PushWebHookDTO pushWebHookDTO, String token) {
-        ApplicationE applicationE = applicationRepository.queryByToken(token);
 
-        if (NO_COMMIT_SHA.equals(pushWebHookDTO.getBefore())) {
-            createBranchSync(pushWebHookDTO, applicationE.getId());
-        } else if (NO_COMMIT_SHA.equals(pushWebHookDTO.getAfter())) {
-            deleteBranchSync(pushWebHookDTO, applicationE.getId());
+    @Override
+    public void branchSync(PushWebHookVO pushWebHookVO, String token) {
+        ApplicationServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
+        if (NO_COMMIT_SHA.equals(pushWebHookVO.getBefore())) {
+            createBranchSync(pushWebHookVO, applicationDTO.getId());
+            devopsGitlabCommitService.create(pushWebHookVO, token);
+        } else if (NO_COMMIT_SHA.equals(pushWebHookVO.getAfter())) {
+            deleteBranchSync(pushWebHookVO, applicationDTO.getId());
         } else {
-            commitBranchSync(pushWebHookDTO, applicationE.getId());
+            commitBranchSync(pushWebHookVO, applicationDTO.getId());
+            devopsGitlabCommitService.create(pushWebHookVO, token);
+
         }
     }
 
     @Override
-    @Saga(code = "devops-sync-gitops", description = "devops同步gitops库相关操作", inputSchemaClass = PushWebHookDTO.class)
-    public void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token) {
-        LOGGER.info(String.format("````````````````````````````` %s", pushWebHookDTO.getCheckoutSha()));
-        pushWebHookDTO.setToken(token);
-        String input;
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
-        pushWebHookDTO.getCommits().forEach(commitDTO -> {
-            DevopsEnvCommitE devopsEnvCommitE = new DevopsEnvCommitE();
-            devopsEnvCommitE.setEnvId(devopsEnvironmentE.getId());
-            devopsEnvCommitE.setCommitSha(commitDTO.getId());
-            devopsEnvCommitE.setCommitUser(TypeUtil.objToLong(pushWebHookDTO.getUserId()));
-            devopsEnvCommitE.setCommitDate(commitDTO.getTimestamp());
-            if (devopsEnvCommitRepository
-                    .queryByEnvIdAndCommit(devopsEnvironmentE.getId(), commitDTO.getId()) == null) {
-                devopsEnvCommitRepository.create(devopsEnvCommitE);
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS, description = "devops同步gitops库相关操作", inputSchemaClass = PushWebHookVO.class)
+    public void fileResourceSyncSaga(PushWebHookVO pushWebHookVO, String token) {
+        LOGGER.info(String.format("````````````````````````````` %s", pushWebHookVO.getCheckoutSha()));
+
+        Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(pushWebHookVO.getUserId()));
+        IamUserDTO iamUserDTO = iamServiceClientOperator.queryUserByUserId(userId);
+
+        DemoEnvSetupSagaHandler.beforeInvoke(iamUserDTO.getLoginName(),userId, iamUserDTO.getOrganizationId());
+
+
+        pushWebHookVO.setToken(token);
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByToken(pushWebHookVO.getToken());
+        pushWebHookVO.getCommits().forEach(commitDTO -> {
+            DevopsEnvCommitDTO devopsEnvCommitDTO = new DevopsEnvCommitDTO();
+            devopsEnvCommitDTO.setEnvId(devopsEnvironmentDTO.getId());
+            devopsEnvCommitDTO.setCommitSha(commitDTO.getId());
+            devopsEnvCommitDTO.setCommitUser(TypeUtil.objToLong(pushWebHookVO.getUserId()));
+            devopsEnvCommitDTO.setCommitDate(commitDTO.getTimestamp());
+            if (devopsEnvCommitService
+                    .baseQueryByEnvIdAndCommit(devopsEnvironmentDTO.getId(), commitDTO.getId()) == null) {
+                devopsEnvCommitService.baseCreate(devopsEnvCommitDTO);
             }
         });
-        DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository
-                .queryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookDTO.getCheckoutSha());
-        devopsEnvironmentE.setSagaSyncCommit(devopsEnvCommitE.getId());
-        devopsEnvironmentRepository.updateSagaSyncEnvCommit(devopsEnvironmentE);
-        LOGGER.info(String.format("update devopsCommit successfully: %s", pushWebHookDTO.getCheckoutSha()));
-        try {
-            input = objectMapper.writeValueAsString(pushWebHookDTO);
-            sagaClient.startSaga("devops-sync-gitops",
-                    new StartInstanceDTO(input, "env", devopsEnvironmentE.getId().toString()));
-        } catch (JsonProcessingException e) {
-            throw new CommonException(e.getMessage(), e);
-        }
+        DevopsEnvCommitDTO devopsEnvCommitDTO = devopsEnvCommitService
+                .baseQueryByEnvIdAndCommit(devopsEnvironmentDTO.getId(), pushWebHookVO.getCheckoutSha());
+        devopsEnvironmentDTO.setSagaSyncCommit(devopsEnvCommitDTO.getId());
+        devopsEnvironmentService.baseUpdateSagaSyncEnvCommit(devopsEnvironmentDTO);
+        LOGGER.info(String.format("update devopsCommit successfully: %s", pushWebHookVO.getCheckoutSha()));
+
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("env")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS),
+                builder -> builder
+                        .withPayloadAndSerialize(pushWebHookVO)
+                        .withRefId(devopsEnvironmentDTO.getId().toString()));
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
-        final Integer gitLabProjectId = pushWebHookDTO.getProjectId();
-        Integer gitLabUserId = pushWebHookDTO.getUserId();
-        Long userId = userAttrRepository.queryUserIdByGitlabUserId(TypeUtil.objToLong(gitLabUserId));
+    @Override
+    public void fileResourceSync(PushWebHookVO pushWebHookVO) {
+        final Integer gitLabProjectId = pushWebHookVO.getProjectId();
+        Integer gitLabUserId = pushWebHookVO.getUserId();
+        Long userId = userAttrService.baseQueryUserIdByGitlabUserId(TypeUtil.objToLong(gitLabUserId));
         if (userId == null) {
             gitLabUserId = 1;
         }
 
         List<String> operationFiles = new ArrayList<>();
         List<String> deletedFiles = new ArrayList<>();
-        Set<DevopsEnvFileResourceE> beforeSync = new HashSet<>();
-        Set<DevopsEnvFileResourceE> beforeSyncDelete = new HashSet<>();
+        Set<DevopsEnvFileResourceDTO> beforeSync = new HashSet<>();
+        Set<DevopsEnvFileResourceDTO> beforeSyncDelete = new HashSet<>();
         //根据token查出环境
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
-        DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getSagaSyncCommit());
+
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByToken(pushWebHookVO.getToken());
+        DevopsEnvCommitDTO devopsEnvCommitDTO = devopsEnvCommitService.baseQuery(devopsEnvironmentDTO.getSagaSyncCommit());
         boolean tagNotExist;
         Map<String, String> objectPath;
         //从iam服务中查出项目和组织code
-        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //本地路径
         final String path = String.format("gitops/%s/%s/%s",
-                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+                organizationDTO.getCode(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
         //生成环境git仓库ssh地址
-        final String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(),
-                devopsEnvironmentE.getCode());
+        final String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getCode(), projectDTO.getCode(),
+                devopsEnvironmentDTO.getCode());
 
         LOGGER.info("The gitOps Repository ssh url: {}", url);
 
-        final Long envId = devopsEnvironmentE.getId();
+        final Long envId = devopsEnvironmentDTO.getId();
 
-        final Long projectId = devopsEnvironmentE.getProjectE().getId();
+        final Long projectId = devopsEnvironmentDTO.getProjectId();
 
         try {
             //更新本地库到最新提交
-            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
+            handDevopsEnvGitRepository(path, url, devopsEnvironmentDTO.getEnvIdRsa(), devopsEnvCommitDTO.getCommitSha());
             LOGGER.info("更新gitops库成功");
             //查询devops-sync tag是否存在，存在则比较tag和最新commit的diff，不存在则识别gitops库下所有文件为新增文件
-            tagNotExist = getDevopsSyncTag(pushWebHookDTO);
+            tagNotExist = getDevopsSyncTag(pushWebHookVO);
 
             if (tagNotExist) {
                 operationFiles.addAll(FileUtil.getFilesPath(path));
                 operationFiles.forEach(file -> {
-                    List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
-                            .queryByEnvIdAndPath(devopsEnvironmentE.getId(), file);
-                    if (!devopsEnvFileResourceES.isEmpty()) {
-                        beforeSync.addAll(devopsEnvFileResourceES);
+                    List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService
+                            .baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), file);
+                    if (!devopsEnvFileResourceDTOS.isEmpty()) {
+                        beforeSync.addAll(devopsEnvFileResourceDTOS);
                     }
                 });
             } else {
                 handleDiffs(gitLabProjectId, operationFiles, deletedFiles, beforeSync, beforeSyncDelete,
-                        devopsEnvironmentE, devopsEnvCommitE);
+                        devopsEnvironmentDTO, devopsEnvCommitDTO);
             }
             List<C7nHelmRelease> c7nHelmReleases = new ArrayList<>();
             List<V1Service> v1Services = new ArrayList<>();
@@ -474,17 +488,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             List<V1ConfigMap> v1ConfigMaps = new ArrayList<>();
             List<V1Secret> v1Secrets = new ArrayList<>();
             List<V1Endpoints> v1Endpoints = new ArrayList<>();
-            List<DevopsCustomizeResourceE> devopsCustomizeResourceES = new ArrayList<>();
+            List<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOS = new ArrayList<>();
 
 
             //从文件中读出对象,序列化为K8S对象
             objectPath = convertFileToK8sObjects(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses,
-                    v1ConfigMaps, v1Secrets, v1Endpoints, devopsCustomizeResourceES, devopsEnvironmentE.getId(), new ArrayList<>(beforeSyncDelete),
+                    v1ConfigMaps, v1Secrets, v1Endpoints, devopsCustomizeResourceDTOS, devopsEnvironmentDTO.getId(), new ArrayList<>(beforeSyncDelete),
                     c7nCertifications);
 
             LOGGER.info("序列化k8s对象成功！");
 
-            List<DevopsEnvFileResourceE> beforeSyncFileResource = new ArrayList<>(beforeSync);
+            List<DevopsEnvFileResourceDTO> beforeSyncFileResource = new ArrayList<>(beforeSync);
 
             //将k8s对象初始化为实例，网络，域名，证书，秘钥对象,处理对象文件关系
             handlerC7nReleaseRelationsService
@@ -509,19 +523,20 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     .handlerRelations(objectPath, beforeSyncFileResource, v1Secrets, null, envId, projectId, path, userId);
 
 
-            handlerCustomResourceService.handlerRelations(objectPath, beforeSyncFileResource, devopsCustomizeResourceES, null, envId, projectId, path, userId);
+            handlerCustomResourceService.handlerRelations(objectPath, beforeSyncFileResource, devopsCustomizeResourceDTOS, null, envId, projectId, path, userId);
             LOGGER.info("k8s对象转换平台对象成功！");
             //处理文件
-            handleFiles(operationFiles, deletedFiles, devopsEnvironmentE, devopsEnvCommitE, path);
+            handleFiles(operationFiles, deletedFiles, devopsEnvironmentDTO, devopsEnvCommitDTO, path);
 
             //删除tag
-            handleTag(pushWebHookDTO, gitLabProjectId, gitLabUserId, devopsEnvCommitE, tagNotExist);
 
-            devopsEnvironmentE.setDevopsSyncCommit(devopsEnvCommitE.getId());
+            handleTag(pushWebHookVO, gitLabProjectId, gitLabUserId, devopsEnvCommitDTO, tagNotExist);
+
+            devopsEnvironmentDTO.setDevopsSyncCommit(devopsEnvCommitDTO.getId());
             //更新环境 解释commit
-            devopsEnvironmentRepository.updateDevopsSyncEnvCommit(devopsEnvironmentE);
+            devopsEnvironmentService.baseUpdateDevopsSyncEnvCommit(devopsEnvironmentDTO);
             //向agent发送同步指令
-            deployService.sendCommand(devopsEnvironmentE);
+            agentCommandService.sendCommand(devopsEnvironmentDTO);
             LOGGER.info("发送gitops同步成功指令成功");
         } catch (CommonException e) {
             String filePath = "";
@@ -531,34 +546,34 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e)
                         .getErrorCode();
             }
-            DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, filePath, path);
+            DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = getDevopsFileError(envId, filePath, path);
             String error;
             try {
                 error = ResourceBundleHandler.getInstance().getValue(e.getMessage());
             } catch (Exception e1) {
                 error = e.getMessage();
             }
-            devopsEnvFileErrorE.setError(error + ":" + errorCode);
-            devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
+            devopsEnvFileErrorDTO.setError(error + ":" + errorCode);
+            devopsEnvFileErrorService.baseCreateOrUpdate(devopsEnvFileErrorDTO);
             LOGGER.info(e.getMessage(), e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return;
         }
 
         //删除文件错误记录
-        DevopsEnvFileErrorE devopsEnvFileErrorE = new DevopsEnvFileErrorE();
-        devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
-        devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE);
+        DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = new DevopsEnvFileErrorDTO();
+        devopsEnvFileErrorDTO.setEnvId(devopsEnvironmentDTO.getId());
+        devopsEnvFileErrorService.baseDelete(devopsEnvFileErrorDTO);
         // do sth to files
     }
 
     @Override
-    public void checkName(Long projectId, Long applicationId, String branchName) {
-        ApplicationE applicationE = applicationRepository.query(applicationId);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<BranchDO> branchEList = devopsGitRepository.listBranches(applicationE.getGitlabProjectE().getId(),
-                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        Optional<BranchDO> branchEOptional = branchEList
+    public void checkBranchName(Long projectId, Long applicationId, String branchName) {
+        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(applicationDTO.getGitlabProjectId(),
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        Optional<BranchDTO> branchEOptional = branchDTOS
                 .stream().filter(e -> branchName.equals(e.getName())).findFirst();
         branchEOptional.ifPresent(e -> {
             throw new CommonException("error.branch.exist");
@@ -566,65 +581,59 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     private void handleFiles(List<String> operationFiles, List<String> deletedFiles,
-                             DevopsEnvironmentE devopsEnvironmentE, DevopsEnvCommitE devopsEnvCommitE, String path) {
+                             DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsEnvCommitDTO devopsEnvCommitDTO, String path) {
         //新增解释文件记录
         for (String filePath : operationFiles) {
-            DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository
-                    .queryByEnvAndPath(devopsEnvironmentE.getId(), filePath);
-            if (devopsEnvFileE == null) {
-                devopsEnvFileE = new DevopsEnvFileE();
-                devopsEnvFileE.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                devopsEnvFileE.setFilePath(filePath);
-                devopsEnvFileE.setEnvId(devopsEnvCommitE.getEnvId());
-                devopsEnvFileRepository.create(devopsEnvFileE);
+            DevopsEnvFileDTO devopsEnvFileDTO = devopsEnvFileService
+                    .baseQueryByEnvAndPath(devopsEnvironmentDTO.getId(), filePath);
+            if (devopsEnvFileDTO == null) {
+                devopsEnvFileDTO = new DevopsEnvFileDTO();
+                devopsEnvFileDTO.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                devopsEnvFileDTO.setFilePath(filePath);
+                devopsEnvFileDTO.setEnvId(devopsEnvCommitDTO.getEnvId());
+                devopsEnvFileService.baseCreate(devopsEnvFileDTO);
             } else {
-                devopsEnvFileE.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                devopsEnvFileRepository.update(devopsEnvFileE);
+                devopsEnvFileDTO.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                devopsEnvFileService.baseUpdate(devopsEnvFileDTO);
             }
         }
 
         for (String filePath : deletedFiles) {
-            DevopsEnvFileE devopsEnvFileE = new DevopsEnvFileE();
-            devopsEnvFileE.setEnvId(devopsEnvironmentE.getId());
-            devopsEnvFileE.setFilePath(filePath);
-            devopsEnvFileRepository.delete(devopsEnvFileE);
+            DevopsEnvFileDTO devopsEnvFileDTO = new DevopsEnvFileDTO();
+            devopsEnvFileDTO.setEnvId(devopsEnvironmentDTO.getId());
+            devopsEnvFileDTO.setFilePath(filePath);
+            devopsEnvFileService.baseDelete(devopsEnvFileDTO);
         }
     }
 
-    private void handleTag(PushWebHookDTO pushWebHookDTO, Integer gitLabProjectId, Integer gitLabUserId,
-                           DevopsEnvCommitE devopsEnvCommitE, Boolean tagNotExist) {
+    private void handleTag(PushWebHookVO pushWebHookVO, Integer gitLabProjectId, Integer gitLabUserId,
+
+                           DevopsEnvCommitDTO devopsEnvCommitDTO, Boolean tagNotExist) {
         if (tagNotExist) {
-            devopsGitRepository.createTag(
-                    gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha(),
+            gitlabServiceClientOperator.createTag(
+                    gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
                     "", "", gitLabUserId);
         } else {
             try {
-                devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, gitLabUserId);
+                gitlabServiceClientOperator.deleteTag(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, gitLabUserId);
             } catch (CommonException e) {
-                if (getDevopsSyncTag(pushWebHookDTO)) {
-                    devopsGitRepository.createTag(
-                            gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha(),
+                if (getDevopsSyncTag(pushWebHookVO)) {
+                    gitlabServiceClientOperator.createTag(
+                            gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha(),
                             "", "", gitLabUserId);
-                } else {
-                    throw new GitOpsExplainException(e.getMessage(), e);
                 }
-            }
-            //创建新tag
-            if (getDevopsSyncTag(pushWebHookDTO)) {
-                devopsGitRepository.createTag(
-                        gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha(),
-                        "", "", gitLabUserId);
             }
         }
     }
 
-    private void handleDiffs(Integer gitLabProjectId, List<String> operationFiles, List<String> deletedFiles,
-                             Set<DevopsEnvFileResourceE> beforeSync, Set<DevopsEnvFileResourceE> beforeSyncDelete,
-                             DevopsEnvironmentE devopsEnvironmentE, DevopsEnvCommitE devopsEnvCommitE) {
+    private void handleDiffs(Integer
+                                     gitLabProjectId, List<String> operationFiles, List<String> deletedFiles,
+                             Set<DevopsEnvFileResourceDTO> beforeSync, Set<DevopsEnvFileResourceDTO> beforeSyncDelete,
+                             DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsEnvCommitDTO devopsEnvCommitDTO) {
         //获取将此次最新提交与tag作比价得到diff
-        CompareResultsE compareResultsE = devopsGitRepository
-                .getCompareResults(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha());
-        compareResultsE.getDiffs().forEach(t -> {
+        CompareResultDTO compareResultDTO = gitlabServiceClientOperator
+                .queryCompareResult(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+        compareResultDTO.getDiffs().forEach(t -> {
             if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
                 if (t.getDeletedFile()) {
                     deletedFiles.add(t.getNewPath());
@@ -636,18 +645,18 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 }
             }
 
-            List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
-                    .queryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getOldPath());
-            if (!devopsEnvFileResourceES.isEmpty()) {
-                beforeSync.addAll(devopsEnvFileResourceES);
+            List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService
+                    .baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), t.getOldPath());
+            if (!devopsEnvFileResourceDTOS.isEmpty()) {
+                beforeSync.addAll(devopsEnvFileResourceDTOS);
             }
         });
 
         deletedFiles.forEach(file -> {
-            List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
-                    .queryByEnvIdAndPath(devopsEnvironmentE.getId(), file);
-            if (!devopsEnvFileResourceES.isEmpty()) {
-                beforeSyncDelete.addAll(devopsEnvFileResourceES);
+            List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService
+                    .baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), file);
+            if (!devopsEnvFileResourceDTOS.isEmpty()) {
+                beforeSyncDelete.addAll(devopsEnvFileResourceDTOS);
             }
         });
     }
@@ -660,9 +669,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                                         List<V1ConfigMap> configMaps,
                                                         List<V1Secret> secrets,
                                                         List<V1Endpoints> v1Endpoints,
-                                                        List<DevopsCustomizeResourceE> devopsCustomizeResourceES,
+                                                        List<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOS,
                                                         Long envId,
-                                                        List<DevopsEnvFileResourceE> beforeSyncDelete,
+                                                        List<DevopsEnvFileResourceDTO> beforeSyncDelete,
                                                         List<C7nCertification> c7nCertifications) {
         Map<String, String> objectPath = new HashMap<>();
 
@@ -756,13 +765,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             break;
                         default:
                             //初始化自定义资源对象
-                            DevopsCustomizeResourceE devopsCustomizeResourceE = getDevopsCustomizeResourceE(envId, filePath, (Map<String, Object>) data);
-                            objectPath.put(TypeUtil.objToString(devopsCustomizeResourceE.hashCode()), filePath);
-                            ConvertK8sObjectService<DevopsCustomizeResourceE> convertCustomResourceE = new ConvertDevopsCustomResourceImpl();
+                            DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = getDevopsCustomizeResourceDTO(envId, filePath, (Map<String, Object>) data);
+                            objectPath.put(TypeUtil.objToString(devopsCustomizeResourceDTO.hashCode()), filePath);
+                            ConvertK8sObjectService<DevopsCustomizeResourceDTO> convertCustomResourceDTO = new ConvertDevopsCustomResourceImpl();
                             // 校验对象是否在其它文件中已经定义
-                            convertCustomResourceE.checkIfExist(devopsCustomizeResourceES, envId, beforeSyncDelete, objectPath, devopsCustomizeResourceE);
+                            convertCustomResourceDTO.checkIfExist(devopsCustomizeResourceDTOS, envId, beforeSyncDelete, objectPath, devopsCustomizeResourceDTO);
                             // 校验参数校验参数是否合法
-                            convertCustomResourceE.checkParameters(devopsCustomizeResourceE, objectPath);
+                            convertCustomResourceDTO.checkParameters(devopsCustomizeResourceDTO, objectPath);
                             break;
                     }
                 }
@@ -773,16 +782,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         return objectPath;
     }
 
-    private DevopsCustomizeResourceE getDevopsCustomizeResourceE(Long envId, String filePath, Map<String, Object> data) {
-        DevopsCustomizeResourceE devopsCustomizeResourceE = new DevopsCustomizeResourceE();
+    private DevopsCustomizeResourceDTO getDevopsCustomizeResourceDTO(Long envId, String
+            filePath, Map<String, Object> data) {
+        DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = new DevopsCustomizeResourceDTO();
 
-        devopsCustomizeResourceE.setEnvId(envId);
-        devopsCustomizeResourceE.setFilePath(filePath);
+        devopsCustomizeResourceDTO.setEnvId(envId);
+        devopsCustomizeResourceDTO.setFilePath(filePath);
         Map<String, Object> datas = data;
         if (datas.get(KIND) == null) {
             throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_KIND_NOT_FOUND.getError(), filePath);
         }
-        devopsCustomizeResourceE.setK8sKind(datas.get(KIND).toString());
+        devopsCustomizeResourceDTO.setK8sKind(datas.get(KIND).toString());
         LinkedHashMap metadata = (LinkedHashMap) datas.get(METADATA);
 
         if (metadata == null) {
@@ -791,7 +801,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (metadata.get(NAME) == null) {
             throw new GitOpsExplainException(GitOpsObjectError.CUSTOM_RESOURCE_NAME_NOT_FOUND.getError(), filePath);
         }
-        devopsCustomizeResourceE.setName(metadata.get(NAME).toString());
+        devopsCustomizeResourceDTO.setName(metadata.get(NAME).toString());
 
         //添加自定义资源标签
         LinkedHashMap labels = (LinkedHashMap) metadata.get(LABELS);
@@ -803,71 +813,144 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         metadata.put(LABELS, labels);
         datas.put(METADATA, metadata);
 
-        devopsCustomizeResourceE.setDevopsCustomizeResourceContentE(new DevopsCustomizeResourceContentE(FileUtil.getYaml().dump(datas)));
-        return devopsCustomizeResourceE;
+        devopsCustomizeResourceDTO.setResourceContent(FileUtil.getYaml().dump(datas));
+        return devopsCustomizeResourceDTO;
     }
 
-    private void commitBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
+    private void commitBranchSync(PushWebHookVO pushWebHookVO, Long appId) {
         try {
-            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
-            DevopsBranchE branchE = devopsGitRepository.queryByAppAndBranchName(appId, branchName);
-            if (branchE == null) {
-                createBranchSync(pushWebHookDTO, appId);
+            String branchName = pushWebHookVO.getRef().replaceFirst(REF_HEADS, "");
+
+            DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchName(appId, branchName);
+            if (devopsBranchDTO == null) {
+                createBranchSync(pushWebHookVO, appId);
             }
 
-            String lastCommit = pushWebHookDTO.getAfter();
-            Optional<CommitDTO> lastCommitOptional
-                    = pushWebHookDTO.getCommits().stream().filter(t -> lastCommit.equals(t.getId())).findFirst();
-            CommitDTO lastCommitDTO = new CommitDTO();
+
+            String lastCommit = pushWebHookVO.getAfter();
+            Optional<CommitVO> lastCommitOptional
+                    = pushWebHookVO.getCommits().stream().filter(t -> lastCommit.equals(t.getId())).findFirst();
+            CommitVO lastCommitDTO = new CommitVO();
             if (lastCommitOptional.isPresent()) {
                 lastCommitDTO = lastCommitOptional.get();
             }
-            branchE.setLastCommit(lastCommit);
-            branchE.setLastCommitDate(lastCommitDTO.getTimestamp());
-            branchE.setLastCommitMsg(lastCommitDTO.getMessage());
-            branchE.setLastCommitUser(pushWebHookDTO.getUserId().longValue());
-            devopsGitRepository.updateBranchLastCommit(branchE);
+
+            devopsBranchDTO.setLastCommit(lastCommit);
+            devopsBranchDTO.setLastCommitDate(lastCommitDTO.getTimestamp());
+            devopsBranchDTO.setLastCommitMsg(lastCommitDTO.getMessage());
+            devopsBranchDTO.setLastCommitUser(pushWebHookVO.getUserId().longValue());
+            devopsBranchService.baseUpdateBranchLastCommit(devopsBranchDTO);
         } catch (Exception e) {
             LOGGER.info("error.update.branch");
         }
 
     }
 
-    private void deleteBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
+
+    private MergeRequestVO devopsMergeRequestToMergeRequest(DevopsMergeRequestDTO
+                                                                    devopsMergeRequestDTO) {
+        MergeRequestVO mergeRequestVO = ConvertUtils.convertObject(devopsMergeRequestDTO, MergeRequestVO.class);
+        mergeRequestVO.setProjectId(devopsMergeRequestDTO.getProjectId().intValue());
+        mergeRequestVO.setId(devopsMergeRequestDTO.getId().intValue());
+        mergeRequestVO.setIid(devopsMergeRequestDTO.getGitlabMergeRequestId().intValue());
+        Long authorUserId = userAttrService
+                .getUserIdByGitlabUserId(devopsMergeRequestDTO.getAuthorId());
+        Long assigneeId = userAttrService
+                .getUserIdByGitlabUserId(devopsMergeRequestDTO.getAssigneeId());
+        List<CommitDTO> commitDTOS;
         try {
-            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
-            devopsGitRepository.deleteDevopsBranch(appId, branchName);
+            commitDTOS = gitlabServiceClientOperator.listCommits(
+                    devopsMergeRequestDTO.getProjectId().intValue(),
+                    devopsMergeRequestDTO.getGitlabMergeRequestId().intValue(), getGitlabUserId());
+            mergeRequestVO.setCommits(ConvertUtils.convertList(commitDTOS, CommitVO.class));
+        } catch (FeignException e) {
+            LOGGER.info(e.getMessage());
+        }
+        IamUserDTO authorUser = iamServiceClientOperator.queryUserByUserId(authorUserId);
+        if (authorUser != null) {
+            AuthorVO authorVO = new AuthorVO();
+            authorVO.setUsername(authorUser.getLoginName());
+            authorVO.setName(authorUser.getRealName());
+            authorVO.setId(authorUser.getId() == null ? null : authorUser.getId().intValue());
+            authorVO.setWebUrl(authorUser.getImageUrl());
+            mergeRequestVO.setAuthor(authorVO);
+        }
+        IamUserDTO assigneeUser = iamServiceClientOperator.queryUserByUserId(assigneeId);
+        if (assigneeUser != null) {
+            AssigneeVO assigneeVO = new AssigneeVO();
+            assigneeVO.setUsername(assigneeUser.getLoginName());
+            assigneeVO.setName(assigneeUser.getRealName());
+            assigneeVO.setId(assigneeId.intValue());
+            assigneeVO.setWebUrl(assigneeUser.getImageUrl());
+            mergeRequestVO.setAssignee(assigneeVO);
+        }
+        return mergeRequestVO;
+    }
+
+
+    private BranchVO getBranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl, IamUserDTO
+            commitUserDTO, IamUserDTO userDTO,
+                                 IssueDTO issue) {
+        String createUserUrl = null;
+        String createUserName = null;
+        String createUserRealName = null;
+        if (userDTO != null) {
+            createUserName = userDTO.getLoginName();
+            createUserUrl = userDTO.getImageUrl();
+            createUserRealName = userDTO.getRealName();
+        }
+        if (commitUserDTO == null) {
+            commitUserDTO = new IamUserDTO();
+        }
+        return new BranchVO(
+                devopsBranchDTO,
+                lastCommitUrl,
+                createUserUrl,
+                issue,
+                commitUserDTO,
+                createUserName,
+                createUserRealName,
+                devopsBranchDTO.getStatus(),
+                devopsBranchDTO.getErrorMessage());
+    }
+
+    private void deleteBranchSync(PushWebHookVO pushWebHookVO, Long appId) {
+        try {
+            String branchName = pushWebHookVO.getRef().replaceFirst(REF_HEADS, "");
+            devopsBranchService.baseDelete(appId, branchName);
         } catch (Exception e) {
             LOGGER.info("error.devops.branch.delete");
         }
     }
 
-    private void createBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
+    private void createBranchSync(PushWebHookVO pushWebHookVO, Long appId) {
         try {
-            String lastCommit = pushWebHookDTO.getAfter();
-            Long userId = pushWebHookDTO.getUserId().longValue();
+            String lastCommit = pushWebHookVO.getAfter();
+            Long userId = pushWebHookVO.getUserId().longValue();
 
-            CommitE commitE = devopsGitRepository.getCommit(
-                    pushWebHookDTO.getProjectId(),
+            CommitDTO commitDTO = gitlabServiceClientOperator.queryCommit(
+
+                    pushWebHookVO.getProjectId(),
                     lastCommit,
                     userId.intValue());
-            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
-            boolean branchExist = devopsGitRepository.queryByAppAndBranchName(appId, branchName) != null;
+            String branchName = pushWebHookVO.getRef().replaceFirst(REF_HEADS, "");
+
+            boolean branchExist = devopsBranchService.baseQueryByAppAndBranchName(appId, branchName) != null;
             if (!branchExist) {
-                DevopsBranchE devopsBranchE = new DevopsBranchE();
-                devopsBranchE.setUserId(userId);
-                devopsBranchE.initApplicationE(appId);
+                DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
+                devopsBranchDTO.setUserId(userId);
+                devopsBranchDTO.setAppServiceId(appId);
 
-                devopsBranchE.setCheckoutDate(commitE == null ? null : commitE.getCommittedDate());
-                devopsBranchE.setCheckoutCommit(lastCommit);
-                devopsBranchE.setBranchName(branchName);
+                devopsBranchDTO.setCheckoutDate(commitDTO.getCommittedDate());
+                devopsBranchDTO.setCheckoutCommit(lastCommit);
+                devopsBranchDTO.setBranchName(branchName);
 
-                devopsBranchE.setLastCommitUser(userId);
-                devopsBranchE.setLastCommit(lastCommit);
-                devopsBranchE.setLastCommitMsg(commitE == null ? null : commitE.getMessage());
+                devopsBranchDTO.setLastCommitUser(userId);
+                devopsBranchDTO.setLastCommit(lastCommit);
+                devopsBranchDTO.setLastCommitMsg(commitDTO.getMessage());
 
-                devopsBranchE.setLastCommitDate(commitE == null ? null : commitE.getCommittedDate());
-                devopsGitRepository.createDevopsBranch(devopsBranchE);
+                devopsBranchDTO.setLastCommitDate(commitDTO.getCommittedDate());
+                devopsBranchService.baseCreate(devopsBranchDTO);
 
 
             }
@@ -876,22 +959,23 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-    private DevopsEnvFileErrorE getDevopsFileError(Long envId, String filePath, String path) {
-        DevopsEnvFileErrorE devopsEnvFileErrorE = devopsEnvFileErrorRepository.queryByEnvIdAndFilePath(envId, filePath);
-        if (devopsEnvFileErrorE == null) {
-            devopsEnvFileErrorE = new DevopsEnvFileErrorE();
-            devopsEnvFileErrorE.setFilePath(filePath);
-            devopsEnvFileErrorE.setEnvId(envId);
-            devopsEnvFileErrorE.setCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+    private DevopsEnvFileErrorDTO getDevopsFileError(Long envId, String filePath, String path) {
+        DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = devopsEnvFileErrorService.baseQueryByEnvIdAndFilePath(envId, filePath);
+        if (devopsEnvFileErrorDTO == null) {
+            devopsEnvFileErrorDTO = new DevopsEnvFileErrorDTO();
+            devopsEnvFileErrorDTO.setFilePath(filePath);
+            devopsEnvFileErrorDTO.setEnvId(envId);
+            devopsEnvFileErrorDTO.setCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
         } else {
-            devopsEnvFileErrorE.setFilePath(filePath);
-            devopsEnvFileErrorE.setCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+            devopsEnvFileErrorDTO.setFilePath(filePath);
+            devopsEnvFileErrorDTO.setCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
         }
-        return devopsEnvFileErrorE;
+        return devopsEnvFileErrorDTO;
     }
 
-    private boolean getDevopsSyncTag(PushWebHookDTO pushWebHookDTO) {
-        return devopsGitRepository.getGitLabTags(pushWebHookDTO.getProjectId(), pushWebHookDTO.getUserId())
+    private boolean getDevopsSyncTag(PushWebHookVO pushWebHookVO) {
+
+        return gitlabServiceClientOperator.listTag(pushWebHookVO.getProjectId(), pushWebHookVO.getUserId())
                 .stream().noneMatch(tagDO -> tagDO.getName().equals(GitUtil.DEV_OPS_SYNC_TAG));
 
     }
@@ -909,4 +993,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             gitUtil.checkout(repoPath, commit);
         }
     }
+
+
+    @Override
+    public BranchDTO baseQueryBranch(Integer gitLabProjectId, String branchName) {
+        return gitlabServiceClientOperator.queryBranch(gitLabProjectId, branchName);
+    }
+
+
 }

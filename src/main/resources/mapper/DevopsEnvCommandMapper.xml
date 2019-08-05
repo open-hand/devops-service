@@ -3,7 +3,7 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper">
 
-    <select id="queryByObject" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO">
+    <select id="queryByObject" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
         SELECT
         d.*
         FROM
@@ -14,7 +14,7 @@
     </select>
 
 
-    <select id="listByObject" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO">
+    <select id="listByObject" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
         SELECT
         d.*
         FROM
@@ -30,7 +30,7 @@
         ORDER BY d.id DESC
     </select>
 
-    <select id="queryInstanceCommand" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO">
+    <select id="listInstanceCommand" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
         SELECT
         d.*
         FROM
@@ -40,6 +40,23 @@
         and d.command_type in ('update','create')
         ORDER BY d.id DESC
     </select>
+
+    <select id="listAllInstanceCommand" resultType="io.choerodon.devops.infra.dto.DevopsEnvCommandDTO">
+   SELECT
+	dc.id,
+	dc.STATUS,
+	de.id envId,
+	de.project_id projectId,
+	dc.creation_date
+FROM
+	devops_env_command dc
+	LEFT JOIN devops_app_instance dai ON dc.object_id = dai.id
+	LEFT JOIN devops_env de ON de.id = dai.env_id
+WHERE
+	dc.object = 'instance'
+	AND command_type IN ( 'update', 'create' )
+    </select>
+
 
 
 </mapper>

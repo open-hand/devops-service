@@ -3,18 +3,12 @@ package io.choerodon.devops.infra.feign;
 import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
-import retrofit2.Call;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.Path;
-import retrofit2.http.Query;
-import retrofit2.http.QueryMap;
 
-import io.choerodon.base.domain.Sort;
-import io.choerodon.devops.api.dto.AccessTokenCheckResultDTO;
-import io.choerodon.devops.api.dto.AppVersionAndValueDTO;
-import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.infra.dto.iam.MarketAppDeployRecordDTO;
+
+import retrofit2.Call;
+import retrofit2.http.*;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -23,19 +17,23 @@ import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
  */
 public interface AppShareClient {
 
-    @POST("v1/public/app_shares/by_token")
-    Call<PageInfo<ApplicationReleasingDTO>> getAppShares(@QueryMap Map<String, Object> map);
+    @GET("v1/public/app_publishes/by_token")
+    Call<PageInfo<RemoteApplicationServiceVO>> getAppShares(@QueryMap Map<String, Object> map);
 
-    @POST("v1/public/app_shares/{app_id}/list_versions")
-    Call<PageInfo<ApplicationVersionRepDTO>> listVersionByAppId(@Path("app_id") Long appId,
+    @GET("v1/public/app_publishes/{app_id}/list_versions")
+    Call<PageInfo<MarketAppPublishVersionVO>> listVersionByAppId(@Path("app_id") Long appId,
                                                                 @QueryMap Map<String, Object> map);
 
-    @GET("v1/public/app_shares/{app_id}/versions/{version_id}/config_info")
-    Call<AppVersionAndValueDTO> getConfigInfoByVerionId(@Path("app_id") Long appId,
-                                                        @Path("version_id") Long versionId,
-                                                        @QueryMap Map<String, Object> map);
+    @GET("v1/public/app_publishes/{app_id}/versions/{version_id}/config_info")
+    Call<AppVersionAndValueVO> getConfigInfoByVerionId(@Path("app_id") Long appId,
+                                                       @Path("version_id") Long versionId,
+                                                       @QueryMap Map<String, Object> map);
 
-    @POST("v1/public/app_shares/check_token")
-    Call<AccessTokenCheckResultDTO> checkTokenExist(@Query("access_token") String accessToken);
+    @GET("v1/public/check_token")
+    Call<AccessTokenCheckResultVO> checkTokenExist(@Query("access_token") String accessToken);
+
+
+    @POST("v1/public/app_deploy_records")
+    Call<Void> createAppDeployRecord(@Query("access_token") String accessToken, @Body MarketAppDeployRecordDTO marketAppDeployRecordDTO);
 
 }

@@ -2,13 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsBranchMapper">
-    <select id="queryByAppAndBranchName" resultType="io.choerodon.devops.infra.dataobject.DevopsBranchDO">
+    <select id="queryByAppAndBranchName" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
         SELECT
         db.*
         FROM
         devops_branch db
         WHERE
-        db.app_id = #{appId}
+        db.app_service_id = #{appServiceId}
         and db.branch_name = #{branchName}
         and db.is_deleted = FALSE
         ORDER BY
@@ -16,13 +16,13 @@
         LIMIT 1
     </select>
 
-    <select id="list" resultType="io.choerodon.devops.infra.dataobject.DevopsBranchDO">
+    <select id="list" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
         SELECT
         db.*
         FROM
         devops_branch db
         WHERE
-        db.app_id = #{appId}
+        db.app_service_id = #{appServiceId}
         and db.is_deleted = FALSE
         <if test='searchParam != null'>
             <if test='searchParam.branchName != null and searchParam.branchName.size > 0'>

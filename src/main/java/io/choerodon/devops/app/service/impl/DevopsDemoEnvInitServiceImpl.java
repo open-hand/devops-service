@@ -2,8 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.PostConstruct;
 
@@ -11,27 +11,28 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.api.eventhandler.DevopsSagaHandler;
 import io.choerodon.devops.api.validator.ApplicationValidator;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.kubernetes.MockMultipartFile;
+import io.choerodon.devops.app.eventhandler.DevopsSagaHandler;
+import io.choerodon.devops.app.eventhandler.payload.DevOpsAppPayload;
+import io.choerodon.devops.app.eventhandler.payload.OrganizationRegisterEventPayload;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.DevopsProjectE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
-import io.choerodon.devops.domain.application.event.OrganizationRegisterEventPayload;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.MockMultipartFile;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.AccessLevel;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
+import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
+import io.choerodon.devops.infra.dto.gitlab.MergeRequestDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.AccessLevel;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
+import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -59,42 +60,40 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Autowired
     private DevopsProjectConfigService projectConfigService;
     @Autowired
-    private ApplicationRepository applicationRepository;
+    private ApplicationSevriceService applicationService;
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
-    private AppShareService applicationMarketService;
+    private ApplicationShareRuleService applicationMarketService;
     @Autowired
     private ApplicationVersionService applicationVersionService;
     @Autowired
     private ApplicationTemplateService applicationTemplateService;
     @Autowired
-    private UserAttrRepository userAttrRepository;
+    private UserAttrService userAttrService;
     @Autowired
-    private IamRepository iamRepository;
+    private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
-    private DevopsProjectRepository devopsProjectRepository;
+    private DevopsProjectService devopsProjectService;
     @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository;
+    private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
-    private AppUserPermissionRepository appUserPermissionRepository;
+    private ApplicationUserPermissionService applicationUserPermissionService;
     @Autowired
     private DevopsSagaHandler devopsSagaHandler;
     @Autowired
-    private GitlabRepository gitlabRepository;
-    @Autowired
-    private DevopsGitRepository devopsGitRepository;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     private Gson gson = new Gson();
 
-    private DemoDataDTO demoDataDTO;
+    private DemoDataVO demoDataVO;
     private Integer gitlabUserId;
 
     @PostConstruct
     public void loadData() {
         try {
             String content = StreamUtils.copyToString(this.getClass().getClassLoader().getResourceAsStream(demoDataFilePath), Charset.forName("UTF-8"));
-            demoDataDTO = JSONObject.parseObject(content, DemoDataDTO.class);
+            demoDataVO = JSONObject.parseObject(content, DemoDataVO.class);
         } catch (Exception e) {
             logger.error("Load content of demo data failed. exception is: {}", e);
         }
@@ -103,51 +102,51 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Override
     public void initialDemoEnv(OrganizationRegisterEventPayload organizationRegisterEventPayload) {
         Long projectId = organizationRegisterEventPayload.getProject().getId();
-//        1. 创建应用
-        ApplicationReqDTO app = demoDataDTO.getApplicationInfo();
+        // 1. 创建应用
+        ApplicationServiceReqVO app = demoDataVO.getApplicationInfo();
         app.setApplicationTemplateId(getMicroServiceTemplateId());
         app.setIsSkipCheckPermission(Boolean.TRUE);
 
-        ApplicationRepDTO applicationRepDTO = createDemoApp(projectId, app);
+        ApplicationServiceRepVO applicationRepDTO = createDemoApp(projectId, app);
 
-        gitlabUserId = TypeUtil.objToInteger(userAttrRepository.queryById(organizationRegisterEventPayload.getUser().getId()).getGitlabUserId());
+        gitlabUserId = TypeUtil.objToInteger(userAttrService.baseQueryById(organizationRegisterEventPayload.getUser().getId()).getGitlabUserId());
 
-        if (applicationRepository.query(applicationRepDTO.getId()).getGitlabProjectE().getId() == null) {
+        if (applicationService.baseQuery(applicationRepDTO.getId()).getGitlabProjectId() == null) {
             throw new CommonException("Creating gitlab project for app {} failed.", applicationRepDTO.getId());
         }
 
-        Integer gitlabProjectId = applicationRepository.query(applicationRepDTO.getId()).getGitlabProjectE().getId();
+        Integer gitlabProjectId = applicationService.baseQuery(applicationRepDTO.getId()).getGitlabProjectId();
 
 //        2. 创建分支
-        BranchDO branchDO = devopsGitRepository.getBranch(gitlabProjectId, demoDataDTO.getBranchInfo().getBranchName());
+        BranchDTO branchDO = gitlabServiceClientOperator.queryBranch(gitlabProjectId, demoDataVO.getBranchInfo().getBranchName());
         if (branchDO.getName() == null) {
-            devopsGitRepository.createBranch(
+            gitlabServiceClientOperator.createBranch(
                     gitlabProjectId,
-                    demoDataDTO.getBranchInfo().getBranchName(),
-                    demoDataDTO.getBranchInfo().getOriginBranch(),
+                    demoDataVO.getBranchInfo().getBranchName(),
+                    demoDataVO.getBranchInfo().getOriginBranch(),
                     gitlabUserId);
         }
 
-//        3. 提交代码
+        // 3. 提交代码
         newCommit(gitlabProjectId);
 
-//        4. 持续集成
-//           - 使用pipeline接口查询pipeline状态，状态完成之后进行下一步操作
-//        目前选择不等待
+        // 4. 持续集成
+        // - 使用pipeline接口查询pipeline状态，状态完成之后进行下一步操作
+        //目前选择不等待
 
-//        5. 创建合并请求并确认
+        // 5. 创建合并请求并确认
         mergeBranch(gitlabProjectId);
 
-//        6. 创建标记，由于选择人工造版本数据而不是通过ci，此处tag-name不使用正确的。
-        devopsGitService.createTag(projectId, applicationRepDTO.getId(), demoDataDTO.getTagInfo().getTag() + "-alpha.1", demoDataDTO.getTagInfo().getRef(), demoDataDTO.getTagInfo().getMsg(), demoDataDTO.getTagInfo().getReleaseNotes());
+        // 6. 创建标记，由于选择人工造版本数据而不是通过ci，此处tag-name不使用正确的。
+        devopsGitService.createTag(projectId, applicationRepDTO.getId(), demoDataVO.getTagInfo().getTag() + "-alpha.1", demoDataVO.getTagInfo().getRef(), demoDataVO.getTagInfo().getMsg(), demoDataVO.getTagInfo().getReleaseNotes());
 
         createFakeApplicationVersion(applicationRepDTO.getId());
 
-//        7. 发布应用
-        ApplicationReleasingDTO applicationReleasingDTO = demoDataDTO.getApplicationRelease();
-        applicationReleasingDTO.setAppId(applicationRepDTO.getId());
-        applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
-        applicationMarketService.release(projectId, applicationReleasingDTO);
+        // 7. 发布应用
+//        ApplicationReleasingVO applicationReleasingDTO = demoDataVO.getApplicationRelease();
+//        applicationReleasingDTO.setAppServiceId(applicationRepDTO.getId());
+//        applicationReleasingDTO.setAppVersions(Collections.singletonList(getApplicationVersion(projectId, applicationRepDTO.getId())));
+//        applicationMarketService.create(projectId, applicationReleasingDTO);
     }
 
     /**
@@ -158,25 +157,26 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param applicationReqDTO 应用创建的数据
      * @return 应用创建的纪录
      */
-    private ApplicationRepDTO createDemoApp(Long projectId, ApplicationReqDTO applicationReqDTO) {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+    private ApplicationServiceRepVO createDemoApp(Long projectId, ApplicationServiceReqVO applicationReqDTO) {
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationReqDTO);
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        ApplicationE applicationE = ConvertHelper.convert(applicationReqDTO, ApplicationE.class);
-        applicationE.initProjectE(projectId);
-        applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
-        applicationRepository.checkCode(applicationE);
-        applicationE.initActive(true);
-        applicationE.initSynchro(false);
-        applicationE.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ApplicationServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, ApplicationServiceDTO.class);
+        applicationDTO.setProjectId(projectId);
+        applicationService.checkName(projectId, applicationDTO.getName());
+        applicationService.checkCode(projectId, applicationDTO.getCode());
+
+        applicationDTO.setActive(true);
+        applicationDTO.setSynchro(false);
+        applicationDTO.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
 
         // 查询创建应用所在的gitlab应用组
-        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
-        GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()),
-                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(applicationDTO.getProjectId());
+        MemberDTO gitlabMember = gitlabGroupMemberService.queryByUserId(
+                TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        if (gitlabMember == null || !Objects.equals(gitlabMember.getAccessLevel(), AccessLevel.OWNER.toValue())) {
             throw new CommonException("error.user.not.owner");
         }
         // 创建saga payload
@@ -184,36 +184,39 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devOpsAppPayload.setType("application");
         devOpsAppPayload.setPath(applicationReqDTO.getCode());
         devOpsAppPayload.setOrganizationId(organization.getId());
-        devOpsAppPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()));
+        devOpsAppPayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()));
         devOpsAppPayload.setUserIds(applicationReqDTO.getUserIds());
         devOpsAppPayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
 
         //设置仓库Id
-        List<DevopsProjectConfigDTO> configDTOS1 = projectConfigService.queryByIdAndType(null, "harbor");
-        List<DevopsProjectConfigDTO> configDTOS2 = projectConfigService.queryByIdAndType(null, "chart");
-        applicationE.initHarborConfig(configDTOS1.get(0).getId());
-        applicationE.initChartConfig(configDTOS2.get(0).getId());
+        List<DevopsProjectConfigVO> harborConfig = projectConfigService.listByIdAndType(null, "harbor");
+        List<DevopsProjectConfigVO> chartConfig = projectConfigService.listByIdAndType(null, "chart");
+        applicationDTO.setHarborConfigId(harborConfig.get(0).getId());
+        applicationDTO.setChartConfigId(chartConfig.get(0).getId());
 
-        applicationE = applicationRepository.create(applicationE);
-        devOpsAppPayload.setAppId(applicationE.getId());
-        devOpsAppPayload.setIamProjectId(projectId);
-        Long appId = applicationE.getId();
+        applicationDTO = applicationService.baseCreate(applicationDTO);
+
+        Long appId = applicationDTO.getId();
         if (appId == null) {
             throw new CommonException("error.application.create.insert");
         }
+
+        devOpsAppPayload.setAppId(applicationDTO.getId());
+        devOpsAppPayload.setIamProjectId(projectId);
+
         // 如果不跳过权限检查
         List<Long> userIds = applicationReqDTO.getUserIds();
         if (!applicationReqDTO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
-            userIds.forEach(e -> appUserPermissionRepository.create(e, appId));
+            userIds.forEach(e -> applicationUserPermissionService.baseCreate(e, appId));
         }
 
         String input = gson.toJson(devOpsAppPayload);
 
         devopsSagaHandler.createApp(input);
 
-        return ConvertHelper.convert(applicationRepository.queryByCode(applicationE.getCode(),
-                applicationE.getProjectE().getId()), ApplicationRepDTO.class);
+        return ConvertUtils.convertObject(applicationService.baseQueryByCode(applicationReqDTO.getCode(),
+                applicationDTO.getProjectId()), ApplicationServiceRepVO.class);
     }
 
 
@@ -223,8 +226,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @return the id
      * @throws CommonException if there isn't a template named 'MicroService'
      */
-    private Long getMicroServiceTemplateId() throws CommonException {
-        List<ApplicationTemplateRepDTO> template = applicationTemplateService.listByOptions(new PageRequest(0, 1), null, demoDataDTO.getTemplateSearchParam()).getList();
+    private Long getMicroServiceTemplateId() {
+        List<ApplicationTemplateRespVO> template = applicationTemplateService.listByOptions(new PageRequest(0, 1), null, demoDataVO.getTemplateSearchParam()).getList();
 
         if (template != null && !template.isEmpty()) {
             return template.get(0).getId();
@@ -239,8 +242,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param gitlabProjectId gitlab project id
      */
     private void newCommit(Integer gitlabProjectId) {
-        System.out.println("-------------" + gitlabProjectId + "" + gitlabUserId + "" + demoDataDTO.getBranchInfo().getBranchName());
-        gitlabRepository.createFile(gitlabProjectId, "newFile" + UUID.randomUUID().toString().replaceAll("-", ""), "a new commit.", "[ADD] a new file", gitlabUserId, demoDataDTO.getBranchInfo().getBranchName());
+        gitlabServiceClientOperator.createFile(gitlabProjectId, "newFile" + UUID.randomUUID().toString().replaceAll("-", ""), "a new commit.", "[ADD] a new file", gitlabUserId, demoDataVO.getBranchInfo().getBranchName());
     }
 
 
@@ -252,10 +254,10 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private void mergeBranch(Integer gitlabProjectId) {
         try {
             // 创建merge request
-            MergeRequestDO mergeRequest = gitlabRepository.createMergeRequest(gitlabProjectId, demoDataDTO.getBranchInfo().getBranchName(), "master", "a new merge request", "[ADD] add instant push", gitlabUserId);
+            MergeRequestDTO mergeRequest = gitlabServiceClientOperator.createMergeRequest(gitlabProjectId, demoDataVO.getBranchInfo().getBranchName(), "master", "a new merge request", "[ADD] add instant push", gitlabUserId);
 
             // 确认merge request
-            gitlabRepository.acceptMergeRequest(gitlabProjectId, mergeRequest.getId(), "", Boolean.FALSE, Boolean.TRUE, gitlabUserId);
+            gitlabServiceClientOperator.acceptMergeRequest(gitlabProjectId, mergeRequest.getId(), "", Boolean.FALSE, Boolean.TRUE, gitlabUserId);
         } catch (Exception e) {
             logger.error("Error occurred when merge request. Exception is {}", e);
         }
@@ -268,19 +270,19 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param projectId     the project id
      * @param applicationId the application id
      * @return the version
-     */
-    private AppMarketVersionDTO getApplicationVersion(Long projectId, Long applicationId) {
-        PageRequest pageRequest = new PageRequest(0, 1);
-        PageInfo<ApplicationVersionRepDTO> versions = applicationVersionService.listApplicationVersionInApp(projectId, applicationId, pageRequest, null);
-        if (!versions.getList().isEmpty()) {
-            AppMarketVersionDTO appMarketVersionDTO = new AppMarketVersionDTO();
-            BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionDTO);
-            return appMarketVersionDTO;
-        } else {
-            logger.error("Error: can not find a version with name {}", demoDataDTO.getTagInfo().getTag());
-            return null;
-        }
-    }
+//     */
+//    private AppMarketVersionVO getApplicationVersion(Long projectId, Long applicationId) {
+//        PageRequest pageRequest = new PageRequest(0, 1);
+//        PageInfo<ApplicationVersionRespVO> versions = applicationVersionService.pageByOptions(projectId, applicationId, pageRequest, null);
+//        if (!versions.getList().isEmpty()) {
+//            AppMarketVersionVO appMarketVersionVO = new AppMarketVersionVO();
+//            BeanUtils.copyProperties(versions.getList().get(0), appMarketVersionVO);
+//            return appMarketVersionVO;
+//        } else {
+//            logger.error("Error: can not find a version with name {}", demoDataVO.getTagInfo().getTag());
+//            return null;
+//        }
+//    }
 
     /**
      * 手动制造一个应用版本
@@ -291,7 +293,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         try {
             byte[] bytes = StreamUtils.copyToByteArray(this.getClass().getClassLoader().getResourceAsStream(tgzFilePath));
             MockMultipartFile multipartFile = new MockMultipartFile("code-i.tgz", "code-i.tgz", "application/tgz", bytes);
-            applicationVersionService.create(demoDataDTO.getAppVersion().getImage(), applicationRepository.query(appId).getToken(), demoDataDTO.getAppVersion().getVersion(), demoDataDTO.getAppVersion().getCommit(), multipartFile);
+            applicationVersionService.create(demoDataVO.getAppVersion().getImage(), applicationService.baseQuery(appId).getToken(), demoDataVO.getAppVersion().getVersion(), demoDataVO.getAppVersion().getCommit(), multipartFile);
         } catch (IOException e) {
             logger.error("can not find file {}", tgzFilePath);
             throw new CommonException(e);

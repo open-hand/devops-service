@@ -3,7 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.app.service.ApplicationSevriceService;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -20,10 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping(value = "/ci")
 public class CiController {
 
-    private ApplicationService applicationService;
+    private ApplicationSevriceService applicationService;
     private ApplicationVersionService applicationVersionService;
 
-    public CiController(ApplicationService applicationService, ApplicationVersionService applicationVersionService) {
+    public CiController(ApplicationSevriceService applicationService, ApplicationVersionService applicationVersionService) {
         this.applicationService = applicationService;
         this.applicationVersionService = applicationVersionService;
     }

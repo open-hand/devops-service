@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.pagehelper.PageInfo;
-
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
+import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
+import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.infra.dto.ApplicationInstanceOverViewDTO;
+import io.choerodon.devops.infra.dto.DeployDTO;
+import io.choerodon.devops.infra.enums.ResourceType;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -17,10 +20,22 @@ import io.choerodon.devops.infra.common.util.enums.ResourceType;
 public interface ApplicationInstanceService {
     /**
      * 根据实例id查询实例信息
+     *
      * @param instanceId 实例id
      * @return 实例信息
      */
     AppInstanceInfoVO queryInfoById(Long instanceId);
+
+
+    /**
+     * 分页查询环境下实例信息（基本信息）
+     *
+     * @param projectId 项目id
+     * @param envId 环境id
+     * @param params 查询参数
+     * @return 环境下实例基本信息
+     */
+    PageInfo<AppInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params);
 
     /**
      * 分页查询应用部署
@@ -34,17 +49,17 @@ public interface ApplicationInstanceService {
      * @return page of devopsEnvPreviewInstanceDTO
      */
 
-    PageInfo<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                                  Long envId, Long versionId, Long appId, Long instanceId, String params);
+    PageInfo<DevopsEnvPreviewInstanceVO> pageByOptions(Long projectId, PageRequest pageRequest,
+                                                       Long envId, Long versionId, Long appId, Long instanceId, String params);
 
     /**
      * 查询应用部署
      *
      * @param projectId 项目id
      * @param appId     应用id
-     * @return page of ApplicationInstancesDTO
+     * @return page of ApplicationInstanceOverViewVO
      */
-    List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId);
+    List<ApplicationInstanceOverViewVO> listApplicationInstanceOverView(Long projectId, Long appId);
 
     /**
      * 查询value列表
@@ -54,24 +69,23 @@ public interface ApplicationInstanceService {
      * @param versionId  版本id
      * @return List
      */
-    ReplaceResult queryValues(String type, Long instanceId, Long versionId);
-
+    InstanceValueVO queryDeployValue(String type, Long instanceId, Long versionId);
 
     /**
      * 部署应用
      *
-     * @param applicationDeployDTO 部署信息
-     * @return ApplicationInstanceDTO
+     * @param applicationDeployVO 部署信息
+     * @return ApplicationInstanceVO
      */
-    ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO);
+    ApplicationInstanceVO createOrUpdate(ApplicationDeployVO applicationDeployVO);
 
     /**
      * 部署应用,GitOps
      *
-     * @param applicationDeployDTO 部署信息
-     * @return ApplicationInstanceDTO
+     * @param applicationDeployVO 部署信息
+     * @return ApplicationInstanceVO
      */
-    ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId);
+    ApplicationInstanceVO createOrUpdateByGitOps(ApplicationDeployVO applicationDeployVO, Long userId);
 
     /**
      * 查询运行中的实例
@@ -80,9 +94,9 @@ public interface ApplicationInstanceService {
      * @param appId        应用id
      * @param appVersionId 应用版本id
      * @param envId        环境id
-     * @return list of AppInstanceCodeDTO
+     * @return baseList of RunningInstanceVO
      */
-    List<AppInstanceCodeDTO> listByOptions(Long projectId, Long appId, Long appVersionId, Long envId);
+    List<RunningInstanceVO> listRunningInstance(Long projectId, Long appId, Long appVersionId, Long envId);
 
     /**
      * 环境下某应用运行中或失败的实例
@@ -90,34 +104,23 @@ public interface ApplicationInstanceService {
      * @param projectId 项目id
      * @param appId     应用id
      * @param envId     环境id
-     * @return list of AppInstanceCodeDTO
+     * @return baseList of AppInstanceCodeDTO
      */
-    List<AppInstanceCodeDTO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
-
-    /**
-     * 环境下某应用运行中或失败的实例，判断自动部署是否可替换该实例
-     *
-     * @param projectId 项目id
-     * @param appId     应用id
-     * @param envId     环境id
-     * @return list of AppInstanceCodeDTO
-     */
-    List<AppInstanceCodeDTO> getByAppIdAndEnvId(Long projectId, Long appId, Long envId);
-
+    List<RunningInstanceVO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 
     /**
      * 实例停止
      *
      * @param instanceId 实例id
      */
-    void instanceStop(Long instanceId);
+    void stopInstance(Long instanceId);
 
     /**
      * 实例重启
      *
      * @param instanceId 实例id
      */
-    void instanceStart(Long instanceId);
+    void startInstance(Long instanceId);
 
 
     /**
@@ -125,14 +128,14 @@ public interface ApplicationInstanceService {
      *
      * @param instanceId 实例id
      */
-    void instanceReStart(Long instanceId);
+    void restartInstance(Long instanceId);
 
     /**
      * 实例删除
      *
      * @param instanceId 实例id
      */
-    void instanceDelete(Long instanceId);
+    void deleteInstance(Long instanceId);
 
 
     /**
@@ -149,15 +152,15 @@ public interface ApplicationInstanceService {
      * @param instanceId 实例id
      * @return string
      */
-    ReplaceResult queryValue(Long instanceId);
+    InstanceValueVO queryLastDeployValue(Long instanceId);
 
     /**
      * 校验values
      *
-     * @param replaceResult values对象
+     * @param instanceValueVO values对象
      * @return List
      */
-    List<ErrorLineDTO> formatValue(ReplaceResult replaceResult);
+    List<ErrorLineVO> formatValue(InstanceValueVO instanceValueVO);
 
 
     /**
@@ -166,9 +169,9 @@ public interface ApplicationInstanceService {
      * @param projectId 项目id
      * @param envId     环境Id
      * @param params    搜索参数
-     * @return DevopsEnvPreviewDTO
+     * @return DevopsEnvPreviewVO
      */
-    DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params);
+    DevopsEnvPreviewVO listByEnv(Long projectId, Long envId, String params);
 
     /**
      * 校验实例名唯一性
@@ -183,16 +186,16 @@ public interface ApplicationInstanceService {
      * @param deployValue
      * @return
      */
-    ReplaceResult getReplaceResult(String versionValue, String deployValue);
+    InstanceValueVO getReplaceResult(String versionValue, String deployValue);
 
     /**
      * 获取升级 Value
      *
      * @param instanceId 实例id
      * @param versionId  版本Id
-     * @return ReplaceResult
+     * @return InstanceValueVO
      */
-    ReplaceResult queryUpgradeValue(Long instanceId, Long versionId);
+    InstanceValueVO queryUpgradeValue(Long instanceId, Long versionId);
 
     /**
      * 获取部署时长报表
@@ -204,7 +207,7 @@ public interface ApplicationInstanceService {
      * @param endTime   结束时间
      * @return List
      */
-    DeployTimeDTO listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
+    DeployTimeVO listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
 
     /**
      * 获取部署次数报表
@@ -216,7 +219,7 @@ public interface ApplicationInstanceService {
      * @param endTime   结束时间
      * @return List
      */
-    DeployFrequencyDTO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime);
+    DeployFrequencyVO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime);
 
     /**
      * 获取部署次数报表table
@@ -226,9 +229,9 @@ public interface ApplicationInstanceService {
      * @param appId     应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
-     * @return List
+     * @return Page
      */
-    PageInfo<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime);
+    PageInfo<DeployDetailTableVO> pageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime);
 
     /**
      * 获取部署时长报表table
@@ -240,15 +243,15 @@ public interface ApplicationInstanceService {
      * @param endTime   结束时间
      * @return List
      */
-    PageInfo<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime);
+    PageInfo<DeployDetailTableVO> pageDeployTimeTable(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime);
 
     /**
      * 部署自动化测试应用
      *
-     * @param applicationDeployDTO 部署信息
-     * @return ApplicationInstanceDTO
+     * @param applicationDeployVO 部署信息
+     * @return ApplicationInstanceVO
      */
-    void deployTestApp(ApplicationDeployDTO applicationDeployDTO);
+    void deployTestApp(ApplicationDeployVO applicationDeployVO);
 
     /**
      * 根据实例id获取更多资源详情(json格式）
@@ -258,7 +261,7 @@ public interface ApplicationInstanceService {
      * @param resourceType 资源类型
      * @return 包含json格式的资源详情的DTO
      */
-    InstanceControllerDetailDTO getInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
+    InstanceControllerDetailVO queryInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
 
     /**
      * 根据实例id获取更多资源详情(yaml格式）
@@ -268,7 +271,7 @@ public interface ApplicationInstanceService {
      * @param resourceType 资源类型
      * @return 包含yaml格式的资源详情的DTO
      */
-    InstanceControllerDetailDTO getInstanceResourceDetailYaml(Long instanceId, String resourceName, ResourceType resourceType);
+    InstanceControllerDetailVO getInstanceResourceDetailYaml(Long instanceId, String resourceName, ResourceType resourceType);
 
     /**
      * 查询自动化测试应用实例状态
@@ -284,21 +287,21 @@ public interface ApplicationInstanceService {
      * @param envId          环境id
      * @param deploymentName deploymentName
      * @param count          pod数量
-     * @return ApplicationInstanceDTO
+     * @return ApplicationInstanceVO
      */
     void operationPodCount(String deploymentName, Long envId, Long count);
 
 
-    DevopsEnvResourceDTO listResourcesInHelmRelease(Long instanceId);
+    DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId);
 
     /**
      * 获取预览 Value
      *
-     * @param replaceResult yaml
-     * @param appVersionId  版本Id
-     * @return ReplaceResult
+     * @param instanceValueVO yaml
+     * @param appVersionId    版本Id
+     * @return InstanceValueVO
      */
-    ReplaceResult previewValues(ReplaceResult replaceResult, Long appVersionId);
+    InstanceValueVO queryPreviewValues(InstanceValueVO instanceValueVO, Long appVersionId);
 
     /**
      * 部署远程应用
@@ -306,11 +309,67 @@ public interface ApplicationInstanceService {
      * @param appRemoteDeployDTO
      * @return
      */
-    ApplicationInstanceDTO deployRemote(ApplicationRemoteDeployDTO appRemoteDeployDTO);
+    ApplicationInstanceVO deployRemoteApp(Long projectId, ApplicationRemoteDeployVO appRemoteDeployDTO);
 
 
     /**
-     * @param instanceSagaDTO
+     * @param instanceSagaPayload
      */
-    void createInstanceBySaga(InstanceSagaDTO instanceSagaDTO);
+    void createInstanceBySaga(InstanceSagaPayload instanceSagaPayload);
+
+    /**
+     * @param commandId
+     * @return
+     */
+    ApplicationInstanceRepVO queryByCommandId(Long commandId);
+
+    List<ApplicationInstanceDTO> baseListByAppId(Long appId);
+
+    List<ApplicationInstanceDTO> baseList();
+
+    List<ApplicationInstanceDTO> baseListByValueId(Long valueId);
+
+    ApplicationInstanceDTO baseQuery(Long id);
+
+    List<ApplicationInstanceDTO> baseListByEnvId(Long envId);
+
+    void deleteByEnvId(Long envId);
+
+    ApplicationInstanceDTO baseQueryByCodeAndEnv(String code, Long envId);
+
+    ApplicationInstanceDTO baseCreate(ApplicationInstanceDTO applicationInstanceDTO);
+
+    List<ApplicationInstanceDTO> baseListByOptions(Long projectId, Long appId, Long appVersionId, Long envId);
+
+    List<ApplicationInstanceDTO> baseListByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+
+    int baseCountByOptions(Long envId, Long appId, String appInstanceCode);
+
+    String baseQueryValueByEnvIdAndAppId(Long envId, Long appId);
+
+    void baseUpdate(ApplicationInstanceDTO applicationInstanceDTO);
+
+    List<ApplicationInstanceOverViewDTO> baseListApplicationInstanceOverView(Long projectId, Long appId, List<Long> envIds);
+
+    String baseQueryValueByInstanceId(Long instanceId);
+
+    void baseDelete(Long id);
+
+    List<DeployDTO> baseListDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
+
+    List<DeployDTO> baselistDeployFrequency(Long projectId, Long[] envIds, Long appId,
+                                            Date startTime, Date endTime);
+
+    PageInfo<DeployDTO> basePageDeployFrequencyTable(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId,
+                                                     Date startTime, Date endTime);
+
+    PageInfo<DeployDTO> basePageDeployTimeTable(Long projectId, PageRequest pageRequest, Long envId, Long[] appIds,
+                                                Date startTime, Date endTime);
+
+    void baseCheckName(String instanceName, Long envId);
+
+    String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
+
+    void baseDeleteInstanceRelInfo(Long instanceId);
+
 }

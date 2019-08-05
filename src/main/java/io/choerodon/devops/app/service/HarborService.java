@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.domain.application.event.HarborPayload;
-import io.choerodon.devops.infra.dataobject.harbor.User;
+import io.choerodon.devops.app.eventhandler.payload.HarborPayload;
 
 /**
  * Created with IntelliJ IDEA.

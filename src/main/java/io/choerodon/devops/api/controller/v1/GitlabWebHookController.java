@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.base.annotation.Permission;
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.GitlabWebHookService;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;

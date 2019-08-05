@@ -4,10 +4,11 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.ApplicationTemplateDTO;
-import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
-import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO;
-import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
+import io.choerodon.devops.api.vo.ApplicationTemplateRespVO;
+import io.choerodon.devops.api.vo.ApplicationTemplateUpdateVO;
+import io.choerodon.devops.api.vo.ApplicationTemplateVO;
+import io.choerodon.devops.app.eventhandler.payload.GitlabProjectPayload;
+import io.choerodon.devops.infra.dto.ApplicationTemplateDTO;
 
 /**
  * Created by younger on 2018/3/27.
@@ -17,20 +18,20 @@ public interface ApplicationTemplateService {
     /**
      * 组织下创建应用模板
      *
-     * @param applicationTemplateDTO 模板信息
-     * @param organizationId         组织Id
+     * @param applicationTemplateVO 模板信息
+     * @param organizationId        组织Id
      * @return ApplicationTemplateDTO
      */
-    ApplicationTemplateRepDTO create(ApplicationTemplateDTO applicationTemplateDTO, Long organizationId);
+    ApplicationTemplateRespVO create(ApplicationTemplateVO applicationTemplateVO, Long organizationId);
 
     /**
      * 组织下更新应用模板
      *
-     * @param applicationTemplateUpdateDTO 模板信息
+     * @param applicationTemplateUpdateVO 模板信息
      * @param organizationId               组织Id
      * @return ApplicationTemplateDTO
      */
-    ApplicationTemplateRepDTO update(ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO, Long organizationId);
+    ApplicationTemplateRespVO update(ApplicationTemplateUpdateVO applicationTemplateUpdateVO, Long organizationId);
 
     /**
      * 组织下删除应用模板
@@ -45,7 +46,7 @@ public interface ApplicationTemplateService {
      * @param appTemplateId 模板id
      * @return ApplicationTemplateDTO
      */
-    ApplicationTemplateRepDTO query(Long appTemplateId);
+    ApplicationTemplateRespVO queryByTemplateId(Long appTemplateId);
 
     /**
      * 组织下分页查询应用模板
@@ -55,7 +56,7 @@ public interface ApplicationTemplateService {
      * @param searchParam    模糊查询参数
      * @return Page
      */
-    PageInfo<ApplicationTemplateRepDTO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam);
+    PageInfo<ApplicationTemplateRespVO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam);
 
     /**
      * 处理模板创建逻辑
@@ -70,7 +71,7 @@ public interface ApplicationTemplateService {
      * @param organizationId 组织Id
      * @return List
      */
-    List<ApplicationTemplateRepDTO> list(Long organizationId);
+    List<ApplicationTemplateRespVO> listAllByOrganizationId(Long organizationId);
 
     /**
      * 创建模板校验名称是否存在
@@ -96,6 +97,7 @@ public interface ApplicationTemplateService {
      */
     Boolean applicationTemplateExist(String uuid);
 
+
     /**
      * 设置应用应用模板创建失败状态
      *
@@ -104,13 +106,13 @@ public interface ApplicationTemplateService {
      */
     void setAppTemplateErrStatus(String gitlabProjectEventDTO, Long organizationId);
 
-//    void initMockService(SagaClient sagaClient);
+    ApplicationTemplateRespVO queryByCode(Long organizationId, String code);
 
-    /**
-     * 根据模板code查询模板
-     *
-     * @param organizationId 组织id
-     * @param code           模板code
-     */
-    ApplicationTemplateRepDTO queryByCode(Long organizationId, String code);
+    ApplicationTemplateDTO baseQueryByCode(Long organizationId, String code);
+
+    List<ApplicationTemplateDTO> baseListByOrganizationId(Long organizationId);
+
+    ApplicationTemplateDTO baseQuery(Long appTemplateId);
+
+    ApplicationTemplateDTO baseUpdate(ApplicationTemplateDTO applicationTemplateDTO);
 }

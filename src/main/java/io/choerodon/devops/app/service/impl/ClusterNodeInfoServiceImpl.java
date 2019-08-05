@@ -9,12 +9,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.AgentNodeInfoDTO;
-import io.choerodon.devops.api.dto.ClusterNodeInfoDTO;
+import io.choerodon.devops.api.vo.AgentNodeInfoVO;
+import io.choerodon.devops.api.vo.ClusterNodeInfoVO;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
-import io.choerodon.devops.domain.application.entity.DevopsClusterE;
-import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.app.service.DevopsClusterService;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
+import io.choerodon.devops.infra.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -41,15 +41,15 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterNodeInfoServiceImpl.class);
 
     @Autowired
-    private DevopsClusterRepository devopsClusterRepository;
+    private DevopsClusterService devopsClusterService;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public String getRedisClusterKey(Long clusterId) {
-        DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
-        if (devopsClusterE != null) {
-            return getRedisClusterKey(clusterId, devopsClusterE.getOrganizationId());
+        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
+        if (devopsClusterDTO != null) {
+            return getRedisClusterKey(clusterId, devopsClusterDTO.getOrganizationId());
         } else {
             throw new CommonException("error.cluster.get");
         }
@@ -61,9 +61,9 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     }
 
     @Override
-    public void setValueForKey(String redisClusterKey, List<AgentNodeInfoDTO> agentNodeInfoDTOS) {
+    public void setValueForKey(String redisClusterKey, List<AgentNodeInfoVO> agentNodeInfoVOS) {
         stringRedisTemplate.delete(redisClusterKey);
-        stringRedisTemplate.opsForList().rightPushAll(redisClusterKey, agentNodeInfoDTOS.stream().map(this::node2JsonString).collect(Collectors.toList()));
+        stringRedisTemplate.opsForList().rightPushAll(redisClusterKey, agentNodeInfoVOS.stream().map(this::node2JsonString).collect(Collectors.toList()));
     }
 
     private String toNormalCpuValue(String cpuAmount) {
@@ -74,7 +74,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         return cpuAmount;
     }
 
-    private void setCpuPercentage(ClusterNodeInfoDTO node) {
+    private void setCpuPercentage(ClusterNodeInfoVO node) {
         double total = Double.parseDouble(node.getCpuTotal());
         double limit = Double.parseDouble(node.getCpuLimit());
         double request = Double.parseDouble(node.getCpuRequest());
@@ -89,8 +89,8 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
      * @param raw the node information
      * @return the json string of the node information
      */
-    private String node2JsonString(AgentNodeInfoDTO raw) {
-        ClusterNodeInfoDTO node = new ClusterNodeInfoDTO();
+    private String node2JsonString(AgentNodeInfoVO raw) {
+        ClusterNodeInfoVO node = new ClusterNodeInfoVO();
         BeanUtils.copyProperties(raw, node);
         node.setCpuLimit(toNormalCpuValue(node.getCpuLimit()));
         node.setCpuRequest(toNormalCpuValue(node.getCpuRequest()));
@@ -117,7 +117,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
      *
      * @param node the node information
      */
-    private void setMemoryInfo(ClusterNodeInfoDTO node) {
+    private void setMemoryInfo(ClusterNodeInfoVO node) {
         double total = ((Long) getByteOfMemory(node.getMemoryTotal())).doubleValue();
         long request = getByteOfMemory(node.getMemoryRequest());
         long limit = getByteOfMemory(node.getMemoryLimit());
@@ -173,19 +173,19 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     }
 
     @Override
-    public PageInfo<ClusterNodeInfoDTO> pageQueryClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest) {
+    public PageInfo<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest) {
         long start = (long) (pageRequest.getPage() - 1) * (long) pageRequest.getSize();
         long stop = start + (long) pageRequest.getSize() - 1;
         String redisKey = getRedisClusterKey(clusterId, organizationId);
 
         long total = stringRedisTemplate.opsForList().size(redisKey);
-        List<ClusterNodeInfoDTO> nodes = stringRedisTemplate
+        List<ClusterNodeInfoVO> nodes = stringRedisTemplate
                 .opsForList()
                 .range(redisKey, start, stop)
                 .stream()
-                .map(node -> JSONObject.parseObject(node, ClusterNodeInfoDTO.class))
+                .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
                 .collect(Collectors.toList());
-        PageInfo<ClusterNodeInfoDTO> result = new PageInfo();
+        PageInfo<ClusterNodeInfoVO> result = new PageInfo();
         if (total < pageRequest.getSize() * pageRequest.getPage()) {
             result.setSize(TypeUtil.objToInt(total) - (pageRequest.getSize() * (pageRequest.getPage() - 1)));
         } else {
@@ -199,7 +199,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     }
 
     @Override
-    public ClusterNodeInfoDTO getNodeInfo(Long organizationId, Long clusterId, String nodeName) {
+    public ClusterNodeInfoVO queryNodeInfo(Long organizationId, Long clusterId, String nodeName) {
         if (StringUtils.isEmpty(nodeName)) {
             return null;
         }
@@ -212,7 +212,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                 .opsForList()
                 .range(redisKey, 0, total - 1)
                 .stream()
-                .map(node -> JSONObject.parseObject(node, ClusterNodeInfoDTO.class))
+                .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
                 .filter(node -> nodeName.equals(node.getNodeName()))
                 .findFirst()
                 .orElse(null);

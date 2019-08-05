@@ -4,28 +4,28 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
-import io.choerodon.devops.api.dto.OrgCertificationDTO;
-import io.choerodon.devops.api.dto.ProjectDTO;
+import io.choerodon.devops.api.vo.OrgCertificationVO;
+import io.choerodon.devops.api.vo.ProjectReqVO;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface DevopsOrgCertificationService {
 
-    void insert(Long organizationId, MultipartFile key, MultipartFile cert, OrgCertificationDTO orgCertificationDTO);
+    void create(Long organizationId, MultipartFile key, MultipartFile cert, OrgCertificationVO orgCertificationVO);
 
-    void update(Long certId, OrgCertificationDTO orgCertificationDTO);
+    void update(Long certId, OrgCertificationVO orgCertificationVO);
 
     void checkName(Long organizationId, String name);
 
-    List<ProjectDTO> listCertProjects(Long certId);
+    List<ProjectReqVO> listCertProjects(Long certId);
 
     void deleteCert(Long certId);
 
-    PageInfo<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
-                                      String[] params);
+    PageInfo<ProjectReqVO> pageProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
+                                        String[] params);
 
-    PageInfo<OrgCertificationDTO> pageCerts(Long organizationId, PageRequest pageRequest,
-                                        String params);
+    PageInfo<OrgCertificationVO> pageCerts(Long organizationId, PageRequest pageRequest,
+                                           String params);
 
-    OrgCertificationDTO getCert(Long certId);
+    OrgCertificationVO queryCert(Long certId);
 
 }

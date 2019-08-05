@@ -32,7 +32,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
 
     changeSet(author: 'runge', id: '2018-07-31-change-column') {
         renameColumn(tableName: 'devops_service', columnDataType: 'VARCHAR(1000)',
-                oldColumnName: 'label', newColumnName: 'annotations', remarks: '网络注释')
+                oldColumnName: 'label', newColumnName: 'annotation', remarks: '网络注释')
         modifyDataType(tableName: 'devops_service', columnName: 'external_ip', newDataType: 'VARCHAR(1000)')
         addColumn(tableName: 'devops_service') {
             column(name: 'ports', type: 'VARCHAR(1000)', remarks: '网络端口', afterColumn: 'status')
@@ -96,4 +96,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
                     column(name: 'load_balance_ip', type: 'VARCHAR(32)', remarks: 'load balance类型的ip', afterColumn: 'end_points')
                 }
             }
+
+    changeSet(author: 'scp', id: '2019-07-29-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_service')
+    }
 }

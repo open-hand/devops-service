@@ -2,15 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper">
-    <resultMap id="envTree" type="io.choerodon.devops.infra.dataobject.DevopsEnvironmentViewDTO">
+    <resultMap id="instanceEnvTree" type="io.choerodon.devops.infra.dto.DevopsEnvironmentViewDTO">
         <id property="id" column="env_id"/>
         <result property="name" column="env_name"/>
         <result property="clusterId" column="cluster_id"/>
         <result property="synchronize" column="synchronize"/>
-        <collection property="apps" ofType="io.choerodon.devops.infra.dataobject.DevopsApplicationViewDTO" notNullColumn="app_id">
-            <id property="id" column="app_id"/>
+        <collection property="apps" ofType="io.choerodon.devops.infra.dto.DevopsApplicationViewDTO" notNullColumn="app_service_id">
+            <id property="id" column="app_service_id"/>
             <result property="name" column="app_name"/>
-            <collection property="instances" ofType="io.choerodon.devops.infra.dataobject.DevopsAppInstanceViewDTO" notNullColumn="ins_id">
+            <collection property="instances" ofType="io.choerodon.devops.infra.dto.DevopsAppInstanceViewDTO" notNullColumn="ins_id">
                 <id property="id" column="ins_id"/>
                 <result property="code" column="ins_code"/>
                 <result property="podRunningCount" column="pod_running_count"/>
@@ -19,7 +19,33 @@
         </collection>
     </resultMap>
 
-    <resultMap id="queryInfoByIdResultMap" type="io.choerodon.devops.infra.dataobject.DevopsEnvironmentInfoDTO">
+    <resultMap id="resourceEnvTree" type="io.choerodon.devops.infra.dto.DevopsResourceEnvOverviewDTO">
+        <id property="id" column="env_id"/>
+        <result property="name" column="env_name"/>
+        <result property="clusterId" column="cluster_id"/>
+        <result property="synchronize" column="synchronize"/>
+
+        <collection property="instances" ofType="io.choerodon.devops.api.vo.DevopsAppInstanceViewVO" notNullColumn="ins_id">
+            <id property="id" column="ins_id"/>
+            <result property="code" column="ins_code"/>
+            <result property="podRunningCount" column="pod_running_count"/>
+            <result property="podCount" column="pod_count"/>
+        </collection>
+        <collection property="services" ofType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO" select="listServices" fetchType="eager" column="env_id">
+        </collection>
+        <collection property="ingresses" ofType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO" select="listIngresses" fetchType="eager" column="env_id">
+        </collection>
+        <collection property="certifications" ofType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO" select="listCertifications" fetchType="eager" column="env_id">
+        </collection>
+        <collection property="configMaps" ofType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO" select="listConfigMaps" fetchType="eager" column="env_id">
+        </collection>
+        <collection property="secrets" ofType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO" select="listSecrets" fetchType="eager" column="env_id">
+        </collection>
+        <collection property="customResources" ofType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO" select="listCustomizeResources" fetchType="eager" column="env_id">
+        </collection>
+    </resultMap>
+
+    <resultMap id="queryInfoByIdResultMap" type="io.choerodon.devops.infra.dto.DevopsEnvironmentInfoDTO">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="code" column="code"/>
@@ -29,25 +55,27 @@
         <result property="sagaSyncCommit" column="saga_sync_commit"/>
         <result property="devopsSyncCommit" column="devops_sync_commit"/>
         <result property="agentSyncCommit" column="agent_sync_commit"/>
+        <result property="isSkipCheckPermission" column="is_skip_check_permission"/>
+        <result property="objectVersionNumber" column="object_version_number"/>
     </resultMap>
 
-    <update id="updateDevopsEnvGroupId" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
+    <update id="updateDevopsEnvGroupId" parameterType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
         UPDATE devops_env de set de.devops_env_group_id = null where de.id = #{envId}
     </update>
 
-    <update id="updateSagaSyncEnvCommit" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
+    <update id="updateSagaSyncEnvCommit" parameterType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
         UPDATE devops_env de set de.saga_sync_commit = #{sagaSyncCommit} where de.id = #{envId}
     </update>
 
-    <update id="updateDevopsSyncEnvCommit" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
+    <update id="updateDevopsSyncEnvCommit" parameterType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
         UPDATE devops_env de set de.devops_sync_commit = #{devopsSyncCommit} where de.id = #{envId}
     </update>
 
-    <update id="updateAgentSyncEnvCommit" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
+    <update id="updateAgentSyncEnvCommit" parameterType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
         UPDATE devops_env de set de.agent_sync_commit = #{agentSyncCommit} where de.id = #{envId}
     </update>
 
-    <select id="queryByToken" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
+    <select id="queryByToken" resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
       select * from devops_env de where de.token = #{token}
     </select>
 
@@ -56,10 +84,10 @@
     </update>
 
 
-    <select id="listEnvTree" resultMap="envTree">
+    <select id="listInstanceEnvTree" resultMap="instanceEnvTree">
         SELECT env.id         as           env_id,
                env.name       as           env_name,
-               app.id         as           app_id,
+               app.id         as           app_service_id,
                app.name       as           app_name,
                ins.id         as           ins_id,
                ins.code       as           ins_code,
@@ -79,8 +107,8 @@
                   AND env.id = ins.env_id) pod_running_count
         FROM devops_env env
                  LEFT JOIN devops_env_application env_app ON env.id = env_app.env_id
-                 LEFT JOIN devops_application app ON env_app.app_id = app.id
-                 LEFT JOIN devops_app_instance ins ON app.id = ins.app_id
+                 LEFT JOIN devops_application_service app ON env_app.app_service_id = app.id
+                 LEFT JOIN devops_app_instance ins ON app.id = ins.app_service_id
                                                           AND env.id = ins.env_id
         WHERE env.project_id = #{projectId}
           AND env.is_active = TRUE
@@ -98,9 +126,100 @@
                env.devops_sync_commit,
                env.agent_sync_commit,
                env.cluster_id,
-               cluster.name as cluster_name
+               cluster.name as cluster_name,
+               env.is_skip_check_permission,
+               env.object_version_number
         FROM devops_env env
         LEFT JOIN devops_cluster cluster ON env.cluster_id = cluster.id
         WHERE env.id = #{envId};
+    </select>
+
+
+    <select id="listByIds" resultType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
+        SELECT
+        *
+        FROM devops_env
+        where id IN
+        <foreach collection="envIds" item="envId" open="(" close=")" separator=",">
+            #{envId}
+        </foreach>
+    </select>
+
+    <select id="queryEnvResourceCount" resultType="io.choerodon.devops.api.vo.DevopsEnvResourceCountVO">
+        SELECT env.id as env_id,
+               (SELECT COUNT(1) FROM devops_app_instance ins WHERE ins.env_id = env.id) AS instance_count,
+               (SELECT COUNT(1) FROM devops_service service WHERE service.env_id = env.id) AS service_count,
+               (SELECT COUNT(1) FROM devops_ingress ingress WHERE ingress.env_id = env.id) AS ingress_count,
+               (SELECT COUNT(1) FROM devops_certification certification WHERE certification.env_id = env.id) AS certification_count,
+               (SELECT COUNT(1) FROM devops_config_map cm WHERE cm.env_id = env.id) AS config_map_count,
+               (SELECT COUNT(1) FROM devops_secret secret WHERE secret.env_id = env.id) AS secret_count,
+               (SELECT COUNT(1) FROM devops_app_instance ins WHERE ins.env_id = env.id AND status = 'running') AS running_instance_count,
+               (SELECT COUNT(1) FROM devops_app_instance ins WHERE ins.env_id = env.id AND status = 'stopped') AS stopped_instance_count,
+               (SELECT COUNT(1) FROM devops_app_instance ins WHERE ins.env_id = env.id AND status = 'operating') AS operating_instance_count,
+               (SELECT COUNT(1) FROM devops_app_instance ins WHERE ins.env_id = env.id AND status = 'failed') AS failed_instance_count
+        FROM devops_env env
+        WHERE env.id = #{envId};
+    </select>
+
+    <select id="listResourceEnvTree" resultMap="resourceEnvTree">
+        SELECT env.id         as           env_id,
+               env.name       as           env_name,
+               ins.id         as           ins_id,
+               ins.code       as           ins_code,
+               env.cluster_id as           cluster_id,
+               env.is_synchro as           synchronize,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.app_instance_id = ins.id
+                  AND dp.namespace = env.code
+                  AND env.id = ins.env_id) pod_count,
+               (SELECT count(1)
+                FROM devops_env_pod dp
+                WHERE dp.app_instance_id = ins.id
+                  AND dp.`status` = 'Running'
+                  AND dp.is_ready = TRUE
+                  AND dp.namespace = env.code
+                  AND env.id = ins.env_id) pod_running_count
+        FROM devops_env env
+                 LEFT JOIN devops_app_instance ins ON env.id = ins.env_id
+        WHERE env.project_id = #{projectId}
+          AND env.is_active = TRUE
+          AND env.is_failed = FALSE;
+    </select>
+
+    <select id="listServices" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
+        SELECT t.id, t.`name`
+        FROM devops_service t
+        WHERE t.env_id = #{envId};
+    </select>
+
+    <select id="listIngresses" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
+        SELECT t.id, t.`name`
+        FROM devops_ingress t
+        WHERE t.env_id = #{envId};
+    </select>
+
+    <select id="listSecrets" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
+        SELECT t.id, t.`name`
+        FROM devops_secret t
+        WHERE t.env_id = #{envId};
+    </select>
+
+    <select id="listConfigMaps" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
+        SELECT t.id, t.`name`
+        FROM devops_config_map t
+        WHERE t.env_id = #{envId};
+    </select>
+
+    <select id="listCustomizeResources" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
+        SELECT t.id, t.`name`
+        FROM devops_customize_resource t
+        WHERE t.env_id = #{envId};
+    </select>
+
+    <select id="listCertifications" resultType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO">
+        SELECT t.id, t.`name`
+        FROM devops_certification t
+        WHERE t.env_id = #{envId};
     </select>
 </mapper>
