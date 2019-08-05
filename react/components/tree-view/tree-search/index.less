@@ -1,9 +1,11 @@
-.c7n-deployment-sidebar-search {
+@import '~choerodon-ui/lib/style/themes/default';
+
+.c7ncd-menu-search {
   padding: 10px;
   height: 46px;
   text-align: center;
 
-  .c7n-deployment-sidebar-search-input {
+  .c7ncd-menu-search-input {
     width: 100%;
 
     .icon {
@@ -11,14 +13,20 @@
       color: rgba(0, 0, 0, 0.65);
     }
 
-    .c7n-pro-input-focused {
+    &.@{c7n-pro-prefix}-input-focused {
       .icon {
         color: #000;
       }
     }
 
-    .c7n-pro-input {
+    .@{c7n-pro-prefix}-input {
+      border: none;
       border-radius: 5px;
+      background: rgba(0, 0, 0, .06);
+    }
+
+    .@{c7n-pro-prefix}-input-clear-button {
+      background: linear-gradient(to right, rgba(0, 0, 0, 0), transparent 20%, transparent);
     }
   }
 }

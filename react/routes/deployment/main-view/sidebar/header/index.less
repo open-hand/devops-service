@@ -1,12 +1,13 @@
-.c7n-deployment-sidebar-head {
-  height: 43px;
-  border-bottom: 1px solid #d3d3d3;
+@import '~choerodon-ui/lib/style/themes/default';
 
-  .c7n-deployment-sidebar-drop {
+.c7ncd-deployment-sidebar-head {
+  height: 43px;
+
+  .c7ncd-deployment-sidebar-drop {
     padding: 6px 0;
     width: 100%;
 
-    .c7n-pro-select {
+    .@{c7n-pro-prefix}-select {
       display: block;
       border: none;
       cursor: pointer;
@@ -15,7 +16,7 @@
       white-space: nowrap;
     }
 
-    .c7n-pro-select-trigger {
+    .@{c7n-pro-prefix}-select-trigger {
       font-size: 20px;
     }
   }

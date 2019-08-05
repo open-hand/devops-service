@@ -53,7 +53,7 @@ function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
           <Route path={`${match.url}/ci-pipeline`} component={CiPipelineManageIndex} />
           <Route path={`${match.url}/template`} component={Template} />
           <Route path={`${match.url}/cluster`} component={Cluster} />
-          <Route path={`${match.url}/app-version`} component={AppVersion} />
+          <Route path={`${match.url}/app-version`} component={Deployment} />
           <Route path={`${match.url}/app`} component={App} />
           <Route path={`${match.url}/app-market`} component={AppStore} />
           <Route path={`${match.url}/instance`} component={InstancesIndex} />
