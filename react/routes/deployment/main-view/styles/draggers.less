@@ -1,3 +1,5 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
 .@{c7ncd-deployment}-draggers {
   &-animate {
     transition: width 0.05s ease-out, height 0.05s ease-out, background 0.05s ease-out, opacity 0.05s ease-out, transform 0.05s ease-out;
@@ -22,21 +24,19 @@
     align-items: center;
     overflow: hidden;
     transition: color 0.2s linear, background-position 0.2s linear, background-size 0.2s linear, background 0.2s linear;
-    background-image: radial-gradient(at center center, rgba(0, 0, 0, 0.2) 0%, transparent 70%, transparent 100%);
-    background-repeat: no-repeat;
     cursor: col-resize;
     height: 100%;
     width: 10px;
     margin-left: 0;
-    background-size: 50px 100%;
-    background-position: 10px 50%;
 
     &:hover {
-      background-position: 0 50%;
+      border-right: 0.02rem solid @primary-color;
+      opacity: .68;
     }
   }
 
   &-handle-dragged {
-    background-position: 0 50%;
+    border-right: 0.02rem solid @primary-color;
+    opacity: .68;
   }
 }

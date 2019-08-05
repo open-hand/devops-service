@@ -132,6 +132,7 @@ const commonField = {
   cover: '覆盖',
   notCovered: '不覆盖',
   container: '容器',
+  'search.placeholder': '请输入搜索条件',
 };
 
 const deployment = {

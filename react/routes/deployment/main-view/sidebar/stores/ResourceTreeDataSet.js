@@ -7,33 +7,36 @@ const RES_TYPES = ['services', 'ingresses', 'certifications', 'configMaps', 'sec
 const ENV_KEYS = ['id', 'name', 'connect', 'synchronize'];
 const ENV_ITEM = 'environment';
 
-const formatData = (value) => {
+const formatData = (value, store) => {
   if (isEmpty(value)) return [];
+  const expandsKeys = store.getExpandedKeys;
 
   const flatted = [];
   for (let i = 0; i < value.length; i++) {
     const node = value[i];
     const envInfo = pick(node, ENV_KEYS);
     const envId = envInfo.id;
+    const envKey = String(envId);
 
     flatted.push({
       ...envInfo,
-      key: String(envId),
+      key: envKey,
       itemType: ENV_ITEM,
-      expand: false,
+      expand: expandsKeys.includes(envKey),
       parentId: '0',
     });
 
     for (let j = 0; j < RES_TYPES.length; j++) {
       const childType = RES_TYPES[j];
       const child = node[childType];
+      const groupKey = `${envId}-${childType}`;
       const group = {
         id: j,
         name: childType,
-        key: `${envId}-${childType}`,
+        key: groupKey,
         itemType: 'group',
         parentId: String(envId),
-        expand: false,
+        expand: expandsKeys.includes(groupKey),
       };
 
       const items = map(child, item => ({
@@ -42,6 +45,7 @@ const formatData = (value) => {
         key: `${envId}-${item.id}`,
         itemType: childType,
         parentId: `${envId}-${childType}`,
+        expand: false,
       }));
       flatted.push(group, ...items);
     }
@@ -50,7 +54,7 @@ const formatData = (value) => {
   return flatted;
 };
 
-export default (projectId, store) => ({
+export default (projectId, store, sidebarStore) => ({
   autoQuery: true,
   paging: false,
   selection: 'single',
@@ -87,7 +91,7 @@ export default (projectId, store) => ({
       method: 'get',
       transformResponse(response) {
         const res = JSON.parse(response);
-        const result = formatData(res);
+        const result = formatData(res, sidebarStore);
 
         if (result.length) {
           const { id, itemType, parentId } = result[0];
