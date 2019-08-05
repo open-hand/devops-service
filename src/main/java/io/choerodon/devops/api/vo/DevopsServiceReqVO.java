@@ -29,7 +29,7 @@ public class DevopsServiceReqVO {
     private Map<String, List<EndPointPortVO>> endPoints;
 
     @ApiModelProperty("实例code")
-    private List<String> appInstance;
+    private List<String> instances;
 
     private Map<String, String> label;
 
@@ -65,12 +65,12 @@ public class DevopsServiceReqVO {
         this.externalIp = externalIp;
     }
 
-    public List<String> getAppInstance() {
-        return appInstance;
+    public List<String> getInstances() {
+        return instances;
     }
 
-    public void setAppInstance(List<String> appInstance) {
-        this.appInstance = appInstance;
+    public void setInstances(List<String> instances) {
+        this.instances = instances;
     }
 
     public List<PortMapVO> getPorts() {

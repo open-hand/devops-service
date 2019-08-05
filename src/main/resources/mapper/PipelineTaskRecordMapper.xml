@@ -8,11 +8,11 @@
         dptr.`name`,
         dptr.is_countersigned,
         dptr.task_type,
-        da.`name` AS appName,
+        da.`name` AS appServiceName,
         de.`name` AS envName,
         dav.version,
-        dptr.application_id,
-        dptr.app_deploy_id,
+        dptr.app_service_id,
+        dptr.app_service_deploy_id,
         dptr.env_id,
         dptr.instance_id,
         dptr.status,
@@ -38,10 +38,10 @@
         ) instanceStatus
         FROM
         devops_pipeline_task_record dptr
-        LEFT JOIN devops_application_service da ON da.id = dptr.application_id
+        LEFT JOIN devops_app_service da ON da.id = dptr.app_service_id
         LEFT JOIN devops_env de ON de.id = dptr.env_id
-        LEFT JOIN devops_app_version dav ON dav.id = dptr.version_id
-        LEFT JOIN devops_app_instance dai ON dai.id = dptr.instance_id
+        LEFT JOIN devops_app_service_version dav ON dav.id = dptr.version_id
+        LEFT JOIN devops_app_service_istance dai ON dai.id = dptr.instance_id
         WHERE dptr.stage_record_id = #{stageRecordId}
         <if test="taskId != null">
             AND dptr.task_id = #{taskId}
@@ -54,8 +54,8 @@
             dptr.`name`,
             dptr.is_countersigned,
             dptr.task_type,
-            dptr.application_id,
-            dptr.app_deploy_id,
+            dptr.app_service_id,
+            dptr.app_service_deploy_id,
             dptr.env_id,
             dptr.instance_id,
             dptr. STATUS,

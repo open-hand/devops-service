@@ -12,8 +12,8 @@ import io.choerodon.devops.api.vo.kubernetes.Payload;
 import io.choerodon.devops.app.eventhandler.payload.OperationPodPayload;
 import io.choerodon.devops.app.eventhandler.payload.SecretPayLoad;
 import io.choerodon.devops.app.service.AgentCommandService;
-import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
-import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
@@ -82,7 +82,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
 
 
     @Override
-    public void deploy(ApplicationServiceDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values, Long commandId, String secretCode) {
+    public void deploy(AppServiceDTO applicationDTO, AppServiceVersionDTO appServiceVersionDTO, String releaseName, DevopsEnvironmentDTO devopsEnvironmentDTO, String values, Long commandId, String secretCode) {
         Msg msg = new Msg();
         List<ImagePullSecret> imagePullSecrets = null;
         if (secretCode != null) {
@@ -90,9 +90,9 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         }
         Payload payload = new Payload(
                 devopsEnvironmentDTO.getCode(),
-                applicationVersionDTO.getRepository(),
+                appServiceVersionDTO.getRepository(),
                 applicationDTO.getCode(),
-                applicationVersionDTO.getVersion(),
+                appServiceVersionDTO.getVersion(),
                 values, releaseName, imagePullSecrets);
 
         msg.setKey(String.format("cluster:%d.env:%s.envId:%d.release:%s",
@@ -244,14 +244,14 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void deployTestApp(ApplicationServiceDTO applicationDTO, ApplicationVersionDTO applicationVersionDTO, String releaseName, String secretName, Long clusterId, String values) {
+    public void deployTestApp(AppServiceDTO applicationDTO, AppServiceVersionDTO appServiceVersionDTO, String releaseName, String secretName, Long clusterId, String values) {
         Msg msg = new Msg();
         List<ImagePullSecret> imagePullSecrets = Arrays.asList(new ImagePullSecret(secretName));
         Payload payload = new Payload(
                 null,
-                applicationVersionDTO.getRepository(),
+                appServiceVersionDTO.getRepository(),
                 applicationDTO.getCode(),
-                applicationVersionDTO.getVersion(),
+                appServiceVersionDTO.getVersion(),
                 values, releaseName, imagePullSecrets);
         msg.setKey(String.format(KEY_FORMAT, clusterId, releaseName));
         msg.setType(HelmType.EXECUTE_TEST.toValue());

@@ -32,7 +32,7 @@ import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.DevopsApplicationResourceMapper;
+import io.choerodon.devops.infra.mapper.DevopsAppServiceResourceMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
@@ -94,7 +94,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Autowired
     private DevopsIngressPathMapper devopsIngressPathMapper;
     @Autowired
-    private DevopsApplicationResourceMapper devopsAppResourceMapper;
+    private DevopsAppServiceResourceMapper devopsAppResourceMapper;
     @Autowired
     private TransactionalProducer producer;
     @Autowired

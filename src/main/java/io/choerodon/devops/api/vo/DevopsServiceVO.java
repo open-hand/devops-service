@@ -16,8 +16,8 @@ public class DevopsServiceVO extends DevopsResourceDataInfoVO {
     private String type;
     private Boolean envStatus;
     private Long appServiceId;
-    private Long appProjectId;
-    private String appName;
+    private Long appServiceProjectId;
+    private String appServiceName;
     private String dns;
     /**
      * 网络本身的标签
@@ -71,12 +71,12 @@ public class DevopsServiceVO extends DevopsResourceDataInfoVO {
         this.appServiceId = appServiceId;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
     public String getStatus() {
@@ -95,12 +95,12 @@ public class DevopsServiceVO extends DevopsResourceDataInfoVO {
         this.envStatus = envStatus;
     }
 
-    public Long getAppProjectId() {
-        return appProjectId;
+    public Long getAppServiceProjectId() {
+        return appServiceProjectId;
     }
 
-    public void setAppProjectId(Long appProjectId) {
-        this.appProjectId = appProjectId;
+    public void setAppServiceProjectId(Long appServiceProjectId) {
+        this.appServiceProjectId = appServiceProjectId;
     }
 
     public DevopsServiceTargetVO getTarget() {

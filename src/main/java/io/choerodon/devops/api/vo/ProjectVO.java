@@ -1,18 +1,15 @@
 package io.choerodon.devops.api.vo;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 /**
  * Created by Zenger on 2018/3/28.
  */
-@Component
-@Scope("prototype")
 public class ProjectVO {
     private Long id;
     private String name;
     private Long organizationId;
     private String code;
+    private DevopsProjectVO devopsProjectVO;
+
 
     public ProjectVO() {
     }
@@ -52,5 +49,14 @@ public class ProjectVO {
     public void setCode(String code) {
         this.code = code;
     }
+    
+    public DevopsProjectVO getDevopsProjectVO() {
+        return devopsProjectVO;
+    }
+
+    public void setDevopsProjectVO(DevopsProjectVO devopsProjectVO) {
+        this.devopsProjectVO = devopsProjectVO;
+    }
+
 
 }

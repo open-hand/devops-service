@@ -18,7 +18,7 @@
         *
         FROM devops_env_resource dir where 1=1
         <if test="instanceId != null">
-            AND dir.app_instance_id = #{instanceId}
+            AND dir.instance_id = #{instanceId}
         </if>
         <if test="commandId != null">
             AND dir.command_id = #{commandId}
@@ -37,8 +37,8 @@
 
     <select id="listByEnvAndType" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
         SELECT * from devops_env_resource der
-        LEFT JOIN devops_app_instance dai
-        on der.app_instance_id = dai.id where dai.env_id = #{envId}
+        LEFT JOIN devops_app_service_instance dai
+        on der.instance_id = dai.id where dai.env_id = #{envId}
         AND der.kind = #{type}
     </select>
 

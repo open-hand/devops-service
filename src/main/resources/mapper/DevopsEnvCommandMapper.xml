@@ -50,7 +50,7 @@
 	dc.creation_date
 FROM
 	devops_env_command dc
-	LEFT JOIN devops_app_instance dai ON dc.object_id = dai.id
+	LEFT JOIN devops_app_service_instance dai ON dc.object_id = dai.id
 	LEFT JOIN devops_env de ON de.id = dai.env_id
 WHERE
 	dc.object = 'instance'

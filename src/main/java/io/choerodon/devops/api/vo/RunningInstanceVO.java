@@ -7,7 +7,7 @@ public class RunningInstanceVO {
 
     private String id;
     private String code;
-    private String appVersion;
+    private String appServiceVersion;
     private Integer isEnabled;
 
     public String getId() {
@@ -26,12 +26,12 @@ public class RunningInstanceVO {
         this.code = code;
     }
 
-    public String getAppVersion() {
-        return appVersion;
+    public String getAppServiceVersion() {
+        return appServiceVersion;
     }
 
-    public void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
+    public void setAppServiceVersion(String appServiceVersion) {
+        this.appServiceVersion = appServiceVersion;
     }
 
     public Integer getIsEnabled() {

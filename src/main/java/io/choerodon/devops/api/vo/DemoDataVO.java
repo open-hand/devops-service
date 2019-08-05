@@ -1,33 +1,33 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.ApplicationVersionDTO;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 
 /**
  * @author zmf
  */
 public class DemoDataVO {
-    private ApplicationServiceReqVO applicationInfo;
-    private ApplicationReleasingVO applicationRelease;
+    private AppServiceReqVO applicationInfo;
+    private AppServiceReleasingVO applicationRelease;
     private String templateSearchParam;
     private String appVersionSearchParam;
     private DemoTagVO tagInfo;
     private DevopsBranchDTO branchInfo;
-    private ApplicationVersionDTO appVersion;
+    private AppServiceVersionDTO appVersion;
 
-    public ApplicationServiceReqVO getApplicationInfo() {
+    public AppServiceReqVO getApplicationInfo() {
         return applicationInfo;
     }
 
-    public void setApplicationInfo(ApplicationServiceReqVO applicationInfo) {
+    public void setApplicationInfo(AppServiceReqVO applicationInfo) {
         this.applicationInfo = applicationInfo;
     }
 
-    public ApplicationReleasingVO getApplicationRelease() {
+    public AppServiceReleasingVO getApplicationRelease() {
         return applicationRelease;
     }
 
-    public void setApplicationRelease(ApplicationReleasingVO applicationRelease) {
+    public void setApplicationRelease(AppServiceReleasingVO applicationRelease) {
         this.applicationRelease = applicationRelease;
     }
 
@@ -63,11 +63,11 @@ public class DemoDataVO {
         this.branchInfo = branchInfo;
     }
 
-    public ApplicationVersionDTO getAppVersion() {
+    public AppServiceVersionDTO getAppVersion() {
         return appVersion;
     }
 
-    public void setAppVersion(ApplicationVersionDTO appVersion) {
+    public void setAppVersion(AppServiceVersionDTO appVersion) {
         this.appVersion = appVersion;
     }
 }

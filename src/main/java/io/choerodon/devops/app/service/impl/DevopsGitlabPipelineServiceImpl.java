@@ -47,7 +47,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     private String gitlabUrl;
 
     @Autowired
-    private ApplicationSevriceService applicationService;
+    private AppSevriceService applicationService;
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
@@ -57,7 +57,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
-    private ApplicationVersionService applicationVersionService;
+    private AppServiceVersionService appServiceVersionService;
     @Autowired
     private DevopsGitlabPipelineMapper devopsGitlabPipelineMapper;
     @Autowired
@@ -67,7 +67,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Saga(code = DEVOPS_GITLAB_PIPELINE, description = "gitlab pipeline创建到数据库", inputSchemaClass = PipelineWebHookVO.class)
     public void create(PipelineWebHookVO pipelineWebHookVO, String token) {
         pipelineWebHookVO.setToken(token);
-        ApplicationServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
+        AppServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
         try {
             String input = objectMapper.writeValueAsString(pipelineWebHookVO);
             transactionalProducer.apply(
@@ -85,7 +85,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
     @Override
     public void handleCreate(PipelineWebHookVO pipelineWebHookVO) {
-        ApplicationServiceDTO applicationDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
+        AppServiceDTO applicationDTO = applicationService.baseQueryByToken(pipelineWebHookVO.getToken());
         DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = baseQueryByGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
         if ("admin1".equals(pipelineWebHookVO.getUser().getUsername()) || "root".equals(pipelineWebHookVO.getUser().getUsername())) {
             pipelineWebHookVO.getUser().setUsername("admin");
@@ -206,7 +206,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         devopsGitlabPipelineDOS.forEach(devopsGitlabPipelineDO -> {
             refs.add(devopsGitlabPipelineDO.getRef() + "-" + devopsGitlabPipelineDO.getSha());
             createDates.add(devopsGitlabPipelineDO.getPipelineCreationDate());
-            ApplicationVersionDTO applicationVersionE = applicationVersionService.baseQueryByCommitSha(appId, devopsGitlabPipelineDO.getRef(), devopsGitlabPipelineDO.getSha());
+            AppServiceVersionDTO applicationVersionE = appServiceVersionService.baseQueryByCommitSha(appId, devopsGitlabPipelineDO.getRef(), devopsGitlabPipelineDO.getSha());
             if (applicationVersionE != null) {
                 versions.add(applicationVersionE.getVersion());
             } else {
@@ -306,7 +306,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             refWithPipelineIds.put(key, pipeLineId);
         });
 
-        ApplicationServiceDTO applicationDTO = applicationService.baseQuery(appId);
+        AppServiceDTO applicationDTO = applicationService.baseQuery(appId);
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
@@ -347,7 +347,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             }
 
             devopsGitlabPipelineDTO.setRef(devopsGitlabPipelineDO.getRef());
-            String version = applicationVersionService.baseQueryByPipelineId(devopsGitlabPipelineDO.getPipelineId(), devopsGitlabPipelineDO.getRef(), appId);
+            String version = appServiceVersionService.baseQueryByPipelineId(devopsGitlabPipelineDO.getPipelineId(), devopsGitlabPipelineDO.getRef(), appId);
             if (version != null) {
                 devopsGitlabPipelineDTO.setVersion(version);
             }

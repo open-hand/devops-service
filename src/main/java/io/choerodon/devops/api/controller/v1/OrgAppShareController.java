@@ -6,7 +6,7 @@ import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.ApplicationShareRuleService;
+import io.choerodon.devops.app.service.AppServiceShareRuleService;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -21,10 +21,10 @@ import org.springframework.web.bind.annotation.*;
  * Description:
  */
 @RestController
-@RequestMapping(value = "/v1/organizations/apps_share")
+@RequestMapping(value = "/v1/organizations/app_service_share")
 public class OrgAppShareController {
     @Autowired
-    private ApplicationShareRuleService applicationShareService;
+    private AppServiceShareRuleService appServiceShareRuleService;
 
     /**
      * 根据版本Id获取values和chart
@@ -35,11 +35,11 @@ public class OrgAppShareController {
     @Permission(type = ResourceType.SITE)
     @ApiOperation(value = "根据版本Id获取values和chart")
     @GetMapping(value = "/values")
-    public ResponseEntity<AppVersionAndValueVO> getValuesAndChart(
+    public ResponseEntity<AppServiceVersionAndValueVO> getValuesAndChart(
             @ApiParam(value = "应用Id")
             @RequestParam(value = "version_id") Long versionId) {
         return Optional.ofNullable(
-                applicationShareService.getValuesAndChart(versionId))
+                appServiceShareRuleService.getValuesAndChart(versionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.values.chart"));
     }
@@ -51,7 +51,7 @@ public class OrgAppShareController {
             @ApiParam(value = "token")
             @RequestBody AccessTokenVO tokenDTO) {
         return Optional.ofNullable(
-                applicationShareService.checkToken(tokenDTO))
+                appServiceShareRuleService.checkToken(tokenDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.check.access.token"));
     }
@@ -62,7 +62,7 @@ public class OrgAppShareController {
     public ResponseEntity saveToken(
             @ApiParam(value = "token")
             @RequestBody AccessTokenVO tokenDTO) {
-        applicationShareService.saveToken(tokenDTO);
+        appServiceShareRuleService.saveToken(tokenDTO);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

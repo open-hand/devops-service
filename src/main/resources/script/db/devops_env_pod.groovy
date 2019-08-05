@@ -41,4 +41,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_pod.groovy') {
             column(name: 'restart_count', type: 'BIGINT UNSIGNED', remarks: 'Pod的重启次数，由Pod中的容器重启次数累加', afterColumn: 'status')
         }
     }
+
+    changeSet(author: 'sheep', id: '2019-08-05-rename-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'instance_id', oldColumnName: 'app_instance_id', tableName: 'devops_env_pod')
+    }
 }

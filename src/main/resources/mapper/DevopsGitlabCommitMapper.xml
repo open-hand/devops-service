@@ -15,16 +15,16 @@
         da.`name` appName
         FROM
         devops_gitlab_commit dgc
-        JOIN devops_application_service da ON dgc.app_service_id = da.id
+        JOIN devops_app_service da ON dgc.app_service_id = da.id
         WHERE
         da.project_id = #{projectId}
-        <if test="appIds != null">
+        <if test="appServiceIds != null">
            AND dgc.app_service_id IN
             <foreach collection="appIds" item="appServiceId" open="(" close=")" separator=",">
                 #{appServiceId}
             </foreach>
         </if>
-        <if test="appIds == null">
+        <if test="appServiceIds == null">
             1
         </if>
         <if test="startDate != null">

@@ -37,7 +37,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
-    private ApplicationInstanceService applicationInstanceService;
+    private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
@@ -214,13 +214,13 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                     .get("choerodon.io/network-service-instances");
             if (instancesCode != null) {
                 List<String> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel().map(t -> {
-                    ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.baseQueryByCodeAndEnv(t, envId);
-                    if (applicationInstanceDTO != null) {
-                        devopsServiceReqVO.setAppServiceId(applicationInstanceDTO.getAppServiceId());
+                    AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(t, envId);
+                    if (appServiceInstanceDTO != null) {
+                        devopsServiceReqVO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
                     }
                     return t;
                 }).collect(Collectors.toList());
-                devopsServiceReqVO.setAppInstance(instanceIdList);
+                devopsServiceReqVO.setInstances(instanceIdList);
             }
         }
         if (v1Service.getSpec().getSelector() != null) {
@@ -242,12 +242,12 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     private Boolean checkIsNotChange(DevopsServiceDTO devopsServiceDTO, DevopsServiceReqVO devopsServiceReqVO) {
         List<PortMapVO> oldPort = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {}.getType());
         //查询网络对应的实例
-        List<DevopsServiceAppInstanceDTO> devopsServiceAppInstanceDTOS =
+        List<DevopsServiceInstanceDTO> devopsServiceInstanceDTOS =
                 devopsServiceInstanceService.baseListByServiceId(devopsServiceDTO.getId());
         Boolean isUpdate = false;
-        if (devopsServiceReqVO.getAppServiceId() != null && devopsServiceDTO.getAppServiceId() != null && devopsServiceReqVO.getAppInstance() != null) {
-            List<String> newInstanceCode = devopsServiceReqVO.getAppInstance();
-            List<String> oldInstanceCode = devopsServiceAppInstanceDTOS.stream().map(DevopsServiceAppInstanceDTO::getCode).collect(Collectors.toList());
+        if (devopsServiceReqVO.getAppServiceId() != null && devopsServiceDTO.getAppServiceId() != null && devopsServiceReqVO.getInstances() != null) {
+            List<String> newInstanceCode = devopsServiceReqVO.getInstances();
+            List<String> oldInstanceCode = devopsServiceInstanceDTOS.stream().map(DevopsServiceInstanceDTO::getCode).collect(Collectors.toList());
             for (String instanceCode : newInstanceCode) {
                 if (!oldInstanceCode.contains(instanceCode)) {
                     isUpdate = true;

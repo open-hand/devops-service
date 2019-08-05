@@ -2,18 +2,18 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.dto.DevopsServiceAppInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsServiceInstanceDTO;
 
 /**
  * Created by Sheep on 2019/7/15.
  */
 public interface DevopsServiceInstanceService {
 
-    void baseCreate(DevopsServiceAppInstanceDTO devopsServiceAppInstanceDTO);
+    void baseCreate(DevopsServiceInstanceDTO devopsServiceInstanceDTO);
 
-    DevopsServiceAppInstanceDTO baseQueryByOptions(Long serviceId, Long instanceId);
+    DevopsServiceInstanceDTO baseQueryByOptions(Long serviceId, Long instanceId);
 
-    List<DevopsServiceAppInstanceDTO> baseListByServiceId(Long serviceId);
+    List<DevopsServiceInstanceDTO> baseListByServiceId(Long serviceId);
 
     void baseDeleteByOptions(Long serviceId, String instanceCode);
 
@@ -21,7 +21,7 @@ public interface DevopsServiceInstanceService {
 
     void baseDeleteById(Long id);
 
-    List<DevopsServiceAppInstanceDTO> baseListByInstanceId(Long instanceId);
+    List<DevopsServiceInstanceDTO> baseListByInstanceId(Long instanceId);
 
-    List<DevopsServiceAppInstanceDTO> baseListByEnvIdAndInstanceCode(Long envId, String instanceCode);
+    List<DevopsServiceInstanceDTO> baseListByEnvIdAndInstanceCode(Long envId, String instanceCode);
 }

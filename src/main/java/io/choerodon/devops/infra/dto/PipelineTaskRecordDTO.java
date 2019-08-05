@@ -18,12 +18,12 @@ public class PipelineTaskRecordDTO extends BaseDTO {
     private String taskType;
     private String status;
     private String triggerVersion;
-    private Long applicationId;
+    private Long appServiceId;
     private Long envId;
     private Long instanceId;
     private Long versionId;
     private Long projectId;
-    private Long appDeployId;
+    private Long appServiceDeployId;
     private Integer isCountersigned;
     private String value;
     private Long taskId;
@@ -35,7 +35,7 @@ public class PipelineTaskRecordDTO extends BaseDTO {
     @Transient
     private String envName;
     @Transient
-    private String appName;
+    private String appServiceName;
     @Transient
     private String version;
     @Transient
@@ -79,14 +79,6 @@ public class PipelineTaskRecordDTO extends BaseDTO {
 
     public void setEnvName(String envName) {
         this.envName = envName;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
     }
 
     public String getVersion() {
@@ -153,14 +145,6 @@ public class PipelineTaskRecordDTO extends BaseDTO {
         this.triggerVersion = triggerVersion;
     }
 
-    public Long getApplicationId() {
-        return applicationId;
-    }
-
-    public void setApplicationId(Long applicationId) {
-        this.applicationId = applicationId;
-    }
-
     public Long getEnvId() {
         return envId;
     }
@@ -193,12 +177,28 @@ public class PipelineTaskRecordDTO extends BaseDTO {
         this.projectId = projectId;
     }
 
-    public Long getAppDeployId() {
-        return appDeployId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setAppDeployId(Long appDeployId) {
-        this.appDeployId = appDeployId;
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
+
+    public Long getAppServiceDeployId() {
+        return appServiceDeployId;
+    }
+
+    public void setAppServiceDeployId(Long appServiceDeployId) {
+        this.appServiceDeployId = appServiceDeployId;
+    }
+
+    public String getAppServiceName() {
+        return appServiceName;
+    }
+
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
     public Integer getIsCountersigned() {

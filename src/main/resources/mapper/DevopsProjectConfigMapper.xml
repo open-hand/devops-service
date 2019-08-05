@@ -87,7 +87,7 @@
             SELECT
                 da.id
             FROM
-                devops_application_service da
+                devops_app_service da
             WHERE
                 da.chart_config_id = #{configId}
             OR da.harbor_config_id = #{configId}

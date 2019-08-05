@@ -7,7 +7,7 @@
         count(1)
         FROM
         devops_service ds,
-        devops_application_service da
+        devops_app_service da
         WHERE
         ds.app_service_id = da.id
         AND ds.`name` = #{name}
@@ -41,9 +41,9 @@
         <if test="appServiceId != null">
             LEFT JOIN devops_app_resource das ON ds.id = das.resource_id
         </if>
-        LEFT JOIN devops_application_service da ON da.id = ds.app_service_id
+        LEFT JOIN devops_app_service da ON da.id = ds.app_service_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
-        LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
+        LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
         WHERE
         1=1
         <if test="instanceId != null">
@@ -83,15 +83,15 @@
         ds.labels,
         ds.end_points,
         da.id AS app_service_id,
-        da.`name` AS app_name,
+        da.`name` AS app_service_name,
         de.id AS env_id,
         de.`name` AS env_name,
         de.`code` AS namespace,
         cmd.`status` commandStatus,
         cmd.command_type commandType,
         cmd.error error,
-        da.project_id AS appProjectId,
-        dsai.app_instance_id AS app_instance_id,
+        da.project_id AS appServiceProjectId,
+        dsai.instance_id AS instance_id,
         dsai.code AS code,
         dai.`status` AS instance_status
         FROM
@@ -116,9 +116,9 @@
             LEFT JOIN devops_app_resource das ON ds.id = das.resource_id
         </if>
         LEFT JOIN devops_env_command cmd ON ds.command_id = cmd.id
-        LEFT JOIN devops_application_service da ON da.id = ds.app_service_id
+        LEFT JOIN devops_app_service da ON da.id = ds.app_service_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
-        LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
+        LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
         WHERE 1
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
@@ -136,16 +136,16 @@
         ds.`name`,
         ds.external_ip,
         ds.labels,
-        da.project_id appProjectId,
+        da.project_id appServiceProjectId,
         ds. ports,
         ds.end_points,
         ds.`status`,
         ds.`type`,
         da.id AS app_service_id,
-        da.`name` AS app_name,
+        da.`name` AS app_service_name,
         de.id AS env_id,
         de.`name` AS env_name,
-        dsai.app_instance_id AS app_instance_id,
+        dsai.instance_id AS instance_id,
         dai.`status` AS instance_status,
         ds.last_update_date,
         ds.creation_date,
@@ -174,8 +174,8 @@
         devops_service ds
         INNER JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
-        LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
-        LEFT JOIN devops_application_service da ON da.id = dai.app_service_id
+        LEFT JOIN devops_app_service_instance dai ON dai.id = dsai.instance_id
+        LEFT JOIN devops_app_service da ON da.id = dai.app_service_id
         WHERE
         ds.id = #{id}
         AND ds.`status` != 'deleted'
@@ -197,8 +197,8 @@
         <result property="ports" column="ports"/>
         <result property="status" column="status"/>
         <result property="appServiceId" column="app_service_id"/>
-        <result property="appName" column="app_name"/>
-        <result property="appProjectId" column="appProjectId"/>
+        <result property="appServiceName" column="app_service_name"/>
+        <result property="appServiceProjectId" column="appServiceProjectId"/>
         <result property="loadBalanceIp" column="load_balance_ip"/>
         <result property="type" column="type"/>
         <result property="envId" column="env_id"/>
@@ -213,7 +213,7 @@
         <result property="createdBy" column="created_by"/>
         <result property="creationDate" column="creation_date"/>
         <collection property="appInstance" ofType="io.choerodon.devops.infra.dto.AppInstanceInfoDTO">
-            <result column="app_instance_id" property="id" jdbcType="VARCHAR"/>
+            <result column="instance_id" property="id" jdbcType="VARCHAR"/>
             <result column="ins_code" property="code" jdbcType="VARCHAR"/>
             <result column="ins_status" property="status" jdbcType="VARCHAR"/>
             <result column="ins_object_version_number" property="objectVersionNumber" jdbcType="VARCHAR"/>
@@ -231,10 +231,10 @@
                     ds.`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
-            <if test='searchParam.appName != null and searchParam.appName.size > 0'>
+            <if test='searchParam.appServiceName != null and searchParam.appServiceName.size > 0'>
                 AND
-                <foreach collection="searchParam.appName" item="appName" open="(" separator=" OR " close=")">
-                    da.`name` LIKE CONCAT(CONCAT('%', #{appName, jdbcType=VARCHAR}),'%')
+                <foreach collection="searchParam.appServiceName" item="appServiceName" open="(" separator=" OR " close=")">
+                    da.`name` LIKE CONCAT(CONCAT('%', #{appServiceName, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.envName != null and searchParam.envName.size > 0'>

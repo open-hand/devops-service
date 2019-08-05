@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsApplicationResourceService;
 import io.choerodon.devops.infra.dto.DevopsApplicationResourceDTO;
-import io.choerodon.devops.infra.mapper.DevopsApplicationResourceMapper;
+import io.choerodon.devops.infra.mapper.DevopsAppServiceResourceMapper;
 
 /**
  * @author zmf
@@ -16,7 +16,7 @@ import io.choerodon.devops.infra.mapper.DevopsApplicationResourceMapper;
 @Service
 public class DevopsApplicationResourceServiceImpl implements DevopsApplicationResourceService {
     @Autowired
-    private DevopsApplicationResourceMapper resourceMapper;
+    private DevopsAppServiceResourceMapper resourceMapper;
 
     @Override
     public void baseCreate(DevopsApplicationResourceDTO devopsApplicationResourceDTO) {

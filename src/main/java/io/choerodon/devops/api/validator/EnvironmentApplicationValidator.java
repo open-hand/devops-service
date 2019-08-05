@@ -3,7 +3,7 @@ package io.choerodon.devops.api.validator;
 import java.util.stream.Stream;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.infra.mapper.ApplicationMapper;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -20,7 +20,7 @@ public class EnvironmentApplicationValidator {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
 
     @Autowired
-    private ApplicationMapper applicationMapper;
+    private AppServiceMapper appServiceMapper;
 
 
     /**
@@ -50,7 +50,7 @@ public class EnvironmentApplicationValidator {
         }
 
         Stream.of(appIds).forEach(id -> {
-            if (applicationMapper.selectByPrimaryKey(id) == null) {
+            if (appServiceMapper.selectByPrimaryKey(id) == null) {
                 throw new CommonException("error.app.id.not.exist", id);
             }
         });

@@ -4,33 +4,33 @@ import java.util.List;
 
 public class DevopsEnvPreviewAppVO {
 
-    private String appName;
-    private String appCode;
+    private String appServiceName;
+    private String appServiceCode;
     private Long projectId;
-    private List<ApplicationInstanceVO> applicationInstanceVOS;
+    private List<AppServiceInstanceVO> appServiceInstanceVOS;
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
-    public String getAppCode() {
-        return appCode;
+    public String getAppServiceCode() {
+        return appServiceCode;
     }
 
-    public void setAppCode(String appCode) {
-        this.appCode = appCode;
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
     }
 
-    public List<ApplicationInstanceVO> getApplicationInstanceVOS() {
-        return applicationInstanceVOS;
+    public List<AppServiceInstanceVO> getAppServiceInstanceVOS() {
+        return appServiceInstanceVOS;
     }
 
-    public void setApplicationInstanceVOS(List<ApplicationInstanceVO> applicationInstanceVOS) {
-        this.applicationInstanceVOS = applicationInstanceVOS;
+    public void setAppServiceInstanceVOS(List<AppServiceInstanceVO> appServiceInstanceVOS) {
+        this.appServiceInstanceVOS = appServiceInstanceVOS;
     }
 
     public Long getProjectId() {

@@ -79,7 +79,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
-    private ApplicationInstanceService applicationInstanceService;
+    private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
@@ -95,9 +95,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private ApplicationSevriceService applicationService;
+    private AppSevriceService applicationService;
     @Autowired
-    private ApplicationVersionService applicationVersionService;
+    private AppServiceVersionService appServiceVersionService;
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
@@ -106,7 +106,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Lazy
     private SocketMsgDispatcher socketMsgDispatcher;
     @Autowired
-    private ApplicationShareRuleService applicationShareService;
+    private AppServiceShareRuleService appServiceShareRuleService;
     @Autowired
     private DevopsCommandEventService devopsCommandEventService;
     @Autowired
@@ -142,16 +142,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
 
-        ApplicationInstanceDTO applicationInstanceDTO =
-                applicationInstanceService.baseQueryByCodeAndEnv(KeyParseTool.getReleaseName(key), envId);
-        if (applicationInstanceDTO == null) {
+        AppServiceInstanceDTO appServiceInstanceDTO =
+                appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseTool.getReleaseName(key), envId);
+        if (appServiceInstanceDTO == null) {
             logger.info("instance not found");
             return;
         }
         DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
         DevopsEnvResourceDTO newDevopsEnvResourceDTO =
                 devopsEnvResourceService.baseQueryOptions(
-                        applicationInstanceDTO.getId(),
+                        appServiceInstanceDTO.getId(),
                         null,
                         null,
                         KeyParseTool.getResourceType(key),
@@ -172,7 +172,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         saveOrUpdateResource(devopsEnvResourceDTO,
                 newDevopsEnvResourceDTO,
                 devopsEnvResourceDetailDTO,
-                applicationInstanceDTO);
+                appServiceInstanceDTO);
         String status = K8sUtil.changePodStatus(v1Pod);
         String resourceVersion = v1Pod.getMetadata().getResourceVersion();
 
@@ -187,10 +187,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodDTO.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
 
         Boolean flag = false;
-        if (applicationInstanceDTO.getId() != null) {
+        if (appServiceInstanceDTO.getId() != null) {
             List<DevopsEnvPodDTO> devopsEnvPodEList = devopsEnvPodService
-                    .baseListByInstanceId(applicationInstanceDTO.getId());
-            handleEnvPod(v1Pod, applicationInstanceDTO, resourceVersion, devopsEnvPodDTO, flag, devopsEnvPodEList);
+                    .baseListByInstanceId(appServiceInstanceDTO.getId());
+            handleEnvPod(v1Pod, appServiceInstanceDTO, resourceVersion, devopsEnvPodDTO, flag, devopsEnvPodEList);
         }
     }
 
@@ -219,9 +219,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
 
-    private void handleEnvPod(V1Pod v1Pod, ApplicationInstanceDTO applicationInstanceDTO, String resourceVersion, DevopsEnvPodDTO devopsEnvPodDTO, Boolean flag, List<DevopsEnvPodDTO> devopsEnvPodDTOS) {
+    private void handleEnvPod(V1Pod v1Pod, AppServiceInstanceDTO appServiceInstanceDTO, String resourceVersion, DevopsEnvPodDTO devopsEnvPodDTO, Boolean flag, List<DevopsEnvPodDTO> devopsEnvPodDTOS) {
         if (devopsEnvPodDTOS == null || devopsEnvPodDTOS.isEmpty()) {
-            devopsEnvPodDTO.setAppInstanceId(applicationInstanceDTO.getId());
+            devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId());
             devopsEnvPodService.baseCreate(devopsEnvPodDTO);
         } else {
             for (DevopsEnvPodDTO pod : devopsEnvPodDTOS) {
@@ -229,7 +229,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         && pod.getNamespace().equals(v1Pod.getMetadata().getNamespace())) {
                     if (!resourceVersion.equals(pod.getResourceVersion())) {
                         devopsEnvPodDTO.setId(pod.getId());
-                        devopsEnvPodDTO.setAppInstanceId(pod.getAppInstanceId());
+                        devopsEnvPodDTO.setInstanceId(pod.getInstanceId());
                         devopsEnvPodDTO.setObjectVersionNumber(pod.getObjectVersionNumber());
                         devopsEnvPodService.baseUpdate(devopsEnvPodDTO);
                     }
@@ -237,7 +237,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 }
             }
             if (!flag) {
-                devopsEnvPodDTO.setAppInstanceId(applicationInstanceDTO.getId());
+                devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId());
                 devopsEnvPodService.baseCreate(devopsEnvPodDTO);
             }
         }
@@ -253,18 +253,18 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         ReleasePayloadVO releasePayloadVO = JSONArray.parseObject(msg, ReleasePayloadVO.class);
         List<Resource> resources = JSONArray.parseArray(releasePayloadVO.getResources(), Resource.class);
         String releaseName = releasePayloadVO.getName();
-        ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
-        if (applicationInstanceDTO != null) {
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
+        if (appServiceInstanceDTO != null) {
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
-                    .baseQuery(applicationInstanceDTO.getCommandId());
+                    .baseQuery(appServiceInstanceDTO.getCommandId());
             if (devopsEnvCommandDTO != null) {
                 devopsEnvCommandDTO.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
-                ApplicationVersionDTO applicationVersionDTO = applicationVersionService.baseQueryByAppIdAndVersion(applicationInstanceDTO.getId(), releasePayloadVO.getChartVersion());
-                applicationInstanceDTO.setAppVersionId(applicationVersionDTO.getId());
-                applicationInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
-                applicationInstanceService.baseUpdate(applicationInstanceDTO);
-                installResource(resources, applicationInstanceDTO);
+                AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppIdAndVersion(appServiceInstanceDTO.getId(), releasePayloadVO.getChartVersion());
+                appServiceInstanceDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
+                appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
+                appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
+                installResource(resources, appServiceInstanceDTO);
             }
         }
     }
@@ -282,15 +282,15 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         }
 
         List<Job> jobs = JSONArray.parseArray(msg, Job.class);
-        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+        AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
         try {
             for (Job job : jobs) {
-                 applicationInstanceDTO = applicationInstanceService
+                 appServiceInstanceDTO = appServiceInstanceService
                         .baseQueryByCodeAndEnv(job.getReleaseName(), envId);
                 DevopsEnvResourceDTO newDevopsEnvResourceDTO =
                         devopsEnvResourceService.baseQueryOptions(
-                                applicationInstanceDTO.getId(),
-                                applicationInstanceDTO.getCommandId(),
+                                appServiceInstanceDTO.getId(),
+                                appServiceInstanceDTO.getCommandId(),
                                 envId,
                                 job.getKind(),
                                 job.getName());
@@ -303,10 +303,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
                 devopsEnvResourceDetailDTO.setMessage(
                         FileUtil.yamlStringtoJson(job.getManifest()));
-                saveOrUpdateResource(devopsEnvResourceDTO, newDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, applicationInstanceDTO);
+                saveOrUpdateResource(devopsEnvResourceDTO, newDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
             }
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
-                    .baseQuery(applicationInstanceDTO.getCommandId());
+                    .baseQuery(appServiceInstanceDTO.getCommandId());
             devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
             devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
         } catch (Exception e) {
@@ -335,7 +335,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                             ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get(RESOURCE_VERSION).toString()));
             String releaseName = null;
             DevopsEnvResourceDTO oldDevopsEnvResourceDTO = null;
-            ApplicationInstanceDTO applicationInstanceDTO = null;
+            AppServiceInstanceDTO appServiceInstanceDTO = null;
             ResourceType resourceType = ResourceType.forString(KeyParseTool.getResourceType(key));
             if (resourceType == null) {
                 resourceType = ResourceType.forString("MissType");
@@ -387,14 +387,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 default:
                     releaseName = KeyParseTool.getReleaseName(key);
                     if (releaseName != null) {
-                        applicationInstanceDTO = applicationInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
-                        if (applicationInstanceDTO == null) {
+                        appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
+                        if (appServiceInstanceDTO == null) {
                             return;
                         }
                         oldDevopsEnvResourceDTO =
                                 devopsEnvResourceService.baseQueryOptions(
-                                        applicationInstanceDTO.getId(),
-                                        resourceType.getType().equals(ResourceType.JOB.getType()) ? applicationInstanceDTO.getCommandId() : null,
+                                        appServiceInstanceDTO.getId(),
+                                        resourceType.getType().equals(ResourceType.JOB.getType()) ? appServiceInstanceDTO.getCommandId() : null,
                                         envId,
                                         KeyParseTool.getResourceType(key),
                                         KeyParseTool.getResourceName(key));
@@ -402,13 +402,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         if (oldDevopsEnvResourceDTO == null) {
                             oldDevopsEnvResourceDTO =
                                     devopsEnvResourceService.baseQueryOptions(
-                                            applicationInstanceDTO.getId(),
-                                            resourceType.getType().equals(ResourceType.JOB.getType()) ? applicationInstanceDTO.getCommandId() : null,
+                                            appServiceInstanceDTO.getId(),
+                                            resourceType.getType().equals(ResourceType.JOB.getType()) ? appServiceInstanceDTO.getCommandId() : null,
                                             null,
                                             KeyParseTool.getResourceType(key),
                                             KeyParseTool.getResourceName(key));
                         }
-                        saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, applicationInstanceDTO);
+                        saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
                     }
                     break;
             }
@@ -418,7 +418,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     private void handleUpdateServiceMsg(String key, Long envId, String msg, DevopsEnvResourceDTO devopsEnvResourceDTO) {
-        ApplicationInstanceDTO applicationInstanceDTO;
+        AppServiceInstanceDTO appServiceInstanceDTO;
         V1Service v1Service = json.deserialize(msg, V1Service.class);
         if (v1Service.getMetadata().getAnnotations() != null) {
             DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(v1Service.getMetadata().getName(), envId);
@@ -447,16 +447,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 List<Long> beforeInstanceIdS = devopsEnvResourceService.baseListByEnvAndType(envId, SERVICE_KIND)
                         .stream()
                         .filter(result -> result.getName().equals(v1Service.getMetadata().getName()))
-                        .map(DevopsEnvResourceDTO::getAppInstanceId)
+                        .map(DevopsEnvResourceDTO::getInstanceId)
                         .collect(Collectors.toList());
                 List<Long> afterInstanceIds = new ArrayList<>();
                 for (String release : releases) {
-                    applicationInstanceDTO = applicationInstanceService
+                    appServiceInstanceDTO = appServiceInstanceService
                             .baseQueryByCodeAndEnv(release, envId);
-                    if (applicationInstanceDTO != null) {
+                    if (appServiceInstanceDTO != null) {
                         DevopsEnvResourceDTO oldDevopsEnvResourceDTO =
                                 devopsEnvResourceService.baseQueryOptions(
-                                        applicationInstanceDTO.getId(),
+                                        appServiceInstanceDTO.getId(),
                                         null,
                                         null,
                                         KeyParseTool.getResourceType(key),
@@ -464,8 +464,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         DevopsEnvResourceDetailDTO newDevopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
                         newDevopsEnvResourceDetailDTO.setMessage(msg);
                         saveOrUpdateResource(devopsEnvResourceDTO, oldDevopsEnvResourceDTO,
-                                newDevopsEnvResourceDetailDTO, applicationInstanceDTO);
-                        afterInstanceIds.add(applicationInstanceDTO.getId());
+                                newDevopsEnvResourceDetailDTO, appServiceInstanceDTO);
+                        afterInstanceIds.add(appServiceInstanceDTO.getId());
                     }
                 }
                 //网络更新实例删除网络以前实例网络关联的resource
@@ -521,12 +521,12 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
-        ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.baseQueryByCodeAndEnv(KeyParseTool.getReleaseName(key), envId);
-        if (applicationInstanceDTO != null) {
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(KeyParseTool.getReleaseName(key), envId);
+        if (appServiceInstanceDTO != null) {
             // 删除实例历史日志记录
-            devopsEnvCommandLogService.baseDeleteByInstanceId(applicationInstanceDTO.getId());
+            devopsEnvCommandLogService.baseDeleteByInstanceId(appServiceInstanceDTO.getId());
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
-                    .baseQueryByObject(ObjectType.INSTANCE.getType(), applicationInstanceDTO.getId());
+                    .baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
             if (devopsEnvCommandDTO != null) {
                 DevopsEnvCommandLogDTO devopsEnvCommandLogDTO = new DevopsEnvCommandLogDTO();
                 devopsEnvCommandLogDTO.setCommandId(devopsEnvCommandDTO.getId());
@@ -543,10 +543,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
-        ApplicationInstanceDTO instanceDTO = applicationInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
+        AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
         if (instanceDTO != null) {
             instanceDTO.setStatus(instanceStatus);
-            applicationInstanceService.baseUpdate(instanceDTO);
+            appServiceInstanceService.baseUpdate(instanceDTO);
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
                     .baseQueryByObject(ObjectType.INSTANCE.getType(), instanceDTO.getId());
             devopsEnvCommandDTO.setStatus(commandStatus);
@@ -667,10 +667,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
         if (devopsEnvCommandDTO.getCommandType().equals(CommandType.CREATE.getType())) {
             if (devopsEnvCommandDTO.getObject().equals(ObjectType.INSTANCE.getType())) {
-                ApplicationInstanceDTO applicationInstanceDTO =
-                        applicationInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
-                applicationInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
-                applicationInstanceService.baseUpdate(applicationInstanceDTO);
+                AppServiceInstanceDTO appServiceInstanceDTO =
+                        appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
+                appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
+                appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
             } else if (devopsEnvCommandDTO.getObject().equals(ObjectType.SERVICE.getType())) {
                 DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQuery(devopsEnvCommandDTO.getObjectId());
                 devopsServiceDTO.setStatus(ServiceStatus.FAILED.getStatus());
@@ -902,14 +902,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private void syncC7nHelmRelease(Long envId, List<DevopsEnvFileErrorDTO> errorDevopsFiles, ResourceCommitVO resourceCommitVO, String[] objects) {
         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO;
-        ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService
                 .baseQueryByCodeAndEnv(objects[1], envId);
         devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                .baseQueryByEnvIdAndResourceId(envId, applicationInstanceDTO.getId(), "C7NHelmRelease");
-        if (updateEnvCommandStatus(resourceCommitVO, applicationInstanceDTO.getCommandId(),
-                devopsEnvFileResourceDTO, C7NHELMRELEASE_KIND, applicationInstanceDTO.getCode(), null, errorDevopsFiles)) {
-            applicationInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
-            applicationInstanceService.baseUpdate(applicationInstanceDTO);
+                .baseQueryByEnvIdAndResourceId(envId, appServiceInstanceDTO.getId(), "C7NHelmRelease");
+        if (updateEnvCommandStatus(resourceCommitVO, appServiceInstanceDTO.getCommandId(),
+                devopsEnvFileResourceDTO, C7NHELMRELEASE_KIND, appServiceInstanceDTO.getCode(), null, errorDevopsFiles)) {
+            appServiceInstanceDTO.setStatus(InstanceStatus.FAILED.getStatus());
+            appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
         }
     }
 
@@ -976,10 +976,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private void saveOrUpdateResource(DevopsEnvResourceDTO devopsEnvResourceDTO,
                                       DevopsEnvResourceDTO oldDevopsEnvResourceDTO,
                                       DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO,
-                                      ApplicationInstanceDTO applicationInstanceDTO) {
-        if (applicationInstanceDTO != null) {
-            devopsEnvResourceDTO.setAppInstanceId(applicationInstanceDTO.getId());
-            devopsEnvResourceDTO.setDevopsEnvCommandId(applicationInstanceDTO.getCommandId());
+                                      AppServiceInstanceDTO appServiceInstanceDTO) {
+        if (appServiceInstanceDTO != null) {
+            devopsEnvResourceDTO.setInstanceId(appServiceInstanceDTO.getId());
+            devopsEnvResourceDTO.setDevopsEnvCommandId(appServiceInstanceDTO.getCommandId());
         }
         if (oldDevopsEnvResourceDTO == null) {
             devopsEnvResourceDTO.setResourceDetailId(
@@ -993,9 +993,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         if (devopsEnvResourceDTO.getReversion() == null) {
             devopsEnvResourceDTO.setReversion(0L);
         }
-        if (applicationInstanceDTO != null) {
-            oldDevopsEnvResourceDTO.setDevopsEnvCommandId(applicationInstanceDTO.getCommandId());
-            oldDevopsEnvResourceDTO.setAppInstanceId(devopsEnvResourceDTO.getAppInstanceId());
+        if (appServiceInstanceDTO != null) {
+            oldDevopsEnvResourceDTO.setDevopsEnvCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsEnvResourceDTO.setInstanceId(devopsEnvResourceDTO.getInstanceId());
         }
         if (devopsEnvResourceDTO.getEnvId() != null) {
             oldDevopsEnvResourceDTO.setEnvId(devopsEnvResourceDTO.getEnvId());
@@ -1011,10 +1011,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     }
 
-    private void installResource(List<Resource> resources, ApplicationInstanceDTO applicationInstanceDTO) {
+    private void installResource(List<Resource> resources, AppServiceInstanceDTO appServiceInstanceDTO) {
         try {
             for (Resource resource : resources) {
-                Long instanceId = applicationInstanceDTO.getId();
+                Long instanceId = appServiceInstanceDTO.getId();
                 if (resource.getKind().equals(ResourceType.INGRESS.getType())) {
                     instanceId = null;
                 }
@@ -1030,7 +1030,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         new DevopsEnvResourceDTO();
                 devopsEnvResourceDTO.setKind(resource.getKind());
                 devopsEnvResourceDTO.setName(resource.getName());
-                devopsEnvResourceDTO.setEnvId(applicationInstanceDTO.getEnvId());
+                devopsEnvResourceDTO.setEnvId(appServiceInstanceDTO.getEnvId());
                 JSONObject jsonResult = JSONObject.parseObject(JSONObject.parseObject(resource.getObject())
                         .get(METADATA).toString());
                 devopsEnvResourceDTO.setReversion(
@@ -1039,9 +1039,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                         devopsEnvResourceDTO,
                         oldDevopsEnvResourceDTO,
                         devopsEnvResourceDetailDTO,
-                        applicationInstanceDTO);
+                        appServiceInstanceDTO);
                 if (resource.getKind().equals(ResourceType.POD.getType())) {
-                    syncPod(resource.getObject(), applicationInstanceDTO);
+                    syncPod(resource.getObject(), appServiceInstanceDTO);
                 }
             }
         } catch (Exception e) {
@@ -1050,16 +1050,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
 
-    private void syncService(DevopsServiceDTO devopsServiceDTO, String msg, ApplicationInstanceDTO applicationInstanceDTO) {
+    private void syncService(DevopsServiceDTO devopsServiceDTO, String msg, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1Service v1Service = json.deserialize(msg, V1Service.class);
         Map<String, String> lab = v1Service.getMetadata().getLabels();
         if (lab.get(SERVICE_LABLE) != null && lab.get(SERVICE_LABLE).equals(SERVICE_KIND)) {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(
-                    applicationInstanceDTO.getEnvId());
+                    appServiceInstanceDTO.getEnvId());
             if (devopsServiceService.baseQueryByNameAndEnvId(
                     v1Service.getMetadata().getName(), devopsEnvironmentDTO.getId()) == null) {
                 devopsServiceDTO.setEnvId(devopsEnvironmentDTO.getId());
-                devopsServiceDTO.setAppServiceId(applicationInstanceDTO.getAppServiceId());
+                devopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
                 devopsServiceDTO.setName(v1Service.getMetadata().getName());
                 devopsServiceDTO.setType(v1Service.getSpec().getType());
                 devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
@@ -1074,13 +1074,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 devopsServiceDTO.setAnnotations(json.serialize(v1Service.getMetadata().getAnnotations()));
                 devopsServiceDTO.setId(devopsServiceService.baseCreate(devopsServiceDTO).getId());
 
-                DevopsServiceAppInstanceDTO devopsServiceAppInstanceDTO = devopsServiceInstanceService
-                        .baseQueryByOptions(devopsServiceDTO.getId(), applicationInstanceDTO.getId());
-                if (devopsServiceAppInstanceDTO == null) {
-                    devopsServiceAppInstanceDTO = new DevopsServiceAppInstanceDTO();
-                    devopsServiceAppInstanceDTO.setServiceId(devopsServiceDTO.getId());
-                    devopsServiceAppInstanceDTO.setAppInstanceId(applicationInstanceDTO.getId());
-                    devopsServiceInstanceService.baseCreate(devopsServiceAppInstanceDTO);
+                DevopsServiceInstanceDTO devopsServiceInstanceDTO = devopsServiceInstanceService
+                        .baseQueryByOptions(devopsServiceDTO.getId(), appServiceInstanceDTO.getId());
+                if (devopsServiceInstanceDTO == null) {
+                    devopsServiceInstanceDTO = new DevopsServiceInstanceDTO();
+                    devopsServiceInstanceDTO.setServiceId(devopsServiceDTO.getId());
+                    devopsServiceInstanceDTO.setInstanceId(appServiceInstanceDTO.getId());
+                    devopsServiceInstanceService.baseCreate(devopsServiceInstanceDTO);
                 }
 
                 DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
@@ -1091,13 +1091,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
             }
         } else {
-            devopsEnvResourceService.deleteByEnvIdAndKindAndName(applicationInstanceDTO.getEnvId(),
+            devopsEnvResourceService.deleteByEnvIdAndKindAndName(appServiceInstanceDTO.getEnvId(),
                     ResourceType.SERVICE.getType(), v1Service.getMetadata().getName());
         }
     }
 
 
-    private void syncPod(String msg, ApplicationInstanceDTO applicationInstanceDTO) {
+    private void syncPod(String msg, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
         String status = K8sUtil.changePodStatus(v1Pod);
         String resourceVersion = v1Pod.getMetadata().getResourceVersion();
@@ -1109,7 +1109,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodDTO.setResourceVersion(resourceVersion);
         devopsEnvPodDTO.setNamespace(v1Pod.getMetadata().getNamespace());
         devopsEnvPodDTO.setReady(getReadyValue(status, v1Pod));
-        devopsEnvPodDTO.setAppInstanceId(applicationInstanceDTO.getId());
+        devopsEnvPodDTO.setInstanceId(appServiceInstanceDTO.getId());
         devopsEnvPodDTO.setNodeName(v1Pod.getSpec().getNodeName());
         devopsEnvPodDTO.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
         devopsEnvPodService.baseCreate(devopsEnvPodDTO);
@@ -1120,7 +1120,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 .baseQueryByKindAndName(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
         try {
             DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService
-                    .baseQueryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceDTO.getAppInstanceId());
+                    .baseQueryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceDTO.getInstanceId());
             // 删除实例事件记录
             devopsCommandEventService.baseDeletePreInstanceCommandEvent(devopsEnvCommandDTO.getObjectId());
             DevopsCommandEventDTO devopsCommandEventDTO = new DevopsCommandEventDTO();
@@ -1137,15 +1137,15 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
 
     @Override
-    public List<ApplicationServiceDTO> getApplication(String appName, Long projectId, Long orgId) {
-        List<ApplicationServiceDTO> applications = new ArrayList<>();
-        ApplicationServiceDTO applicationDTO = applicationService
+    public List<AppServiceDTO> getApplication(String appName, Long projectId, Long orgId) {
+        List<AppServiceDTO> applications = new ArrayList<>();
+        AppServiceDTO applicationDTO = applicationService
                 .baseQueryByCode(appName, projectId);
         if (applicationDTO != null) {
             applications.add(applicationDTO);
         }
-        List<ApplicationServiceDTO> applicationDTOS = applicationService.baseListByCode(appName);
-        List<ApplicationServiceDTO> applicationList = applicationDTOS.stream()
+        List<AppServiceDTO> applicationDTOS = applicationService.baseListByCode(appName);
+        List<AppServiceDTO> applicationList = applicationDTOS.stream()
                 .filter(result ->
                         iamServiceClientOperator.queryIamProjectById(result.getProjectId()).getOrganizationId().equals(orgId))
                 .collect(Collectors.toList());
@@ -1153,8 +1153,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         return applications;
     }
 
-    private List<ApplicationServiceDTO> findAppInAppMarket(List<ApplicationServiceDTO> applicationDTOS, List<ApplicationServiceDTO> applicationList) {
-        List<ApplicationServiceDTO> applications = new ArrayList<>();
+    private List<AppServiceDTO> findAppInAppMarket(List<AppServiceDTO> applicationDTOS, List<AppServiceDTO> applicationList) {
+        List<AppServiceDTO> applications = new ArrayList<>();
 //        if (!applicationList.isEmpty()) {
 //            applicationList.forEach(applicationDTO -> {
 //                if (applicationShareService.baseCountByAppId(applicationDTO.getId()) != 0) {
@@ -1205,7 +1205,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private void getCommands(Long envId, List<Command> commands) {
         List<Command> removeCommands = new ArrayList<>();
-        applicationInstanceService.baseListByEnvId(envId).stream().forEach(applicationInstanceDTO -> {
+        appServiceInstanceService.baseListByEnvId(envId).stream().forEach(applicationInstanceDTO -> {
             Long commandId = applicationInstanceDTO.getCommandId();
             if (commandId != null) {
                 Command command = new Command();
@@ -1332,19 +1332,19 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsEnvResourceDTO.setEnvId(envId);
             devopsEnvResourceDTO.setReversion(TypeUtil.objToLong(v1Service.getMetadata().getResourceVersion()));
             for (String release : releases) {
-                ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService
+                AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService
                         .baseQueryByCodeAndEnv(release, envId);
 
                 DevopsEnvResourceDTO oldDevopsEnvResourceDTO = devopsEnvResourceService
                         .baseQueryOptions(
-                                applicationInstanceDTO.getId(),
+                                appServiceInstanceDTO.getId(),
                                 null, null,
                                 KeyParseTool.getResourceType(key),
                                 KeyParseTool.getResourceName(key));
                 saveOrUpdateResource(devopsEnvResourceDTO,
                         oldDevopsEnvResourceDTO,
                         devopsEnvResourceDetailDTO,
-                        applicationInstanceDTO);
+                        appServiceInstanceDTO);
             }
             devopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
             devopsServiceService.baseUpdate(devopsServiceDTO);
@@ -1521,9 +1521,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private void updateResourceStatus(Long envId, DevopsEnvCommandDTO devopsEnvCommandDTO, InstanceStatus running, ServiceStatus running2, IngressStatus running3, CertificationStatus active) {
         if (devopsEnvCommandDTO.getObject().equals(INSTANCE_KIND)) {
-            ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
-            applicationInstanceDTO.setStatus(running.getStatus());
-            applicationInstanceService.baseUpdate(applicationInstanceDTO);
+            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
+            appServiceInstanceDTO.setStatus(running.getStatus());
+            appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
         }
         if (devopsEnvCommandDTO.getObject().equals(SERVICE_KIND)) {
             DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQuery(devopsEnvCommandDTO.getObjectId());

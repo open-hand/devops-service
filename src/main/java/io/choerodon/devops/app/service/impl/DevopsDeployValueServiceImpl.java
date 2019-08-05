@@ -11,14 +11,14 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineAppDeployService;
-import io.choerodon.devops.infra.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.PipelineAppDeployDTO;
+import io.choerodon.devops.infra.dto.PipelineAppServiceDeployDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
@@ -50,7 +50,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Autowired
     private PipelineAppDeployService pipelineAppDeployService;
     @Autowired
-    private ApplicationInstanceService applicationInstanceService;
+    private AppServiceInstanceService appServiceInstanceService;
 
     @Override
     public DevopsDeployValueVO createOrUpdate(Long projectId, DevopsDeployValueVO devopsDeployValueVO) {
@@ -115,10 +115,10 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
 
     @Override
     public Boolean checkDelete(Long projectId, Long valueId) {
-        List<PipelineAppDeployDTO> pipelineAppDeployDTOS = pipelineAppDeployService.baseQueryByValueId(valueId);
-        if (pipelineAppDeployDTOS == null || pipelineAppDeployDTOS.isEmpty()) {
-            List<ApplicationInstanceDTO> applicationInstanceDTOS = applicationInstanceService.baseListByValueId(valueId);
-            if (applicationInstanceDTOS == null || applicationInstanceDTOS.isEmpty()) {
+        List<PipelineAppServiceDeployDTO> pipelineAppServiceDeployDTOS = pipelineAppDeployService.baseQueryByValueId(valueId);
+        if (pipelineAppServiceDeployDTOS == null || pipelineAppServiceDeployDTOS.isEmpty()) {
+            List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.baseListByValueId(valueId);
+            if (appServiceInstanceDTOS == null || appServiceInstanceDTOS.isEmpty()) {
                 return true;
             }
         }

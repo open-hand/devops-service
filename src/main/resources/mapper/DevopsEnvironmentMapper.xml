@@ -10,7 +10,7 @@
         <collection property="apps" ofType="io.choerodon.devops.infra.dto.DevopsApplicationViewDTO" notNullColumn="app_service_id">
             <id property="id" column="app_service_id"/>
             <result property="name" column="app_name"/>
-            <collection property="instances" ofType="io.choerodon.devops.infra.dto.DevopsAppInstanceViewDTO" notNullColumn="ins_id">
+            <collection property="instances" ofType="io.choerodon.devops.infra.dto.AppServiceInstanceViewDTO" notNullColumn="ins_id">
                 <id property="id" column="ins_id"/>
                 <result property="code" column="ins_code"/>
                 <result property="status" column="ins_status"/>
@@ -26,7 +26,7 @@
         <result property="clusterId" column="cluster_id"/>
         <result property="synchronize" column="synchronize"/>
 
-        <collection property="instances" ofType="io.choerodon.devops.api.vo.DevopsAppInstanceViewVO" notNullColumn="ins_id">
+        <collection property="instances" ofType="io.choerodon.devops.api.vo.DevopsAppServiceInstanceViewVO" notNullColumn="ins_id">
             <id property="id" column="ins_id"/>
             <result property="status" column="ins_status"/>
             <result property="code" column="ins_code"/>
@@ -110,8 +110,8 @@
                   AND env.id = ins.env_id) pod_running_count
         FROM devops_env env
                  LEFT JOIN devops_env_application env_app ON env.id = env_app.env_id
-                 LEFT JOIN devops_application_service app ON env_app.app_service_id = app.id
-                 LEFT JOIN devops_app_instance ins ON app.id = ins.app_service_id
+                 LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id
+                 LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
                                                           AND env.id = ins.env_id
         WHERE env.project_id = #{projectId}
           AND env.is_active = TRUE
@@ -185,7 +185,7 @@
                   AND dp.namespace = env.code
                   AND env.id = ins.env_id) pod_running_count
         FROM devops_env env
-                 LEFT JOIN devops_app_instance ins ON env.id = ins.env_id
+                 LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id
         WHERE env.project_id = #{projectId}
           AND env.is_active = TRUE
           AND env.is_failed = FALSE;

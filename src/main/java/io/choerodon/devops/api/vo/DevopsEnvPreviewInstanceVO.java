@@ -2,7 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
-public class DevopsEnvPreviewInstanceVO extends ApplicationInstanceVO {
+public class DevopsEnvPreviewInstanceVO extends AppServiceInstanceVO {
 
     private List<ServiceVO> serviceVOS;
     private List<IngressVO> ingressVOS;

@@ -24,22 +24,14 @@ public class DevopsServiceQueryDTO extends BaseDTO {
     private Long appServiceId;
     private String appName;
     private String labels;
-    private List<AppInstanceInfoDTO> appInstance;
+    private List<AppServiceInstanceInfoDTO> instances;
     private String loadBalanceIp;
     private String message;
-
-
-    @Transient
-    private Long appProjectId;
-    @Transient
+    private Long appServiceProjectId;
     private String instanceStatus;
-    @Transient
     private String commandType;
-    @Transient
     private String commandStatus;
-    @Transient
     private String error;
-
 
     public Long getId() {
         return id;
@@ -65,6 +57,22 @@ public class DevopsServiceQueryDTO extends BaseDTO {
         this.externalIp = externalIp;
     }
 
+    public String getPorts() {
+        return ports;
+    }
+
+    public void setPorts(String ports) {
+        this.ports = ports;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public Long getEnvId() {
         return envId;
     }
@@ -73,12 +81,44 @@ public class DevopsServiceQueryDTO extends BaseDTO {
         this.envId = envId;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public String getEnvName() {
         return envName;
     }
 
     public void setEnvName(String envName) {
         this.envName = envName;
+    }
+
+    public String getEnvCode() {
+        return envCode;
+    }
+
+    public void setEnvCode(String envCode) {
+        this.envCode = envCode;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    public String getEndPoints() {
+        return endPoints;
+    }
+
+    public void setEndPoints(String endPoints) {
+        this.endPoints = endPoints;
     }
 
     public Long getAppServiceId() {
@@ -97,46 +137,6 @@ public class DevopsServiceQueryDTO extends BaseDTO {
         this.appName = appName;
     }
 
-    public List<AppInstanceInfoDTO> getAppInstance() {
-        return appInstance;
-    }
-
-    public void setAppInstance(List<AppInstanceInfoDTO> appInstance) {
-        this.appInstance = appInstance;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
-
-    public String getPorts() {
-        return ports;
-    }
-
-    public void setPorts(String ports) {
-        this.ports = ports;
-    }
-
-    public Long getAppProjectId() {
-        return appProjectId;
-    }
-
-    public void setAppProjectId(Long appProjectId) {
-        this.appProjectId = appProjectId;
-    }
-
     public String getLabels() {
         return labels;
     }
@@ -145,12 +145,44 @@ public class DevopsServiceQueryDTO extends BaseDTO {
         this.labels = labels;
     }
 
-    public String getType() {
-        return type;
+    public List<AppServiceInstanceInfoDTO> getInstances() {
+        return instances;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setInstances(List<AppServiceInstanceInfoDTO> instances) {
+        this.instances = instances;
+    }
+
+    public String getLoadBalanceIp() {
+        return loadBalanceIp;
+    }
+
+    public void setLoadBalanceIp(String loadBalanceIp) {
+        this.loadBalanceIp = loadBalanceIp;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public Long getAppServiceProjectId() {
+        return appServiceProjectId;
+    }
+
+    public void setAppServiceProjectId(Long appServiceProjectId) {
+        this.appServiceProjectId = appServiceProjectId;
+    }
+
+    public String getInstanceStatus() {
+        return instanceStatus;
+    }
+
+    public void setInstanceStatus(String instanceStatus) {
+        this.instanceStatus = instanceStatus;
     }
 
     public String getCommandType() {
@@ -175,46 +207,5 @@ public class DevopsServiceQueryDTO extends BaseDTO {
 
     public void setError(String error) {
         this.error = error;
-    }
-
-    public String getEndPoints() {
-        return endPoints;
-    }
-
-    public void setEndPoints(String endPoints) {
-        this.endPoints = endPoints;
-    }
-
-    public String getLoadBalanceIp() {
-        return loadBalanceIp;
-    }
-
-    public void setLoadBalanceIp(String loadBalanceIp) {
-        this.loadBalanceIp = loadBalanceIp;
-    }
-
-
-    public String getInstanceStatus() {
-        return instanceStatus;
-    }
-
-    public void setInstanceStatus(String instanceStatus) {
-        this.instanceStatus = instanceStatus;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getEnvCode() {
-        return envCode;
-    }
-
-    public void setEnvCode(String envCode) {
-        this.envCode = envCode;
     }
 }

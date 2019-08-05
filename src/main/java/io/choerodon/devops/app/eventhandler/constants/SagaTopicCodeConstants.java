@@ -33,7 +33,7 @@ public class SagaTopicCodeConstants {
     /**
      * Devops创建应用
      */
-    public static final String DEVOPS_CREATE_APPLICATION = "devops-create-application";
+    public static final String DEVOPS_CREATE_APPLICATION_SERVICE = "devops-create-application-service";
 
     /**
      * Devops删除失败应用

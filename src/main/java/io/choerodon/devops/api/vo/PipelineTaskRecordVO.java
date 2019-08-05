@@ -13,9 +13,9 @@ public class PipelineTaskRecordVO {
     private String status;
     private String taskType;
     private Integer isCountersigned;
-    private String appName;
+    private String appServiceName;
     private String envName;
-    private Long applicationId;
+    private Long appServiceId;
     private Long envId;
     private String version;
     private String instanceName;
@@ -33,12 +33,12 @@ public class PipelineTaskRecordVO {
         this.envPermission = envPermission;
     }
 
-    public Long getApplicationId() {
-        return applicationId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setApplicationId(Long applicationId) {
-        this.applicationId = applicationId;
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Long getEnvId() {
@@ -121,12 +121,12 @@ public class PipelineTaskRecordVO {
         this.isCountersigned = isCountersigned;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
     public String getEnvName() {

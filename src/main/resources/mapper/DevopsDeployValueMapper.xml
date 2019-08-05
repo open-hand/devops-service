@@ -16,7 +16,7 @@
         FROM
         devops_deploy_value dpv
         JOIN devops_env de ON de.id = dpv.env_id
-        JOIN devops_application_service da ON da.id = dpv.app_service_id
+        JOIN devops_app_service da ON da.id = dpv.app_service_id
         <if test="userId !=null">
             JOIN devops_env_user_permission deup ON (
             deup.iam_user_id = #{userId}

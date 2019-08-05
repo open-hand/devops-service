@@ -31,12 +31,8 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     public static final String LOCALHOST = "localhost";
     public static final String CLUSTER_ISSUER = "ClusterIssuer";
 
-    //    @Autowired
-//    private CertificationRepository certificationRepository;
     @Autowired
     private CertificationService certificationService;
-    //    @Autowired
-//    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired

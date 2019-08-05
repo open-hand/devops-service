@@ -160,7 +160,7 @@ public class CertificationServiceImpl implements CertificationService {
                 certContent = certificationFileDTO.getCertFile();
             }
 
-            C7nCertification c7nCertification = c7nCertification = getC7nCertification(certName, type, domains, keyContent, certContent, envCode);
+            C7nCertification c7nCertification  = getC7nCertification(certName, type, domains, keyContent, certContent, envCode);
 
             createAndStore(newCertificationDTO, c7nCertification);
 

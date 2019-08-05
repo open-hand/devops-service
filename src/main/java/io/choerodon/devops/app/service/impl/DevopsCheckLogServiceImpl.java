@@ -37,15 +37,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-upgrade", false));
 
     @Autowired
-    private ApplicationVersionMapper applicationVersionMapper;
+    private AppServiceVersionMapper appServiceVersionMapper;
     @Autowired
     private DevopsCheckLogMapper devopsCheckLogMapper;
     @Autowired
     private DevopsClusterMapper devopsClusterMapper;
     @Autowired
-    private ApplicationShareRuleMapper applicationShareMapper;
+    private AppServiceShareRuleMapper applicationShareMapper;
     @Autowired
-    private ApplicationInstanceMapper applicationInstanceMapper;
+    private AppServiceInstanceMapper appServiceInstanceMapper;
     @Autowired
     private DevopsEnvApplicationService devopsEnvApplicationService;
     @Autowired
@@ -101,7 +101,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private void syncEnvAppRelevance(List<CheckLog> logs) {
-            List<DevopsEnvApplicationDTO> applicationInstanceDTOS = ConvertUtils.convertList(applicationInstanceMapper.selectAll(), DevopsEnvApplicationDTO.class);
+            List<DevopsEnvApplicationDTO> applicationInstanceDTOS = ConvertUtils.convertList(appServiceInstanceMapper.selectAll(), DevopsEnvApplicationDTO.class);
 
             applicationInstanceDTOS.stream().distinct().forEach(v -> {
                 CheckLog checkLog = new CheckLog();
@@ -122,17 +122,17 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             LOGGER.info("delete application market data.");
             applicationShareMapper.deleteAll();
             LOGGER.info("insert application share rule.");
-            applicationVersionMapper.selectAll().stream()
+            appServiceVersionMapper.selectAll().stream()
                     .filter(versionDTO -> versionDTO.getIsPublish() != null && versionDTO.getIsPublish().equals(1L))
                     .forEach(versionDTO -> {
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent(String.format(
                                 "Sync application share rule,versionId: %s, appServiceId: %s", versionDTO.getId(), versionDTO.getAppServiceId()));
-                        ApplicationShareRuleDTO applicationShareRuleDTO = new ApplicationShareRuleDTO();
-                        applicationShareRuleDTO.setShareLevel("organization");
-                        applicationShareRuleDTO.setVersion(versionDTO.getVersion());
-                        applicationShareRuleDTO.setAppServiceId(versionDTO.getAppServiceId());
-                        if (applicationShareMapper.insert(applicationShareRuleDTO) != 1) {
+                        AppServiceShareRuleDTO appServiceShareRuleDTO = new AppServiceShareRuleDTO();
+                        appServiceShareRuleDTO.setShareLevel("organization");
+                        appServiceShareRuleDTO.setVersion(versionDTO.getVersion());
+                        appServiceShareRuleDTO.setAppServiceId(versionDTO.getAppServiceId());
+                        if (applicationShareMapper.insert(appServiceShareRuleDTO) != 1) {
                             checkLog.setResult("failed");
                         } else {
                             checkLog.setResult("success");
@@ -140,7 +140,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         logs.add(checkLog);
                     });
             LOGGER.info("update publish Time.");
-            applicationVersionMapper.updatePublishTime();
+            appServiceVersionMapper.updatePublishTime();
         }
 
 

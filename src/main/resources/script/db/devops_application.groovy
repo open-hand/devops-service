@@ -90,8 +90,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         addColumn(tableName: 'devops_application') {
             column(name: 'img_url', type:  'VARCHAR(200)', remarks: '图标url', afterColumn: 'is_failed')
         }
-        renameTable(newTableName: 'devops_application_service', oldTableName: 'devops_application')
+        renameTable(newTableName: 'devops_app_service', oldTableName: 'devops_application')
 
     }
+
+
+    changeSet(author: 'Younger', id: '2019-8-05-drop-column') {
+        dropColumn(columnName: "app_template_id", tableName: "devops_app_service")
+    }
+
 
 }

@@ -12,12 +12,12 @@ import io.choerodon.devops.api.vo.CustomMergeRequestVO;
 import io.choerodon.devops.api.vo.DevopsBranchVO;
 import io.choerodon.devops.api.vo.IssueVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.ApplicationServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.mapper.ApplicationMapper;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class IssueServiceImpl implements IssueService {
     @Autowired
     private DevopsBranchService devopsBranchService;
     @Autowired
-    private ApplicationSevriceService applicationService;
+    private AppSevriceService applicationService;
     @Autowired
     private DevopsMergeRequestService devopsMergeRequestService;
     @Autowired
@@ -43,7 +43,7 @@ public class IssueServiceImpl implements IssueService {
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
-    private ApplicationMapper applicationMapper;
+    private AppServiceMapper appServiceMapper;
 
 
     @Override
@@ -93,8 +93,8 @@ public class IssueServiceImpl implements IssueService {
                     .collect(Collectors.toList());
             DevopsBranchVO devopsBranchVO = ConvertHelper.convert(devopsBranchDO, DevopsBranchVO.class);
             devopsBranchVO.setCommits(devopsGitlabCommitES);
-            ApplicationServiceDTO applicationDTO = applicationService.baseQuery(devopsBranchDO.getAppServiceId());
-            devopsBranchVO.setAppName(applicationDTO.getName());
+            AppServiceDTO applicationDTO = applicationService.baseQuery(devopsBranchDO.getAppServiceId());
+            devopsBranchVO.setAppServiceName(applicationDTO.getName());
             List<DevopsMergeRequestDTO> mergeRequests = devopsMergeRequestService.baseListBySourceBranch(
                     devopsBranchDO.getBranchName(), (long) gitLabProjectId);
             devopsBranchVO.setMergeRequests(addAuthorNameAndAssigneeName(
@@ -153,7 +153,7 @@ public class IssueServiceImpl implements IssueService {
     }
 
     private Integer getGitLabId(Long applicationId) {
-        ApplicationServiceDTO applicationDO = applicationMapper.selectByPrimaryKey(applicationId);
+        AppServiceDTO applicationDO = appServiceMapper.selectByPrimaryKey(applicationId);
         if (applicationDO != null) {
             return applicationDO.getGitlabProjectId();
         } else {

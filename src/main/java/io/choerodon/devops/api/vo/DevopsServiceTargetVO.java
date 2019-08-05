@@ -10,19 +10,20 @@ import java.util.Map;
  * Description:
  */
 public class DevopsServiceTargetVO {
-    private List<AppInstanceInfoVO> appInstance;
+    private List<AppServiceInstanceInfoVO> appInstance;
     /**
      * 是创建网络时所填的标签，也是这个网络本身的选择器
      */
     private Map<String, String> labels;
     private Map<String, List<EndPointPortVO>> endPoints;
 
-    public List<AppInstanceInfoVO> getAppInstance() {
+    public List<AppServiceInstanceInfoVO> getAppInstance() {
         return appInstance;
     }
 
-    public void setAppInstance(List<AppInstanceInfoVO> appInstance) {
+    public void setAppInstance(List<AppServiceInstanceInfoVO> appInstance) {
         this.appInstance = appInstance;
+
     }
 
     public Map<String, String> getLabels() {

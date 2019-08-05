@@ -2,7 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.dto.PipelineAppDeployDTO;
+import io.choerodon.devops.infra.dto.PipelineAppServiceDeployDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -10,21 +10,21 @@ import io.choerodon.devops.infra.dto.PipelineAppDeployDTO;
  * Description:
  */
 public interface PipelineAppDeployService {
-    PipelineAppDeployDTO baseCreate(PipelineAppDeployDTO pipelineAppDeployDTO);
+    PipelineAppServiceDeployDTO baseCreate(PipelineAppServiceDeployDTO pipelineAppServiceDeployDTO);
 
-    PipelineAppDeployDTO baseUpdate(PipelineAppDeployDTO pipelineAppDeployDTO);
+    PipelineAppServiceDeployDTO baseUpdate(PipelineAppServiceDeployDTO pipelineAppServiceDeployDTO);
 
     void baseDeleteById(Long appDelpoyId);
 
-    PipelineAppDeployDTO baseQueryById(Long appDelpoyId);
+    PipelineAppServiceDeployDTO baseQueryById(Long appDelpoyId);
 
-    List<PipelineAppDeployDTO> baseQueryByAppId(Long appId);
+    List<PipelineAppServiceDeployDTO> baseQueryByAppId(Long appId);
 
     void baseCheckName(String name, Long envId);
 
-    List<PipelineAppDeployDTO> baseQueryByValueId(Long valueId);
+    List<PipelineAppServiceDeployDTO> baseQueryByValueId(Long valueId);
 
-    List<PipelineAppDeployDTO> baseQueryByEnvId(Long envId);
+    List<PipelineAppServiceDeployDTO> baseQueryByEnvId(Long envId);
 
     void baseUpdateWithInstanceId(Long instanceId);
 }
