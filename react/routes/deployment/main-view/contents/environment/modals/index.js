@@ -1,9 +1,9 @@
 import React from 'react';
 import { StoreProvider } from './stores';
-import EnvModal from './EnvModal';
+import Modals from './Modals';
 
 export default props => (
   <StoreProvider {...props}>
-    <EnvModal />
+    <Modals />
   </StoreProvider>
 );

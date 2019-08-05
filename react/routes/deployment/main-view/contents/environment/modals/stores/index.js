@@ -1,11 +1,10 @@
 import React, { createContext, useContext } from 'react';
 import { inject } from 'mobx-react';
 import { injectIntl } from 'react-intl';
-// import useStore from './useStore';
 
 const Store = createContext();
 
-export function useEnvModalStore() {
+export function useModalStore() {
   return useContext(Store);
 }
 
@@ -15,6 +14,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
 
     const value = {
       ...props,
+      modal: 'test',
       permissions: [
         'devops-service.application-instance.pageByOptions',
       ],

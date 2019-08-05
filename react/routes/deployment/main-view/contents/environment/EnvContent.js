@@ -1,19 +1,18 @@
-import React, { Fragment, useState, lazy, Suspense, useCallback } from 'react';
+import React, { Fragment, lazy, Suspense, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
 import { useDeploymentStore } from '../../../stores';
 import StatusDot from '../../components/status-dot';
 import PrefixTitle from '../../components/prefix-title';
+import Modals from './modals';
 
 import './index.less';
 
 const { TabPane } = Tabs;
-const SYNC_TAB = 'sync';
-const ASSIGN_TAB = 'assign';
 
 const SyncSituation = lazy(() => import('./sync-situation'));
-const Permissions = lazy(() => import('../../table-list/permissions'));
+const Permissions = lazy(() => import('./Permissions'));
 
 const EnvContent = observer(() => {
   const {
@@ -23,12 +22,15 @@ const EnvContent = observer(() => {
   const {
     intl: { formatMessage },
     baseInfoDs,
+    tabs: {
+      SYNC_TAB,
+      ASSIGN_TAB,
+    },
+    envStore,
   } = useEnvironmentStore();
-
-  const [activeKey, setActiveKey] = useState(SYNC_TAB);
   const handleChange = useCallback((key) => {
-    setActiveKey(key);
-  }, []);
+    envStore.setTabKey(key);
+  }, [envStore]);
 
   const baseInfo = baseInfoDs.data;
 
@@ -50,6 +52,7 @@ const EnvContent = observer(() => {
 
   return (
     <div className={`${prefixCls}-environment`}>
+      <Modals />
       <PrefixTitle
         prefixCls={prefixCls}
         fallback={!baseInfo.length}
@@ -58,7 +61,7 @@ const EnvContent = observer(() => {
       </PrefixTitle>
       <Tabs
         animated={false}
-        activeKey={activeKey}
+        activeKey={envStore.getTabKey}
         onChange={handleChange}
       >
         <TabPane
