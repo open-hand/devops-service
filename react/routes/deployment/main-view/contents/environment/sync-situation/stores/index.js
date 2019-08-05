@@ -17,7 +17,6 @@ export const StoreProvider = injectIntl(inject('AppState')(
   (props) => {
     const { AppState: { currentMenuType: { id } }, children, intl } = props;
     const {
-      prefixCls,
       intlPrefix,
       deploymentStore: {
         getSelectedMenu: { menuId },

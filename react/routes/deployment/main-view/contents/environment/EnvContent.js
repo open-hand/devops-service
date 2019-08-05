@@ -28,7 +28,6 @@ const EnvContent = observer(() => {
     },
     envStore,
   } = useEnvironmentStore();
-
   const handleChange = useCallback((key) => {
     envStore.setTabKey(key);
   }, [envStore]);

@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import HeaderButtons from '../../../components/header-buttons';
 import { useDeploymentStore } from '../../../../stores';
@@ -8,11 +8,8 @@ import { useModalStore } from './stores';
 const EnvModals = observer(() => {
   const {
     intlPrefix,
-    prefixCls,
     intl: { formatMessage },
-    viewType: {
-      RES_VIEW_TYPE,
-    },
+    deploymentStore,
   } = useDeploymentStore();
   const {
     envStore: {
@@ -22,12 +19,21 @@ const EnvModals = observer(() => {
       SYNC_TAB,
       ASSIGN_TAB,
     },
+    permissionsDs,
   } = useEnvironmentStore();
   const { modal } = useModalStore();
 
   const openModal = useCallback(() => {
     // console.log(modal);
-  }, [modal]);
+  }, []);
+
+  useEffect(() => {
+    deploymentStore.setNoHeader(false);
+  }, [deploymentStore]);
+
+  function refresh() {
+    permissionsDs.query();
+  }
 
   const buttons = useMemo(() => ([{
     name: formatMessage({ id: `${intlPrefix}.modal.link-service` }),
@@ -43,6 +49,11 @@ const EnvModals = observer(() => {
     name: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
     icon: 'relate',
     handler: openModal,
+    display: tabKey === ASSIGN_TAB,
+  }, {
+    name: formatMessage({ id: 'refresh' }),
+    icon: 'refresh',
+    handler: refresh,
     display: tabKey === ASSIGN_TAB,
   }]), [ASSIGN_TAB, formatMessage, intlPrefix, openModal, tabKey]);
 

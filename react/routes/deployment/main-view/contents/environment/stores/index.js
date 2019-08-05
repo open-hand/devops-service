@@ -18,7 +18,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
     const { intl, AppState: { currentMenuType: { id } }, children } = props;
     const { intlPrefix, deploymentStore: { getSelectedMenu: { menuId } } } = useDeploymentStore();
     const baseInfoDs = useMemo(() => new DataSet(BaseInfoDataSet(id, menuId)), [id, menuId]);
-    // NOTES: 需要将 autoQuery 置为 false
+    // TODO: 设置 autoQuery 为 false，在切换tab时手动 query
     const permissionsDs = useMemo(() => new DataSet(PermissionsDataSet({
       intl,
       intlPrefix,

@@ -6,7 +6,7 @@ export default function useStore() {
   return useLocalStore(() => ({
     selectedMenu: {},
     viewType: 'instance',
-    noHeader: false,
+    noHeader: true,
     setSelectedMenu(data) {
       this.selectedMenu = data;
       this.noHeader = NO_HEADER.includes(menuType);
@@ -20,6 +20,9 @@ export default function useStore() {
     },
     get getViewType() {
       return this.viewType;
+    },
+    setNoHeader(data) {
+      this.noHeader = data;
     },
     get getNoHeader() {
       return this.noHeader;

@@ -1,7 +1,7 @@
 import getTablePostData from '../../../../../../utils/getTablePostData';
 
 export default ({ intl, intlPrefix, projectId, envId }) => ({
-  autoQuery: false,
+  autoQuery: true,
   selection: false,
   pageSize: 10,
   transport: {

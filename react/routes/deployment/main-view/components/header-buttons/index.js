@@ -23,7 +23,7 @@ const HeaderButtons = memo(({ items }) => {
   </div> : null;
 });
 
-HeaderButtons.PropTypes = {
+HeaderButtons.propTypes = {
   items: PropTypes.array,
 };
 

@@ -1,5 +1,6 @@
 import React, { Fragment, useRef, useMemo, lazy, Suspense } from 'react';
 import { observer } from 'mobx-react-lite';
+import isEmpty from 'lodash/isEmpty';
 import classnames from 'classnames';
 import Draggable from 'react-draggable';
 import Sidebar from './sidebar';
@@ -17,7 +18,9 @@ const IstContent = lazy(() => import('./contents/instance'));
 const MainView = observer(() => {
   const {
     prefixCls,
-    deploymentStore,
+    deploymentStore: {
+      getSelectedMenu,
+    },
     itemType: {
       ENV_ITEM,
       APP_ITEM,
@@ -34,7 +37,7 @@ const MainView = observer(() => {
   const { mainStore } = useMainStore();
 
   const content = useMemo(() => {
-    const { menuType } = deploymentStore.getSelectedMenu;
+    const { menuType } = getSelectedMenu;
     const cmMaps = {
       [ENV_ITEM]: <EnvContent />,
       [APP_ITEM]: <AppContent />,
@@ -43,7 +46,7 @@ const MainView = observer(() => {
     return cmMaps[menuType]
       ? <Suspense fallback={<div>loading</div>}>{cmMaps[menuType]}</Suspense>
       : <div>加载数据中</div>;
-  }, [APP_ITEM, ENV_ITEM, IST_ITEM, deploymentStore.getSelectedMenu]);
+  }, [APP_ITEM, ENV_ITEM, IST_ITEM, getSelectedMenu]);
 
   const rootRef = useRef(null);
 
@@ -70,7 +73,7 @@ const MainView = observer(() => {
     ref={rootRef}
     className={`${prefixCls}-wrap`}
   >
-    {!draggable ? null : (
+    {draggable && (
       <Fragment>
         <Draggable
           axis="x"
@@ -92,12 +95,9 @@ const MainView = observer(() => {
     )}
     <Fragment>
       <Sidebar />
-      <div className={`${prefixCls}-main ${dragPrefixCls}-animate`}>
-        {/* content */}
-        <Suspense fallback={<div>loading</div>}>
-          <EnvContent />
-        </Suspense>
-      </div>
+      {!isEmpty(getSelectedMenu) && <div className={`${prefixCls}-main ${dragPrefixCls}-animate`}>
+        {content}
+      </div>}
     </Fragment>
   </div>);
 });
