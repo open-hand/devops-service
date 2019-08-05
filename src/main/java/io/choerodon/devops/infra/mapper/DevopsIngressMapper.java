@@ -16,6 +16,8 @@ import io.choerodon.mybatis.common.Mapper;
  * Description:
  */
 public interface DevopsIngressMapper extends Mapper<DevopsIngressDTO> {
+    List<String> listInstanceNamesByIngressId(@Param("ingressId") Long ingressId);
+
     List<String> listIngressNameByServiceId(@Param("serviceId") Long serviceId);
 
     DevopsIngressDTO queryById(@Param("id") Long ingressId);
