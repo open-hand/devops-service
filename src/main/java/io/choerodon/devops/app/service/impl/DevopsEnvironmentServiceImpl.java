@@ -127,6 +127,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Transactional(rollbackFor = Exception.class)
     public void create(Long projectId, DevopsEnvironmentVO devopsEnvironmentVO) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = ConvertUtils.convertObject(devopsEnvironmentVO, DevopsEnvironmentDTO.class);
+        // 创建环境时默认跳过权限校验
+        devopsEnvironmentDTO.setSkipCheckPermission(Boolean.TRUE);
         devopsEnvironmentDTO.setProjectId(projectId);
         checkCode(projectId, devopsEnvironmentVO.getClusterId(), devopsEnvironmentVO.getCode());
         devopsEnvironmentDTO.setActive(true);
@@ -173,8 +175,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setIamProjectId(projectId);
         gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
 
-        // 创建环境时将项目下所有用户装入payload以便于saga消费
-        gitlabProjectPayload.setUserIds(devopsEnvironmentVO.getUserIds());
         producer.apply(
                 StartSagaBuilder
                         .newBuilder()
