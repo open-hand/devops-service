@@ -3,8 +3,6 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.infra.dto.ServiceInstanceDO;
-
 /**
  * Creator: Runge
  * Date: 2018/8/3
@@ -12,15 +10,18 @@ import io.choerodon.devops.infra.dto.ServiceInstanceDO;
  * Description:
  */
 public class DevopsServiceTargetVO {
-    private List<ServiceInstanceDO> appInstance;
+    private List<AppInstanceInfoVO> appInstance;
+    /**
+     * 是创建网络时所填的标签，也是这个网络本身的选择器
+     */
     private Map<String, String> labels;
     private Map<String, List<EndPointPortVO>> endPoints;
 
-    public List<ServiceInstanceDO> getAppInstance() {
+    public List<AppInstanceInfoVO> getAppInstance() {
         return appInstance;
     }
 
-    public void setAppInstance(List<ServiceInstanceDO> appInstance) {
+    public void setAppInstance(List<AppInstanceInfoVO> appInstance) {
         this.appInstance = appInstance;
     }
 

@@ -30,6 +30,7 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO{
     private String commandStatus;
     private String error;
     private Map<String, String> annotations;
+    private List<String> instances;
 
     public DevopsIngressVO() {
         this.pathList = new ArrayList<>();
@@ -192,6 +193,14 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO{
 
     public void setAnnotations(Map<String, String> annotations) {
         this.annotations = annotations;
+    }
+
+    public List<String> getInstances() {
+        return instances;
+    }
+
+    public void setInstances(List<String> instances) {
+        this.instances = instances;
     }
 
     @Override

@@ -317,6 +317,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         DevopsIngressVO vo = new DevopsIngressVO();
         BeanUtils.copyProperties(devopsIngressDTO, vo);
+        vo.setInstances(devopsIngressMapper.listInstanceNamesByIngressId(vo.getId()));
+
         if (!StringUtils.isEmpty(devopsIngressDTO.getMessage())) {
             V1beta1Ingress ingress = json.deserialize(devopsIngressDTO.getMessage(), V1beta1Ingress.class);
             vo.setAnnotations(ingress.getMetadata().getAnnotations());

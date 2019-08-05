@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ServiceStatus;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -35,12 +36,12 @@ import io.choerodon.devops.infra.util.TypeUtil;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 
 /**
@@ -91,6 +92,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsServiceMapper devopsServiceMapper;
     @Autowired
     private TransactionalProducer producer;
+    @Autowired
+    private IamServiceClientOperator iamServiceClientOperator;
 
 
     @Override
@@ -148,12 +151,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 }
             }
         }
-        DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
-        if(devopsServiceQueryDTO!=null) {
-            return queryDtoToVo(baseQueryById(id));
-        }else {
-            return null;
-        }
+        return queryDtoToVo(baseQueryById(id));
     }
 
     @Override
@@ -642,6 +640,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     private DevopsServiceDTO voToDto(DevopsServiceReqVO devopsServiceReqVO) {
+        if (devopsServiceReqVO == null) {
+            return null;
+        }
         DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
         BeanUtils.copyProperties(devopsServiceReqVO, devopsServiceDTO);
         devopsServiceDTO.setPorts(gson.toJson(devopsServiceReqVO.getPorts()));
@@ -650,6 +651,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     private DevopsServiceVO queryDtoToVo(DevopsServiceQueryDTO devopsServiceQueryDTO) {
+        if (devopsServiceQueryDTO == null) {
+            return null;
+        }
         DevopsServiceVO devopsServiceVO = new DevopsServiceVO();
         BeanUtils.copyProperties(devopsServiceQueryDTO, devopsServiceVO);
 
@@ -663,12 +667,25 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceVO.setConfig(devopsServiceConfigVO);
 
         DevopsServiceTargetVO devopsServiceTargetVO = new DevopsServiceTargetVO();
-        devopsServiceTargetVO.setAppInstance(devopsServiceQueryDTO.getAppInstance());
-        devopsServiceTargetVO.setLabels(gson.fromJson(devopsServiceQueryDTO.getEndPoints(), new TypeToken<Map<String, List<EndPointPortVO>>>() {
+        devopsServiceTargetVO.setAppInstance(ConvertUtils.convertList(devopsServiceQueryDTO.getAppInstance(), AppInstanceInfoVO.class));
+        if (!StringUtils.isEmpty(devopsServiceQueryDTO.getMessage())) {
+            V1Service v1Service = json.deserialize(devopsServiceQueryDTO.getMessage(), V1Service.class);
+            devopsServiceTargetVO.setLabels(v1Service.getSpec().getSelector());
+            devopsServiceVO.setLabels(v1Service.getMetadata().getLabels());
+        }
+        devopsServiceTargetVO.setLabels(gson.fromJson(devopsServiceQueryDTO.getLabels(), new TypeToken<Map<String, String>>() {
         }.getType()));
-        devopsServiceTargetVO.setEndPoints(gson.fromJson(devopsServiceQueryDTO.getLabels(), new TypeToken<Map<String, String>>() {
+        devopsServiceTargetVO.setEndPoints(gson.fromJson(devopsServiceQueryDTO.getEndPoints(), new TypeToken<Map<String, List<EndPointPortVO>>>() {
         }.getType()));
         devopsServiceVO.setTarget(devopsServiceTargetVO);
+
+        // service的dnsName为${serviceName.namespace}
+        devopsServiceVO.setDns(devopsServiceVO.getName() + "." + devopsServiceQueryDTO.getEnvCode());
+
+        if (devopsServiceQueryDTO.getCreatedBy() != 0) {
+            devopsServiceVO.setCreatorName(iamServiceClientOperator.queryUserByUserId(devopsServiceQueryDTO.getCreatedBy()).getRealName());
+        }
+
         return devopsServiceVO;
     }
 
@@ -912,7 +929,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         resourceConvertToYamlHandler.operationEnvGitlabFile(SERVICE_RREFIX + devopsServiceDTO.getName(), TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
                 userAttrDTO.getGitlabUserId(), devopsServiceDTO.getId(), SERVICE, v1Endpoints, false, devopsServiceDTO.getEnvId(), path);
 
-        ServiceSagaPayLoad serviceSagaPayLoad = new ServiceSagaPayLoad(devopsEnvironmentDTO.getProjectId(),userAttrDTO.getGitlabUserId());
+        ServiceSagaPayLoad serviceSagaPayLoad = new ServiceSagaPayLoad(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         serviceSagaPayLoad.setDevopsServiceDTO(devopsServiceDTO);
         serviceSagaPayLoad.setV1Service(service);
         serviceSagaPayLoad.setCreated(serviceSagaPayLoad.getCreated());
