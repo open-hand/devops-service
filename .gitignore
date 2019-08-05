@@ -15,7 +15,6 @@ target/
 *.iws
 *.iml
 *.ipr
-.project
 .vscode
 
 ### NetBeans ###
@@ -58,4 +57,3 @@ yarn.lock
 # folder
 dist
 lib
-

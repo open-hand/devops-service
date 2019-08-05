@@ -6,8 +6,9 @@ const ENV_ITEM = 'environment';
 const APP_ITEM = 'application';
 const IST_ITEM = 'instances';
 
-const formatData = (value) => {
+const formatData = (value, store) => {
   if (isEmpty(value)) return [];
+  const expandsKeys = store.getExpandedKeys;
 
   const flatted = [];
   function flatData(data, prevKey = '', itemType = ENV_ITEM) {
@@ -19,7 +20,7 @@ const formatData = (value) => {
       flatted.push({
         ...peerNode,
         name: node.name || node.code,
-        expand: false,
+        expand: expandsKeys.includes(key),
         parentId: prevKey || '0',
         itemType,
         key,
@@ -38,7 +39,7 @@ const formatData = (value) => {
   return flatted;
 };
 
-export default (projectId, store) => ({
+export default (projectId, store, sidebarStore) => ({
   autoQuery: true,
   paging: false,
   selection: 'single',
@@ -75,7 +76,7 @@ export default (projectId, store) => ({
       method: 'get',
       transformResponse(response) {
         const res = JSON.parse(response);
-        const result = formatData(res);
+        const result = formatData(res, sidebarStore);
         if (result.length) {
           const { id, itemType, parentId } = result[0];
           store.setSelectedMenu({

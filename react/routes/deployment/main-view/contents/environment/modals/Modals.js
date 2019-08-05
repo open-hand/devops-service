@@ -40,22 +40,26 @@ const EnvModals = observer(() => {
     icon: 'relate',
     handler: openModal,
     display: true,
+    group: 1,
   }, {
     name: formatMessage({ id: `${intlPrefix}.modal.permission` }),
     icon: 'authority',
     handler: openModal,
     display: true,
+    group: 1,
   }, {
     name: formatMessage({ id: `${intlPrefix}.modal.env-detail` }),
     icon: 'relate',
     handler: openModal,
     display: tabKey === ASSIGN_TAB,
+    group: 1,
   }, {
     name: formatMessage({ id: 'refresh' }),
     icon: 'refresh',
     handler: refresh,
     display: tabKey === ASSIGN_TAB,
-  }]), [ASSIGN_TAB, formatMessage, intlPrefix, openModal, tabKey]);
+    group: 2,
+  }]), [ASSIGN_TAB, formatMessage, intlPrefix, openModal, refresh, tabKey]);
 
   return <HeaderButtons items={buttons} />;
 });
