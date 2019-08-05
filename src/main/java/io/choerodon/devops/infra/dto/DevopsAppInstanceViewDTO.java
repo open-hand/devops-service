@@ -8,6 +8,7 @@ public class DevopsAppInstanceViewDTO {
     private String code;
     private Long podCount;
     private Long podRunningCount;
+    private String status;
 
     public Long getId() {
         return id;
@@ -39,5 +40,13 @@ public class DevopsAppInstanceViewDTO {
 
     public void setPodRunningCount(Long podRunningCount) {
         this.podRunningCount = podRunningCount;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
