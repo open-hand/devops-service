@@ -16,6 +16,17 @@ public class GitlabGroupPayload {
     private Long userId;
     private List<String> roleLabels;
 
+    public GitlabGroupPayload() {
+    }
+
+    public GitlabGroupPayload(String projectCode, String projectName, String organizationCode, String organizationName, String userName, Long userId) {
+        this.projectCode = projectCode;
+        this.projectName = projectName;
+        this.organizationCode = organizationCode;
+        this.organizationName = organizationName;
+        this.userName = userName;
+        this.userId = userId;
+    }
 
     public Long getProjectId() {
         return projectId;

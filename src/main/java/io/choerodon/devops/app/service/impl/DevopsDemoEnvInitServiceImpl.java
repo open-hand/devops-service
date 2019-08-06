@@ -154,7 +154,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      */
     private AppServiceRepVO createDemoApp(Long projectId, AppServiceReqVO applicationReqDTO) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        ApplicationValidator.checkApplicationService(applicationReqDTO);
+        ApplicationValidator.checkApplicationService(applicationReqDTO.getCode());
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, AppServiceDTO.class);

@@ -30,6 +30,7 @@ public class AppServiceDTO extends BaseDTO {
     private String type;
     private Boolean isSkipCheckPermission;
     private String imgUrl;
+    private String repository;
 
     @Transient
     private String publishLevel;
@@ -43,6 +44,14 @@ public class AppServiceDTO extends BaseDTO {
     private String sonarUrl;
     @Transient
     private String gitlabProjectUrl;
+
+    public String getRepository() {
+        return repository;
+    }
+
+    public void setRepository(String repository) {
+        this.repository = repository;
+    }
 
     public String getImgUrl() {
         return imgUrl;

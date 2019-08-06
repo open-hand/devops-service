@@ -67,7 +67,7 @@ public class AppServiceController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下从外部代码库导入服务")
-    @PostMapping("/import")
+    @PostMapping("/import/external")
     public ResponseEntity<AppServiceRepVO> importApp(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -674,5 +674,17 @@ public class AppServiceController {
                 applicationServiceService.listProjects(organizationId, projectId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.projects"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "导入应用")
+    @PostMapping(value = "/import/internal")
+    public ResponseEntity importAppService(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用信息", required = true)
+            @RequestBody List<ApplicationImportInternalVO> importInternalVOS) {
+        applicationServiceService.importAppServiceInternal(projectId, importInternalVOS);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }
