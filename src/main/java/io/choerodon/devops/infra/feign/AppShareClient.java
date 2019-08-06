@@ -21,11 +21,11 @@ public interface AppShareClient {
     Call<PageInfo<RemoteAppServiceVO>> getAppShares(@QueryMap Map<String, Object> map);
 
     @GET("v1/public/app_publishes/{app_id}/list_versions")
-    Call<PageInfo<MarketAppPublishVersionVO>> listVersionByAppId(@Path("app_id") Long appId,
+    Call<PageInfo<MarketAppPublishVersionVO>> listVersionByAppId(@Path("app_id") Long appServiceId,
                                                                 @QueryMap Map<String, Object> map);
 
     @GET("v1/public/app_publishes/{app_id}/versions/{version_id}/config_info")
-    Call<AppServiceVersionAndValueVO> getConfigInfoByVerionId(@Path("app_id") Long appId,
+    Call<AppServiceVersionAndValueVO> getConfigInfoByVerionId(@Path("app_id") Long appServiceId,
                                                               @Path("version_id") Long versionId,
                                                               @QueryMap Map<String, Object> map);
 

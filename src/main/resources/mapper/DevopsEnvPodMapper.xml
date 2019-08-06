@@ -10,10 +10,10 @@
                     dp.`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
-            <if test='searchParam.appVersion != null and searchParam.appVersion.size > 0'>
+            <if test='searchParam.appServiceService != null and searchParam.appServiceService.size > 0'>
                 AND
-                <foreach collection="searchParam.appVersion" item="appVersion" open="(" separator=" OR " close=")">
-                    dav.version LIKE CONCAT(CONCAT('%', #{appVersion, jdbcType=VARCHAR}),'%')
+                <foreach collection="searchParam.appServiceService" item="appServiceService" open="(" separator=" OR " close=")">
+                    dav.version LIKE CONCAT(CONCAT('%', #{appServiceService, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.ip != null and searchParam.ip.size > 0'>
@@ -57,8 +57,8 @@
         dp.is_ready,
         dp.`status`,
         dp.creation_date,
-        da.`name` appName,
-        dav.version appVersion,
+        da.`name` appServiceName,
+        dav.version appServiceVersion,
         dai.`code` instanceCode,
         de.id envId,
         de.`code` envCode,

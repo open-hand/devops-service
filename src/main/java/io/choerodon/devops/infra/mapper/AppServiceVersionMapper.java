@@ -56,13 +56,13 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
 
     List<Long> listByAppIdAndVersionIds(@Param("applicationId") Long applicationId);
 
-    List<AppServiceVersionDTO> listUpgradeVersion(@Param("appVersionId") Long appVersionId);
+    List<AppServiceVersionDTO> listUpgradeVersion(@Param("appServiceServiceId") Long appServiceServiceId);
 
-    Integer checkByProjectAndVersionId(@Param("projectId") Long projectId, @Param("appVersionId") Long appVersionId);
+    Integer checkByProjectAndVersionId(@Param("projectId") Long projectId, @Param("appServiceServiceId") Long appServiceServiceId);
 
     AppServiceVersionDTO queryNewestVersion(@Param("appServiceId") Long appServiceId);
 
-    List<AppServiceVersionDTO> listByAppVersionIds(@Param("appVersionIds") List<Long> appVersionIds);
+    List<AppServiceVersionDTO> listByAppVersionIds(@Param("appServiceServiceIds") List<Long> appServiceServiceIds);
 
     List<AppServiceVersionDTO> listByAppIdAndBranch(@Param("appServiceId") Long appServiceId, @Param("branch") String branch);
 

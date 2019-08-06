@@ -13,7 +13,7 @@ public class DevOpsAppServicePayload {
     private Integer groupId;
     private String type;
     private Long organizationId;
-    private Long appId;
+    private Long appServiceId;
     private List<Long> userIds;
     private Boolean isSkipCheckPermission;
     private Long iamProjectId;
@@ -67,11 +67,11 @@ public class DevOpsAppServicePayload {
     }
 
     public Long getAppId() {
-        return appId;
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setAppId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public List<Long> getUserIds() {

@@ -47,9 +47,9 @@ public class PipelineAppDeployServiceImpl implements PipelineAppDeployService {
     }
 
     @Override
-    public List<PipelineAppServiceDeployDTO> baseQueryByAppId(Long appId) {
+    public List<PipelineAppServiceDeployDTO> baseQueryByAppId(Long appServiceId) {
         PipelineAppServiceDeployDTO pipelineAppServiceDeployDTO = new PipelineAppServiceDeployDTO();
-        pipelineAppServiceDeployDTO.setAppServiceId(appId);
+        pipelineAppServiceDeployDTO.setAppServiceId(appServiceId);
         return appDeployMapper.select(pipelineAppServiceDeployDTO);
     }
 

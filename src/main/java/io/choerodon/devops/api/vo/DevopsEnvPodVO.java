@@ -7,7 +7,7 @@ import java.util.List;
 public class DevopsEnvPodVO {
 
     private Long id;
-    private Long appInstanceId;
+    private Long instanceId;
     private String name;
     private String ip;
     private Boolean isReady;
@@ -197,11 +197,11 @@ public class DevopsEnvPodVO {
         this.restartCount = restartCount;
     }
 
-    public Long getAppInstanceId() {
-        return appInstanceId;
+    public Long getInstanceId() {
+        return instanceId;
     }
 
-    public void setAppInstanceId(Long appInstanceId) {
-        this.appInstanceId = appInstanceId;
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 }

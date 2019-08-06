@@ -21,42 +21,42 @@ public interface DevopsGitService {
      * 获取工程下地址
      *
      * @param projectId
-     * @param appId
+     * @param appServiceId
      * @return
      */
-    String queryUrl(Long projectId, Long appId);
+    String queryUrl(Long projectId, Long appServiceId);
 
     /**
      * 创建标签
      *
      * @param projectId
-     * @param appId
+     * @param appServiceId
      * @param tag
      * @param ref
      * @param msg
      * @param releaseNotes
      */
-    void createTag(Long projectId, Long appId, String tag, String ref, String msg, String releaseNotes);
+    void createTag(Long projectId, Long appServiceId, String tag, String ref, String msg, String releaseNotes);
 
     /**
      * 更新标签
      *
      * @param projectId
-     * @param appId
+     * @param appServiceId
      * @param tag
      * @param releaseNotes
      * @return
      */
-    TagVO updateTag(Long projectId, Long appId, String tag, String releaseNotes);
+    TagVO updateTag(Long projectId, Long appServiceId, String tag, String releaseNotes);
 
     /**
      * 删除标签
      *
      * @param projectId
-     * @param appId
+     * @param appServiceId
      * @param tag
      */
-    void deleteTag(Long projectId, Long appId, String tag);
+    void deleteTag(Long projectId, Long appServiceId, String tag);
 
     /**
      * 创建分支

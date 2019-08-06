@@ -12,7 +12,7 @@
         dgc.commit_sha,
         dgc.commit_content,
         dgc.url,
-        da.`name` appName
+        da.`name` appServiceName
         FROM
         devops_gitlab_commit dgc
         JOIN devops_app_service da ON dgc.app_service_id = da.id
@@ -20,7 +20,7 @@
         da.project_id = #{projectId}
         <if test="appServiceIds != null">
            AND dgc.app_service_id IN
-            <foreach collection="appIds" item="appServiceId" open="(" close=")" separator=",">
+            <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
                 #{appServiceId}
             </foreach>
         </if>

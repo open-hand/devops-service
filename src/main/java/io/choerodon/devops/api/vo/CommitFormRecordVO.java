@@ -18,7 +18,7 @@ public class CommitFormRecordVO {
     private String userName;
     private Date commitDate;
     private String commitSHA;
-    private String appName;
+    private String appServiceName;
     private String url;
 
     public CommitFormRecordVO() {
@@ -34,7 +34,7 @@ public class CommitFormRecordVO {
         this.userName = userName;
         this.commitDate = devopsGitlabCommitDO.getCommitDate();
         this.commitSHA = devopsGitlabCommitDO.getCommitSha();
-        this.appName = devopsGitlabCommitDO.getAppName();
+        this.appServiceName = devopsGitlabCommitDO.getAppServiceName();
         this.url = devopsGitlabCommitDO.getUrl();
     }
 
@@ -94,12 +94,12 @@ public class CommitFormRecordVO {
         this.commitSHA = commitSHA;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
     public String getUrl() {

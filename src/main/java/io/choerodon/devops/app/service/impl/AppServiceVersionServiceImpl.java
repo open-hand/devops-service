@@ -226,54 +226,54 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public List<AppServiceVersionRespVO> listByAppId(Long appId, Boolean isPublish) {
-        return ConvertUtils.convertList(baseListByAppId(appId, isPublish), AppServiceVersionRespVO.class);
+    public List<AppServiceVersionRespVO> listByAppId(Long appServiceId, Boolean isPublish) {
+        return ConvertUtils.convertList(baseListByAppId(appServiceId, isPublish), AppServiceVersionRespVO.class);
     }
 
     @Override
-    public PageInfo<AppServiceVersionRespVO> pageByAppIdAndParam(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<AppServiceVersionRespVO> pageByAppIdAndParam(Long appServiceId, Boolean isPublish, Long appServiceServiceId, PageRequest pageRequest, String searchParam) {
         return ConvertUtils.convertPage(
-                basePageByPublished(appId, isPublish, appVersionId, pageRequest, searchParam), AppServiceVersionRespVO.class);
+                basePageByPublished(appServiceId, isPublish, appServiceServiceId, pageRequest, searchParam), AppServiceVersionRespVO.class);
     }
 
     @Override
-    public List<AppServiceVersionRespVO> listDeployedByAppId(Long projectId, Long appId) {
+    public List<AppServiceVersionRespVO> listDeployedByAppId(Long projectId, Long appServiceId) {
         return ConvertUtils.convertList(
-                baseListAppDeployedVersion(projectId, appId), AppServiceVersionRespVO.class);
+                baseListAppDeployedVersion(projectId, appServiceId), AppServiceVersionRespVO.class);
     }
 
     @Override
-    public List<AppServiceVersionRespVO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
+    public List<AppServiceVersionRespVO> listByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId) {
         return ConvertUtils.convertList(
-                baseListByAppIdAndEnvId(projectId, appId, envId), AppServiceVersionRespVO.class);
+                baseListByAppIdAndEnvId(projectId, appServiceId, envId), AppServiceVersionRespVO.class);
     }
 
     @Override
-    public PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appId, PageRequest pageRequest, String searchParams) {
+    public PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest, String searchParams) {
         Map<String, Object> searchParamMap = json.deserialize(searchParams, Map.class);
         PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
                 .doSelectPageInfo(() ->
                         appServiceVersionMapper.listByOptions(
-                                appId,
+                                appServiceId,
                                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
         return ConvertUtils.convertPage(applicationVersionDTOPageInfo, AppServiceVersionVO.class);
     }
 
     @Override
-    public List<AppServiceVersionRespVO> listUpgradeableAppVersion(Long projectId, Long appVersionId) {
-        baseCheckByProjectAndVersionId(projectId, appVersionId);
+    public List<AppServiceVersionRespVO> listUpgradeableAppVersion(Long projectId, Long appServiceServiceId) {
+        baseCheckByProjectAndVersionId(projectId, appServiceServiceId);
         return ConvertUtils.convertList(
-                baseListUpgradeVersion(appVersionId), AppServiceVersionRespVO.class);
+                baseListUpgradeVersion(appServiceServiceId), AppServiceVersionRespVO.class);
     }
 
     @Override
-    public DeployVersionVO queryDeployedVersions(Long appId) {
-        AppServiceVersionDTO appServiceVersionDTO = baseQueryNewestVersion(appId);
+    public DeployVersionVO queryDeployedVersions(Long appServiceId) {
+        AppServiceVersionDTO appServiceVersionDTO = baseQueryNewestVersion(appServiceId);
         DeployVersionVO deployVersionVO = new DeployVersionVO();
         List<DeployEnvVersionVO> deployEnvVersionVOS = new ArrayList<>();
         if (appServiceVersionDTO != null) {
-            Map<Long, List<AppServiceInstanceDTO>> envInstances = appServiceInstanceService.baseListByAppId(appId)
+            Map<Long, List<AppServiceInstanceDTO>> envInstances = appServiceInstanceService.baseListByAppId(appServiceId)
                     .stream()
                     .filter(applicationInstanceDTO -> applicationInstanceDTO.getCommandId() != null)
                     .collect(Collectors.groupingBy(AppServiceInstanceDTO::getEnvId));
@@ -314,25 +314,25 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public String queryVersionValue(Long appVersionId) {
-        AppServiceVersionDTO appServiceVersionDTO = baseQuery(appVersionId);
+    public String queryVersionValue(Long appServiceServiceId) {
+        AppServiceVersionDTO appServiceVersionDTO = baseQuery(appServiceServiceId);
         return appServiceVersionValueService.baseQuery(appServiceVersionDTO.getValueId()).getValue();
     }
 
     @Override
-    public AppServiceVersionRespVO queryById(Long appVersionId) {
-        return ConvertUtils.convertObject(baseQuery(appVersionId), AppServiceVersionRespVO.class);
+    public AppServiceVersionRespVO queryById(Long appServiceServiceId) {
+        return ConvertUtils.convertObject(baseQuery(appServiceServiceId), AppServiceVersionRespVO.class);
     }
 
     @Override
-    public List<AppServiceVersionRespVO> listByAppServiceVersionIds(List<Long> appVersionIds) {
-        return ConvertUtils.convertList(baseListByAppVersionIds(appVersionIds), AppServiceVersionRespVO.class);
+    public List<AppServiceVersionRespVO> listByAppServiceVersionIds(List<Long> appServiceServiceIds) {
+        return ConvertUtils.convertList(baseListByAppVersionIds(appServiceServiceIds), AppServiceVersionRespVO.class);
     }
 
     @Override
-    public List<AppServiceVersionAndCommitVO> listByAppIdAndBranch(Long appId, String branch) {
-        List<AppServiceVersionDTO> appServiceVersionDTOS = baseListByAppIdAndBranch(appId, branch);
-        AppServiceDTO applicationDTO = applicationService.baseQuery(appId);
+    public List<AppServiceVersionAndCommitVO> listByAppIdAndBranch(Long appServiceId, String branch) {
+        List<AppServiceVersionDTO> appServiceVersionDTOS = baseListByAppIdAndBranch(appServiceId, branch);
+        AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceId);
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<AppServiceVersionAndCommitVO> appServiceVersionAndCommitVOS = new ArrayList<>();
@@ -358,18 +358,18 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public Boolean queryByPipelineId(Long pipelineId, String branch, Long appId) {
-        return appServiceVersionMapper.queryByPipelineId(pipelineId, branch, appId) != null;
+    public Boolean queryByPipelineId(Long pipelineId, String branch, Long appServiceId) {
+        return appServiceVersionMapper.queryByPipelineId(pipelineId, branch, appServiceId) != null;
     }
 
     @Override
-    public String queryValueById(Long projectId, Long appId) {
-        return appServiceVersionMapper.queryValueByAppId(appId);
+    public String queryValueById(Long projectId, Long appServiceId) {
+        return appServiceVersionMapper.queryValueByAppId(appServiceId);
     }
 
     @Override
-    public AppServiceVersionRespVO queryByAppAndVersion(Long appId, String version) {
-        return ConvertUtils.convertObject(baseQueryByAppIdAndVersion(appId, version), AppServiceVersionRespVO.class);
+    public AppServiceVersionRespVO queryByAppAndVersion(Long appServiceId, String version) {
+        return ConvertUtils.convertObject(baseQueryByAppIdAndVersion(appServiceId, version), AppServiceVersionRespVO.class);
     }
 
     @Override
@@ -390,7 +390,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public PageInfo<MarketAppPublishVersionVO> pageVersionByAppId(Long appId, PageRequest pageRequest, String params) {
+    public PageInfo<MarketAppPublishVersionVO> pageVersionByAppId(Long appServiceId, PageRequest pageRequest, String params) {
         DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
@@ -406,7 +406,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         map.put("access_token", marketConnectInfoDO.getAccessToken());
         Response<PageInfo<MarketAppPublishVersionVO>> pageInfoResponse = null;
         try {
-            pageInfoResponse = shareClient.listVersionByAppId(appId, map).execute();
+            pageInfoResponse = shareClient.listVersionByAppId(appServiceId, map).execute();
             if (!pageInfoResponse.isSuccessful()) {
                 throw new CommonException("error.get.app.version.shares");
             }
@@ -417,16 +417,16 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public PageInfo<AppServiceVersionRespVO> pageShareVersionByAppId(Long appId, PageRequest pageRequest, String params) {
+    public PageInfo<AppServiceVersionRespVO> pageShareVersionByAppId(Long appServiceId, PageRequest pageRequest, String params) {
         PageInfo<AppServiceVersionDTO> applicationDTOPageInfo = PageHelper.startPage(
                 pageRequest.getPage(),
                 pageRequest.getSize(),
-                PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceVersionMapper.listShareVersionByAppId(appId, params));
+                PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceVersionMapper.listShareVersionByAppId(appServiceId, params));
         return ConvertUtils.convertPage(applicationDTOPageInfo, AppServiceVersionRespVO.class);
     }
 
     @Override
-    public AppServiceVersionAndValueVO queryConfigByVerionId(Long appId, Long versionId) {
+    public AppServiceVersionAndValueVO queryConfigByVerionId(Long appServiceId, Long versionId) {
         DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
         if (marketConnectInfoDO == null) {
             throw new CommonException("not.exist.remote token");
@@ -436,7 +436,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         map.put("access_token", marketConnectInfoDO.getAccessToken());
         Response<AppServiceVersionAndValueVO> versionAndValueDTOResponse = null;
         try {
-            versionAndValueDTOResponse = shareClient.getConfigInfoByVerionId(appId, versionId, map).execute();
+            versionAndValueDTOResponse = shareClient.getConfigInfoByVerionId(appServiceId, versionId, map).execute();
             if (!versionAndValueDTOResponse.isSuccessful()) {
                 throw new CommonException("error.get.app.version.config.shares");
             }
@@ -446,23 +446,23 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return versionAndValueDTOResponse.body();
     }
 
-    public List<AppServiceVersionDTO> baseListByAppId(Long appId, Boolean isPublish) {
-        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppId(appId, isPublish);
+    public List<AppServiceVersionDTO> baseListByAppId(Long appServiceId, Boolean isPublish) {
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppId(appServiceId, isPublish);
         if (appServiceVersionDTOS.isEmpty()) {
             return Collections.emptyList();
         }
         return appServiceVersionDTOS;
     }
 
-    public PageInfo<AppServiceVersionDTO> basePageByPublished(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<AppServiceVersionDTO> basePageByPublished(Long appServiceId, Boolean isPublish, Long appServiceServiceId, PageRequest pageRequest, String searchParam) {
         PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo;
         applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
-                () -> appServiceVersionMapper.selectByAppIdAndParamWithPage(appId, isPublish, searchParam));
-        if (appVersionId != null) {
+                () -> appServiceVersionMapper.selectByAppIdAndParamWithPage(appServiceId, isPublish, searchParam));
+        if (appServiceServiceId != null) {
             AppServiceVersionDTO versionDO = new AppServiceVersionDTO();
-            versionDO.setId(appVersionId);
+            versionDO.setId(appServiceServiceId);
             AppServiceVersionDTO searchDO = appServiceVersionMapper.selectByPrimaryKey(versionDO);
-            applicationVersionDTOPageInfo.getList().removeIf(v -> v.getId().equals(appVersionId));
+            applicationVersionDTOPageInfo.getList().removeIf(v -> v.getId().equals(appServiceServiceId));
             applicationVersionDTOPageInfo.getList().add(0, searchDO);
         }
         if (applicationVersionDTOPageInfo.getList().isEmpty()) {
@@ -471,30 +471,30 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return applicationVersionDTOPageInfo;
     }
 
-    public List<AppServiceVersionDTO> baseListAppDeployedVersion(Long projectId, Long appId) {
+    public List<AppServiceVersionDTO> baseListAppDeployedVersion(Long projectId, Long appServiceId) {
         List<AppServiceVersionDTO> appServiceVersionDTOS =
-                appServiceVersionMapper.listAppDeployedVersion(projectId, appId);
+                appServiceVersionMapper.listAppDeployedVersion(projectId, appServiceId);
         if (appServiceVersionDTOS.isEmpty()) {
             return Collections.emptyList();
         }
         return appServiceVersionDTOS;
     }
 
-    public AppServiceVersionDTO baseQuery(Long appVersionId) {
-        return appServiceVersionMapper.selectByPrimaryKey(appVersionId);
+    public AppServiceVersionDTO baseQuery(Long appServiceServiceId) {
+        return appServiceVersionMapper.selectByPrimaryKey(appServiceServiceId);
     }
 
-    public List<AppServiceVersionDTO> baseListByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
-        return appServiceVersionMapper.listByAppIdAndEnvId(projectId, appId, envId);
+    public List<AppServiceVersionDTO> baseListByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId) {
+        return appServiceVersionMapper.listByAppIdAndEnvId(projectId, appServiceId, envId);
     }
 
     public String baseQueryValue(Long versionId) {
         return appServiceVersionMapper.queryValue(versionId);
     }
 
-    public AppServiceVersionDTO baseQueryByAppIdAndVersion(Long appId, String version) {
+    public AppServiceVersionDTO baseQueryByAppIdAndVersion(Long appServiceId, String version) {
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-        appServiceVersionDTO.setAppServiceId(appId);
+        appServiceVersionDTO.setAppServiceId(appServiceId);
         appServiceVersionDTO.setVersion(version);
         List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
         if (appServiceVersionDTOS.isEmpty()) {
@@ -503,10 +503,10 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return appServiceVersionDTOS.get(0);
     }
 
-    public void baseUpdatePublishLevelByIds(List<Long> appVersionIds, Long level) {
+    public void baseUpdatePublishLevelByIds(List<Long> appServiceServiceIds, Long level) {
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
         appServiceVersionDTO.setIsPublish(level);
-        for (Long id : appVersionIds) {
+        for (Long id : appServiceServiceIds) {
             appServiceVersionDTO.setId(id);
             appServiceVersionDTO.setObjectVersionNumber(appServiceVersionMapper.selectByPrimaryKey(id).getObjectVersionNumber());
             if (appServiceVersionDTO.getObjectVersionNumber() == null) {
@@ -518,7 +518,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
     }
 
-    public PageInfo<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appId, PageRequest pageRequest,
+    public PageInfo<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest,
                                                             String searchParam, Boolean isProjectOwner,
                                                             Long userId) {
         Sort sort = pageRequest.getSort();
@@ -541,13 +541,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             applicationVersionDTOPageInfo = PageHelper
-                    .startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper.listApplicationVersion(projectId, appId,
+                    .startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper.listApplicationVersion(projectId, appServiceId,
                             TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), isProjectOwner, userId));
         } else {
             applicationVersionDTOPageInfo = PageHelper.startPage(
                     pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper
-                    .listApplicationVersion(projectId, appId, null, null, isProjectOwner, userId));
+                    .listApplicationVersion(projectId, appServiceId, null, null, isProjectOwner, userId));
         }
         return applicationVersionDTOPageInfo;
     }
@@ -556,12 +556,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return appServiceVersionMapper.listByPublished(applicationId);
     }
 
-    public Boolean baseCheckByAppIdAndVersionIds(Long appId, List<Long> appVersionIds) {
-        if (appId == null || appVersionIds.isEmpty()) {
+    public Boolean baseCheckByAppIdAndVersionIds(Long appServiceId, List<Long> appServiceServiceIds) {
+        if (appServiceId == null || appServiceServiceIds.isEmpty()) {
             throw new CommonException("error.app.version.check");
         }
-        List<Long> versionList = appServiceVersionMapper.listByAppIdAndVersionIds(appId);
-        if (appVersionIds.stream().anyMatch(t -> !versionList.contains(t))) {
+        List<Long> versionList = appServiceVersionMapper.listByAppIdAndVersionIds(appServiceId);
+        if (appServiceServiceIds.stream().anyMatch(t -> !versionList.contains(t))) {
             throw new CommonException("error.app.version.check");
         }
         return true;
@@ -603,40 +603,40 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
     }
 
-    public List<AppServiceVersionDTO> baseListUpgradeVersion(Long appVersionId) {
-        return appServiceVersionMapper.listUpgradeVersion(appVersionId);
+    public List<AppServiceVersionDTO> baseListUpgradeVersion(Long appServiceServiceId) {
+        return appServiceVersionMapper.listUpgradeVersion(appServiceServiceId);
     }
 
 
-    public void baseCheckByProjectAndVersionId(Long projectId, Long appVersionId) {
-        Integer index = appServiceVersionMapper.checkByProjectAndVersionId(projectId, appVersionId);
+    public void baseCheckByProjectAndVersionId(Long projectId, Long appServiceServiceId) {
+        Integer index = appServiceVersionMapper.checkByProjectAndVersionId(projectId, appServiceServiceId);
         if (index == 0) {
             throw new CommonException("error.project.AppVersion.notExist");
         }
     }
 
-    public AppServiceVersionDTO baseQueryByCommitSha(Long appId, String ref, String sha) {
-        return appServiceVersionMapper.queryByCommitSha(appId, ref, sha);
+    public AppServiceVersionDTO baseQueryByCommitSha(Long appServiceId, String ref, String sha) {
+        return appServiceVersionMapper.queryByCommitSha(appServiceId, ref, sha);
     }
 
-    public AppServiceVersionDTO baseQueryNewestVersion(Long appId) {
-        return appServiceVersionMapper.queryNewestVersion(appId);
+    public AppServiceVersionDTO baseQueryNewestVersion(Long appServiceId) {
+        return appServiceVersionMapper.queryNewestVersion(appServiceId);
     }
 
-    public List<AppServiceVersionDTO> baseListByAppVersionIds(List<Long> appVersionIds) {
-        return appServiceVersionMapper.listByAppVersionIds(appVersionIds);
+    public List<AppServiceVersionDTO> baseListByAppVersionIds(List<Long> appServiceServiceIds) {
+        return appServiceVersionMapper.listByAppVersionIds(appServiceServiceIds);
     }
 
-    public List<AppServiceVersionDTO> baseListByAppIdAndBranch(Long appId, String branch) {
-        return appServiceVersionMapper.listByAppIdAndBranch(appId, branch);
+    public List<AppServiceVersionDTO> baseListByAppIdAndBranch(Long appServiceId, String branch) {
+        return appServiceVersionMapper.listByAppIdAndBranch(appServiceId, branch);
     }
 
-    public String baseQueryByPipelineId(Long pipelineId, String branch, Long appId) {
-        return appServiceVersionMapper.queryByPipelineId(pipelineId, branch, appId);
+    public String baseQueryByPipelineId(Long pipelineId, String branch, Long appServiceId) {
+        return appServiceVersionMapper.queryByPipelineId(pipelineId, branch, appServiceId);
     }
 
-    public String baseQueryValueByAppId(Long appId) {
-        return appServiceVersionMapper.queryValueByAppId(appId);
+    public String baseQueryValueByAppId(Long appServiceId) {
+        return appServiceVersionMapper.queryValueByAppId(appServiceId);
     }
 
 }

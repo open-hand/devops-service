@@ -10,6 +10,6 @@ public interface AppServiceVersionValueService {
     AppServiceVersionValueDTO baseCreate(AppServiceVersionValueDTO
                                                  appServiceVersionValueDTO);
 
-    AppServiceVersionValueDTO baseQuery(Long appVersionValueId);
+    AppServiceVersionValueDTO baseQuery(Long appServiceServiceValueId);
 
 }

@@ -35,13 +35,13 @@ public interface DevopsDeployValueService {
      * 项目下获取部署配置
      *
      * @param projectId
-     * @param appId
+     * @param appServiceId
      * @param envId
      * @param pageRequest
      * @param params
      * @return
      */
-    PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params);
+    PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, PageRequest pageRequest, String params);
 
     /**
      * 项目下查询配置详情
@@ -64,11 +64,11 @@ public interface DevopsDeployValueService {
      * 根据应用Id和环境Id获取配置
      *
      * @param projectId
-     * @param appId
+     * @param appServiceId
      * @param envId
      * @return
      */
-    List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appId, Long envId);
+    List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appServiceId, Long envId);
 
     /**
      * 检测能否删除
@@ -79,7 +79,7 @@ public interface DevopsDeployValueService {
      */
     Boolean checkDelete(Long projectId, Long valueId);
 
-    PageInfo<DevopsDeployValueDTO> basePageByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params);
+    PageInfo<DevopsDeployValueDTO> basePageByOptions(Long projectId, Long appServiceId, Long envId, Long userId, PageRequest pageRequest, String params);
 
     DevopsDeployValueDTO baseCreateOrUpdate(DevopsDeployValueDTO pipelineRecordE);
 
@@ -89,5 +89,5 @@ public interface DevopsDeployValueService {
 
     void baseCheckName(Long projectId, String name);
 
-    List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+    List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId);
 }

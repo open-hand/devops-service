@@ -4,10 +4,10 @@ import java.util.Date;
 
 public class DeployDetailTableVO {
 
-    private String appInstanceCode;
-    private String appCode;
-    private String appName;
-    private String appVersion;
+    private String appServiceInstanceCode;
+    private String appServiceName;
+    private String appServiceCode;
+    private String appServiceVersion;
     private Date creationDate;
     private String deployTime;
     private String lastUpdatedName;
@@ -15,36 +15,36 @@ public class DeployDetailTableVO {
     private String error;
 
 
-    public String getAppInstanceCode() {
-        return appInstanceCode;
+    public String getAppServiceInstanceCode() {
+        return appServiceInstanceCode;
     }
 
-    public void setAppInstanceCode(String appInstanceCode) {
-        this.appInstanceCode = appInstanceCode;
+    public void setAppServiceInstanceCode(String appServiceInstanceCode) {
+        this.appServiceInstanceCode = appServiceInstanceCode;
     }
 
-    public String getAppCode() {
-        return appCode;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppCode(String appCode) {
-        this.appCode = appCode;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceCode() {
+        return appServiceCode;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
     }
 
-    public String getAppVersion() {
-        return appVersion;
+    public String getAppServiceVersion() {
+        return appServiceVersion;
     }
 
-    public void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
+    public void setAppServiceVersion(String appServiceVersion) {
+        this.appServiceVersion = appServiceVersion;
     }
 
     public Date getCreationDate() {

@@ -18,7 +18,7 @@ public interface PipelineAppDeployService {
 
     PipelineAppServiceDeployDTO baseQueryById(Long appDelpoyId);
 
-    List<PipelineAppServiceDeployDTO> baseQueryByAppId(Long appId);
+    List<PipelineAppServiceDeployDTO> baseQueryByAppId(Long appServiceId);
 
     void baseCheckName(String name, Long envId);
 

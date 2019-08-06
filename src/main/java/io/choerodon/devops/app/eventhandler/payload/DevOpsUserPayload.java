@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class DevOpsUserPayload {
     private Long iamProjectId;
-    private Long appId;
+    private Long appServiceId;
     private Integer gitlabProjectId;
     private List<Long> iamUserIds;
     private Integer option;
@@ -24,11 +24,11 @@ public class DevOpsUserPayload {
     }
 
     public Long getAppId() {
-        return appId;
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setAppId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Integer getGitlabProjectId() {

@@ -105,18 +105,18 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public DevopsGitlabCommitVO queryCommits(Long projectId, String appIds, Date startDate, Date
+    public DevopsGitlabCommitVO queryCommits(Long projectId, String appServiceIds, Date startDate, Date
             endDate) {
 
-        List<Long> appIdsMap = gson.fromJson(appIds, new TypeToken<List<Long>>() {
+        List<Long> appServiceIdsMap = gson.fromJson(appServiceIds, new TypeToken<List<Long>>() {
         }.getType());
-        if (appIdsMap.isEmpty()) {
+        if (appServiceIdsMap.isEmpty()) {
             return new DevopsGitlabCommitVO();
         }
 
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS = devopsGitlabCommitService
-                .baseListByOptions(projectId, appIdsMap, startDate, endDate);
+                .baseListByOptions(projectId, appServiceIdsMap, startDate, endDate);
         if (devopsGitlabCommitDTOS.isEmpty()) {
             return new DevopsGitlabCommitVO();
         }
@@ -135,22 +135,22 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public PageInfo<CommitFormRecordVO> pageRecordCommits(Long projectId, String appIds, PageRequest
+    public PageInfo<CommitFormRecordVO> pageRecordCommits(Long projectId, String appServiceIds, PageRequest
             pageRequest,
                                                           Date startDate, Date endDate) {
 
-        List<Long> appIdsMap = gson.fromJson(appIds, new TypeToken<List<Long>>() {
+        List<Long> appServiceIdsMap = gson.fromJson(appServiceIds, new TypeToken<List<Long>>() {
         }.getType());
-        if (appIdsMap.isEmpty()) {
+        if (appServiceIdsMap.isEmpty()) {
             return new PageInfo<>();
         }
 
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitDTO> devopsGitlabCommitES = devopsGitlabCommitService
-                .baseListByOptions(projectId, appIdsMap, startDate, endDate);
+                .baseListByOptions(projectId, appServiceIdsMap, startDate, endDate);
         Map<Long, IamUserDTO> userMap = getUserDOMap(devopsGitlabCommitES);
         // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
-        return getCommitFormRecordDTOS(projectId, appIdsMap, pageRequest, userMap, startDate, endDate);
+        return getCommitFormRecordDTOS(projectId, appServiceIdsMap, pageRequest, userMap, startDate, endDate);
     }
 
     private Map<Long, IamUserDTO> getUserDOMap(List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS) {
@@ -195,10 +195,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         return commitFormUserVOS;
     }
 
-    private PageInfo<CommitFormRecordVO> getCommitFormRecordDTOS(Long
-                                                                         projectId, List<Long> appId, PageRequest pageRequest,
+    private PageInfo<CommitFormRecordVO> getCommitFormRecordDTOS(Long projectId, List<Long> appServiceIds, PageRequest pageRequest,
                                                                  Map<Long, IamUserDTO> userMap, Date startDate, Date endDate) {
-        return devopsGitlabCommitService.basePageByOptions(projectId, appId, pageRequest, userMap, startDate, endDate);
+        return devopsGitlabCommitService.basePageByOptions(projectId, appServiceIds, pageRequest, userMap, startDate, endDate);
     }
 
     private List<Date> getTotalDates(List<CommitFormUserVO> commitFormUserVOS) {
@@ -226,10 +225,10 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public List<DevopsGitlabCommitDTO> baseListByOptions(Long projectId, List<Long> appIds, Date
+    public List<DevopsGitlabCommitDTO> baseListByOptions(Long projectId, List<Long> appServiceIds, Date
             startDate, Date endDate) {
         List<DevopsGitlabCommitDTO> devopsGitlabCommitDOList = devopsGitlabCommitMapper
-                .listCommits(projectId, appIds, new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime()));
+                .listCommits(projectId, appServiceIds, new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime()));
         if (devopsGitlabCommitDOList == null || devopsGitlabCommitDOList.isEmpty()) {
             return new ArrayList<>();
         }
@@ -237,14 +236,14 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public PageInfo<CommitFormRecordVO> basePageByOptions(Long projectId, List<Long> appId,
+    public PageInfo<CommitFormRecordVO> basePageByOptions(Long projectId, List<Long> appServiceIds,
                                                           PageRequest pageRequest, Map<Long, IamUserDTO> userMap,
                                                           Date startDate, Date endDate) {
         List<CommitFormRecordVO> commitFormRecordVOList = new ArrayList<>();
 
         PageInfo<DevopsGitlabCommitDTO> devopsGitlabCommitDTOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(),
                 PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
-                () -> devopsGitlabCommitMapper.listCommits(projectId, appId, new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime())));
+                () -> devopsGitlabCommitMapper.listCommits(projectId, appServiceIds, new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime())));
 
         devopsGitlabCommitDTOPage.getList().forEach(e -> {
             Long userId = e.getUserId();
@@ -276,9 +275,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public List<DevopsGitlabCommitDTO> baseListByAppIdAndBranch(Long appId, String branch, Date
+    public List<DevopsGitlabCommitDTO> baseListByAppIdAndBranch(Long appServiceIds, String branch, Date
             startDate) {
-        return devopsGitlabCommitMapper.queryByAppIdAndBranch(appId, branch, startDate == null ? null : new java.sql.Date(startDate.getTime()));
+        return devopsGitlabCommitMapper.queryByAppIdAndBranch(appServiceIds, branch, startDate == null ? null : new java.sql.Date(startDate.getTime()));
     }
 
     private boolean checkExist(DevopsGitlabCommitDTO devopsGitlabCommitDTO) {

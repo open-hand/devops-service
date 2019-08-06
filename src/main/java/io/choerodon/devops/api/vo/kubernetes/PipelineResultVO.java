@@ -14,29 +14,29 @@ public class PipelineResultVO {
     private String ref;
     private String createdAt;
     private Long[] time;
-    private String appName;
-    private String appCode;
-    private Boolean appStatus;
+    private String appServiceName;
+    private String appServiceCode;
+    private Boolean appServiceStatus;
     private Long gitlabProjectId;
     private String imageUrl;
     private String gitlabUrl;
     private Boolean latest;
     private List<GitlabJobVO> jobs;
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
-    public String getAppCode() {
-        return appCode;
+    public String getAppServiceCode() {
+        return appServiceCode;
     }
 
-    public void setAppCode(String appCode) {
-        this.appCode = appCode;
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
     }
 
     public Long getId() {
@@ -95,12 +95,12 @@ public class PipelineResultVO {
         this.gitlabProjectId = gitlabProjectId;
     }
 
-    public Boolean getAppStatus() {
-        return appStatus;
+    public Boolean getAppServiceStatus() {
+        return appServiceStatus;
     }
 
-    public void setAppStatus(Boolean appStatus) {
-        this.appStatus = appStatus;
+    public void setAppServiceStatus(Boolean appServiceStatus) {
+        this.appServiceStatus = appServiceStatus;
     }
 
     public String getImageUrl() {

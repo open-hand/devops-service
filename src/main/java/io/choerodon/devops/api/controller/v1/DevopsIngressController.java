@@ -218,6 +218,6 @@ public class DevopsIngressController {
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsIngressService.pageByEnv(projectId, envId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.appInstance.query"));
+                .orElseThrow(() -> new CommonException("error.appServiceInstance.query"));
     }
 }

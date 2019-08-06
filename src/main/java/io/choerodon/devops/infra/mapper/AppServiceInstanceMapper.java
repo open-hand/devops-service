@@ -43,7 +43,7 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
 
     int countByOptions(@Param("envId") Long envId,
                        @Param("appServiceId") Long appServiceId,
-                       @Param("appInstanceCode") String appInstanceCode);
+                       @Param("appServiceInstanceCode") String appServiceInstanceCode);
 
     String queryValueByEnvIdAndAppId(@Param("envId") Long envId, @Param("appServiceId") Long appServiceId);
 
@@ -51,7 +51,7 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
 
     String queryByInstanceId(@Param("instanceId") Long instanceId);
 
-    List<DeployDTO> listDeployTime(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("appIds") Long[] appIds, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+    List<DeployDTO> listDeployTime(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("appServiceIds") Long[] appServiceIds, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
     List<DeployDTO> listDeployFrequency(@Param("projectId") Long projectId, @Param("envIds") Long[] envIds, @Param("appServiceId") Long appServiceId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 

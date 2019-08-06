@@ -24,7 +24,7 @@ public class DevopsDeployValueVO {
     private Date lastUpdateDate;
     private Boolean index;
     private String envName;
-    private String appName;
+    private String appServiceName;
     private Long objectVersionNumber;
 
     public Long getObjectVersionNumber() {
@@ -59,12 +59,12 @@ public class DevopsDeployValueVO {
         this.envName = envName;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
     public Boolean getIndex() {

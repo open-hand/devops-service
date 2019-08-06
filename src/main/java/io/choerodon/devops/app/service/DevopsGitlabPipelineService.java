@@ -14,13 +14,13 @@ public interface DevopsGitlabPipelineService {
 
     void updateStages(JobWebHookVO jobWebHookVO);
 
-    PipelineTimeVO getPipelineTime(Long appId, Date startTime, Date endTime);
+    PipelineTimeVO getPipelineTime(Long appServiceId, Date startTime, Date endTime);
 
-    PipelineFrequencyVO getPipelineFrequency(Long appId, Date startTime, Date endTime);
+    PipelineFrequencyVO getPipelineFrequency(Long appServiceId, Date startTime, Date endTime);
 
     void handleCreate(PipelineWebHookVO pipelineWebHookVO);
 
-    PageInfo<DevopsGitlabPipelineVO> pageByOptions(Long appId, String branch, PageRequest pageRequest, Date startTime, Date endTime);
+    PageInfo<DevopsGitlabPipelineVO> pageByOptions(Long appServiceId, String branch, PageRequest pageRequest, Date startTime, Date endTime);
 
     void baseCreate(DevopsGitlabPipelineDTO devopsGitlabPipelineDTO);
 
@@ -30,11 +30,11 @@ public interface DevopsGitlabPipelineService {
 
     DevopsGitlabPipelineDTO baseQueryByCommitId(Long commitId);
 
-    List<DevopsGitlabPipelineDTO> baseListByApplicationId(Long appId, Date startTime, Date endTime);
+    List<DevopsGitlabPipelineDTO> baseListByApplicationId(Long appServiceId, Date startTime, Date endTime);
 
-    PageInfo<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appId, PageRequest pageRequest, Date startTime, Date endTime);
+    PageInfo<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appServiceId, PageRequest pageRequest, Date startTime, Date endTime);
 
     void baseDeleteWithoutCommit();
 
-    List<DevopsGitlabPipelineDTO> baseListByAppIdAndBranch(Long appId, String branch);
+    List<DevopsGitlabPipelineDTO> baseListByAppIdAndBranch(Long appServiceId, String branch);
 }

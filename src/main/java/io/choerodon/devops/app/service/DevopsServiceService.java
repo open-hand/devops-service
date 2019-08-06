@@ -125,10 +125,10 @@ public interface DevopsServiceService {
      * @param projectId   项目id
      * @param instanceId  实例Id
      * @param pageRequest 分页参数
-     * @param appId       应用id
+     * @param appServiceId       应用id
      * @return Page of DevopsServiceVO
      */
-    PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appId);
+    PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appServiceId);
 
     void createServiceBySaga(ServiceSagaPayLoad serviceSagaPayLoad);
 
@@ -137,7 +137,7 @@ public interface DevopsServiceService {
     Boolean baseCheckName(Long envId, String name);
 
     PageInfo<DevopsServiceQueryDTO> basePageByOptions(Long projectId, Long envId, Long instanceId, PageRequest pageRequest,
-                                                      String searchParam, Long appId);
+                                                      String searchParam, Long appServiceId);
 
     List<DevopsServiceQueryDTO> baseListRunningService(Long envId);
 

@@ -49,7 +49,7 @@ public interface AgentMsgHandlerService {
 
     void gitOpsSyncEvent(String key, String msg, Long clusterId);
 
-    List<AppServiceDTO> getApplication(String appName, Long projectId, Long orgId);
+    List<AppServiceDTO> getApplication(String appServiceName, Long projectId, Long orgId);
 
     void gitOpsCommandSyncEvent(String key, Long clusterId);
 

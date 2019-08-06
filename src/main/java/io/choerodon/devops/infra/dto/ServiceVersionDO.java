@@ -9,7 +9,7 @@ public class ServiceVersionDO {
 
     private Long id;
     private String version;
-    private List<ServiceInstanceDO> appInstance;
+    private List<ServiceInstanceDO> instances;
 
     public Long getId() {
         return id;
@@ -27,11 +27,11 @@ public class ServiceVersionDO {
         this.version = version;
     }
 
-    public List<ServiceInstanceDO> getAppInstance() {
-        return appInstance;
+    public List<ServiceInstanceDO> getInstances() {
+        return instances;
     }
 
-    public void setAppInstance(List<ServiceInstanceDO> appInstance) {
-        this.appInstance = appInstance;
+    public void setInstances(List<ServiceInstanceDO> instances) {
+        this.instances = instances;
     }
 }

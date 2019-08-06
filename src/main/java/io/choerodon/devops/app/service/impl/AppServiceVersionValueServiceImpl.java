@@ -28,8 +28,8 @@ public class AppServiceVersionValueServiceImpl implements AppServiceVersionValue
 
 
     @Override
-    public AppServiceVersionValueDTO baseQuery(Long appVersionValueId) {
-        return appServiceVersionValueMapper.selectByPrimaryKey(appVersionValueId);
+    public AppServiceVersionValueDTO baseQuery(Long appServiceServiceValueId) {
+        return appServiceVersionValueMapper.selectByPrimaryKey(appServiceServiceValueId);
     }
 
 

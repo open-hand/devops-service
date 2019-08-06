@@ -9,7 +9,6 @@ import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
@@ -192,8 +191,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         applicationDTO = applicationService.baseCreate(applicationDTO);
 
-        Long appId = applicationDTO.getId();
-        if (appId == null) {
+        Long appServiceId = applicationDTO.getId();
+        if (appServiceId == null) {
             throw new CommonException("error.application.create.insert");
         }
 
@@ -203,7 +202,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         // 如果不跳过权限检查
         List<Long> userIds = applicationReqDTO.getUserIds();
         if (!applicationReqDTO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
-            userIds.forEach(e -> appServiceUserPermissionService.baseCreate(e, appId));
+            userIds.forEach(e -> appServiceUserPermissionService.baseCreate(e, appServiceId));
         }
 
         String input = gson.toJson(devOpsAppServicePayload);
@@ -267,13 +266,13 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     /**
      * 手动制造一个应用版本
      *
-     * @param appId application id
+     * @param appServiceId application id
      */
-    private void createFakeApplicationVersion(Long appId) {
+    private void createFakeApplicationVersion(Long appServiceId) {
         try {
             byte[] bytes = StreamUtils.copyToByteArray(this.getClass().getClassLoader().getResourceAsStream(tgzFilePath));
             MockMultipartFile multipartFile = new MockMultipartFile("code-i.tgz", "code-i.tgz", "application/tgz", bytes);
-            appServiceVersionService.create(demoDataVO.getAppVersion().getImage(), applicationService.baseQuery(appId).getToken(), demoDataVO.getAppVersion().getVersion(), demoDataVO.getAppVersion().getCommit(), multipartFile);
+            appServiceVersionService.create(demoDataVO.getAppServiceVersionDTO().getImage(), applicationService.baseQuery(appServiceId).getToken(), demoDataVO.getAppServiceVersionDTO().getVersion(), demoDataVO.getAppServiceVersionDTO().getCommit(), multipartFile);
         } catch (IOException e) {
             logger.error("can not find file {}", tgzFilePath);
             throw new CommonException(e);

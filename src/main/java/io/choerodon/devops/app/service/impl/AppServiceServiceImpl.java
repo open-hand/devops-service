@@ -210,17 +210,17 @@ public class AppServiceServiceImpl implements AppSevriceService {
         devOpsAppServicePayload.setAppId(appServiceDTO.getId());
         devOpsAppServicePayload.setIamProjectId(appServiceDTO.getProjectId());
 
-        producer.applyAndReturn(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withRefType("")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE),
-                builder -> builder
-                        .withPayloadAndSerialize(devOpsAppServicePayload)
-                        .withRefId("")
-                        .withSourceId(projectId));
-
+//        producer.applyAndReturn(
+//                StartSagaBuilder
+//                        .newBuilder()
+//                        .withLevel(ResourceLevel.PROJECT)
+//                        .withRefType("")
+//                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE),
+//                builder -> builder
+//                        .withPayloadAndSerialize(devOpsAppServicePayload)
+//                        .withRefId("")
+//                        .withSourceId(projectId));
+        operationApplication(devOpsAppServicePayload);
         return ConvertUtils.convertObject(baseQueryByCode(appServiceDTO.getCode(), appServiceDTO.getProjectId()), AppServiceRepVO.class);
     }
 
@@ -277,8 +277,8 @@ public class AppServiceServiceImpl implements AppSevriceService {
         appServiceDTO.setHarborConfigId(appServiceUpdateDTO.getHarborConfigId());
         appServiceDTO.setChartConfigId(appServiceUpdateDTO.getChartConfigId());
 
-        Long appId = appServiceUpdateDTO.getId();
-        AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appId);
+        Long appServiceId = appServiceUpdateDTO.getId();
+        AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
 
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
             baseCheckName(appServiceDTO.getProjectId(), appServiceDTO.getName());
@@ -597,12 +597,12 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    public List<AppServiceCodeVO> listByEnvId(Long projectId, Long envId, String status, Long appId) {
+    public List<AppServiceCodeVO> listByEnvId(Long projectId, Long envId, String status, Long appServiceId) {
         List<AppServiceCodeVO> applicationCodeVOS = ConvertUtils
                 .convertList(baseListByEnvId(projectId, envId, status),
                         AppServiceCodeVO.class);
-        if (appId != null) {
-            AppServiceDTO appServiceDTO = baseQuery(appId);
+        if (appServiceId != null) {
+            AppServiceDTO appServiceDTO = baseQuery(appServiceId);
             AppServiceCodeVO applicationCodeVO = new AppServiceCodeVO();
             BeanUtils.copyProperties(appServiceDTO, applicationCodeVO);
             for (int i = 0; i < applicationCodeVOS.size(); i++) {
@@ -616,8 +616,8 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    public PageInfo<AppServiceCodeVO> pageByIds(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
-        return ConvertUtils.convertPage(basePageByEnvId(projectId, envId, appId, pageRequest),
+    public PageInfo<AppServiceCodeVO> pageByIds(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest) {
+        return ConvertUtils.convertPage(basePageByEnvId(projectId, envId, appServiceId, pageRequest),
                 AppServiceCodeVO.class);
     }
 
@@ -628,8 +628,8 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    public List<AppServiceUserPermissionRespVO> listAllUserPermission(Long appId) {
-        List<Long> userIds = appServiceUserPermissionService.baseListByAppId(appId).stream().map(AppServiceUserRelDTO::getIamUserId)
+    public List<AppServiceUserPermissionRespVO> listAllUserPermission(Long appServiceId) {
+        List<Long> userIds = appServiceUserPermissionService.baseListByAppId(appServiceId).stream().map(AppServiceUserRelDTO::getIamUserId)
                 .collect(Collectors.toList());
         List<IamUserDTO> userEList = iamServiceClientOperator.listUsersByIds(userIds);
         List<AppServiceUserPermissionRespVO> resultList = new ArrayList<>();
@@ -696,11 +696,11 @@ public class AppServiceServiceImpl implements AppSevriceService {
 
         // 创建应用
         appServiceDTO = baseCreate(appServiceDTO);
-        Long appId = appServiceDTO.getId();
+        Long appServiceId = appServiceDTO.getId();
         // 如果不跳过权限检查
         List<Long> userIds = appServiceImportVO.getUserIds();
         if (!appServiceImportVO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
-            userIds.forEach(e -> appServiceUserPermissionService.baseCreate(e, appId));
+            userIds.forEach(e -> appServiceUserPermissionService.baseCreate(e, appServiceId));
         }
 
         //创建saga payload
@@ -726,7 +726,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
                         .withRefId("")
                         .withSourceId(projectId));
 
-        return ConvertUtils.convertObject(baseQuery(appId), AppServiceRepVO.class);
+        return ConvertUtils.convertObject(baseQuery(appServiceId), AppServiceRepVO.class);
     }
 
     @Override
@@ -803,7 +803,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    public SonarContentsVO getSonarContent(Long projectId, Long appId) {
+    public SonarContentsVO getSonarContent(Long projectId, Long appServiceId) {
 
         //没有使用sonarqube直接返回空对象
         if (sonarqubeUrl.equals("")) {
@@ -811,7 +811,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
         }
         SonarContentsVO sonarContentsVO = new SonarContentsVO();
         List<SonarContentVO> sonarContentVOS = new ArrayList<>();
-        AppServiceDTO applicationDTO = baseQuery(appId);
+        AppServiceDTO applicationDTO = baseQuery(appServiceId);
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
@@ -1106,7 +1106,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    public SonarTableVO getSonarTable(Long projectId, Long appId, String type, Date startTime, Date endTime) {
+    public SonarTableVO getSonarTable(Long projectId, Long appServiceId, String type, Date startTime, Date endTime) {
         if (sonarqubeUrl.equals("")) {
             return new SonarTableVO();
         }
@@ -1116,7 +1116,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
         Date tomorrow = c.getTime();
         SonarTableVO sonarTableVO = new SonarTableVO();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
-        AppServiceDTO applicationDTO = baseQuery(appId);
+        AppServiceDTO applicationDTO = baseQuery(appServiceId);
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
@@ -1668,8 +1668,8 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    public void baseCheckApp(Long projectId, Long appId) {
-        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appId);
+    public void baseCheckApp(Long projectId, Long appServiceId) {
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         if (appServiceDTO == null || !appServiceDTO.getProjectId().equals(projectId)) {
             throw new CommonException("error.app.project.notMatch");
         }
@@ -1748,8 +1748,8 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    public PageInfo<AppServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listByEnvId(projectId, envId, appId, NODELETED));
+    public PageInfo<AppServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest) {
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listByEnvId(projectId, envId, appServiceId, NODELETED));
 
     }
 
@@ -1898,6 +1898,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
         baseCheckCode(applicationDTO);
         applicationDTO.setActive(true);
         applicationDTO.setSynchro(false);
+        applicationDTO.setProjectId(projectId);
         applicationDTO.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
         applicationDTO.setHarborConfigId(applicationReqDTO.getHarborConfigId());
         applicationDTO.setChartConfigId(applicationReqDTO.getChartConfigId());
@@ -2093,7 +2094,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
 
     private void updateGitlabMemberPermission(DevOpsAppServicePayload devOpsAppServicePayload, Integer gitlabUserId) {
         MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(devOpsAppServicePayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
-        if (memberDTO != null) {
+        if (memberDTO.getUserId() != null) {
             gitlabGroupMemberService.delete(devOpsAppServicePayload.getGroupId(), TypeUtil.objToInteger(gitlabUserId));
         }
         MemberDTO gitlabMemberDTO = gitlabServiceClientOperator.getProjectMember(devOpsAppServicePayload.getGitlabProjectId(), TypeUtil.objToInteger(gitlabUserId));

@@ -22,16 +22,16 @@ public class DevopsDeployValueDTO extends BaseDTO {
     private String description;
 
     @Transient
-    private String appName;
+    private String appServiceName;
     @Transient
     private String envName;
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
     public String getEnvName() {

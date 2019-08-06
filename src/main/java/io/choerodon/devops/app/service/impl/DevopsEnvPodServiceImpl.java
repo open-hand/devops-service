@@ -52,10 +52,10 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
 
     @Override
-    public PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageRequest, String searchParam) {
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
-        PageInfo<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageByIds(projectId, envId, appId, instanceId, pageRequest, searchParam);
+        PageInfo<DevopsEnvPodDTO> devopsEnvPodDTOPageInfo = basePageByIds(projectId, envId, appServiceId, instanceId, pageRequest, searchParam);
         PageInfo<DevopsEnvPodVO> devopsEnvPodVOPageInfo = ConvertUtils.convertPage(devopsEnvPodDTOPageInfo, DevopsEnvPodVO.class);
 
         devopsEnvPodVOPageInfo.setList(devopsEnvPodDTOPageInfo.getList().stream().map(devopsEnvPodDTO -> {
@@ -78,7 +78,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     public void setContainers(DevopsEnvPodVO devopsEnvPodVO) {
 
         //解析pod的yaml内容获取container的信息
-        String message = devopsEnvResourceService.getResourceDetailByNameAndTypeAndInstanceId(devopsEnvPodVO.getAppInstanceId(), devopsEnvPodVO.getName(), ResourceType.POD);
+        String message = devopsEnvResourceService.getResourceDetailByNameAndTypeAndInstanceId(devopsEnvPodVO.getInstanceId(), devopsEnvPodVO.getName(), ResourceType.POD);
 
         if (StringUtils.isEmpty(message)) {
             return;
@@ -150,7 +150,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     }
 
     @Override
-    public PageInfo<DevopsEnvPodDTO> basePageByIds(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsEnvPodDTO> basePageByIds(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageRequest, String searchParam) {
 
         Sort sort = pageRequest.getSort();
         String sortResult = "";
@@ -177,13 +177,13 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
                     pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppPod(
                     projectId,
                     envId,
-                    appId,
+                    appServiceId,
                     instanceId,
                     TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
         } else {
             devopsEnvPodDOPage = PageHelper.startPage(
-                    pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppPod(projectId, envId, appId, instanceId, null, null));
+                    pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppPod(projectId, envId, appServiceId, instanceId, null, null));
         }
 
         return devopsEnvPodDOPage;

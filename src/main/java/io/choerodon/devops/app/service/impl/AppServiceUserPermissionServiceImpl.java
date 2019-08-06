@@ -26,25 +26,25 @@ public class AppServiceUserPermissionServiceImpl implements AppServiceUserPermis
 
 
 @Override
-    public void baseCreate(Long userId, Long appId) {
-        appServiceUserRelMapper.insert(new AppServiceUserRelDTO(userId, appId));
+    public void baseCreate(Long userId, Long appServiceId) {
+        appServiceUserRelMapper.insert(new AppServiceUserRelDTO(userId, appServiceId));
     }
 
     @Override
-    public void baseDeleteByAppServiceId(Long appId) {
+    public void baseDeleteByAppServiceId(Long appServiceId) {
         AppServiceUserRelDTO appServiceUserRelDTO = new AppServiceUserRelDTO();
-        appServiceUserRelDTO.setAppServiceId(appId);
+        appServiceUserRelDTO.setAppServiceId(appServiceId);
         appServiceUserRelMapper.delete(appServiceUserRelDTO);
     }
 
     @Override
-    public void baseDeleteByUserIdAndAppIds(List<Long> appIds, Long userId) {
-        appServiceUserRelMapper.deleteByUserIdWithAppIds(appIds, userId);
+    public void baseDeleteByUserIdAndAppIds(List<Long> appServiceIds, Long userId) {
+        appServiceUserRelMapper.deleteByUserIdWithAppIds(appServiceIds, userId);
     }
 
     @Override
-    public List<AppServiceUserRelDTO> baseListByAppId(Long appId) {
-        return appServiceUserRelMapper.listAllUserPermissionByAppId(appId);
+    public List<AppServiceUserRelDTO> baseListByAppId(Long appServiceId) {
+        return appServiceUserRelMapper.listAllUserPermissionByAppId(appServiceId);
     }
 
     @Override
@@ -56,16 +56,16 @@ public class AppServiceUserPermissionServiceImpl implements AppServiceUserPermis
 
 
     @Override
-    public List<AppServiceUserRelDTO> baseListAll(Long appId) {
-        return appServiceUserRelMapper.listAllUserPermissionByAppId(appId);
+    public List<AppServiceUserRelDTO> baseListAll(Long appServiceId) {
+        return appServiceUserRelMapper.listAllUserPermissionByAppId(appServiceId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void baseUpdate(Long appId, List<Long> addUserIds, List<Long> deleteUserIds) {
+    public void baseUpdate(Long appServiceId, List<Long> addUserIds, List<Long> deleteUserIds) {
         // 待添加的用户列表
         List<IamUserDTO> addIamUsers = iamServiceClientOperator.listUsersByIds(addUserIds);
-        addIamUsers.forEach(e -> appServiceUserRelMapper.insert(new AppServiceUserRelDTO(e.getId(), appId)));
+        addIamUsers.forEach(e -> appServiceUserRelMapper.insert(new AppServiceUserRelDTO(e.getId(), appServiceId)));
         // 待删除的用户列表
         deleteUserIds.forEach(e -> {
             AppServiceUserRelDTO appServiceUserRelDTO = new AppServiceUserRelDTO();

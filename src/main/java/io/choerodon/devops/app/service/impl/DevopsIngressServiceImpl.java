@@ -148,12 +148,12 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     /**
      * 查询传入的网络是否全是同一个应用下
      *
-     * @param appId      应用id
+     * @param appServiceId      应用id
      * @param serviceIds 网络id
      * @return false 如果某个网络不存在和应用的关系或所有网络不在同一个应用下
      */
-    private boolean isAllServiceInApp(Long appId, List<Long> serviceIds) {
-        return devopsAppResourceMapper.queryResourceIdsInApp(appId, ResourceType.SERVICE.getType(), serviceIds).size() == serviceIds.size();
+    private boolean isAllServiceInApp(Long appServiceId, List<Long> serviceIds) {
+        return devopsAppResourceMapper.queryResourceIdsInApp(appServiceId, ResourceType.SERVICE.getType(), serviceIds).size() == serviceIds.size();
     }
 
 
@@ -531,16 +531,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                                       DevopsIngressDTO devopsIngressDTO,
                                       UserAttrDTO userAttrDTO,
                                       DevopsEnvCommandDTO devopsEnvCommandDTO,
-                                      Long appId) {
+                                      Long appServiceId) {
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
 
         //操作域名数据库
         if (isCreate) {
             Long ingressId = baseCreateIngressAndPath(devopsIngressDTO).getId();
-            if (appId != null) {
+            if (appServiceId != null) {
                 DevopsApplicationResourceDTO resourceDTO = new DevopsApplicationResourceDTO();
-                resourceDTO.setAppServiceId(appId);
+                resourceDTO.setAppServiceId(appServiceId);
                 resourceDTO.setResourceType(ObjectType.INSTANCE.getType());
                 resourceDTO.setResourceId(ingressId);
                 devopsApplicationResourceService.baseCreate(resourceDTO);
