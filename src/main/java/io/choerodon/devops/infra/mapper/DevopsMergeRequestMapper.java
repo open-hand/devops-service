@@ -15,10 +15,6 @@ import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
  * Description:
  */
 public interface DevopsMergeRequestMapper extends Mapper<DevopsMergeRequestDTO> {
-
-    Integer queryByAppIdAndGitlabId(@Param("projectId") Long applicationId,
-                                    @Param("gitlabMergeRequestId") Long gitlabMergeRequestId);
-
     List<DevopsMergeRequestDTO> getByProjectIdAndState(@Param("projectId") Integer gitLabProjectId,
                                                        @Param("state") String state);
 

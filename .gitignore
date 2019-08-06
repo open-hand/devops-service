@@ -24,7 +24,7 @@ nbbuild/
 dist/
 nbdist/
 .nb-gradle/
-application-default.yml
+application-default.*
 init-local-database.sh
 init-database.sh
 values_yaml.spec

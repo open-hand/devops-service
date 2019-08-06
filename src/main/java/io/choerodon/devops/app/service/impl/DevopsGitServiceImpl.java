@@ -850,7 +850,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private MergeRequestVO devopsMergeRequestToMergeRequest(DevopsMergeRequestDTO
                                                                     devopsMergeRequestDTO) {
         MergeRequestVO mergeRequestVO = ConvertUtils.convertObject(devopsMergeRequestDTO, MergeRequestVO.class);
-        mergeRequestVO.setProjectId(devopsMergeRequestDTO.getProjectId().intValue());
+        mergeRequestVO.setProjectId(devopsMergeRequestDTO.getGitlabProjectId().intValue());
         mergeRequestVO.setId(devopsMergeRequestDTO.getId().intValue());
         mergeRequestVO.setIid(devopsMergeRequestDTO.getGitlabMergeRequestId().intValue());
         Long authorUserId = userAttrService
@@ -860,7 +860,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         List<CommitDTO> commitDTOS;
         try {
             commitDTOS = gitlabServiceClientOperator.listCommits(
-                    devopsMergeRequestDTO.getProjectId().intValue(),
+                    devopsMergeRequestDTO.getGitlabProjectId().intValue(),
                     devopsMergeRequestDTO.getGitlabMergeRequestId().intValue(), getGitlabUserId());
             mergeRequestVO.setCommits(ConvertUtils.convertList(commitDTOS, CommitVO.class));
         } catch (FeignException e) {

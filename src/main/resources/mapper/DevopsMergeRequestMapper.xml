@@ -2,22 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper">
-    <select id="queryByAppIdAndGitlabId" resultType="java.lang.Integer">
-        SELECT
-        COUNT(1)
-        FROM
-        devops_merge_request
-        WHERE
-        project_id = #{projectId}
-        AND gitlab_merge_request_id = #{gitlabMergeRequestId}
-    </select>
     <select id="getByProjectIdAndState" resultType="io.choerodon.devops.infra.dto.DevopsMergeRequestDTO">
         SELECT
         *
         FROM
         devops_merge_request
         WHERE
-        project_id = #{projectId}
+        gitlab_project_id = #{projectId}
         AND state = #{state}
     </select>
 
@@ -28,7 +19,7 @@
         FROM
         devops_merge_request
           WHERE
-        project_id = #{projectId}
+        gitlab_project_id = #{projectId}
         AND source_branch = #{branchName}
         ORDER by id desc
     </select>
@@ -43,7 +34,7 @@
 	count( CASE WHEN dmr.state = 'opened' THEN 'opened' END ) opened
     FROM
 	devops_merge_request dmr
-	where dmr.project_id = #{projectId}
+	where dmr.gitlab_project_id = #{projectId}
     </select>
 
 

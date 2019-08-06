@@ -21,7 +21,7 @@ public class DevopsMergeRequestDTO extends BaseDTO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long projectId;
+    private Long gitlabProjectId;
 
     private Long gitlabMergeRequestId;
 
@@ -59,12 +59,12 @@ public class DevopsMergeRequestDTO extends BaseDTO {
     /**
      * constructor a new merge request item
      *
-     * @param projectId    devops application ID
+     * @param gitlabProjectId    devops application ID
      * @param sourceBranch source branch to merge
      * @param targetBranch target merge branch
      */
-    public DevopsMergeRequestDTO(Long projectId, String sourceBranch, String targetBranch) {
-        this.projectId = projectId;
+    public DevopsMergeRequestDTO(Long gitlabProjectId, String sourceBranch, String targetBranch) {
+        this.gitlabProjectId = gitlabProjectId;
         this.sourceBranch = sourceBranch;
         this.targetBranch = targetBranch;
     }
@@ -77,12 +77,12 @@ public class DevopsMergeRequestDTO extends BaseDTO {
         this.id = id;
     }
 
-    public Long getProjectId() {
-        return projectId;
+    public Long getGitlabProjectId() {
+        return gitlabProjectId;
     }
 
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
+    public void setGitlabProjectId(Long gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
     }
 
     public Long getGitlabMergeRequestId() {

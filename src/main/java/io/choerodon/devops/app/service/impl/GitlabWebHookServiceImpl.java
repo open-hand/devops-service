@@ -40,12 +40,11 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
         switch (kind) {
             case "merge_request":
                 DevopsMergeRequestVO devopsMergeRequestVO = JSONArray.parseObject(body, DevopsMergeRequestVO.class, FastjsonParserConfigProvider.getParserConfig());
-                DevopsMergeRequestDTO devopsMergeRequestDTO = ConvertUtils.convertObject(devopsMergeRequestVO, DevopsMergeRequestDTO.class);
                 if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info(devopsMergeRequestDTO.toString());
+                    LOGGER.info(devopsMergeRequestVO.toString());
                 }
 
-                devopsMergeRequestService.baseCreate(devopsMergeRequestDTO);
+                devopsMergeRequestService.create(devopsMergeRequestVO);
                 break;
             case "push":
                 PushWebHookVO pushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());

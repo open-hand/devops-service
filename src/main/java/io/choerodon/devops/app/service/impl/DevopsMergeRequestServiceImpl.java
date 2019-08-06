@@ -6,6 +6,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
 import io.choerodon.devops.app.service.DevopsMergeRequestService;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
@@ -20,24 +21,19 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService {
-
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsMergeRequestServiceImpl.class);
-
-
     @Autowired
     private DevopsMergeRequestMapper devopsMergeRequestMapper;
 
-
     @Override
     public List<DevopsMergeRequestDTO> baseListBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
-        return devopsMergeRequestMapper.listBySourceBranch(gitLabProjectId.intValue(),sourceBranchName);
+        return devopsMergeRequestMapper.listBySourceBranch(gitLabProjectId.intValue(), sourceBranchName);
     }
 
     @Override
     public DevopsMergeRequestDTO baseQueryByAppIdAndMergeRequestId(Long projectId, Long gitlabMergeRequestId) {
         DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
-        devopsMergeRequestDTO.setProjectId(projectId);
+        devopsMergeRequestDTO.setGitlabProjectId(projectId);
         devopsMergeRequestDTO.setGitlabMergeRequestId(gitlabMergeRequestId);
         return devopsMergeRequestMapper
                 .selectOne(devopsMergeRequestDTO);
@@ -46,9 +42,9 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     @Override
     public PageInfo<DevopsMergeRequestDTO> basePageByOptions(Integer gitlabProjectId, String state, PageRequest pageRequest) {
         DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
-        devopsMergeRequestDTO.setProjectId(gitlabProjectId.longValue());
+        devopsMergeRequestDTO.setGitlabProjectId(gitlabProjectId.longValue());
         devopsMergeRequestDTO.setState(state);
-        PageInfo<DevopsMergeRequestDTO> devopsMergeRequestDTOPageInfo= PageHelper.startPage(pageRequest.getPage(),pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+        PageInfo<DevopsMergeRequestDTO> devopsMergeRequestDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 devopsMergeRequestMapper.select(devopsMergeRequestDTO));
         return devopsMergeRequestDTOPageInfo;
     }
@@ -56,7 +52,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     @Override
     public List<DevopsMergeRequestDTO> baseQueryByGitlabProjectId(Integer gitlabProjectId) {
         DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
-        devopsMergeRequestDTO.setProjectId(gitlabProjectId.longValue());
+        devopsMergeRequestDTO.setGitlabProjectId(gitlabProjectId.longValue());
         List<DevopsMergeRequestDTO> devopsMergeRequestDTOS = devopsMergeRequestMapper
                 .select(devopsMergeRequestDTO);
         return devopsMergeRequestDTOS;
@@ -68,10 +64,15 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     }
 
     @Override
+    public void create(DevopsMergeRequestVO devopsMergeRequestVO) {
+        baseCreate(voToDto(devopsMergeRequestVO));
+    }
+
+    @Override
     public void baseCreate(DevopsMergeRequestDTO devopsMergeRequestDTO) {
-        Long projectId = devopsMergeRequestDTO.getProjectId();
+        Long gitlabProjectId = devopsMergeRequestDTO.getGitlabProjectId();
         Long gitlabMergeRequestId = devopsMergeRequestDTO.getGitlabMergeRequestId();
-        DevopsMergeRequestDTO mergeRequestETemp = baseQueryByAppIdAndMergeRequestId(projectId, gitlabMergeRequestId);
+        DevopsMergeRequestDTO mergeRequestETemp = baseQueryByAppIdAndMergeRequestId(gitlabProjectId, gitlabMergeRequestId);
         Long mergeRequestId = mergeRequestETemp != null ? mergeRequestETemp.getId() : null;
         if (mergeRequestId == null) {
             try {
@@ -93,5 +94,18 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         return devopsMergeRequestMapper.countMergeRequest(gitlabProjectId);
     }
 
-
+    private DevopsMergeRequestDTO voToDto(DevopsMergeRequestVO devopsMergeRequestVO) {
+        DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
+        devopsMergeRequestDTO.setGitlabProjectId(devopsMergeRequestVO.getProject().getId());
+        devopsMergeRequestDTO.setGitlabMergeRequestId(devopsMergeRequestVO.getObjectAttributes().getIid());
+        devopsMergeRequestDTO.setSourceBranch(devopsMergeRequestVO.getObjectAttributes().getSourceBranch());
+        devopsMergeRequestDTO.setTargetBranch(devopsMergeRequestVO.getObjectAttributes().getTargetBranch());
+        devopsMergeRequestDTO.setAuthorId(devopsMergeRequestVO.getObjectAttributes().getAuthorId());
+        devopsMergeRequestDTO.setAssigneeId(devopsMergeRequestVO.getObjectAttributes().getAssigneeId());
+        devopsMergeRequestDTO.setState(devopsMergeRequestVO.getObjectAttributes().getState());
+        devopsMergeRequestDTO.setTitle(devopsMergeRequestVO.getObjectAttributes().getTitle());
+        devopsMergeRequestDTO.setCreatedAt(devopsMergeRequestVO.getObjectAttributes().getCreatedAt());
+        devopsMergeRequestDTO.setUpdatedAt(devopsMergeRequestVO.getObjectAttributes().getUpdatedAt());
+        return devopsMergeRequestDTO;
+    }
 }
