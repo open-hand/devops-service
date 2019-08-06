@@ -7,7 +7,7 @@
         FROM devops_ingress_path path
                  INNER JOIN devops_service svc ON path.service_id = svc.id
                  INNER JOIN devops_service_instance sins ON svc.id = sins.service_id
-                 INNER JOIN devops_app_instance ins ON sins.app_instance_id = ins.id
+                 INNER JOIN devops_app_service_instance ins ON sins.app_instance_id = ins.id
         WHERE path.ingress_id = #{ingressId}
     </select>
 

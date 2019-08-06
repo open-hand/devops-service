@@ -39,7 +39,7 @@
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
         <if test="appServiceId != null">
-            LEFT JOIN devops_app_resource das ON ds.id = das.resource_id
+            LEFT JOIN devops_app_service_resource das ON ds.id = das.resource_id
         </if>
         LEFT JOIN devops_app_service da ON da.id = ds.app_service_id
         LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
@@ -113,7 +113,7 @@
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
         <if test="appServiceId != null">
-            LEFT JOIN devops_app_resource das ON ds.id = das.resource_id
+            LEFT JOIN devops_app_service_resource das ON ds.id = das.resource_id
         </if>
         LEFT JOIN devops_env_command cmd ON ds.command_id = cmd.id
         LEFT JOIN devops_app_service da ON da.id = ds.app_service_id
