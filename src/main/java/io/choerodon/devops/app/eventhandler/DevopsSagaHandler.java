@@ -177,9 +177,7 @@ public class DevopsSagaHandler {
             AppServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppImportPayload.getAppId());
             if (applicationDTO.getFailed() != null && applicationDTO.getFailed()) {
                 applicationDTO.setFailed(false);
-                if (1 != applicationService.baseUpdate(applicationDTO)) {
-                    LOGGER.error("update application set create success status error");
-                }
+                 applicationService.baseUpdate(applicationDTO);
             }
         }
         return data;
@@ -239,9 +237,7 @@ public class DevopsSagaHandler {
         DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
         AppServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppServicePayload.getAppId());
         applicationDTO.setFailed(true);
-        if (1 != applicationService.baseUpdate(applicationDTO)) {
-            LOGGER.error("update application {} set create failed status error", applicationDTO.getCode());
-        }
+        applicationService.baseUpdate(applicationDTO);
         return data;
     }
 

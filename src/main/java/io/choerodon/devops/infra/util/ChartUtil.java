@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.eventhandler.payload.AppServiceVersionPayload;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
@@ -84,4 +85,38 @@ public class ChartUtil {
         }
     }
 
+    public String downloadChartForAppMarket(AppServiceVersionPayload appServiceVersionPayload, String appServiceCode, String destpath) {
+        String repository=appServiceVersionPayload.getRepository();
+        repository=repository.replace("http://","");
+        String[] repositoryArray=repository.split("/");
+
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setType(CHART);
+        configurationProperties.setBaseUrl("http://"+repositoryArray[0]);
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        ChartClient chartClient = retrofit.create(ChartClient.class);
+        Call<ResponseBody> getTaz = chartClient.downloadTaz(repositoryArray[1],repositoryArray[2], appServiceCode, appServiceVersionPayload.getVersion());
+        String fileName=String.format("%s%s%s-%s.tgz",
+                destpath,
+                FILE_SEPARATOR,
+                appServiceCode,
+                appServiceVersionPayload.getVersion());
+        try {
+            Response<ResponseBody> response = getTaz.execute();
+            try (FileOutputStream fos = new FileOutputStream(fileName)) {
+                if (response.body() != null) {
+                    InputStream is = response.body().byteStream();
+                    byte[] buffer = new byte[4096];
+                    int r = 0;
+                    while ((r = is.read(buffer)) > 0) {
+                        fos.write(buffer, 0, r);
+                    }
+                    is.close();
+                }
+            }
+        } catch (IOException e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+        return fileName;
+    }
 }

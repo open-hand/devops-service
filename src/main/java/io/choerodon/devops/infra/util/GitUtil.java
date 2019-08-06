@@ -10,15 +10,6 @@ import java.util.regex.Pattern;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.GitConfigVO;
-import io.choerodon.devops.api.vo.GitEnvConfigVO;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.IamService;
-import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -36,6 +27,16 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.GitConfigVO;
+import io.choerodon.devops.api.vo.GitEnvConfigVO;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.IamService;
+import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 
 /**
  * Created by younger on 2018/3/29.
@@ -289,6 +290,29 @@ public class GitUtil {
                     throw new CommonException(ERROR_GIT_CLONE, e);
                 }
                 break;
+        }
+        return git;
+    }
+
+    /**
+     * Git克隆
+     */
+    public Git cloneAppMarket(String name, String tag, String remoteUrl) {
+        Git git = null;
+        String workingDirectory = getWorkingDirectory(name);
+        File localPathFile = new File(workingDirectory);
+        deleteDirectory(localPathFile);
+        try {
+            Git.cloneRepository()
+                    .setURI(remoteUrl)
+                    .setBranch(tag)
+                    .setDirectory(localPathFile)
+                    .call();
+            FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
+            git = Git.init().setDirectory(localPathFile).call();
+
+        } catch (GitAPIException e) {
+            throw new CommonException(ERROR_GIT_CLONE, e);
         }
         return git;
     }

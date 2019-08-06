@@ -1,8 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -16,7 +14,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang.StringUtils;
@@ -46,9 +43,7 @@ import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.sonar.*;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
-import io.choerodon.devops.app.eventhandler.payload.DevOpsUserPayload;
+import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
@@ -68,6 +63,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.tool.UUIDTool;
@@ -110,6 +106,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
     private static final String ERROR_UPDATE_APP = "error.application.update";
     private static final String TEST = "test-application";
     private static final String DUPLICATE = "duplicate";
+    private static final String FILE_SEPARATOR = "/";
     private Gson gson = new Gson();
     private JSON json = new JSON();
 
@@ -156,6 +153,19 @@ public class AppServiceServiceImpl implements AppSevriceService {
     private DevopsBranchService devopsBranchService;
     @Autowired
     private MarketConnectInfoService marketConnectInfoService;
+    @Autowired
+    private GitlabGroupService gitlabGroupService;
+    @Autowired
+    private AppServiceVersionValueService appServiceVersionValueService;
+    @Autowired
+    private AppServiceVersionReadmeService appServiceVersionReadmeService;
+    @Autowired
+    private AppServiceVersionService appServiceVersionService;
+    @Autowired
+    private ChartUtil chartUtil;
+
+    @Value("${services.helm.url}")
+    private String helmUrl;
 
 
     @Override
@@ -164,7 +174,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
     @Transactional
     public AppServiceRepVO create(Long projectId, AppServiceReqVO appServiceReqVO) {
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        ApplicationValidator.checkApplicationService(appServiceReqVO);
+        ApplicationValidator.checkApplicationService(appServiceReqVO.getCode());
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         // 查询创建应用所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
@@ -273,9 +283,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
             baseCheckName(appServiceDTO.getProjectId(), appServiceDTO.getName());
         }
-        if (baseUpdate(appServiceDTO) != 1) {
-            throw new CommonException(ERROR_UPDATE_APP);
-        }
+        baseUpdate(appServiceDTO);
         return true;
     }
 
@@ -285,9 +293,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
     public Boolean updateActive(Long appServiceId, Boolean active) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         appServiceDTO.setActive(active);
-        if (baseUpdate(appServiceDTO) != 1) {
-            throw new CommonException("error.application.active");
-        }
+        baseUpdate(appServiceDTO);
         return true;
     }
 
@@ -408,6 +414,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
         }
     }
 
+
     @Override
     public void operationApplicationImport(DevOpsAppImportServicePayload devOpsAppServiceImportPayload) {
         // 准备相关的数据
@@ -430,84 +437,80 @@ public class AppServiceServiceImpl implements AppSevriceService {
         // 为项目下的成员分配对于此gitlab项目的权限
         operateGitlabMemberPermission(devOpsAppServiceImportPayload);
 
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(devOpsAppServiceImportPayload.getUserId()));
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(devOpsAppServiceImportPayload.getUserId()));
 
 
-            // clone外部代码仓库
-            String applicationDir = APPLICATION + UUIDTool.genUuid();
-            Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
+        // clone外部代码仓库
+        String applicationDir = APPLICATION + UUIDTool.genUuid();
+        Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
 
 
-            // 设置Application对应的gitlab项目的仓库地址
-            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
-            appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
-                    + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
+        // 设置Application对应的gitlab项目的仓库地址
+        String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+        appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getCode()
+                + "-" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git");
 
-            File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
+        File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
 
-            try {
-                List<Ref> refs = repositoryGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
-                for (Ref ref : refs) {
-                    String branchName;
-                    if (ref.getName().equals("refs/remotes/origin/master")) {
-                        continue;
+        try {
+            List<Ref> refs = repositoryGit.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+            for (Ref ref : refs) {
+                String branchName;
+                if (ref.getName().equals("refs/remotes/origin/master")) {
+                    continue;
+                }
+                if (ref.getName().equals("refs/heads/master")) {
+                    branchName = MASTER;
+                } else {
+                    branchName = ref.getName().split("/")[3];
+                }
+                repositoryGit.checkout().setName(ref.getName()).call();
+                if (!branchName.equals(MASTER)) {
+                    repositoryGit.checkout().setCreateBranch(true).setName(branchName).call();
+                }
+
+                // 获取push代码所需的access token
+                String accessToken = getToken(devOpsAppServiceImportPayload.getGitlabProjectId(), applicationDir, userAttrDTO);
+
+                BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), branchName);
+                if (branchDTO.getName() == null) {
+                    try {
+                        // 提交并推代码
+                        gitUtil.commitAndPush(repositoryGit, appServiceDTO.getGitlabProjectUrl(), accessToken, ref.getName());
+                    } catch (CommonException e) {
+                        releaseResources(applicationWorkDir,  repositoryGit);
+                        throw e;
                     }
-                    if (ref.getName().equals("refs/heads/master")) {
-                        branchName = MASTER;
-                    } else {
-                        branchName = ref.getName().split("/")[3];
-                    }
-                    repositoryGit.checkout().setName(ref.getName()).call();
-                    if (!branchName.equals(MASTER)) {
-                        repositoryGit.checkout().setCreateBranch(true).setName(branchName).call();
-                    }
 
-
-
-                    // 获取push代码所需的access token
-                    String accessToken = getToken(devOpsAppServiceImportPayload, applicationDir, userAttrDTO);
-
-                    BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), branchName);
-                    if (branchDTO.getName() == null) {
-                        try {
-                            // 提交并推代码
-                            gitUtil.commitAndPush(repositoryGit, appServiceDTO.getGitlabProjectUrl(), accessToken, ref.getName());
-                        } catch (CommonException e) {
-                            releaseResources(applicationWorkDir,  repositoryGit);
-                            throw e;
-                        }
-
-                        branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), branchName);
-                        //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
-                        if (branchName.equals(MASTER)) {
-                            if (!branchDTO.getProtected()) {
-                                try {
-                                    gitlabServiceClientOperator.createProtectBranch(devOpsAppServiceImportPayload.getGitlabProjectId(), MASTER, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppServiceImportPayload.getUserId());
-                                } catch (CommonException e) {
-                                    if (!gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), MASTER).getProtected()) {
-                                        throw new CommonException(e);
-                                    }
+                    branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), branchName);
+                    //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
+                    if (branchName.equals(MASTER)) {
+                        if (!branchDTO.getProtected()) {
+                            try {
+                                gitlabServiceClientOperator.createProtectBranch(devOpsAppServiceImportPayload.getGitlabProjectId(), MASTER, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppServiceImportPayload.getUserId());
+                            } catch (CommonException e) {
+                                if (!gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), MASTER).getProtected()) {
+                                    throw new CommonException(e);
                                 }
                             }
                         }
-                    } else {
-                        if (branchName.equals(MASTER)) {
-                            if (!branchDTO.getProtected()) {
-                                gitlabServiceClientOperator.createProtectBranch(devOpsAppServiceImportPayload.getGitlabProjectId(), MASTER,
-                                        AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
-                                        devOpsAppServiceImportPayload.getUserId());
-                            }
+                    }
+                } else {
+                    if (branchName.equals(MASTER)) {
+                        if (!branchDTO.getProtected()) {
+                            gitlabServiceClientOperator.createProtectBranch(devOpsAppServiceImportPayload.getGitlabProjectId(), MASTER,
+                                    AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
+                                    devOpsAppServiceImportPayload.getUserId());
                         }
                     }
-                    initBranch(devOpsAppServiceImportPayload, appServiceDTO, branchName);
                 }
-            } catch (GitAPIException e) {
-                LOGGER.error("GitAPIException: {}", e);
+                initBranch(devOpsAppServiceImportPayload, appServiceDTO, branchName);
             }
+        } catch (GitAPIException e) {
+            LOGGER.error("GitAPIException: {}", e);
+        }
 
-            releaseResources(applicationWorkDir, repositoryGit);
-
-
+        releaseResources(applicationWorkDir, repositoryGit);
 
         try {
             // 设置application的属性
@@ -520,13 +523,12 @@ public class AppServiceServiceImpl implements AppSevriceService {
             setProjectHook(appServiceDTO, gitlabProjectDO.getId(), applicationServiceToken, devOpsAppServiceImportPayload.getUserId());
 
             // 更新并校验
-            if (baseUpdate(appServiceDTO) != 1) {
-                throw new CommonException(ERROR_UPDATE_APP);
-            }
+            baseUpdate(appServiceDTO);
         } catch (Exception e) {
             throw new CommonException(e.getMessage(), e);
         }
     }
+
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
@@ -649,12 +651,13 @@ public class AppServiceServiceImpl implements AppSevriceService {
 
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT, description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
+
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO) {
         // 获取当前操作的用户的信息
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         // 校验application信息的格式
-        ApplicationValidator.checkApplicationService(appServiceImportVO);
+        ApplicationValidator.checkApplicationService(appServiceImportVO.getCode());
 
         // 校验名称唯一性
         baseCheckName(projectId, appServiceImportVO.getName());
@@ -1309,7 +1312,8 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    public PageInfo<DevopsUserPermissionVO> pagePermissionUsers(Long projectId, Long appServiceId, PageRequest pageRequest, String searchParam) {
+    public PageInfo<DevopsUserPermissionVO> pagePermissionUsers(Long projectId, Long appServiceId, PageRequest pageRequest, String
+            searchParam) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
@@ -1470,6 +1474,199 @@ public class AppServiceServiceImpl implements AppSevriceService {
         return pageInfo.getList().stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public void createRemoteAppService(AppServicePayload appServicePayload, GroupDTO groupDTO, String orgCode, Long userId) {
+        ApplicationValidator.checkApplicationService(appServicePayload.getCode());
+        //校验是否已经下载过
+        AppServiceDTO appServiceDTO = appServiceMapper.queryByCodeWithNoProject(appServicePayload.getCode());
+        if (appServiceDTO == null) {
+            appServiceDTO = ConvertUtils.convertObject(appServicePayload, AppServiceDTO.class);
+            //第一次下载创建应用
+            appServiceDTO = baseCreate(appServiceDTO);
+
+            //创建gitlab project
+            if (appServiceDTO.getGitlabProjectId() != null) {
+                GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.createProject(groupDTO.getId(),
+                        appServicePayload.getCode(),
+                        TypeUtil.objToInteger(userId), false);
+                appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
+                appServiceDTO.setSynchro(true);
+                appServiceDTO.setFailed(false);
+                appServiceDTO = baseUpdate(appServiceDTO);
+            }
+        }
+        Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
+        // 获取push代码所需的access token
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(userId));
+        String applicationDir = APPLICATION + System.currentTimeMillis();
+        String accessToken = getToken(gitlabProjectId, applicationDir, userAttrDTO);
+
+        //根据版本推送代码和下载chart
+        appServicePayload.getAppServiceVersionPayloads().forEach(appServiceVersionPayload -> {
+            //拉取代码
+            Git git = gitUtil.cloneAppMarket(applicationDir, appServiceVersionPayload.getVersion(), appServicePayload.getRepository());
+            //push 到远程仓库
+            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+            String repositoryUrl = repoUrl + groupDTO.getPath() + "/" + appServicePayload.getCode() + ".git";
+            GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userId));
+            gitUtil.push(git, applicationDir, repositoryUrl, gitLabUserDTO.getUsername(), accessToken);
+
+            //下载chart
+            String zipPath = String.format("charts%s%s", FILE_SEPARATOR, appServicePayload.getCode());
+            String fileName = chartUtil.downloadChartForAppMarket(appServiceVersionPayload, appServicePayload.getCode(), zipPath);
+
+            //解压文件
+            String dirName = UUIDTool.genUuid();
+            String unZipPath = String.format("%s%s%s%s", "temp", appServicePayload.getCode(), FILE_SEPARATOR, dirName);
+            FileUtil.unTarGZ(fileName, unZipPath);
+            File zipDirectory = new File(unZipPath);
+            helmUrl = helmUrl.endsWith("/") ? helmUrl : helmUrl + "/";
+
+            AppServiceVersionDTO versionDTO = new AppServiceVersionDTO();
+            //解析 解压过后的文件
+            if (zipDirectory.exists() && zipDirectory.isDirectory()) {
+
+                File[] listFiles = zipDirectory.listFiles();
+                BeanUtils.copyProperties(appServiceVersionPayload, versionDTO);
+                versionDTO.setAppServiceCode(appServicePayload.getCode());
+                versionDTO.setAppServiceName(appServicePayload.getName());
+                //获取替换Repository
+                List<File> appMarkets = Arrays.stream(listFiles).parallel()
+                        .filter(k -> k.getName().equals("values.yaml"))
+                        .collect(Collectors.toCollection(ArrayList::new));
+                if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
+                    File valuesFile = appMarkets.get(0);
+                    Map<String, String> params = new HashMap<>();
+                    params.put(appServiceVersionPayload.getRepository(), String.format("%s%s%s", helmUrl, FILE_SEPARATOR, appServicePayload.getCode()));
+                    FileUtil.fileToInputStream(valuesFile, params);
+
+                    //创建appServiceValue
+                    AppServiceVersionValueDTO versionValueDTO = new AppServiceVersionValueDTO();
+                    versionValueDTO.setValue(FileUtil.getFileContent(valuesFile));
+                    versionDTO.setValueId(appServiceVersionValueService.baseCreate(versionValueDTO).getId());
+                    //创建ReadMe
+                    AppServiceVersionReadmeDTO versionReadmeDTO = new AppServiceVersionReadmeDTO();
+                    versionReadmeDTO.setReadme(FileUtil.getReadme(unZipPath));
+                    versionDTO.setReadmeValueId(appServiceVersionReadmeService.baseCreate(versionReadmeDTO).getId());
+                    //创建version
+                    appServiceVersionService.baseCreate(versionDTO);
+                }
+            } else {
+                FileUtil.deleteDirectory(zipDirectory);
+                throw new CommonException("error.zip.empty");
+            }
+
+            //打包 上传
+            String newZipPath = String.format("new-charts%s%s", FILE_SEPARATOR, appServicePayload.getCode());
+            try {
+                FileOutputStream fileOutputStream = new FileOutputStream(new File(newZipPath));
+                FileUtil.toZip(zipPath, fileOutputStream, true);
+                chartUtil.uploadChart(orgCode, "application-market", new File(newZipPath));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } finally {
+                FileUtil.deleteDirectory(new File(zipPath));
+                FileUtil.deleteDirectory(new File(unZipPath));
+                FileUtil.deleteDirectory(new File(newZipPath));
+            }
+        });
+
+        //更新app token和hook
+        appServiceDTO.setToken(accessToken);
+        setProjectHook(appServiceDTO, appServiceDTO.getGitlabProjectId(), accessToken, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        baseUpdate(appServiceDTO);
+    }
+
+
+    @Override
+    public void downLoadAppService(ApplicationPayload applicationPayload) {
+        UserAttrVO userAttrVO = userAttrService.queryByUserId(applicationPayload.getUserId());
+        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(applicationPayload.getOrganizationId());
+        //创建gitlab group
+        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
+        gitlabGroupPayload.setOrganizationCode(organizationDTO.getCode());
+        gitlabGroupPayload.setOrganizationName(organizationDTO.getName());
+        gitlabGroupPayload.setUserId(applicationPayload.getUserId());
+        GroupDTO groupDTO = gitlabGroupService.createAppMarketGroup(gitlabGroupPayload);
+        // 查询创建应用所在的gitlab应用组 用户权限
+        MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
+                TypeUtil.objToInteger(groupDTO.getId()),
+                TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
+        if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
+            throw new CommonException("error.user.not.owner");
+        }
+        applicationPayload.getAppServicePayloads().forEach(appServicePayload -> createRemoteAppService(appServicePayload, groupDTO, organizationDTO.getCode(), applicationPayload.getUserId()));
+
+    }
+
+    @Override
+    public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        importInternalVOS.forEach(importInternalVO -> {
+            AppServiceDTO appServiceDTO = new AppServiceDTO();
+            appServiceDTO.setProjectId(projectId);
+            if (importInternalVO.getAppCode() != null) {
+                // 校验application信息的格式
+                ApplicationValidator.checkApplicationService(importInternalVO.getAppCode());
+
+                // 校验名称唯一性
+                baseCheckName(projectId, importInternalVO.getAppName());
+
+                // 校验code唯一性
+                baseCheckCode(appServiceDTO);
+
+                appServiceDTO.setCode(importInternalVO.getAppCode());
+                appServiceDTO.setName(importInternalVO.getAppName());
+            } else {
+                AppServiceDTO oldAppService = baseQuery(importInternalVO.getAppServiceId());
+                appServiceDTO.setCode(oldAppService.getCode());
+                appServiceDTO.setName(oldAppService.getName());
+            }
+
+            appServiceDTO.setProjectId(projectId);
+            appServiceDTO.setActive(true);
+            appServiceDTO.setSynchro(false);
+            appServiceDTO = baseCreate(appServiceDTO);
+
+            // 查询创建应用所在的gitlab应用组
+            DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+            // 查询创建应用所在的gitlab应用组 用户权限
+            MemberDTO memberDTO = gitlabGroupMemberService.queryByUserId(
+                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                    TypeUtil.objToInteger(userAttrVO.getGitlabUserId()));
+            if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
+                throw new CommonException("error.user.not.owner");
+            }
+
+            //创建gitlab 应用
+            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.createProject(
+                    TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
+                    appServiceDTO.getCode(),
+                    TypeUtil.objToInteger(userAttrVO.getGitlabUserId()), false);
+            appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
+            appServiceDTO.setSynchro(true);
+            appServiceDTO.setFailed(false);
+            appServiceDTO = baseUpdate(appServiceDTO);
+
+            //拉取代码
+            // 获取push代码所需的access token
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            String applicationDir = APPLICATION + System.currentTimeMillis();
+            String accessToken = getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
+
+            AppServiceVersionDTO applicationVersion = appServiceVersionService.baseQuery(importInternalVO.getVersionId());
+            Git git = gitUtil.cloneAppMarket(applicationDir, applicationVersion.getVersion(), applicationVersion.getRepository());
+            //push 到远程仓库
+            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+
+            String repositoryUrl = repoUrl + organizationDTO.getCode() + "/" + projectDTO.getCode() + "/" + appServiceDTO.getCode() + ".git";
+            GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserById(TypeUtil.objToInteger(userAttrDTO.getIamUserId()));
+            gitUtil.push(git, applicationDir, repositoryUrl, gitLabUserDTO.getUsername(), accessToken);
+        });
+    }
+
     @Override
     public void baseCheckApp(Long projectId, Long appId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appId);
@@ -1479,13 +1676,17 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    public int baseUpdate(AppServiceDTO applicationDTO) {
+    public AppServiceDTO baseUpdate(AppServiceDTO applicationDTO) {
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(applicationDTO.getId());
         if (applicationDTO.getFailed() != null && !applicationDTO.getFailed()) {
             appServiceMapper.updateAppToSuccess(applicationDTO.getId());
         }
         applicationDTO.setObjectVersionNumber(oldAppServiceDTO.getObjectVersionNumber());
-        return appServiceMapper.updateByPrimaryKeySelective(applicationDTO);
+        if (appServiceMapper.updateByPrimaryKeySelective(applicationDTO) != 1) {
+            throw new CommonException("error.app.service.update");
+
+        }
+        return appServiceMapper.selectByPrimaryKey(applicationDTO.getId());
     }
 
     @Override
@@ -1773,11 +1974,29 @@ public class AppServiceServiceImpl implements AppSevriceService {
         devopsBranchService.baseCreate(devopsBranchDTO);
     }
 
-    private String getToken(DevOpsAppServicePayload devOpsAppServicePayload, String applicationDir, UserAttrDTO userAttrDTO) {
+    private void replaceParams(AppServiceDTO applicationDTO,
+                               ProjectDTO projectDTO,
+                               OrganizationDTO organizationDTO,
+                               String applicationDir) {
+        try {
+            File file = new File(gitUtil.getWorkingDirectory(applicationDir));
+            Map<String, String> params = new HashMap<>();
+            params.put("{{group.name}}", organizationDTO.getCode() + "-" + projectDTO.getCode());
+            params.put("{{service.code}}", applicationDTO.getCode());
+            FileUtil.replaceReturnFile(file, params);
+        } catch (Exception e) {
+            //删除模板
+            gitUtil.deleteWorkingDirectory(applicationDir);
+            throw new CommonException(e.getMessage(), e);
+        }
+    }
+
+
+    private String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO) {
         String accessToken = userAttrDTO.getGitlabToken();
         if (accessToken == null) {
-            accessToken = gitlabServiceClientOperator.createProjectToken(devOpsAppServicePayload.getGitlabProjectId(),
-                    applicationDir, devOpsAppServicePayload.getUserId());
+            accessToken = gitlabServiceClientOperator.createProjectToken(gitlabProjectId,
+                    applicationDir, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             userAttrDTO.setGitlabToken(accessToken);
             userAttrService.baseUpdate(userAttrDTO);
         }
@@ -1811,7 +2030,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
     /**
      * 释放资源
      */
-    private void releaseResources( File applicationWorkDir,  Git repositoryGit) {
+    private void releaseResources(File applicationWorkDir, Git repositoryGit) {
         if (repositoryGit != null) {
             repositoryGit.close();
         }
@@ -1889,9 +2108,9 @@ public class AppServiceServiceImpl implements AppSevriceService {
      * set project hook id for application
      *
      * @param appServiceDTO the application entity
-     * @param projectId      the gitlab project id
-     * @param token          the token for project hook
-     * @param userId         the gitlab user id
+     * @param projectId     the gitlab project id
+     * @param token         the token for project hook
+     * @param userId        the gitlab user id
      */
     private void setProjectHook(AppServiceDTO appServiceDTO, Integer projectId, String token, Integer userId) {
         ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
@@ -1912,7 +2131,8 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
 
-    private void initApplicationParams(ProjectDTO projectDTO, OrganizationDTO organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {
+    private void initApplicationParams(ProjectDTO projectDTO, OrganizationDTO
+            organizationDTO, List<AppServiceDTO> applicationDTOS, String urlSlash) {
         List<String> projectKeys = new ArrayList<>();
         if (!sonarqubeUrl.equals("")) {
             SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);

@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.payload.ApplicationPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -337,9 +338,19 @@ public interface AppSevriceService {
 
     List<ProjectVO> listProjects(Long organizationId, Long projectId, String params);
 
+    /**
+     * 导入内部应用服务
+     *
+     * @param projectId
+     * @param importInternalVOS
+     */
+    void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS);
+
+    void downLoadAppService(ApplicationPayload applicationPayload);
+
     void baseCheckApp(Long projectId, Long appServiceId);
 
-    int baseUpdate(AppServiceDTO appServiceDTO);
+    AppServiceDTO baseUpdate(AppServiceDTO appServiceDTO);
 
     void updateApplicationStatus(AppServiceDTO appServiceDTO);
 

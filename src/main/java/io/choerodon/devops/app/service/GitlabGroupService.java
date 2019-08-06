@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
+import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,6 +12,13 @@ import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
  */
 public interface GitlabGroupService {
     void createGroup(GitlabGroupPayload gitlabGroupPayload, String groupCodeSuffix);
+
+    /**
+     * 为应用下载创建 group
+     * @param gitlabGroupPayload
+     * @return
+     */
+    GroupDTO createAppMarketGroup(GitlabGroupPayload gitlabGroupPayload);
 
     void updateGroup(GitlabGroupPayload gitlabGroupPayload, String groupCodeSuffix);
 }

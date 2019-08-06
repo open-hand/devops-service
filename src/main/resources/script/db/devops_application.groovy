@@ -94,10 +94,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
 
     }
 
-
     changeSet(author: 'Younger', id: '2019-8-05-drop-column') {
         dropColumn(columnName: "app_template_id", tableName: "devops_app_service")
     }
-
 
 }
