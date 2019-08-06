@@ -1147,7 +1147,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         List<AppServiceDTO> applicationDTOS = applicationService.baseListByCode(appServiceName);
         List<AppServiceDTO> applicationList = applicationDTOS.stream()
                 .filter(result ->
-                        iamServiceClientOperator.queryIamProjectById(result.getProjectId()).getOrganizationId().equals(orgId))
+                        iamServiceClientOperator.queryIamProjectById(result.getAppId()).getOrganizationId().equals(orgId))
                 .collect(Collectors.toList());
         applications.addAll(findAppInAppMarket(applicationDTOS, applicationList));
         return applications;

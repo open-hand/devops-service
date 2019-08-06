@@ -41,7 +41,7 @@
         LEFT JOIN devops_app_service da ON da.id = dptr.app_service_id
         LEFT JOIN devops_env de ON de.id = dptr.env_id
         LEFT JOIN devops_app_service_version dav ON dav.id = dptr.version_id
-        LEFT JOIN devops_app_service_istance dai ON dai.id = dptr.instance_id
+        LEFT JOIN devops_app_service_instance dai ON dai.id = dptr.instance_id
         WHERE dptr.stage_record_id = #{stageRecordId}
         <if test="taskId != null">
             AND dptr.task_id = #{taskId}

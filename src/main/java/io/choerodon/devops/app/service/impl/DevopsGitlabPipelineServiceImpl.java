@@ -307,7 +307,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         });
 
         AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceId);
-        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
+        ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getAppId());
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //获取pipeline记录

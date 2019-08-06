@@ -49,7 +49,7 @@
         SELECT
         dp.id,
         dp.ip,
-        da.project_id projectId,
+        de.project_id projectId,
         dam.share_level,
         dp.`name`,
         dp.instance_id,

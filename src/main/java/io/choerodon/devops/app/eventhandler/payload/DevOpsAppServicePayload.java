@@ -66,11 +66,11 @@ public class DevOpsAppServicePayload {
         this.organizationId = organizationId;
     }
 
-    public Long getAppId() {
+    public Long getAppServiceId() {
         return appServiceId;
     }
 
-    public void setAppId(Long appServiceId) {
+    public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
     }
 

@@ -174,7 +174,7 @@ public class DevopsSagaHandler {
                 applicationService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
                 throw e;
             }
-            AppServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppImportPayload.getAppId());
+            AppServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppImportPayload.getAppServiceId());
             if (applicationDTO.getFailed() != null && applicationDTO.getFailed()) {
                 applicationDTO.setFailed(false);
                  applicationService.baseUpdate(applicationDTO);
@@ -235,7 +235,7 @@ public class DevopsSagaHandler {
             seq = 1)
     public String setAppErr(String data) {
         DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
-        AppServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppServicePayload.getAppId());
+        AppServiceDTO applicationDTO = applicationService.baseQuery(devOpsAppServicePayload.getAppServiceId());
         applicationDTO.setFailed(true);
         applicationService.baseUpdate(applicationDTO);
         return data;

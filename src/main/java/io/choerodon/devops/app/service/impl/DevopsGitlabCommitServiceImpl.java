@@ -67,7 +67,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                     if ("root".equals(commitDTO.getAuthor().getName())) {
                         devopsGitlabCommitDTO.setUserId(1L);
                     } else {
-                        IamUserDTO iamUserDTO = iamServiceClientOperator.queryByEmail(applicationDTO.getProjectId(),
+                        IamUserDTO iamUserDTO = iamServiceClientOperator.queryByEmail(applicationDTO.getAppId(),
                                 commitDTO.getAuthor().getEmail());
                         if (iamUserDTO != null) {
                             devopsGitlabCommitDTO.setUserId(iamUserDTO.getId());
@@ -91,7 +91,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 if ("root".equals(commitDTO.getAuthorName())) {
                     devopsGitlabCommitDTO.setUserId(1L);
                 } else {
-                    IamUserDTO userE = iamServiceClientOperator.queryByEmail(applicationDTO.getProjectId(),
+                    IamUserDTO userE = iamServiceClientOperator.queryByEmail(applicationDTO.getAppId(),
                             commitDTO.getAuthorEmail());
                     if (userE != null) {
                         devopsGitlabCommitDTO.setUserId(userE.getId());

@@ -41,7 +41,7 @@ public class AppServiceController {
     /**
      * 项目下创建服务
      *
-     * @param projectId         项目id
+     * @param projectId       项目id
      * @param appServiceReqVO 服务信息
      * @return ApplicationServiceRepVO
      */
@@ -61,7 +61,7 @@ public class AppServiceController {
     /**
      * 项目下从外部代码库导入服务
      *
-     * @param projectId           项目id
+     * @param projectId          项目id
      * @param appServiceImportVO 服务信息
      * @return ApplicationServiceImportVO
      */
@@ -102,7 +102,7 @@ public class AppServiceController {
     /**
      * 项目下更新服务信息
      *
-     * @param projectId            项目id
+     * @param projectId           项目id
      * @param appServiceUpdateDTO 服务
      * @return Boolean
      */
@@ -372,7 +372,7 @@ public class AppServiceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
-    
+
 
     /**
      * 项目下查询已经启用有版本未发布的服务
@@ -669,7 +669,7 @@ public class AppServiceController {
             @ApiParam(value = "应用服务Id")
             @PathVariable(value = "organization_id", required = false) Long organizationId,
             @ApiParam(value = "查询参数", required = true)
-            @RequestParam(value = "params",required = false) String params) {
+            @RequestParam(value = "params", required = false) String params) {
         return Optional.ofNullable(
                 applicationServiceService.listProjects(organizationId, projectId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

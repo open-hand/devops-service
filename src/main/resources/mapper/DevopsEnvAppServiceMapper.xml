@@ -23,7 +23,7 @@
         derd.message detail
         FROM
         devops_app_service_instance dai
-        JOIN devops_env_resource der ON der.app_instance_id = dai.id
+        JOIN devops_env_resource der ON der.instance_id = dai.id
         JOIN devops_env_resource_detail derd ON derd.id = der.resource_detail_id
         WHERE
         dai.app_service_id = #{appServiceId}
@@ -40,7 +40,7 @@
                            FROM devops_env_app_service env_app
                            WHERE env_app.env_id = #{envId}
                            ) related_app ON app.id = related_app.app_service_id
-        WHERE app.project_id = #{projectId}
+        WHERE app.app_id = #{projectId}
           AND (app.is_failed IS NULL OR app.is_failed = FALSE)
           AND app.is_active = TRUE
           AND app.is_synchro = TRUE

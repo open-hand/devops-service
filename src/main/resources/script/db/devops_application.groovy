@@ -98,4 +98,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         dropColumn(columnName: "app_template_id", tableName: "devops_app_service")
     }
 
+    changeSet(author: 'zmf', id: '2019-08-06-rename-project-id-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_id', oldColumnName: 'project_id', tableName: 'devops_app_service', remarks: '应用ID')
+    }
 }
