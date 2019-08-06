@@ -17,7 +17,7 @@
         da.is_skip_check_permission,
         da.creation_date
         FROM devops_app_service da
-        where da.app_id = #{projectId}
+        where da.app_id = #{appId}
         <if test="isActive != null">
             <if test="isActive">
                 AND da.is_active = TRUE
@@ -67,7 +67,7 @@
         JOIN devops_env de ON de.id = dai.env_id
         left join devops_app_service_share_rule dam on dam.app_service_id = da.id
         WHERE
-        de.project_id = #{projectId}
+        de.project_id = #{appId}
         AND de.id = #{envId}
         <if test="appServiceId!=null and appServiceId !=''">
             ORDER BY da.id not in (#{appServiceId}),da.id ASC
@@ -83,7 +83,7 @@
             da.is_active is true
           AND da.is_synchro is true
           AND da.gitlab_project_id is not null
-          AND da.app_id = #{projectId}
+          AND da.app_id = #{appId}
     </select>
 
     <select id="listDeployedApp" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -98,7 +98,7 @@
         LEFT JOIN devops_app_service_share_rule dam ON dam.app_service_id = da.id
         WHERE
         da.is_active
-        AND de.project_id = #{projectId}
+        AND de.project_id = #{appId}
         ORDER BY
         dam.share_level ASC,
         da.id DESC
@@ -116,7 +116,7 @@
         LEFT JOIN devops_app_service_share_rule dam ON dam.app_service_id = da.id
         WHERE
         da.is_active
-        AND de.project_id = #{projectId}
+        AND de.project_id = #{appId}
         ORDER BY
         dam.share_level ASC,
         da.id DESC
@@ -183,7 +183,7 @@
         FROM
         devops_app_service da
         WHERE
-        da.app_id = #{projectId}
+        da.app_id = #{appId}
         AND da.is_active = #{active}
         AND ((select count(1) from devops_app_service_share_rule dam where da.id=dam.app_service_id)=0)
         AND ((select count(1) from devops_app_service_version dav where da.id=dav.app_service_id)>0)
@@ -220,7 +220,7 @@
         NOT EXISTS ( SELECT 1 FROM devops_app_service_share_rule dam WHERE dam.app_service_id = da.id )
         AND NOT EXISTS ( SELECT 1 FROM devops_app_service_instance dai JOIN devops_app_service_version dav ON dav.id =
         dai.app_service_version_id WHERE dai.`status` != 'deleted' AND dav.app_service_id = da.id )
-        AND da.id = #{applicationId}
+        AND da.id = #{appServiceId}
     </select>
 
     <select id="listByCode" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -247,7 +247,7 @@
         da.uuid
         FROM
         devops_app_service da
-        WHERE da.app_id = #{projectId}
+        WHERE da.app_id = #{appId}
         AND da.is_active = 1
         AND da.gitlab_project_id IS NOT NULL
         <if test='isProjectOwner != null'>
@@ -297,7 +297,7 @@
                 where da.harbor_config_id = #{oldConfigId}
             </if>
         </if>
-        AND da.app_id = #{projectId}
+        AND da.app_id = #{appId}
     </update>
 
     <select id="queryByCodeWithNoProject" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -329,7 +329,7 @@
         </foreach>
         AND (
             dasr.share_level = 'organization'
-            OR dasr.app_id = #{projectId}
+            OR dasr.app_id = #{appId}
         )
         <if test="params != null">
             and (da.code like #{params} or da.name like #{params} )
