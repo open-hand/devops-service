@@ -5,15 +5,15 @@ import java.util.List;
 
 public class DeployAppVO {
 
-    private String appName;
+    private String appServiceName;
     private List<DeployDetailVO> deployDetailVOS;
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
     public List<DeployDetailVO> getDeployDetailVOS() {

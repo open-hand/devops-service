@@ -162,7 +162,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     private void operateEnvGitLabFile(Integer gitlabEnvGroupProjectId, V1Secret v1Secret, DevopsSecretDTO devopsSecretDTO,
-                                      DevopsEnvCommandDTO devopsEnvCommandDTO, Boolean isCreate, UserAttrDTO userAttrDTO, Long appId) {
+                                      DevopsEnvCommandDTO devopsEnvCommandDTO, Boolean isCreate, UserAttrDTO userAttrDTO, Long appServiceId) {
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsSecretDTO.getEnvId());
 
@@ -170,9 +170,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         if (isCreate) {
             Long secretId = baseCreate(devopsSecretDTO).getId();
             //创建应用资源关系
-            if (appId != null) {
+            if (appServiceId != null) {
                 DevopsApplicationResourceDTO applicationResourceDTO = new DevopsApplicationResourceDTO();
-                applicationResourceDTO.setAppServiceId(appId);
+                applicationResourceDTO.setAppServiceId(appServiceId);
                 applicationResourceDTO.setResourceType(ObjectType.SERVICE.getType());
                 applicationResourceDTO.setResourceId(secretId);
                 devopsApplicationResourceService.baseCreate(applicationResourceDTO);
@@ -331,8 +331,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public PageInfo<SecretRespVO> pageByOption(Long envId, PageRequest pageRequest, String params, Long appId, boolean toDecode) {
-        return ConvertUtils.convertPage(basePageByOption(envId, pageRequest, params, appId), dto -> dtoToVO(dto, toDecode));
+    public PageInfo<SecretRespVO> pageByOption(Long envId, PageRequest pageRequest, String params, Long appServiceId, boolean toDecode) {
+        return ConvertUtils.convertPage(basePageByOption(envId, pageRequest, params, appServiceId), dto -> dtoToVO(dto, toDecode));
     }
 
     private SecretRespVO dtoToVO(DevopsSecretDTO devopsSecretDTO, boolean toDecode) {
@@ -411,12 +411,12 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         return devopsSecretMapper.selectOne(devopsSecretDTO);
     }
 
-    public PageInfo<DevopsSecretDTO> basePageByOption(Long envId, PageRequest pageRequest, String params, Long appId) {
+    public PageInfo<DevopsSecretDTO> basePageByOption(Long envId, PageRequest pageRequest, String params, Long appServiceId) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         PageInfo<DevopsSecretDTO> devopsSecretDTOPageInfo = PageHelper
-                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsSecretMapper.listByOption(envId, searchParamMap, paramMap, appId));
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsSecretMapper.listByOption(envId, searchParamMap, paramMap, appServiceId));
         return devopsSecretDTOPageInfo;
     }
 

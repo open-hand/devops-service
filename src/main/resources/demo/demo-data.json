@@ -18,7 +18,7 @@
       "type": [1]
     }
   },
-  "appVersionSearchParam": {
+  "appServiceServiceSearchParam": {
     "searchParam": {
       "version": []
     },
@@ -34,7 +34,7 @@
     "originBranch": "master",
     "branchName": "feature-SP-11"
   },
-  "appVersion": {
+  "appServiceService": {
     "version": "0.1.0",
     "commit": "000000000000000000000000",
     "image": "registry.saas.test.com/code-x-code-x/code-i:2018.12.24-104231-multi-container"

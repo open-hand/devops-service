@@ -229,8 +229,8 @@
         <if test="appServiceId != null">
             AND dai.app_service_id = #{appServiceId}
         </if>
-        <if test="appInstanceCode != null">
-            AND dai.code = #{appInstanceCode}
+        <if test="appServiceInstanceCode != null">
+            AND dai.code = #{appServiceInstanceCode}
         </if>
     </select>
 
@@ -404,7 +404,7 @@
 
     <select id="listDeployTime" resultType="io.choerodon.devops.infra.dto.DeployDTO">
         select
-        dai.code appInstanceCode,
+        dai.code appServiceInstanceCode,
         da.code appServiceCode,
         da.name appServiceName,
         dav.version appServiceVersion,
@@ -430,11 +430,11 @@
         <if test="envId != null">
             AND de.id = #{envId}
         </if>
-        <if test="appIds != null">
+        <if test="appServiceIds != null">
             AND da.id in
-            <foreach collection="appIds" item="appIds" index="index"
+            <foreach collection="appServiceIds" item="appServiceIds" index="index"
                      open="(" close=")" separator=",">
-                #{appIds}
+                #{appServiceIds}
             </foreach>
         </if>
         order by cmd.last_update_date DESC
@@ -442,7 +442,7 @@
 
     <select id="listDeployFrequency" resultType="io.choerodon.devops.infra.dto.DeployDTO">
         select
-        dai.code appInstanceCode,
+        dai.code appServiceInstanceCode,
         da.code appServiceCode,
         da.name appServiceName,
         (

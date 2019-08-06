@@ -69,7 +69,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsDeployValueVO> pageByOptions(Long projectId, Long appServiceId, Long envId, PageRequest pageRequest, String params) {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
@@ -77,7 +77,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
         if (!iamServiceClientOperator.isProjectOwner(DetailsHelper.getUserDetails().getUserId(), projectDTO)) {
             userId = DetailsHelper.getUserDetails().getUserId();
         }
-        PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo = basePageByOptions(projectId, appId, envId, userId, pageRequest, params);
+        PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo = basePageByOptions(projectId, appServiceId, envId, userId, pageRequest, params);
         PageInfo<DevopsDeployValueVO> page = ConvertUtils.convertPage(deployValueDTOPageInfo, DevopsDeployValueVO.class);
         page.setList(deployValueDTOPageInfo.getList().stream().map(devopsDeployValueDTO -> {
 
@@ -109,8 +109,8 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appId, Long envId) {
-        return ConvertUtils.convertList(baseQueryByAppIdAndEnvId(projectId, appId, envId), DevopsDeployValueVO.class);
+    public List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appServiceId, Long envId) {
+        return ConvertUtils.convertList(baseQueryByAppIdAndEnvId(projectId, appServiceId, envId), DevopsDeployValueVO.class);
     }
 
     @Override
@@ -126,12 +126,12 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public PageInfo<DevopsDeployValueDTO> basePageByOptions(Long projectId, Long appId, Long envId, Long userId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsDeployValueDTO> basePageByOptions(Long projectId, Long appServiceId, Long envId, Long userId, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo = PageHelper
-                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsDeployValueMapper.listByOptions(projectId, appId, envId, userId, searchParamMap, paramMap));
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsDeployValueMapper.listByOptions(projectId, appServiceId, envId, userId, searchParamMap, paramMap));
         return deployValueDTOPageInfo;
     }
 
@@ -176,10 +176,10 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
+    public List<DevopsDeployValueDTO> baseQueryByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId) {
         DevopsDeployValueDTO devopsDeployValueDTO = new DevopsDeployValueDTO();
         devopsDeployValueDTO.setProjectId(projectId);
-        devopsDeployValueDTO.setAppServiceId(appId);
+        devopsDeployValueDTO.setAppServiceId(appServiceId);
         devopsDeployValueDTO.setEnvId(envId);
         return devopsDeployValueMapper.select(devopsDeployValueDTO);
     }

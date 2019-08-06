@@ -157,10 +157,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
     @Override
-    public PageInfo<DevopsConfigMapRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String searchParam, Long appId) {
+    public PageInfo<DevopsConfigMapRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String searchParam, Long appServiceId) {
 
         PageInfo<DevopsConfigMapDTO> devopsConfigMapDTOPageInfo = basePageByEnv(
-                envId, pageRequest, searchParam, appId);
+                envId, pageRequest, searchParam, appServiceId);
         devopsConfigMapDTOPageInfo.getList().forEach(devopsConfigMapRepDTO -> {
             List<String> keys = new ArrayList<>();
             gson.fromJson(devopsConfigMapRepDTO.getValue(), Map.class).forEach((key, value) ->
@@ -304,13 +304,13 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
     @Override
-    public PageInfo<DevopsConfigMapDTO> basePageByEnv(Long envId, PageRequest pageRequest, String params, Long appId) {
+    public PageInfo<DevopsConfigMapDTO> basePageByEnv(Long envId, PageRequest pageRequest, String params, Long appServiceId) {
         Map maps = gson.fromJson(params, Map.class);
         PageInfo<DevopsConfigMapDTO> devopsConfigMapDOS = PageHelper
                 .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(maps.get(TypeUtil.PARAM)),
-                        appId));
+                        appServiceId));
         return devopsConfigMapDOS;
     }
 
@@ -339,13 +339,13 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                                       DevopsConfigMapDTO devopsConfigMapDTO,
                                       UserAttrDTO userAttrDTO,
                                       DevopsEnvCommandDTO devopsEnvCommandDTO,
-                                      Long appId) {
+                                      Long appServiceId) {
         //操作configMap数据库
         if (isCreate) {
             Long configMapId = baseCreate(devopsConfigMapDTO).getId();
-            if (appId != null) {
+            if (appServiceId != null) {
                 DevopsApplicationResourceDTO devopsApplicationResourceDTO = new DevopsApplicationResourceDTO();
-                devopsApplicationResourceDTO.setAppServiceId(appId);
+                devopsApplicationResourceDTO.setAppServiceId(appServiceId);
                 devopsApplicationResourceDTO.setResourceType(ObjectType.CONFIGMAP.getType());
                 devopsApplicationResourceDTO.setResourceId(configMapId);
                 devopsApplicationResourceService.baseCreate(devopsApplicationResourceDTO);

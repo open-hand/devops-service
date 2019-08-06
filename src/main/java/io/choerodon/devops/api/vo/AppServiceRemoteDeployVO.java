@@ -9,7 +9,7 @@ public class AppServiceRemoteDeployVO {
 
     private Long environmentId;
     private String type;
-    private Long appInstanceId;
+    private Long instanceId;
     private Long commandId;
     private String instanceName;
     private boolean isNotChange;
@@ -26,12 +26,12 @@ public class AppServiceRemoteDeployVO {
         this.type = type;
     }
 
-    public Long getAppInstanceId() {
-        return appInstanceId;
+    public Long getInstanceId() {
+        return instanceId;
     }
 
-    public void setAppInstanceId(Long appInstanceId) {
-        this.appInstanceId = appInstanceId;
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 
     public Long getCommandId() {

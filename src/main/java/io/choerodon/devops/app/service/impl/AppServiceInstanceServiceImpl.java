@@ -209,11 +209,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 .collect(Collectors.toMap(AppServiceLatestVersionDTO::getAppServiceId, t -> t, (a, b) -> b));
 
         //查询部署总览，每个应用最新的版本以及在每个环境每个实例部署的版本
-        Map<Long, Integer> appInstancesListMap = new HashMap<>();
+        Map<Long, Integer> appServiceInstancesListMap = new HashMap<>();
         List<AppServiceInstanceOverViewVO> appServiceInstanceOverViewVOS = new ArrayList<>();
         appServiceInstanceOverViewDTOS.forEach(t -> {
             AppServiceInstanceOverViewVO appServiceInstanceOverViewVO = new AppServiceInstanceOverViewVO();
-            if (appInstancesListMap.get(t.getAppServiceId()) == null) {
+            if (appServiceInstancesListMap.get(t.getAppServiceId()) == null) {
                 if (t.getInstanceId() != null
                         || t.getVersionId().equals(latestVersionList.get(t.getAppServiceId()).getVersionId())) {
                     appServiceInstanceOverViewVO = new AppServiceInstanceOverViewVO(
@@ -227,11 +227,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     if (t.getInstanceId() != null) {
                         initInstanceOverView(appServiceInstanceOverViewVO, t, latestVersionList.get(t.getAppServiceId()).getVersionId());
                     }
-                    appInstancesListMap.put(t.getAppServiceId(), appServiceInstanceOverViewVOS.size());
+                    appServiceInstancesListMap.put(t.getAppServiceId(), appServiceInstanceOverViewVOS.size());
                     appServiceInstanceOverViewVOS.add(appServiceInstanceOverViewVO);
                 }
             } else {
-                appServiceInstanceOverViewVO = appServiceInstanceOverViewVOS.get(appInstancesListMap.get(t.getAppServiceId()));
+                appServiceInstanceOverViewVO = appServiceInstanceOverViewVOS.get(appServiceInstancesListMap.get(t.getAppServiceId()));
                 initInstanceOverViewIfNotExist(appServiceInstanceOverViewVO, t);
             }
             if (t.getInstanceId() != null
@@ -311,7 +311,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         resultMaps.forEach((key, value) -> {
             DeployAppVO deployAppVO = new DeployAppVO();
             List<DeployDetailVO> deployDetailVOS = new ArrayList<>();
-            deployAppVO.setAppName(key);
+            deployAppVO.setAppServiceName(key);
             //给应用下每个实例操作设置时长
             value.forEach(deployDO -> {
                 DeployDetailVO deployDetailVO = new DeployDetailVO();
@@ -1057,8 +1057,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 projectId, envId, appServiceId);
     }
 
-    public int baseCountByOptions(Long envId, Long appServiceId, String appInstanceCode) {
-        return appServiceInstanceMapper.countByOptions(envId, appServiceId, appInstanceCode);
+    public int baseCountByOptions(Long envId, Long appServiceId, String appServiceInstanceCode) {
+        return appServiceInstanceMapper.countByOptions(envId, appServiceId, appServiceInstanceCode);
     }
 
     public String baseQueryValueByEnvIdAndAppId(Long

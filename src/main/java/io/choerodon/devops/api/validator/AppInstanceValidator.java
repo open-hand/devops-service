@@ -11,7 +11,7 @@ import io.choerodon.core.exception.CommonException;
  * Description:
  */
 public class AppInstanceValidator {
-    //appInstance name
+    //appServiceInstance name
     private static final String NAME_PATTERN = "[a-z]([-a-z0-9]*[a-z0-9])?";
 
     private AppInstanceValidator() {

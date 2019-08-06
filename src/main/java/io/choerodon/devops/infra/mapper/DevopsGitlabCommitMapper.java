@@ -11,7 +11,7 @@ import io.choerodon.mybatis.common.Mapper;
 
 public interface DevopsGitlabCommitMapper extends Mapper<DevopsGitlabCommitDTO> {
     List<DevopsGitlabCommitDTO> listCommits(@Param("projectId") Long projectId,
-                                            @Param("appIds") List<Long> appId,
+                                            @Param("appServiceIds") List<Long> appServiceIds,
                                             @Param("startDate") Date startDate,
                                             @Param("endDate") Date endDate);
 

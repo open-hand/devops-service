@@ -123,7 +123,7 @@ public interface DevopsEnvironmentService {
      * @param projectId 项目id
      * @return List
      */
-    List<DevopsEnviromentRepVO> listByProjectId(Long projectId, Long appId);
+    List<DevopsEnviromentRepVO> listByProjectId(Long projectId, Long appServiceId);
 
     /**
      * 创建环境saga事件

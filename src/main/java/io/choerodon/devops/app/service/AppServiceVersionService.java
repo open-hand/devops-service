@@ -28,156 +28,156 @@ public interface AppServiceVersionService {
     /**
      * 应用下查询应用所有版本
      *
-     * @param appId     应用Id
+     * @param appServiceId     应用Id
      * @param isPublish 是否发布
      * @return List
      */
-    List<AppServiceVersionRespVO> listByAppId(Long appId, Boolean isPublish);
+    List<AppServiceVersionRespVO> listByAppId(Long appServiceId, Boolean isPublish);
 
     /**
      * 根据参数和页数在应用下查询应用所有版本
      *
-     * @param appId        应用Id
-     * @param appVersionId 应用版本Id
+     * @param appServiceId        应用Id
+     * @param appServiceServiceId 应用版本Id
      * @param isPublish    是否发布
      * @param pageRequest  分页参数
      * @param searchParam  查询参数
      * @return List
      */
-    PageInfo<AppServiceVersionRespVO> pageByAppIdAndParam(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam);
+    PageInfo<AppServiceVersionRespVO> pageByAppIdAndParam(Long appServiceId, Boolean isPublish, Long appServiceServiceId, PageRequest pageRequest, String searchParam);
 
     /**
      * 项目下查询应用所有已部署版本
      *
      * @param projectId 项目ID
-     * @param appId     应用ID
+     * @param appServiceId     应用ID
      * @return List
      */
-    List<AppServiceVersionRespVO> listDeployedByAppId(Long projectId, Long appId);
+    List<AppServiceVersionRespVO> listDeployedByAppId(Long projectId, Long appServiceId);
 
     /**
      * 查询部署在某个环境的应用版本
      *
      * @param projectId 项目id
-     * @param appId     应用Id
+     * @param appServiceId     应用Id
      * @param envId     环境Id
      * @return List
      */
-    List<AppServiceVersionRespVO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+    List<AppServiceVersionRespVO> listByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId);
 
     /**
      * 分页查询某应用下的所有版本
      *
      * @param projectId   项目id
-     * @param appId       应用id
+     * @param appServiceId       应用id
      * @param pageRequest 分页参数
      * @param searchParam 模糊搜索参数
      * @return ApplicationVersionRespVO
      */
-    PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appId, PageRequest pageRequest, String searchParam);
+    PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest, String searchParam);
 
     /**
      * 根据应用id查询需要升级的应用版本
      */
-    List<AppServiceVersionRespVO> listUpgradeableAppVersion(Long projectId, Long appVersionId);
+    List<AppServiceVersionRespVO> listUpgradeableAppVersion(Long projectId, Long appServiceServiceId);
 
     /**
      * 项目下查询应用最新的版本和各环境下部署的版本
      *
-     * @param appId 应用ID
+     * @param appServiceId 应用ID
      * @return DeployVersionVO
      */
-    DeployVersionVO queryDeployedVersions(Long appId);
+    DeployVersionVO queryDeployedVersions(Long appServiceId);
 
 
-    String queryVersionValue(Long appVersionId);
+    String queryVersionValue(Long appServiceServiceId);
 
-    AppServiceVersionRespVO queryById(Long appVersionId);
+    AppServiceVersionRespVO queryById(Long appServiceServiceId);
 
-    List<AppServiceVersionRespVO> listByAppServiceVersionIds(List<Long> appVersionIds);
+    List<AppServiceVersionRespVO> listByAppServiceVersionIds(List<Long> appServiceServiceIds);
 
-    List<AppServiceVersionAndCommitVO> listByAppIdAndBranch(Long appId, String branch);
+    List<AppServiceVersionAndCommitVO> listByAppIdAndBranch(Long appServiceId, String branch);
 
     /**
      * 根据pipelineID 查询版本, 判断是否存在
      *
      * @param pipelineId pipeline
      * @param branch     分支
-     * @param appId      应用id
+     * @param appServiceId      应用id
      * @return
      */
-    Boolean queryByPipelineId(Long pipelineId, String branch, Long appId);
+    Boolean queryByPipelineId(Long pipelineId, String branch, Long appServiceId);
 
     /**
      * 项目下根据应用Id查询value
      *
      * @param projectId 项目id
-     * @param appId     应用id
+     * @param appServiceId     应用id
      * @return
      */
-    String queryValueById(Long projectId, Long appId);
+    String queryValueById(Long projectId, Long appServiceId);
 
     /**
      * 根据应用和版本号查询应用版本
      *
-     * @param appId   应用Id
+     * @param appServiceId   应用Id
      * @param version 版本
      * @return ApplicationVersionRespVO
      */
-    AppServiceVersionRespVO queryByAppAndVersion(Long appId, String version);
+    AppServiceVersionRespVO queryByAppAndVersion(Long appServiceId, String version);
 
     /**
      * 获取远程应用版本
-     * @param appId
+     * @param appServiceId
      * @param pageRequest
      * @param params
      * @return
      */
-    PageInfo<MarketAppPublishVersionVO> pageVersionByAppId(Long appId, PageRequest pageRequest, String params);
+    PageInfo<MarketAppPublishVersionVO> pageVersionByAppId(Long appServiceId, PageRequest pageRequest, String params);
 
     /**
      * 获取共享应用版本
-     * @param appId
+     * @param appServiceId
      * @param pageRequest
      * @param params
      * @return
      */
-    PageInfo<AppServiceVersionRespVO> pageShareVersionByAppId(Long appId, PageRequest pageRequest, String params);
+    PageInfo<AppServiceVersionRespVO> pageShareVersionByAppId(Long appServiceId, PageRequest pageRequest, String params);
 
     /**
      * 获取远程应用版本详情
-     * @param appId
+     * @param appServiceId
      * @param versionId
      * @return
      */
-    AppServiceVersionAndValueVO queryConfigByVerionId(Long appId, Long versionId);
+    AppServiceVersionAndValueVO queryConfigByVerionId(Long appServiceId, Long versionId);
 
     List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId);
 
-    List<AppServiceVersionDTO> baseListByAppId(Long appId, Boolean isPublish);
+    List<AppServiceVersionDTO> baseListByAppId(Long appServiceId, Boolean isPublish);
 
-    PageInfo<AppServiceVersionDTO> basePageByPublished(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam);
+    PageInfo<AppServiceVersionDTO> basePageByPublished(Long appServiceId, Boolean isPublish, Long appServiceServiceId, PageRequest pageRequest, String searchParam);
 
 
-    List<AppServiceVersionDTO> baseListAppDeployedVersion(Long projectId, Long appId);
+    List<AppServiceVersionDTO> baseListAppDeployedVersion(Long projectId, Long appServiceId);
 
-    AppServiceVersionDTO baseQuery(Long appVersionId);
+    AppServiceVersionDTO baseQuery(Long appServiceServiceId);
 
-    List<AppServiceVersionDTO> baseListByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+    List<AppServiceVersionDTO> baseListByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId);
 
     String baseQueryValue(Long versionId);
 
-    AppServiceVersionDTO baseQueryByAppIdAndVersion(Long appId, String version);
+    AppServiceVersionDTO baseQueryByAppIdAndVersion(Long appServiceId, String version);
 
-    void baseUpdatePublishLevelByIds(List<Long> appVersionIds, Long level);
+    void baseUpdatePublishLevelByIds(List<Long> appServiceServiceIds, Long level);
 
-    PageInfo<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appId, PageRequest pageRequest,
+    PageInfo<AppServiceVersionDTO> basePageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest,
                                                      String searchParam, Boolean isProjectOwner,
                                                      Long userId);
 
     List<AppServiceVersionDTO> baseListByPublished(Long applicationId);
 
-    Boolean baseCheckByAppIdAndVersionIds(Long appId, List<Long> appVersionIds);
+    Boolean baseCheckByAppIdAndVersionIds(Long appServiceId, List<Long> appServiceServiceIds);
 
     Long baseCreateReadme(String readme);
 
@@ -185,21 +185,21 @@ public interface AppServiceVersionService {
 
     void baseUpdate(AppServiceVersionDTO appServiceVersionDTO);
 
-    List<AppServiceVersionDTO> baseListUpgradeVersion(Long appVersionId);
+    List<AppServiceVersionDTO> baseListUpgradeVersion(Long appServiceServiceId);
 
-    void baseCheckByProjectAndVersionId(Long projectId, Long appVersionId);
+    void baseCheckByProjectAndVersionId(Long projectId, Long appServiceServiceId);
 
-    AppServiceVersionDTO baseQueryByCommitSha(Long appId, String ref, String sha);
+    AppServiceVersionDTO baseQueryByCommitSha(Long appServiceId, String ref, String sha);
 
-    AppServiceVersionDTO baseQueryNewestVersion(Long appId);
+    AppServiceVersionDTO baseQueryNewestVersion(Long appServiceId);
 
-    List<AppServiceVersionDTO> baseListByAppVersionIds(List<Long> appVersionIds);
+    List<AppServiceVersionDTO> baseListByAppVersionIds(List<Long> appServiceServiceIds);
 
-    List<AppServiceVersionDTO> baseListByAppIdAndBranch(Long appId, String branch);
+    List<AppServiceVersionDTO> baseListByAppIdAndBranch(Long appServiceId, String branch);
 
-    String baseQueryByPipelineId(Long pipelineId, String branch, Long appId);
+    String baseQueryByPipelineId(Long pipelineId, String branch, Long appServiceId);
 
-    String baseQueryValueByAppId(Long appId);
+    String baseQueryValueByAppId(Long appServiceId);
 
     AppServiceVersionDTO baseCreate(AppServiceVersionDTO appServiceVersionDTO);
 }

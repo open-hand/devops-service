@@ -1,7 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.List;
-import javax.persistence.Transient;
 
 import io.choerodon.mybatis.entity.BaseDTO;
 
@@ -22,7 +21,7 @@ public class DevopsServiceQueryDTO extends BaseDTO {
     private String namespace;
     private String endPoints;
     private Long appServiceId;
-    private String appName;
+    private String appServiceName;
     private String labels;
     private List<AppServiceInstanceInfoDTO> instances;
     private String loadBalanceIp;
@@ -129,12 +128,12 @@ public class DevopsServiceQueryDTO extends BaseDTO {
         this.appServiceId = appServiceId;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
     public String getLabels() {

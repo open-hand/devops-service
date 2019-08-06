@@ -10,9 +10,9 @@ import io.choerodon.devops.infra.dto.DevopsApplicationResourceDTO;
 public interface DevopsApplicationResourceService {
     void baseCreate(DevopsApplicationResourceDTO devopsApplicationResourceDTO);
 
-    void baseDeleteByAppIdAndType(Long appId, String type);
+    void baseDeleteByAppIdAndType(Long appServiceId, String type);
 
     void baseDeleteByResourceIdAndType(Long resourceId, String type);
 
-    List<DevopsApplicationResourceDTO> baseQueryByApplicationAndType(Long appId, String type);
+    List<DevopsApplicationResourceDTO> baseQueryByApplicationAndType(Long appServiceId, String type);
 }

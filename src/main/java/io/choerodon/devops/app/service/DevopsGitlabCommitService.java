@@ -16,23 +16,23 @@ public interface DevopsGitlabCommitService {
 
     void create(PushWebHookVO pushWebHookVO, String token);
 
-    DevopsGitlabCommitVO queryCommits(Long projectId, String appIds, Date startDate, Date endDate);
+    DevopsGitlabCommitVO queryCommits(Long projectId, String appServiceIds, Date startDate, Date endDate);
 
-    PageInfo<CommitFormRecordVO> pageRecordCommits(Long projectId, String appIds, PageRequest pageRequest,
+    PageInfo<CommitFormRecordVO> pageRecordCommits(Long projectId, String appServiceIds, PageRequest pageRequest,
                                                    Date startDate, Date endDate);
 
     DevopsGitlabCommitDTO baseCreate(DevopsGitlabCommitDTO devopsGitlabCommitDTO);
 
     DevopsGitlabCommitDTO baseQueryByShaAndRef(String sha, String ref);
 
-    List<DevopsGitlabCommitDTO> baseListByOptions(Long projectId, List<Long> appIds, Date startDate, Date endDate);
+    List<DevopsGitlabCommitDTO> baseListByOptions(Long projectId, List<Long> appServiceIds, Date startDate, Date endDate);
 
-    PageInfo<CommitFormRecordVO> basePageByOptions(Long projectId, List<Long> appId,
+    PageInfo<CommitFormRecordVO> basePageByOptions(Long projectId, List<Long> appServiceId,
                                                    PageRequest pageRequest, Map<Long, IamUserDTO> userMap,
                                                    Date startDate, Date endDate);
 
     void baseUpdate(DevopsGitlabCommitDTO devopsGitlabCommitDTO);
 
-    List<DevopsGitlabCommitDTO> baseListByAppIdAndBranch(Long appId, String branch, Date startDate);
+    List<DevopsGitlabCommitDTO> baseListByAppIdAndBranch(Long appServiceId, String branch, Date startDate);
 
 }

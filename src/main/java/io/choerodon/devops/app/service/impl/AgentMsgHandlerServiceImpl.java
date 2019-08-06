@@ -1137,14 +1137,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
 
     @Override
-    public List<AppServiceDTO> getApplication(String appName, Long projectId, Long orgId) {
+    public List<AppServiceDTO> getApplication(String appServiceName, Long projectId, Long orgId) {
         List<AppServiceDTO> applications = new ArrayList<>();
         AppServiceDTO applicationDTO = applicationService
-                .baseQueryByCode(appName, projectId);
+                .baseQueryByCode(appServiceName, projectId);
         if (applicationDTO != null) {
             applications.add(applicationDTO);
         }
-        List<AppServiceDTO> applicationDTOS = applicationService.baseListByCode(appName);
+        List<AppServiceDTO> applicationDTOS = applicationService.baseListByCode(appServiceName);
         List<AppServiceDTO> applicationList = applicationDTOS.stream()
                 .filter(result ->
                         iamServiceClientOperator.queryIamProjectById(result.getProjectId()).getOrganizationId().equals(orgId))

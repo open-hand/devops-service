@@ -38,7 +38,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Override
     public List<DevopsEnvApplicationVO> batchCreate(DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
         return Stream.of(devopsEnvAppServiceVO.getAppServiceIds())
-                .map(appId -> new DevopsEnvApplicationDTO(devopsEnvAppServiceVO.getEnvId(), appId))
+                .map(appServiceId -> new DevopsEnvApplicationDTO(devopsEnvAppServiceVO.getEnvId(), appServiceId))
                 .peek(e -> devopsEnvAppServiceMapper.insertIgnore(e))
                 .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))
                 .collect(Collectors.toList());
@@ -46,17 +46,17 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
 
     @Override
     public List<AppServiceRepVO> listAppByEnvId(Long envId) {
-        List<Long> appIds = baseListAppByEnvId(envId);
+        List<Long> appServiceIds = baseListAppByEnvId(envId);
         List<AppServiceRepVO> applicationRepVOS = new ArrayList<>();
-        appIds.forEach(v ->
+        appServiceIds.forEach(v ->
                 applicationRepVOS.add(ConvertUtils.convertObject(applicationService.baseQuery(v), AppServiceRepVO.class))
         );
         return applicationRepVOS;
     }
 
     @Override
-    public List<DevopsEnvLabelVO> listLabelByAppAndEnvId(Long envId, Long appId) {
-        List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
+    public List<DevopsEnvLabelVO> listLabelByAppAndEnvId(Long envId, Long appServiceId) {
+        List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appServiceId);
         List<DevopsEnvLabelVO> devopsEnvLabelVOS = new ArrayList<>();
         devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
             DevopsEnvLabelVO devopsEnvLabelVO = new DevopsEnvLabelVO();
@@ -70,8 +70,8 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     }
 
     @Override
-    public List<DevopsEnvPortVO> listPortByAppAndEnvId(Long envId, Long appId) {
-        List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appId);
+    public List<DevopsEnvPortVO> listPortByAppAndEnvId(Long envId, Long appServiceId) {
+        List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appServiceId);
         List<DevopsEnvPortVO> devopsEnvPortVOS = new ArrayList<>();
         devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
             V1beta2Deployment v1beta2Deployment = json.deserialize(
@@ -108,8 +108,8 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     }
 
     @Override
-    public List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appId) {
-        return devopsEnvAppServiceMapper.listResourceByEnvAndApp(envId, appId);
+    public List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appServiceId) {
+        return devopsEnvAppServiceMapper.listResourceByEnvAndApp(envId, appServiceId);
     }
 
     @Override

@@ -12,9 +12,9 @@ import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 public interface DevopsBranchService {
     List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId);
 
-    DevopsBranchDTO baseQueryByAppAndBranchName(Long appId, String branchName);
+    DevopsBranchDTO baseQueryByAppAndBranchName(Long appServiceId, String branchName);
 
-    void baseUpdateBranchIssue(Long appId, DevopsBranchDTO devopsBranchDTO);
+    void baseUpdateBranchIssue(Long appServiceId, DevopsBranchDTO devopsBranchDTO);
 
     void baseUpdateBranchLastCommit(DevopsBranchDTO devopsBranchDTO);
 
@@ -24,13 +24,13 @@ public interface DevopsBranchService {
 
     void baseUpdateBranch(DevopsBranchDTO devopsBranchDTO);
 
-    PageInfo<DevopsBranchDTO> basePageBranch(Long appId, PageRequest pageRequest, String params);
+    PageInfo<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageRequest, String params);
 
-    void baseDelete(Long appId, String branchName);
+    void baseDelete(Long appServiceId, String branchName);
 
-    List<DevopsBranchDTO> baseListByAppId(Long appId);
+    List<DevopsBranchDTO> baseListByAppId(Long appServiceId);
 
-    List<DevopsBranchDTO> baseListByAppIdAndBranchName(Long appId, String branchName);
+    List<DevopsBranchDTO> baseListByAppIdAndBranchName(Long appServiceId, String branchName);
 
     DevopsBranchDTO baseQueryByBranchNameAndCommit(String branchName, String commit);
 

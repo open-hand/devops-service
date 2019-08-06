@@ -19,7 +19,7 @@ public class DevopsGitlabCommitDTO extends BaseDTO {
     private Date commitDate;
 
     @Transient
-    private String appName;
+    private String appServiceName;
     private String url;
 
     public Long getId() {
@@ -78,12 +78,12 @@ public class DevopsGitlabCommitDTO extends BaseDTO {
         this.commitDate = commitDate;
     }
 
-    public String getAppName() {
-        return appName;
+    public String getAppServiceName() {
+        return appServiceName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 
     public String getUrl() {

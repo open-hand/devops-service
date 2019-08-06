@@ -40,14 +40,14 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         return devopsBranchMapper.select(queryDevopsBranchDTO);
     }
 
-    public DevopsBranchDTO baseQueryByAppAndBranchName(Long appId, String branchName) {
+    public DevopsBranchDTO baseQueryByAppAndBranchName(Long appServiceId, String branchName) {
         return devopsBranchMapper
-                .queryByAppAndBranchName(appId, branchName);
+                .queryByAppAndBranchName(appServiceId, branchName);
     }
 
-    public void baseUpdateBranchIssue(Long appId, DevopsBranchDTO devopsBranchDTO) {
+    public void baseUpdateBranchIssue(Long appServiceId, DevopsBranchDTO devopsBranchDTO) {
         DevopsBranchDTO oldDevopsBranchDTO = devopsBranchMapper
-                .queryByAppAndBranchName(appId, devopsBranchDTO.getBranchName());
+                .queryByAppAndBranchName(appServiceId, devopsBranchDTO.getBranchName());
         oldDevopsBranchDTO.setIssueId(devopsBranchDTO.getIssueId());
         devopsBranchMapper.updateByPrimaryKey(devopsBranchDTO);
     }
@@ -81,7 +81,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     }
 
 
-    public PageInfo<DevopsBranchDTO> basePageBranch(Long appId, PageRequest pageRequest, String params) {
+    public PageInfo<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageRequest, String params) {
 
         PageInfo<DevopsBranchDTO> devopsBranchDTOPageInfo;
         if (!StringUtils.isEmpty(params)) {
@@ -89,24 +89,24 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
                 devopsBranchDTOPageInfo = PageHelper.startPage(
                         pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(
-                        appId, null,
+                        appServiceId, null,
                         TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             } else {
                 devopsBranchDTOPageInfo = PageHelper.startPage(
                         pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(
-                        appId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                        appServiceId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             }
         } else {
             devopsBranchDTOPageInfo = PageHelper.startPage(
-                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(appId, null, null));
+                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(appServiceId, null, null));
         }
         return devopsBranchDTOPageInfo;
     }
 
 
-    public void baseDelete(Long appId, String branchName) {
-        DevopsBranchDTO devopsBranchDTO = devopsBranchMapper.queryByAppAndBranchName(appId, branchName);
+    public void baseDelete(Long appServiceId, String branchName) {
+        DevopsBranchDTO devopsBranchDTO = devopsBranchMapper.queryByAppAndBranchName(appServiceId, branchName);
         if (devopsBranchDTO != null) {
             devopsBranchDTO.setDeleted(true);
             devopsBranchMapper.updateByPrimaryKeySelective(devopsBranchDTO);
@@ -114,16 +114,16 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     }
 
 
-    public List<DevopsBranchDTO> baseListByAppId(Long appId) {
+    public List<DevopsBranchDTO> baseListByAppId(Long appServiceId) {
         DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
-        devopsBranchDTO.setAppServiceId(appId);
+        devopsBranchDTO.setAppServiceId(appServiceId);
         return devopsBranchMapper.select(devopsBranchDTO);
     }
 
 
-    public List<DevopsBranchDTO> baseListByAppIdAndBranchName(Long appId, String branchName) {
+    public List<DevopsBranchDTO> baseListByAppIdAndBranchName(Long appServiceId, String branchName) {
         DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
-        devopsBranchDTO.setAppServiceId(appId);
+        devopsBranchDTO.setAppServiceId(appServiceId);
         devopsBranchDTO.setBranchName(branchName);
         return devopsBranchMapper.select(devopsBranchDTO);
     }

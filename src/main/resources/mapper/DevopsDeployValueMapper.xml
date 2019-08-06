@@ -10,7 +10,7 @@
         dpv.created_by,
         dpv.last_update_date,
         de.`name` AS envName,
-        da.`name` AS appName,
+        da.`name` AS appServiceName,
         dpv.env_id,
         dpv.app_service_id
         FROM

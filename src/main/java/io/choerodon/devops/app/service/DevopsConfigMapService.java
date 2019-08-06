@@ -23,7 +23,7 @@ public interface DevopsConfigMapService {
 
     DevopsConfigMapRespVO query(Long configMapId);
 
-    PageInfo<DevopsConfigMapRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String searchParam, Long appId);
+    PageInfo<DevopsConfigMapRespVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String searchParam, Long appServiceId);
 
     DevopsConfigMapDTO baseQueryByEnvIdAndName(Long envId, String name);
 
@@ -35,7 +35,7 @@ public interface DevopsConfigMapService {
 
     void baseDelete(Long id);
 
-    PageInfo<DevopsConfigMapDTO> basePageByEnv(Long envId, PageRequest pageRequest, String params, Long appId);
+    PageInfo<DevopsConfigMapDTO> basePageByEnv(Long envId, PageRequest pageRequest, String params, Long appServiceId);
 
     List<DevopsConfigMapDTO> baseListByEnv(Long envId);
 

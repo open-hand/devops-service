@@ -42,14 +42,14 @@ public class EnvironmentApplicationValidator {
     /**
      * 校验应用id不为空且存在
      *
-     * @param appIds 应用id
+     * @param appServiceIds 应用id
      */
-    public void checkAppIdsExist(Long[] appIds) {
-        if (appIds == null || appIds.length == 0) {
+    public void checkAppIdsExist(Long[] appServiceIds) {
+        if (appServiceIds == null || appServiceIds.length == 0) {
             throw new CommonException("error.app.ids.null");
         }
 
-        Stream.of(appIds).forEach(id -> {
+        Stream.of(appServiceIds).forEach(id -> {
             if (appServiceMapper.selectByPrimaryKey(id) == null) {
                 throw new CommonException("error.app.id.not.exist", id);
             }

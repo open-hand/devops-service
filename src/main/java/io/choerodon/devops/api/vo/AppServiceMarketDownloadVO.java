@@ -6,7 +6,7 @@ public class AppServiceMarketDownloadVO {
 
     private Long appMarketId;
 
-    private List<Long> appVersionIds;
+    private List<Long> appServiceVersionIds;
 
     public Long getAppMarketId() {
         return appMarketId;
@@ -16,11 +16,11 @@ public class AppServiceMarketDownloadVO {
         this.appMarketId = appMarketId;
     }
 
-    public List<Long> getAppVersionIds() {
-        return appVersionIds;
+    public List<Long> getAppServiceVersionIds() {
+        return appServiceVersionIds;
     }
 
-    public void setAppVersionIds(List<Long> appVersionIds) {
-        this.appVersionIds = appVersionIds;
+    public void setAppServiceVersionIds(List<Long> appServiceVersionIds) {
+        this.appServiceVersionIds = appServiceVersionIds;
     }
 }

@@ -10,10 +10,10 @@ public class DemoDataVO {
     private AppServiceReqVO applicationInfo;
     private AppServiceReleasingVO applicationRelease;
     private String templateSearchParam;
-    private String appVersionSearchParam;
+    private String appServiceVersionSearchParam;
     private DemoTagVO tagInfo;
     private DevopsBranchDTO branchInfo;
-    private AppServiceVersionDTO appVersion;
+    private AppServiceVersionDTO appServiceVersionDTO;
 
     public AppServiceReqVO getApplicationInfo() {
         return applicationInfo;
@@ -39,12 +39,12 @@ public class DemoDataVO {
         this.templateSearchParam = templateSearchParam;
     }
 
-    public String getAppVersionSearchParam() {
-        return appVersionSearchParam;
+    public String getAppServiceVersionSearchParam() {
+        return appServiceVersionSearchParam;
     }
 
-    public void setAppVersionSearchParam(String appVersionSearchParam) {
-        this.appVersionSearchParam = appVersionSearchParam;
+    public void setAppServiceVersionSearchParam(String appServiceVersionSearchParam) {
+        this.appServiceVersionSearchParam = appServiceVersionSearchParam;
     }
 
     public DemoTagVO getTagInfo() {
@@ -63,11 +63,11 @@ public class DemoDataVO {
         this.branchInfo = branchInfo;
     }
 
-    public AppServiceVersionDTO getAppVersion() {
-        return appVersion;
+    public AppServiceVersionDTO getAppServiceVersionDTO() {
+        return appServiceVersionDTO;
     }
 
-    public void setAppVersion(AppServiceVersionDTO appVersion) {
-        this.appVersion = appVersion;
+    public void setAppServiceVersionDTO(AppServiceVersionDTO appServiceVersionDTO) {
+        this.appServiceVersionDTO = appServiceVersionDTO;
     }
 }

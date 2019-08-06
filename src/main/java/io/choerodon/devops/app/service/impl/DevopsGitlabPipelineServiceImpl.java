@@ -193,12 +193,12 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public PipelineTimeVO getPipelineTime(Long appId, Date startTime, Date endTime) {
-        if (appId == null) {
+    public PipelineTimeVO getPipelineTime(Long appServiceId, Date startTime, Date endTime) {
+        if (appServiceId == null) {
             return new PipelineTimeVO();
         }
         PipelineTimeVO pipelineTimeVO = new PipelineTimeVO();
-        List<DevopsGitlabPipelineDTO> devopsGitlabPipelineDOS = baseListByApplicationId(appId, startTime, endTime);
+        List<DevopsGitlabPipelineDTO> devopsGitlabPipelineDOS = baseListByApplicationId(appServiceId, startTime, endTime);
         List<String> pipelineTimes = new LinkedList<>();
         List<String> refs = new LinkedList<>();
         List<String> versions = new LinkedList<>();
@@ -206,7 +206,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         devopsGitlabPipelineDOS.forEach(devopsGitlabPipelineDO -> {
             refs.add(devopsGitlabPipelineDO.getRef() + "-" + devopsGitlabPipelineDO.getSha());
             createDates.add(devopsGitlabPipelineDO.getPipelineCreationDate());
-            AppServiceVersionDTO applicationVersionE = appServiceVersionService.baseQueryByCommitSha(appId, devopsGitlabPipelineDO.getRef(), devopsGitlabPipelineDO.getSha());
+            AppServiceVersionDTO applicationVersionE = appServiceVersionService.baseQueryByCommitSha(appServiceId, devopsGitlabPipelineDO.getRef(), devopsGitlabPipelineDO.getSha());
             if (applicationVersionE != null) {
                 versions.add(applicationVersionE.getVersion());
             } else {
@@ -240,12 +240,12 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public PipelineFrequencyVO getPipelineFrequency(Long appId, Date startTime, Date endTime) {
-        if (appId == null) {
+    public PipelineFrequencyVO getPipelineFrequency(Long appServiceId, Date startTime, Date endTime) {
+        if (appServiceId == null) {
             return new PipelineFrequencyVO();
         }
         PipelineFrequencyVO pipelineFrequencyVO = new PipelineFrequencyVO();
-        List<DevopsGitlabPipelineDTO> devopsGitlabPipelineDOS = baseListByApplicationId(appId, startTime, endTime);
+        List<DevopsGitlabPipelineDTO> devopsGitlabPipelineDOS = baseListByApplicationId(appServiceId, startTime, endTime);
         //按照创建时间分组
         Map<String, List<DevopsGitlabPipelineDTO>> resultMaps = devopsGitlabPipelineDOS.stream()
                 .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getPipelineCreationDate().getTime()).toString()));
@@ -280,17 +280,17 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public PageInfo<DevopsGitlabPipelineVO> pageByOptions(Long appId, String branch, PageRequest pageRequest, Date startTime, Date endTime) {
-        if (appId == null) {
+    public PageInfo<DevopsGitlabPipelineVO> pageByOptions(Long appServiceId, String branch, PageRequest pageRequest, Date startTime, Date endTime) {
+        if (appServiceId == null) {
             return new PageInfo<>();
         }
         PageInfo<DevopsGitlabPipelineVO> pageDevopsGitlabPipelineDTOS = new PageInfo<>();
         List<DevopsGitlabPipelineVO> devopsGiltabPipelineDTOS = new ArrayList<>();
         PageInfo<DevopsGitlabPipelineDTO> devopsGitlabPipelineDOS = new PageInfo<>();
         if (branch == null) {
-            devopsGitlabPipelineDOS = basePageByApplicationId(appId, pageRequest, startTime, endTime);
+            devopsGitlabPipelineDOS = basePageByApplicationId(appServiceId, pageRequest, startTime, endTime);
         } else {
-            devopsGitlabPipelineDOS.setList(baseListByAppIdAndBranch(appId, branch));
+            devopsGitlabPipelineDOS.setList(baseListByAppIdAndBranch(appServiceId, branch));
         }
         BeanUtils.copyProperties(devopsGitlabPipelineDOS, pageDevopsGitlabPipelineDTOS);
 
@@ -306,7 +306,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             refWithPipelineIds.put(key, pipeLineId);
         });
 
-        AppServiceDTO applicationDTO = applicationService.baseQuery(appId);
+        AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceId);
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
@@ -347,7 +347,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             }
 
             devopsGitlabPipelineDTO.setRef(devopsGitlabPipelineDO.getRef());
-            String version = appServiceVersionService.baseQueryByPipelineId(devopsGitlabPipelineDO.getPipelineId(), devopsGitlabPipelineDO.getRef(), appId);
+            String version = appServiceVersionService.baseQueryByPipelineId(devopsGitlabPipelineDO.getPipelineId(), devopsGitlabPipelineDO.getRef(), appServiceId);
             if (version != null) {
                 devopsGitlabPipelineDTO.setVersion(version);
             }
@@ -404,15 +404,15 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public List<DevopsGitlabPipelineDTO> baseListByApplicationId(Long appId, Date startTime, Date endTime) {
-        return devopsGitlabPipelineMapper.listDevopsGitlabPipeline(appId, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime()));
+    public List<DevopsGitlabPipelineDTO> baseListByApplicationId(Long appServiceId, Date startTime, Date endTime) {
+        return devopsGitlabPipelineMapper.listDevopsGitlabPipeline(appServiceId, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime()));
     }
 
 
     @Override
-    public PageInfo<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appId, PageRequest pageRequest, Date startTime, Date endTime) {
+    public PageInfo<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appServiceId, PageRequest pageRequest, Date startTime, Date endTime) {
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
-                devopsGitlabPipelineMapper.listDevopsGitlabPipeline(appId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
+                devopsGitlabPipelineMapper.listDevopsGitlabPipeline(appServiceId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
     }
 
     @Override
@@ -421,7 +421,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public List<DevopsGitlabPipelineDTO> baseListByAppIdAndBranch(Long appId, String branch) {
-        return devopsGitlabPipelineMapper.listByBranch(appId, branch);
+    public List<DevopsGitlabPipelineDTO> baseListByAppIdAndBranch(Long appServiceId, String branch) {
+        return devopsGitlabPipelineMapper.listByBranch(appServiceId, branch);
     }
 }

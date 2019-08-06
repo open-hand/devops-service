@@ -11,8 +11,8 @@ public interface ChartClient {
     @GET("health")
     Call<Object> getHealth();
 
-    @GET("{orgCode}/{proCode}/charts/{appCode}-{appVersion}.tgz")
-    Call<ResponseBody> downloadTaz(@Path("orgCode") String orgCode, @Path("proCode") String proCode, @Path("appCode") String appCode, @Path("appVersion") String appVersion);
+    @GET("{orgCode}/{proCode}/charts/{appServiceCode}-{appServiceVersion}.tgz")
+    Call<ResponseBody> downloadTaz(@Path("orgCode") String orgCode, @Path("proCode") String proCode, @Path("appServiceName") String appServiceCode, @Path("appServiceVersion") String appServiceVersion);
 
     @Multipart
     @POST("{orgCode}/{proCode}/api/charts")

@@ -110,9 +110,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     @Override
-    public PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appId) {
+    public PageInfo<DevopsServiceVO> pageByInstance(Long projectId, Long instanceId, PageRequest pageRequest, Long appServiceId) {
         PageInfo<DevopsServiceVO> devopsServiceByPage = ConvertUtils.convertPage(basePageByOptions(
-                projectId, null, instanceId, pageRequest, null, appId), this::queryDtoToVo);
+                projectId, null, instanceId, pageRequest, null, appServiceId), this::queryDtoToVo);
         if (!devopsServiceByPage.getList().isEmpty()) {
             devopsServiceByPage.getList().forEach(devopsServiceVO -> {
                 PageInfo<DevopsIngressVO> devopsIngressVOPageInfo = devopsIngressService
@@ -145,7 +145,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceInstanceDTO.getAppServiceId());
                     DevopsServiceQueryDTO devopsServiceQueryDTO = baseQueryById(id);
                     devopsServiceQueryDTO.setAppServiceId(applicationDTO.getId());
-                    devopsServiceQueryDTO.setAppName(applicationDTO.getName());
+                    devopsServiceQueryDTO.setAppServiceName(applicationDTO.getName());
                     devopsServiceQueryDTO.setAppServiceProjectId(applicationDTO.getProjectId());
                     return queryDtoToVo(devopsServiceQueryDTO);
                 }
@@ -429,7 +429,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     public PageInfo<DevopsServiceQueryDTO> basePageByOptions(Long projectId, Long envId, Long instanceId, PageRequest pageRequest,
-                                                             String searchParam, Long appId) {
+                                                             String searchParam, Long appServiceId) {
 
         Sort sort = pageRequest.getSort();
         String sortResult = "";
@@ -445,8 +445,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                             property = "ds.external_ip";
                         } else if (property.equals("targetPort")) {
                             property = "ds.target_port";
-                        } else if (property.equals("appName")) {
-                            property = "app_name";
+                        } else if (property.equals("appServiceName")) {
+                            property = "app_service_name";
                         }
                         return property + " " + t.getDirection();
                     })
@@ -465,20 +465,20 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             count = devopsServiceMapper.selectCountByName(
                     projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), appId);
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), appServiceId);
 
             result.setTotal(count);
             devopsServiceQueryDTOS = devopsServiceMapper.listDevopsServiceByPage(
                     projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), sortResult, appId);
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), sortResult, appServiceId);
             result.setList(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
         } else {
             count = devopsServiceMapper
-                    .selectCountByName(projectId, envId, instanceId, null, null, appId);
+                    .selectCountByName(projectId, envId, instanceId, null, null, appServiceId);
             result.setTotal(count);
             devopsServiceQueryDTOS =
                     devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, envId, instanceId, null, null, sortResult, appId);
+                            projectId, envId, instanceId, null, null, sortResult, appServiceId);
             result.setList(devopsServiceQueryDTOS.subList(start, stop > devopsServiceQueryDTOS.size() ? devopsServiceQueryDTOS.size() : stop));
         }
         if (devopsServiceQueryDTOS.size() < pageRequest.getSize() * pageRequest.getPage()) {
@@ -598,21 +598,21 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                                    List<DevopsServiceInstanceDTO> addDevopsServiceInstanceDTOS,
                                                    List<String> beforedevopsServiceAppInstanceDTOS) {
         StringBuilder stringBuffer = new StringBuilder();
-        List<String> appInstances = devopsServiceReqVO.getInstances();
-        if (appInstances != null) {
-            appInstances.forEach(appInstance -> {
+        List<String> appServiceInstances = devopsServiceReqVO.getInstances();
+        if (appServiceInstances != null) {
+            appServiceInstances.forEach(appServiceInstance -> {
                 AppServiceInstanceDTO appServiceInstanceDTO =
-                        appServiceInstanceService.baseQueryByCodeAndEnv(appInstance, devopsServiceReqVO.getEnvId());
-                stringBuffer.append(appInstance).append("+");
-                if (beforedevopsServiceAppInstanceDTOS.contains(appInstance)) {
-                    beforedevopsServiceAppInstanceDTOS.remove(appInstance);
+                        appServiceInstanceService.baseQueryByCodeAndEnv(appServiceInstance, devopsServiceReqVO.getEnvId());
+                stringBuffer.append(appServiceInstance).append("+");
+                if (beforedevopsServiceAppInstanceDTOS.contains(appServiceInstance)) {
+                    beforedevopsServiceAppInstanceDTOS.remove(appServiceInstance);
                     return;
                 }
                 DevopsServiceInstanceDTO devopsServiceInstanceDTO = new DevopsServiceInstanceDTO();
                 if (appServiceInstanceDTO != null) {
                     devopsServiceInstanceDTO.setInstanceId(appServiceInstanceDTO.getId());
                 }
-                devopsServiceInstanceDTO.setCode(appInstance);
+                devopsServiceInstanceDTO.setCode(appServiceInstance);
                 addDevopsServiceInstanceDTOS.add(devopsServiceInstanceDTO);
             });
         }
@@ -672,7 +672,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceVO.setConfig(devopsServiceConfigVO);
 
         DevopsServiceTargetVO devopsServiceTargetVO = new DevopsServiceTargetVO();
-        devopsServiceTargetVO.setAppInstance(ConvertUtils.convertList(devopsServiceQueryDTO.getInstances(), AppServiceInstanceInfoVO.class));
+        devopsServiceTargetVO.setInstances(ConvertUtils.convertList(devopsServiceQueryDTO.getInstances(), AppServiceInstanceInfoVO.class));
         if (!StringUtils.isEmpty(devopsServiceQueryDTO.getMessage())) {
             V1Service v1Service = json.deserialize(devopsServiceQueryDTO.getMessage(), V1Service.class);
             devopsServiceTargetVO.setLabels(v1Service.getSpec().getSelector());

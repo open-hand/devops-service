@@ -11,14 +11,14 @@ public class DevOpsAppSyncPayload {
     private String code;
     private String name;
     private Boolean active;
-    private Long appId;
+    private Long appServiceId;
 
     public Long getAppId() {
-        return appId;
+        return appServiceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setAppId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public String getName() {

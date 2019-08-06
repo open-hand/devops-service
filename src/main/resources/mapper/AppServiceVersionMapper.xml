@@ -31,9 +31,9 @@
         dav.id,
         dav.version,
         dav.commit,
-        da.code appCode,
-        da.name appName,
-        da.is_active appStatus,
+        da.code appServiceCode,
+        da.name appServiceName,
+        da.is_active appServiceStatus,
         da.id appServiceId,
         dav.creation_date
         FROM
@@ -231,9 +231,9 @@
         FROM
         devops_app_service_version
         WHERE
-        id = #{appVersionId}
+        id = #{appServiceServiceId}
         )
-        AND id > #{appVersionId}
+        AND id > #{appServiceServiceId}
         ORDER BY id DESC
     </select>
     <select id="checkProIdAndVerId" resultType="java.lang.Integer">
@@ -244,7 +244,7 @@
         JOIN devops_app_service_version dav ON dav.app_service_id = da.id
         WHERE
         da.project_id = #{projectId}
-        AND dav.id = #{appVersionId}
+        AND dav.id = #{appServiceServiceId}
     </select>
 
 
@@ -258,11 +258,11 @@
         FROM
         devops_app_service_version dav
         where 1=1
-        <if test="appVersionIds != null">
+        <if test="appServiceServiceIds != null">
             AND dav.id in
-            <foreach collection="appVersionIds" item="appVersionIds" index="index"
+            <foreach collection="appServiceServiceIds" item="appServiceServiceIds" index="index"
                      open="(" close=")" separator=",">
-                #{appVersionIds}
+                #{appServiceServiceIds}
             </foreach>
         </if>
     </select>

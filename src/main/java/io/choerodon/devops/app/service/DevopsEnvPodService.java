@@ -15,13 +15,13 @@ public interface DevopsEnvPodService {
     /**
      * @param projectId
      * @param envId
-     * @param appId
+     * @param appServiceId
      * @param instanceId
      * @param pageRequest
      * @param searchParam
      * @return PageInfp
      */
-    PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsEnvPodVO> pageByOptions(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageRequest, String searchParam);
 
     void setContainers(DevopsEnvPodVO devopsEnvPodVO);
 
@@ -35,7 +35,7 @@ public interface DevopsEnvPodService {
 
     void baseUpdate(DevopsEnvPodDTO devopsEnvPodDTO);
 
-    PageInfo<DevopsEnvPodDTO> basePageByIds(Long projectId, Long envId, Long appId, Long instanceId, PageRequest pageRequest, String searchParam);
+    PageInfo<DevopsEnvPodDTO> basePageByIds(Long projectId, Long envId, Long appServiceId, Long instanceId, PageRequest pageRequest, String searchParam);
 
     void baseDeleteByName(String name, String namespace);
 

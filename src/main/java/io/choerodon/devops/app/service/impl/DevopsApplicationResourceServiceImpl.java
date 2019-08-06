@@ -26,9 +26,9 @@ public class DevopsApplicationResourceServiceImpl implements DevopsApplicationRe
     }
 
     @Override
-    public void baseDeleteByAppIdAndType(Long appId, String type) {
+    public void baseDeleteByAppIdAndType(Long appServiceId, String type) {
         DevopsApplicationResourceDTO resourceDO = new DevopsApplicationResourceDTO();
-        resourceDO.setAppServiceId(appId);
+        resourceDO.setAppServiceId(appServiceId);
         resourceDO.setResourceType(type);
         resourceMapper.delete(resourceDO);
     }
@@ -42,9 +42,9 @@ public class DevopsApplicationResourceServiceImpl implements DevopsApplicationRe
     }
 
     @Override
-    public List<DevopsApplicationResourceDTO> baseQueryByApplicationAndType(Long appId, String type) {
+    public List<DevopsApplicationResourceDTO> baseQueryByApplicationAndType(Long appServiceId, String type) {
         DevopsApplicationResourceDTO resourceDO = new DevopsApplicationResourceDTO();
-        resourceDO.setAppServiceId(appId);
+        resourceDO.setAppServiceId(appServiceId);
         resourceDO.setResourceType(type);
         return resourceMapper.select(resourceDO);
     }

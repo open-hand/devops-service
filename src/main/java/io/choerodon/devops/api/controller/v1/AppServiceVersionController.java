@@ -161,7 +161,7 @@ public class AppServiceVersionController {
      * 根据服务版本ID查询，可升级的服务版本
      *
      * @param projectId    项目ID
-     * @param appVersionId 服务版本ID
+     * @param appServiceServiceId 服务版本ID
      * @return ApplicationVersionRespVO
      */
     @Permission(type = ResourceType.PROJECT,
@@ -173,8 +173,8 @@ public class AppServiceVersionController {
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务版本ID", required = true)
-            @PathVariable(value = "app_version_id") Long appVersionId) {
-        return Optional.ofNullable(appServiceVersionService.listUpgradeableAppVersion(projectId, appVersionId))
+            @PathVariable(value = "app_version_id") Long appServiceServiceId) {
+        return Optional.ofNullable(appServiceVersionService.listUpgradeableAppVersion(projectId, appServiceServiceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }

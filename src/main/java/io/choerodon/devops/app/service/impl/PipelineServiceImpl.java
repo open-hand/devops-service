@@ -343,17 +343,17 @@ public class PipelineServiceImpl implements PipelineService {
         PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(taskRecordId);
         Long pipelineRecordId = pipelineStageRecordService.baseQueryById(stageRecordId).getPipelineRecordId();
         CustomContextUtil.setUserId(taskRecordDTO.getCreatedBy());
-        AppServiceVersionDTO appVersionE = getDeployVersion(pipelineRecordId, stageRecordId, taskRecordDTO);
+        AppServiceVersionDTO appServiceServiceE = getDeployVersion(pipelineRecordId, stageRecordId, taskRecordDTO);
         //保存记录
         taskRecordDTO.setStatus(WorkFlowStatus.RUNNING.toValue());
         taskRecordDTO.setName(taskRecordDTO.getName());
-        taskRecordDTO.setVersionId(appVersionE.getId());
+        taskRecordDTO.setVersionId(appServiceServiceE.getId());
         taskRecordDTO = pipelineTaskRecordService.baseCreateOrUpdateRecord(taskRecordDTO);
         try {
             AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(taskRecordDTO.getInstanceName(), taskRecordDTO.getEnvId());
             Long instanceId = instanceE == null ? null : instanceE.getId();
             String type = instanceId == null ? CommandType.CREATE.getType() : CommandType.UPDATE.getType();
-            AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(appVersionE.getId(), taskRecordDTO.getEnvId(),
+            AppServiceDeployVO appServiceDeployVO = new AppServiceDeployVO(appServiceServiceE.getId(), taskRecordDTO.getEnvId(),
                     devopsDeployValueService.baseQueryById(taskRecordDTO.getValueId()).getValue(), taskRecordDTO.getAppServiceId(), type, instanceId,
                     taskRecordDTO.getInstanceName(), taskRecordDTO.getId(), taskRecordDTO.getValueId());
             if (type.equals(CommandType.UPDATE.getType())) {

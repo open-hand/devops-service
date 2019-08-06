@@ -42,14 +42,14 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
     }
 
     @Override
-    public Boolean updateUserPermission(Long projectId, Long appId, List<Long> userIds, Integer option) {
+    public Boolean updateUserPermission(Long projectId, Long appServiceId, List<Long> userIds, Integer option) {
 
         List<Integer> allMemberGitlabIdsWithoutOwner;
         List<Integer> addGitlabUserIds;
         List<Integer> deleteGitlabUserIds;
         List<Integer> updateGitlabUserIds;
 
-        AppServiceDTO applicationDTO = applicationService.baseQuery(appId);
+        AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceId);
         Integer gitlabProjectId = applicationDTO.getGitlabProjectId();
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(applicationDTO.getProjectId());
         Integer gitlabGroupId = devopsProjectDTO.getDevopsAppGroupId().intValue();

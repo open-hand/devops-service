@@ -26,25 +26,25 @@ public interface DevopsEnvApplicationService {
      * 查询应用在环境下的所有label
      *
      * @param envId
-     * @param appId
+     * @param appServiceId
      * @return
      */
-    List<DevopsEnvLabelVO> listLabelByAppAndEnvId(Long envId, Long appId);
+    List<DevopsEnvLabelVO> listLabelByAppAndEnvId(Long envId, Long appServiceId);
 
     /**
      * 查询应用在环境下的所有端口
      *
      * @param envId
-     * @param appId
+     * @param appServiceId
      * @return
      */
-    List<DevopsEnvPortVO> listPortByAppAndEnvId(Long envId, Long appId);
+    List<DevopsEnvPortVO> listPortByAppAndEnvId(Long envId, Long appServiceId);
 
     DevopsEnvApplicationDTO baseCreate(DevopsEnvApplicationDTO devopsEnvApplicationDTO);
 
     List<Long> baseListAppByEnvId(Long envId);
 
-    List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appId);
+    List<DevopsEnvMessageVO> baseListResourceByEnvAndApp(Long envId, Long appServiceId);
 
     /**
      * 查询项目下可用的且没有与该环境关联的应用
