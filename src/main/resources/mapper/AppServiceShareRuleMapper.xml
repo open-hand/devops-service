@@ -10,7 +10,7 @@
         dasr.version_type,
         dasr.version,
         dasr.share_level,
-        dasr.project_id
+        dasr.app_id
         FROM
         devops_app_service_share_rule dasr
         WHERE

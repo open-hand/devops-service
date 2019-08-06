@@ -9,7 +9,7 @@ public class AppServiceCodeVO {
     private String name;
     private String code;
     private String publishLevel;
-    private Long projectId;
+    private Long appId;
     private String contributor;
     private String description;
 
@@ -45,12 +45,12 @@ public class AppServiceCodeVO {
         this.publishLevel = publishLevel;
     }
 
-    public Long getProjectId() {
-        return projectId;
+    public Long getAppId() {
+        return appId;
     }
 
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 
     public String getContributor() {

@@ -61,8 +61,6 @@
         da.`name` ,
         dam.share_level,
         da.app_id app_id,
-        dam.contributor contributor,
-        dam.description description
         FROM
         devops_app_service da
         JOIN devops_app_service_instance dai ON dai.app_service_id = da.id
@@ -91,8 +89,6 @@
     <select id="listDeployedApp" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT
         dam.share_level publishLevel,
-        dam.contributor,
-        dam.description,
         da.*
         FROM
         devops_app_service da
@@ -111,8 +107,6 @@
     <select id="listAll" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT
         dam.share_level publishLevel,
-        dam.contributor,
-        dam.description,
         da.*
         FROM
         devops_app_service da
@@ -225,7 +219,7 @@
         WHERE
         NOT EXISTS ( SELECT 1 FROM devops_app_service_share_rule dam WHERE dam.app_service_id = da.id )
         AND NOT EXISTS ( SELECT 1 FROM devops_app_service_instance dai JOIN devops_app_service_version dav ON dav.id =
-        dai.app_version_id WHERE dai.`status` != 'deleted' AND dav.app_service_id = da.id )
+        dai.app_service_version_id WHERE dai.`status` != 'deleted' AND dav.app_service_id = da.id )
         AND da.id = #{applicationId}
     </select>
 
@@ -335,7 +329,7 @@
         </foreach>
         AND (
             dasr.share_level = 'organization'
-            OR dasr.project_id = #{projectId}
+            OR dasr.app_id = #{projectId}
         )
         <if test="params != null">
             and (da.code like #{params} or da.name like #{params} )

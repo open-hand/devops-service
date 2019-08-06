@@ -102,7 +102,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
                         (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
                         (String) mapParams.get(TypeUtil.PARAM)));
         PageInfo<AppServiceShareRuleVO> shareRuleVOPageInfo = ConvertUtils.convertPage(devopsProjectConfigDTOPageInfo, AppServiceShareRuleVO.class);
-        List<AppServiceShareRuleVO> appServiceShareRuleVOS = shareRuleVOPageInfo.getList().stream().peek(t -> t.setProjectName(iamService.queryIamProject(t.getProjectId()).getName())).collect(Collectors.toList());
+        List<AppServiceShareRuleVO> appServiceShareRuleVOS = shareRuleVOPageInfo.getList().stream().peek(t -> t.setProjectName(iamService.queryIamProject(t.getAppId()).getName())).collect(Collectors.toList());
         shareRuleVOPageInfo.setList(appServiceShareRuleVOS);
         return shareRuleVOPageInfo;
     }
@@ -110,7 +110,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Override
     public AppServiceShareRuleVO query(Long projectId, Long ruleId) {
         AppServiceShareRuleVO appServiceShareRuleVO = ConvertUtils.convertObject(appServiceShareRuleMapper.selectByPrimaryKey(ruleId), AppServiceShareRuleVO.class);
-        appServiceShareRuleVO.setProjectName(iamService.queryIamProject(appServiceShareRuleVO.getProjectId()).getName());
+        appServiceShareRuleVO.setProjectName(iamService.queryIamProject(appServiceShareRuleVO.getAppId()).getName());
         return appServiceShareRuleVO;
     }
 

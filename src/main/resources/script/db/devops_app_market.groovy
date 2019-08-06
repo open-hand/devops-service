@@ -98,4 +98,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
     changeSet(id: '2019-08-05-rename-table', author: 'scp') {
         renameTable(newTableName: 'devops_app_service_share_rule', oldTableName: 'devops_app_share_rule')
     }
+
+    changeSet(author: 'zmf', id: '2019-08-06-rename-project-id-column') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_id', oldColumnName: 'project_id', tableName: 'devops_app_service_share_rule', remarks: '应用ID')
+    }
 }
