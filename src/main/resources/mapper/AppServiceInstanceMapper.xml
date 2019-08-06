@@ -143,7 +143,7 @@
         JOIN devops_app_service da ON da.id = dai.app_service_id
         LEFT JOIN devops_app_service_version  dav ON dai.app_version_id = dav.id
         LEFT JOIN devops_env_command cmd ON cmd.id = dai.command_id
-        LEFT JOIN devops_app_share_rule dam ON dam.app_service_id = da.id
+        LEFT JOIN devops_app_service_share_rule dam ON dam.app_service_id = da.id
         WHERE de.project_id = #{projectId}
         AND dai.`status` != 'deleted'
         <include refid="sqlparam"/>
@@ -380,7 +380,7 @@
         JOIN devops_app_service_instance dai ON dai.app_version_id = dav.id
         AND dai.status != 'deleted'
         JOIN devops_env de ON de.id = dai.env_id
-        LEFT JOIN devops_app_share_rule dam ON dam.app_service_id = da.id
+        LEFT JOIN devops_app_service_share_rule dam ON dam.app_service_id = da.id
         WHERE
         de.project_id = #{projectId}
         <if test="appServiceId != null">
