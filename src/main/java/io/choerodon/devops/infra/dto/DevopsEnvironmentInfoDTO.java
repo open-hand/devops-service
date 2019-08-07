@@ -17,6 +17,7 @@ public class DevopsEnvironmentInfoDTO {
     private Long agentSyncCommit;
     private Boolean isSkipCheckPermission;
     private Long objectVersionNumber;
+    private String description;
 
     public Long getId() {
         return id;
@@ -104,5 +105,13 @@ public class DevopsEnvironmentInfoDTO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

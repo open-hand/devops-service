@@ -38,7 +38,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Override
     public List<DevopsEnvApplicationVO> batchCreate(DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
         return Stream.of(devopsEnvAppServiceVO.getAppServiceIds())
-                .map(appServiceId -> new DevopsEnvApplicationDTO(devopsEnvAppServiceVO.getEnvId(), appServiceId))
+                .map(appServiceId -> new DevopsEnvApplicationDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
                 .peek(e -> devopsEnvAppServiceMapper.insertIgnore(e))
                 .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))
                 .collect(Collectors.toList());
