@@ -18,7 +18,9 @@
                ins.app_service_version_id,
                version.version as version_name,
                das.name as app_service_name,
-               ins.env_id
+               ins.env_id,
+               ins.last_update_date,
+               ins.object_version_number
         FROM devops_app_service_instance ins
                  LEFT JOIN devops_app_service_version  version ON ins.app_service_version_id = version.id
                  LEFT JOIN devops_app_service das ON ins.app_service_id = das.id
