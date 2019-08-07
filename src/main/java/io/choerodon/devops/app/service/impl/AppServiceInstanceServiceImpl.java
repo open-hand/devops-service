@@ -108,7 +108,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private UserAttrService userAttrService;
     @Autowired
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     @Autowired
     private DevopsProjectConfigService devopsProjectConfigService;
     @Autowired

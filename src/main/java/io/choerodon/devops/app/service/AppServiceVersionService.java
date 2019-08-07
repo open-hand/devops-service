@@ -29,10 +29,9 @@ public interface AppServiceVersionService {
      * 应用下查询应用所有版本
      *
      * @param appServiceId     应用Id
-     * @param isPublish 是否发布
      * @return List
      */
-    List<AppServiceVersionRespVO> listByAppId(Long appServiceId, Boolean isPublish);
+    List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId);
 
     /**
      * 根据参数和页数在应用下查询应用所有版本
@@ -154,7 +153,7 @@ public interface AppServiceVersionService {
 
     List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId);
 
-    List<AppServiceVersionDTO> baseListByAppId(Long appServiceId, Boolean isPublish);
+    List<AppServiceVersionDTO> baseListByAppServiceId(Long appServiceId);
 
     PageInfo<AppServiceVersionDTO> basePageByPublished(Long appServiceId, Boolean isPublish, Long appServiceServiceId, PageRequest pageRequest, String searchParam);
 

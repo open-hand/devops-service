@@ -52,7 +52,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private String helmUrl;
 
     @Autowired
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
@@ -226,8 +226,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public List<AppServiceVersionRespVO> listByAppId(Long appServiceId, Boolean isPublish) {
-        return ConvertUtils.convertList(baseListByAppId(appServiceId, isPublish), AppServiceVersionRespVO.class);
+    public List<AppServiceVersionRespVO> listByAppServiceId(Long appServiceId) {
+        return ConvertUtils.convertList(baseListByAppServiceId(appServiceId), AppServiceVersionRespVO.class);
     }
 
     @Override
@@ -446,8 +446,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return versionAndValueDTOResponse.body();
     }
 
-    public List<AppServiceVersionDTO> baseListByAppId(Long appServiceId, Boolean isPublish) {
-        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppId(appServiceId, isPublish);
+    @Override
+    public List<AppServiceVersionDTO> baseListByAppServiceId(Long appServiceId) {
+        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.listByAppId(appServiceId);
         if (appServiceVersionDTOS.isEmpty()) {
             return Collections.emptyList();
         }

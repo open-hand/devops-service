@@ -18,8 +18,12 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                              @Param("appMarket") Boolean appMarket,
                              @Param("type") String type,
                              @Param("searchParam") Map<String, Object> searchParam,
-                             @Param("param") String param,
+                             @Param("params") String params,
                              @Param("index") String index);
+
+    List<AppServiceDTO> listByAppId(@Param("appId") Long appId,
+                                    @Param("searchParam") Map<String, Object> searchParam,
+                                    @Param("params") List<String> params);
 
     List<AppServiceDTO> listAll(@Param("appId") Long appId);
 

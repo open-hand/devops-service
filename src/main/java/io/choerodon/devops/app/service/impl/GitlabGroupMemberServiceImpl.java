@@ -45,7 +45,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     @Autowired
     private IamService iamService;
     @Autowired
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     @Autowired
     private AppServiceUserPermissionService appServiceUserPermissionService;
     @Autowired

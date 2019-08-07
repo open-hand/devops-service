@@ -88,7 +88,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     @Autowired
     private UserAttrService userAttrService;
     @Autowired

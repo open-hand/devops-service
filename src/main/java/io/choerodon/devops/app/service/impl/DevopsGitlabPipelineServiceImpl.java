@@ -47,7 +47,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     private String gitlabUrl;
 
     @Autowired
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired

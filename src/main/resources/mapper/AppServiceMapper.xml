@@ -54,6 +54,17 @@
         </if>
     </select>
 
+    <select id="listByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT
+        da.id,
+        da.app_id,
+        da.name,
+        da.code
+        FROM devops_app_service da
+        where da.app_id = #{appId}
+        <include refid="sqlparam"/>
+    </select>
+
     <select id="listByEnvId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT
         da.id,
@@ -168,10 +179,13 @@
                 </foreach>
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            )
+        <if test='params != null and params != ""'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                 (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                )
+            </foreach>
         </if>
     </sql>
 
