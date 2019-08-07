@@ -316,11 +316,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     public PageInfo<AppServiceMarketVO> pageByAppId(Long appId,
                                                     PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+        List<String> paramList = mapParams.get(TypeUtil.PARAMS) == null ? null : (List<String>) mapParams.get(TypeUtil.PARAMS);
         PageInfo<AppServiceDTO> appServiceDTOPageInfo = PageHelper
                 .startPage(pageRequest.getPage(),
                         pageRequest.getSize(),
                         PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
-                        appServiceMapper.listByAppId(appId, (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (List<String>) mapParams.get(TypeUtil.PARAM)));
+                        appServiceMapper.listByAppId(appId, (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), paramList));
 
         PageInfo<AppServiceMarketVO> appServiceMarketVOPageInfo = ConvertUtils.convertPage(appServiceDTOPageInfo, this::dtoToMarketVO);
         List<AppServiceMarketVO> list = appServiceMarketVOPageInfo.getList();
@@ -341,7 +342,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map maps = gson.fromJson(params, Map.class);
         PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(maps.get(TypeUtil.PARAM)), isProjectOwner, userAttrDTO.getIamUserId()));
+                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwner, userAttrDTO.getIamUserId()));
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
 
         initApplicationParams(projectDTO, organizationDTO, applicationServiceDTOPageInfo.getList(), urlSlash);
@@ -1338,7 +1339,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (!org.springframework.util.StringUtils.isEmpty(searchParam)) {
             Map maps = gson.fromJson(searchParam, Map.class);
             searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+            param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
             roleAssignmentSearchVO.setParam(new String[]{param});
             if (searchParamMap.get("loginName") != null) {
                 String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
@@ -1726,12 +1727,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (doPage != null && !doPage) {
             applicationDTOPageInfo.setList(appServiceMapper.list(projectId, isActive, hasVersion, appMarket, type,
                     (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
-                    mapParams.get(TypeUtil.PARAM).toString(), PageRequestUtil.checkSortIsEmpty(pageRequest)));
+                    mapParams.get(TypeUtil.PARAMS).toString(), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         } else {
             applicationDTOPageInfo = PageHelper
                     .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.list(projectId, isActive, hasVersion, appMarket, type,
                             (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
-                            (String) mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
+                            (String) mapParams.get(TypeUtil.PARAMS), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         }
         return applicationDTOPageInfo;
     }
@@ -1742,7 +1743,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Map maps = gson.fromJson(params, Map.class);
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(maps.get(TypeUtil.PARAM)), isProjectOwner, userId));
+                TypeUtil.cast(maps.get(TypeUtil.PARAMS)), isProjectOwner, userId));
     }
 
     @Override
@@ -1787,7 +1788,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
             searchParam = TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM));
-            param = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM));
+            param = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
         }
         Map<String, Object> finalSearchParam = searchParam;
         String finalParam = param;

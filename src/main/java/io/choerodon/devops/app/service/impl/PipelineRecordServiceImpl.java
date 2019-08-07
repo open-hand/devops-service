@@ -33,7 +33,7 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     public PageInfo<PipelineRecordDTO> basePageByOptions(Long projectId, Long pipelineId, PageRequest pageRequest, String params, Map<String, Object> classifyParam) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 pipelineRecordMapper.listByOptions(projectId, pipelineId, searchParamMap, paramMap, classifyParam));
     }

@@ -161,7 +161,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        String param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         return ConvertUtils.convertPage(PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
                 .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(envId, searchParamMap, param)), AppServiceInstanceInfoVO.class);
     }
@@ -174,7 +174,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         PageInfo<AppServiceInstanceDTO> applicationInstanceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 appServiceInstanceMapper
                         .listApplicationInstance(projectId, envId, appServiceVersionId, appServiceId, instanceId, searchParamMap, paramMap));
@@ -511,7 +511,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
 
         List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper
                 .listApplicationInstance(projectId, envId, null, null, null, searchParamMap, paramMap);

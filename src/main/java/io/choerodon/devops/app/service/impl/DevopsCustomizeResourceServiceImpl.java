@@ -409,7 +409,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
                 .doSelectPageInfo(() -> devopsCustomizeResourceMapper.pageResources(envId,
                         maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                        maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
     }
 
     @Override

@@ -488,7 +488,7 @@ public class CertificationServiceImpl implements CertificationService {
         }
 
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        String param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         PageInfo<CertificationDTO> certificationDTOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult)
                 .doSelectPageInfo(() -> devopsCertificationMapper.queryCertification(projectId, organizationId, envId, searchParamMap, param));
 

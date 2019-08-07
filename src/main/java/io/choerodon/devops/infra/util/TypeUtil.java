@@ -12,7 +12,7 @@ import java.util.Map;
 public class TypeUtil {
 
     public static final String SEARCH_PARAM = "searchParam";
-    public static final String PARAM = "param";
+    public static final String PARAMS = "params";
     private static final Gson gson = new Gson();
 
     private TypeUtil() {
@@ -102,12 +102,12 @@ public class TypeUtil {
     public static Map<String,Object> castMapParams(String params){
         Map<String, Object> mapParams = new HashMap<>();
         mapParams.put(TypeUtil.SEARCH_PARAM, null);
-        mapParams.put(TypeUtil.PARAM, null);
+        mapParams.put(TypeUtil.PARAMS, null);
 
         if (!StringUtils.isEmpty(params)) {
             Map maps = gson.fromJson(params, Map.class);
             mapParams.put(TypeUtil.SEARCH_PARAM, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)));
-            mapParams.put(TypeUtil.PARAM, TypeUtil.cast(maps.get(TypeUtil.PARAM)));
+            mapParams.put(TypeUtil.PARAMS, TypeUtil.cast(maps.get(TypeUtil.PARAMS)));
         }
 
         return mapParams;

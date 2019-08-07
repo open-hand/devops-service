@@ -309,7 +309,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         PageInfo<DevopsConfigMapDTO> devopsConfigMapDOS = PageHelper
                 .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsConfigMapMapper.listByEnv(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAM)),
+                        TypeUtil.cast(maps.get(TypeUtil.PARAMS)),
                         appServiceId));
         return devopsConfigMapDOS;
     }

@@ -335,7 +335,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
             devopsClusterEPage = PageHelper
-                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsClusterMapper.listClusters(organizationId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
+                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsClusterMapper.listClusters(organizationId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         } else {
             devopsClusterEPage = PageHelper.startPage(
                     pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsClusterMapper.listClusters(organizationId, null, null));

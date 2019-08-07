@@ -694,7 +694,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (!StringUtils.isEmpty(params)) {
             Map maps = gson.fromJson(params, Map.class);
             searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+            param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
             roleAssignmentSearchVO.setParam(new String[]{param});
             if (searchParamMap != null) {
                 if (searchParamMap.get("loginName") != null) {
@@ -759,7 +759,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (!StringUtils.isEmpty(params)) {
             Map maps = gson.fromJson(params, Map.class);
             Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+            String param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
 
             roleAssignmentSearchVO.setParam(new String[]{param});
             if (searchParamMap.get("loginName") != null) {
@@ -892,7 +892,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (!StringUtils.isEmpty(searchParams)) {
             Map maps = gson.fromJson(searchParams, Map.class);
             Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+            String param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
             roleAssignmentSearchVO.setParam(new String[]{param});
             if (searchParamMap.get("loginName") != null) {
                 String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
