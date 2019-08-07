@@ -71,7 +71,7 @@ const TreeView = observer(({ ds, store, nodesRender, searchAble }) => {
 
   return (
     <Fragment>
-      {searchAble && <TreeSearch onChange={handleSearch} />}
+      {searchAble && <TreeSearch value={store.getSearchValue} onChange={handleSearch} />}
       <ScrollArea
         vertical
         className={treeClass}
