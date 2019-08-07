@@ -18,6 +18,7 @@ public class AppServiceInstanceInfoDTO {
     private String versionName;
     private Date lastUpdateDate;
     private Long objectVersionNumber;
+    private Long envId;
 
     public Long getId() {
         return id;
@@ -105,5 +106,13 @@ public class AppServiceInstanceInfoDTO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }
