@@ -238,7 +238,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void handlerReleaseInstall(String key, String msg, Long clusterId) {
+    public void helmInstallResourceInfo(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
@@ -259,13 +259,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 appServiceInstanceDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                 appServiceInstanceService.baseUpdate(appServiceInstanceDTO);
                 installResource(resources, appServiceInstanceDTO);
+
             }
         }
     }
 
 
     @Override
-    public void handlerPreInstall(String key, String msg, Long clusterId) {
+    public void helmInstallJobInfo(String key, String msg, Long clusterId) {
         if (msg.equals("null")) {
             return;
         }
@@ -510,7 +511,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void helmReleaseHookLogs(String key, String msg, Long clusterId) {
+    public void helmJobLog(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
@@ -588,13 +589,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void helmReleasePreUpgrade(String key, String msg, Long clusterId) {
-        handlerPreInstall(key, msg, clusterId);
+    public void helmUpgradeJobInfo(String key, String msg, Long clusterId) {
+        helmInstallJobInfo(key, msg, clusterId);
     }
 
     @Override
-    public void handlerReleaseUpgrade(String key, String msg, Long clusterId) {
-        handlerReleaseInstall(key, msg, clusterId);
+    public void helmUpgradeResourceInfo(String key, String msg, Long clusterId) {
+        helmInstallResourceInfo(key, msg, clusterId);
     }
 
 
@@ -741,7 +742,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void jobEvent(String msg) {
+    public void helmJobEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
         if (event.getInvolvedObject().getKind().equals(ResourceType.POD.getType())) {
             event.getInvolvedObject().setKind(ResourceType.JOB.getType());
@@ -753,7 +754,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void releasePodEvent(String msg) {
+    public void helmPodEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
         insertDevopsCommandEvent(event, ResourceType.POD.getType());
     }
@@ -788,11 +789,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         List<DevopsEnvFileErrorDTO> errorDevopsFiles = getEnvFileErrors(envId, gitOpsSyncDTO, devopsEnvironmentDTO);
 
         gitOpsSyncDTO.getMetadata().getFilesCommit().forEach(fileCommit -> {
-            DevopsEnvFileDTO devopsEnvFileDTO = devopsEnvFileService.baseQueryByEnvAndPath(devopsEnvironmentDTO.getId(), fileCommit.getFile());
-            devopsEnvFileDTO.setAgentCommit(fileCommit.getCommit());
-            devopsEnvFileService.baseUpdate(devopsEnvFileDTO);
+            if(fileCommit.getFile().endsWith(".yaml")||fileCommit.getFile().endsWith("yml")) {
+                DevopsEnvFileDTO devopsEnvFileDTO = devopsEnvFileService.baseQueryByEnvAndPath(devopsEnvironmentDTO.getId(), fileCommit.getFile());
+                devopsEnvFileDTO.setAgentCommit(fileCommit.getCommit());
+                devopsEnvFileService.baseUpdate(devopsEnvFileDTO);
+            }
         });
-        gitOpsSyncDTO.getMetadata().getResourceCommitVOS()
+        gitOpsSyncDTO.getMetadata().getResourceCommits()
                 .forEach(resourceCommitVO -> {
                     String[] objects = resourceCommitVO.getResourceId().split("/");
                     switch (objects[0]) {
@@ -1171,7 +1174,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void gitOpsCommandSyncEvent(String key, Long clusterId) {
+    public void resourceStatusSyncEvent(String key, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
@@ -1265,7 +1268,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
 
     @Override
-    public void gitOpsCommandSyncEventResult(String key, String msg, Long clusterId) {
+    public void resourceStatusSync(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
@@ -1343,7 +1346,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    public void updateNamespaces(String msg, Long clusterId) {
+    public void namespaceInfo(String msg, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         devopsClusterDTO.setNamespaces(msg);
         devopsClusterService.baseUpdate(devopsClusterDTO);

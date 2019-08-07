@@ -145,8 +145,8 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 // 初始化secret对象参数,更新secret并更新文件对象关联关系
                 SecretReqVO secretReqVO = getSecretReqDTO(c7nSecret, envId, "update");
                 secretReqVO.setId(devopsSecretDTO.getId());
-                if (secretReqVO.equals(ConvertHelper.convert(devopsSecretDTO, SecretReqVO.class))) {
-                    isNotChange = true;
+                if (secretReqVO.getValue().equals(devopsSecretService.dtoToReqVo(devopsSecretDTO).getValue())) {
+                        isNotChange = true;
                 }
 
                 DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsSecretDTO.getCommandId());

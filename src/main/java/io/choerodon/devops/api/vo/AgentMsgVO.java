@@ -1,9 +1,9 @@
-package io.choerodon.devops.infra.ws;
+package io.choerodon.devops.api.vo;
 
 /**
  * Created by Sheep on 2019/7/25.
  */
-public class AgentMsg {
+public class AgentMsgVO {
 
     private String key;
     private String type;

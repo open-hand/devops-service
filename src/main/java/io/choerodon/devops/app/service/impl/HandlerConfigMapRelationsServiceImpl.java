@@ -88,29 +88,29 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                     String filePath = "";
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(configMap.hashCode()));
-                        DevopsConfigMapDTO devopsConfigMapE = devopsConfigMapService
+                        DevopsConfigMapDTO devopsConfigMapDTO = devopsConfigMapService
                                 .baseQueryByEnvIdAndName(envId, configMap.getMetadata().getName());
                         //初始化configMap对象参数,更新configMap并更新文件对象关联关系
                         DevopsConfigMapVO devopsConfigMapVO = getDevospConfigMapDTO(
                                 configMap,
                                 envId, "update");
-                        Boolean isNotChange = devopsConfigMapVO.getValue().equals(gson.fromJson(devopsConfigMapService.baseQueryById(devopsConfigMapE.getId()).getValue(), Map.class));
-                        DevopsEnvCommandDTO devopsEnvCommandE = devopsEnvCommandService.baseQuery(devopsConfigMapE.getEnvId());
-                        devopsConfigMapVO.setId(devopsConfigMapE.getId());
+                        Boolean isNotChange = devopsConfigMapVO.getValue().equals(gson.fromJson(devopsConfigMapService.baseQueryById(devopsConfigMapDTO.getId()).getValue(), Map.class));
+                        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsConfigMapDTO.getEnvId());
+                        devopsConfigMapVO.setId(devopsConfigMapDTO.getId());
                         if (!isNotChange) {
                             devopsConfigMapService.createOrUpdateByGitOps(devopsConfigMapVO, userId);
-                            DevopsConfigMapDTO newDevopsConfigMapE = devopsConfigMapService
+                            DevopsConfigMapDTO newDevopsConfigMapDTO = devopsConfigMapService
                                     .baseQueryByEnvIdAndName(envId, configMap.getMetadata().getName());
-                            devopsEnvCommandE = devopsEnvCommandService.baseQuery(newDevopsConfigMapE.getEnvId());
+                            devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(newDevopsConfigMapDTO.getCommandId());
                         }
-                        devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                        devopsEnvCommandService.baseUpdate(devopsEnvCommandE);
+                        devopsEnvCommandDTO.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
                         DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService
-                                .baseQueryByEnvIdAndResourceId(envId, devopsConfigMapE.getId(), configMap.getKind());
+                                .baseQueryByEnvIdAndResourceId(envId, devopsConfigMapDTO.getId(), configMap.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
                                 envId,
                                 devopsEnvFileResourceDTO,
-                                configMap.hashCode(), devopsConfigMapE.getId(), configMap.getKind());
+                                configMap.hashCode(), devopsConfigMapDTO.getId(), configMap.getKind());
 
                     } catch (CommonException e) {
                         String errorCode = "";

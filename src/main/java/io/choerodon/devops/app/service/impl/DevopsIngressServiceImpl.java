@@ -305,7 +305,19 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     @Override
     public DevopsIngressVO queryIngress(Long projectId, Long ingressId) {
-        return ConvertUtils.convertObject(baseQuery(ingressId), DevopsIngressVO.class);
+        DevopsIngressDTO devopsIngressDTO = devopsIngressMapper.selectByPrimaryKey(ingressId);
+        if (devopsIngressDTO != null) {
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
+            DevopsIngressVO devopsIngressVO = new DevopsIngressVO(
+                    ingressId, devopsIngressDTO.getDomain(), devopsIngressDTO.getName(), devopsEnvironmentDTO.getId(),
+                    devopsIngressDTO.getUsable(), devopsEnvironmentDTO.getName());
+            DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(ingressId);
+            devopsIngressPathMapper.select(devopsIngressPathDTO).forEach(e -> getDevopsIngressDTO(devopsIngressVO, e));
+            devopsIngressDTO.setStatus(devopsIngressDTO.getStatus());
+            setIngressDTOCert(devopsIngressDTO.getCertId(), devopsIngressVO);
+            return devopsIngressVO;
+        }
+        return null;
     }
 
     @Override
@@ -777,6 +789,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     public DevopsIngressDTO baseQuery(Long ingressId) {
         return devopsIngressMapper.selectByPrimaryKey(ingressId);
     }
+
+
 
     private void setIngressDTOCert(Long certId, DevopsIngressVO devopsIngressVO) {
         if (certId != null) {

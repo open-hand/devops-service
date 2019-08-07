@@ -27,7 +27,7 @@ public interface DevopsServiceMapper extends Mapper<DevopsServiceDTO> {
 
     List<Long> selectDeployedEnv();
 
-    DevopsServiceQueryDTO queryById(@Param("id") Long id);
+    DevopsServiceQueryDTO selectById(@Param("id") Long id);
 
     int selectCountByOptions(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("name") String name);
 

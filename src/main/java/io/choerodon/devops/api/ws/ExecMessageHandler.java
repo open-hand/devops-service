@@ -1,4 +1,4 @@
-package io.choerodon.devops.infra.ws;
+package io.choerodon.devops.api.ws;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -22,9 +22,7 @@ import org.springframework.web.socket.WebSocketSession;
 @Component
 public class ExecMessageHandler implements MessageHandler<BinaryMessage> {
 
-
     private static final Logger logger = LoggerFactory.getLogger(ExecMessageHandler.class);
-
 
     @Autowired
     private DefaultRelationshipDefining defaultRelationshipDefining;

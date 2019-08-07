@@ -1,4 +1,4 @@
-package io.choerodon.devops.infra.ws;
+package io.choerodon.devops.api.ws;
 
 
 import java.io.IOException;
@@ -45,6 +45,7 @@ public class LogMessageHandler implements MessageHandler<BinaryMessage> {
     public String matchPath() {
         return "/ws/log";
     }
+
 
 
 }

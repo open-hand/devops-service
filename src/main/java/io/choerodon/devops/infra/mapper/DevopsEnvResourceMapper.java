@@ -13,7 +13,7 @@ import io.choerodon.devops.infra.dto.DevopsEnvResourceDTO;
 public interface DevopsEnvResourceMapper extends Mapper<DevopsEnvResourceDTO> {
     List<DevopsEnvResourceDTO> listJobs(@Param("commandId") Long commandId);
 
-    DevopsEnvResourceDTO queryResource(@Param("instanceId") Long instanceId,
+    List<DevopsEnvResourceDTO> queryResource(@Param("instanceId") Long instanceId,
                                        @Param("commandId") Long commandId,
                                        @Param("envId") Long envId,
                                        @Param("kind") String kind,

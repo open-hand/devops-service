@@ -1,9 +1,9 @@
-package io.choerodon.devops.infra.ws;
+package io.choerodon.devops.api.vo;
 
 /**
  * Created by Sheep on 2019/7/26.
  */
-public class PipeRequest {
+public class PipeRequestVO {
 
     private String podName;
     private String containerName;
@@ -11,7 +11,7 @@ public class PipeRequest {
     private String namespace;
 
 
-    public PipeRequest(String podName, String containerName, String pipeID, String namespace) {
+    public PipeRequestVO(String podName, String containerName, String pipeID, String namespace) {
         this.podName = podName;
         this.containerName = containerName;
         this.pipeID = pipeID;

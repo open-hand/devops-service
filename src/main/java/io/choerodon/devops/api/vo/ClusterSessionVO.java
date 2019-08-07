@@ -1,11 +1,11 @@
-package io.choerodon.devops.infra.ws;
+package io.choerodon.devops.api.vo;
 
 import java.io.Serializable;
 
 /**
  * Created by Sheep on 2019/7/25.
  */
-public class ClusterSession implements Serializable {
+public class ClusterSessionVO implements Serializable {
 
     private String registerKey;
     private Long clusterId;

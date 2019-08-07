@@ -423,7 +423,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentDTO, userAttrDTO);
+//        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentDTO, userAttrDTO);
     }
 
 

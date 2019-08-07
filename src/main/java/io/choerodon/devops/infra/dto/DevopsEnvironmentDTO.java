@@ -21,6 +21,7 @@ public class DevopsEnvironmentDTO extends BaseDTO {
     private String name;
     private String code;
     private String token;
+
     private String description;
     private Boolean isActive;
     private Long devopsEnvGroupId;

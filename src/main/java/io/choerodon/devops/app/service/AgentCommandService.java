@@ -4,13 +4,12 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.api.vo.ConfigVO;
+import io.choerodon.devops.api.vo.PipeRequestVO;
 import io.choerodon.devops.api.vo.kubernetes.Command;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.ws.PipeRequest;
-
 
 
 /**
@@ -48,6 +47,5 @@ public interface AgentCommandService {
                              Long commandId, Long envId,
                              Long clusterId);
 
-    void startLogOrExecConnection(String type,String key, PipeRequest pipeRequest, Long clusterId);
-
+    void startLogOrExecConnection(String type, String key, PipeRequestVO pipeRequest, Long clusterId);
 }

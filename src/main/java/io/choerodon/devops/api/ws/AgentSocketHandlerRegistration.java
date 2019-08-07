@@ -1,4 +1,4 @@
-package io.choerodon.devops.infra.ws;
+package io.choerodon.devops.api.ws;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
+import io.choerodon.devops.api.vo.ClusterSessionVO;
 import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
@@ -37,7 +38,7 @@ import org.springframework.web.socket.server.HandshakeFailureException;
 @Component
 public class AgentSocketHandlerRegistration implements SocketHandlerRegistration {
 
-    private static final String CLUSTER_SESSION = "cluster-sessions";
+    private static final String CLUSTER_SESSION = "cluster-sessions-catch";
     private static final Logger logger = LoggerFactory.getLogger(AgentSocketHandlerRegistration.class);
     private ConcurrentHashMap<String, Map<String, Object>> attributes = new ConcurrentHashMap<>();
     private Set<WebSocketSession> webSocketSessions = new HashSet<>();
@@ -95,11 +96,11 @@ public class AgentSocketHandlerRegistration implements SocketHandlerRegistration
             throw new HandshakeFailureException("agent token not match");
         }
 
-        //校验是否已经有关联该key的agent连接到了devops
-        Map<String, ClusterSession> clusterSessions = (Map<String, ClusterSession>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
+        //校验是否已经有关联该key的agent连接到了devops,则删除已有key,连接之后建立新的关系
+        Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
         if (clusterSessions.getOrDefault(key, null) != null) {
-            throw new HandshakeFailureException(" already have a same agent connect to devops!");        }
-
+            redisTemplate.opsForHash().delete(CLUSTER_SESSION, key);
+        }
         return true;
     }
 
@@ -118,7 +119,7 @@ public class AgentSocketHandlerRegistration implements SocketHandlerRegistration
         webSocketHelper.contact(webSocketSession, registerKey);
 
         //将已连接的agent集群信息放到redis中,用于判断集群是否连接
-        ClusterSession clusterSession = new ClusterSession();
+        ClusterSessionVO clusterSession = new ClusterSessionVO();
         clusterSession.setClusterId(TypeUtil.objToLong(attribute.get("clusterId")));
         clusterSession.setVersion(TypeUtil.objToString(attribute.get("version")));
         clusterSession.setRegisterKey(registerKey);

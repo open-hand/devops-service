@@ -1,5 +1,6 @@
-package io.choerodon.devops.infra.ws;
+package io.choerodon.devops.api.ws;
 
+import io.choerodon.devops.api.vo.AgentMsgVO;
 import io.choerodon.devops.app.service.AgentMsgHandlerService;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.HelmType;
@@ -18,18 +19,23 @@ import org.springframework.web.socket.WebSocketSession;
  */
 
 @Component
-public class AgentTextMessageHandler implements MessageHandler<AgentMsg> {
-
+public class AgentTextMessageHandler implements MessageHandler<AgentMsgVO> {
 
     private static final Logger logger = LoggerFactory.getLogger(AgentTextMessageHandler.class);
-
 
     @Autowired
     private AgentMsgHandlerService agentMsgHandlerService;
 
     @Override
-    public void handle(WebSocketSession webSocketSession, String type, String key, AgentMsg msg) {
+    public void handle(WebSocketSession webSocketSession, String type, String key, AgentMsgVO msg) {
         HelmType helmType = HelmType.forValue(String.valueOf(msg.getType()));
+        if(helmType==null) {
+            System.out.println("找不到指令啊" + msg.getType());
+            return;
+        }
+        System.out.println("收到了这个指令嘿嘿:" + helmType.toString());
+        //设置集群id
+        msg.setClusterId(key.split(":")[1]);
 
         if (helmType == null) {
             return;
@@ -38,17 +44,17 @@ public class AgentTextMessageHandler implements MessageHandler<AgentMsg> {
             logger.debug(msg.toString());
         }
         switch (helmType) {
-            case HELM_RELEASE_PRE_INSTALL:
-                agentMsgHandlerService.handlerPreInstall(
+            case HELM_INSTALL_JOB_INFO:
+                agentMsgHandlerService.helmInstallJobInfo(
                         msg.getKey(),
                         msg.getPayload(),
                         TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HELM_INSTALL_RELEASE:
-                agentMsgHandlerService.handlerReleaseInstall(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+            case HELM_INSTALL_RESOURCE_INFO:
+                agentMsgHandlerService.helmInstallResourceInfo(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HELM_RELEASE_UPGRADE:
-                agentMsgHandlerService.handlerReleaseUpgrade(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+            case HELM_UPGRADE_RESOURCE_INFO:
+                agentMsgHandlerService.helmUpgradeResourceInfo(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 agentMsgHandlerService.updateInstanceStatus(
                         msg.getKey(),
                         KeyParseUtil.getResourceName(msg.getKey()),
@@ -77,8 +83,8 @@ public class AgentTextMessageHandler implements MessageHandler<AgentMsg> {
                         CommandStatus.SUCCESS.getStatus(),
                         "");
                 break;
-            case HELM_RELEASE_PRE_UPGRADE:
-                agentMsgHandlerService.helmReleasePreUpgrade(
+            case HELM_UPGRADE_JOB_INFO:
+                agentMsgHandlerService.helmUpgradeJobInfo(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case NETWORK_SERVICE:
@@ -98,8 +104,8 @@ public class AgentTextMessageHandler implements MessageHandler<AgentMsg> {
             case RESOURCE_DELETE:
                 agentMsgHandlerService.resourceDelete(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HELM_RELEASE_HOOK_LOGS:
-                agentMsgHandlerService.helmReleaseHookLogs(
+            case HELM_JOB_LOG:
+                agentMsgHandlerService.helmJobLog(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_RELEASE_DELETE_FAILED:
@@ -132,18 +138,18 @@ public class AgentTextMessageHandler implements MessageHandler<AgentMsg> {
                 agentMsgHandlerService.resourceSync(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case JOB_EVENT:
-                agentMsgHandlerService.jobEvent(msg.getPayload());
+            case HELM_JOB_EVENT:
+                agentMsgHandlerService.helmJobEvent(msg.getPayload());
                 break;
-            case RELEASE_POD_EVENT:
-                agentMsgHandlerService.releasePodEvent(
+            case HELM_POD_EVENT:
+                agentMsgHandlerService.helmPodEvent(
                         msg.getPayload());
                 break;
             case GIT_OPS_SYNC_EVENT:
                 agentMsgHandlerService.gitOpsSyncEvent(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case STATUS_SYNC_EVENT:
-                agentMsgHandlerService.gitOpsCommandSyncEvent(msg.getKey(), TypeUtil.objToLong(msg.getClusterId()));
+            case RESOURCE_STATUS_SYNC_EVENT:
+                agentMsgHandlerService.resourceStatusSyncEvent(msg.getKey(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case CERT_ISSUED:
                 agentMsgHandlerService.certIssued(
@@ -153,11 +159,11 @@ public class AgentTextMessageHandler implements MessageHandler<AgentMsg> {
                 agentMsgHandlerService.certFailed(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case STATUS_SYNC:
-                agentMsgHandlerService.gitOpsCommandSyncEventResult(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+            case RESOURCE_STATUS_SYNC:
+                agentMsgHandlerService.resourceStatusSync(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case NAMESPACE_UPDATE:
-                agentMsgHandlerService.updateNamespaces(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+            case NAMESPACE_INFO:
+                agentMsgHandlerService.namespaceInfo(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case UPGRADE_CLUSTER:
                 agentMsgHandlerService.upgradeCluster(msg.getKey(), msg.getPayload());
@@ -190,6 +196,7 @@ public class AgentTextMessageHandler implements MessageHandler<AgentMsg> {
                 agentMsgHandlerService.handlePodRealTimeData(msg.getPayload());
                 break;
             default:
+                System.out.println("找不到指令啊" + helmType.toString());
                 break;
         }
     }
@@ -200,7 +207,7 @@ public class AgentTextMessageHandler implements MessageHandler<AgentMsg> {
     }
 
     @Override
-    public Class<AgentMsg> payloadClass() {
-        return AgentMsg.class;
+    public Class<AgentMsgVO> payloadClass() {
+        return AgentMsgVO.class;
     }
 }

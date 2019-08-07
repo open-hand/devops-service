@@ -1,4 +1,4 @@
-package io.choerodon.devops.infra.ws;
+package io.choerodon.devops.api.ws;
 
 import java.util.Arrays;
 import java.util.HashMap;
