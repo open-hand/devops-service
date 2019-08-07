@@ -499,7 +499,7 @@ public class GitlabServiceClientOperator {
         Integer index = 0;
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> maps = json.deserialize(params, Map.class);
-            String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+            String param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
             param = param == null ? "" : param;
             if (!param.equals("")) {
                 if (tagDTO.getName().contains(param) || tagDTO.getCommit().getShortId().contains(param)

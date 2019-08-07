@@ -90,12 +90,12 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                 devopsBranchDTOPageInfo = PageHelper.startPage(
                         pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(
                         appServiceId, null,
-                        TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                        TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
             } else {
                 devopsBranchDTOPageInfo = PageHelper.startPage(
                         pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(
                         appServiceId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                        TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
             }
         } else {
             devopsBranchDTOPageInfo = PageHelper.startPage(

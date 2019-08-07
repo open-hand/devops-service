@@ -256,7 +256,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                         appServiceVersionMapper.listByOptions(
                                 appServiceId,
                                 TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
+                                TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         return ConvertUtils.convertPage(applicationVersionDTOPageInfo, AppServiceVersionVO.class);
     }
 
@@ -544,7 +544,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             applicationVersionDTOPageInfo = PageHelper
                     .startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper.listApplicationVersion(projectId, appServiceId,
                             TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), isProjectOwner, userId));
+                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), isProjectOwner, userId));
         } else {
             applicationVersionDTOPageInfo = PageHelper.startPage(
                     pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper

@@ -180,7 +180,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
                     appServiceId,
                     instanceId,
                     TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
+                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         } else {
             devopsEnvPodDOPage = PageHelper.startPage(
                     pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppPod(projectId, envId, appServiceId, instanceId, null, null));
