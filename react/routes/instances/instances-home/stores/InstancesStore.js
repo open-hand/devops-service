@@ -209,10 +209,7 @@ class InstancesStore {
   }
 
   @action setIstAll(data) {
-    if (this.requireTime <= data.requireTime) {
-      this.istAll = data.list;
-      this.requireTime = data.requireTime;
-    }
+    this.istAll = data.list;
   }
 
   @computed get getIstAll() {
@@ -263,14 +260,10 @@ class InstancesStore {
 
   /**
    * 查询实例
-   * @param fresh 刷新图案显示
    * @param projectId
-   * @param info { 环境id， 应用id, 实例id }
-   * @param requireTime 发起请求的时间
+   * @param info
    */
-  loadInstanceAll = (fresh = true, projectId, info = {}, requireTime) => {
-    this.changeLoading(fresh);
-
+  loadInstanceAll = (projectId, info = {}) => {
     // 拼接url
     let search = '';
     for (const key in info) {
@@ -282,19 +275,18 @@ class InstancesStore {
     const { param, filters } = this.istParams;
     const { pageSize: size, page } = this.istPage;
 
-    this.setRequireTime(requireTime);
 
     return axios
       .post(
-        `devops/v1/projects/${projectId}/app_instances/list_by_options?page=${page}&size=${size}${search}`,
+        `devops/v1/projects/${projectId}/app_service_instances/page_by_options?page=${page}&size=${size}${search}`,
         JSON.stringify({ searchParam: filters, param: String(param) }),
       )
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
           const { pageNum, pageSize, total, list } = data;
-          this.setIstAll({ list, requireTime });
-          this.setPageInfo({ pageNum, pageSize, total, requireTime });
+          this.setIstAll({ list });
+          this.setPageInfo({ pageNum, pageSize, total });
         }
         this.changeLoading(false);
       });
@@ -394,6 +386,7 @@ class InstancesStore {
   };
 
   loadResource = (projectId, instanceId) => axios
+    // .get(`/devops/v1/projects/${projectId}/app_service_instances/${instanceId}/resources`)
     .get(`/devops/v1/projects/${projectId}/app_instances/${instanceId}/resources`)
     .then((data) => {
       const res = handleProptError(data);

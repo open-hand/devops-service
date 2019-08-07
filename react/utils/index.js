@@ -6,7 +6,7 @@ import _ from 'lodash';
 import storage from './storage';
 
 /**
- * 处理数据请求错误
+ * 【废弃】请使用 handlePromptError
  * @param data
  * @returns {*}
  */
@@ -19,10 +19,9 @@ function handleProptError(data) {
 }
 
 /**
- * 处理检查性API的结果
- * 有异常说明不可用，则返回 false
- * 无异常则返回 true
+ * 【废弃】请使用 handlePromptError
  * @param data
+ * @returns {boolean}
  */
 function handleCheckerProptError(data) {
   if (data && data.failed) {
@@ -255,10 +254,10 @@ function timeConvert(time) {
     return;
   }
   // 毫秒转为秒
-  const _time = time / 1000;
-  const sec = Math.floor((_time % 60) % 60);
-  const min = Math.floor(_time / 60) % 60;
-  const hour = Math.floor(_time / 3600);
+  const now = time / 1000;
+  const sec = Math.floor((now % 60) % 60);
+  const min = Math.floor(now / 60) % 60;
+  const hour = Math.floor(now / 3600);
 
   let result = `${sec}s`;
   if (hour > 0) {
@@ -286,9 +285,9 @@ function findAllIndex(collection, value) {
 }
 
 function getWindowHeight() {
-  return window.innerHeight ||
-    document.documentElement.clientHeight ||
-    document.body.clientHeight;
+  return window.innerHeight
+    || document.documentElement.clientHeight
+    || document.body.clientHeight;
 }
 
 export {

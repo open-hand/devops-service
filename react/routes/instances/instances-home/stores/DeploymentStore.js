@@ -1,10 +1,10 @@
-import { observable, action, computed } from "mobx";
-import { axios, store } from "@choerodon/boot";
-import { handleProptError } from "../../../../utils";
-import EnvOverviewStore from "../../../envOverview/stores/EnvOverviewStore";
-import InstancesStore from "./InstancesStore";
+import { observable, action, computed } from 'mobx';
+import { axios, store } from '@choerodon/boot';
+import { handleProptError } from '../../../../utils';
+import EnvOverviewStore from '../../../envOverview/stores/EnvOverviewStore';
+import InstancesStore from './InstancesStore';
 
-@store("DeploymentStore")
+@store('DeploymentStore')
 class DeploymentStore {
   @observable dataSource = {};
 
@@ -47,41 +47,25 @@ class DeploymentStore {
           URL_TYPE[type]
         }`
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.setData(res);
         }
         this.setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         this.setLoading(false);
         Choerodon.handleResponseError(err);
       });
   };
 
-  operatePodCount(current, projectId, envId, name, num) {
-    if (current === "env-overview") {
-      current = "overview";
-    }
-    const istLoader = {
-      instance() {
-        const time = Date.now();
-        InstancesStore.loadInstanceAll(false, projectId, { envId }, time);
-      },
-      overview() {
-        EnvOverviewStore.loadIstOverview(false, projectId, envId);
-      },
-    };
-
+  operatePodCount(projectId, envId, name, num) {
     axios
       .put(
         `devops/v1/projects/${projectId}/app_instances/operate_pod_count?envId=${envId}&deploymentName=${name}&count=${num}`
       )
-      .then(() => {
-        setTimeout(istLoader[current], 2000);
-      })
-      .catch(err => {
+      .catch((err) => {
         Choerodon.handleResponseError(err);
       });
   }
