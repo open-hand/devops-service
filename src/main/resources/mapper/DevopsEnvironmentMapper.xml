@@ -59,6 +59,7 @@
         <result property="agentSyncCommit" column="agent_sync_commit"/>
         <result property="isSkipCheckPermission" column="is_skip_check_permission"/>
         <result property="objectVersionNumber" column="object_version_number"/>
+        <result property="description" column="description"/>
     </resultMap>
 
     <update id="updateDevopsEnvGroupId" parameterType="io.choerodon.devops.infra.dto.DevopsEnvironmentDTO">
@@ -131,7 +132,8 @@
                env.cluster_id,
                cluster.name as cluster_name,
                env.is_skip_check_permission,
-               env.object_version_number
+               env.object_version_number,
+               env.description
         FROM devops_env env
         LEFT JOIN devops_cluster cluster ON env.cluster_id = cluster.id
         WHERE env.id = #{envId};

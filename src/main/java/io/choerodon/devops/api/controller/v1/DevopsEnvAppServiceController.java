@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * @date 2019/7/1
  */
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/env/apps")
+@RequestMapping(value = "/v1/projects/{project_id}/env/app_services")
 public class DevopsEnvAppServiceController {
 
     @Autowired
