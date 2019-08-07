@@ -18,6 +18,7 @@ public class AppServiceInstanceInfoVO {
     private String versionName;
     private Date lastUpdateDate;
     private Long objectVersionNumber;
+    private Boolean connect;
 
     public Long getId() {
         return id;
@@ -105,5 +106,13 @@ public class AppServiceInstanceInfoVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Boolean getConnect() {
+        return connect;
+    }
+
+    public void setConnect(Boolean connect) {
+        this.connect = connect;
     }
 }

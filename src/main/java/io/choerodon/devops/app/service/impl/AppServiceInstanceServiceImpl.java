@@ -150,8 +150,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (appServiceInstanceInfoDTO == null) {
             return null;
         }
+        List<Long> updatedEnv = clusterConnectionHandler.getUpdatedEnvList();
         AppServiceInstanceInfoVO appServiceInstanceInfoVO = new AppServiceInstanceInfoVO();
         BeanUtils.copyProperties(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
+        appServiceInstanceInfoVO.setConnect(updatedEnv.contains(appServiceInstanceInfoDTO.getEnvId()));
         return appServiceInstanceInfoVO;
     }
 
