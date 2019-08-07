@@ -14,7 +14,7 @@ import DevPipelineStore from '../../stores/project/devPipeline';
 import DepPipelineEmpty from '../../components/DepPipelineEmpty/DepPipelineEmpty';
 import StatusIcon from '../../components/StatusIcon/StatusIcon';
 import BranchStore from './stores';
-
+import handleMapStore from '../code-manager/main-view/store/handleMapStore';
 import '../main.scss';
 import './Branch.scss';
 import './index.scss';
@@ -22,11 +22,16 @@ import './index.scss';
 const { AppState } = stores;
 const { Option, OptGroup } = Select;
 
+
 @observer
 class Branch extends Component {
   constructor(props) {
     super(props);
     const menu = AppState.currentMenuType;
+    handleMapStore.setCodeManagerBranch({
+      refresh: this.handleRefresh,
+      select: this.loadData,
+    });
     this.state = {
       projectId: menu.id,
       paras: [],
@@ -199,96 +204,10 @@ class Branch extends Component {
           >{record.issueCode}</Tooltip></a>
         </div>),
       },
-      {
-        align: 'right',
-        className: 'operateIcons',
-        key: 'action',
-        render: (test, record) => (
-          <div>
-            {record.branchName !== 'master'
-              ? <React.Fragment>
-                <Permission
-                  projectId={this.state.projectId}
-                  organizationId={orgId}
-                  type={type}
-                  service={['devops-service.devops-git.update']}
-                >
-                  <Tooltip
-                    placement="bottom"
-                    title={<FormattedMessage id="branch.edit" />}
-                  >
-                    <Button size="small" shape="circle" onClick={this.handleEdit.bind(this, record.branchName)}>
-                      <i className="icon icon-mode_edit" />
-                    </Button>
-                  </Tooltip>
-                </Permission>
-                <Tooltip
-                  placement="bottom"
-                  title={<FormattedMessage id="branch.request" />}
-                >
-                  <a
-                    href={record.commitUrl && `${record.commitUrl.split('/commit')[0]}/merge_requests/new?change_branches=true&merge_request[source_branch]=${record.branchName}&merge_request[target_branch]=master`}
-                    target="_blank"
-                    rel="nofollow me noopener noreferrer"
-                  >
-                    <Button size="small" shape="circle">
-                      <i className="icon icon-merge_request" />
-                    </Button>
-                  </a>
-                </Tooltip>
-                <Permission
-                  projectId={this.state.projectId}
-                  organizationId={orgId}
-                  type={type}
-                  service={['devops-service.devops-git.delete']}
-                >
-                  <Tooltip
-                    placement="bottom"
-                    title={<FormattedMessage id="delete" />}
-                  >
-                    <Button size="small" shape="circle" onClick={this.openRemove.bind(this, record.branchName)}>
-                      <i className="icon icon-delete_forever" />
-                    </Button>
-                  </Tooltip>
-                </Permission>
-              </React.Fragment>
-              : null
-            }
-          </div>
-        ),
-      },
     ];
     const titleData = ['master', 'feature', 'bugfix', 'release', 'hotfix', 'custom'];
-    const title = (<div className="c7n-header-table">
-      <span>
-        <FormattedMessage id="branch.list" />
-      </span>
-      <Popover
-        overlayClassName="branch-popover"
-        placement="rightTop"
-        arrowPointAtCenter
-        content={<section>
-          {
-            _.map(titleData, item => (<div className="c7n-branch-block" key={item}>
-              <span className={`branch-popover-span span-${item}`} />
-              <div className="branch-popover-content">
-                <p className="branch-popover-p">
-                  <FormattedMessage id={`branch.${item}`} />
-                </p>
-                <p>
-                  <FormattedMessage id={`branch.${item}Des`} />
-                </p>
-              </div>
-            </div>))
-          }
-        </section>}
-      >
-        <Icon className="branch-icon-help" type="help" />
-      </Popover>
-    </div>);
     return (
       <div>
-        {title}
         <Table
           filters={paras}
           filterBarPlaceholder={formatMessage({ id: 'filter' })}
@@ -470,23 +389,25 @@ class Branch extends Component {
           'agile-service.work-log.queryWorkLogListByIssueId',
         ]}
       >
-        {apps && apps.length && appId ? <Fragment><Header
-          title={<FormattedMessage id="branch.head" />}
-          backPath={backPath}
-        >
-          <Select
-            filter
-            className="c7n-header-select"
-            dropdownClassName="c7n-header-select_drop"
-            placeholder={formatMessage({ id: 'ist.noApp' })}
-            value={apps && apps.length ? DevPipelineStore.getSelectApp : undefined}
-            disabled={apps.length === 0}
-            filterOption={(input, option) => option.props.children.props.children.props.children
-              .toLowerCase().indexOf(input.toLowerCase()) >= 0}
-            onChange={this.loadData}
+        {apps && apps.length && appId 
+          ? <Fragment>
+            {/* <Header
+            title={<FormattedMessage id="branch.head" />}
+            backPath={backPath}
           >
-            <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
-              {
+            <Select
+              filter
+              className="c7n-header-select"
+              dropdownClassName="c7n-header-select_drop"
+              placeholder={formatMessage({ id: 'ist.noApp' })}
+              value={apps && apps.length ? DevPipelineStore.getSelectApp : undefined}
+              disabled={apps.length === 0}
+              filterOption={(input, option) => option.props.children.props.children.props.children
+                .toLowerCase().indexOf(input.toLowerCase()) >= 0}
+              onChange={this.loadData}
+            >
+              <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
+                {
                 _.map(DevPipelineStore.getRecentApp, app => (
                   <Option
                     key={`recent-${app.id}`}
@@ -496,9 +417,9 @@ class Branch extends Component {
                     <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
                   </Option>))
               }
-            </OptGroup>
-            <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
-              {
+              </OptGroup>
+              <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
+                {
                 _.map(apps, (app, index) => (
                   <Option
                     value={app.id}
@@ -508,64 +429,64 @@ class Branch extends Component {
                     <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
                   </Option>))
               }
-            </OptGroup>
-          </Select>
-          {BranchStore.getBranchList.length && DevPipelineStore.selectedApp ? <Permission
-            service={['devops-service.devops-git.createBranch']}
-          >
-            <Button
-              onClick={this.showSidebar}
-              icon="playlist_add"
+              </OptGroup>
+            </Select>
+            {BranchStore.getBranchList.length && DevPipelineStore.selectedApp ? <Permission
+              service={['devops-service.devops-git.createBranch']}
             >
-              <FormattedMessage id="branch.create" />
+              <Button
+                onClick={this.showSidebar}
+                icon="playlist_add"
+              >
+                <FormattedMessage id="branch.create" />
+              </Button>
+            </Permission> : null}
+            <Button
+              onClick={this.handleRefresh}
+              icon="refresh"
+            >
+              <FormattedMessage id="refresh" />
             </Button>
-          </Permission> : null}
-          <Button
-            onClick={this.handleRefresh}
-            icon="refresh"
-          >
-            <FormattedMessage id="refresh" />
-          </Button>
-        </Header>
-          <Content code={apps.length ? 'branch.app' : 'branch'} values={{ name: titleName }} className="page-content">
-            {this.tableBranch}
-          </Content>
-          {BranchStore.createBranchShow === 'create' && <BranchCreate
-            name={_.filter(apps, app => app.id === DevPipelineStore.selectedApp)[0].name}
-            appId={DevPipelineStore.selectedApp}
-            store={BranchStore}
-            visible={BranchStore.createBranchShow === 'create'}
-            onClose={this.hideSidebar}
-          />}
-          {BranchStore.createBranchShow === 'edit' && <BranchEdit
-            name={branchName}
-            appId={DevPipelineStore.selectedApp}
-            store={BranchStore}
-            visible={BranchStore.createBranchShow === 'edit'}
-            onClose={this.hideSidebar}
-          />}
-          {BranchStore.createBranchShow === 'detail' && <IssueDetail
-            name={branchName}
-            store={BranchStore}
-            visible={BranchStore.createBranchShow === 'detail'}
-            onClose={this.hideSidebar}
-          />}
-          <Modal
-            confirmLoading={submitting}
-            visible={visible}
-            title={`${formatMessage({ id: 'branch.action.delete' })}“${branchName}”`}
-            closable={false}
-            footer={[
-              <Button key="back" onClick={this.closeRemove} disabled={submitting}>{<FormattedMessage
-                id="cancel"
-              />}</Button>,
-              <Button key="submit" type="danger" onClick={this.handleDelete} loading={submitting}>
-                {formatMessage({ id: 'delete' })}
-              </Button>,
-            ]}
-          >
-            <div className="c7n-padding-top_8">{formatMessage({ id: 'branch.delete.tooltip' })}</div>
-          </Modal></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="branch.head" />} type="app" />}
+          </Header> */}
+            <Content className="page-content c7n-branch-content">
+              {this.tableBranch}
+            </Content>
+            {BranchStore.createBranchShow === 'create' && <BranchCreate
+              name={_.filter(apps, app => app.id === DevPipelineStore.selectedApp)[0].name}
+              appId={DevPipelineStore.selectedApp}
+              store={BranchStore}
+              visible={BranchStore.createBranchShow === 'create'}
+              onClose={this.hideSidebar}
+            />}
+            {BranchStore.createBranchShow === 'edit' && <BranchEdit
+              name={branchName}
+              appId={DevPipelineStore.selectedApp}
+              store={BranchStore}
+              visible={BranchStore.createBranchShow === 'edit'}
+              onClose={this.hideSidebar}
+            />}
+            {BranchStore.createBranchShow === 'detail' && <IssueDetail
+              name={branchName}
+              store={BranchStore}
+              visible={BranchStore.createBranchShow === 'detail'}
+              onClose={this.hideSidebar}
+            />}
+            <Modal
+              confirmLoading={submitting}
+              visible={visible}
+              title={`${formatMessage({ id: 'branch.action.delete' })}“${branchName}”`}
+              closable={false}
+              footer={[
+                <Button key="back" onClick={this.closeRemove} disabled={submitting}>{<FormattedMessage
+                  id="cancel"
+                />}</Button>,
+                <Button key="submit" type="danger" onClick={this.handleDelete} loading={submitting}>
+                  {formatMessage({ id: 'delete' })}
+                </Button>,
+              ]}
+            >
+              <div className="c7n-padding-top_8">{formatMessage({ id: 'branch.delete.tooltip' })}</div>
+            </Modal></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="branch.head" />} type="app" />}
       </Page>
     );
   }

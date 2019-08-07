@@ -130,7 +130,7 @@ class DevPipelineStore {
       DeploymentPipelineStore.setProRole('app', '');
     }
     this.setPreProId(projectId);
-    axios.get(`/devops/v1/projects/${projectId}/apps`)
+    axios.get(`/devops/v1/projects/${projectId}/app_service/list_by_active`)
       .then((data) => {
         const res = handleProptError(data);
         if (res) {

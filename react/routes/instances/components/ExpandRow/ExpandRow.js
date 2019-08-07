@@ -1,11 +1,10 @@
-
 import React, { Component, Fragment } from 'react';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import _ from 'lodash';
 import TimeAgo from 'timeago-react';
-import { stores, Content } from '@choerodon/boot';
+import { Content } from '@choerodon/boot';
 import { Tooltip, Button, Modal, Collapse, Spin } from 'choerodon-ui';
 import { formatDate } from '../../../../utils';
 import DeploymentStore from '../../instances-home/stores/DeploymentStore';
@@ -15,9 +14,6 @@ import PodCircle from './PodCircle';
 
 import './index.scss';
 
-
-
-const { AppState } = stores;
 const { Sidebar } = Modal;
 const { Panel } = Collapse;
 
@@ -30,15 +26,21 @@ const PANEL_TYPE = [
   'variables',
 ];
 
+const ContainerLabel = () => (<span className="c7ncd-deploy-container-label">
+  <FormattedMessage id="ist.deploy.container" />
+</span>);
+
+@inject('AppState')
+@injectIntl
+@withRouter
 @observer
-class ExpandRow extends Component {
+export default class ExpandRow extends Component {
   constructor(props) {
     super(props);
     this.state = {
       visible: false,
       sideName: '',
       activeKey: [],
-      isAllExpand: false,
     };
     this.getExpandContent = this.getExpandContent.bind(this);
     this.renderPorts = this.renderPorts.bind(this);
@@ -48,33 +50,18 @@ class ExpandRow extends Component {
     this.renderLabel = this.renderLabel.bind(this);
     this.renderVar = this.renderVar.bind(this);
     this.handleExpandAll = this.handleExpandAll.bind(this);
-    this.containerLabel = (
-      <span className="c7ncd-deploy-container-label">
-        {this.props.intl.formatMessage({ id: 'ist.deploy.container' })}
-      </span>
-    );
   }
 
-  handleLink() {
-    InstancesStore.setIsCache({ isCache: true });
-  }
-
-  changeTargetCount = count => {
+  changeTargetCount = (count) => {
     InstancesStore.setTargetCount(count);
   };
 
   getExpandContent() {
-    const content = [];
-    const {
-      record,
-      intl: { formatMessage },
-    } = this.props;
+    const { record } = this.props;
 
-    const getPodContent = dto =>
-      _.map(record[dto], item => this.getDeployContent(dto, item, record));
+    const getPodContent = dto => _.map(record[dto], item => this.getDeployContent(dto, item, record));
 
-    const getNoPodContent = dto =>
-      _.map(record[dto], item => this.getNoPodContent(dto, item));
+    const getNoPodContent = dto => _.map(record[dto], item => this.getNoPodContent(dto, item));
 
     const contentList = [
       {
@@ -107,7 +94,7 @@ class ExpandRow extends Component {
 
     return (
       <div className="c7n-deploy-expanded">
-        {_.map(contentList, dto => {
+        {_.map(contentList, (dto) => {
           const { main, title } = dto;
           return main.length ? (
             <Fragment key={title}>
@@ -155,8 +142,8 @@ class ExpandRow extends Component {
 
     // 计算 pod 数量和环形图占比
     const count = _.countBy(devopsEnvPodDTOS, pod => !!pod.ready);
-    const correctCount = count['true'] || 0;
-    const errorCount = count['false'] || 0;
+    const correctCount = count.true || 0;
+    const errorCount = count.false || 0;
     const sum = correctCount + errorCount;
     const correct = sum > 0 ? (correctCount / sum) * (Math.PI * 2 * 30) : 0;
 
@@ -188,16 +175,16 @@ class ExpandRow extends Component {
               {podType === 'deploymentDTOS' ? (
                 'ReplicaSet'
               ) : (
-                <FormattedMessage id={`ist.expand.net.status`} />
+                <FormattedMessage id="ist.expand.net.status" />
               )}
               ：
             </span>
             <span
-              title={`${item[available] || 0} available / ${item[current] ||
-              0} current / ${item[desired] || 0} desired`}
+              title={`${item[available] || 0} available / ${item[current]
+              || 0} current / ${item[desired] || 0} desired`}
               className="c7n-deploy-expanded-values"
-            >{`${item[available] || 0} available / ${item[current] ||
-            0} current / ${item[desired] || 0} desired`}</span>
+            >{`${item[available] || 0} available / ${item[current]
+            || 0} current / ${item[desired] || 0} desired`}</span>
           </li>
           <li className="c7n-deploy-expanded-lists">
             <span className="c7n-deploy-expanded-keys">
@@ -236,7 +223,6 @@ class ExpandRow extends Component {
             }}
             targetCount={targetCount}
             status={status}
-            handleLink={this.handleLink}
             handleChangeCount={this.changeTargetCount}
             currentPage={currentPage}
             store={DeploymentStore}
@@ -266,7 +252,7 @@ class ExpandRow extends Component {
         rightItems: ['capacity', 'age'],
       },
     };
-    const content = key => {
+    const content = (key) => {
       let text = null;
       switch (key) {
         case 'age':
@@ -329,7 +315,13 @@ class ExpandRow extends Component {
    * @param {*} name
    */
   handleClick = (type, id, name) => {
-    const { id: projectId } = AppState.currentMenuType;
+    const {
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
     this.setState({ visible: true, sideName: name });
     DeploymentStore.loadDeploymentsJson(type, projectId, id, name);
   };
@@ -339,7 +331,7 @@ class ExpandRow extends Component {
     DeploymentStore.setData([]);
   };
 
-  handlePanelChange = key => {
+  handlePanelChange = (key) => {
     const isExpand = key.length === PANEL_TYPE.length;
     this.setState({ activeKey: key, isExpand });
   };
@@ -362,10 +354,10 @@ class ExpandRow extends Component {
         title: <FormattedMessage id={`ist.deploy.ports.${item}`} />,
         key: item,
         dataIndex: item,
-        render: _textOrNA,
+        render: textOrNA,
       }));
 
-      portsContent = _.map(containers, item => {
+      portsContent = _.map(containers, (item) => {
         const { name, ports } = item;
         if (ports && ports.length) {
           hasPorts = true;
@@ -374,7 +366,7 @@ class ExpandRow extends Component {
           <Fragment key={name}>
             <div className="c7ncd-deploy-container-title">
               <span className="c7ncd-deploy-container-name">{name}</span>
-              {this.containerLabel}
+              <ContainerLabel />
             </div>
             <div className="c7ncd-deploy-container-table">
               <SimpleTable columns={columns} data={ports && ports.slice()} />
@@ -413,19 +405,19 @@ class ExpandRow extends Component {
     let healthContent = null;
 
     if (containers && containers.length) {
-      healthContent = _.map(containers, item => {
+      healthContent = _.map(containers, (item) => {
         const { name } = item;
         const readinessProbe = item.readinessProbe || {};
         const livenessProbe = item.livenessProbe || {};
 
-        const readDom = _returnHealthDom('readiness', readinessProbe);
-        const liveDom = _returnHealthDom('liveness', livenessProbe);
+        const readDom = returnHealthDom('readiness', readinessProbe);
+        const liveDom = returnHealthDom('liveness', livenessProbe);
 
         return (
           <div key={name} className="c7ncd-deploy-health-wrap">
             <div className="c7ncd-deploy-container-title">
               <span className="c7ncd-deploy-container-name">{name}</span>
-              {this.containerLabel}
+              <ContainerLabel />
             </div>
             <div className="c7ncd-deploy-health-content">
               {readDom}
@@ -474,7 +466,7 @@ class ExpandRow extends Component {
     ];
 
     let hasEnv = false;
-    let envContent = _.map(containers, item => {
+    let envContent = _.map(containers, (item) => {
       const { name, env } = item;
       if (env && env.length) {
         hasEnv = true;
@@ -483,7 +475,7 @@ class ExpandRow extends Component {
         <Fragment key={name}>
           <div className="c7ncd-deploy-container-title">
             <span className="c7ncd-deploy-container-name">{name}</span>
-            {this.containerLabel}
+            <ContainerLabel />
           </div>
           <div className="c7ncd-deploy-container-table">
             <SimpleTable columns={columns} data={env && env.slice()} />
@@ -517,7 +509,9 @@ class ExpandRow extends Component {
      */
     function format(obj, col) {
       const arr = [];
+      // eslint-disable-next-line no-restricted-syntax
       for (const key in obj) {
+        // eslint-disable-next-line no-prototype-builtins
         if (obj.hasOwnProperty(key)) {
           const value = obj[key];
           arr.push({ key, value });
@@ -566,8 +560,8 @@ class ExpandRow extends Component {
   renderVolume(containers, volumes, isLoading) {
     let volumeContent = null;
 
-    const _volumeType = (vol, mounts) => {
-      const vDom = _volumesTemplate(vol);
+    const volumeType = (vol, mounts) => {
+      const vDom = volumesTemplate(vol);
       const columnsItem = ['mountPath', 'subPath', 'readOnly'];
       const columns = _.map(columnsItem, item => ({
         title: <FormattedMessage id={`ist.deploy.volume.${item}`} />,
@@ -588,15 +582,15 @@ class ExpandRow extends Component {
     };
 
     if (volumes && volumes.length) {
-      volumeContent = _.map(volumes, vol => {
+      volumeContent = _.map(volumes, (vol) => {
         const { name } = vol;
         const mounts = [];
-        _.forEach(containers, item => {
+        _.forEach(containers, (item) => {
           const { volumeMounts } = item;
           const filterVol = _.filter(volumeMounts, m => m.name === name);
           mounts.push(...filterVol);
         });
-        return _volumeType(vol, mounts);
+        return volumeType(vol, mounts);
       });
     } else {
       volumeContent = (
@@ -618,7 +612,7 @@ class ExpandRow extends Component {
 
   renderSecurity(containers, hostIPC, hostNetwork, isLoading) {
     const containerArr = containers.length ? containers : [{}];
-    const securityCtx = _.map(containerArr, item => {
+    const securityCtx = _.map(containerArr, (item) => {
       const { imagePullPolicy, name } = item;
       const securityContext = item.securityContext || {};
       const {
@@ -638,15 +632,15 @@ class ExpandRow extends Component {
       }
 
       const addArr = capAdd.length ? (
-        _.map(capAdd, item => (
-          <p className="c7ncd-deploy-detail-text">{item}</p>
+        _.map(capAdd, text => (
+          <p className="c7ncd-deploy-detail-text">{text}</p>
         ))
       ) : (
         <FormattedMessage id="ist.deploy.none" />
       );
       const dropArr = capDrop.length ? (
-        _.map(capDrop, item => (
-          <p className="c7ncd-deploy-detail-text">{item}</p>
+        _.map(capDrop, text => (
+          <p className="c7ncd-deploy-detail-text">{text}</p>
         ))
       ) : (
         <FormattedMessage id="ist.deploy.none" />
@@ -656,24 +650,24 @@ class ExpandRow extends Component {
         <Fragment key={name}>
           <div className="c7ncd-deploy-container-title">
             <span className="c7ncd-deploy-container-name">{name}</span>
-            {this.containerLabel}
+            <ContainerLabel />
           </div>
           <div className="c7ncd-deploy-security-block">
-            {_securityItem('imagePullPolicy', imagePullPolicy, '_flex')}
-            {_securityItem('privileged', privileged, '_flex')}
-            {_securityItem(
+            {securityItem('imagePullPolicy', imagePullPolicy, '_flex')}
+            {securityItem('privileged', privileged, '_flex')}
+            {securityItem(
               'allowPrivilegeEscalation',
               allowPrivilegeEscalation,
               '_flex',
             )}
           </div>
           <div className="c7ncd-deploy-security-block">
-            {_securityItem('runAsNonRoot', runAsNonRoot)}
-            {_securityItem('readOnlyRootFilesystem', readOnlyRootFilesystem)}
+            {securityItem('runAsNonRoot', runAsNonRoot)}
+            {securityItem('readOnlyRootFilesystem', readOnlyRootFilesystem)}
           </div>
           <div className="c7ncd-deploy-security-block">
-            {_securityItem('capabilities.add', addArr)}
-            {_securityItem('capabilities.drop', dropArr)}
+            {securityItem('capabilities.add', addArr)}
+            {securityItem('capabilities.drop', dropArr)}
           </div>
         </Fragment>
       );
@@ -682,8 +676,8 @@ class ExpandRow extends Component {
     const securityContent = (
       <div className="c7ncd-deploy-security-wrap">
         <div className="c7ncd-deploy-security-block">
-          {_securityItem('hostIPC', hostIPC)}
-          {_securityItem('hostNetwork', hostNetwork)}
+          {securityItem('hostIPC', hostIPC)}
+          {securityItem('hostNetwork', hostNetwork)}
         </div>
         {securityCtx}
       </div>
@@ -699,10 +693,7 @@ class ExpandRow extends Component {
   }
 
   render() {
-    const {
-      url,
-      intl: { formatMessage },
-    } = this.props;
+    const { intl: { formatMessage } } = this.props;
 
     const { visible, sideName, activeKey, isExpand } = this.state;
 
@@ -738,8 +729,7 @@ class ExpandRow extends Component {
       volume: () => this.renderVolume(containers, volumes, getLoading),
       health: () => this.renderHealth(containers, getLoading),
       variables: () => this.renderVar(containers, getLoading),
-      security: () =>
-        this.renderSecurity(containers, hostIPC, hostNetwork, getLoading),
+      security: () => this.renderSecurity(containers, hostIPC, hostNetwork, getLoading),
       label: () => this.renderLabel(labels, annotations, getLoading),
     };
 
@@ -808,7 +798,7 @@ class ExpandRow extends Component {
 /**
  * 内容为空时返回 n/a
  */
-function _textOrNA(text) {
+function textOrNA(text) {
   if (!text && !_.isBoolean(text)) {
     return 'n/a';
   }
@@ -820,7 +810,7 @@ function _textOrNA(text) {
  * @param {string} name
  * @param {obj} data
  */
-function _returnHealthDom(name, data) {
+function returnHealthDom(name, data) {
   const items = [
     'failureThreshold',
     'initialDelaySeconds',
@@ -840,7 +830,7 @@ function _returnHealthDom(name, data) {
             <p className="c7ncd-deploy-detail-label">
               <FormattedMessage id={`ist.deploy.health.${item}`} />
             </p>
-            <p className="c7ncd-deploy-detail-text">{_textOrNA(data[item])}</p>
+            <p className="c7ncd-deploy-detail-text">{textOrNA(data[item])}</p>
           </div>
         ))}
       </div>
@@ -849,16 +839,15 @@ function _returnHealthDom(name, data) {
 }
 
 /**
- * 返回数据卷的项目DOM
- * @param {string} name
- * @param {string} data
- * @param {bool} isBool 该项是不是Bool类型
+ * 返回数据卷的项目 DOM
+ * @param name
+ * @param data
+ * @param isBool
+ * @returns {*}
  */
-function _volumesItem(name, data, isBool = false) {
-  let value = data;
-  if (isBool) {
-    value = _.isBoolean(data) ? data.toString() : data;
-  }
+function volumesItem(name, data, isBool = false) {
+  const value = isBool && _.isBoolean(data) ? data.toString() : data;
+
   return (
     <div className="c7ncd-deploy-volume-item">
       <p className="c7ncd-deploy-detail-label">
@@ -869,19 +858,17 @@ function _volumesItem(name, data, isBool = false) {
   );
 }
 
-function _volumesTemplate(data) {
+function volumesTemplate(data) {
   let template = null;
   const VOL_TYPE = ['configMap', 'persistentVolumeClaim', 'secret', 'hostPath'];
-
-  const { name } = data;
   const vKey = Object.keys(data);
+  const { name } = data;
 
   let type = _.toString(_.filter(VOL_TYPE, item => vKey.includes(item)));
-
   switch (type) {
     case 'configMap':
-    case 'secret':
-      const { defaultMode, items, optional, name, secretName } = data[type];
+    case 'secret': {
+      const { defaultMode, items, optional } = data[type];
       let itemDom = null;
       if (items && items.length) {
         const columns = [
@@ -911,8 +898,8 @@ function _volumesTemplate(data) {
       }
       template = (
         <div className="c7ncd-deploy-volume-main">
-          {_volumesItem('defaultMode', defaultMode)}
-          {_volumesItem('optional', optional, true)}
+          {volumesItem('defaultMode', defaultMode)}
+          {volumesItem('optional', optional, true)}
           <div className={`c7ncd-deploy-volume-item${items ? '_full' : ''}`}>
             <p className="c7ncd-deploy-detail-label">
               <FormattedMessage id="ist.deploy.volume.item" />
@@ -922,24 +909,27 @@ function _volumesTemplate(data) {
         </div>
       );
       break;
-    case 'persistentVolumeClaim':
+    }
+    case 'persistentVolumeClaim': {
       const { claimName, readOnly } = data[type];
       template = (
         <div className="c7ncd-deploy-volume-main">
-          {_volumesItem('claimName', claimName)}
-          {_volumesItem('readOnly', readOnly, true)}
+          {volumesItem('claimName', claimName)}
+          {volumesItem('readOnly', readOnly, true)}
         </div>
       );
       break;
-    case 'hostPath':
-      const { path, type: hostType } = data[type];
+    }
+    case 'hostPath': {
+      const { path } = data[type];
       template = (
         <div className="c7ncd-deploy-volume-main">
-          {_volumesItem('path', path)}
-          {_volumesItem('type', type)}
+          {volumesItem('path', path)}
+          {volumesItem('type', type)}
         </div>
       );
       break;
+    }
 
     default:
       type = '未知';
@@ -948,21 +938,20 @@ function _volumesTemplate(data) {
   return (
     <Fragment>
       <div className="c7ncd-deploy-volume-main">
-        {_volumesItem('name', name)}
-        {_volumesItem('volume.type', type)}
+        {volumesItem('name', name)}
+        {volumesItem('volume.type', type)}
       </div>
       {template}
     </Fragment>
   );
 }
 
-function _securityItem(name, data, type = '') {
-  let content =
-    _.isArray(data) || _.isObject(data) ? (
-      data
-    ) : (
-      <p className="c7ncd-deploy-detail-text">{_textOrNA(data)}</p>
-    );
+function securityItem(name, data, type = '') {
+  const content = _.isArray(data) || _.isObject(data) ? (
+    data
+  ) : (
+    <p className="c7ncd-deploy-detail-text">{textOrNA(data)}</p>
+  );
   return (
     <div className={`c7ncd-deploy-security-item${type}`}>
       <p className="c7ncd-deploy-detail-label">
@@ -972,5 +961,3 @@ function _securityItem(name, data, type = '') {
     </div>
   );
 }
-
-export default withRouter(injectIntl(ExpandRow));

@@ -9,7 +9,10 @@ import { useMainStore } from '../stores';
 import './index.less';
 
 const TreeMenu = observer(() => {
-  const { treeDs } = useSidebarStore();
+  const {
+    treeDs,
+    sidebarStore,
+  } = useSidebarStore();
   const { mainStore } = useMainStore();
 
   const bounds = useMemo(() => mainStore.getNavBounds, [mainStore.getNavBounds]);
@@ -18,7 +21,8 @@ const TreeMenu = observer(() => {
   return <nav style={bounds} className="c7n-deployment-sidebar">
     <SidebarHeading />
     <TreeView
-      dataSource={treeDs}
+      ds={treeDs}
+      store={sidebarStore}
       nodesRender={nodeRenderer}
     />
   </nav>;

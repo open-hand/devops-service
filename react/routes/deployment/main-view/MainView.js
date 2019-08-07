@@ -59,7 +59,6 @@ const MainView = observer(() => {
     handleStartDrag,
     handleDrag,
   } = useResize(rootRef, mainStore);
-
   const dragPrefixCls = `${prefixCls}-draggers`;
 
   const draggableClass = useMemo(() => classnames({
@@ -80,8 +79,8 @@ const MainView = observer(() => {
           position={resizeNav}
           bounds={{
             left: X_AXIS_WIDTH,
-            top: 0,
             right: dragRight,
+            top: 0,
             bottom: 0,
           }}
           onStart={handleStartDrag}
@@ -90,7 +89,7 @@ const MainView = observer(() => {
         >
           <div className={draggableClass} />
         </Draggable>
-        {isDragging ? <div className={`${dragPrefixCls}-blocker`} /> : null}
+        {isDragging && <div className={`${dragPrefixCls}-blocker`} />}
       </Fragment>
     )}
     <Fragment>

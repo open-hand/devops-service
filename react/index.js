@@ -12,9 +12,9 @@ const CertificateManage = asyncRouter(() => import('./routes/certificate'),);
 const EnvPipelineIndex = asyncRouter(() => import('./routes/env-pipeline'));
 const CiPipelineManageIndex = asyncRouter(() => import('./routes/ciPipelineManage'),);
 const AppVersion = asyncRouter(() => import('./routes/appVersion'));
-const App = asyncRouter(() => import('./routes/app'));
+const App = asyncRouter(() => import('./routes/app-service'));
 const AppStore = asyncRouter(() => import('./routes/app-store'));
-const InstancesIndex = asyncRouter(() => import('./routes/instances'));
+const InstancesIndex = asyncRouter(() => import('./routes/deployment/main-view/contents/instance/details'));
 const DeploymentApp = asyncRouter(() => import('./routes/deploymentApp'));
 const NetworkConfig = asyncRouter(() => import('./routes/network'));
 const Domain = asyncRouter(() => import('./routes/domain'));
@@ -39,6 +39,7 @@ const CodeQuality = asyncRouter(() => import('./routes/codeQuality'));
 const Notifications = asyncRouter(() => import('./routes/notifications'));
 const Resource = asyncRouter(() => import('./routes/resource'));
 const Deployment = asyncRouter(() => import('./routes/deployment'));
+const CodeManager = asyncRouter(() => import('./routes/code-manager'));
 
 function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
   const IntlProviderAsync = asyncLocaleProvider(language, () => import(`./locale/${language}`),);
@@ -53,7 +54,7 @@ function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
           <Route path={`${match.url}/ci-pipeline`} component={CiPipelineManageIndex} />
           <Route path={`${match.url}/template`} component={Template} />
           <Route path={`${match.url}/cluster`} component={Cluster} />
-          <Route path={`${match.url}/app-version`} component={AppVersion} />
+          <Route path={`${match.url}/app-version`} component={Deployment} />
           <Route path={`${match.url}/app`} component={App} />
           <Route path={`${match.url}/app-market`} component={AppStore} />
           <Route path={`${match.url}/instance`} component={InstancesIndex} />
@@ -76,7 +77,8 @@ function DEVOPSIndex({ match, AppState: { currentLanguage: language } }) {
           <Route path={`${match.url}/pipeline`} component={PipelineIndex} />
           <Route path={`${match.url}/pipeline-record`} component={PipelineRecord} />
           <Route path={`${match.url}/deployment-config`} component={DeploymentConfig} />
-          <Route path={`${match.url}/code-quality`} component={CodeQuality} />
+          <Route path={`${match.url}/code-quality`} component={CodeManager} />
+          {/* <Route path={`${match.url}/code-quality`} component={CodeQuality} /> */}
           <Route path={`${match.url}/notifications`} component={Notifications} />
           <Route path={`${match.url}/custom-resource`} component={Resource} />
           <Route path={`${match.url}/deployment`} component={Deployment} />

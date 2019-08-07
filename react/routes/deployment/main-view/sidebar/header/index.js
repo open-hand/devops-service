@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { Select } from 'choerodon-ui/pro';
 import { useDeploymentStore } from '../../../stores';
+import { useSidebarStore } from '../stores';
 
 import './index.less';
 
@@ -13,17 +14,21 @@ const SidebarHeader = () => {
       RES_VIEW_TYPE,
     },
     intlPrefix,
+    prefixCls,
     intl: { formatMessage },
     deploymentStore,
   } = useDeploymentStore();
+  const { sidebarStore } = useSidebarStore();
 
   const handleChoose = useCallback((choose) => {
     deploymentStore.changeViewType(choose);
-  }, [deploymentStore]);
+    sidebarStore.setExpandedKeys([]);
+    sidebarStore.setSearchValue('');
+  }, [deploymentStore, sidebarStore]);
 
-  return <div className="c7n-deployment-sidebar-head">
+  return <div className={`${prefixCls}-sidebar-head`}>
     <Select
-      className="c7n-deployment-sidebar-drop"
+      className={`${prefixCls}-sidebar-drop`}
       dropdownMatchSelectWidth
       onChange={handleChoose}
       value={deploymentStore.getViewType}

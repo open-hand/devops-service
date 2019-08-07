@@ -1,5 +1,9 @@
 import React from 'react';
+import { StoreProvider } from './stores';
+import Details from './Details';
 
-export default function DetailsPage() {
-  return (<div>details</div>);
-}
+export default props => (
+  <StoreProvider {...props}>
+    <Details />
+  </StoreProvider>
+);

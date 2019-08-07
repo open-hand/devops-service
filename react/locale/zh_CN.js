@@ -40,6 +40,12 @@ const commonField = {
   address: '地址',
   path: '路径',
   captcha: '验证码',
+  loginName: '登录名',
+  userName: '用户名',
+  mailbox: '邮箱',
+  password: '密码',
+  projectRole: '项目角色',
+  addTime: '添加时间',
 
   // 状态描述
   null: '无',
@@ -111,8 +117,12 @@ const commonField = {
   detailMore: '更多详情',
   expandAll: '全部展开',
   collapseAll: '全部折叠',
+  checkCodeExist: '编码已存在',
+  checkCodeReg: '编码只能由小写字母、数字、"-"组成，且以小写字母开头，不能以"-"结尾',
+  checkCodeFailed: '编码校验失败，请稍后再试',
   checkNameExist: '名称已存在',
   checkNameFailed: '名称重名校验失败，请稍后再试',
+  nameCanNotHasSpaces: '名称不能包含空格',
   checkNameFail: '网络错误，请稍后重试',
   formatError: '格式有误',
   checkEmailError: '请输入有效的邮箱地址',
@@ -132,6 +142,7 @@ const commonField = {
   cover: '覆盖',
   notCovered: '不覆盖',
   container: '容器',
+  'search.placeholder': '请输入搜索条件',
 };
 
 const deployment = {
@@ -215,6 +226,37 @@ const deployment = {
   'c7ncd.deployment.modal.link-service': '关联服务',
   'c7ncd.deployment.modal.env-detail': '环境详情',
   'c7ncd.deployment.modal.permission': '权限管理',
+};
+
+const appService = {
+  'c7ncd.appService.name': '服务名称',
+  'c7ncd.appService.code': '服务编码',
+  'c7ncd.appService.type': '服务类型',
+  'c7ncd.appService.type.normal': '普通服务',
+  'c7ncd.appService.type.test': '测试服务',
+  'c7ncd.appService.icon': '服务图标',
+  'c7ncd.appService.create': '创建服务',
+  'c7ncd.appService.edit': '修改服务',
+  'c7ncd.appService.detail': '服务详情',
+  'c7ncd.appService.disable': '停用服务',
+  'c7ncd.appService.enable': '启用服务',
+  'c7ncd.appService.version': '服务版本',
+  'c7ncd.appService.permission': '权限分配',
+  'c7ncd.appService.share': '共享设置',
+  'c7ncd.appService.permission.manage': '权限管理',
+  'c7ncd.appService.share.rule.add': '添加共享规则',
+  'c7ncd.appService.create.settings': '高级设置',
+  'c7ncd.appService.create.settings.tips': '操作高级设置存在一定风险，若无实质需求，请使用默认仓库！',
+  'c7ncd.appService.docker': 'Docker仓库配置',
+  'c7ncd.appService.docker.default': '默认Docker仓库',
+  'c7ncd.appService.docker.custom': '自定义Docker仓库',
+  'c7ncd.appService.helm': 'Helm仓库配置',
+  'c7ncd.appService.helm.default': '默认Helm仓库',
+  'c7ncd.appService.helm.custom': '自定义Helm仓库',
+  'c7ncd.appService.test': '测试连接',
+  'c7ncd.appService.version.specific': '特定版本',
+  'c7ncd.appService.version.type': '特定类型',
+  'c7ncd.appService.share.range': '共享范围',
 };
 
 // 文档地址前缀
@@ -2020,6 +2062,7 @@ const zhCN = {
 
   ...commonField,
   ...deployment,
+  ...appService,
   ...pageDetail,
 };
 

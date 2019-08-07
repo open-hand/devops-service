@@ -6,6 +6,7 @@ import { DataSet } from 'choerodon-ui/pro';
 import InstanceTreeDataSet from './InstanceTreeDataSet';
 import ResourceTreeDataSet from './ResourceTreeDataSet';
 import { useDeploymentStore } from '../../../stores';
+import useStore from './useStore';
 
 const Store = createContext();
 
@@ -24,6 +25,7 @@ export const StoreProvider = injectIntl(inject('AppState')(
           RES_VIEW_TYPE,
         },
       } = useDeploymentStore();
+      const sidebarStore = useStore();
       const viewType = deploymentStore.getViewType;
 
       const treeDs = useMemo(() => {
@@ -32,12 +34,13 @@ export const StoreProvider = injectIntl(inject('AppState')(
           [RES_VIEW_TYPE]: ResourceTreeDataSet,
         };
         const TreeDataSet = treeMapping[viewType];
-        return new DataSet(TreeDataSet(id, deploymentStore));
-      }, [IST_VIEW_TYPE, RES_VIEW_TYPE, deploymentStore, id, viewType]);
+        return new DataSet(TreeDataSet(id, deploymentStore, sidebarStore));
+      }, [IST_VIEW_TYPE, RES_VIEW_TYPE, deploymentStore, id, sidebarStore, viewType]);
 
       const value = {
         ...props,
         treeDs,
+        sidebarStore,
       };
       return (
         <Store.Provider value={value}>

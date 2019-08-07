@@ -1,8 +1,8 @@
-import { observable, action, computed } from "mobx";
-import { axios, store } from "@choerodon/boot";
-import { handleProptError } from "../../../utils";
+import { observable, action, computed } from 'mobx';
+import { axios, store } from '@choerodon/boot';
+import { handleProptError } from '../../../utils';
 
-@store("CodeQualityStore")
+@store('CodeQualityStore')
 class CodeQualityStore {
   @observable data = null;
 
@@ -26,14 +26,13 @@ class CodeQualityStore {
     return this.loading;
   }
 
-
   /**
    ** 查询代码质量数据
    */
   loadData = (projectId, appId) => {
     this.changeLoading(true);
-    return axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/sonarqube`)
-      .then(data => {
+    return axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/sonarqube`)
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.setData(res);

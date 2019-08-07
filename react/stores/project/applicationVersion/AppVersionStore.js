@@ -2,7 +2,7 @@ import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/boot';
 import _ from 'lodash';
 import { handleProptError } from '../../../utils';
-import DeploymentPipelineStore from "../deploymentPipeline";
+import DeploymentPipelineStore from '../deploymentPipeline';
 
 const ORDER = {
   ascend: 'asc',
@@ -70,11 +70,12 @@ class AppVersionStore {
    * @param projectId
    * @returns {Promise<T | never>}
    */
-  queryAppData = projectId => {
+  queryAppData = (projectId) => {
     if (Number(this.preProId) !== Number(projectId)) {
       DeploymentPipelineStore.setProRole('app', '');
     }
     this.setPreProId(projectId);
+    
     return axios.get(`/devops/v1/projects/${projectId}/apps`)
       .then((data) => {
         const result = handleProptError(data);
@@ -90,11 +91,11 @@ class AppVersionStore {
       .catch(err => Choerodon.prompt(err));
   };
 
-  loadData = (proId, app, page = this.pageInfo.current, pageSize = this.pageInfo.pageSize, sort = { field: "id", order: "descend" },
-              filter = {
-                searchParam: {},
-                param: "",
-              }) => {
+  loadData = (proId, app, page = this.pageInfo.current, pageSize = this.pageInfo.pageSize, sort = { field: 'id', order: 'descend' },
+    filter = {
+      searchParam: {},
+      param: '',
+    }) => {
     this.changeLoading(true);
     const url = app
       ? `/devops/v1/projects/${proId}/app_versions/list_by_options?appId=${app}&page=${page}&size=${pageSize}&sort=${sort.field || 'id'},${ORDER[sort.order]}`
@@ -123,8 +124,7 @@ class AppVersionStore {
       });
   };
 
-  loadVerByPipId = (projectId, id, branch) =>
-    axios.get(`devops/v1/projects/${projectId}/app_versions/query_by_pipeline?pipelineId=${id}&branch=${branch}`);
+  loadVerByPipId = (projectId, id, branch) => axios.get(`devops/v1/projects/${projectId}/app_versions/query_by_pipeline?pipelineId=${id}&branch=${branch}`);
 }
 
 const appVersionStore = new AppVersionStore();

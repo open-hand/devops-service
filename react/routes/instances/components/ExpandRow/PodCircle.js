@@ -1,10 +1,10 @@
-import React, { PureComponent, Fragment } from "react";
-import { FormattedMessage, injectIntl } from "react-intl";
-import { withRouter, Link } from "react-router-dom";
-import { stores } from "@choerodon/boot";
-import _ from "lodash";
-import { Tooltip, Button } from "choerodon-ui";
-import "./PodCircle.scss";
+import React, { PureComponent, Fragment } from 'react';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { withRouter, Link } from 'react-router-dom';
+import { stores } from '@choerodon/boot';
+import _ from 'lodash';
+import { Tooltip, Button } from 'choerodon-ui';
+import './PodCircle.scss';
 
 const { AppState } = stores;
 
@@ -25,10 +25,10 @@ export default class PodCircle extends PureComponent {
    *
    * @memberof PodCircle
    */
-  operatePodCount = _.debounce(count => {
+  operatePodCount = _.debounce((count) => {
     const { id: projectId } = AppState.currentMenuType;
     const { currentPage, store, envId, name } = this.props;
-    const page = currentPage === "env-overview" ? "overview" : "instance";
+    const page = currentPage === 'env-overview' ? 'overview' : 'instance';
     store.operatePodCount(page, projectId, envId, name, count);
   }, 600);
 
@@ -55,10 +55,8 @@ export default class PodCircle extends PureComponent {
     const currentPodTargetCount = targetCount[`${name}-${podType}`] || sum;
     let { btnDisable } = this.state;
 
-    if (targetCount <= 1) {
-      return;
-    } else {
-      let count = currentPodTargetCount - 1;
+    if (targetCount > 1) {
+      const count = currentPodTargetCount - 1;
       // 最小pod数为1
       if (count <= 1) {
         btnDisable = true;
@@ -83,7 +81,7 @@ export default class PodCircle extends PureComponent {
     const currentPodTargetCount = targetCount[`${name}-${podType}`] || sum;
     let { btnDisable } = this.state;
 
-    let count = currentPodTargetCount + 1;
+    const count = currentPodTargetCount + 1;
 
     this.changeTextDisplay();
 
@@ -114,7 +112,7 @@ export default class PodCircle extends PureComponent {
           cy="35"
           r="30"
           strokeWidth={sum === 0 || sum > correctCount ? 5 : 0}
-          stroke={sum > 0 ? "#ffb100" : "#f3f3f3"}
+          stroke={sum > 0 ? '#ffb100' : '#f3f3f3'}
           className="c7n-pod-circle-error"
         />
         <circle
@@ -128,7 +126,7 @@ export default class PodCircle extends PureComponent {
           {sum}
         </text>
         <text x="50%" y="50" className="c7n-pod-circle-text">
-          {sum > 1 ? "pods" : "pod"}
+          {sum > 1 ? 'pods' : 'pod'}
         </text>
       </svg>
     );
@@ -159,16 +157,14 @@ export default class PodCircle extends PureComponent {
 
     // 实际pod数和目标数不同
     // 修改过pod数
-    const show =
-      textDisplay &&
-      sum !== currentPodTargetCount &&
-      connect &&
-      status === "running";
-    const descIsEnable =
-      btnDisable ||
-      !connect ||
-      currentPodTargetCount <= 1 ||
-      status !== "running";
+    const show = textDisplay
+      && sum !== currentPodTargetCount
+      && connect
+      && status === 'running';
+    const descIsEnable = btnDisable
+      || !connect
+      || currentPodTargetCount <= 1
+      || status !== 'running';
 
     const backPath = `/devops/${currentPage}?type=${type}&id=${projectId}&name=${encodeURIComponent(
       projectName
@@ -179,10 +175,10 @@ export default class PodCircle extends PureComponent {
       <Fragment>
         <div className="c7ncd-pod-wrap">
           <div className="c7ncd-pod-content">
-            {status === "running" ? (
+            {status === 'running' ? (
               <Link
                 to={{
-                  pathname: "/devops/container",
+                  pathname: '/devops/container',
                   search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(
                     projectName
                   )}&organizationId=${organizationId}`,
@@ -198,10 +194,10 @@ export default class PodCircle extends PureComponent {
               this.renderCircle
             )}
           </div>
-          {podType === "deploymentDTOS" && (
+          {podType === 'deploymentDTOS' && (
             <div className="c7ncd-pod-content c7ncd-pod-btn-wrap">
               <Button
-                disabled={!(connect && status === "running")}
+                disabled={!(connect && status === 'running')}
                 className="c7ncd-pod-btn"
                 size="small"
                 icon="expand_less"

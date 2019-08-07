@@ -1,12 +1,14 @@
-import React, { Fragment, useMemo } from 'react';
+import React, { Fragment, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { Action } from '@choerodon/boot';
 import { observer } from 'mobx-react-lite';
 import { Icon } from 'choerodon-ui/pro';
 import toUpper from 'lodash/toUpper';
 import StatusDot from '../../components/status-dot';
 import PodCircle from '../../components/pod-circle';
-import { useMainStore } from '../../stores';
 import { useDeploymentStore } from '../../../stores';
+import { useMainStore } from '../../stores';
+import { useSidebarStore } from '../stores';
 
 import './index.less';
 
@@ -25,6 +27,7 @@ const TreeItem = observer(({ record, search }) => {
       CIPHER_ITEM,
       CUSTOM_ITEM,
     },
+    intl: { formatMessage },
   } = useDeploymentStore();
   const {
     podColor: {
@@ -32,6 +35,7 @@ const TreeItem = observer(({ record, search }) => {
       PADDING_COLOR,
     },
   } = useMainStore();
+  const { treeDs } = useSidebarStore();
 
   const type = record.get('itemType');
   const name = record.get('name');
@@ -117,11 +121,28 @@ const TreeItem = observer(({ record, search }) => {
     </Fragment> : name;
   }, [name, prefixCls, search]);
 
+  const instanceFunc = useCallback((id) => {
+    treeDs.query();
+  }, [treeDs]);
+
+  const suffix = useMemo(() => {
+    const istId = record.get('id');
+    const actionData = [
+      {
+        service: [],
+        text: formatMessage({ id: 'delete' }),
+        action: () => instanceFunc(istId),
+      },
+    ];
+    return <Action placement="bottomRight" data={actionData} />;
+  }, [formatMessage, instanceFunc, record]);
+
   return <Fragment>
     {prefixIcon}
     <span className={`${prefixCls}-tree-text`}>
       {text}
     </span>
+    {type === IST_ITEM && suffix}
   </Fragment>;
 });
 
