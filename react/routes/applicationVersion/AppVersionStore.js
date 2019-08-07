@@ -1,7 +1,7 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/boot';
 import _ from 'lodash';
-import { handleProptError } from '../../../utils';
+import { handleProptError } from '../../utils';
 import DeploymentPipelineStore from '../deploymentPipeline';
 
 const ORDER = {
@@ -104,9 +104,9 @@ class AppVersionStore {
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
-          const { pageNum, pageSize, total, list } = res;
+          const { pageNum, pageSizes, total, list } = res;
           this.setAllData(list);
-          this.setPageInfo({ current: pageNum, pageSize, total });
+          this.setPageInfo({ current: pageNum, pageSizes, total });
         }
         this.changeLoading(false);
       });

@@ -53,7 +53,7 @@ class AppTagStore {
   queryTagData = (projectId, page = 1, sizes = 10, postData = { searchParam: {}, param: '' }) => {
     this.setLoading(true);
     if (DevPipelineStore.selectedApp) {
-      axios.post(`/devops/v1/projects/${projectId}/apps/${DevPipelineStore.selectedApp}/git/tags_list_options?page=${page}&size=${sizes}`, JSON.stringify(postData))
+      axios.post(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/page_tags_by_options?page=${page}&size=${sizes}`, JSON.stringify(postData))
         .then((data) => {
           this.setLoading(false);
           const result = handleProptError(data);

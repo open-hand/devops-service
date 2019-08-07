@@ -18,4 +18,3 @@ const codeQualityIndex = ({ match }) => (
 );
 
 export default codeQualityIndex;
-

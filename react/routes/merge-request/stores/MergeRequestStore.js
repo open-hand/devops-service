@@ -126,7 +126,7 @@ class MergeRequestStore {
     this.setLoading(true);
     const userId = this.getUserId;
     if (key === 'all') {
-      axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/git/merge_request/list?page=${page}&size=${size}`)
+      axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request?page=${page}&size=${size}`)
         .then((res) => {
           const response = handleProptError(res);
           if (response) {
@@ -154,7 +154,7 @@ class MergeRequestStore {
         });
     } else {
       // 针对opened和assignee的数据不分页处理，原因是前端从opened中分离assignee数据，会导致分页数据都显示opened的
-      axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/git/merge_request/list?state=${key}&page=${page}&size=${key === 'opened' ? 30 : size}`)
+      axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/list_merge_request?state=${key}&page=${page}&size=${key === 'opened' ? 30 : size}`)
         .then((res) => {
           const response = handleProptError(res);
           if (response) {
@@ -198,7 +198,7 @@ class MergeRequestStore {
   });
 
   loadUrl(projectId, appId) {
-    return axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/git/url`)
+    return axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/url`)
       .then((data) => {
         if (data && data.failed) {
           Choerodon.prompt(data.message);

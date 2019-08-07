@@ -3,6 +3,17 @@
   margin-bottom: 16px;
 }
 
+.c7n-merge-tabs {
+  height: 100%;
+  .c7n-tabs-bar {
+    position: unset;
+    margin-left: 0;
+  }
+}
+
+.c7n-merge-content {
+  padding-left: 0;
+}
 .c7n-merge-branches {
   display: flex;
 
