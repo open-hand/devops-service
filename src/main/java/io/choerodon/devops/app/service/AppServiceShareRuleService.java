@@ -15,7 +15,7 @@ public interface AppServiceShareRuleService {
 
     AppServiceShareRuleVO createOrUpdate(Long projectId, AppServiceShareRuleVO appServiceShareRuleVO);
 
-    PageInfo<AppServiceShareRuleVO> pageByOptions(Long projectId, PageRequest pageRequest, String params);
+    PageInfo<AppServiceShareRuleVO> pageByOptions(Long appServiceId, PageRequest pageRequest, String params);
 
     AppServiceShareRuleVO query(Long projectId, Long ruleId);
 

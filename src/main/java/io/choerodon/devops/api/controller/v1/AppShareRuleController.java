@@ -63,13 +63,13 @@ public class AppShareRuleController {
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "服务共享规则")
-    @PostMapping(value = "page_by_options")
+    @PostMapping(value = "/page_by_options")
     @CustomPageRequest
     public ResponseEntity<PageInfo<AppServiceShareRuleVO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam
-            @PathVariable(value = "app_service_id") Long appServiceId,
+            @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "过滤参数")
@@ -87,7 +87,7 @@ public class AppShareRuleController {
      * @param ruleId
      * @return
      */
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "服务共享规则")
     @GetMapping(value = "/{rule_id}")
     public ResponseEntity<AppServiceShareRuleVO> query(
