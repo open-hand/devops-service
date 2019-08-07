@@ -92,13 +92,13 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     }
 
     @Override
-    public PageInfo<AppServiceShareRuleVO> pageByOptions(Long projectId, PageRequest pageRequest, String params) {
+    public PageInfo<AppServiceShareRuleVO> pageByOptions(Long appServiceId, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         PageInfo<AppServiceShareRuleDTO> devopsProjectConfigDTOPageInfo = PageHelper.startPage(
                 pageRequest.getPage(),
                 pageRequest.getSize(),
                 PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
-                () -> appServiceShareRuleMapper.listByOptions(projectId,
+                () -> appServiceShareRuleMapper.listByOptions(appServiceId,
                         (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
                         (String) mapParams.get(TypeUtil.PARAM)));
         PageInfo<AppServiceShareRuleVO> shareRuleVOPageInfo = ConvertUtils.convertPage(devopsProjectConfigDTOPageInfo, AppServiceShareRuleVO.class);

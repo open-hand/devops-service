@@ -113,9 +113,9 @@ public class DevopsGitlabPipelineController {
             @ApiParam(value = "app_service_id")
             @RequestParam(value = "app_service_id",required = false) Long appServiceId,
             @ApiParam(value = "start_time")
-            @RequestParam(value = "start_time") Date startTime,
+            @RequestParam(required = false, value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
-            @RequestParam(value = "end_time") Date endTime) {
+            @RequestParam(required = false, value = "end_time") Date endTime) {
         return Optional.ofNullable(devopsGitlabPipelineService.pageByOptions(appServiceId, branch, pageRequest, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
