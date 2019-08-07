@@ -1,7 +1,7 @@
 import { observable, action, computed } from 'mobx';
 import { axios } from '@choerodon/boot';
 import { handlePromptError } from '../../../../../../../utils';
-import mock from './mock';
+import { resourceData, deploymentsData } from './mock';
 
 export default class InstanceDetails {
   @observable resources = {};
@@ -71,6 +71,8 @@ export default class InstanceDetails {
    */
   async loadDeploymentsJson(type, project, instance, name) {
     this.setModalLoading(true);
+    this.setDeployments(deploymentsData);
+
     const URL_TYPE = {
       deploymentDTOS: `deployment_detail_json?deployment_name=${name}`,
       statefulSetDTOS: `stateful_set_detail_json?stateful_set_name=${name}`,
@@ -103,15 +105,14 @@ export default class InstanceDetails {
 
   async loadResource(projectId, instanceId) {
     this.setLoading(true);
+    this.setResources(resourceData);
 
     try {
       const data = await axios
-      // .get(`/devops/v1/projects/${projectId}/app_service_instances/${instanceId}/resources`)
         .get(`/devops/v1/projects/${projectId}/app_service_instances/${instanceId}/resources`);
       const res = handlePromptError(data);
       if (res) {
         // this.setResources(data);
-        this.setResources(mock);
       }
       this.setLoading(false);
     } catch (e) {

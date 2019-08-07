@@ -12,11 +12,9 @@ const { Sidebar } = Modal;
 const { Panel } = Collapse;
 
 const PANEL_TYPE = [
-  'ports',
   'volume',
   'health',
   'security',
-  'label',
   'variables',
 ];
 
@@ -37,69 +35,11 @@ export default class DetailsSidebar extends Component {
     this.setState({ activeKey: key, isExpand });
   };
 
-  handleExpandAll() {
+  handleExpandAll = () => {
     this.setState(prev => ({
       isExpand: !prev.isExpand,
       activeKey: !prev.isExpand ? PANEL_TYPE : [],
     }));
-  }
-
-  renderPorts = (containers, isLoading) => {
-    let portsContent = null;
-    let hasPorts = false;
-
-    if (containers && containers.length) {
-      const colItems = ['name', 'containerPort', 'protocol', 'hostPort'];
-
-      const columns = _.map(colItems, item => ({
-        title: <FormattedMessage id={`ist.deploy.ports.${item}`} />,
-        key: item,
-        dataIndex: item,
-        render: textOrNA,
-      }));
-
-      portsContent = _.map(containers, (item) => {
-        const { name, ports } = item;
-        if (ports && ports.length) {
-          hasPorts = true;
-        }
-        return (
-          <Fragment key={name}>
-            <div className="c7ncd-deploy-container-title">
-              <span className="c7ncd-deploy-container-name">{name}</span>
-              <ContainerLabel />
-            </div>
-            <div className="c7ncd-deploy-container-table">
-              <SimpleTable columns={columns} data={ports && ports.slice()} />
-            </div>
-          </Fragment>
-        );
-      });
-    } else {
-      portsContent = (
-        <div className="c7ncd-deploy-detail-empty">
-          <FormattedMessage id="ist.deploy.ports.map" />
-          <FormattedMessage id="ist.deploy.ports.empty" />
-        </div>
-      );
-    }
-
-    if (!hasPorts) {
-      portsContent = (
-        <div className="c7ncd-deploy-detail-empty">
-          <FormattedMessage id="ist.deploy.ports.map" />
-          <FormattedMessage id="ist.deploy.ports.empty" />
-        </div>
-      );
-    }
-
-    return isLoading ? (
-      <div className="c7ncd-deploy-spin">
-        <Spin />
-      </div>
-    ) : (
-      portsContent
-    );
   };
 
   renderHealth = (containers, isLoading) => {
@@ -199,62 +139,6 @@ export default class DetailsSidebar extends Component {
       </div>
     ) : (
       envContent
-    );
-  };
-
-  renderLabel = (labels, annotations, isLoading) => {
-    /**
-     * 表格数据
-     * @param {object} obj
-     * @param {array} col
-     */
-    function format(obj, col) {
-      const arr = [];
-      // eslint-disable-next-line no-restricted-syntax
-      for (const key in obj) {
-        // eslint-disable-next-line no-prototype-builtins
-        if (obj.hasOwnProperty(key)) {
-          const value = obj[key];
-          arr.push({ key, value });
-        }
-      }
-      return (
-        <div className="c7ncd-deploy-container-table">
-          <SimpleTable columns={columns} data={arr} />
-        </div>
-      );
-    }
-
-    const columns = [
-      {
-        width: '50%',
-        title: <FormattedMessage id="ist.deploy.key" />,
-        key: 'key',
-        dataIndex: 'key',
-      },
-      {
-        width: '50%',
-        title: <FormattedMessage id="ist.deploy.value" />,
-        key: 'value',
-        dataIndex: 'value',
-      },
-    ];
-
-    const labelContent = format(labels, columns);
-
-    const annoContent = format(annotations, columns);
-
-    return isLoading ? (
-      <div className="c7ncd-deploy-spin">
-        <Spin />
-      </div>
-    ) : (
-      <Fragment>
-        <div className="c7ncd-deploy-label">Labels</div>
-        {labelContent}
-        <div className="c7ncd-deploy-label">Annotations</div>
-        {annoContent}
-      </Fragment>
     );
   };
 
@@ -425,12 +309,10 @@ export default class DetailsSidebar extends Component {
     }
 
     const renderFun = {
-      ports: () => this.renderPorts(containers, getModalLoading),
       volume: () => this.renderVolume(containers, volumes, getModalLoading),
       health: () => this.renderHealth(containers, getModalLoading),
       variables: () => this.renderVar(containers, getModalLoading),
       security: () => this.renderSecurity(containers, hostIPC, hostNetwork, getModalLoading),
-      label: () => this.renderLabel(labels, annotations, getModalLoading),
     };
 
     return (<Sidebar
