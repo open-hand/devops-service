@@ -226,6 +226,10 @@ const deployment = {
   'c7ncd.deployment.modal.link-service': '关联服务',
   'c7ncd.deployment.modal.env-detail': '环境详情',
   'c7ncd.deployment.modal.permission': '权限管理',
+  'c7ncd.deployment.modal.values': '修改Values',
+  'c7ncd.deployment.modal.modify': '变更实例',
+  'c7ncd.deployment.modal.redeploy': '重新部署',
+  'c7ncd.deployment.modal.detail': '实例详情',
 };
 
 const appService = {

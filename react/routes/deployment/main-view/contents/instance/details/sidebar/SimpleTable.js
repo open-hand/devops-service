@@ -37,6 +37,7 @@ class SimpleTable extends PureComponent {
     `;
 
     const BodyCell = styled.td`
+      white-space: normal !important;
       padding: 5px 2px !important;
       border-bottom: none !important;
       font-size: 13px;
