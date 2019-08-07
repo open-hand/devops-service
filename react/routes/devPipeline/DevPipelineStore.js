@@ -2,16 +2,17 @@ import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/boot';
 import _ from 'lodash';
 import moment from 'moment';
-import { handleProptError } from '../../../utils';
-import AppTagStore from '../../../routes/appTag/stores';
-import BranchStore from '../../../routes/branch/stores';
-import MergeRequestStore from '../../../routes/merge-request/stores';
-import CiPipelineStore from '../../../routes/ciPipelineManage/stores';
-import DevConsoleStore from '../../../routes/devConsole/stores';
-import ReportsStore from '../../../routes/reports/stores';
+import { handleProptError } from '../../utils';
+import AppTagStore from '../appTag/stores';
+import BranchStore from '../branch/stores';
+import MergeRequestStore from '../merge-request/stores';
+import CiPipelineStore from '../ciPipelineManage/stores';
+import DevConsoleStore from '../devConsole/stores';
+import ReportsStore from '../reports/stores';
 import DeploymentPipelineStore from '../deploymentPipeline';
 import AppVersionStore from '../applicationVersion';
-import CodeQualityStore from '../../../routes/codeQuality/stores';
+import CodeQualityStore from '../codeQuality/stores';
+
 
 const { AppState } = stores;
 const START = moment().subtract(6, 'days').format().split('T')[0].replace(/-/g, '/');

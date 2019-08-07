@@ -1,8 +1,15 @@
+@import '~choerodon-ui/lib/style/themes/default';
+
 .c7n-codeQuality-wrapper {
-  $A: #00bfa5;
-  $B: #4d90fe;
-  $C: #ffb100;
-  $D: #f44336;
+
+  @A: #00bfa5;
+  @B: #4d90fe;
+  @C: #ffb100;
+  @D: #f44336;
+
+  .@{c7n-prefix}-header-select-noborder::before {
+    border: none;
+  }
 
   .c7n-codeQuality-content {
 
@@ -132,7 +139,6 @@
   }
 
   a {
-
     &:focus,
     &:visited {
       text-decoration: none;

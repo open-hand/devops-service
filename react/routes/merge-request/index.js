@@ -10,7 +10,8 @@ import MouserOverWrapper from '../../components/MouseOverWrapper';
 import DevPipelineStore from '../../stores/project/devPipeline';
 import DepPipelineEmpty from '../../components/DepPipelineEmpty/DepPipelineEmpty';
 import Tips from '../../components/Tips';
-import MergeRequestStore from './stores'
+import MergeRequestStore from './stores';
+import handleMapStore from '../code-manager/main-view/store/handleMapStore';
 
 import './index.scss';
 import '../main.scss';
@@ -23,6 +24,10 @@ const TabPane = Tabs.TabPane;
 class MergeRequestHome extends Component {
   constructor(props) {
     super(props);
+    handleMapStore.setCodeManagerMergeRequest({
+      refresh: this.reload,
+      select: this.handleChange,
+    });
     this.state = {
       tabKey: 'opened',
     };
@@ -93,7 +98,7 @@ class MergeRequestHome extends Component {
     window.open(url);
   };
 
-  handleChange(id) {
+  handleChange= (id) => {
     this.setState({
       tabKey: 'opened',
     });
@@ -156,11 +161,11 @@ class MergeRequestHome extends Component {
       render: record => (
         <div>
           {record.author ? (<Tooltip
-            title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}>
+            title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}
+          >
             {record.author.avatarUrl
               ? <img className="c7n-merge-avatar" src={record.author.avatarUrl} alt="avatar" />
-              :
-              <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
+              : <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
           </Tooltip>) : <span className="apptag-commit apptag-commit-avatar">?</span>}
           <Tooltip
             title={record.createdAt}
@@ -245,11 +250,11 @@ class MergeRequestHome extends Component {
       render: record => (
         <div>
           {record.author ? (<Tooltip
-            title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}>
+            title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}
+          >
             {record.author.avatarUrl
               ? <img className="c7n-merge-avatar" src={record.author.avatarUrl} alt="avatar" />
-              :
-              <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
+              : <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
           </Tooltip>) : <span className="apptag-commit apptag-commit-avatar">?</span>}
           <Tooltip title={record.createdAt}>
             <TimeAgo
@@ -334,11 +339,11 @@ class MergeRequestHome extends Component {
       render: record => (
         <div>
           {record.author ? (<Tooltip
-            title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}>
+            title={record.author.username !== record.author.name ? `${record.author.username} ${record.author.name}` : record.author.name}
+          >
             {record.author.avatarUrl
               ? <img className="c7n-merge-avatar" src={record.author.avatarUrl} alt="avatar" />
-              :
-              <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
+              : <span className="apptag-commit apptag-commit-avatar">{record.author.name.toString().substr(0, 1)}</span>}
           </Tooltip>) : <span className="apptag-commit apptag-commit-avatar">?</span>}
           <Tooltip title={record.createdAt}>
             <TimeAgo
@@ -376,11 +381,13 @@ class MergeRequestHome extends Component {
         <div>
           {record.assignee ? (<div>
             <Tooltip
-              title={record.assignee.username !== record.assignee.name ? `${record.assignee.username} ${record.assignee.name}` : record.assignee.name}>
+              title={record.assignee.username !== record.assignee.name ? `${record.assignee.username} ${record.assignee.name}` : record.assignee.name}
+            >
               {record.assignee.avatarUrl
                 ? <img className="c7n-merge-avatar" src={record.assignee.avatarUrl} alt="avatar" />
                 : <span
-                  className="apptag-commit apptag-commit-avatar">{record.assignee.name.toString().substr(0, 1)}</span>}
+                  className="apptag-commit apptag-commit-avatar"
+                >{record.assignee.name.toString().substr(0, 1)}</span>}
             </Tooltip>
             {record.assignee.username !== record.assignee.name ? `${record.assignee.username} ${record.assignee.name}` : record.assignee.name}
           </div>) : <FormattedMessage id="merge.noAssignee" />}
@@ -420,7 +427,7 @@ class MergeRequestHome extends Component {
       >
         {hasAppData && appId
           ? <Fragment>
-            <Header
+            {/* <Header
               title={<FormattedMessage id="merge.head" />}
               backPath={backPath}
             >
@@ -433,7 +440,7 @@ class MergeRequestHome extends Component {
                 disabled={appData.length === 0}
                 filterOption={(input, option) => option.props.children.props.children.props.children
                   .toLowerCase().indexOf(input.toLowerCase()) >= 0}
-                onChange={this.handleChange.bind(this)}
+                onChange={this.handleChange}
               >
                 <OptGroup label={intl.formatMessage({ id: 'recent' })} key="recent">
                   {
@@ -474,9 +481,9 @@ class MergeRequestHome extends Component {
                 <i className="icon-refresh icon" />
                 <FormattedMessage id="refresh" />
               </Button>
-            </Header>
-            <Content code={appData.length ? 'merge.app' : 'merge'} values={{ name: titleName }}>
-              <Tabs activeKey={tabKey} onChange={this.tabChange} animated={false}>
+            </Header> */}
+            <Content values={{ name: titleName }} className="c7n-merge-content">
+              <Tabs activecKey={tabKey} onChange={this.tabChange} animated={false} className="c7n-merge-tabs">
                 <TabPane tab={`${intl.formatMessage({ id: 'merge.tab1' })}(${openCount || 0})`} key="opened">
                   <Table
                     filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
@@ -529,8 +536,8 @@ class MergeRequestHome extends Component {
                     filterBar={false}
                   />
                 </TabPane>
-                {getAssigneeCount !== 0 ?
-                  <TabPane tab={`${intl.formatMessage({ id: 'merge.tab5' })}(${getAssigneeCount || 0})`} key="assignee">
+                {getAssigneeCount !== 0
+                  ? <TabPane tab={`${intl.formatMessage({ id: 'merge.tab5' })}(${getAssigneeCount || 0})`} key="assignee">
                     <Table
                       filterBarPlaceholder={intl.formatMessage({ id: 'filter' })}
                       onChange={this.tableChange}
