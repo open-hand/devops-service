@@ -1,7 +1,7 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/boot';
 import _ from 'lodash';
-import { handleProptError } from '../../../utils';
+import { handleProptError } from '../../utils';
 import DeploymentPipelineStore from '../deploymentPipeline';
 
 const ORDER = {

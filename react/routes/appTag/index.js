@@ -11,9 +11,9 @@ import TimePopover from '../../components/timePopover';
 import AppTagCreate from './AppTagCreate';
 import AppTagEdit from './AppTagEdit';
 import DevPipelineStore from '../../stores/project/devPipeline';
-import DepPipelineEmpty from "../../components/DepPipelineEmpty/DepPipelineEmpty";
+import DepPipelineEmpty from '../../components/DepPipelineEmpty/DepPipelineEmpty';
 import AppTagStore from './stores';
-
+import handleMapStore from '../code-manager/main-view/store/handleMapStore';
 import '../main.scss';
 import './style/AppTag.scss';
 
@@ -25,6 +25,10 @@ const { Panel } = Collapse;
 class AppTag extends Component {
   constructor(props) {
     super(props);
+    handleMapStore.setCodeManagerAppTag({
+      refresh: this.handleRefresh,
+      select: this.handleSelect,
+    });
     this.state = {
       page: 1,
       pageSize: 10,
@@ -164,7 +168,7 @@ class AppTag extends Component {
     const currentAppName = appName || DevPipelineStore.getDefaultAppName;
     const { current, total, pageSize } = AppTagStore.pageInfo;
     const tagList = [];
-    const  backPath = state && state.backPath;
+    const backPath = state && state.backPath;
     _.forEach(tagData, (item) => {
       const {
         commit: {
@@ -270,7 +274,8 @@ class AppTag extends Component {
           'devops-service.devops-git.deleteTag',
         ]}
       >
-        {appData && appData.length && appId ? <Fragment><Header
+        {appData && appData.length && appId ? <Fragment>
+          {/* <Header
           title={<FormattedMessage id="apptag.head" />}
           backPath={backPath}
         >
@@ -337,64 +342,65 @@ class AppTag extends Component {
           >
             <FormattedMessage id="refresh" />
           </Button>
-        </Header>
-        <Content code={appData.length ? 'apptag.app' : 'apptag'} values={{ name: titleName }}>
-          <div className="c7n-tag-table"><FormattedMessage id="apptag.table" /></div>
-          {loading || _.isNull(loading) ? <LoadingBar display /> : <Fragment>
-            {tagList.length ? <Fragment>
-              <Collapse bordered={false}>{tagList}</Collapse>
-              <div className="c7n-tag-pagin">
-                <Pagination
-                  total={total}
-                  current={current}
-                  pageSize={pageSize}
-                  onChange={this.handlePaginChange}
-                  onShowSizeChange={this.handlePaginChange}
-                />
-              </div>
-            </Fragment> : (<div className="c7n-tag-empty">
-              <div>
-                <Icon type="info" className="c7n-tag-empty-icon" />
-                <span className="c7n-tag-empty-text">{formatMessage({ id: `apptag.${empty}.empty` })}</span>
-              </div>
-              {empty === 'tag' ? (
-                <Button
-                  type="primary"
-                  funcType="raised"
-                  onClick={() => this.displayCreateModal(true, empty)}
-                >
-                  <FormattedMessage id="apptag.create" />
-                </Button>
-              ) : null}
-            </div>)}
-          </Fragment>}
-        </Content>
-        <Modal
-          confirmLoading={deleteLoading}
-          visible={visible}
-          title={`${formatMessage({ id: 'apptag.action.delete' })}“${tag}”`}
-          closable={false}
-          footer={[
-            <Button key="back" onClick={this.closeRemove} disabled={deleteLoading}>{<FormattedMessage id="cancel" />}</Button>,
-            <Button key="submit" type="danger" onClick={this.deleteTag} loading={deleteLoading}>
-              {formatMessage({ id: 'delete' })}
-            </Button>,
-          ]}
-        ><div className="c7n-padding-top_8">{formatMessage({ id: 'apptag.delete.tooltip' })}</div></Modal>
-        {creationDisplay ? <AppTagCreate
-          app={titleName}
-          store={AppTagStore}
-          show={creationDisplay}
-          close={this.displayCreateModal}
-        /> : null}
-        {editDisplay ? <AppTagEdit
-          app={currentAppName}
-          store={AppTagStore}
-          tag={editTag}
-          release={editRelease}
-          show={editDisplay}
-          close={this.displayEditModal}
-        /> : null}</Fragment> : <DepPipelineEmpty title={<FormattedMessage id="apptag.head" />} type="app" />}
+        </Header> */}
+          {/* <Content code={appData.length ? 'apptag.app' : 'apptag'} values={{ name: titleName }}> */}
+          <Content>
+            <div className="c7n-tag-table"><FormattedMessage id="apptag.table" /></div>
+            {loading || _.isNull(loading) ? <LoadingBar display /> : <Fragment>
+              {tagList.length ? <Fragment>
+                <Collapse bordered={false}>{tagList}</Collapse>
+                <div className="c7n-tag-pagin">
+                  <Pagination
+                    total={total}
+                    current={current}
+                    pageSize={pageSize}
+                    onChange={this.handlePaginChange}
+                    onShowSizeChange={this.handlePaginChange}
+                  />
+                </div>
+              </Fragment> : (<div className="c7n-tag-empty">
+                <div>
+                  <Icon type="info" className="c7n-tag-empty-icon" />
+                  <span className="c7n-tag-empty-text">{formatMessage({ id: `apptag.${empty}.empty` })}</span>
+                </div>
+                {empty === 'tag' ? (
+                  <Button
+                    type="primary"
+                    funcType="raised"
+                    onClick={() => this.displayCreateModal(true, empty)}
+                  >
+                    <FormattedMessage id="apptag.create" />
+                  </Button>
+                ) : null}
+              </div>)}
+            </Fragment>}
+          </Content>
+          <Modal
+            confirmLoading={deleteLoading}
+            visible={visible}
+            title={`${formatMessage({ id: 'apptag.action.delete' })}“${tag}”`}
+            closable={false}
+            footer={[
+              <Button key="back" onClick={this.closeRemove} disabled={deleteLoading}>{<FormattedMessage id="cancel" />}</Button>,
+              <Button key="submit" type="danger" onClick={this.deleteTag} loading={deleteLoading}>
+                {formatMessage({ id: 'delete' })}
+              </Button>,
+            ]}
+          ><div className="c7n-padding-top_8">{formatMessage({ id: 'apptag.delete.tooltip' })}</div></Modal>
+          {creationDisplay ? <AppTagCreate
+            app={titleName}
+            store={AppTagStore}
+            show={creationDisplay}
+            close={this.displayCreateModal}
+          /> : null}
+          {editDisplay ? <AppTagEdit
+            app={currentAppName}
+            store={AppTagStore}
+            tag={editTag}
+            release={editRelease}
+            show={editDisplay}
+            close={this.displayEditModal}
+          /> : null}</Fragment> : <DepPipelineEmpty title={<FormattedMessage id="apptag.head" />} type="app" />}
       </Page>
     );
   }

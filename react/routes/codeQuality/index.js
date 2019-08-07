@@ -5,27 +5,33 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { Page, Header, Content } from '@choerodon/boot';
 import { Select, Button, Tooltip, Icon, Card } from 'choerodon-ui';
 import _ from 'lodash';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import LoadingBar from '../../components/loadingBar/LoadingBar';
-import DevPipelineStore from '../../stores/project/devPipeline';
+import DevPipelineStore from '../devPipeline';
 import DepPipelineEmpty from '../../components/DepPipelineEmpty/DepPipelineEmpty';
 import Percentage from '../../components/percentage/Percentage';
 import Rating from '../../components/rating/Rating';
 import { QUALITY_LIST, OBJECT_TYPE } from './components/Constants';
 import CodeQualityStore from './stores';
+import handleMapStore from '../code-manager/main-view/store/handleMapStore';
 
-import './index.scss';
+import './index.less';
 import '../main.scss';
 
 const { Option, OptGroup } = Select;
-
 @injectIntl
 @withRouter
 @inject('AppState')
-@observer
+@observer 
 class CodeQuality extends Component {
   constructor(props) {
     super(props);
+    handleMapStore.setCodeQuality({
+      refresh: this.handleRefresh,
+      select: this.handleSelect,
+    });
     this.state = {
+     
     };
   }
 
@@ -57,6 +63,15 @@ class CodeQuality extends Component {
     DevPipelineStore.setRecentApp(value);
     CodeQualityStore.loadData(projectId, value);
   };
+
+  /**
+   * 复制仓库地址处理函数
+   */
+  handleCopy = () => {
+    this.setState({
+      repoUrl: 'www.baidu.com',
+    });
+  }
 
   getDetail = () => {
     const {
@@ -173,57 +188,6 @@ class CodeQuality extends Component {
         ]}
       >
         {getAppData && getAppData.length && getSelectApp ? <Fragment>
-          <Header
-            title={formatMessage({ id: 'codeQuality.head' })}
-            backPath={backPath}
-          >
-            <Select
-              filter
-              className="c7n-header-select"
-              dropdownClassName="c7n-header-select_drop"
-              placeholder={formatMessage({ id: 'ist.noApp' })}
-              value={getSelectApp}
-              disabled={getAppData.length === 0}
-              filterOption={(input, option) => option.props.children.props.children.props.children
-                .toLowerCase().indexOf(input.toLowerCase()) >= 0}
-              onChange={this.handleSelect}
-            >
-              <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
-                {
-                  _.map(getRecentApp, ({ id, permission, code, name: opName }) => (
-                    <Option
-                      key={`recent-${id}`}
-                      value={id}
-                      disabled={!permission}
-                    >
-                      <Tooltip title={code}>
-                        <span className="c7n-ib-width_100">{opName}</span>
-                      </Tooltip>
-                    </Option>))
-                }
-              </OptGroup>
-              <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
-                {
-                  _.map(getAppData, ({ id, code, name: opName, permission }, index) => (
-                    <Option
-                      value={id}
-                      key={index}
-                      disabled={!permission}
-                    >
-                      <Tooltip title={code}>
-                        <span className="c7n-ib-width_100">{opName}</span>
-                      </Tooltip>
-                    </Option>))
-                }
-              </OptGroup>
-            </Select>
-            <Button
-              onClick={this.handleRefresh}
-              icon="refresh"
-            >
-              <FormattedMessage id="refresh" />
-            </Button>
-          </Header>
           <Content code="codeQuality" values={{ name: titleName }}>
             {getLoading ? <LoadingBar display /> : this.getDetail()}
           </Content>
