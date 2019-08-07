@@ -68,9 +68,7 @@ class CodeQuality extends Component {
    * 复制仓库地址处理函数
    */
   handleCopy = () => {
-    this.setState({
-      repoUrl: 'www.baidu.com',
-    });
+    // this.setState();
   }
 
   getDetail = () => {
