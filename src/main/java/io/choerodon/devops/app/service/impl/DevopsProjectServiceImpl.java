@@ -13,10 +13,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class DevopsProjectServiceImpl implements DevopsProjectService {
-
-
     @Autowired
-    DevopsProjectMapper devopsProjectMapper;
+    private DevopsProjectMapper devopsProjectMapper;
 
     @Override
     public DevopsProjectDTO baseQueryByProjectId(Long projectId) {
@@ -61,4 +59,10 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         }
     }
 
+    @Override
+    public Long queryAppIdByProjectId(Long projectId) {
+        // 未修复数据时，需要此逻辑，修复后，正式发布0.19.0前要删除此逻辑 TODO
+        Long appId = devopsProjectMapper.queryAppIdByProjectId(projectId);
+        return appId == null ? projectId : appId;
+    }
 }

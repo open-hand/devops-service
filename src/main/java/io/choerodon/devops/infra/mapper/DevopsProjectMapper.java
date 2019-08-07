@@ -12,4 +12,11 @@ public interface DevopsProjectMapper extends Mapper<DevopsProjectDTO> {
     void updateObjectVersionNumber(@Param("iamProjectId") Long iamProjectId);
 
     DevopsProjectDTO queryByGitlabGroupId(@Param("gitlabGroupId") Integer gitlabGroupId);
+
+    Long queryAppIdByProjectId(@Param("iamProjectId") Long iamProjectId);
+
+    /**
+     * 0.19版本前修复表中appId的值，可以在0.20版本删除
+     */
+    void fixAppIdValue();
 }

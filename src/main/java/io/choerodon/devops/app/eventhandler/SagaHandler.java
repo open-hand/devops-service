@@ -42,8 +42,6 @@ public class SagaHandler {
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private GitlabUserService gitlabUserService;
-    @Autowired
-    private AppSevriceService applicationService;
 
 
     private void loggerInfo(Object o) {
@@ -52,7 +50,7 @@ public class SagaHandler {
 
 
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_GROUP,
-            description = "devops 创建 GitLab Group",
+            description = "devops创建应用Group",
             sagaCode = SagaTopicCodeConstants.IAM_CREATE_PROJECT,
             maxRetryCount = 3,
             seq = 1)

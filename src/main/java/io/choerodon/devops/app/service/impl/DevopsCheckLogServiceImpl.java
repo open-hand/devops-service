@@ -55,6 +55,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
+    private DevopsProjectMapper devopsProjectMapper;
+    @Autowired
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
     private OrgServiceClientOperator orgServiceClientOperator;
@@ -89,6 +91,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 syncAppShare(logs);
                 syncDeployRecord(logs);
                 syncCulster(logs);
+                syncProjectAppId();
 
             } else {
                 LOGGER.info("version not matched");
@@ -116,6 +119,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 }
                 logs.add(checkLog);
             });
+        }
+
+        private void syncProjectAppId() {
+            devopsProjectMapper.fixAppIdValue();
         }
 
         private void syncAppShare(List<CheckLog> logs) {

@@ -61,8 +61,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
-    private AppServiceShareRuleService applicationMarketService;
-    @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
     private UserAttrService userAttrService;
@@ -157,9 +155,12 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, AppServiceDTO.class);
-        applicationDTO.setAppId(projectId);
-        applicationService.checkName(projectId, applicationDTO.getName());
-        applicationService.checkCode(projectId, applicationDTO.getCode());
+
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
+
+        applicationDTO.setAppId(appId);
+        applicationService.checkName(appId, applicationDTO.getName());
+        applicationService.checkCode(appId, applicationDTO.getCode());
 
         applicationDTO.setActive(true);
         applicationDTO.setSynchro(false);

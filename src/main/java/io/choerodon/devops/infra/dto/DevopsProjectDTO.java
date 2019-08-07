@@ -13,13 +13,13 @@ public class DevopsProjectDTO extends BaseDTO {
 
     @Id
     private Long iamProjectId;
+    private Long appId;
     private Long devopsAppGroupId;
     private Long devopsEnvGroupId;
     private Boolean harborProjectIsPrivate;
     private String harborProjectUserName;
     private String harborProjectUserPassword;
     private String harborProjectUserEmail;
-
 
     public DevopsProjectDTO() {
     }
@@ -34,6 +34,14 @@ public class DevopsProjectDTO extends BaseDTO {
 
     public void setIamProjectId(Long iamProjectId) {
         this.iamProjectId = iamProjectId;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 
     public Long getDevopsAppGroupId() {

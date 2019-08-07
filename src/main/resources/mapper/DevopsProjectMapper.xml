@@ -3,14 +3,21 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsProjectMapper">
     <select id="queryByGitlabGroupId" resultType="io.choerodon.devops.infra.dto.DevopsProjectDTO">
-
         select * FROM devops_project where devops_app_group_id = #{gitlabGroupId}
     </select>
-
-
 
     <update id="updateObJectVersionNumber">
      update devops_project set object_version_number = 1 where iam_project_id = #{iamProjectId};
     </update>
 
+    <select id="queryAppIdByProjectId" resultType="java.lang.Long">
+        SELECT project.app_id
+        FROM devops_project project
+        WHERE project.iam_project_id = ${iamProjectId}
+    </select>
+
+    <update id="fixAppIdValue">
+        UPDATE devops_project project SET project.app_id = project.iam_project_id
+        WHERE project.app_id IS NULL
+    </update>
 </mapper>

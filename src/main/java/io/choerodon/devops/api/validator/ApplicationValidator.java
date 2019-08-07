@@ -17,8 +17,8 @@ public class ApplicationValidator {
     /**
      * 检查应用的name和code是否符合标准
      */
-    public static void checkApplicationService(String appServiceCoed) {
-        if (!Pattern.matches(SERVICE_PATTERN, appServiceCoed)) {
+    public static void checkApplicationService(String appServiceCode) {
+        if (!Pattern.matches(SERVICE_PATTERN, appServiceCode)) {
             throw new CommonException("error.app.code.notMatch");
         }
     }

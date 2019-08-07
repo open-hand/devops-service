@@ -160,10 +160,26 @@ public interface AppSevriceService {
     /**
      * 创建服务校验名称是否存在
      *
-     * @param projectId 项目id
+     * @param appId 应用id
+     * @param name  服务name
+     */
+    void checkName(Long appId, String name);
+
+    /**
+     * 创建服务校验编码是否存在
+     *
+     * @param appId 应用id
+     * @param code  服务code
+     */
+    void checkCode(Long appId, String code);
+
+    /**
+     * 创建服务校验名称是否存在
+     *
+     * @param projectId 项目ID
      * @param name      服务name
      */
-    void checkName(Long projectId, String name);
+    void checkNameByProjectId(Long projectId, String name);
 
     /**
      * 创建服务校验编码是否存在
@@ -171,7 +187,7 @@ public interface AppSevriceService {
      * @param projectId 项目ID
      * @param code      服务code
      */
-    void checkCode(Long projectId, String code);
+    void checkCodeByProjectId(Long projectId, String code);
 
     /**
      * 项目下查询已经启用有版本未发布的服务
@@ -214,7 +230,7 @@ public interface AppSevriceService {
     /**
      * 从外部代码托管平台导入项目创建服务
      *
-     * @param projectId           project id
+     * @param projectId          project id
      * @param appServiceImportVO 导入操作的相关信息
      * @return response
      */
@@ -254,8 +270,8 @@ public interface AppSevriceService {
     /**
      * 查看sonarqube相关信息
      *
-     * @param projectId 项目Id
-     * @param appServiceId     服务id
+     * @param projectId    项目Id
+     * @param appServiceId 服务id
      * @return
      */
     SonarContentsVO getSonarContent(Long projectId, Long appServiceId);
@@ -263,8 +279,8 @@ public interface AppSevriceService {
     /**
      * 查看sonarqube相关报表
      *
-     * @param projectId 项目Id
-     * @param appServiceId     服务id
+     * @param projectId    项目Id
+     * @param appServiceId 服务id
      * @return
      */
     SonarTableVO getSonarTable(Long projectId, Long appServiceId, String type, Date startTime, Date endTime);
@@ -396,10 +412,6 @@ public interface AppSevriceService {
     void baseUpdateHarborConfig(Long projectId, Long newConfigId, Long oldConfigId, boolean harborPrivate);
 
     AppServiceDTO getApplicationServiceDTO(Long projectId, AppServiceReqVO applicationReqDTO);
-
-    void baseCheckName(Long projectId, String appServiceName);
-
-    void baseCheckCode(AppServiceDTO appServiceDTO);
 
     AppServiceDTO baseCreate(AppServiceDTO appServiceDTO);
 }

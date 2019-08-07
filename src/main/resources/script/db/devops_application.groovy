@@ -101,4 +101,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
     changeSet(author: 'zmf', id: '2019-08-06-rename-project-id-column') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_id', oldColumnName: 'project_id', tableName: 'devops_app_service', remarks: '应用ID')
     }
+
+    changeSet(author: 'zmf', id: '2019-08-07-drop-UniqueConstraint') {
+        dropUniqueConstraint(constraintName: "devops_app_uk_project_id_name", tableName: "devops_app_service")
+    }
 }

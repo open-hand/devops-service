@@ -269,11 +269,8 @@ public class AppServiceServiceImpl implements AppSevriceService {
             description = "Devops更新gitlab用户", inputSchema = "{}")
     @Override
     @Transactional
-
     public Boolean update(Long projectId, AppServiceUpdateDTO appServiceUpdateDTO) {
-
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
-        appServiceDTO.setAppId(projectId);
         appServiceDTO.setHarborConfigId(appServiceUpdateDTO.getHarborConfigId());
         appServiceDTO.setChartConfigId(appServiceUpdateDTO.getChartConfigId());
 
@@ -281,7 +278,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
 
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
-            baseCheckName(appServiceDTO.getAppId(), appServiceDTO.getName());
+            checkName(oldAppServiceDTO.getAppId(), appServiceDTO.getName());
         }
         baseUpdate(appServiceDTO);
         return true;
@@ -362,16 +359,23 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    public void checkName(Long projectId, String name) {
-        baseCheckName(projectId, name);
+    public void checkName(Long appId, String name) {
+        baseCheckName(appId, name);
     }
 
     @Override
     public void checkCode(Long appId, String code) {
-        AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setAppId(appId);
-        appServiceDTO.setCode(code);
-        baseCheckCode(appServiceDTO);
+        baseCheckCode(appId, code);
+    }
+
+    @Override
+    public void checkNameByProjectId(Long projectId, String name) {
+        baseCheckName(devopsProjectService.queryAppIdByProjectId(projectId), name);
+    }
+
+    @Override
+    public void checkCodeByProjectId(Long projectId, String code) {
+        baseCheckCode(devopsProjectService.queryAppIdByProjectId(projectId), code);
     }
 
     @Override
@@ -650,23 +654,25 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT, description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
-
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
+            description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO) {
         // 获取当前操作的用户的信息
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         // 校验application信息的格式
         ApplicationValidator.checkApplicationService(appServiceImportVO.getCode());
-
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
         // 校验名称唯一性
-        baseCheckName(projectId, appServiceImportVO.getName());
+        checkName(appId, appServiceImportVO.getName());
 
         // 校验code唯一性
+        checkCode(appId, appServiceImportVO.getCode());
+
         AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setAppId(projectId);
+        appServiceDTO.setAppId(appId);
+        appServiceDTO.setName(appServiceImportVO.getName());
         appServiceDTO.setCode(appServiceImportVO.getCode());
-        baseCheckCode(appServiceDTO);
 
         // 校验repository（和token） 地址是否有效
         GitPlatformType gitPlatformType = GitPlatformType.from(appServiceImportVO.getPlatformType());
@@ -674,9 +680,9 @@ public class AppServiceServiceImpl implements AppSevriceService {
 
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
 
-        appServiceDTO = fromImportDtoToEntity(appServiceImportVO);
+        appServiceDTO = fromImportVoToDto(appServiceImportVO);
 
-        appServiceDTO.setAppId(projectId);
+        appServiceDTO.setAppId(appId);
         appServiceDTO.setActive(true);
         appServiceDTO.setSynchro(false);
         appServiceDTO.setIsSkipCheckPermission(appServiceImportVO.getIsSkipCheckPermission());
@@ -1602,20 +1608,21 @@ public class AppServiceServiceImpl implements AppSevriceService {
     @Override
     public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
         OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         UserAttrVO userAttrVO = userAttrService.queryByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         importInternalVOS.forEach(importInternalVO -> {
             AppServiceDTO appServiceDTO = new AppServiceDTO();
-            appServiceDTO.setAppId(projectId);
+            appServiceDTO.setAppId(appId);
             if (importInternalVO.getAppCode() != null) {
                 // 校验application信息的格式
                 ApplicationValidator.checkApplicationService(importInternalVO.getAppCode());
 
                 // 校验名称唯一性
-                baseCheckName(projectId, importInternalVO.getAppName());
+                checkName(appId, importInternalVO.getAppName());
 
                 // 校验code唯一性
-                baseCheckCode(appServiceDTO);
+                checkCode(appId, importInternalVO.getAppCode());
 
                 appServiceDTO.setCode(importInternalVO.getAppCode());
                 appServiceDTO.setName(importInternalVO.getAppName());
@@ -1625,7 +1632,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
                 appServiceDTO.setName(oldAppService.getName());
             }
 
-            appServiceDTO.setAppId(projectId);
+            appServiceDTO.setAppId(appId);
             appServiceDTO.setActive(true);
             appServiceDTO.setSynchro(false);
             appServiceDTO = baseCreate(appServiceDTO);
@@ -1732,7 +1739,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
     @Override
     public AppServiceDTO baseQueryByCode(String code, Long projectId) {
         AppServiceDTO applicationDTO = new AppServiceDTO();
-        applicationDTO.setAppId(projectId);
+        applicationDTO.setAppId(devopsProjectService.queryAppIdByProjectId(projectId));
         applicationDTO.setCode(code);
         return appServiceMapper.selectOne(applicationDTO);
     }
@@ -1810,7 +1817,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
     @Override
     public List<AppServiceDTO> baseListByProjectIdAndSkipCheck(Long projectId) {
         AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setAppId(projectId);
+        appServiceDTO.setAppId(devopsProjectService.queryAppIdByProjectId(projectId));
         appServiceDTO.setIsSkipCheckPermission(true);
         return appServiceMapper.select(appServiceDTO);
     }
@@ -1818,7 +1825,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
     @Override
     public List<AppServiceDTO> baseListByProjectId(Long projectId) {
         AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setAppId(projectId);
+        appServiceDTO.setAppId(devopsProjectService.queryAppIdByProjectId(projectId));
         return appServiceMapper.select(appServiceDTO);
     }
 
@@ -1894,19 +1901,19 @@ public class AppServiceServiceImpl implements AppSevriceService {
     @Override
     public AppServiceDTO getApplicationServiceDTO(Long projectId, AppServiceReqVO applicationReqDTO) {
         AppServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, AppServiceDTO.class);
-        baseCheckName(projectId, applicationDTO.getName());
-        baseCheckCode(applicationDTO);
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
+        checkName(appId, applicationDTO.getName());
+        checkCode(appId, applicationDTO.getCode());
         applicationDTO.setActive(true);
         applicationDTO.setSynchro(false);
-        applicationDTO.setAppId(projectId);
+        applicationDTO.setAppId(appId);
         applicationDTO.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
         applicationDTO.setHarborConfigId(applicationReqDTO.getHarborConfigId());
         applicationDTO.setChartConfigId(applicationReqDTO.getChartConfigId());
         return applicationDTO;
     }
 
-    @Override
-    public void baseCheckName(Long appId, String appServiceName) {
+    private void baseCheckName(Long appId, String appServiceName) {
         AppServiceDTO appServiceDTO = new AppServiceDTO();
         appServiceDTO.setAppId(appId);
         appServiceDTO.setName(appServiceName);
@@ -1915,9 +1922,11 @@ public class AppServiceServiceImpl implements AppSevriceService {
         }
     }
 
-    @Override
-    public void baseCheckCode(AppServiceDTO applicationDTO) {
-        if (!appServiceMapper.select(applicationDTO).isEmpty()) {
+    private void baseCheckCode(Long appId, String appServiceCode) {
+        AppServiceDTO appServiceDTO = new AppServiceDTO();
+        appServiceDTO.setAppId(appId);
+        appServiceDTO.setCode(appServiceCode);
+        if (!appServiceMapper.select(appServiceDTO).isEmpty()) {
             throw new CommonException("error.code.exist");
         }
     }
@@ -1934,9 +1943,8 @@ public class AppServiceServiceImpl implements AppSevriceService {
         return appServiceMapper.listAll(projectId);
     }
 
-    private AppServiceDTO fromImportDtoToEntity(AppServiceImportVO appServiceImportVO) {
+    private AppServiceDTO fromImportVoToDto(AppServiceImportVO appServiceImportVO) {
         AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setAppId(appServiceImportVO.getProjectId());
         BeanUtils.copyProperties(appServiceImportVO, appServiceDTO);
         appServiceDTO.setHarborConfigId(appServiceImportVO.getHarborConfigId());
         appServiceDTO.setChartConfigId(appServiceImportVO.getChartConfigId());

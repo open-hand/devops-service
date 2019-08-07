@@ -50,4 +50,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
         }
     }
 
+    changeSet(id: '2019-08-07-rename-column', author: 'zmf') {
+        addColumn(tableName: 'devops_project') {
+            column(name: 'app_id', type: 'BIGINT UNSIGNED', afterColumn: 'iam_project_id', remarks: '应用ID')
+        }
+    }
 }
