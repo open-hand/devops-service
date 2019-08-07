@@ -1,40 +1,39 @@
 import React, { PureComponent, Fragment } from 'react';
+import { inject } from 'mobx-react';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import { withRouter, Link } from 'react-router-dom';
-import { stores } from '@choerodon/boot';
 import _ from 'lodash';
-import { Tooltip, Button } from 'choerodon-ui';
-import './PodCircle.scss';
+import { Button } from 'choerodon-ui';
 
-const { AppState } = stores;
+import './index.less';
 
-@withRouter
+@inject('AppState')
 @injectIntl
-export default class PodCircle extends PureComponent {
-  constructor(props) {
-    super(props);
-    this.state = {
-      btnDisable: false,
-      textDisplay: false,
-    };
-  }
+export default class Pods extends PureComponent {
+  state = {
+    btnDisable: false,
+    textDisplay: false,
+  };
 
   /**
    * 限制连续点击发送请求的次数
    * 限制600ms
-   *
-   * @memberof PodCircle
    */
   operatePodCount = _.debounce((count) => {
-    const { id: projectId } = AppState.currentMenuType;
-    const { currentPage, store, envId, name } = this.props;
-    const page = currentPage === 'env-overview' ? 'overview' : 'instance';
-    store.operatePodCount(page, projectId, envId, name, count);
+    const {
+      store,
+      envId,
+      name,
+      AppState: {
+        currentMenuType: {
+          id: projectId,
+        },
+      },
+    } = this.props;
+    store.operatePodCount(projectId, envId, name, count);
   }, 600);
 
   /**
    * 环形图下的文字显示
-   * @memberof PodCircle
    */
   changeTextDisplay = () => {
     let { textDisplay } = this.state;
@@ -65,7 +64,7 @@ export default class PodCircle extends PureComponent {
       this.setState({ btnDisable });
       this.operatePodCount(count);
       handleChangeCount(
-        _.assign({}, targetCount, { [`${name}-${podType}`]: count })
+        _.assign({}, targetCount, { [`${name}-${podType}`]: count }),
       );
     }
   };
@@ -92,7 +91,7 @@ export default class PodCircle extends PureComponent {
     this.setState({ btnDisable });
     this.operatePodCount(count);
     handleChangeCount(
-      _.assign({}, targetCount, { [`${name}-${podType}`]: count })
+      _.assign({}, targetCount, { [`${name}-${podType}`]: count }),
     );
   };
 
@@ -102,9 +101,7 @@ export default class PodCircle extends PureComponent {
    * @memberof PodCircle
    */
   get renderCircle() {
-    const {
-      count: { sum, correct, correctCount },
-    } = this.props;
+    const { count: { sum, correct, correctCount } } = this.props;
     return (
       <svg width="70" height="70">
         <circle
@@ -134,18 +131,8 @@ export default class PodCircle extends PureComponent {
 
   render() {
     const {
-      id: projectId,
-      name: projectName,
-      organizationId,
-      type,
-    } = AppState.currentMenuType;
-    const {
       podType,
       status,
-      handleLink,
-      currentPage,
-      appId,
-      instanceId,
       connect,
       name,
       count: { sum },
@@ -166,33 +153,11 @@ export default class PodCircle extends PureComponent {
       || currentPodTargetCount <= 1
       || status !== 'running';
 
-    const backPath = `/devops/${currentPage}?type=${type}&id=${projectId}&name=${encodeURIComponent(
-      projectName
-    )}&organizationId=${organizationId}`;
-    const state = { appId, backPath, instanceId };
-
     return (
       <Fragment>
         <div className="c7ncd-pod-wrap">
           <div className="c7ncd-pod-content">
-            {status === 'running' ? (
-              <Link
-                to={{
-                  pathname: '/devops/container',
-                  search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(
-                    projectName
-                  )}&organizationId=${organizationId}`,
-                  state,
-                }}
-                onClick={handleLink}
-              >
-                <Tooltip title={<FormattedMessage id="ist.expand.link" />}>
-                  {this.renderCircle}
-                </Tooltip>
-              </Link>
-            ) : (
-              this.renderCircle
-            )}
+            {this.renderCircle}
           </div>
           {podType === 'deploymentDTOS' && (
             <div className="c7ncd-pod-content c7ncd-pod-btn-wrap">

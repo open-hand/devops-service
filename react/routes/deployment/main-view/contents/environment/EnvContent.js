@@ -1,4 +1,4 @@
-import React, { Fragment, lazy, Suspense, useCallback } from 'react';
+import React, { Fragment, lazy, Suspense, useCallback, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs } from 'choerodon-ui';
 import { useEnvironmentStore } from './stores';
@@ -34,28 +34,30 @@ const EnvContent = observer(() => {
 
   const baseInfo = baseInfoDs.data;
 
-  let title = null;
-  if (baseInfo.length) {
-    const record = baseInfo[0];
-    const name = record.get('name');
-    const connect = record.get('connect');
-    const synchronize = record.get('synchronize');
+  const title = useMemo(() => {
+    if (baseInfo.length) {
+      const record = baseInfo[0];
+      const name = record.get('name');
+      const connect = record.get('connect');
+      const synchronize = record.get('synchronize');
 
-    title = <Fragment>
-      <StatusDot
-        connect={connect}
-        synchronize={synchronize}
-      />
-      <span className={`${prefixCls}-title-text`}>{name}</span>
-    </Fragment>;
-  }
+      return <Fragment>
+        <StatusDot
+          connect={connect}
+          synchronize={synchronize}
+        />
+        <span className={`${prefixCls}-title-text`}>{name}</span>
+      </Fragment>;
+    }
+    return null;
+  }, [baseInfo, prefixCls]);
 
   return (
     <div className={`${prefixCls}-environment`}>
       <Modals />
       <PrefixTitle
         prefixCls={prefixCls}
-        fallback={!baseInfo.length}
+        fallback={!title}
       >
         {title}
       </PrefixTitle>

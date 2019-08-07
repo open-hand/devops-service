@@ -14,7 +14,7 @@ const CiPipelineManageIndex = asyncRouter(() => import('./routes/ciPipelineManag
 const AppVersion = asyncRouter(() => import('./routes/appVersion'));
 const App = asyncRouter(() => import('./routes/app'));
 const AppStore = asyncRouter(() => import('./routes/app-store'));
-const InstancesIndex = asyncRouter(() => import('./routes/instances'));
+const InstancesIndex = asyncRouter(() => import('./routes/deployment/main-view/contents/instance/details'));
 const DeploymentApp = asyncRouter(() => import('./routes/deploymentApp'));
 const NetworkConfig = asyncRouter(() => import('./routes/network'));
 const Domain = asyncRouter(() => import('./routes/domain'));

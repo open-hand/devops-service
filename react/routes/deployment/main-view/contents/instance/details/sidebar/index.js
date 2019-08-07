@@ -1,18 +1,12 @@
 import React, { Component, Fragment } from 'react';
-import { FormattedMessage, injectIntl } from 'react-intl';
-import { observer, inject } from 'mobx-react';
-import { withRouter } from 'react-router-dom';
+import { FormattedMessage } from 'react-intl';
+import { observer } from 'mobx-react';
 import _ from 'lodash';
-import TimeAgo from 'timeago-react';
-import { Content } from '@choerodon/boot';
-import { Tooltip, Button, Modal, Collapse, Spin } from 'choerodon-ui';
-import { formatDate } from '../../../../utils';
-import DeploymentStore from '../../instances-home/stores/DeploymentStore';
-import InstancesStore from '../../instances-home/stores/InstancesStore';
+import { Button, Modal, Collapse, Spin } from 'choerodon-ui';
+import Store from '../stores';
 import SimpleTable from './SimpleTable';
-import PodCircle from './PodCircle';
 
-import './index.scss';
+import './index.less';
 
 const { Sidebar } = Modal;
 const { Panel } = Collapse;
@@ -30,305 +24,12 @@ const ContainerLabel = () => (<span className="c7ncd-deploy-container-label">
   <FormattedMessage id="ist.deploy.container" />
 </span>);
 
-@inject('AppState')
-@injectIntl
-@withRouter
 @observer
-export default class ExpandRow extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      visible: false,
-      sideName: '',
-      activeKey: [],
-    };
-    this.getExpandContent = this.getExpandContent.bind(this);
-    this.renderPorts = this.renderPorts.bind(this);
-    this.renderVolume = this.renderVolume.bind(this);
-    this.renderHealth = this.renderHealth.bind(this);
-    this.renderSecurity = this.renderSecurity.bind(this);
-    this.renderLabel = this.renderLabel.bind(this);
-    this.renderVar = this.renderVar.bind(this);
-    this.handleExpandAll = this.handleExpandAll.bind(this);
-  }
+export default class DetailsSidebar extends Component {
+  static contextType = Store;
 
-  changeTargetCount = (count) => {
-    InstancesStore.setTargetCount(count);
-  };
-
-  getExpandContent() {
-    const { record } = this.props;
-
-    const getPodContent = dto => _.map(record[dto], item => this.getDeployContent(dto, item, record));
-
-    const getNoPodContent = dto => _.map(record[dto], item => this.getNoPodContent(dto, item));
-
-    const contentList = [
-      {
-        title: 'Deployments',
-        main: getPodContent('deploymentDTOS'),
-      },
-      {
-        title: 'Stateful Set',
-        main: getPodContent('statefulSetDTOS'),
-      },
-      {
-        title: 'Daemon Set',
-        main: getPodContent('daemonSetDTOS'),
-      },
-      {
-        title: 'PVC',
-        main: getNoPodContent('persistentVolumeClaimDTOS'),
-      },
-      {
-        title: 'Service',
-        main: getNoPodContent('serviceDTOS'),
-      },
-      {
-        title: 'Ingress',
-        main: getNoPodContent('ingressDTOS'),
-      },
-    ];
-
-    const hasContent = _.find(contentList, item => item.main.length);
-
-    return (
-      <div className="c7n-deploy-expanded">
-        {_.map(contentList, (dto) => {
-          const { main, title } = dto;
-          return main.length ? (
-            <Fragment key={title}>
-              <div className="c7n-deploy-expanded-title">
-                <span>{title}</span>
-              </div>
-              {main}
-            </Fragment>
-          ) : null;
-        })}
-        {!hasContent ? (
-          <div className="c7n-deploy-expanded-empty">
-            <FormattedMessage id="ist.expand.empty" />
-          </div>
-        ) : null}
-      </div>
-    );
-  }
-
-  /**
-   *
-   * @param {string} podType
-   * @param {object} item
-   * @param {object} record
-   * @returns
-   * @memberof ExpandRow
-   */
-  getDeployContent = (podType, item, record) => {
-    const { envId, appId, status, id, connect } = record;
-    const { name, age, devopsEnvPodDTOS } = item;
-
-    const POD_TYPE = {
-      // 确保“当前/需要/可提供”的顺序
-      deploymentDTOS: ['current', 'desired', 'available'],
-      daemonSetDTOS: [
-        'currentScheduled',
-        'desiredScheduled',
-        'numberAvailable',
-      ],
-      statefulSetDTOS: ['currentReplicas', 'desiredReplicas', 'readyReplicas'],
-    };
-    const [current, desired, available] = POD_TYPE[podType];
-
-    const targetCount = InstancesStore.getTargetCount;
-
-    // 计算 pod 数量和环形图占比
-    const count = _.countBy(devopsEnvPodDTOS, pod => !!pod.ready);
-    const correctCount = count.true || 0;
-    const errorCount = count.false || 0;
-    const sum = correctCount + errorCount;
-    const correct = sum > 0 ? (correctCount / sum) * (Math.PI * 2 * 30) : 0;
-
-    /**
-     * 返回路径
-     * 从实例点过去的返回实例
-     * 从环境总览点过去的返回实力总览
-     */
-    const currentPage = window.location.href.includes('env-overview')
-      ? 'env-overview'
-      : 'instance';
-
-    return (
-      <div key={name} className="c7n-deploy-expanded-item">
-        <ul className="c7n-deploy-expanded-text">
-          <li className="c7n-deploy-expanded-lists">
-            <span className="c7n-deploy-expanded-keys c7n-expanded-text_bold">
-              <FormattedMessage id="ist.expand.name" />：
-            </span>
-            <span
-              title={name}
-              className="c7n-deploy-expanded-values c7n-expanded-text_bold"
-            >
-              {name}
-            </span>
-          </li>
-          <li className="c7n-deploy-expanded-lists">
-            <span className="c7n-deploy-expanded-keys">
-              {podType === 'deploymentDTOS' ? (
-                'ReplicaSet'
-              ) : (
-                <FormattedMessage id="ist.expand.net.status" />
-              )}
-              ：
-            </span>
-            <span
-              title={`${item[available] || 0} available / ${item[current]
-              || 0} current / ${item[desired] || 0} desired`}
-              className="c7n-deploy-expanded-values"
-            >{`${item[available] || 0} available / ${item[current]
-            || 0} current / ${item[desired] || 0} desired`}</span>
-          </li>
-          <li className="c7n-deploy-expanded-lists">
-            <span className="c7n-deploy-expanded-keys">
-              <FormattedMessage id="ist.expand.date" />：
-            </span>
-            <span className="c7n-deploy-expanded-values">
-              <Tooltip title={formatDate(age)}>
-                <TimeAgo
-                  datetime={age}
-                  locale={Choerodon.getMessage('zh_CN', 'en')}
-                />
-              </Tooltip>
-            </span>
-          </li>
-          <li className="c7n-deploy-expanded-lists">
-            <Button
-              className="c7ncd-detail-btn"
-              onClick={() => this.handleClick(podType, id, name)}
-            >
-              <FormattedMessage id="detailMore" />
-            </Button>
-          </li>
-        </ul>
-        <div className="c7n-deploy-expanded-pod">
-          <PodCircle
-            podType={podType}
-            connect={connect}
-            appId={appId}
-            envId={envId}
-            instanceId={id}
-            name={name}
-            count={{
-              sum,
-              correct,
-              correctCount,
-            }}
-            targetCount={targetCount}
-            status={status}
-            handleChangeCount={this.changeTargetCount}
-            currentPage={currentPage}
-            store={DeploymentStore}
-          />
-        </div>
-      </div>
-    );
-  };
-
-  /**
-   * PVC service ingress 三个没有pod圈
-   * @param {string} type
-   * @param {array} data
-   */
-  getNoPodContent = (type, data) => {
-    const TYPE_KEY = {
-      serviceDTOS: {
-        leftItems: ['type', 'externalIp', 'age'],
-        rightItems: ['clusterIp', 'port'],
-      },
-      ingressDTOS: {
-        leftItems: ['type', 'ports'],
-        rightItems: ['address', 'age'],
-      },
-      persistentVolumeClaimDTOS: {
-        leftItems: ['status', 'accessModes'],
-        rightItems: ['capacity', 'age'],
-      },
-    };
-    const content = (key) => {
-      let text = null;
-      switch (key) {
-        case 'age':
-          text = (
-            <Tooltip title={formatDate(data[key])}>
-              <TimeAgo
-                datetime={data[key]}
-                locale={Choerodon.getMessage('zh_CN', 'en')}
-              />
-            </Tooltip>
-          );
-          break;
-        case 'status':
-          text = (
-            <span className={`c7n-deploy-pvc c7n-deploy-pvc_${data[key]}`}>
-              {data[key]}
-            </span>
-          );
-          break;
-        default:
-          text = data[key];
-          break;
-      }
-      return (
-        <li className="c7n-deploy-expanded-lists">
-          <span className="c7n-deploy-expanded-keys">
-            <FormattedMessage id={`ist.expand.net.${key}`} />：
-          </span>
-          <span className="c7n-deploy-expanded-values">{text}</span>
-        </li>
-      );
-    };
-    return (
-      <div key={data.name} className="c7n-deploy-expanded-item">
-        <div className="c7n-deploy-expanded-lists">
-          <span className="c7n-deploy-expanded-keys c7n-expanded-text_bold">
-            <FormattedMessage id="ist.expand.name" />：
-          </span>
-          <span
-            title={data.name}
-            className="c7n-deploy-expanded-values c7n-expanded-text_bold"
-          >
-            {data.name}
-          </span>
-        </div>
-        <ul className="c7n-deploy-expanded-text c7n-deploy-expanded_half">
-          {_.map(TYPE_KEY[type].leftItems, item => content(item))}
-        </ul>
-        <ul className="c7n-deploy-expanded-text c7n-deploy-expanded_half">
-          {_.map(TYPE_KEY[type].rightItems, item => content(item))}
-        </ul>
-      </div>
-    );
-  };
-
-  /**
-   * 打开Deployment详情侧边栏，并加载数据
-   * @param {string} type
-   * @param {*} id
-   * @param {*} name
-   */
-  handleClick = (type, id, name) => {
-    const {
-      AppState: {
-        currentMenuType: {
-          id: projectId,
-        },
-      },
-    } = this.props;
-    this.setState({ visible: true, sideName: name });
-    DeploymentStore.loadDeploymentsJson(type, projectId, id, name);
-  };
-
-  hideSidebar = () => {
-    this.setState({ visible: false, activeKey: [], isExpand: false });
-    DeploymentStore.setData([]);
+  state = {
+    activeKey: [],
   };
 
   handlePanelChange = (key) => {
@@ -343,7 +44,7 @@ export default class ExpandRow extends Component {
     }));
   }
 
-  renderPorts(containers, isLoading) {
+  renderPorts = (containers, isLoading) => {
     let portsContent = null;
     let hasPorts = false;
 
@@ -399,9 +100,9 @@ export default class ExpandRow extends Component {
     ) : (
       portsContent
     );
-  }
+  };
 
-  renderHealth(containers, isLoading) {
+  renderHealth = (containers, isLoading) => {
     let healthContent = null;
 
     if (containers && containers.length) {
@@ -447,9 +148,9 @@ export default class ExpandRow extends Component {
     ) : (
       healthContent
     );
-  }
+  };
 
-  renderVar(containers, isLoading) {
+  renderVar = (containers, isLoading) => {
     const columns = [
       {
         width: '50%',
@@ -499,9 +200,9 @@ export default class ExpandRow extends Component {
     ) : (
       envContent
     );
-  }
+  };
 
-  renderLabel(labels, annotations, isLoading) {
+  renderLabel = (labels, annotations, isLoading) => {
     /**
      * 表格数据
      * @param {object} obj
@@ -555,9 +256,9 @@ export default class ExpandRow extends Component {
         {annoContent}
       </Fragment>
     );
-  }
+  };
 
-  renderVolume(containers, volumes, isLoading) {
+  renderVolume = (containers, volumes, isLoading) => {
     let volumeContent = null;
 
     const volumeType = (vol, mounts) => {
@@ -608,9 +309,9 @@ export default class ExpandRow extends Component {
     ) : (
       volumeContent
     );
-  }
+  };
 
-  renderSecurity(containers, hostIPC, hostNetwork, isLoading) {
+  renderSecurity = (containers, hostIPC, hostNetwork, isLoading) => {
     const containerArr = containers.length ? containers : [{}];
     const securityCtx = _.map(containerArr, (item) => {
       const { imagePullPolicy, name } = item;
@@ -690,17 +391,16 @@ export default class ExpandRow extends Component {
     ) : (
       securityContent
     );
-  }
+  };
 
   render() {
-    const { intl: { formatMessage } } = this.props;
-
-    const { visible, sideName, activeKey, isExpand } = this.state;
-
+    const { detailsStore, intl: { formatMessage } } = this.context;
+    const { visible, onClose } = this.props;
+    const { activeKey, isExpand } = this.state;
     const {
-      getData: { detail },
-      getLoading,
-    } = DeploymentStore;
+      getDeployments: { detail },
+      getModalLoading,
+    } = detailsStore;
 
     let containers = [];
     let volumes = [];
@@ -725,73 +425,62 @@ export default class ExpandRow extends Component {
     }
 
     const renderFun = {
-      ports: () => this.renderPorts(containers, getLoading),
-      volume: () => this.renderVolume(containers, volumes, getLoading),
-      health: () => this.renderHealth(containers, getLoading),
-      variables: () => this.renderVar(containers, getLoading),
-      security: () => this.renderSecurity(containers, hostIPC, hostNetwork, getLoading),
-      label: () => this.renderLabel(labels, annotations, getLoading),
+      ports: () => this.renderPorts(containers, getModalLoading),
+      volume: () => this.renderVolume(containers, volumes, getModalLoading),
+      health: () => this.renderHealth(containers, getModalLoading),
+      variables: () => this.renderVar(containers, getModalLoading),
+      security: () => this.renderSecurity(containers, hostIPC, hostNetwork, getModalLoading),
+      label: () => this.renderLabel(labels, annotations, getModalLoading),
     };
 
-    return (
-      <Fragment>
-        {this.getExpandContent()}
-        <Sidebar
-          destroyOnClose
-          footer={[
-            <Button
-              type="primary"
-              funcType="raised"
-              key="close"
-              onClick={this.hideSidebar}
-            >
-              <FormattedMessage id="close" />
-            </Button>,
-          ]}
-          title={formatMessage({ id: 'ist.deploy.detail' })}
-          visible={visible}
+    return (<Sidebar
+      destroyOnClose
+      visible
+      footer={[
+        <Button
+          type="primary"
+          funcType="raised"
+          key="close"
+          onClick={onClose}
         >
-          <Content
-            code="ist.deploy"
-            values={{ name: sideName }}
-            className="sidebar-content"
+          <FormattedMessage id="close" />
+        </Button>,
+      ]}
+      title={formatMessage({ id: 'ist.deploy.detail' })}
+    >
+      <div className="c7ncd-expand-btn-wrap">
+        <Button
+          className="c7ncd-expand-btn"
+          onClick={this.handleExpandAll}
+        >
+          <FormattedMessage id={isExpand ? 'collapseAll' : 'expandAll'} />
+        </Button>
+      </div>
+      <Collapse
+        bordered={false}
+        activeKey={activeKey}
+        onChange={this.handlePanelChange}
+      >
+        {_.map(PANEL_TYPE, item => (
+          <Panel
+            key={item}
+            header={
+              <div className="c7ncd-deploy-panel-header">
+                <div className="c7ncd-deploy-panel-title">
+                  <FormattedMessage id={`ist.deploy.${item}`} />
+                </div>
+                <div className="c7ncd-deploy-panel-text">
+                  <FormattedMessage id={`ist.deploy.${item}.describe`} />
+                </div>
+              </div>
+            }
+            className="c7ncd-deploy-panel"
           >
-            <div className="c7ncd-expand-btn-wrap">
-              <Button
-                className="c7ncd-expand-btn"
-                onClick={this.handleExpandAll}
-              >
-                <FormattedMessage id={isExpand ? 'collapseAll' : 'expandAll'} />
-              </Button>
-            </div>
-            <Collapse
-              bordered={false}
-              activeKey={activeKey}
-              onChange={this.handlePanelChange}
-            >
-              {_.map(PANEL_TYPE, item => (
-                <Panel
-                  key={item}
-                  header={
-                    <div className="c7ncd-deploy-panel-header">
-                      <div className="c7ncd-deploy-panel-title">
-                        <FormattedMessage id={`ist.deploy.${item}`} />
-                      </div>
-                      <div className="c7ncd-deploy-panel-text">
-                        <FormattedMessage id={`ist.deploy.${item}.describe`} />
-                      </div>
-                    </div>
-                  }
-                  className="c7ncd-deploy-panel"
-                >
-                  {visible ? renderFun[item]() : null}
-                </Panel>
-              ))}
-            </Collapse>
-          </Content>
-        </Sidebar>
-      </Fragment>
-    );
+            {visible && renderFun[item]()}
+          </Panel>
+        ))}
+      </Collapse>
+    </Sidebar>);
   }
 }
 
