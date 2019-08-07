@@ -12,7 +12,7 @@ const CertificateManage = asyncRouter(() => import('./routes/certificate'),);
 const EnvPipelineIndex = asyncRouter(() => import('./routes/env-pipeline'));
 const CiPipelineManageIndex = asyncRouter(() => import('./routes/ciPipelineManage'),);
 const AppVersion = asyncRouter(() => import('./routes/appVersion'));
-const App = asyncRouter(() => import('./routes/app'));
+const App = asyncRouter(() => import('./routes/app-service'));
 const AppStore = asyncRouter(() => import('./routes/app-store'));
 const InstancesIndex = asyncRouter(() => import('./routes/deployment/main-view/contents/instance/details'));
 const DeploymentApp = asyncRouter(() => import('./routes/deploymentApp'));
