@@ -534,7 +534,7 @@ public class PipelineServiceImpl implements PipelineService {
             } else {
                 if ((appDeployDTO.getTriggerVersion() != null) && !appDeployDTO.getTriggerVersion().isEmpty()) {
                     List<String> list = Arrays.asList(appDeployDTO.getTriggerVersion().split(","));
-                    List<AppServiceVersionDTO> versionES = appServiceVersionService.baseListByAppId(appDeployDTO.getAppServiceId(), null)
+                    List<AppServiceVersionDTO> versionES = appServiceVersionService.baseListByAppServiceId(appDeployDTO.getAppServiceId())
                             .stream()
                             .filter(versionE -> versionE.getCreationDate().getTime() > appDeployDTO.getCreationDate().getTime())
                             .collect(Collectors.toList());
@@ -941,7 +941,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private AppServiceVersionDTO getDeployVersion(Long pipelineRecordId, Long stageRecordId, PipelineTaskRecordDTO taskRecordDTO) {
-        List<AppServiceVersionDTO> versionES = appServiceVersionService.baseListByAppId(taskRecordDTO.getAppServiceId(), null);
+        List<AppServiceVersionDTO> versionES = appServiceVersionService.baseListByAppServiceId(taskRecordDTO.getAppServiceId());
         Integer index = -1;
         for (int i = 0; i < versionES.size(); i++) {
             AppServiceVersionDTO versionE = versionES.get(i);

@@ -71,7 +71,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     @Autowired
     private DevopsProjectConfigService devopsProjectConfigService;
 

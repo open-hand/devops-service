@@ -11,10 +11,6 @@ import java.util.Date;
 public class AppServiceMarketVersionVO {
     private Long id;
     private String version;
-    private Boolean isDeployed;
-    private Boolean isPublish;
-    private Date creationDate;
-    private Date updatedDate;
 
     public Long getId() {
         return id;
@@ -30,37 +26,5 @@ public class AppServiceMarketVersionVO {
 
     public void setVersion(String version) {
         this.version = version;
-    }
-
-    public Boolean getDeployed() {
-        return isDeployed;
-    }
-
-    public void setDeployed(Boolean deployed) {
-        isDeployed = deployed;
-    }
-
-    public Date getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public Boolean getPublish() {
-        return isPublish;
-    }
-
-    public void setPublish(Boolean publish) {
-        isPublish = publish;
-    }
-
-    public Date getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(Date updatedDate) {
-        this.updatedDate = updatedDate;
     }
 }

@@ -13,7 +13,7 @@ import io.choerodon.devops.api.vo.CommitFormRecordVO;
 import io.choerodon.devops.api.vo.CommitFormUserVO;
 import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
-import io.choerodon.devops.app.service.AppSevriceService;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -41,7 +41,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
     @Autowired
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired

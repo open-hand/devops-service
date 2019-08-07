@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
-import io.choerodon.devops.app.service.AppSevriceService;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
@@ -31,7 +31,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     private JSON json = new JSON();
 
     @Autowired
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     @Autowired
     private DevopsEnvAppServiceMapper devopsEnvAppServiceMapper;
 

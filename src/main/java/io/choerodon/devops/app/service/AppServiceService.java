@@ -16,7 +16,7 @@ import io.choerodon.devops.infra.enums.GitPlatformType;
 /**
  * Created by younger on 2018/3/28.
  */
-public interface AppSevriceService {
+public interface AppServiceService {
 
     /**
      * 项目下创建服务
@@ -85,10 +85,9 @@ public interface AppSevriceService {
                                             String params);
 
 
-    PageInfo<AppServiceRepVO> pageByOptionsAppMarket(Long projectId, Boolean isActive, Boolean hasVersion,
-                                                     Boolean appMarket,
-                                                     String type, Boolean doPage,
-                                                     PageRequest pageRequest, String params);
+    PageInfo<AppServiceMarketVO> pageByAppId(Long appId,
+                                             PageRequest pageRequest,
+                                             String params);
 
     /**
      * 处理服务创建逻辑

@@ -35,7 +35,7 @@ public class IssueServiceImpl implements IssueService {
     @Autowired
     private DevopsBranchService devopsBranchService;
     @Autowired
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     @Autowired
     private DevopsMergeRequestService devopsMergeRequestService;
     @Autowired

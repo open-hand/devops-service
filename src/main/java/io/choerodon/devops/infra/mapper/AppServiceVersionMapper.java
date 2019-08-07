@@ -36,8 +36,7 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
 
     String queryValue(@Param("versionId") Long versionId);
 
-    List<AppServiceVersionDTO> listByAppId(@Param("appServiceId") Long appServiceId,
-                                           @Param("isPublish") Boolean isPublish);
+    List<AppServiceVersionDTO> listByAppId(@Param("appServiceId") Long appServiceId);
 
     List<AppServiceVersionDTO> selectByAppIdAndParamWithPage(@Param("appServiceId") Long appServiceId,
                                                              @Param("isPublish") Boolean isPublish,

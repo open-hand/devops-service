@@ -69,7 +69,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     @Autowired
     private DevopsServiceInstanceService devopsServiceInstanceService;
     @Autowired

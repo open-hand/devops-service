@@ -74,7 +74,7 @@ import io.choerodon.websocket.tool.UUIDTool;
  */
 @Service
 @EnableConfigurationProperties(HarborConfigurationProperties.class)
-public class AppServiceServiceImpl implements AppSevriceService {
+public class AppServiceServiceImpl implements AppServiceService {
     public static final String SEVERITIES = "severities";
     public static final Logger LOGGER = LoggerFactory.getLogger(AppServiceServiceImpl.class);
     public static final String NODELETED = "nodeleted";
@@ -313,12 +313,21 @@ public class AppServiceServiceImpl implements AppSevriceService {
     }
 
     @Override
-    public PageInfo<AppServiceRepVO> pageByOptionsAppMarket(Long projectId, Boolean isActive, Boolean hasVersion,
-                                                            Boolean appMarket,
-                                                            String type, Boolean doPage,
-                                                            PageRequest pageRequest, String params) {
-        PageInfo<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageRequest, params);
-        return ConvertUtils.convertPage(applicationServiceDTOS, this::dtoToRepVo);
+    public PageInfo<AppServiceMarketVO> pageByAppId(Long appId,
+                                                    PageRequest pageRequest, String params) {
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+        PageInfo<AppServiceDTO> appServiceDTOPageInfo = PageHelper
+                .startPage(pageRequest.getPage(),
+                        pageRequest.getSize(),
+                        PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
+                        appServiceMapper.listByAppId(appId, (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), (List<String>) mapParams.get(TypeUtil.PARAM)));
+
+        PageInfo<AppServiceMarketVO> appServiceMarketVOPageInfo = ConvertUtils.convertPage(appServiceDTOPageInfo, this::dtoToMarketVO);
+        List<AppServiceMarketVO> list = appServiceMarketVOPageInfo.getList();
+        list.forEach(appServiceMarketVO -> appServiceMarketVO.setAppServiceMarketVersionVOS(
+                ConvertUtils.convertList(appServiceVersionService.baseListByAppServiceId(appServiceMarketVO.getAppServiceId()), AppServiceMarketVersionVO.class)));
+        appServiceMarketVOPageInfo.setList(list);
+        return appServiceMarketVOPageInfo;
     }
 
     @Override
@@ -482,7 +491,7 @@ public class AppServiceServiceImpl implements AppSevriceService {
                         // 提交并推代码
                         gitUtil.commitAndPush(repositoryGit, appServiceDTO.getGitlabProjectUrl(), accessToken, ref.getName());
                     } catch (CommonException e) {
-                        releaseResources(applicationWorkDir,  repositoryGit);
+                        releaseResources(applicationWorkDir, repositoryGit);
                         throw e;
                     }
 
@@ -2173,6 +2182,14 @@ public class AppServiceServiceImpl implements AppSevriceService {
         BeanUtils.copyProperties(applicationDTO, applicationRepVO);
         applicationRepVO.setGitlabProjectId(TypeUtil.objToLong(applicationDTO.getGitlabProjectId()));
         return applicationRepVO;
+    }
+
+    private AppServiceMarketVO dtoToMarketVO(AppServiceDTO applicationDTO) {
+        AppServiceMarketVO appServiceMarketVO = new AppServiceMarketVO();
+        appServiceMarketVO.setAppServiceId(applicationDTO.getId());
+        appServiceMarketVO.setAppServiceCode(applicationDTO.getCode());
+        appServiceMarketVO.setAppServiceName(applicationDTO.getName());
+        return appServiceMarketVO;
     }
 
     private DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, String role, Date creationDate) {

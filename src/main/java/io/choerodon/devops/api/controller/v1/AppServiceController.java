@@ -19,7 +19,7 @@ import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.AppSevriceService;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -32,9 +32,9 @@ import io.choerodon.swagger.annotation.CustomPageRequest;
 public class AppServiceController {
 
     private static final String ERROR_APPLICATION_GET = "error.app.service.get";
-    private AppSevriceService applicationServiceService;
+    private AppServiceService applicationServiceService;
 
-    public AppServiceController(AppSevriceService applicationServiceService) {
+    public AppServiceController(AppServiceService applicationServiceService) {
         this.applicationServiceService = applicationServiceService;
     }
 
@@ -225,38 +225,6 @@ public class AppServiceController {
     }
 
 
-    /**
-     * @param projectId
-     * @param isActive
-     * @param hasVersion
-     * @param doPage
-     * @param pageRequest
-     * @param params
-     * @return
-     */
-    @Permission(type = ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下分页查询服务 服务发布使用")
-    @CustomPageRequest
-    @PostMapping("/page_by_options/app_market")
-    public ResponseEntity<PageInfo<AppServiceRepVO>> pageByOptionsMarket(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "服务是否启用")
-            @RequestParam(value = "active", required = false) Boolean isActive,
-            @ApiParam(value = "服务是否存在版本")
-            @RequestParam(value = "has_version", required = false) Boolean hasVersion,
-            @ApiParam(value = "是否分页")
-            @RequestParam(value = "doPage", required = false) Boolean doPage,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(
-                applicationServiceService.pageByOptionsAppMarket(projectId, isActive, hasVersion, null, null, doPage, pageRequest, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.get"));
-    }
 
     /**
      * 根据环境id获取已部署正在运行实例的服务

@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.AppSevriceService;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.app.service.IamService;
 import io.choerodon.devops.app.service.UserAttrService;
@@ -25,14 +25,14 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionService {
 
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     private IamService iamService;
     private UserAttrService userAttrService;
     private DevopsProjectService devopsProjectService;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     public UpdateAppUserPermissionServiceImpl() {
-        this.applicationService = ApplicationContextHelper.getSpringFactory().getBean(AppSevriceService.class);
+        this.applicationService = ApplicationContextHelper.getSpringFactory().getBean(AppServiceService.class);
         this.iamService = ApplicationContextHelper.getSpringFactory().getBean(IamService.class);
         this.userAttrService = ApplicationContextHelper.getSpringFactory().getBean(UserAttrService.class);
         this.devopsProjectService = ApplicationContextHelper.getSpringFactory()

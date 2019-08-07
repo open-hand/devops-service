@@ -26,6 +26,17 @@
         </if>
     </select>
 
+    <select id="listByAppId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT
+        dav.id,
+        dav.version,
+        dav.creation_date
+        FROM
+        devops_app_service_version dav
+        WHERE
+        dav.app_service_id = #{appServiceId}
+    </select>
+
     <select id="listApplicationVersion" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
         dav.id,

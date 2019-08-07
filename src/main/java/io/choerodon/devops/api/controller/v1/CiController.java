@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.devops.app.service.AppServiceVersionService;
-import io.choerodon.devops.app.service.AppSevriceService;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -20,10 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping(value = "/ci")
 public class CiController {
 
-    private AppSevriceService applicationService;
+    private AppServiceService applicationService;
     private AppServiceVersionService appServiceVersionService;
 
-    public CiController(AppSevriceService applicationService, AppServiceVersionService appServiceVersionService) {
+    public CiController(AppServiceService applicationService, AppServiceVersionService appServiceVersionService) {
         this.applicationService = applicationService;
         this.appServiceVersionService = appServiceVersionService;
     }
