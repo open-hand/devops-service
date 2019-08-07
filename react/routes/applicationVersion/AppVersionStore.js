@@ -104,9 +104,9 @@ class AppVersionStore {
       .then((data) => {
         const res = handleProptError(data);
         if (res) {
-          const { pageNum, pageSize, total, list } = res;
+          const { pageNum, pageSizes, total, list } = res;
           this.setAllData(list);
-          this.setPageInfo({ current: pageNum, pageSize, total });
+          this.setPageInfo({ current: pageNum, pageSizes, total });
         }
         this.changeLoading(false);
       });

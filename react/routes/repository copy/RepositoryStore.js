@@ -1,5 +1,5 @@
 import { observable, action, computed } from 'mobx';
-import {axios, store, stores} from '@choerodon/boot';
+import { axios, store, stores } from '@choerodon/boot';
 import { handleProptError } from '../../../utils';
 
 const orderMapping = {
