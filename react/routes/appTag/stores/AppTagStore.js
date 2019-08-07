@@ -1,7 +1,7 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store } from '@choerodon/boot';
 import { handleProptError } from '../../../utils';
-import DevPipelineStore from '../../../stores/project/devPipeline';
+import DevPipelineStore from '../../devPipeline';
 
 @store('AppTagStore')
 class AppTagStore {

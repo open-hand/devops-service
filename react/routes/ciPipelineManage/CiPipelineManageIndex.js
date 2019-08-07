@@ -5,7 +5,7 @@ import {
 } from 'react-router-dom';
 import { asyncRouter, nomatch } from '@choerodon/boot';
 
-const CiPipelineHome = asyncRouter(() => import('./ciPipelineHome'));
+const CiPipelineHome = asyncRouter(() => import('./ciPipelineHome/CiPipelineHome'));
 
 const CiPipelineIndex = ({ match }) => (
   <Switch>

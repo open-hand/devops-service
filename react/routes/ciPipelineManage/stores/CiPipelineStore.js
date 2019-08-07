@@ -21,9 +21,15 @@ class CiPipelineStore {
 
   @observable loading = true;
 
+
+  @computed get
+  getciPipelines() {
+    return this.ciPipelines.slice();
+  }
+
   loadPipelines(spin, appId, page = 1, size = this.pagination.pageSize, projectId = AppState.currentMenuType.id) {
     spin && this.setLoading(true);
-    return axios.get(`/devops/v1/projects/${projectId}/pipeline/pageByOptions?appId=${appId}&page=${page}&size=${size}`)
+    return axios.get(`/devops/v1/projects/${projectId}/pipeline/page_by_options?app_id=${appId}&page=${page}&size=${size}`)
       .then((res) => {
         const response = handleProptError(res);
         if (response) {
@@ -41,7 +47,7 @@ class CiPipelineStore {
 
   loadPipelinesByBc(appId, branch, page = 1, size = this.pagination.pageSize, projectId = AppState.currentMenuType.id) {
     this.setLoading(true);
-    return axios.get(`/devops/v1/projects/${projectId}/pipeline/pageByOptions?appId=${appId}&branch=${branch}&page=${page}&size=${size}`)
+    return axios.get(`/devops/v1/projects/${projectId}/pipeline/page_by_options?app_id=${appId}&branch=${branch}&page=${page}&size=${size}`)
       .then((res) => {
         const response = handleProptError(res);
         if (response) {

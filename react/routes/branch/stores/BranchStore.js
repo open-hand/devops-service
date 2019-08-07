@@ -1,6 +1,8 @@
 import { observable, action, computed } from 'mobx';
 import { axios, store, stores } from '@choerodon/boot';
 import { handleProptError } from '../../../utils';
+import DevPipelineStore from '../../devPipeline/DevPipelineStore';
+import { branchList, issuesList, tagList } from './mock';
 
 const { AppState } = stores;
 const HEIGHT = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
@@ -128,7 +130,11 @@ class BranchStore {
       .then((data) => {
         this.setIssueLoading(false);
         const res = handleProptError(data);
-        this.setIssue(data.list);
+        if (res) {
+          this.setIssue(data.list);
+        } else {
+          this.setIssue(issuesList.list);
+        }
         return res;
       });
   };
@@ -171,6 +177,8 @@ class BranchStore {
         const res = handleProptError(data);
         if (res) {
           this.setBranchData(data);
+        } else {
+          this.setBranchData(branchList);
         }
       });
   };
@@ -187,7 +195,8 @@ class BranchStore {
     param: '' } }) => {
     if (DevPipelineStore.selectedApp) {
       this.changeLoading(true);
-      axios.post(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/page_branch_by_options?page=${page}&size=${size}&sort=${sort.field},${sort.order}`, JSON.stringify(postData))
+      axios
+        .post(`/devops/v1/projects/${projectId}/app_service/${DevPipelineStore.selectedApp}/git/page_branch_by_options?page=${page}&size=${size}&sort=${sort.field},${sort.order}`, JSON.stringify(postData))
         .then((data) => {
           this.changeLoading(false);
           const res = handleProptError(data);
@@ -195,6 +204,9 @@ class BranchStore {
             this.setBranchList(data.list);
             const pages = { current: data.pageNum, pageSize: size, total: data.total };
             this.setPageInfo(pages);
+          } else {
+            // 模拟数据
+            this.setBranchList(branchList.list);
           }
         });
     }
@@ -205,6 +217,8 @@ class BranchStore {
       const res = handleProptError(data);
       if (res) {
         this.setTagData(data);
+      } else {
+        this.setTagData(tagList);
       }
     });
 

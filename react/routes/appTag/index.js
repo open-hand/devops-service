@@ -10,7 +10,7 @@ import LoadingBar from '../../components/loadingBar';
 import TimePopover from '../../components/timePopover';
 import AppTagCreate from './AppTagCreate';
 import AppTagEdit from './AppTagEdit';
-import DevPipelineStore from '../../stores/project/devPipeline';
+import DevPipelineStore from '../devPipeline';
 import DepPipelineEmpty from '../../components/DepPipelineEmpty/DepPipelineEmpty';
 import AppTagStore from './stores';
 import handleMapStore from '../code-manager/main-view/store/handleMapStore';
@@ -28,6 +28,7 @@ class AppTag extends Component {
     handleMapStore.setCodeManagerAppTag({
       refresh: this.handleRefresh,
       select: this.handleSelect,
+      getSelfToolBar: this.getSelfToolBar(),
     });
     this.state = {
       page: 1,
@@ -47,7 +48,37 @@ class AppTag extends Component {
     AppTagStore.setLoading(null);
     AppTagStore.setTagData([]);
     this.loadInitData();
+    this.handleRefresh();
   }
+
+
+  /**
+   * 生成特殊的自定义tool-bar
+   */
+  getSelfToolBar= () => {
+    const appData = DevPipelineStore.getAppData;
+    const { type, id: projectId, organizationId: orgId } = AppState.currentMenuType;
+    return appData && appData.length ? (
+      <Permission
+        service={[
+          'devops-service.devops-git.createTag',
+        ]}
+        type={type}
+        projectId={projectId}
+        organizationId={orgId}
+      >
+        <Button
+          type="primary"
+          funcType="flat"
+          icon="playlist_add"
+          onClick={() => this.displayCreateModal(true)}
+        >
+          <FormattedMessage id="apptag.create" />
+        </Button>
+      </Permission>
+    ) : null;
+  }
+
 
   /**
    * 通过下拉选择器选择应用时，获取应用id
@@ -67,14 +98,12 @@ class AppTag extends Component {
   handleRefresh = () => {
     const { page, pageSize } = this.state;
     this.loadTagData(page, pageSize);
-    DevPipelineStore.queryAppData(AppState.currentMenuType.id);
   };
 
   /**
    * 加载应用信息
    */
   loadInitData = () => {
-    DevPipelineStore.queryAppData(AppState.currentMenuType.id, 'tag');
     this.setState({ appName: null });
   };
 
@@ -179,14 +208,13 @@ class AppTag extends Component {
           url,
         },
         commitUserImage,
-        tagName,
         release,
       } = item;
       const header = (<div className="c7n-tag-panel">
         <div className="c7n-tag-panel-info">
           <div className="c7n-tag-panel-name">
             <Icon type="local_offer" />
-            <span>{tagName}</span>
+            <span>{release.tagName}</span>
           </div>
           <div className="c7n-tag-panel-detail">
             <Icon className="c7n-tag-icon-point" type="point" />
@@ -221,7 +249,7 @@ class AppTag extends Component {
                 shape="circle"
                 size="small"
                 icon="mode_edit"
-                onClick={e => this.displayEditModal(true, tagName, release, e)}
+                onClick={e => this.displayEditModal(true, release.tagName, release, e)}
               />
             </Tooltip>
           </Permission>
@@ -241,7 +269,7 @@ class AppTag extends Component {
                 shape="circle"
                 size="small"
                 icon="delete_forever"
-                onClick={e => this.openRemove(e, tagName)}
+                onClick={e => this.openRemove(e, release.tagName)}
               />
             </Tooltip>
           </Permission>
@@ -249,7 +277,7 @@ class AppTag extends Component {
       </div>);
       tagList.push(<Panel
         header={header}
-        key={tagName}
+        key={release.tagName}
       >
         <div className="c7n-tag-release">{release ? <div className="c7n-md-parse c7n-md-preview">
           <ReactMarkdown
@@ -344,8 +372,8 @@ class AppTag extends Component {
           </Button>
         </Header> */}
           {/* <Content code={appData.length ? 'apptag.app' : 'apptag'} values={{ name: titleName }}> */}
-          <Content>
-            <div className="c7n-tag-table"><FormattedMessage id="apptag.table" /></div>
+          <Content className="c7n-tag-content">
+            {/* <div className="c7n-tag-table"><FormattedMessage id="apptag.table" /></div> */}
             {loading || _.isNull(loading) ? <LoadingBar display /> : <Fragment>
               {tagList.length ? <Fragment>
                 <Collapse bordered={false}>{tagList}</Collapse>

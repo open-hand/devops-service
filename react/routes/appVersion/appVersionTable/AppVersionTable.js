@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import { stores } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import TimePopover from '../../../components/timePopover';
-import DevPipelineStore from '../../../stores/project/devPipeline';
+import DevPipelineStore from '../../devPipeline';
 import '../applicationHome/ApplicationVersion.scss';
 import '../../main.scss';
 
@@ -30,7 +30,7 @@ class AppVersionTable extends Component {
       organizationId,
     } = AppState.currentMenuType;
     history.push({
-      pathname: `/devops/env-overview`,
+      pathname: '/devops/env-overview',
       search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(
         projectName
       )}&organizationId=${organizationId}&overview`,
@@ -68,14 +68,14 @@ class AppVersionTable extends Component {
     }];
 
     return (<Table
-              loading={loading}
-              pagination={store.pageInfo}
-              columns={columns}
-              filterBar={false}
-              dataSource={versionData}
-              rowKey={record => record.id}
-              onChange={this.tableChange}
-            />);
+      loading={loading}
+      pagination={store.pageInfo}
+      columns={columns}
+      filterBar={false}
+      dataSource={versionData}
+      rowKey={record => record.id}
+      onChange={this.tableChange}
+    />);
   }
 }
 
