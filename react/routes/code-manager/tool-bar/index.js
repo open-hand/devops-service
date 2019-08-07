@@ -35,18 +35,7 @@ class CodeManagerToolBar extends Component {
     } = this.props;
     
     const { appId } = state || {};
-    let type = '';
-    switch (this.state.name) {
-      case 'CodeQuality':
-        type = 'quality';
-        break;
-      case 'CodeManagerBranch':
-        type = 'branch';
-        break;
-      default:
-        type = '';
-    }
-    DevPipelineStore.queryAppData(projectId, type, appId);
+    DevPipelineStore.queryAppData(projectId, 'branch', appId);    
   }
 
   /**
@@ -56,7 +45,13 @@ class CodeManagerToolBar extends Component {
   handleSelect = (value, option) => {
     DevPipelineStore.setSelectApp(value);
     DevPipelineStore.setRecentApp(value);
-    handleMapStore[this.state.name].select(value, option);
+    Object.keys(handleMapStore).forEach((key) => {
+      if (key.indexOf('Code') !== -1) {
+        handleMapStore[key]
+        && handleMapStore[key].select
+        && handleMapStore[key].select(value, option);
+      }
+    });
   };
 
   
@@ -69,6 +64,11 @@ class CodeManagerToolBar extends Component {
   handleRefresh = () => {
     handleMapStore[this.state.name].refresh();
   };
+
+  getSelfToolBar = () => {
+    const obj = handleMapStore[this.state.name] && handleMapStore[this.state.name].getSelfToolBar;
+    return obj;
+  }
 
   render() {
     const {
@@ -125,6 +125,7 @@ class CodeManagerToolBar extends Component {
                 }
         </OptGroup>
       </Select>
+      {this.getSelfToolBar()}
       {currentApp && currentApp.repoUrl
         ? <Tooltip title={<FormattedMessage id="repository.copyUrl" />} placement="bottom">
           <CopyToClipboard

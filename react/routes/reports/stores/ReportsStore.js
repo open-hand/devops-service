@@ -1,12 +1,12 @@
-import { observable, action, computed } from "mobx";
-import { axios, store, stores } from "@choerodon/boot";
-import moment from "moment";
-import _ from "lodash";
-import { handleProptError } from "../../../utils";
+import { observable, action, computed } from 'mobx';
+import { axios, store, stores } from '@choerodon/boot';
+import moment from 'moment';
+import _ from 'lodash';
+import { handleProptError } from '../../../utils';
 
 const { AppState } = stores;
 
-@store("ReportsStore")
+@store('ReportsStore')
 class ReportsStore {
   @observable pageInfo = {
     current: 1,
@@ -16,11 +16,11 @@ class ReportsStore {
 
   @observable Info = {
     filters: {},
-    sort: { columnKey: "id", order: "descend" },
+    sort: { columnKey: 'id', order: 'descend' },
     paras: [],
   };
 
-  @observable startTime = moment().subtract(6, "days");
+  @observable startTime = moment().subtract(6, 'days');
 
   @observable startDate = null;
 
@@ -60,7 +60,7 @@ class ReportsStore {
 
   @observable allApps = [];
 
-  @observable proRole = "";
+  @observable proRole = '';
 
   @observable codeQuality = {};
 
@@ -262,26 +262,24 @@ class ReportsStore {
    * 加载项目下的应用
    * @param proId
    */
-  loadApps = proId =>
-    axios.get(`/devops/v1/projects/${proId}/apps/list_all`).then(data => {
-      const res = handleProptError(data);
-      this.handleAppsDate(res);
-      return res;
-    });
+  loadApps = proId => axios.get(`/devops/v1/projects/${proId}/apps/list_all`).then((data) => {
+    const res = handleProptError(data);
+    this.handleAppsDate(res);
+    return res;
+  });
 
   /**
    * 加载项目下所有应用，代码提交报表使用
    * @param proId
    */
-  loadAllApps = proId =>
-    axios.get(`/devops/v1/projects/${proId}/apps`).then(data => {
-      const res = handleProptError(data);
-      this.handleAppsDate(res);
-      return res;
-    });
+  loadAllApps = proId => axios.get(`/devops/v1/projects/${proId}/apps`).then((data) => {
+    const res = handleProptError(data);
+    this.handleAppsDate(res);
+    return res;
+  });
 
-  handleAppsDate = data => {
-    const apps = data ? _.filter(data, ["permission", true]) : [];
+  handleAppsDate = (data) => {
+    const apps = data ? _.filter(data, ['permission', true]) : [];
     if (apps.length) {
       this.setAllApps(apps);
     } else {
@@ -299,19 +297,19 @@ class ReportsStore {
     const { projectId, organizationId, type } = AppState.currentMenuType;
     const datas = [
       {
-        code: "devops-service.devops-environment.create",
+        code: 'devops-service.devops-environment.create',
         organizationId,
         projectId,
         resourceType: type,
       },
     ];
     axios
-      .post("/iam/v1/permissions/checkPermission", JSON.stringify(datas))
-      .then(data => {
+      .post('/iam/v1/permissions/checkPermission', JSON.stringify(datas))
+      .then((data) => {
         const res = handleProptError(data);
         if (res && res.length) {
           const { approve } = res[0];
-          this.setProRole(approve ? "owner" : "member");
+          this.setProRole(approve ? 'owner' : 'member');
         }
       });
   };
@@ -326,7 +324,7 @@ class ReportsStore {
       .get(
         `/devops/v1/projects/${projectId}/pipeline/frequency?appId=${appId}&startTime=${startTime}&endTime=${endTime}`
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.setBuildNumber(data);
@@ -345,7 +343,7 @@ class ReportsStore {
       .get(
         `/devops/v1/projects/${projectId}/pipeline/time?appId=${appId}&startTime=${startTime}&endTime=${endTime}`
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.setBuildDuration(data);
@@ -371,7 +369,7 @@ class ReportsStore {
       .get(
         `/devops/v1/projects/${projectId}/pipeline/page?appId=${appId}&startTime=${startTime}&endTime=${endTime}&page=${page}&size=${size}`
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.handleData(data);
@@ -387,7 +385,7 @@ class ReportsStore {
         `devops/v1/projects/${projectId}/app_instances/env_commands/time?envId=${envId}&endTime=${endTime}&startTime=${startTime}`,
         JSON.stringify(appIds)
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.setDdChart(data);
@@ -404,7 +402,7 @@ class ReportsStore {
         `devops/v1/projects/${projectId}/app_instances/env_commands/frequency?appId=${appId}&endTime=${endTime}&startTime=${startTime}`,
         JSON.stringify(envIds)
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.setDtChart(data);
@@ -429,7 +427,7 @@ class ReportsStore {
         `devops/v1/projects/${projectId}/app_instances/env_commands/timeDetail?envId=${envId}&endTime=${endTime}&startTime=${startTime}&page=${page}&size=${size}`,
         JSON.stringify(appIds)
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.handleData(data);
@@ -454,7 +452,7 @@ class ReportsStore {
         `devops/v1/projects/${projectId}/app_instances/env_commands/frequencyDetail?appId=${appId}&endTime=${endTime}&startTime=${startTime}&page=${page}&size=${size}`,
         JSON.stringify(envIds)
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.handleData(data);
@@ -478,14 +476,14 @@ class ReportsStore {
         `devops/v1/projects/${projectId}/commits?start_date=${start}&end_date=${end}`,
         JSON.stringify(apps)
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.setCommits(res);
         }
         this.setCommitLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         this.setCommitLoading(false);
         Choerodon.handleResponseError(err);
       });
@@ -512,14 +510,14 @@ class ReportsStore {
         `devops/v1/projects/${projectId}/commits/record?page=${page}&size=5&start_date=${start}&end_date=${end}`,
         JSON.stringify(apps)
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.setCommitsRecord(res);
         }
         this.setHistoryLoad(false);
       })
-      .catch(err => {
+      .catch((err) => {
         this.setHistoryLoad(false);
         Choerodon.handleResponseError(err);
       });
@@ -534,7 +532,7 @@ class ReportsStore {
       .get(
         `/devops/v1/projects/${projectId}/apps/${appId}/sonarQubeTable?type=${type}&startTime=${startTime}&endTime=${endTime}`
       )
-      .then(data => {
+      .then((data) => {
         const res = handleProptError(data);
         if (res) {
           this.setCodeQuality(data);
@@ -543,7 +541,7 @@ class ReportsStore {
       });
   };
 
-  handleData = data => {
+  handleData = (data) => {
     const { pageNum, pageSize, total, list } = data;
     this.setAllData(list);
     const page = { pageNum, pageSize, total };

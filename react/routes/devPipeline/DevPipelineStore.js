@@ -124,8 +124,6 @@ class DevPipelineStore {
    * @param apps
    */
   queryAppData = (projectId = AppState.currentMenuType.id, type, apps) => {
-    AppTagStore.setTagData([]);
-    BranchStore.setBranchList([]);
     if (Number(this.preProId) !== Number(projectId)) {
       this.setAppData([]);
       DeploymentPipelineStore.setProRole('app', '');

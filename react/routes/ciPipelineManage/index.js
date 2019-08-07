@@ -1,24 +1,27 @@
 import React, { Component, Fragment } from 'react';
-import { observer } from 'mobx-react';
+import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { Tooltip, Select } from 'choerodon-ui';
 import { Content, Header, Page, stores } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import _ from 'lodash';
 import CiPipelineStore from './stores';
-import DevPipelineStore from '../../stores/project/devPipeline';
+import DevPipelineStore from '../devPipeline/DevPipelineStore';
 import DepPipelineEmpty from '../../components/DepPipelineEmpty/DepPipelineEmpty';
 import RefreshBtn from '../../components/refreshBtn';
 import DevopsStore from '../../stores/DevopsStore';
-import CiPipelineTable from './CiPipelineTable';
+import CiPipelineTable from './CiPipelineTable.js';
 
 import '../main.scss';
-import './index.scss';
+import './index.less';
 
 const { Option, OptGroup } = Select;
 const { AppState } = stores;
 
-@observer
+@injectIntl
+@withRouter
+@inject('AppState')
+@observer 
 class CiPipelineHome extends Component {
   constructor(props) {
     super(props);
@@ -27,7 +30,7 @@ class CiPipelineHome extends Component {
   }
 
   componentDidMount() {
-    DevPipelineStore.queryAppData(AppState.currentMenuType.id, 'ci');
+    this.handleRefresh();
   }
 
   componentWillUnmount() {
@@ -42,7 +45,6 @@ class CiPipelineHome extends Component {
       CiPipelineStore.pagination.current,
       CiPipelineStore.pagination.pageSize,
     );
-    DevPipelineStore.queryAppData(AppState.currentMenuType.id);
   };
 
   handleChange(appId) {
@@ -70,7 +72,8 @@ class CiPipelineHome extends Component {
           'devops-service.devops-gitlab-pipeline.pagePipeline',
         ]}
       >
-        {appData && appData.length && appId ? <Fragment><Header title={<FormattedMessage id="ciPipeline.head" />}>
+        {appData && appData.length && appId ? <Fragment>
+          {/* <Header title={<FormattedMessage id="ciPipeline.head" />}>
           <Select
             filter
             className="c7n-header-select"
@@ -108,8 +111,9 @@ class CiPipelineHome extends Component {
             </OptGroup>
           </Select>
           <RefreshBtn name="ci" onFresh={this.handleRefresh} />
-        </Header>
-          <Content code={appData.length ? 'ciPipeline.app' : 'ciPipeline'} values={{ name: titleName }}>
+        </Header> */}
+          {/* code={appData.length ? 'ciPipeline.app' : 'ciPipeline'} values={{ name: titleName }} */}
+          <Content className="c7n-content">
             <CiPipelineTable store={CiPipelineStore} loading={CiPipelineStore.loading} />
           </Content></Fragment> : <DepPipelineEmpty title={<FormattedMessage id="ciPipeline.head" />} type="app" />}
       </Page>

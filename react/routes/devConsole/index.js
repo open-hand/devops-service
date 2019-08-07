@@ -26,7 +26,7 @@ import LoadingBar from '../../components/loadingBar';
 import TimePopover from '../../components/timePopover';
 import AppTagCreate from '../appTag/AppTagCreate';
 import AppTagEdit from '../appTag/AppTagEdit';
-import DevPipelineStore from '../../stores/project/devPipeline';
+import DevPipelineStore from '../devPipeline';
 import AppTagStore from '../appTag/stores';
 import BranchStore from '../branch/stores';
 import MouserOverWrapper from '../../components/MouseOverWrapper';
