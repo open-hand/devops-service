@@ -109,7 +109,7 @@
                   AND dp.namespace = env.code
                   AND env.id = ins.env_id) pod_running_count
         FROM devops_env env
-                 LEFT JOIN devops_env_application env_app ON env.id = env_app.env_id
+                 LEFT JOIN devops_env_app_service env_app ON env.id = env_app.env_id
                  LEFT JOIN devops_app_service app ON env_app.app_service_id = app.id
                  LEFT JOIN devops_app_service_instance ins ON app.id = ins.app_service_id
                                                           AND env.id = ins.env_id
