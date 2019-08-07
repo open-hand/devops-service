@@ -61,8 +61,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Autowired
     private DevopsGitService devopsGitService;
     @Autowired
-    private AppServiceShareRuleService applicationMarketService;
-    @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
     private UserAttrService userAttrService;
@@ -157,16 +155,19 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, AppServiceDTO.class);
-        applicationDTO.setProjectId(projectId);
-        applicationService.checkName(projectId, applicationDTO.getName());
-        applicationService.checkCode(projectId, applicationDTO.getCode());
+
+        Long appId = devopsProjectService.queryAppIdByProjectId(projectId);
+
+        applicationDTO.setAppId(appId);
+        applicationService.checkName(appId, applicationDTO.getName());
+        applicationService.checkCode(appId, applicationDTO.getCode());
 
         applicationDTO.setActive(true);
         applicationDTO.setSynchro(false);
         applicationDTO.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
 
         // 查询创建应用所在的gitlab应用组
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(applicationDTO.getProjectId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(applicationDTO.getAppId());
         MemberDTO gitlabMember = gitlabGroupMemberService.queryByUserId(
                 TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -196,7 +197,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
             throw new CommonException("error.application.create.insert");
         }
 
-        devOpsAppServicePayload.setAppId(applicationDTO.getId());
+        devOpsAppServicePayload.setAppServiceId(applicationDTO.getId());
         devOpsAppServicePayload.setIamProjectId(projectId);
 
         // 如果不跳过权限检查
@@ -210,7 +211,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devopsSagaHandler.createAppService(input);
 
         return ConvertUtils.convertObject(applicationService.baseQueryByCode(applicationReqDTO.getCode(),
-                applicationDTO.getProjectId()), AppServiceRepVO.class);
+                applicationDTO.getAppId()), AppServiceRepVO.class);
     }
 
 

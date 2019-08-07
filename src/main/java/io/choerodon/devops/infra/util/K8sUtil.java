@@ -112,7 +112,7 @@ public class K8sUtil {
             default:
                 break;
         }
-        return "<unknow>";
+        return "<unknown>";
     }
 
     /**

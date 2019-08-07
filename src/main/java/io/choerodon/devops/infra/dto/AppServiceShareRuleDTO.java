@@ -17,7 +17,7 @@ public class AppServiceShareRuleDTO extends BaseDTO {
     private String shareLevel;
     private String versionType;
     private String version;
-    private Long projectId;
+    private Long appId;
 
     public Long getId() {
         return id;
@@ -59,11 +59,11 @@ public class AppServiceShareRuleDTO extends BaseDTO {
         this.version = version;
     }
 
-    public Long getProjectId() {
-        return projectId;
+    public Long getAppId() {
+        return appId;
     }
 
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 }

@@ -31,7 +31,7 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_CREATE_INGRESS = "devops-create-ingress";
 
     /**
-     * Devops创建应用
+     * Devops创建应用服务
      */
     public static final String DEVOPS_CREATE_APPLICATION_SERVICE = "devops-create-application-service";
 

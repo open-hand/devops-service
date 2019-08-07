@@ -15,11 +15,11 @@
                   AND dp.`status` = 'Running'
                   AND dp.is_ready = TRUE) pod_running_count,
                ins.app_service_id,
-               ins.app_version_id,
+               ins.app_service_version_id,
                version.version as version_name,
                das.name as app_service_name
         FROM devops_app_service_instance ins
-                 LEFT JOIN devops_app_service_version  version ON ins.app_version_id = version.id
+                 LEFT JOIN devops_app_service_version  version ON ins.app_service_version_id = version.id
                  LEFT JOIN devops_app_service das ON ins.app_service_id = das.id
         WHERE ins.id = #{instanceId}
     </select>
@@ -37,11 +37,11 @@
                   AND dp.`status` = 'Running'
                   AND dp.is_ready = TRUE) pod_running_count,
                ins.app_service_id,
-               ins.app_version_id,
+               ins.app_service_version_id,
                version.version as version_name,
                das.name as app_service_name
         FROM devops_app_service_instance ins
-                 LEFT JOIN devops_app_service_version  version ON ins.app_version_id = version.id
+                 LEFT JOIN devops_app_service_version  version ON ins.app_service_version_id = version.id
                  LEFT JOIN devops_app_service das ON ins.app_service_id = das.id
         WHERE ins.env_id = #{envId}
         <include refid="infoSqlParam"/>
@@ -83,7 +83,7 @@
         dai.`code` code,
         dam.share_level publishLevel,
         da.id appServiceId,
-        da.project_id projectId,
+        de.project_id projectId,
         da.code as appServiceCode,
         da.`name` appServiceName,
         dav.version appServiceVersion,
@@ -116,14 +116,14 @@
         ) podRunningCount,
         ( select count(1) from devops_service ds
         left join devops_service_instance dsi on ds.id = dsi.service_id
-        where dsi.app_instance_id = dai.id ) serviceCount,
+        where dsi.instance_id = dai.id ) serviceCount,
         (
         SELECT
         count(distinct dip.ingress_id)
         FROM
         devops_ingress_path dip
         JOIN devops_service_instance dsi ON dip.service_id = dsi.service_id
-        where dsi.app_instance_id = dai.id
+        where dsi.instance_id = dai.id
         ) ingressCount,
         dai.object_version_number,
         cmd.`status` commandStatus,
@@ -141,7 +141,7 @@
         devops_app_service_instance dai
         JOIN devops_env de ON dai.env_id = de.id
         JOIN devops_app_service da ON da.id = dai.app_service_id
-        LEFT JOIN devops_app_service_version  dav ON dai.app_version_id = dav.id
+        LEFT JOIN devops_app_service_version  dav ON dai.app_service_version_id = dav.id
         LEFT JOIN devops_env_command cmd ON cmd.id = dai.command_id
         LEFT JOIN devops_app_service_share_rule dam ON dam.app_service_id = da.id
         WHERE de.project_id = #{projectId}
@@ -173,12 +173,12 @@
         AND dai.env_id = de.id
         AND dai.`status` = 'running'
         AND de.project_id = #{projectId}
-        AND dai.app_version_id = dav.id
+        AND dai.app_service_version_id = dav.id
         <if test="envId != null">
             AND dai.env_id = #{envId}
         </if>
         <if test="versionId != null">
-            AND dai.app_version_id = #{versionId}
+            AND dai.app_service_version_id = #{versionId}
         </if>
         <if test="appServiceId != null">
             AND dai.app_service_id = #{appServiceId}
@@ -366,7 +366,7 @@
         dam.share_level publishLevel,
         da.`code` appServiceCode,
         da.`name` appServiceName,
-        da.project_id projectId,
+        de.project_id projectId,
         dav.id versionId,
         dai.id instanceId,
         dai.status instanceStatus,
@@ -377,7 +377,7 @@
         FROM
         devops_app_service da
         JOIN devops_app_service_version  dav ON dav.app_service_id = da.id
-        JOIN devops_app_service_instance dai ON dai.app_version_id = dav.id
+        JOIN devops_app_service_instance dai ON dai.app_service_version_id = dav.id
         AND dai.status != 'deleted'
         JOIN devops_env de ON de.id = dai.env_id
         LEFT JOIN devops_app_service_share_rule dam ON dam.app_service_id = da.id
@@ -416,10 +416,10 @@
         cmd.created_by
         from devops_app_service_instance dai
         JOIN devops_app_service da ON dai.app_service_id = da.id
-        JOIN devops_app_service_version  dav ON dai.app_version_id = dav.id
+        JOIN devops_app_service_version  dav ON dai.app_service_version_id = dav.id
         JOIN devops_env de ON de.id = dai.env_id
         LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
-        where da.project_id = #{projectId} and cmd.command_type in ('create','update') and cmd.`status` not in
+        where da.app_id = #{projectId} and cmd.command_type in ('create','update') and cmd.`status` not in
         ('doing','operating') and cmd.object = 'instance' and dai.status != 'deleted'
         <if test="startTime != null">
             AND cmd.creation_date >= CONCAT('','${startTime}',' 00:00:00')
@@ -511,6 +511,6 @@
 	LEFT JOIN devops_env_command_value  ON devops_env_command.value_id = devops_env_command_value.id
     WHERE
 	devops_env_command.object_id = #{instanceId}
-	and devops_env_command.object = "instance"
+	AND devops_env_command.object = 'instance'
     </delete>
 </mapper>

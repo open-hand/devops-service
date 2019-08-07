@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.pagehelper.PageInfo;
 import io.choerodon.base.domain.PageRequest;
+import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 
 /**
@@ -20,6 +21,8 @@ public interface DevopsMergeRequestService {
     List<DevopsMergeRequestDTO> baseQueryByGitlabProjectId(Integer gitlabProjectId);
 
     Integer baseUpdate(DevopsMergeRequestDTO devopsMergeRequestDTO);
+
+    void create(DevopsMergeRequestVO devopsMergeRequestVO);
 
     void baseCreate(DevopsMergeRequestDTO devopsMergeRequestDTO);
 

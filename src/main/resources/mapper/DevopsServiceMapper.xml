@@ -11,7 +11,7 @@
         WHERE
         ds.app_service_id = da.id
         AND ds.`name` = #{name}
-        AND da.project_id = #{projectId}
+        AND da.app_id = #{projectId}
         AND ds.env_id = #{envId}
         AND ds.`status` != 'deleted'
     </select>
@@ -90,7 +90,7 @@
         cmd.`status` commandStatus,
         cmd.command_type commandType,
         cmd.error error,
-        da.project_id AS appServiceProjectId,
+        de.project_id AS appServiceProjectId,
         dsai.instance_id AS instance_id,
         dsai.code AS code,
         dai.`status` AS instance_status
@@ -136,7 +136,7 @@
         ds.`name`,
         ds.external_ip,
         ds.labels,
-        da.project_id appServiceProjectId,
+        de.project_id appServiceProjectId,
         ds. ports,
         ds.end_points,
         ds.`status`,
@@ -161,10 +161,10 @@
         dai.code AS ins_code,
         (SELECT count(1)
          FROM devops_env_pod dp
-         WHERE dp.app_instance_id = dai.id) pod_count,
+         WHERE dp.instance_id = dai.id) pod_count,
         (SELECT count(1)
          FROM devops_env_pod dp
-         WHERE dp.app_instance_id = dai.id
+         WHERE dp.instance_id = dai.id
            AND dp.`status` = 'Running'
            AND dp.is_ready = TRUE) pod_running_count,
         dai.last_update_date AS ins_last_update_date,

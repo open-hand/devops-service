@@ -39,7 +39,7 @@
         FROM
         devops_app_service da
         RIGHT JOIN devops_app_service_version dav ON da.id = dav.app_service_id
-        WHERE da.project_id = #{projectId}
+        WHERE da.app_id = #{projectId}
         <if test='appServiceId != null'>
             AND da.id= #{appServiceId}
         </if>
@@ -83,9 +83,9 @@
         JOIN devops_app_service da ON lv.app_service_id = da.id
         LEFT JOIN devops_app_service_share_rule dam on dam.app_service_id = da.id
         WHERE
-        da.project_id = #{projectId}
+        da.app_id = #{projectId}
         OR (
-        da.project_id IN
+        da.app_id IN
         <foreach collection="projectIds" item="project" open="(" separator="," close=")">
             #{project}
         </foreach>
@@ -117,7 +117,7 @@
         da.id = dai.app_service_id
         AND de.id = dai.env_id
         AND dai.`status` = 'running'
-        AND dai.app_version_id = dav.id
+        AND dai.app_service_version_id = dav.id
         AND de.project_id = #{projectId}
         AND de.id = #{envId}
         AND da.id = #{appServiceId}
@@ -189,7 +189,7 @@
         dav.version
         FROM
         devops_app_service_version dav
-        JOIN devops_app_service_instance dai ON dai.app_version_id = dav.id
+        JOIN devops_app_service_instance dai ON dai.app_service_version_id = dav.id
         AND dai.`status` != 'deleted'
         JOIN devops_env de ON de.id = dai.env_id
         WHERE
@@ -243,7 +243,7 @@
         devops_app_service da
         JOIN devops_app_service_version dav ON dav.app_service_id = da.id
         WHERE
-        da.project_id = #{projectId}
+        da.app_id = #{projectId}
         AND dav.id = #{appServiceServiceId}
     </select>
 
@@ -340,7 +340,7 @@
                     SELECT
                         dasr.version_type
                     FROM
-                        devops_app_service_share_rule_rule dasr
+                        devops_app_service_share_rule dasr
                     WHERE
                         dasr.app_service_id = #{appServiceId}
                     AND dasr.version IS NULL
@@ -361,7 +361,7 @@
                         SELECT
                             dasr.version
                         FROM
-                            devops_app_service_share_rule_rule dasr
+                            devops_app_service_share_rule dasr
                         WHERE
                             dasr.app_service_id =  #{appServiceId}
                         AND dasr.version IS NOT NULL

@@ -5,7 +5,7 @@
     <select id="list" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
         da.id,
-        da.project_id,
+        da.app_id,
         da.name,
         da.code,
         da.type,
@@ -17,7 +17,7 @@
         da.is_skip_check_permission,
         da.creation_date
         FROM devops_app_service da
-        where da.project_id = #{projectId}
+        where da.app_id = #{appId}
         <if test="isActive != null">
             <if test="isActive">
                 AND da.is_active = TRUE
@@ -60,16 +60,14 @@
         da.`code`,
         da.`name` ,
         dam.share_level,
-        da.project_id projectId,
-        dam.contributor contributor,
-        dam.description description
+        da.app_id app_id,
         FROM
         devops_app_service da
         JOIN devops_app_service_instance dai ON dai.app_service_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
         left join devops_app_service_share_rule dam on dam.app_service_id = da.id
         WHERE
-        de.project_id = #{projectId}
+        de.project_id = #{appId}
         AND de.id = #{envId}
         <if test="appServiceId!=null and appServiceId !=''">
             ORDER BY da.id not in (#{appServiceId}),da.id ASC
@@ -85,14 +83,12 @@
             da.is_active is true
           AND da.is_synchro is true
           AND da.gitlab_project_id is not null
-          AND da.project_id = #{projectId}
+          AND da.app_id = #{appId}
     </select>
 
     <select id="listDeployedApp" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT
         dam.share_level publishLevel,
-        dam.contributor,
-        dam.description,
         da.*
         FROM
         devops_app_service da
@@ -102,7 +98,7 @@
         LEFT JOIN devops_app_service_share_rule dam ON dam.app_service_id = da.id
         WHERE
         da.is_active
-        AND de.project_id = #{projectId}
+        AND de.project_id = #{appId}
         ORDER BY
         dam.share_level ASC,
         da.id DESC
@@ -111,8 +107,6 @@
     <select id="listAll" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT DISTINCT
         dam.share_level publishLevel,
-        dam.contributor,
-        dam.description,
         da.*
         FROM
         devops_app_service da
@@ -122,7 +116,7 @@
         LEFT JOIN devops_app_service_share_rule dam ON dam.app_service_id = da.id
         WHERE
         da.is_active
-        AND de.project_id = #{projectId}
+        AND de.project_id = #{appId}
         ORDER BY
         dam.share_level ASC,
         da.id DESC
@@ -189,7 +183,7 @@
         FROM
         devops_app_service da
         WHERE
-        da.project_id = #{projectId}
+        da.app_id = #{appId}
         AND da.is_active = #{active}
         AND ((select count(1) from devops_app_service_share_rule dam where da.id=dam.app_service_id)=0)
         AND ((select count(1) from devops_app_service_version dav where da.id=dav.app_service_id)>0)
@@ -200,7 +194,7 @@
     <select id="queryByToken" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
         da.id,
-        da.project_id,
+        da.app_id,
         da.name,
         da.code,
         da.is_active,
@@ -225,14 +219,14 @@
         WHERE
         NOT EXISTS ( SELECT 1 FROM devops_app_service_share_rule dam WHERE dam.app_service_id = da.id )
         AND NOT EXISTS ( SELECT 1 FROM devops_app_service_instance dai JOIN devops_app_service_version dav ON dav.id =
-        dai.app_version_id WHERE dai.`status` != 'deleted' AND dav.app_service_id = da.id )
-        AND da.id = #{applicationId}
+        dai.app_service_version_id WHERE dai.`status` != 'deleted' AND dav.app_service_id = da.id )
+        AND da.id = #{appServiceId}
     </select>
 
     <select id="listByCode" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
         da.`id`,
-        da.project_id
+        da.app_id
         FROM
         devops_app_service da
         JOIN devops_app_service_share_rule dam ON da.id = dam.app_service_id
@@ -243,7 +237,7 @@
     <select id="listCodeRepository" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
         da.id,
-        da.project_id,
+        da.app_id,
         da.name,
         da.code,
         da.is_active,
@@ -253,7 +247,7 @@
         da.uuid
         FROM
         devops_app_service da
-        WHERE da.project_id = #{projectId}
+        WHERE da.app_id = #{appId}
         AND da.is_active = 1
         AND da.gitlab_project_id IS NOT NULL
         <if test='isProjectOwner != null'>
@@ -303,7 +297,7 @@
                 where da.harbor_config_id = #{oldConfigId}
             </if>
         </if>
-        AND da.project_id = #{projectId}
+        AND da.app_id = #{appId}
     </update>
 
     <select id="queryByCodeWithNoProject" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -313,7 +307,7 @@
             devops_app_service da
         WHERE
             da.code = #{code}
-          AND da.project_id is null
+          AND da.app_id is null
     </select>
 
     <select id="listShareApplications" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -321,11 +315,11 @@
             da.id,
             da.`code`,
             da.`name`,
-            da.project_id,
+            da.app_id,
             da.chart_config_id,
             da.harbor_config_id
         FROM
-            devops_app_service_share_rule_rule dasr
+            devops_app_service_share_rule dasr
         JOIN devops_app_service da ON da.id = dasr.app_service_id
 
         WHERE
@@ -335,7 +329,7 @@
         </foreach>
         AND (
             dasr.share_level = 'organization'
-            OR dasr.project_id = #{projectId}
+            OR dasr.app_id = #{appId}
         )
         <if test="params != null">
             and (da.code like #{params} or da.name like #{params} )

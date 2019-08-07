@@ -11,7 +11,7 @@ public class AppServiceRepVO {
     private Long id;
     private String name;
     private String code;
-    private Long projectId;
+    private Long appId;
     private Long gitlabProjectId;
     private String repoUrl;
     private Boolean isSynchro;
@@ -69,12 +69,12 @@ public class AppServiceRepVO {
         this.code = code;
     }
 
-    public Long getProjectId() {
-        return projectId;
+    public Long getAppId() {
+        return appId;
     }
 
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 
     public String getRepoUrl() {

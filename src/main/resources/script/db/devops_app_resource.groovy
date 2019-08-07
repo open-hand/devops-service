@@ -31,4 +31,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_resource.groovy') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_app_resource')
     }
 
+
+    changeSet(author: 'zmf', id: '2019-08-06-rename-table') {
+        renameTable(newTableName: 'devops_app_service_resource', oldTableName: 'devops_app_resource')
+    }
 }
