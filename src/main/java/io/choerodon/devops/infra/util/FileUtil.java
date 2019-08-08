@@ -273,6 +273,16 @@ public class FileUtil {
     }
 
     /**
+     * 创建目录
+     */
+    public static void createDirectory(String outputDir) {
+        File file = new File(outputDir);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+    }
+
+    /**
      * 从文件夹中查找指定文件
      */
     public static File queryFileFromFiles(File file, String fileName) {

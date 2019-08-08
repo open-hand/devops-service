@@ -7,10 +7,7 @@ import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.AppServiceShareRuleService;
 import io.choerodon.devops.app.service.OrgAppMarketService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -57,6 +54,21 @@ public class OrgAppMarketController {
                 orgAppMarketService.pageByAppId(appId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.services.page"));
+    }
+
+    /**
+     *
+     * @param appMarketUploadVO
+     * @return
+     */
+    @Permission(type = ResourceType.SITE, permissionWithin = true )
+    @ApiOperation(value = "打包并上传文件")
+    @PostMapping("/upload")
+    public ResponseEntity upload(
+            @ApiParam(value = "应用信息",required = true)
+            @RequestBody AppMarketUploadVO appMarketUploadVO) {
+        orgAppMarketService.upload(appMarketUploadVO);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
 }
