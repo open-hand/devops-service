@@ -179,7 +179,7 @@
                 </foreach>
             </if>
         </if>
-        <if test='params != null and params != ""'>
+        <if test='params != null and params.size>0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
                  (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
