@@ -189,6 +189,11 @@ const deployment = {
   'c7ncd.deployment.environment.permission.name': '登录名',
   'c7ncd.deployment.environment.permission.role': '项目角色',
   'c7ncd.deployment.environment.permission.addTime': '添加时间',
+  'c7ncd.deployment.environment.code': '环境编码',
+  'c7ncd.deployment.environment.status': '环境状态',
+  'c7ncd.deployment.environment.description': '环境描述',
+  'c7ncd.deployment.environment.cluster': '连接集群',
+  'c7ncd.deployment.environment.add.service': '添加服务',
   'c7ncd.deployment.application.tabs.networking': '网络与域名',
   'c7ncd.deployment.application.tabs.mapping': '配置映射',
   'c7ncd.deployment.application.tabs.cipher': '密文',
@@ -230,6 +235,12 @@ const deployment = {
   'c7ncd.deployment.modal.modify': '变更实例',
   'c7ncd.deployment.modal.redeploy': '重新部署',
   'c7ncd.deployment.modal.detail': '实例详情',
+  'c7ncd.deployment.app-service': '应用服务',
+  'c7ncd.deployment.set-operator': '设置该环境的开发操作人员',
+  'c7ncd.deployment.project.member': '项目成员',
+  'c7ncd.deployment.member.all': '项目下所有成员',
+  'c7ncd.deployment.member.specific': '项目下特定成员',
+  'c7ncd.deployment.add.member': '添加人员',
 };
 
 const appService = {
