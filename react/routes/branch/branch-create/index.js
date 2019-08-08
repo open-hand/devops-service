@@ -1,17 +1,17 @@
-import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
-import { observer } from "mobx-react";
-import { Modal, Form, Radio, Input, Select, Tooltip } from "choerodon-ui";
-import { Content, stores } from "@choerodon/boot";
-import { injectIntl, FormattedMessage } from "react-intl";
-import _ from "lodash";
-import "../../main.scss";
-import "./index.scss";
-import "../index.scss";
-import MouserOverWrapper from "../../../components/MouseOverWrapper";
-import DevPipelineStore from "../../../stores/project/devPipeline";
-import DevConsoleStore from "../../devConsole/stores";
-import InterceptMask from "../../../components/interceptMask/InterceptMask";
+import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import { observer } from 'mobx-react';
+import { Modal, Form, Radio, Input, Select, Tooltip } from 'choerodon-ui';
+import { Content, stores } from '@choerodon/boot';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import _ from 'lodash';
+import '../../main.scss';
+import './index.scss';
+import '../index.scss';
+import MouserOverWrapper from '../../../components/MouseOverWrapper';
+import DevPipelineStore from '../../devPipeline';
+import DevConsoleStore from '../../devConsole/stores';
+import InterceptMask from '../../../components/interceptMask/InterceptMask';
 
 const { AppState } = stores;
 const Sidebar = Modal.Sidebar;
@@ -35,7 +35,7 @@ class BranchCreate extends Component {
     this.state = {
       projectId: menu.id,
       submitting: false,
-      type: "custom",
+      type: 'custom',
       branchSize: 3,
       tagSize: 3,
       filter: false,
@@ -47,36 +47,36 @@ class BranchCreate extends Component {
    * @param s
    * @returns {*}
    */
-  getOptionContent = s => {
+  getOptionContent = (s) => {
     const { formatMessage } = this.props.intl;
-    let mes = "";
-    let icon = "";
-    let color = "";
+    let mes = '';
+    let icon = '';
+    let color = '';
     switch (s.typeCode) {
-      case "story":
-        mes = formatMessage({ id: "branch.issue.story" });
-        icon = "agile_story";
-        color = "#00bfa5";
+      case 'story':
+        mes = formatMessage({ id: 'branch.issue.story' });
+        icon = 'agile_story';
+        color = '#00bfa5';
         break;
-      case "bug":
-        mes = formatMessage({ id: "branch.issue.bug" });
-        icon = "agile_fault";
-        color = "#f44336";
+      case 'bug':
+        mes = formatMessage({ id: 'branch.issue.bug' });
+        icon = 'agile_fault';
+        color = '#f44336';
         break;
-      case "issue_epic":
-        mes = formatMessage({ id: "branch.issue.epic" });
-        icon = "agile_epic";
-        color = "#743be7";
+      case 'issue_epic':
+        mes = formatMessage({ id: 'branch.issue.epic' });
+        icon = 'agile_epic';
+        color = '#743be7';
         break;
-      case "sub_task":
-        mes = formatMessage({ id: "branch.issue.subtask" });
-        icon = "agile_subtask";
-        color = "#4d90fe";
+      case 'sub_task':
+        mes = formatMessage({ id: 'branch.issue.subtask' });
+        icon = 'agile_subtask';
+        color = '#4d90fe';
         break;
       default:
-        mes = formatMessage({ id: "branch.issue.task" });
-        icon = "agile_task";
-        color = "#4d90fe";
+        mes = formatMessage({ id: 'branch.issue.task' });
+        icon = 'agile_task';
+        color = '#4d90fe';
     }
     return (
       <span>
@@ -87,9 +87,9 @@ class BranchCreate extends Component {
         </Tooltip>
         <Tooltip title={s.summary}>
           <span className="branch-issue-content">
-            <span style={{ color: "rgb(0,0,0,0.65)" }}>{s.issueNum}</span>
+            <span style={{ color: 'rgb(0,0,0,0.65)' }}>{s.issueNum}</span>
             <MouserOverWrapper
-              style={{ display: "inline-block", verticalAlign: "sub" }}
+              style={{ display: 'inline-block', verticalAlign: 'sub' }}
               width="350px"
               text={s.summary}
             >
@@ -106,22 +106,22 @@ class BranchCreate extends Component {
    * @param type 分支类型
    * @returns {*}
    */
-  getIcon = type => {
+  getIcon = (type) => {
     let icon;
     switch (type) {
-      case "feature":
+      case 'feature':
         icon = <span className="c7n-branch-icon icon-feature">F</span>;
         break;
-      case "bugfix":
+      case 'bugfix':
         icon = <span className="c7n-branch-icon icon-develop">B</span>;
         break;
-      case "hotfix":
+      case 'hotfix':
         icon = <span className="c7n-branch-icon icon-hotfix">H</span>;
         break;
-      case "master":
+      case 'master':
         icon = <span className="c7n-branch-icon icon-master">M</span>;
         break;
-      case "release":
+      case 'release':
         icon = <span className="c7n-branch-icon icon-release">R</span>;
         break;
       default:
@@ -134,7 +134,7 @@ class BranchCreate extends Component {
    * 提交分支数据
    * @param e
    */
-  handleOk = e => {
+  handleOk = (e) => {
     e.preventDefault();
     const { store, isDevConsole } = this.props;
     const appId = DevPipelineStore.selectedApp;
@@ -142,10 +142,9 @@ class BranchCreate extends Component {
     this.props.form.validateFieldsAndScroll((err, data) => {
       if (!err) {
         const postData = data;
-        postData.branchName =
-          type && type !== "custom"
-            ? `${type}-${data.branchName}`
-            : data.branchName;
+        postData.branchName = type && type !== 'custom'
+          ? `${type}-${data.branchName}`
+          : data.branchName;
         this.setState({ submitting: true });
         store
           .createBranch(projectId, appId, postData)
@@ -158,7 +157,7 @@ class BranchCreate extends Component {
             this.props.form.resetFields();
             this.setState({ submitting: false });
           })
-          .catch(error => {
+          .catch((error) => {
             Choerodon.handleResponseError(error);
             this.setState({ submitting: false });
           });
@@ -171,9 +170,9 @@ class BranchCreate extends Component {
    */
   triggerNameCheck = () => {
     const { getFieldValue, validateFields } = this.props.form;
-    const value = getFieldValue("branchName");
+    const value = getFieldValue('branchName');
     if (value) {
-      validateFields(["branchName"], { force: true });
+      validateFields(['branchName'], { force: true });
     }
   };
 
@@ -189,16 +188,16 @@ class BranchCreate extends Component {
     const single = /^@+$/;
     const { intl } = this.props;
     if (endWith.test(value)) {
-      callback(intl.formatMessage({ id: "branch.checkNameEnd" }));
+      callback(intl.formatMessage({ id: 'branch.checkNameEnd' }));
     } else if (contain.test(value) || single.test(value)) {
-      callback(intl.formatMessage({ id: "branch.check" }));
+      callback(intl.formatMessage({ id: 'branch.check' }));
     } else {
       const { appId, store } = this.props;
       const { projectId, type } = this.state;
-      const name = `${type === "custom" ? "" : `${type}-`}${value}`;
-      store.checkName(projectId, appId, name).then(data => {
+      const name = `${type === 'custom' ? '' : `${type}-`}${value}`;
+      store.checkName(projectId, appId, name).then((data) => {
         if (data && data.failed) {
-          callback(intl.formatMessage({ id: "branch.check.existence" }));
+          callback(intl.formatMessage({ id: 'branch.check.existence' }));
         } else {
           callback();
         }
@@ -218,7 +217,7 @@ class BranchCreate extends Component {
    * 切换分支类型
    * @param value
    */
-  changeType = value => {
+  changeType = (value) => {
     this.setState({ type: value }, () => this.triggerNameCheck());
   };
 
@@ -235,29 +234,29 @@ class BranchCreate extends Component {
     } = this.props;
     const issue = store.issue.slice();
     const issueDto = _.filter(issue, i => i.issueId === value)[0];
-    let type = "";
+    let type = '';
     switch (key) {
-      case "story":
-        type = "feature";
+      case 'story':
+        type = 'feature';
         break;
-      case "bug":
-        type = "bugfix";
+      case 'bug':
+        type = 'bugfix';
         break;
-      case "issue_epic":
-        type = "custom";
+      case 'issue_epic':
+        type = 'custom';
         break;
-      case "sub_task":
-        type = "feature";
+      case 'sub_task':
+        type = 'feature';
         break;
-      case "task":
-        type = "feature";
+      case 'task':
+        type = 'feature';
         break;
       default:
-        type = "custom";
+        type = 'custom';
     }
     this.setState({ type });
     setFieldsValue({ type, branchName: issueDto ? issueDto.issueNum : '' });
-    this.triggerNameCheck()
+    this.triggerNameCheck();
   };
 
   /**
@@ -267,10 +266,10 @@ class BranchCreate extends Component {
    */
   searchIssue = (input, options) => {
     const { store } = this.props;
-    if (input !== "") {
+    if (input !== '') {
       store.loadIssue(this.state.projectId, input, false);
     } else {
-      store.loadIssue(this.state.projectId, "", true);
+      store.loadIssue(this.state.projectId, '', true);
     }
   };
 
@@ -282,21 +281,21 @@ class BranchCreate extends Component {
     e.stopPropagation();
     const { branchSize, tagSize } = this.state;
     const { store } = this.props;
-    if (type === "branch") {
+    if (type === 'branch') {
       this.setState({ branchSize: branchSize + 10 });
       store.loadBranchData({
         projectId: this.state.projectId,
         size: branchSize + 10,
         postData: {
           searchParam: { branchName: [this.state.filter] },
-          param: "",
+          param: '',
         },
       });
     } else {
       this.setState({ tagSize: tagSize + 10 });
       store.loadTagData(this.state.projectId, 1, tagSize + 10, {
         searchParam: { tagName: [this.state.filter] },
-        param: "",
+        param: '',
       });
     }
   };
@@ -304,18 +303,18 @@ class BranchCreate extends Component {
   /**
    * 搜索分支数据
    */
-  searchData = input => {
+  searchData = (input) => {
     const { store } = this.props;
     const { branchSize, tagSize } = this.state;
     this.setState({ filter: input });
     store.loadBranchData({
       projectId: this.state.projectId,
       size: branchSize,
-      postData: { searchParam: { branchName: [input] }, param: "" },
+      postData: { searchParam: { branchName: [input] }, param: '' },
     });
     store.loadTagData(this.state.projectId, 1, tagSize, {
       searchParam: { tagName: [input] },
-      param: "",
+      param: '',
     });
   };
 
@@ -351,7 +350,7 @@ class BranchCreate extends Component {
             className="c7n-sidebar-form"
           >
             <FormItem className="branch-formItem" {...formItemLayout}>
-              {getFieldDecorator("issueId")(
+              {getFieldDecorator('issueId')(
                 <Select
                   dropdownClassName="createBranch-dropdown"
                   onFilterChange={this.searchIssue}
@@ -375,12 +374,12 @@ class BranchCreate extends Component {
               )}
             </FormItem>
             <FormItem className="branch-formItem" {...formItemLayout}>
-              {getFieldDecorator("originBranch", {
+              {getFieldDecorator('originBranch', {
                 rules: [
                   {
                     required: true,
                     whitespace: true,
-                    message: intl.formatMessage({ id: "required" }),
+                    message: intl.formatMessage({ id: 'required' }),
                   },
                 ],
                 initialValue: this.state.originBranch,
@@ -395,7 +394,7 @@ class BranchCreate extends Component {
                   filterOption={false}
                 >
                   <OptGroup
-                    label={intl.formatMessage({ id: "branch.branch" })}
+                    label={intl.formatMessage({ id: 'branch.branch' })}
                     key="proGroup"
                   >
                     {branches.list.map(s => (
@@ -404,52 +403,52 @@ class BranchCreate extends Component {
                         {s.branchName}
                       </Option>
                     ))}
-                    {branches.total > branches.size &&
-                    branches.size > 0 ? (
+                    {branches.total > branches.size
+                    && branches.size > 0 ? (
                       <Option key="more">
                         <div
                           role="none"
-                          onClick={this.changeSize.bind(this, "branch")}
+                          onClick={this.changeSize.bind(this, 'branch')}
                           className="c7n-option-popover c7n-dom-more"
                         >
-                          {intl.formatMessage({ id: "loadMore" })}
+                          {intl.formatMessage({ id: 'loadMore' })}
                         </div>
                       </Option>
-                    ) : null}
+                      ) : null}
                   </OptGroup>
                   <OptGroup
-                    label={intl.formatMessage({ id: "branch.tag" })}
+                    label={intl.formatMessage({ id: 'branch.tag' })}
                     key="more"
                   >
                     {tags.list.map(s => (
-                      <Option value={s.tagName} key={s.tagName}>
+                      <Option value={s.release.tagName} key={s.release.tagName}>
                         <i className="icon icon-local_offer c7n-branch-formItem-icon" />
-                        {s.tagName}
+                        {s.release.tagName}
                       </Option>
                     ))}
-                    {tags.total > tags.size &&
-                    tags.size > 0 ? (
+                    {tags.total > tags.size
+                    && tags.size > 0 ? (
                       <Option value="more">
                         <div
                           role="none"
-                          onClick={this.changeSize.bind(this, "tag")}
+                          onClick={this.changeSize.bind(this, 'tag')}
                           className="c7n-option-popover c7n-dom-more"
                         >
-                          {intl.formatMessage({ id: "loadMore" })}
+                          {intl.formatMessage({ id: 'loadMore' })}
                         </div>
                       </Option>
-                    ) : null}
+                      ) : null}
                   </OptGroup>
                 </Select>
               )}
             </FormItem>
             <FormItem className="c7n-formItem_180" {...formItemLayout}>
-              {getFieldDecorator("type", {
+              {getFieldDecorator('type', {
                 rules: [
                   {
                     required: true,
                     whitespace: true,
-                    message: intl.formatMessage({ id: "required" }),
+                    message: intl.formatMessage({ id: 'required' }),
                   },
                 ],
                 initialValue: this.state.type,
@@ -462,7 +461,7 @@ class BranchCreate extends Component {
                   onSelect={this.selectTemplate}
                   size="default"
                 >
-                  {["feature", "bugfix", "release", "hotfix", "custom"].map(
+                  {['feature', 'bugfix', 'release', 'hotfix', 'custom'].map(
                     s => (
                       <Option value={s} key={s}>
                         {this.getIcon(s)}
@@ -474,12 +473,12 @@ class BranchCreate extends Component {
               )}
             </FormItem>
             <FormItem className="c7n-formItem_281" {...formItemLayout}>
-              {getFieldDecorator("branchName", {
+              {getFieldDecorator('branchName', {
                 rules: [
                   {
                     required: true,
                     whitespace: true,
-                    message: intl.formatMessage({ id: "required" }),
+                    message: intl.formatMessage({ id: 'required' }),
                   },
                   {
                     validator: this.checkName,
@@ -490,7 +489,7 @@ class BranchCreate extends Component {
                   maxLength={50}
                   label={<FormattedMessage id="branch.name" />}
                   prefix={`${
-                    this.state.type === "custom" ? "" : `${this.state.type}-`
+                    this.state.type === 'custom' ? '' : `${this.state.type}-`
                   }`}
                 />
               )}

@@ -41,7 +41,7 @@ class CodeQuality extends Component {
       location: { state },
     } = this.props;
     const { appId } = state || {};
-    DevPipelineStore.queryAppData(projectId, 'quality', appId);
+    this.handleRefresh();
   }
 
   handleRefresh = () => {
@@ -186,7 +186,7 @@ class CodeQuality extends Component {
         ]}
       >
         {getAppData && getAppData.length && getSelectApp ? <Fragment>
-          <Content code="codeQuality" values={{ name: titleName }}>
+          <Content className="c7n-codeQuality-content">
             {getLoading ? <LoadingBar display /> : this.getDetail()}
           </Content>
         </Fragment> : <DepPipelineEmpty title={formatMessage({ id: 'codeQuality.head' })} type="app" />}

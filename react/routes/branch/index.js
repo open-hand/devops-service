@@ -10,7 +10,7 @@ import TimePopover from '../../components/timePopover';
 import BranchEdit from './branch-edit';
 import IssueDetail from './issue-detail';
 import MouserOverWrapper from '../../components/MouseOverWrapper';
-import DevPipelineStore from '../../stores/project/devPipeline';
+import DevPipelineStore from '../devPipeline';
 import DepPipelineEmpty from '../../components/DepPipelineEmpty/DepPipelineEmpty';
 import StatusIcon from '../../components/StatusIcon/StatusIcon';
 import BranchStore from './stores';
@@ -31,6 +31,7 @@ class Branch extends Component {
     handleMapStore.setCodeManagerBranch({
       refresh: this.handleRefresh,
       select: this.loadData,
+      getSelfToolBar: this.getSelfToolBar(),
     });
     this.state = {
       projectId: menu.id,
@@ -51,8 +52,21 @@ class Branch extends Component {
     if (state && state.appId) {
       historyAppId = state.appId;
     }
-    DevPipelineStore.queryAppData(AppState.currentMenuType.id, 'branch', historyAppId);
   }
+
+  /**
+   * 生成特殊的自定义tool-bar
+   */
+  getSelfToolBar= () => (BranchStore.getBranchList.length && DevPipelineStore.selectedApp ? <Permission
+    service={['devops-service.devops-git.createBranch']}
+  >
+    <Button
+      onClick={this.showSidebar}
+      icon="playlist_add"
+    >
+      <FormattedMessage id="branch.create" />
+    </Button>
+  </Permission> : null)
 
   /**
    * 获取issue的options
@@ -254,7 +268,6 @@ class Branch extends Component {
     const pagination = BranchStore.getPageInfo;
     const { filters, paras, sort } = this.state;
     this.tableChange(pagination, filters, sort, paras);
-    DevPipelineStore.queryAppData(AppState.currentMenuType.id);
   };
 
   /**
@@ -392,22 +405,22 @@ class Branch extends Component {
         {apps && apps.length && appId 
           ? <Fragment>
             {/* <Header
-            title={<FormattedMessage id="branch.head" />}
-            backPath={backPath}
-          >
-            <Select
-              filter
-              className="c7n-header-select"
-              dropdownClassName="c7n-header-select_drop"
-              placeholder={formatMessage({ id: 'ist.noApp' })}
-              value={apps && apps.length ? DevPipelineStore.getSelectApp : undefined}
-              disabled={apps.length === 0}
-              filterOption={(input, option) => option.props.children.props.children.props.children
-                .toLowerCase().indexOf(input.toLowerCase()) >= 0}
-              onChange={this.loadData}
+              title={<FormattedMessage id="branch.head" />}
+              backPath={backPath}
             >
-              <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
-                {
+              <Select
+                filter
+                className="c7n-header-select"
+                dropdownClassName="c7n-header-select_drop"
+                placeholder={formatMessage({ id: 'ist.noApp' })}
+                value={apps && apps.length ? DevPipelineStore.getSelectApp : undefined}
+                disabled={apps.length === 0}
+                filterOption={(input, option) => option.props.children.props.children.props.children
+                  .toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                onChange={this.loadData}
+              >
+                <OptGroup label={formatMessage({ id: 'recent' })} key="recent">
+                  {
                 _.map(DevPipelineStore.getRecentApp, app => (
                   <Option
                     key={`recent-${app.id}`}
@@ -417,9 +430,9 @@ class Branch extends Component {
                     <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
                   </Option>))
               }
-              </OptGroup>
-              <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
-                {
+                </OptGroup>
+                <OptGroup label={formatMessage({ id: 'deploy.app' })} key="app">
+                  {
                 _.map(apps, (app, index) => (
                   <Option
                     value={app.id}
@@ -429,25 +442,25 @@ class Branch extends Component {
                     <Tooltip title={app.code}><span className="c7n-ib-width_100">{app.name}</span></Tooltip>
                   </Option>))
               }
-              </OptGroup>
-            </Select>
-            {BranchStore.getBranchList.length && DevPipelineStore.selectedApp ? <Permission
-              service={['devops-service.devops-git.createBranch']}
-            >
-              <Button
-                onClick={this.showSidebar}
-                icon="playlist_add"
+                </OptGroup>
+              </Select>
+              {BranchStore.getBranchList.length && DevPipelineStore.selectedApp ? <Permission
+                service={['devops-service.devops-git.createBranch']}
               >
-                <FormattedMessage id="branch.create" />
+                <Button
+                  onClick={this.showSidebar}
+                  icon="playlist_add"
+                >
+                  <FormattedMessage id="branch.create" />
+                </Button>
+              </Permission> : null}
+              <Button
+                onClick={this.handleRefresh}
+                icon="refresh"
+              >
+                <FormattedMessage id="refresh" />
               </Button>
-            </Permission> : null}
-            <Button
-              onClick={this.handleRefresh}
-              icon="refresh"
-            >
-              <FormattedMessage id="refresh" />
-            </Button>
-          </Header> */}
+            </Header> */}
             <Content className="page-content c7n-branch-content">
               {this.tableBranch}
             </Content>

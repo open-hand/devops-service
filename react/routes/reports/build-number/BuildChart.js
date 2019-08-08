@@ -5,7 +5,7 @@ import { Spin } from 'choerodon-ui';
 import ReactEcharts from 'echarts-for-react';
 import _ from 'lodash';
 import ReportsStore from '../stores';
-import '../../ciPipelineManage/index.scss';
+import '../../ciPipelineManage/index.less';
 import { getAxis } from '../../../utils';
 
 class BuildTable extends Component {

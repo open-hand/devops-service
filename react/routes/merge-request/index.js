@@ -7,7 +7,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import TimeAgo from 'timeago-react';
 import _ from 'lodash';
 import MouserOverWrapper from '../../components/MouseOverWrapper';
-import DevPipelineStore from '../../stores/project/devPipeline';
+import DevPipelineStore from '../devPipeline';
 import DepPipelineEmpty from '../../components/DepPipelineEmpty/DepPipelineEmpty';
 import Tips from '../../components/Tips';
 import MergeRequestStore from './stores';
@@ -27,6 +27,7 @@ class MergeRequestHome extends Component {
     handleMapStore.setCodeManagerMergeRequest({
       refresh: this.reload,
       select: this.handleChange,
+      getSelfToolBar: this.getSelfToolBar(),
     });
     this.state = {
       tabKey: 'opened',
@@ -34,8 +35,23 @@ class MergeRequestHome extends Component {
   }
 
   componentDidMount() {
-    DevPipelineStore.queryAppData(AppState.currentMenuType.id, 'merge');
     MergeRequestStore.loadUser();
+    this.reload();
+  }
+  
+
+  /**
+   * 生成特殊的自定义tool-bar
+   */
+  getSelfToolBar= () => {
+    const appData = DevPipelineStore.getAppData;
+    return appData.length ? (<Button
+      funcType="flat"
+      onClick={this.linkToNewMerge}
+    >
+      <i className="icon-playlist_add icon" />
+      <FormattedMessage id="merge.createMerge" />
+    </Button>) : null;
   }
 
   /**
@@ -52,7 +68,6 @@ class MergeRequestHome extends Component {
       MergeRequestStore.pageInfo.current,
       MergeRequestStore.pageInfo.pageSize,
     );
-    DevPipelineStore.queryAppData(AppState.currentMenuType.id);
   };
 
   tabChange = (key) => {

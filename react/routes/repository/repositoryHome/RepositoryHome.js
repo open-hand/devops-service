@@ -1,4 +1,4 @@
-import React, {Component, Fragment} from 'react';
+import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { observer, inject } from 'mobx-react';
 import { injectIntl, FormattedMessage } from 'react-intl';
@@ -9,8 +9,8 @@ import _ from 'lodash';
 import MouserOverWrapper from '../../../components/MouseOverWrapper';
 import '../../main.scss';
 import './RepositoryHome.scss';
-import DepPipelineEmpty from "../../../components/DepPipelineEmpty/DepPipelineEmpty";
-import DevPipelineStore from "../../../stores/project/devPipeline";
+import DepPipelineEmpty from '../../../components/DepPipelineEmpty/DepPipelineEmpty';
+import DevPipelineStore from '../../devPipeline';
 
 const { AppState } = stores;
 const repoColor = [
@@ -125,7 +125,7 @@ class RepositoryHome extends Component {
       },
     } = this.props;
     history.push({
-      pathname: "/devops/code-quality",
+      pathname: '/devops/code-quality',
       search,
       state: {
         backPath: `/devops/repository${search}`,
@@ -219,7 +219,7 @@ class RepositoryHome extends Component {
         {flag && flag.length ? <Fragment>
           <Header title={<FormattedMessage id="repository.head" />}>
             <Button
-              icon='refresh'
+              icon="refresh"
               onClick={this.handleRefresh}
             >
               <FormattedMessage id="refresh" />

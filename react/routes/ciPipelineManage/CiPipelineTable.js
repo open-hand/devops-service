@@ -6,12 +6,13 @@ import { Permission, stores } from '@choerodon/boot';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import TimeAgo from 'timeago-react';
 import MouserOverWrapper from '../../components/MouseOverWrapper';
-import DevPipelineStore from '../../stores/project/devPipeline';
-import Tips from "../../components/Tips/Tips";
-import { getTableTitle } from '../../utils';
+import DevPipelineStore from '../devPipeline';
+import Tips from '../../components/Tips/Tips';
+import CiPipelineStore from './stores';
+
 
 import '../main.scss';
-import './index.scss';
+import './index.less';
 
 const ICONS = {
   passed: {
@@ -79,10 +80,9 @@ const ICONS_ACTION = {
 };
 
 const { AppState } = stores;
-const HEIGHT =
-  window.innerHeight ||
-  document.documentElement.clientHeight ||
-  document.body.clientHeight;
+const HEIGHT = window.innerHeight
+  || document.documentElement.clientHeight
+  || document.body.clientHeight;
 
 @observer
 class CiPipelineTable extends Component {
@@ -93,7 +93,7 @@ class CiPipelineTable extends Component {
   }
 
   get tableCiPipeline() {
-    const { pagination, ciPipelines } = this.props.idnex;
+    const { pagination, getCiPipelines } = CiPipelineStore;
     const { loading, intl: { formatMessage } } = this.props;
     let Loading = loading;
     if (loading === 'undefined') {
@@ -124,7 +124,7 @@ class CiPipelineTable extends Component {
       {
         title: <FormattedMessage id="ciPipeline.time" />,
         dataIndex: 'pipelineTime',
-        render: (pipelineTime) => (
+        render: pipelineTime => (
           <span>
             {this.renderTime(pipelineTime)}
           </span>
@@ -133,7 +133,7 @@ class CiPipelineTable extends Component {
       {
         title: <FormattedMessage id="ciPipeline.createdAt" />,
         dataIndex: 'creationDate',
-        render: (creationDate) => (
+        render: creationDate => (
           <div>
             <Tooltip
               title={creationDate}
@@ -155,10 +155,10 @@ class CiPipelineTable extends Component {
       <div>
         <Table
           loading={Loading}
-          size="middle"
+          size="default"
           pagination={pagination}
           columns={ciPipelineColumns}
-          dataSource={ciPipelines.slice()}
+          dataSource={getCiPipelines}
           rowKey={record => record.pipelineId}
           onChange={this.handleTableChange}
           filterBar={false}
