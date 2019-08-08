@@ -74,6 +74,7 @@ import io.choerodon.websocket.tool.UUIDTool;
 @Service
 @EnableConfigurationProperties(HarborConfigurationProperties.class)
 public class AppServiceServiceImpl implements AppServiceService {
+    private static final String SONAR_KEY = "%s-%s:%s";
     public static final String SEVERITIES = "severities";
     public static final Logger LOGGER = LoggerFactory.getLogger(AppServiceServiceImpl.class);
     public static final String NODELETED = "nodeleted";
@@ -807,14 +808,14 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         SonarContentsVO sonarContentsVO = new SonarContentsVO();
         List<SonarContentVO> sonarContentVOS = new ArrayList<>();
-        AppServiceDTO applicationDTO = baseQuery(appServiceId);
+        AppServiceDTO appServiceDTO = baseQuery(appServiceId);
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organization = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
 
         //初始化sonarClient
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = String.format("%s-%s:%s", organization.getCode(), projectDTO.getCode(), applicationDTO.getCode());
+        String key = String.format(SONAR_KEY, organization.getCode(), projectDTO.getCode(), appServiceDTO.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         try {
 
@@ -1116,7 +1117,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = String.format("%s-%s:%s", organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
+        String key = String.format(SONAR_KEY, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("component", key);
@@ -2123,7 +2124,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 t.setRepoUrl(
                         gitlabUrl + urlSlash + organizationDTO.getCode() + "-" + projectDTO.getCode() + "/" +
                                 t.getCode() + ".git");
-                String key = String.format("%s-%s:%s", organizationDTO.getCode(), projectDTO.getCode(), t.getCode());
+                String key = String.format(SONAR_KEY, organizationDTO.getCode(), projectDTO.getCode(), t.getCode());
                 if (!projectKeys.isEmpty() && projectKeys.contains(key)) {
                     t.setSonarUrl(sonarqubeUrl);
                 }
