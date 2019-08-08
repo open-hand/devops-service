@@ -66,8 +66,10 @@ class CodeManagerToolBar extends Component {
   };
 
   getSelfToolBar = () => {
-    const obj = handleMapStore[this.state.name] && handleMapStore[this.state.name].getSelfToolBar;
-    return obj;
+    const obj = handleMapStore[this.state.name] 
+    && handleMapStore[this.state.name].getSelfToolBar
+    && handleMapStore[this.state.name].getSelfToolBar();
+    return obj || null;
   }
 
   render() {
