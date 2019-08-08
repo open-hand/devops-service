@@ -1,8 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-
 import io.choerodon.base.annotation.Permission;
 import io.choerodon.base.enums.ResourceType;
 import io.choerodon.core.exception.CommonException;
@@ -16,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author lizongwei
@@ -40,7 +40,7 @@ public class DevopsEnvAppServiceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建环境下的服务关联")
     @PostMapping("/batch_create")
-    public ResponseEntity<List<DevopsEnvApplicationVO>> batch_create(
+    public ResponseEntity<List<DevopsEnvApplicationVO>> batchCreate(
             @ApiParam(value = "关联信息", required = true)
             @RequestBody DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
         validator.checkEnvIdExist(devopsEnvAppServiceVO.getEnvId());
@@ -48,6 +48,17 @@ public class DevopsEnvAppServiceController {
         return Optional.ofNullable(devopsEnvApplicationService.batchCreate(devopsEnvAppServiceVO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.app.create"));
+    }
+
+    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "删除指定环境关联的多个服务")
+    @PostMapping("/batch_delete")
+    public ResponseEntity batchDelete(
+            @ApiParam(value = "关联信息", required = true)
+            @RequestBody DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
+        validator.checkEnvIdAndAppIdsExist(devopsEnvAppServiceVO);
+        devopsEnvApplicationService.batchDelete(devopsEnvAppServiceVO);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
