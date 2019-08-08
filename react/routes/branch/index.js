@@ -28,11 +28,7 @@ class Branch extends Component {
   constructor(props) {
     super(props);
     const menu = AppState.currentMenuType;
-    handleMapStore.setCodeManagerBranch({
-      refresh: this.handleRefresh,
-      select: this.loadData,
-      getSelfToolBar: this.getSelfToolBar(),
-    });
+   
     this.state = {
       projectId: menu.id,
       paras: [],
@@ -52,6 +48,11 @@ class Branch extends Component {
     if (state && state.appId) {
       historyAppId = state.appId;
     }
+    handleMapStore.setCodeManagerBranch({
+      refresh: this.handleRefresh,
+      select: this.loadData,
+      getSelfToolBar: this.getSelfToolBar,
+    });
   }
 
   /**

@@ -27,7 +27,7 @@ class MergeRequestHome extends Component {
     handleMapStore.setCodeManagerMergeRequest({
       refresh: this.reload,
       select: this.handleChange,
-      getSelfToolBar: this.getSelfToolBar(),
+      getSelfToolBar: this.getSelfToolBar,
     });
     this.state = {
       tabKey: 'opened',
