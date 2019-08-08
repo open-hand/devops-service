@@ -126,15 +126,6 @@ public interface AppServiceVersionService {
     AppServiceVersionRespVO queryByAppAndVersion(Long appServiceId, String version);
 
     /**
-     * 获取远程应用版本
-     * @param appServiceId
-     * @param pageRequest
-     * @param params
-     * @return
-     */
-    PageInfo<MarketAppPublishVersionVO> pageVersionByAppId(Long appServiceId, PageRequest pageRequest, String params);
-
-    /**
      * 获取共享应用版本
      * @param appServiceId
      * @param pageRequest
@@ -143,13 +134,6 @@ public interface AppServiceVersionService {
      */
     PageInfo<AppServiceVersionRespVO> pageShareVersionByAppId(Long appServiceId, PageRequest pageRequest, String params);
 
-    /**
-     * 获取远程应用版本详情
-     * @param appServiceId
-     * @param versionId
-     * @return
-     */
-    AppServiceVersionAndValueVO queryConfigByVerionId(Long appServiceId, Long versionId);
 
     List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId);
 

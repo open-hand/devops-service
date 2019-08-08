@@ -814,28 +814,6 @@ public class AppServiceInstanceController {
         appServiceInstanceService.operationPodCount(name, envId, count);
     }
 
-    /**
-     * 部署远程服务市场服务
-     *
-     * @param projectId
-     * @param appRemoteDeployDTO
-     * @return
-     */
-    @ApiOperation(value = "部署远程服务市场服务")
-    @Permission(type = io.choerodon.base.enums.ResourceType.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
-    @PostMapping(value = "/deploy_remote_app")
-    public ResponseEntity<AppServiceInstanceVO> deployRemoteApp(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "部署信息", required = true)
-            @RequestBody AppServiceRemoteDeployVO appRemoteDeployDTO) {
-        return Optional.ofNullable(appServiceInstanceService.deployRemoteApp(projectId, appRemoteDeployDTO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.remote.deploy"));
-    }
-
 
     /**
      * 根据实例commandId查询实例信息

@@ -11,6 +11,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.AppServiceShareRuleService;
+import io.choerodon.devops.app.service.OrgAppMarketService;
 import io.choerodon.mybatis.annotation.SortDefault;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 
@@ -32,49 +33,7 @@ import springfox.documentation.annotations.ApiIgnore;
 @RequestMapping(value = "/v1/organizations/app_market")
 public class OrgAppMarketController {
     @Autowired
-    private AppServiceShareRuleService appServiceShareRuleService;
-    @Autowired
-    private AppServiceService appServiceService;
-
-    /**
-     * 根据版本Id获取values和chart
-     *
-     * @param versionId 版本Id
-     * @return Long
-     */
-    @Permission(type = ResourceType.SITE)
-    @ApiOperation(value = "根据版本Id获取values和chart")
-    @GetMapping(value = "/values")
-    public ResponseEntity<AppServiceVersionAndValueVO> getValuesAndChart(
-            @ApiParam(value = "应用Id")
-            @RequestParam(value = "version_id") Long versionId) {
-        return Optional.ofNullable(
-                appServiceShareRuleService.getValuesAndChart(versionId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.get.values.chart"));
-    }
-
-    @Permission(type = ResourceType.SITE)
-    @ApiOperation(value = "token校验")
-    @PostMapping(value = "/check_token")
-    public ResponseEntity<AccessTokenCheckResultVO> checkToken(
-            @ApiParam(value = "token")
-            @RequestBody AccessTokenVO tokenDTO) {
-        return Optional.ofNullable(
-                appServiceShareRuleService.checkToken(tokenDTO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.check.access.token"));
-    }
-
-    @Permission(type = ResourceType.SITE)
-    @ApiOperation(value = "token保存")
-    @PostMapping(value = "/save_token")
-    public ResponseEntity saveToken(
-            @ApiParam(value = "token")
-            @RequestBody AccessTokenVO tokenDTO) {
-        appServiceShareRuleService.saveToken(tokenDTO);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+    private OrgAppMarketService orgAppMarketService;
 
     /**
      * @param appId
@@ -95,7 +54,7 @@ public class OrgAppMarketController {
             @ApiParam(value = "查询参数",required = false)
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                appServiceService.pageByAppId(appId, pageRequest, params))
+                orgAppMarketService.pageByAppId(appId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.services.page"));
     }

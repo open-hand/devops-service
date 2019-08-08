@@ -83,12 +83,6 @@ public interface AppServiceService {
                                             Boolean doPage,
                                             PageRequest pageRequest,
                                             String params);
-
-
-    PageInfo<AppServiceMarketVO> pageByAppId(Long appId,
-                                             PageRequest pageRequest,
-                                             String params);
-
     /**
      * 处理服务创建逻辑
      *
@@ -293,16 +287,6 @@ public interface AppServiceService {
      * @return
      */
     String getGitlabUrl(Long projectId, Long appServiceId);
-
-    /**
-     * 获取远程服务
-     *
-     * @param projectId
-     * @param pageRequest
-     * @param params
-     * @return
-     */
-    PageInfo<RemoteAppServiceVO> pageRemoteAppService(Long projectId, PageRequest pageRequest, String params);
 
     /**
      * 获取共享服务

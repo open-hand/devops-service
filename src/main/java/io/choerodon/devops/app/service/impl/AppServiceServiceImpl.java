@@ -55,7 +55,6 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.AppShareClient;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -310,25 +309,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         PageInfo<AppServiceRepVO> resultDTOPage = ConvertUtils.convertPage(applicationServiceDTOS, this::dtoToRepVo);
         resultDTOPage.setList(setApplicationRepVOPermission(applicationServiceDTOS.getList(), userAttrDTO, projectDTO));
         return resultDTOPage;
-    }
-
-    @Override
-    public PageInfo<AppServiceMarketVO> pageByAppId(Long appId,
-                                                    PageRequest pageRequest, String params) {
-        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
-        List<String> paramList = mapParams.get(TypeUtil.PARAMS) == null ? null : (List<String>) mapParams.get(TypeUtil.PARAMS);
-        PageInfo<AppServiceDTO> appServiceDTOPageInfo = PageHelper
-                .startPage(pageRequest.getPage(),
-                        pageRequest.getSize(),
-                        PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
-                        appServiceMapper.listByAppId(appId, (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM), paramList));
-
-        PageInfo<AppServiceMarketVO> appServiceMarketVOPageInfo = ConvertUtils.convertPage(appServiceDTOPageInfo, this::dtoToMarketVO);
-        List<AppServiceMarketVO> list = appServiceMarketVOPageInfo.getList();
-        list.forEach(appServiceMarketVO -> appServiceMarketVO.setAppServiceMarketVersionVOS(
-                ConvertUtils.convertList(appServiceVersionService.baseListByAppServiceId(appServiceMarketVO.getAppServiceId()), AppServiceMarketVersionVO.class)));
-        appServiceMarketVOPageInfo.setList(list);
-        return appServiceMarketVOPageInfo;
     }
 
     @Override
@@ -1288,33 +1268,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         return sonarTableVO;
     }
 
-
-    @Override
-    public PageInfo<RemoteAppServiceVO> pageRemoteAppService(Long projectId, PageRequest pageRequest, String params) {
-        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
-        if (marketConnectInfoDO == null) {
-            throw new CommonException("not.exist.remote token");
-        }
-        AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
-        Map<String, Object> map = new HashMap<>();
-        map.put("page", pageRequest.getPage());
-        map.put("size", pageRequest.getSize());
-        map.put("sort", PageRequestUtil.getOrderByStr(pageRequest));
-        map.put("access_token", marketConnectInfoDO.getAccessToken());
-        params = params == null ? "" : params;
-        map.put("params", params);
-        Response<PageInfo<RemoteAppServiceVO>> pageInfoResponse = null;
-        try {
-            pageInfoResponse = shareClient.getAppShares(map).execute();
-            if (!pageInfoResponse.isSuccessful()) {
-                throw new CommonException("error.get.app.shares");
-            }
-        } catch (IOException e) {
-            throw new CommonException("error.get.app.shares");
-        }
-        return pageInfoResponse.body();
-    }
-
     @Override
     public PageInfo<AppServiceRepVO> pageShareAppService(Long projectId, PageRequest pageRequest, String params) {
         Long organizationId = iamServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
@@ -2183,14 +2136,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         BeanUtils.copyProperties(applicationDTO, applicationRepVO);
         applicationRepVO.setGitlabProjectId(TypeUtil.objToLong(applicationDTO.getGitlabProjectId()));
         return applicationRepVO;
-    }
-
-    private AppServiceMarketVO dtoToMarketVO(AppServiceDTO applicationDTO) {
-        AppServiceMarketVO appServiceMarketVO = new AppServiceMarketVO();
-        appServiceMarketVO.setAppServiceId(applicationDTO.getId());
-        appServiceMarketVO.setAppServiceCode(applicationDTO.getCode());
-        appServiceMarketVO.setAppServiceName(applicationDTO.getName());
-        return appServiceMarketVO;
     }
 
     private DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, String role, Date creationDate) {

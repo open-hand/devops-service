@@ -10,4 +10,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_market_connect_info.groovy') {
             column(name: 'access_token', type: 'varchar(128)', remarks: '连接远程应用市场的token')
         }
     }
+
+    changeSet(author: 'scp', id: '2019-08-08-delete-table') {
+        dropTable(tableName: "devops_market_connect_info")
+    }
+
 }
