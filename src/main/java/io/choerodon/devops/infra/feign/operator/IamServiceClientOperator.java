@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.infra.dto.iam.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +25,6 @@ import io.choerodon.devops.api.vo.iam.RoleSearchVO;
 import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
-import io.choerodon.devops.infra.dto.iam.IamAppDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
 
@@ -85,6 +82,16 @@ public class IamServiceClientOperator {
         } catch (FeignException e) {
             throw new CommonException(e);
         }
+    }
+
+    public List<ApplicationDTO> listAppsByOrgId(Long orgId, String name) {
+        ResponseEntity<List<ApplicationDTO>> apps;
+        try {
+            apps = iamServiceClient.queryAppsByOrgId(orgId, name);
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+        return apps.getBody();
     }
 
     public List<ProjectWithRoleVO> listProjectWithRoleDTO(Long userId) {

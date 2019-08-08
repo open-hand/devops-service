@@ -15,6 +15,7 @@ public class GitlabGroupPayload {
     private String userName;
     private Long userId;
     private List<String> roleLabels;
+    private ApplicationEventPayload applicationEventPayload;
 
     public GitlabGroupPayload() {
     }
@@ -90,5 +91,13 @@ public class GitlabGroupPayload {
 
     public void setRoleLabels(List<String> roleLabels) {
         this.roleLabels = roleLabels;
+    }
+
+    public ApplicationEventPayload getApplicationEventPayload() {
+        return applicationEventPayload;
+    }
+
+    public void setApplicationEventPayload(ApplicationEventPayload applicationEventPayload) {
+        this.applicationEventPayload = applicationEventPayload;
     }
 }

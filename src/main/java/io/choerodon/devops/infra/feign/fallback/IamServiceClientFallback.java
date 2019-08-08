@@ -17,11 +17,7 @@ import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
-import io.choerodon.devops.infra.dto.DevopsProjectDTO;
-import io.choerodon.devops.infra.dto.iam.IamAppDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -71,6 +67,11 @@ public class IamServiceClientFallback implements IamServiceClient {
     @Override
     public ResponseEntity<PageInfo<ProjectDTO>> queryProjectByOrgId(Long id, int page, int size, String name, String[] params) {
         throw new CommonException("error.project.get");
+    }
+
+    @Override
+    public ResponseEntity<List<ApplicationDTO>> queryAppsByOrgId(Long id, String name) {
+        throw new CommonException("error.app.query.by.org.id.and.app.name");
     }
 
     @Override

@@ -82,8 +82,8 @@ public class SagaHandler {
 
 
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_UPDATE_GITLAB_GROUP,
-            description = "devops  更新 GitLab Group",
-            sagaCode = SagaTopicCodeConstants.IAM_UPDATE_PROJECT,
+            description = "devops  更新 应用 Group",
+            sagaCode = SagaTopicCodeConstants.BASE_UPDATE_APPLICATION,
             maxRetryCount = 3,
             seq = 1)
     public String handleUpdateGitlabGroupEvent(String msg) {

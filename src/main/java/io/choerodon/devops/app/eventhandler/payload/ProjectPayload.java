@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * project　event
@@ -11,11 +11,18 @@ public class ProjectPayload {
     private Long projectId;
     private String projectCode;
     private String projectName;
+    private String projectCategory;
     private String organizationCode;
     private String organizationName;
     private String userName;
     private Long userId;
-    private List<String> roleLabels;
+    private String imageUrl;
+    private Long programId;
+    private Long applicationId;
+
+    private ApplicationEventPayload applicationEventPayload;
+
+    private Set<String> roleLabels;
 
     public Long getProjectId() {
         return projectId;
@@ -73,11 +80,51 @@ public class ProjectPayload {
         this.userId = userId;
     }
 
-    public List<String> getRoleLabels() {
+    public Set<String> getRoleLabels() {
         return roleLabels;
     }
 
-    public void setRoleLabels(List<String> roleLabels) {
+    public void setRoleLabels(Set<String> roleLabels) {
         this.roleLabels = roleLabels;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public String getProjectCategory() {
+        return projectCategory;
+    }
+
+    public void setProjectCategory(String projectCategory) {
+        this.projectCategory = projectCategory;
+    }
+
+    public Long getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(Long programId) {
+        this.programId = programId;
+    }
+
+    public Long getApplicationId() {
+        return applicationId;
+    }
+
+    public void setApplicationId(Long applicationId) {
+        this.applicationId = applicationId;
+    }
+
+    public ApplicationEventPayload getApplicationEventPayload() {
+        return applicationEventPayload;
+    }
+
+    public void setApplicationEventPayload(ApplicationEventPayload applicationEventPayload) {
+        this.applicationEventPayload = applicationEventPayload;
     }
 }

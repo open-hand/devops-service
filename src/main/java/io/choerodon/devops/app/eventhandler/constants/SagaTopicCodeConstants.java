@@ -129,6 +129,11 @@ public class SagaTopicCodeConstants {
     public static final String IAM_UPDATE_PROJECT = "iam-update-project";
 
     /**
+     * base服务更新应用
+     */
+    public static final String BASE_UPDATE_APPLICATION = "base-update-application";
+
+    /**
      * 创建组织事件
      */
     public static final String DEVOPS_CREATE_ORGANIZATION = "devopsCreateOrganization";

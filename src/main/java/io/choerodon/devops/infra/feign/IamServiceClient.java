@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import com.github.pagehelper.PageInfo;
+import io.choerodon.devops.infra.dto.iam.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +19,6 @@ import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.choerodon.devops.api.vo.iam.UserWithRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.MemberRoleVO;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
-import io.choerodon.devops.infra.dto.iam.IamAppDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.fallback.IamServiceClientFallback;
 
 /**
@@ -54,6 +51,9 @@ public interface IamServiceClient {
 
     @GetMapping(value = "/v1/organizations/{id}/projects")
     ResponseEntity<PageInfo<ProjectDTO>> queryProjectByOrgId(@PathVariable("id") Long id, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("name") String name, @RequestParam("params") String[] params);
+
+    // TODO
+    ResponseEntity<List<ApplicationDTO>> queryAppsByOrgId(@PathVariable("id") Long id, @RequestParam("name") String name);
 
     @PostMapping(value = "/v1/users/ids")
     ResponseEntity<List<IamUserDTO>> listUsersByIds(@RequestBody Long[] ids);
