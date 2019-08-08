@@ -54,7 +54,6 @@ public class DevopsProjectConfigController {
      * *
      *
      * @param projectId 项目id
-     * @param type      配置类型
      * @return
      */
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -63,11 +62,9 @@ public class DevopsProjectConfigController {
     @GetMapping
     public ResponseEntity<List<DevopsConfigVO>> query(
             @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "配置类型", required = true)
-            @RequestParam(value = "type") String type) {
+            @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(
-                devopsConfigService.queryByResourceId(projectId, type))
+                devopsConfigService.queryByResourceId(projectId, ResourceType.PROJECT.value()))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.get.type"));
     }
