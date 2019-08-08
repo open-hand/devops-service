@@ -19,6 +19,7 @@ public class AppServiceInstanceInfoDTO {
     private Date lastUpdateDate;
     private Long objectVersionNumber;
     private Long envId;
+    private Long clusterId;
 
     public Long getId() {
         return id;
@@ -114,5 +115,13 @@ public class AppServiceInstanceInfoDTO {
 
     public void setEnvId(Long envId) {
         this.envId = envId;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
     }
 }
