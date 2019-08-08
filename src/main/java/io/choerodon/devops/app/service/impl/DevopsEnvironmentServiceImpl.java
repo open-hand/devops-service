@@ -384,8 +384,18 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedEnvList();
         vo.setConnect(upgradeClusterList.contains(envInfo.getClusterId()));
 
-        if (envInfo.getAgentSyncCommit().equals(envInfo.getSagaSyncCommit()) &&
-                envInfo.getAgentSyncCommit().equals(envInfo.getDevopsSyncCommit())) {
+
+        if (envInfo.getSagaSyncCommit() == null) {
+            if (devopsEnvFileErrorMapper.queryErrorFileCountByEnvId(environmentId) > 0) {
+                vo.setGitopsStatus(EnvironmentGitopsStatus.FAILED.getValue());
+            } else {
+                vo.setGitopsStatus(EnvironmentGitopsStatus.PROCESSING.getValue());
+            }
+            return vo;
+        }
+
+        if (envInfo.getSagaSyncCommit().equals(envInfo.getAgentSyncCommit()) &&
+                envInfo.getSagaSyncCommit().equals(envInfo.getDevopsSyncCommit())) {
             vo.setGitopsStatus(EnvironmentGitopsStatus.FINISHED.getValue());
         } else {
             if (devopsEnvFileErrorMapper.queryErrorFileCountByEnvId(environmentId) > 0) {
