@@ -53,6 +53,7 @@ public interface IamServiceClient {
     ResponseEntity<PageInfo<ProjectDTO>> queryProjectByOrgId(@PathVariable("id") Long id, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("name") String name, @RequestParam("params") String[] params);
 
     // TODO
+    @GetMapping(value = "/v1/organizations/{id}/apps")
     ResponseEntity<List<ApplicationDTO>> queryAppsByOrgId(@PathVariable("id") Long id, @RequestParam("name") String name);
 
     @PostMapping(value = "/v1/users/ids")
