@@ -71,5 +71,13 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
     List<AppServiceDTO> listShareApplicationService(@Param("appServiceIds") List<Long> appServiceIds,
                                                     @Param("appId") Long appId,
                                                     @Param("params") String params);
+
+    void updateHarborConfigNullByConfigId(@Param("harborConfigId")Long harborConfigId);
+
+    void updateChartConfigNullByConfigId(@Param("chartConfigId") Long chartConfigId);
+
+    void updateHarborConfigNullByServiceId(@Param("appServiceId")Long appServiceId);
+
+    void updateChartConfigNullByServiceId(@Param("appServiceId") Long appServiceId);
 }
 

@@ -9,11 +9,6 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
 import com.zaxxer.hikari.util.UtilityElf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.devops.api.vo.kubernetes.CheckLog;
 import io.choerodon.devops.api.vo.kubernetes.ProjectCreateDTO;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
@@ -26,6 +21,10 @@ import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.OrgServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 @Service
@@ -60,10 +59,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private IamServiceClientOperator iamServiceClientOperator;
     @Autowired
     private OrgServiceClientOperator orgServiceClientOperator;
+    @Autowired
+    private DevopsConfigMapper devopsConfigMapper;
+    @Autowired
+    private AppServiceMapper appServiceMapper;
 
     @Override
     public void checkLog(String version) {
         LOGGER.info("start upgrade task");
+        LOGGER.info("sync config begin!!!");
+
         executorService.submit(new UpgradeTask(version));
     }
 
@@ -74,7 +79,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         UpgradeTask(String version) {
             this.version = version;
         }
-
 
         UpgradeTask(String version, Long env) {
             this.version = version;
@@ -87,12 +91,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             List<CheckLog> logs = new ArrayList<>();
             devopsCheckLogDTO.setBeginCheckDate(new Date());
             if ("0.19.0".equals(version)) {
-                syncEnvAppRelevance(logs);
-                syncAppShare(logs);
-                syncDeployRecord(logs);
-                syncCulster(logs);
-                syncProjectAppId();
-
+//                syncEnvAppRelevance(logs);
+//                syncAppShare(logs);
+//                syncDeployRecord(logs);
+//                syncCulster(logs);
+//                syncProjectAppId();
+                syncConfig();
             } else {
                 LOGGER.info("version not matched");
             }
@@ -101,6 +105,64 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsCheckLogDTO.setEndCheckDate(new Date());
 
             devopsCheckLogMapper.insert(devopsCheckLogDTO);
+        }
+
+        private void syncConfig(){
+
+            LOGGER.info("sync config begin!!!");
+
+            //避免2次修复数据
+            List<DevopsConfigDTO> configs = devopsConfigMapper.existAppSerciveConfig();
+            if(configs.isEmpty()) {
+                DevopsConfigDTO harborDefault = devopsConfigMapper.queryByNameWithNoProject("harbor_default");
+                DevopsConfigDTO chartDefault = devopsConfigMapper.queryByNameWithNoProject("chart_default");
+                List<DevopsConfigDTO> addHarborConfigs = new ArrayList<>();
+                List<DevopsConfigDTO> addChartConfigs = new ArrayList<>();
+                appServiceMapper.selectAll().stream().forEach(appServiceDTO -> {
+                    if (appServiceDTO.getHarborConfigId() != null && !appServiceDTO.getHarborConfigId().equals(harborDefault.getId())) {
+                        DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey(appServiceDTO.getHarborConfigId());
+                        if (devopsConfigDTO == null) {
+                            appServiceMapper.updateHarborConfigNullByServiceId(appServiceDTO.getId());
+                        } else {
+                            devopsConfigDTO.setId(null);
+                            devopsConfigDTO.setProjectId(null);
+                            devopsConfigDTO.setAppServiceId(appServiceDTO.getId());
+                            addHarborConfigs.add(devopsConfigDTO);
+                        }
+                    }
+                    if (appServiceDTO.getChartConfigId() != null && !appServiceDTO.getChartConfigId().equals(chartDefault.getId())) {
+                        DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey(appServiceDTO.getChartConfigId());
+                        if (devopsConfigDTO == null) {
+                            appServiceMapper.updateChartConfigNullByServiceId(appServiceDTO.getId());
+                        } else {
+                            devopsConfigDTO.setId(null);
+                            devopsConfigDTO.setProjectId(null);
+                            devopsConfigDTO.setAppServiceId(appServiceDTO.getId());
+                            addChartConfigs.add(devopsConfigDTO);
+                        }
+                    }
+                });
+                devopsConfigMapper.deleteByProject();
+                appServiceMapper.updateHarborConfigNullByConfigId(harborDefault.getId());
+                appServiceMapper.updateChartConfigNullByConfigId(chartDefault.getId());
+                addHarborConfigs.forEach(devopsConfigDTO -> {
+                    devopsConfigMapper.insert(devopsConfigDTO);
+                    AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(devopsConfigDTO.getAppServiceId());
+                    appServiceDTO.setHarborConfigId(devopsConfigDTO.getId());
+                    appServiceMapper.updateByPrimaryKey(appServiceDTO);
+                });
+                addChartConfigs.forEach(devopsConfigDTO -> {
+                    devopsConfigMapper.insert(devopsConfigDTO);
+                    AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(devopsConfigDTO.getAppServiceId());
+                    appServiceDTO.setChartConfigId(devopsConfigDTO.getId());
+                    appServiceMapper.updateByPrimaryKey(appServiceDTO);
+                });
+                LOGGER.info("sync config end!!!");
+            }
+
+
+
+
         }
 
         private void syncEnvAppRelevance(List<CheckLog> logs) {
@@ -120,6 +182,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 logs.add(checkLog);
             });
         }
+
 
         private void syncProjectAppId() {
             devopsProjectMapper.fixAppIdValue();

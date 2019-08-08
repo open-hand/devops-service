@@ -148,7 +148,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
-    private DevopsProjectConfigService devopsProjectConfigService;
+    private DevopsConfigService devopsConfigService;
     @Autowired
     private DevopsBranchService devopsBranchService;
     @Autowired
@@ -555,14 +555,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             ProjectConfigVO harborProjectConfig;
             ProjectConfigVO chartProjectConfig;
             if (applicationDTO.getHarborConfigId() != null) {
-                harborProjectConfig = gson.fromJson(devopsProjectConfigService.baseQuery(applicationDTO.getHarborConfigId()).getConfig(), ProjectConfigVO.class);
+                harborProjectConfig = gson.fromJson(devopsConfigService.baseQuery(applicationDTO.getHarborConfigId()).getConfig(), ProjectConfigVO.class);
             } else {
-                harborProjectConfig = gson.fromJson(devopsProjectConfigService.baseListByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getConfig(), ProjectConfigVO.class);
+                harborProjectConfig = gson.fromJson(devopsConfigService.baseListByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getConfig(), ProjectConfigVO.class);
             }
             if (applicationDTO.getChartConfigId() != null) {
-                chartProjectConfig = gson.fromJson(devopsProjectConfigService.baseQuery(applicationDTO.getChartConfigId()).getConfig(), ProjectConfigVO.class);
+                chartProjectConfig = gson.fromJson(devopsConfigService.baseQuery(applicationDTO.getChartConfigId()).getConfig(), ProjectConfigVO.class);
             } else {
-                chartProjectConfig = gson.fromJson(devopsProjectConfigService.baseListByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getConfig(), ProjectConfigVO.class);
+                chartProjectConfig = gson.fromJson(devopsConfigService.baseListByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getConfig(), ProjectConfigVO.class);
             }
             if (type == null) {
                 inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");

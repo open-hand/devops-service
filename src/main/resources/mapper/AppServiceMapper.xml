@@ -314,6 +314,34 @@
         AND da.app_id = #{appId}
     </update>
 
+
+
+
+    <update id="updateHarborConfigNullByConfigId">
+        UPDATE devops_app_service da
+        set da.harbor_config_id = null
+        where da.harbor_config_id = #{harborConfigId}
+    </update>
+
+    <update id="updateChartConfigNullByConfigId">
+        UPDATE devops_app_service da
+        set da.chart_config_id = null
+        where da.chart_config_id = #{chartConfigId}
+    </update>
+
+
+    <update id="updateHarborConfigNullByServiceId">
+        UPDATE devops_app_service da
+        set da.harbor_config_id = null
+        where da.id = #{appServiceId}
+    </update>
+
+    <update id="updateChartConfigNullByServiceId">
+        UPDATE devops_app_service da
+        set da.chart_config_id = null
+        where da.id = #{appServiceId}
+    </update>
+
     <select id="queryByCodeWithNoProject" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT
             da.*

@@ -59,7 +59,7 @@ import retrofit2.Response;
  * Created by Zenger on 2018/4/12.
  */
 @Service
-public class AppServiceInstanceServiceImpl implements AppServiceInstanceService {
+public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService {
 
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
@@ -109,7 +109,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private AppServiceService applicationService;
     @Autowired
-    private DevopsProjectConfigService devopsProjectConfigService;
+    private DevopsConfigService devopsConfigService;
     @Autowired
     private DevopsRegistrySecretService devopsRegistrySecretService;
     @Autowired
@@ -1239,8 +1239,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceDTO applicationDTO = applicationService.baseQueryByCodeWithNullProject(code);
         if (applicationDTO == null) {
             applicationDTO = new AppServiceDTO();
-            DevopsProjectConfigDTO harborConfigDTO = createConfig(HARBOR, appServiceRemoteDeployVO.getAppServiceRemoteVO().getCode(), appServiceRemoteDeployVO.getHarbor());
-            DevopsProjectConfigDTO chartConfigDTO = createConfig(CHART, appServiceRemoteDeployVO.getAppServiceRemoteVO().getCode(), appServiceRemoteDeployVO.getChart());
+            DevopsConfigDTO harborConfigDTO = createConfig(HARBOR, appServiceRemoteDeployVO.getAppServiceRemoteVO().getCode(), appServiceRemoteDeployVO.getHarbor());
+            DevopsConfigDTO chartConfigDTO = createConfig(CHART, appServiceRemoteDeployVO.getAppServiceRemoteVO().getCode(), appServiceRemoteDeployVO.getChart());
             applicationDTO.setType(appServiceRemoteDeployVO.getAppServiceRemoteVO().getType());
             applicationDTO.setCode(code);
             applicationDTO.setName(name);
@@ -1281,17 +1281,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @param projectConfigVO
      * @return
      */
-    private DevopsProjectConfigDTO createConfig(String type, String code, ProjectConfigVO projectConfigVO) {
+    private DevopsConfigDTO createConfig(String type, String code, ProjectConfigVO projectConfigVO) {
         String name = code + "-" + type;
-        DevopsProjectConfigDTO devopsProjectConfigDTO = devopsProjectConfigService.baseCheckByName(name);
-        if (devopsProjectConfigDTO == null) {
-            devopsProjectConfigDTO = new DevopsProjectConfigDTO();
-            devopsProjectConfigDTO.setConfig(gson.toJson(projectConfigVO));
-            devopsProjectConfigDTO.setName(name);
-            devopsProjectConfigDTO.setType(type);
-            return devopsProjectConfigService.baseCreate(devopsProjectConfigDTO);
+        DevopsConfigDTO devopsConfigDTO = devopsConfigService.baseCheckByName(name);
+        if (devopsConfigDTO == null) {
+            devopsConfigDTO = new DevopsConfigDTO();
+            devopsConfigDTO.setConfig(gson.toJson(projectConfigVO));
+            devopsConfigDTO.setName(name);
+            devopsConfigDTO.setType(type);
+            return devopsConfigService.baseCreate(devopsConfigDTO);
         }
-        return devopsProjectConfigDTO;
+        return devopsConfigDTO;
     }
 
 
@@ -1425,25 +1425,25 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private String getSecret(AppServiceDTO applicationDTO, String secretCode, DevopsEnvironmentDTO devopsEnvironmentDTO) {
         //如果应用绑定了私有镜像库,则处理secret
         if (applicationDTO.getHarborConfigId() != null) {
-            DevopsProjectConfigDTO devopsProjectConfigDTO = devopsProjectConfigService.baseQuery(applicationDTO.getHarborConfigId());
-            ProjectConfigVO projectConfigVO = gson.fromJson(devopsProjectConfigDTO.getConfig(), ProjectConfigVO.class);
+            DevopsConfigDTO devopsConfigDTO = devopsConfigService.baseQuery(applicationDTO.getHarborConfigId());
+            ProjectConfigVO projectConfigVO = gson.fromJson(devopsConfigDTO.getConfig(), ProjectConfigVO.class);
             if (projectConfigVO.getPrivate() != null) {
-                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getCode(), devopsProjectConfigDTO.getId());
+                DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId());
                 if (devopsRegistrySecretDTO == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
-                    List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = devopsRegistrySecretService.baseListByConfig(devopsProjectConfigDTO.getId());
+                    List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = devopsRegistrySecretService.baseListByConfig(devopsConfigDTO.getId());
                     if (devopsRegistrySecretDTOS.isEmpty()) {
-                        secretCode = String.format("%s%s%s%s", "registry-secret-", devopsProjectConfigDTO.getId(), "-", GenerateUUID.generateUUID().substring(0, 5));
+                        secretCode = String.format("%s%s%s%s", "registry-secret-", devopsConfigDTO.getId(), "-", GenerateUUID.generateUUID().substring(0, 5));
                     } else {
                         secretCode = devopsRegistrySecretDTOS.get(0).getSecretCode();
                     }
-                    devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsProjectConfigDTO.getId(), devopsEnvironmentDTO.getCode(), secretCode, devopsProjectConfigDTO.getConfig());
+                    devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), secretCode, devopsConfigDTO.getConfig());
                     devopsRegistrySecretService.baseCreate(devopsRegistrySecretDTO);
                     agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, projectConfigVO, CREATE);
                 } else {
                     //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
-                    if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(devopsProjectConfigDTO.getConfig()))) {
-                        devopsRegistrySecretDTO.setSecretDetail(gson.toJson(devopsProjectConfigDTO.getConfig()));
+                    if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(devopsConfigDTO.getConfig()))) {
+                        devopsRegistrySecretDTO.setSecretDetail(gson.toJson(devopsConfigDTO.getConfig()));
                         devopsRegistrySecretService.baseUpdate(devopsRegistrySecretDTO);
                         agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), projectConfigVO, UPDATE);
                     } else {

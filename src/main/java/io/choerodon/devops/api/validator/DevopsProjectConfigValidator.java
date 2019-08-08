@@ -1,7 +1,7 @@
 package io.choerodon.devops.api.validator;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsProjectConfigVO;
+import io.choerodon.devops.api.vo.DevopsConfigVO;
 import io.choerodon.devops.api.vo.ProjectConfigVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
@@ -20,9 +20,9 @@ public class DevopsProjectConfigValidator {
     @Autowired
     AppServiceService applicationService;
 
-    public void checkConfigType(DevopsProjectConfigVO devopsProjectConfigVO) {
-        ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigVO.getType().toUpperCase());
-        ProjectConfigVO configDTO = devopsProjectConfigVO.getConfig();
+    public void checkConfigType(DevopsConfigVO devopsConfigVO) {
+        ProjectConfigType type = ProjectConfigType.valueOf(devopsConfigVO.getType().toUpperCase());
+        ProjectConfigVO configDTO = devopsConfigVO.getConfig();
         switch (type) {
             case HARBOR:
                 applicationService.checkHarbor(configDTO.getUrl(),configDTO.getUserName(),configDTO.getPassword(),configDTO.getProject(),configDTO.getEmail());
