@@ -530,24 +530,6 @@ public class AppServiceController {
     }
 
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下查询远程服务")
-    @CustomPageRequest
-    @GetMapping(value = "/page_remote_app_service")
-    public ResponseEntity<PageInfo<RemoteAppServiceVO>> pageRemoteApps(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestParam(value = "params", required = false) String params) {
-        return Optional.ofNullable(
-                applicationServiceService.pageRemoteAppService(projectId, pageRequest, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.remote.app.service.get"));
-    }
-
-
-    @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询共享服务")
     @CustomPageRequest
     @PostMapping(value = "/page_share_app_service")

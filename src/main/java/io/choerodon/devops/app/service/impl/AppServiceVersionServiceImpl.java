@@ -30,7 +30,6 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.feign.AppShareClient;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
@@ -390,60 +389,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public PageInfo<MarketAppPublishVersionVO> pageVersionByAppId(Long appServiceId, PageRequest pageRequest, String params) {
-        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
-        if (marketConnectInfoDO == null) {
-            throw new CommonException("not.exist.remote token");
-        }
-        AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
-        Map<String, Object> map = new HashMap<>();
-        map.put("page", pageRequest.getPage());
-        map.put("size", pageRequest.getSize());
-        map.put("sort", PageRequestUtil.getOrderByStr(pageRequest));
-        if (params != null) {
-            map.put("params", params);
-        }
-        map.put("access_token", marketConnectInfoDO.getAccessToken());
-        Response<PageInfo<MarketAppPublishVersionVO>> pageInfoResponse = null;
-        try {
-            pageInfoResponse = shareClient.listVersionByAppId(appServiceId, map).execute();
-            if (!pageInfoResponse.isSuccessful()) {
-                throw new CommonException("error.get.app.version.shares");
-            }
-        } catch (IOException e) {
-            throw new CommonException("error.get.app.version.shares");
-        }
-        return pageInfoResponse.body();
-    }
-
-    @Override
     public PageInfo<AppServiceVersionRespVO> pageShareVersionByAppId(Long appServiceId, PageRequest pageRequest, String params) {
         PageInfo<AppServiceVersionDTO> applicationDTOPageInfo = PageHelper.startPage(
                 pageRequest.getPage(),
                 pageRequest.getSize(),
                 PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceVersionMapper.listShareVersionByAppId(appServiceId, params));
         return ConvertUtils.convertPage(applicationDTOPageInfo, AppServiceVersionRespVO.class);
-    }
-
-    @Override
-    public AppServiceVersionAndValueVO queryConfigByVerionId(Long appServiceId, Long versionId) {
-        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
-        if (marketConnectInfoDO == null) {
-            throw new CommonException("not.exist.remote token");
-        }
-        AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
-        Map<String, Object> map = new HashMap<>();
-        map.put("access_token", marketConnectInfoDO.getAccessToken());
-        Response<AppServiceVersionAndValueVO> versionAndValueDTOResponse = null;
-        try {
-            versionAndValueDTOResponse = shareClient.getConfigInfoByVerionId(appServiceId, versionId, map).execute();
-            if (!versionAndValueDTOResponse.isSuccessful()) {
-                throw new CommonException("error.get.app.version.config.shares");
-            }
-        } catch (IOException e) {
-            throw new CommonException("error.get.app.version.config.shares");
-        }
-        return versionAndValueDTOResponse.body();
     }
 
     @Override

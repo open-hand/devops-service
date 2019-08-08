@@ -304,15 +304,6 @@ public interface AppServiceInstanceService {
     InstanceValueVO queryPreviewValues(InstanceValueVO instanceValueVO, Long appServiceServiceId);
 
     /**
-     * 部署远程应用
-     *
-     * @param appRemoteDeployDTO
-     * @return
-     */
-    AppServiceInstanceVO deployRemoteApp(Long projectId, AppServiceRemoteDeployVO appRemoteDeployDTO);
-
-
-    /**
      * @param instanceSagaPayload
      */
     void createInstanceBySaga(InstanceSagaPayload instanceSagaPayload);

@@ -33,7 +33,6 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.MarketAppDeployRecordDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.AppShareClient;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
@@ -981,53 +980,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         instanceValueVO.setTotalLine(FileUtil.getFileTotalLine(instanceValueVO.getYaml()));
         FileUtil.deleteFile(path + System.getProperty(FILE_SEPARATOR) + fileName);
         return instanceValueVO;
-    }
-
-    @Override
-    @Transactional
-    public AppServiceInstanceVO deployRemoteApp(Long projectId, AppServiceRemoteDeployVO appServiceRemoteDeployVO) {
-        //创建远程应用
-        AppServiceDTO applicationDTO = createApplication(appServiceRemoteDeployVO);
-
-        //创建远程应用版本
-        AppServiceVersionDTO appServiceVersionDTO = createVersion(applicationDTO, appServiceRemoteDeployVO.getAppServiceVersionRemoteVO());
-
-        //初始化部署所需数据
-        AppServiceDeployVO appServiceDeployVO = ConvertUtils.convertObject(appServiceRemoteDeployVO, AppServiceDeployVO.class);
-        appServiceDeployVO.setAppServiceId(applicationDTO.getId());
-        appServiceDeployVO.setAppServiceVersionId(appServiceVersionDTO.getId());
-        appServiceDeployVO.setValues(appServiceRemoteDeployVO.getAppServiceVersionRemoteVO().getValues());
-        AppServiceInstanceVO appServiceInstanceVO = createOrUpdate(appServiceDeployVO);
-
-        //创建远程部署记录
-        createRemoteAppDeployRecord(projectId, appServiceRemoteDeployVO);
-        return appServiceInstanceVO;
-    }
-
-
-    private void createRemoteAppDeployRecord(Long projectId, AppServiceRemoteDeployVO appServiceRemoteDeployVO) {
-        DevopsMarketConnectInfoDTO marketConnectInfoDO = marketConnectInfoService.baseQuery();
-        if (marketConnectInfoDO == null) {
-            throw new CommonException("not.exist.remote token");
-        }
-        AppShareClient shareClient = RetrofitHandler.getAppShareClient(marketConnectInfoDO.getSaasMarketUrl());
-        Response<Void> versionAndValueDTOResponse = null;
-
-        MarketAppDeployRecordDTO marketAppDeployRecordDTO = new MarketAppDeployRecordDTO();
-        marketAppDeployRecordDTO.setAppServiceId(appServiceRemoteDeployVO.getAppServiceRemoteVO().getId());
-        marketAppDeployRecordDTO.setVersionId(appServiceRemoteDeployVO.getAppServiceVersionRemoteVO().getId());
-
-        ProjectDTO projectDTO = iamService.queryIamProject(projectId);
-        marketAppDeployRecordDTO.setOrganizationId(projectDTO.getOrganizationId());
-
-        try {
-            versionAndValueDTOResponse = shareClient.createAppDeployRecord(marketConnectInfoDO.getAccessToken(), marketAppDeployRecordDTO).execute();
-            if (!versionAndValueDTOResponse.isSuccessful()) {
-                throw new CommonException("error.create.app.deploy.record");
-            }
-        } catch (IOException e) {
-            throw new CommonException("error.create.app.deploy.record");
-        }
     }
 
     @Override

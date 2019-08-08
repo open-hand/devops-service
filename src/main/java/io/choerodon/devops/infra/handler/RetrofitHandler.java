@@ -19,7 +19,6 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.infra.feign.AppShareClient;
 import io.choerodon.devops.infra.feign.SonarClient;
 
 public class RetrofitHandler {
@@ -147,12 +146,4 @@ public class RetrofitHandler {
         return retrofit.create(SonarClient.class);
     }
 
-    public static AppShareClient getAppShareClient(String appShareUrl) {
-        ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setBaseUrl(appShareUrl);
-        configurationProperties.setType("app_share");
-        configurationProperties.setInsecureSkipTlsVerify(true);
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        return retrofit.create(AppShareClient.class);
-    }
 }
