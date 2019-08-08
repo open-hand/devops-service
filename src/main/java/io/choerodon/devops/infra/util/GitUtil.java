@@ -254,44 +254,28 @@ public class GitUtil {
     }
 
     /**
-     * Git克隆
+     * clone 并checkout
+     *
+     * @param dirName
+     * @param remoteUrl
+     * @param accessToken
+     * @return
      */
-    public Git clone(String name, String type, String remoteUrl) {
-        Git git = null;
-        String branch;
-        String workingDirectory = getWorkingDirectory(name);
-        File localPathFile = new File(workingDirectory);
+    public void cloneAndCheckout(String dirName, String remoteUrl, String accessToken, String commit) {
+        File localPathFile = new File(dirName);
         deleteDirectory(localPathFile);
-        switch (type) {
-            case "MicroServiceFront":
-                return cloneGitHubTemplate("choerodon-front-template", workingDirectory, version);
-            case "MicroService":
-                return cloneGitHubTemplate("choerodon-microservice-template", workingDirectory, version);
-            case "JavaLib":
-                return cloneGitHubTemplate("choerodon-javalib-template", workingDirectory, version);
-            case "ChoerodonMoChaTemplate":
-                return cloneGitHubTemplate("choerodon-mocha-template", workingDirectory, version);
-            case "GoTemplate":
-                return cloneGitHubTemplate("choerodon-golang-template", workingDirectory, version);
-            case "SpringBootTemplate":
-                return cloneGitHubTemplate("choerodon-springboot-template", workingDirectory, version);
-            default:
-                branch = MASTER;
-                try {
-                    Git.cloneRepository()
-                            .setURI(remoteUrl)
-                            .setBranch(branch)
-                            .setDirectory(localPathFile)
-                            .call();
-                    FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
-                    git = Git.init().setDirectory(localPathFile).call();
-
-                } catch (GitAPIException e) {
-                    throw new CommonException(ERROR_GIT_CLONE, e);
-                }
-                break;
+        try {
+            Git.cloneRepository()
+                    .setURI(remoteUrl)
+                    .setDirectory(localPathFile)
+                    .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
+                    .call()
+                    .close();
+            checkout(dirName, commit);
+            FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
+        } catch (GitAPIException e) {
+            throw new CommonException(ERROR_GIT_CLONE, e);
         }
-        return git;
     }
 
     /**
@@ -305,12 +289,9 @@ public class GitUtil {
         try {
             Git.cloneRepository()
                     .setURI(remoteUrl)
-                    .setBranch(tag)
                     .setDirectory(localPathFile)
                     .call();
             FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
-            git = Git.init().setDirectory(localPathFile).call();
-
         } catch (GitAPIException e) {
             throw new CommonException(ERROR_GIT_CLONE, e);
         }

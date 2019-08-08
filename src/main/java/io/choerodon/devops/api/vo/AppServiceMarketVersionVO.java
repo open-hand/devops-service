@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.Date;
-
 /**
  * Creator: Runge
  * Date: 2018/5/31
