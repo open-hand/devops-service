@@ -129,9 +129,9 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     public PageInfo<DevopsDeployValueDTO> basePageByOptions(Long projectId, Long appServiceId, Long envId, Long userId, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+        List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         PageInfo<DevopsDeployValueDTO> deployValueDTOPageInfo = PageHelper
-                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsDeployValueMapper.listByOptions(projectId, appServiceId, envId, userId, searchParamMap, paramMap));
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsDeployValueMapper.listByOptions(projectId, appServiceId, envId, userId, searchParamMap, paramList));
         return deployValueDTOPageInfo;
     }
 

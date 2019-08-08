@@ -247,7 +247,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     @Override
     public PageInfo<AppServiceVersionVO> pageByOptions(Long projectId, Long appServiceId, PageRequest pageRequest, String searchParams) {
-        Map<String, Object> searchParamMap = json.deserialize(searchParams, Map.class);
+        Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParams);
         PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
                 .doSelectPageInfo(() ->
                         appServiceVersionMapper.listByOptions(
@@ -388,10 +388,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     @Override
     public PageInfo<AppServiceVersionRespVO> pageShareVersionByAppId(Long appServiceId, PageRequest pageRequest, String params) {
+        Map<String, Object> paramMap = TypeUtil.castMapParams(params);
         PageInfo<AppServiceVersionDTO> applicationDTOPageInfo = PageHelper.startPage(
                 pageRequest.getPage(),
                 pageRequest.getSize(),
-                PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceVersionMapper.listShareVersionByAppId(appServiceId, params));
+                PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceVersionMapper.listShareVersionByAppId(appServiceId, TypeUtil.cast(paramMap.get(TypeUtil.PARAMS))));
         return ConvertUtils.convertPage(applicationDTOPageInfo, AppServiceVersionRespVO.class);
     }
 
@@ -489,7 +490,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
         PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo;
         if (!StringUtils.isEmpty(searchParam)) {
-            Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
+            Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
             applicationVersionDTOPageInfo = PageHelper
                     .startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper.listApplicationVersion(projectId, appServiceId,
                             TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),

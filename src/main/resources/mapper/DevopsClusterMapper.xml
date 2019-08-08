@@ -44,11 +44,14 @@
                 </foreach>
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND (dc.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dc.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dc.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            )
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (dc.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dc.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dc.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                )
+            </foreach>
         </if>
     </sql>
 

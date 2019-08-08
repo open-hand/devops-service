@@ -18,7 +18,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
                              @Param("appMarket") Boolean appMarket,
                              @Param("type") String type,
                              @Param("searchParam") Map<String, Object> searchParam,
-                             @Param("params") String params,
+                             @Param("params") List<String> params,
                              @Param("index") String index);
 
     List<AppServiceDTO> listByAppId(@Param("appId") Long appId,
@@ -41,7 +41,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
     List<AppServiceDTO> basePageByActiveAndPubAndHasVersion(@Param("appId") Long appId,
                                                             @Param("active") Boolean active,
                                                             @Param("searchParam") Map<String, Object> searchParam,
-                                                            @Param("param") String param);
+                                                            @Param("params") List<String> params);
 
     AppServiceDTO queryByToken(@Param("token") String token);
 
@@ -70,7 +70,7 @@ public interface AppServiceMapper extends Mapper<AppServiceDTO> {
 
     List<AppServiceDTO> listShareApplicationService(@Param("appServiceIds") List<Long> appServiceIds,
                                                     @Param("appId") Long appId,
-                                                    @Param("params") String params);
+                                                    @Param("params") List<String> params);
 
     void updateHarborConfigNullByConfigId(@Param("harborConfigId")Long harborConfigId);
 

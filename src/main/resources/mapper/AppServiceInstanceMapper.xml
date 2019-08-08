@@ -75,10 +75,13 @@
                     ) = #{searchParam.podCount, jdbcType=BIGINT}
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND (ins.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR das.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR version.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (ins.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR das.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR version.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            </foreach>
         </if>
     </sql>
 
@@ -355,13 +358,16 @@
                 </foreach>
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND (dai.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR da.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dai.status LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR de.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (dai.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR da.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dai.status LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR de.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            </foreach>
         </if>
     </sql>
 

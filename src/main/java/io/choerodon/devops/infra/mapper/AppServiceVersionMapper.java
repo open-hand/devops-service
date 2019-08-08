@@ -18,7 +18,7 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
             @Param("projectId") Long projectId,
             @Param("appServiceId") Long appServiceId,
             @Param("searchParam") Map<String, Object> searchParam,
-            @Param("param") String param,
+            @Param("params") List<String> params,
             @Param("isProjectOwner") Boolean isProjectOwner,
             @Param("userId") Long userId);
 
@@ -49,7 +49,7 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
             @Param("projectId") Long projectId,
             @Param("appServiceId") Long appServiceId,
             @Param("searchParam") Map<String, Object> searchParam,
-            @Param("param") String param);
+            @Param("params") List<String> params);
 
     List<AppServiceVersionDTO> listByPublished(@Param("applicationId") Long applicationId);
 
@@ -79,5 +79,5 @@ public interface AppServiceVersionMapper extends Mapper<AppServiceVersionDTO> {
     void updatePublishTime();
 
     List<AppServiceVersionDTO> listShareVersionByAppId(@Param("appServiceId") Long appServiceId,
-                                                       @Param("params") String params);
+                                                       @Param("params") List<String> params);
 }

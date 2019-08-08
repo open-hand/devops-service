@@ -50,9 +50,12 @@
                 </foreach>
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND (dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dpv.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dpv.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            </foreach>
         </if>
     </sql>
 </mapper>

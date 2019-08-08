@@ -373,8 +373,12 @@
             dasr.share_level = 'organization'
             OR dasr.app_id = #{appId}
         )
-        <if test="params != null">
-            and (da.code like #{params} or da.name like #{params} )
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%') )
+            </foreach>
         </if>
     </select>
 </mapper>

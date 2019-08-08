@@ -70,8 +70,11 @@
                 </foreach>
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            </foreach>
         </if>
     </select>
 
@@ -379,10 +382,12 @@
                     ) dasr2 ON dav.version = dasr2.version
                     AND dav.app_service_id =  #{appServiceId}
             ) davall
-            <if test="params !=null">
-                WHERE davall.version LIKE CONCAT(CONCAT('%', #{params}, '%'))
+            <if test='params != null and params.size > 0'>
+                AND
+                <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                    WHERE davall.version LIKE CONCAT(CONCAT('%', #{param}, '%'))
+                </foreach>
             </if>
-
     </select>
 
 </mapper>

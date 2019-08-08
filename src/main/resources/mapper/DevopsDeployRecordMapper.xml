@@ -69,7 +69,16 @@ WHERE
 				</foreach>
 			</if>
 		</if>
-
+		<if test='params != null and params.size > 0'>
+			AND
+			<foreach collection="params" item="param" open="(" separator=" OR " close=")">
+				(t.deploy_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+				OR t.deployStatus LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+				OR t.pipelineName LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+				OR t.env LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+				)
+			</foreach>
+		</if>
 	</sql>
 
 </mapper>
