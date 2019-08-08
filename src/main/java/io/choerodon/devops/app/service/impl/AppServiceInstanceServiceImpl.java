@@ -30,7 +30,6 @@ import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.MarketAppDeployRecordDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -38,7 +37,6 @@ import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.util.*;
@@ -52,7 +50,6 @@ import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import retrofit2.Response;
 
 
 /**
@@ -1278,15 +1275,15 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
      *
      * @param type
      * @param code
-     * @param projectConfigVO
+     * @param configVO
      * @return
      */
-    private DevopsConfigDTO createConfig(String type, String code, ProjectConfigVO projectConfigVO) {
+    private DevopsConfigDTO createConfig(String type, String code, ConfigVO configVO) {
         String name = code + "-" + type;
         DevopsConfigDTO devopsConfigDTO = devopsConfigService.baseCheckByName(name);
         if (devopsConfigDTO == null) {
             devopsConfigDTO = new DevopsConfigDTO();
-            devopsConfigDTO.setConfig(gson.toJson(projectConfigVO));
+            devopsConfigDTO.setConfig(gson.toJson(configVO));
             devopsConfigDTO.setName(name);
             devopsConfigDTO.setType(type);
             return devopsConfigService.baseCreate(devopsConfigDTO);
@@ -1426,8 +1423,8 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
         //如果应用绑定了私有镜像库,则处理secret
         if (applicationDTO.getHarborConfigId() != null) {
             DevopsConfigDTO devopsConfigDTO = devopsConfigService.baseQuery(applicationDTO.getHarborConfigId());
-            ProjectConfigVO projectConfigVO = gson.fromJson(devopsConfigDTO.getConfig(), ProjectConfigVO.class);
-            if (projectConfigVO.getPrivate() != null) {
+            ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+            if (configVO.getPrivate() != null) {
                 DevopsRegistrySecretDTO devopsRegistrySecretDTO = devopsRegistrySecretService.baseQueryByEnvAndId(devopsEnvironmentDTO.getCode(), devopsConfigDTO.getId());
                 if (devopsRegistrySecretDTO == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
@@ -1439,16 +1436,16 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
                     }
                     devopsRegistrySecretDTO = new DevopsRegistrySecretDTO(devopsEnvironmentDTO.getId(), devopsConfigDTO.getId(), devopsEnvironmentDTO.getCode(), secretCode, devopsConfigDTO.getConfig());
                     devopsRegistrySecretService.baseCreate(devopsRegistrySecretDTO);
-                    agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, projectConfigVO, CREATE);
+                    agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), secretCode, configVO, CREATE);
                 } else {
                     //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
                     if (!devopsRegistrySecretDTO.getSecretDetail().equals(gson.toJson(devopsConfigDTO.getConfig()))) {
                         devopsRegistrySecretDTO.setSecretDetail(gson.toJson(devopsConfigDTO.getConfig()));
                         devopsRegistrySecretService.baseUpdate(devopsRegistrySecretDTO);
-                        agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), projectConfigVO, UPDATE);
+                        agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO, UPDATE);
                     } else {
                         if (!devopsRegistrySecretDTO.getStatus()) {
-                            agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), projectConfigVO, UPDATE);
+                            agentCommandService.operateSecret(devopsEnvironmentDTO.getClusterId(), devopsEnvironmentDTO.getCode(), devopsRegistrySecretDTO.getSecretCode(), configVO, UPDATE);
                         }
                     }
                     secretCode = devopsRegistrySecretDTO.getSecretCode();

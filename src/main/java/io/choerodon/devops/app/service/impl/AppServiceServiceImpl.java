@@ -14,25 +14,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ListBranchCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -66,6 +47,24 @@ import io.choerodon.devops.infra.mapper.AppServiceUserRelMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.tool.UUIDTool;
+import io.kubernetes.client.JSON;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 
 /**
@@ -557,17 +556,17 @@ public class AppServiceServiceImpl implements AppServiceService {
             ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(applicationDTO.getAppId());
             OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             InputStream inputStream;
-            ProjectConfigVO harborProjectConfig;
-            ProjectConfigVO chartProjectConfig;
+            ConfigVO harborProjectConfig;
+            ConfigVO chartProjectConfig;
             if (applicationDTO.getHarborConfigId() != null) {
-                harborProjectConfig = gson.fromJson(devopsConfigService.baseQuery(applicationDTO.getHarborConfigId()).getConfig(), ProjectConfigVO.class);
+                harborProjectConfig = gson.fromJson(devopsConfigService.baseQuery(applicationDTO.getHarborConfigId()).getConfig(), ConfigVO.class);
             } else {
-                harborProjectConfig = gson.fromJson(devopsConfigService.baseListByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getConfig(), ProjectConfigVO.class);
+                harborProjectConfig = gson.fromJson(devopsConfigService.baseListByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getConfig(), ConfigVO.class);
             }
             if (applicationDTO.getChartConfigId() != null) {
-                chartProjectConfig = gson.fromJson(devopsConfigService.baseQuery(applicationDTO.getChartConfigId()).getConfig(), ProjectConfigVO.class);
+                chartProjectConfig = gson.fromJson(devopsConfigService.baseQuery(applicationDTO.getChartConfigId()).getConfig(), ConfigVO.class);
             } else {
-                chartProjectConfig = gson.fromJson(devopsConfigService.baseListByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getConfig(), ProjectConfigVO.class);
+                chartProjectConfig = gson.fromJson(devopsConfigService.baseListByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getConfig(), ConfigVO.class);
             }
             if (type == null) {
                 inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
@@ -832,22 +831,24 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         //如果传入了project,校验用户是否有project的权限
-        Call<List<ProjectDetail>> listProject = harborClient.listProject(project);
-        Response<List<ProjectDetail>> projectResponse = null;
-        try {
-            projectResponse = listProject.execute();
-            if (projectResponse.body() == null) {
-                throw new CommonException("error.harbor.project.permission");
-            } else {
-                if (project != null) {
-                    List<ProjectDetail> projects = (projectResponse.body()).stream().filter(a -> (a.getName().equals(configurationProperties.getProject()))).collect(Collectors.toList());
-                    if (projects.isEmpty()) {
-                        throw new CommonException("error.harbor.project.permission");
+        if (project != null) {
+            Call<List<ProjectDetail>> listProject = harborClient.listProject(project);
+            Response<List<ProjectDetail>> projectResponse = null;
+            try {
+                projectResponse = listProject.execute();
+                if (projectResponse.body() == null) {
+                    throw new CommonException("error.harbor.project.permission");
+                } else {
+                    if (project != null) {
+                        List<ProjectDetail> projects = (projectResponse.body()).stream().filter(a -> (a.getName().equals(configurationProperties.getProject()))).collect(Collectors.toList());
+                        if (projects.isEmpty()) {
+                            throw new CommonException("error.harbor.project.permission");
+                        }
                     }
                 }
+            } catch (IOException e) {
+                throw new CommonException(e);
             }
-        } catch (IOException e) {
-            throw new CommonException(e);
         }
         return true;
     }

@@ -15,8 +15,8 @@ public class AppServiceRemoteDeployVO {
     private boolean isNotChange;
     private AppServiceRemoteVO appServiceRemoteVO;
     private AppServiceVersionRemoteVO appServiceVersionRemoteVO;
-    private ProjectConfigVO harbor;
-    private ProjectConfigVO chart;
+    private ConfigVO harbor;
+    private ConfigVO chart;
 
     public String getType() {
         return type;
@@ -82,19 +82,19 @@ public class AppServiceRemoteDeployVO {
         this.appServiceVersionRemoteVO = appServiceVersionRemoteVO;
     }
 
-    public ProjectConfigVO getHarbor() {
+    public ConfigVO getHarbor() {
         return harbor;
     }
 
-    public void setHarbor(ProjectConfigVO harbor) {
+    public void setHarbor(ConfigVO harbor) {
         this.harbor = harbor;
     }
 
-    public ProjectConfigVO getChart() {
+    public ConfigVO getChart() {
         return chart;
     }
 
-    public void setChart(ProjectConfigVO chart) {
+    public void setChart(ConfigVO chart) {
         this.chart = chart;
     }
 }

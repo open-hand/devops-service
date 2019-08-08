@@ -2,14 +2,13 @@ package io.choerodon.devops.app.task;
 
 import com.google.gson.Gson;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ProjectConfigVO;
+import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -37,13 +36,13 @@ public class DevopsCommandRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         try {
-            ProjectConfigVO harborConfig = new ProjectConfigVO();
+            ConfigVO harborConfig = new ConfigVO();
             harborConfig.setUrl(servicesHarborBaseUrl);
             harborConfig.setUserName(servicesHarborUsername);
             harborConfig.setPassword(servicesHarborPassword);
             initConfig(harborConfig, HARBOR_NAME, ProjectConfigType.HARBOR.getType());
 
-            ProjectConfigVO chartConfig = new ProjectConfigVO();
+            ConfigVO chartConfig = new ConfigVO();
             chartConfig.setUrl(servicesHelmUrl);
             initConfig(chartConfig, CHART_NAME, ProjectConfigType.CHART.getType());
         } catch (Exception e) {
@@ -51,7 +50,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
         }
     }
 
-    private void initConfig(ProjectConfigVO configDTO, String configName, String configType) {
+    private void initConfig(ConfigVO configDTO, String configName, String configType) {
         DevopsConfigDTO newConfigDTO = new DevopsConfigDTO();
         newConfigDTO.setConfig(gson.toJson(configDTO));
         newConfigDTO.setName(configName);
@@ -59,7 +58,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
         DevopsConfigDTO oldConfigDTO = devopsConfigService.baseQueryByName(null, configName);
         if (oldConfigDTO == null) {
             devopsConfigService.baseCreate(newConfigDTO);
-        } else if (!configDTO.equals(gson.fromJson(oldConfigDTO.getConfig(), ProjectConfigVO.class))) {
+        } else if (!configDTO.equals(gson.fromJson(oldConfigDTO.getConfig(), ConfigVO.class))) {
             newConfigDTO.setId(oldConfigDTO.getId());
             newConfigDTO.setObjectVersionNumber(oldConfigDTO.getObjectVersionNumber());
             devopsConfigService.baseUpdate(newConfigDTO);

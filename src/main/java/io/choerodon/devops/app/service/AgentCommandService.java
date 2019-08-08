@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.api.vo.ProjectConfigVO;
+import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
@@ -35,5 +35,5 @@ public interface AgentCommandService {
 
     void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count);
 
-    void operateSecret(Long clusterId, String namespace, String secretName, ProjectConfigVO projectConfigVO, String type);
+    void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO, String type);
 }
