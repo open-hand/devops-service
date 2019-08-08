@@ -10,7 +10,7 @@ public class DevopsConfigVO {
 
     private String name;
 
-    private ProjectConfigVO config;
+    private ConfigVO config;
 
     private Long projectId;
 
@@ -18,7 +18,11 @@ public class DevopsConfigVO {
 
     private Long appServiceId;
 
+    private Boolean harborPrivate;
+
     private String type;
+
+    private String configType;
 
     private Long objectVersionNumber;
 
@@ -38,11 +42,11 @@ public class DevopsConfigVO {
         this.name = name;
     }
 
-    public ProjectConfigVO getConfig() {
+    public ConfigVO getConfig() {
         return config;
     }
 
-    public void setConfig(ProjectConfigVO config) {
+    public void setConfig(ConfigVO config) {
         this.config = config;
     }
 
@@ -84,5 +88,21 @@ public class DevopsConfigVO {
 
     public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
+    }
+
+    public String getConfigType() {
+        return configType;
+    }
+
+    public void setConfigType(String configType) {
+        this.configType = configType;
+    }
+
+    public Boolean getHarborPrivate() {
+        return harborPrivate;
+    }
+
+    public void setHarborPrivate(Boolean harborPrivate) {
+        this.harborPrivate = harborPrivate;
     }
 }

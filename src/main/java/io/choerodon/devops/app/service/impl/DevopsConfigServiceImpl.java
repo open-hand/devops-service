@@ -1,20 +1,21 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsProjectConfigValidator;
+import io.choerodon.devops.api.vo.ConfigVO;
+import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
-import io.choerodon.devops.api.vo.ProjectConfigVO;
-import io.choerodon.devops.api.vo.ProjectDefaultConfigVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.app.service.DevopsProjectService;
@@ -49,6 +50,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
     private static final String HARBOR = "harbor";
     private static final String CHART = "chart";
+    private static final String CUSTOM = "custom";
+    private static final String DEFAULT = "default";
     private static final Gson gson = new Gson();
 
 
@@ -70,65 +73,67 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Autowired
     private AppServiceService applicationService;
 
-    @Override
-    public DevopsConfigVO create(Long projectId, DevopsConfigVO devopsConfigVO) {
+    public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
 
-        configValidator.checkConfigType(devopsConfigVO);
-        baseCheckByName(projectId, devopsConfigVO.getName());
+        devopsConfigVOS.stream().forEach(devopsConfigVO -> {
+            //根据每个配置的默认还是自定义执行不同逻辑
+            if (devopsConfigVO.getType().equals(CUSTOM)) {
 
-        if (devopsConfigVO.getType().equals(HARBOR) && devopsConfigVO.getConfig().getProject() != null) {
-            checkRegistryProjectIsPrivate(devopsConfigVO);
-        }
-        devopsConfigVO.setProjectId(projectId);
-
-        DevopsConfigDTO devopsConfigDTO = baseCreate(voToDto(devopsConfigVO));
-        return dtoToVo(devopsConfigDTO);
+                //自定义的harbor类型,不管是新建还是更新，当传进来有harbor project时都要检验project是否是私有
+                if (devopsConfigVO.getType().equals(HARBOR) && devopsConfigVO.getConfig().getProject() != null) {
+                    checkRegistryProjectIsPrivate(devopsConfigVO);
+                }
+                //根据配置所在的资源层级，查询出数据库中是否存在，存在则更新，不存在则新建
+                DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
+                DevopsConfigDTO newDevopsConfigDTO = voToDto(devopsConfigVO);
+                if (devopsConfigDTO != null) {
+                    newDevopsConfigDTO.setId(devopsConfigDTO.getId());
+                    setResourceId(resourceId, resourceType, newDevopsConfigDTO);
+                    baseUpdate(newDevopsConfigDTO);
+                } else {
+                    setResourceId(resourceId, resourceType, newDevopsConfigDTO);
+                    baseCreate(newDevopsConfigDTO);
+                }
+            } else {
+                //默认的harbor类型,在项目层级有设置私有的功能
+                if (devopsConfigVO.getType().equals(HARBOR) && resourceType.equals(ResourceLevel.PROJECT.value())) {
+                    DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
+                    //判断当前默认仓库私有配置是否和数据库中存储一致，不一致则执行对应逻辑
+                    if (!devopsProjectDTO.getHarborProjectIsPrivate().equals(devopsConfigVO.getHarborPrivate())) {
+                        operateHarborProject(resourceId, devopsConfigVO.getHarborPrivate());
+                    }
+                }
+                //根据配置所在的资源层级，查询出数据库中是否存在，存在则删除
+                DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
+                if (devopsConfigDTO != null) {
+                    baseDelete(devopsConfigDTO.getId());
+                }
+            }
+        });
     }
 
 
     @Override
-    public DevopsConfigVO update(Long projectId, DevopsConfigVO devopsConfigVO) {
-        if (devopsConfigVO.getType().equals(HARBOR) && devopsConfigVO.getConfig().getProject() != null) {
-            checkRegistryProjectIsPrivate(devopsConfigVO);
-        }
-        if (!ObjectUtils.isEmpty(devopsConfigVO.getType())) {
-            configValidator.checkConfigType(devopsConfigVO);
-        }
-        return dtoToVo(baseUpdate(voToDto(devopsConfigVO)));
+    public List<DevopsConfigVO> queryByResourceId(Long resourceId, String resourceType) {
+
+        List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
+
+        List<DevopsConfigDTO> devopsConfigDTOS = baseListByResource(resourceId,resourceType);
+        devopsConfigDTOS.stream().forEach(devopsConfigDTO -> {
+            DevopsConfigVO devopsConfigVO = dtoToVo(devopsConfigDTO);
+            //如果是项目层级下的harbor类型，需返回是否私有
+            if(devopsConfigVO.getProjectId()!=null&&devopsConfigVO.getType().equals(HARBOR)) {
+                DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(devopsConfigVO.getProjectId());
+                devopsConfigVO.setHarborPrivate(devopsProjectDTO.getHarborProjectIsPrivate());
+            }
+            devopsConfigVOS.add(devopsConfigVO);
+        });
+        return devopsConfigVOS;
     }
 
-    @Override
-    public DevopsConfigVO queryById(Long id) {
-        return dtoToVo(baseQuery(id));
-    }
 
-    @Override
-    public PageInfo<DevopsConfigVO> pageByOptions(Long projectId, PageRequest pageRequest, String params) {
-        return ConvertUtils.convertPage(basePageByOptions(projectId, pageRequest, params), this::dtoToVo);
-    }
 
-    @Override
-    public void delete(Long id) {
-        baseDelete(id);
-    }
-
-    @Override
-    public List<DevopsConfigVO> listByIdAndType(Long projectId, String type) {
-        return ConvertUtils.convertList(baseListByIdAndType(projectId, type), this::dtoToVo);
-    }
-
-    @Override
-    public void checkName(Long projectId, String name) {
-        baseCheckByName(projectId, name);
-    }
-
-    @Override
-    public Boolean checkIsUsed(Long configId) {
-        return baseCheckUsed(configId);
-    }
-
-    @Override
-    public void operateHarborProject(Long projectId, Boolean harborPrivate) {
+    private void operateHarborProject(Long projectId, Boolean harborPrivate) {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
@@ -207,14 +212,14 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             devopsConfigVO.setName("project_harbor_default");
             devopsConfigVO.setType(HARBOR);
             devopsConfigVO.setProjectId(projectId);
-            ProjectConfigVO projectConfigVO = new ProjectConfigVO();
-            projectConfigVO.setPrivate(true);
-            projectConfigVO.setUrl(harborConfigurationProperties.getBaseUrl());
-            projectConfigVO.setPassword(user.getPassword());
-            projectConfigVO.setUserName(user.getUsername());
-            projectConfigVO.setEmail(user.getEmail());
-            projectConfigVO.setProject(organizationDTO.getCode() + "-" + projectDTO.getCode());
-            devopsConfigVO.setConfig(projectConfigVO);
+            ConfigVO configVO = new ConfigVO();
+            configVO.setPrivate(true);
+            configVO.setUrl(harborConfigurationProperties.getBaseUrl());
+            configVO.setPassword(user.getPassword());
+            configVO.setUserName(user.getUsername());
+            configVO.setEmail(user.getEmail());
+            configVO.setProject(organizationDTO.getCode() + "-" + projectDTO.getCode());
+            devopsConfigVO.setConfig(configVO);
             DevopsConfigDTO devopsConfigDTO = baseCreate(voToDto(devopsConfigVO));
 
             //更新项目下所有应用的harbor配置为该默认配置
@@ -268,25 +273,19 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     @Override
-    public ProjectDefaultConfigVO queryProjectDefaultConfig(Long projectId) {
-        ProjectDefaultConfigVO projectDefaultConfigVO = new ProjectDefaultConfigVO();
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-        projectDefaultConfigVO.setHarborIsPrivate(devopsProjectDTO.getHarborProjectIsPrivate());
-        List<DevopsConfigDTO> harborConfigs = baseListByIdAndType(projectId, HARBOR);
-        Optional<DevopsConfigDTO> devopsProjectConfigDTO = harborConfigs.stream().filter(result -> result.getName().equals("project_harbor_default")).findFirst();
-        if (devopsProjectConfigDTO.isPresent()) {
-            projectDefaultConfigVO.setHarborConfigName(devopsProjectConfigDTO.get().getName());
-        } else {
-            projectDefaultConfigVO.setHarborConfigName(harborConfigs.get(0).getName());
-        }
-        List<DevopsConfigDTO> chartConfigs = baseListByIdAndType(projectId, CHART);
-        Optional<DevopsConfigDTO> chartConfig = chartConfigs.stream().filter(result -> result.getName().equals("chart_default")).findFirst();
+    public DefaultConfigVO queryDefaultConfig(Long resourceId, String resourceType) {
+        DefaultConfigVO defaultConfigVO = new DefaultConfigVO();
 
-        if (chartConfig.isPresent()) {
-            projectDefaultConfigVO.setChartConfigName(chartConfig.get().getName());
+        //查询当前资源层级数据库中是否有对应的组件设置，有则返回url,无返回空，代表使用默认
+        DevopsConfigDTO harborConfig = baseQueryByResourceAndType(resourceId, resourceType, HARBOR);
+        if (harborConfig != null) {
+            defaultConfigVO.setHarborConfigUrl(gson.fromJson(harborConfig.getConfig(), ConfigVO.class).getUrl());
         }
-
-        return projectDefaultConfigVO;
+        DevopsConfigDTO chartConfig = baseQueryByResourceAndType(resourceId, resourceType, CHART);
+        if (chartConfig != null) {
+            defaultConfigVO.setChartConfigUrl(gson.fromJson(chartConfig.getConfig(), ConfigVO.class).getUrl());
+        }
+        return defaultConfigVO;
     }
 
 
@@ -350,11 +349,28 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     public void baseCheckByName(Long projectId, String name) {
-        DevopsConfigDTO projectConfigDO = new DevopsConfigDTO();
-        projectConfigDO.setProjectId(projectId);
-        projectConfigDO.setName(name);
-        if (devopsConfigMapper.selectOne(projectConfigDO) != null) {
+        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
+        devopsConfigDTO.setProjectId(projectId);
+        devopsConfigDTO.setName(name);
+        if (devopsConfigMapper.selectOne(devopsConfigDTO) != null) {
             throw new CommonException("error.project.config.exist");
+        }
+    }
+
+    public DevopsConfigDTO baseQueryByResourceAndType(Long resourceId, String resourceType, String type) {
+        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
+        setResourceId(resourceId, resourceType, devopsConfigDTO);
+        devopsConfigDTO.setType(type);
+        return devopsConfigMapper.selectOne(devopsConfigDTO);
+    }
+
+    private void setResourceId(Long resourceId, String resourceType, DevopsConfigDTO devopsConfigDTO) {
+        if (ResourceLevel.ORGANIZATION.value().equals(resourceType)) {
+            devopsConfigDTO.setOrganizationId(resourceId);
+        } else if (ResourceLevel.PROJECT.value().equals(resourceType)) {
+            devopsConfigDTO.setProjectId(resourceId);
+        } else {
+            devopsConfigDTO.setAppServiceId(resourceId);
         }
     }
 
@@ -363,11 +379,17 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
 
+    public List<DevopsConfigDTO> baseListByResource(Long resourceId, String resourceType) {
+        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
+        setResourceId(resourceId,resourceType,devopsConfigDTO);
+        return devopsConfigMapper.select(devopsConfigDTO);
+    }
+
     private DevopsConfigVO dtoToVo(DevopsConfigDTO devopsConfigDTO) {
         DevopsConfigVO devopsConfigVO = new DevopsConfigVO();
         BeanUtils.copyProperties(devopsConfigDTO, devopsConfigVO);
-        ProjectConfigVO projectConfigVO = gson.fromJson(devopsConfigDTO.getConfig(), ProjectConfigVO.class);
-        devopsConfigVO.setConfig(projectConfigVO);
+        ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+        devopsConfigVO.setConfig(configVO);
         return devopsConfigVO;
     }
 

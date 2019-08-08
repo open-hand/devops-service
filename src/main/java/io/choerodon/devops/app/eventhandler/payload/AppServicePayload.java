@@ -2,7 +2,7 @@ package io.choerodon.devops.app.eventhandler.payload;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.ProjectConfigVO;
+import io.choerodon.devops.api.vo.ConfigVO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -16,8 +16,8 @@ public class AppServicePayload {
     private String imgUrl;
     private String type;
     private String repository;
-    private ProjectConfigVO harbor;
-    private ProjectConfigVO chart;
+    private ConfigVO harbor;
+    private ConfigVO chart;
     private List<AppServiceVersionPayload> appServiceVersionPayloads;
 
     public Long getAppId() {
@@ -68,19 +68,19 @@ public class AppServicePayload {
         this.repository = repository;
     }
 
-    public ProjectConfigVO getHarbor() {
+    public ConfigVO getHarbor() {
         return harbor;
     }
 
-    public void setHarbor(ProjectConfigVO harbor) {
+    public void setHarbor(ConfigVO harbor) {
         this.harbor = harbor;
     }
 
-    public ProjectConfigVO getChart() {
+    public ConfigVO getChart() {
         return chart;
     }
 
-    public void setChart(ProjectConfigVO chart) {
+    public void setChart(ConfigVO chart) {
         this.chart = chart;
     }
 

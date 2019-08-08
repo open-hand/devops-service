@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import retrofit2.Response;
 
 import io.choerodon.base.domain.PageRequest;
 import io.choerodon.base.domain.Sort;
@@ -31,7 +30,6 @@ import io.choerodon.devops.infra.dto.iam.OrganizationDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.operator.IamServiceClientOperator;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper;
@@ -120,7 +118,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setVersion(version);
         if (applicationDTO.getChartConfigId() != null) {
             DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey((applicationDTO.getChartConfigId()));
-            helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ProjectConfigVO.class).getUrl();
+            helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class).getUrl();
         }
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");

@@ -185,10 +185,10 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devOpsAppServicePayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
 
         //设置仓库Id
-        List<DevopsConfigVO> harborConfig = projectConfigService.listByIdAndType(null, "harbor");
-        List<DevopsConfigVO> chartConfig = projectConfigService.listByIdAndType(null, "chart");
-        applicationDTO.setHarborConfigId(harborConfig.get(0).getId());
-        applicationDTO.setChartConfigId(chartConfig.get(0).getId());
+//        List<DevopsConfigVO> harborConfig = projectConfigService.listByIdAndType(null, "harbor");
+//        List<DevopsConfigVO> chartConfig = projectConfigService.listByIdAndType(null, "chart");
+//        applicationDTO.setHarborConfigId(harborConfig.get(0).getId());
+//        applicationDTO.setChartConfigId(chartConfig.get(0).getId());
 
         applicationDTO = applicationService.baseCreate(applicationDTO);
 

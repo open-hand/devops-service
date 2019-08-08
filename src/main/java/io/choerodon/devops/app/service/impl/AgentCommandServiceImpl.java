@@ -177,15 +177,15 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void operateSecret(Long clusterId, String namespace, String secretName, ProjectConfigVO projectConfigVO, String type) {
+    public void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO, String type) {
         Msg msg = new Msg();
         SecretPayLoad secretPayLoad = new SecretPayLoad();
-        secretPayLoad.setEmail(projectConfigVO.getEmail());
+        secretPayLoad.setEmail(configVO.getEmail());
         secretPayLoad.setName(secretName);
         secretPayLoad.setNamespace(namespace);
-        secretPayLoad.setServer(projectConfigVO.getUrl());
-        secretPayLoad.setUsername(projectConfigVO.getUserName());
-        secretPayLoad.setPassword(projectConfigVO.getPassword());
+        secretPayLoad.setServer(configVO.getUrl());
+        secretPayLoad.setUsername(configVO.getUserName());
+        secretPayLoad.setPassword(configVO.getPassword());
 
         try {
             msg.setPayload(mapper.writeValueAsString(secretPayLoad));
