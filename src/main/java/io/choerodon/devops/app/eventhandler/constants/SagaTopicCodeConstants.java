@@ -36,6 +36,21 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_CREATE_APPLICATION_SERVICE = "devops-create-application-service";
 
     /**
+     * Devops创建应用服务，发送saga到base-service
+     */
+    public static final String DEVOPS_CREATE_APPLICATION_SERVICE_EVENT = "devops-create-application-service-event";
+
+    /**
+     * Devops更新应用服务，发送saga到base-service
+     */
+    public static final String DEVOPS_UPDATE_APPLICATION_SERVICE_EVENT = "devops-update-application-service-event";
+
+    /**
+     * Devops删除创建失败的应用服务，发送saga到base-service
+     */
+    public static final String DEVOPS_DELETE_APPLICATION_SERVICE_EVENT = "devops-delete-application-service-event";
+
+    /**
      * Devops删除失败应用
      */
     public static final String DEVOPS_APP_DELETE = "devops-app-delete";
