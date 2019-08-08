@@ -152,8 +152,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private DevopsBranchService devopsBranchService;
     @Autowired
-    private MarketConnectInfoService marketConnectInfoService;
-    @Autowired
     private GitlabGroupService gitlabGroupService;
     @Autowired
     private AppServiceVersionValueService appServiceVersionValueService;
@@ -210,17 +208,18 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setAppServiceId(appServiceDTO.getId());
         devOpsAppServicePayload.setIamProjectId(appServiceDTO.getAppId());
 
-//        producer.applyAndReturn(
-//                StartSagaBuilder
-//                        .newBuilder()
-//                        .withLevel(ResourceLevel.PROJECT)
-//                        .withRefType("")
-//                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE),
-//                builder -> builder
-//                        .withPayloadAndSerialize(devOpsAppServicePayload)
-//                        .withRefId("")
-//                        .withSourceId(projectId));
-        operationApplication(devOpsAppServicePayload);
+        producer.apply(
+                StartSagaBuilder
+                        .newBuilder()
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withRefType("")
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE)
+                        .withPayloadAndSerialize(devOpsAppServicePayload)
+                        .withRefId("")
+                        .withSourceId(projectId),
+                builder -> {
+                });
+        sendCreateAppServiceInfo(appServiceDTO, projectId);
         return ConvertUtils.convertObject(baseQueryByCode(appServiceDTO.getCode(), appServiceDTO.getAppId()), AppServiceRepVO.class);
     }
 
@@ -263,6 +262,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
         }
         appServiceMapper.deleteByPrimaryKey(appServiceId);
+        sendDeleteAppServiceInfo(appServiceDTO, projectId);
     }
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_GITLAB_USERS,
@@ -277,10 +277,15 @@ public class AppServiceServiceImpl implements AppServiceService {
         Long appServiceId = appServiceUpdateDTO.getId();
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
 
+        if (oldAppServiceDTO == null) {
+            return false;
+        }
+
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
             checkName(oldAppServiceDTO.getAppId(), appServiceDTO.getName());
         }
         baseUpdate(appServiceDTO);
+        sendUpdateAppServiceInfo(baseQuery(appServiceUpdateDTO.getId()), projectId);
         return true;
     }
 
@@ -723,7 +728,72 @@ public class AppServiceServiceImpl implements AppServiceService {
                         .withRefId("")
                         .withSourceId(projectId));
 
+        sendCreateAppServiceInfo(appServiceDTO, projectId);
         return ConvertUtils.convertObject(baseQuery(appServiceId), AppServiceRepVO.class);
+    }
+
+    /**
+     * 发送服务信息
+     *
+     * @param appServiceDTO 服务信息
+     * @param projectId     项目id
+     */
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT,
+            description = "devops创建应用服务",
+            inputSchemaClass = io.choerodon.devops.infra.dto.AppServiceDTO.class)
+    private void sendCreateAppServiceInfo(AppServiceDTO appServiceDTO, Long projectId) {
+        producer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withSourceId(projectId)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE_EVENT)
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withPayloadAndSerialize(appServiceDTO),
+                builder -> {
+                }
+        );
+    }
+
+    /**
+     * 发送服务信息
+     *
+     * @param appServiceDTO 服务信息
+     * @param projectId     项目id
+     */
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_EVENT,
+            description = "devops删除应用服务",
+            inputSchemaClass = io.choerodon.devops.infra.dto.AppServiceDTO.class)
+    private void sendDeleteAppServiceInfo(AppServiceDTO appServiceDTO, Long projectId) {
+        producer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withSourceId(projectId)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_EVENT)
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withPayloadAndSerialize(appServiceDTO),
+                builder -> {
+                }
+        );
+    }
+
+
+    /**
+     * 发送服务信息
+     *
+     * @param appServiceDTO 服务信息
+     * @param projectId     项目id
+     */
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_UPDATE_APPLICATION_SERVICE_EVENT,
+            description = "devops更新应用服务",
+            inputSchemaClass = io.choerodon.devops.infra.dto.AppServiceDTO.class)
+    private void sendUpdateAppServiceInfo(AppServiceDTO appServiceDTO, Long projectId) {
+        producer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withSourceId(projectId)
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_UPDATE_APPLICATION_SERVICE_EVENT)
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withPayloadAndSerialize(appServiceDTO),
+                builder -> {
+                }
+        );
     }
 
     @Override
