@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
-<mapper namespace="io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper">
-    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.DevopsProjectConfigDTO">
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsConfigMapper">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
         SELECT
         dpc.id,
         dpc.project_id,
@@ -10,7 +10,7 @@
         dpc.type,
         dpc.config,
         dpc.object_version_number
-        FROM devops_project_config dpc
+        FROM devops_config dpc
         where dpc.project_id = #{projectId}
         and dpc.name != 'project_harbor_default'
         <include refid="sqlparam"/>
@@ -22,7 +22,7 @@
         dpc.type,
         dpc.config,
         dpc.object_version_number
-        FROM devops_project_config dpc
+        FROM devops_config dpc
         where dpc.project_id = #{projectId}
         and dpc.name = 'project_harbor_default'
         <include refid="sqlparam"/>
@@ -34,7 +34,7 @@
         dpc.type,
         dpc.config,
         dpc.object_version_number
-        FROM devops_project_config dpc
+        FROM devops_config dpc
         where dpc.project_id is null
         <include refid="sqlparam"/>
     </select>
@@ -63,7 +63,7 @@
         </if>
     </sql>
 
-    <select id="queryByIdAndType" resultType="io.choerodon.devops.infra.dto.DevopsProjectConfigDTO">
+    <select id="queryByIdAndType" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
             SELECT
                 dpc.id,
                 dpc.project_id,
@@ -71,7 +71,7 @@
                 dpc.config,
                 dpc.type
             FROM
-                devops_project_config dpc
+                devops_config dpc
             WHERE
                 (
                     dpc.project_id = #{projectId}
@@ -93,13 +93,27 @@
             OR da.harbor_config_id = #{configId}
     </select>
 
-    <select id="queryByNameWithNoProject" resultType="io.choerodon.devops.infra.dto.DevopsProjectConfigDTO">
+    <select id="queryByNameWithNoProject" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
         SELECT
             dpc.*
         FROM
-            devops_project_config dpc
+            devops_config dpc
         WHERE
-            dpc.name
+            dpc.name = #{name}
         AND dpc.project_id is null
     </select>
+
+
+    <delete id="deleteByProject">
+        DELETE FROM devops_config
+        WHERE project_id is not null
+    </delete>
+
+
+    <select id="existAppSerciveConfig" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
+        SELECT
+        * from devops_config
+        where app_service_id is not null
+    </select>
+
 </mapper>

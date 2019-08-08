@@ -11,8 +11,8 @@ import io.choerodon.mybatis.entity.BaseDTO;
  * @author zongw.lee@gmail.com
  * @since 2019/03/11
  */
-@Table(name = "devops_project_config")
-public class DevopsProjectConfigDTO extends BaseDTO {
+@Table(name = "devops_config")
+public class DevopsConfigDTO extends BaseDTO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +23,10 @@ public class DevopsProjectConfigDTO extends BaseDTO {
     private String config;
 
     private Long projectId;
+
+    private Long organizationId;
+
+    private Long appServiceId;
 
     private String type;
 
@@ -64,5 +68,21 @@ public class DevopsProjectConfigDTO extends BaseDTO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 }

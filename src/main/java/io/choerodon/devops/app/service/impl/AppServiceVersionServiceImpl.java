@@ -35,7 +35,7 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionMapper;
 import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper;
-import io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper;
+import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.util.*;
 
 @Service
@@ -83,7 +83,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private AppServiceMapper appServiceMapper;
     @Autowired
-    private DevopsProjectConfigMapper devopsProjectConfigMapper;
+    private DevopsConfigMapper devopsConfigMapper;
     @Autowired
     private MarketConnectInfoService marketConnectInfoService;
 
@@ -119,8 +119,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setCommit(commit);
         appServiceVersionDTO.setVersion(version);
         if (applicationDTO.getChartConfigId() != null) {
-            DevopsProjectConfigDTO devopsProjectConfigDTO = devopsProjectConfigMapper.selectByPrimaryKey((applicationDTO.getChartConfigId()));
-            helmUrl = gson.fromJson(devopsProjectConfigDTO.getConfig(), ProjectConfigVO.class).getUrl();
+            DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey((applicationDTO.getChartConfigId()));
+            helmUrl = gson.fromJson(devopsConfigDTO.getConfig(), ProjectConfigVO.class).getUrl();
         }
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl : helmUrl + "/" + organization.getCode() + "/" + projectDTO.getCode() + "/");

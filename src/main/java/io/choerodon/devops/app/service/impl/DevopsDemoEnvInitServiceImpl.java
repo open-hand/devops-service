@@ -55,7 +55,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private String tgzFilePath;
 
     @Autowired
-    private DevopsProjectConfigService projectConfigService;
+    private DevopsConfigService projectConfigService;
     @Autowired
     private AppServiceService applicationService;
     @Autowired
@@ -185,8 +185,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devOpsAppServicePayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
 
         //设置仓库Id
-        List<DevopsProjectConfigVO> harborConfig = projectConfigService.listByIdAndType(null, "harbor");
-        List<DevopsProjectConfigVO> chartConfig = projectConfigService.listByIdAndType(null, "chart");
+        List<DevopsConfigVO> harborConfig = projectConfigService.listByIdAndType(null, "harbor");
+        List<DevopsConfigVO> chartConfig = projectConfigService.listByIdAndType(null, "chart");
         applicationDTO.setHarborConfigId(harborConfig.get(0).getId());
         applicationDTO.setChartConfigId(chartConfig.get(0).getId());
 
