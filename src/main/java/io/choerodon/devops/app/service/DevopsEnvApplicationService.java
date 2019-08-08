@@ -13,6 +13,11 @@ import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
 public interface DevopsEnvApplicationService {
     List<DevopsEnvApplicationVO> batchCreate(DevopsEnvAppServiceVO devopsEnvAppServiceVO);
 
+    /**
+     * 批量删除与该环境关联的应用
+     * @param devopsEnvAppServiceVO
+     */
+    void batchDelete(DevopsEnvAppServiceVO devopsEnvAppServiceVO);
 
     /**
      * 查询环境下的所有应用

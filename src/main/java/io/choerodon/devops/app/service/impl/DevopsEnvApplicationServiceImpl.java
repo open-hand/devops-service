@@ -45,6 +45,13 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     }
 
     @Override
+    public void batchDelete(DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
+        Stream.of(devopsEnvAppServiceVO.getAppServiceIds())
+                .map(appServiceId -> new DevopsEnvApplicationDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
+                .forEach((e -> devopsEnvAppServiceMapper.delete(e)));
+    }
+
+    @Override
     public List<AppServiceRepVO> listAppByEnvId(Long envId) {
         List<Long> appServiceIds = baseListAppByEnvId(envId);
         List<AppServiceRepVO> applicationRepVOS = new ArrayList<>();

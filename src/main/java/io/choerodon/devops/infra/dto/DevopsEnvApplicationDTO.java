@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.Table;
 
-@Table(name = "devops_env_application")
+@Table(name = "devops_env_app_service")
 public class DevopsEnvApplicationDTO {
     private Long appServiceId;
     private Long envId;
