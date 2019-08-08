@@ -28,7 +28,7 @@ class AppTag extends Component {
     handleMapStore.setCodeManagerAppTag({
       refresh: this.handleRefresh,
       select: this.handleSelect,
-      getSelfToolBar: this.getSelfToolBar(),
+      getSelfToolBar: this.getSelfToolBar,
     });
     this.state = {
       page: 1,
