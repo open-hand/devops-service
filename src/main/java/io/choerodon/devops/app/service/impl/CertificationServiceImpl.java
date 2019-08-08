@@ -488,9 +488,8 @@ public class CertificationServiceImpl implements CertificationService {
         }
 
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         PageInfo<CertificationDTO> certificationDTOPage = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult)
-                .doSelectPageInfo(() -> devopsCertificationMapper.queryCertification(projectId, organizationId, envId, searchParamMap, param));
+                .doSelectPageInfo(() -> devopsCertificationMapper.listCertificationByOptions(projectId, organizationId, envId, searchParamMap, TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
 
         // check if cert is overdue
         certificationDTOPage.getList().forEach(dto -> {

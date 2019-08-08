@@ -17,7 +17,7 @@ public interface DevopsClusterMapper extends Mapper<DevopsClusterDTO> {
 
     List<DevopsClusterDTO> listClusters(@Param("organizationId") Long organizationId,
                                         @Param("searchParam") Map<String, Object> searchParam,
-                                        @Param("param") String param);
+                                        @Param("params") List<String> params);
 
     /**
      * 查询节点下的Pod

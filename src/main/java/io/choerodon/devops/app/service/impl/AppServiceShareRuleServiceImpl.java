@@ -90,8 +90,8 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
                 pageRequest.getSize(),
                 PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
                 () -> appServiceShareRuleMapper.listByOptions(appServiceId,
-                        (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
-                        (String) mapParams.get(TypeUtil.PARAMS)));
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS))));
         PageInfo<AppServiceShareRuleVO> shareRuleVOPageInfo = ConvertUtils.convertPage(devopsProjectConfigDTOPageInfo, AppServiceShareRuleVO.class);
         List<AppServiceShareRuleVO> appServiceShareRuleVOS = shareRuleVOPageInfo.getList().stream().peek(t -> t.setProjectName(iamService.queryIamProject(t.getAppId()).getName())).collect(Collectors.toList());
         shareRuleVOPageInfo.setList(appServiceShareRuleVOS);

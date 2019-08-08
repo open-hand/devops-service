@@ -1341,14 +1341,16 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public PageInfo<AppServiceRepVO> pageShareAppService(Long projectId, PageRequest pageRequest, String params) {
+    public PageInfo<AppServiceRepVO> pageShareAppService(Long projectId, PageRequest pageRequest, String searchParam) {
+        Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
+
         Long organizationId = iamServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
         iamServiceClientOperator.listIamProjectByOrgId(organizationId, null, null).forEach(proId -> {
                     baseListAll(projectId).forEach(appServiceDTO -> appServiceIds.add(appServiceDTO.getId()));
                 }
         );
-        PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, params));
+        PageInfo<AppServiceDTO> applicationServiceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.listShareApplicationService(appServiceIds, projectId, TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         return ConvertUtils.convertPage(applicationServiceDTOPageInfo, AppServiceRepVO.class);
     }
 
@@ -1751,13 +1753,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         //是否需要分页
         if (doPage != null && !doPage) {
             applicationDTOPageInfo.setList(appServiceMapper.list(projectId, isActive, hasVersion, appMarket, type,
-                    (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
-                    mapParams.get(TypeUtil.PARAMS).toString(), PageRequestUtil.checkSortIsEmpty(pageRequest)));
+                    TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         } else {
             applicationDTOPageInfo = PageHelper
                     .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper.list(projectId, isActive, hasVersion, appMarket, type,
-                            (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
-                            (String) mapParams.get(TypeUtil.PARAMS), PageRequestUtil.checkSortIsEmpty(pageRequest)));
+                            TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                            TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         }
         return applicationDTOPageInfo;
     }
@@ -1809,14 +1811,14 @@ public class AppServiceServiceImpl implements AppServiceService {
     public PageInfo<AppServiceDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
                                                                        PageRequest pageRequest, String params) {
         Map<String, Object> searchParam = null;
-        String param = null;
+        List<String> paramList = null;
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
             searchParam = TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM));
-            param = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
+            paramList = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
         }
-        Map<String, Object> finalSearchParam = searchParam;
-        String finalParam = param;
+        final Map<String, Object> finalSearchParam = searchParam;
+        final List<String> finalParam = paramList;
 
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> appServiceMapper
                 .basePageByActiveAndPubAndHasVersion(projectId, isActive, finalSearchParam, finalParam));

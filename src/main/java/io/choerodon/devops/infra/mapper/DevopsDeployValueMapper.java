@@ -18,5 +18,5 @@ public interface DevopsDeployValueMapper extends Mapper<DevopsDeployValueDTO> {
                                              @Param("envId") Long envId,
                                              @Param("userId") Long userId,
                                              @Param("searchParam") Map<String, Object> searchParam,
-                                             @Param("param") String param);
+                                             @Param("params") List<String> params);
 }

@@ -20,7 +20,7 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
 
     List<AppServiceInstanceInfoDTO> listInstanceInfoByEnvAndOptions(@Param("envId") Long envId,
                                                                     @Param("searchParam") Map<String, Object> searchParam,
-                                                                    @Param("param") String param);
+                                                                    @Param("params") List<String> params);
 
     List<AppServiceInstanceDTO> listApplicationInstance(@Param("projectId") Long projectId,
                                                         @Param("envId") Long envId,
@@ -28,7 +28,7 @@ public interface AppServiceInstanceMapper extends Mapper<AppServiceInstanceDTO> 
                                                         @Param("appServiceId") Long appServiceId,
                                                         @Param("instanceId") Long instanceId,
                                                         @Param("searchParam") Map<String, Object> searchParam,
-                                                        @Param("param") String param);
+                                                        @Param("params") List<String> params);
 
 
     List<AppServiceInstanceDTO> listApplicationInstanceCode(@Param("projectId") Long projectId,

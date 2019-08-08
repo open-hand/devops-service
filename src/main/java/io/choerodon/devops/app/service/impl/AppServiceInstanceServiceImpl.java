@@ -157,9 +157,9 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
     public PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String param = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+        List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         return ConvertUtils.convertPage(PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
-                .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(envId, searchParamMap, param)), AppServiceInstanceInfoVO.class);
+                .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(envId, searchParamMap, paramList)), AppServiceInstanceInfoVO.class);
     }
 
     @Override
@@ -170,10 +170,10 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
 
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+        List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
         PageInfo<AppServiceInstanceDTO> applicationInstanceDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() ->
                 appServiceInstanceMapper
-                        .listApplicationInstance(projectId, envId, appServiceVersionId, appServiceId, instanceId, searchParamMap, paramMap));
+                        .listApplicationInstance(projectId, envId, appServiceVersionId, appServiceId, instanceId, searchParamMap, paramList));
 
         BeanUtils.copyProperties(applicationInstanceDTOPageInfo, devopsEnvPreviewInstanceDTOPageInfo);
 
@@ -507,10 +507,9 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
 
 
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
 
         List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper
-                .listApplicationInstance(projectId, envId, null, null, null, searchParamMap, paramMap);
+                .listApplicationInstance(projectId, envId, null, null, null, searchParamMap, TypeUtil.cast(maps.get(TypeUtil.PARAMS)));
 
         List<AppServiceInstanceVO> appServiceInstanceVOS =
                 ConvertUtils.convertList(appServiceInstanceDTOS, AppServiceInstanceVO.class);

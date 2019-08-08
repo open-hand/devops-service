@@ -65,12 +65,12 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
 
         //设置环境信息以及用户信息
-        devopsDeployRecordVOPageInfo.getList().stream().forEach(devopsDeployRecordVO -> {
+        devopsDeployRecordVOPageInfo.getList().forEach(devopsDeployRecordVO -> {
             if (devopsDeployRecordVO.getEnv() != null) {
                 List<String> env = Arrays.asList(devopsDeployRecordVO.getEnv().split(",")).stream().map(s -> devopsEnvironmentDTOS.stream().filter(devopsEnvironmentDTO -> devopsEnvironmentDTO.getId().equals(TypeUtil.objToLong(s))).collect(Collectors.toList()).get(0).getName()).collect(Collectors.toList());
                 devopsDeployRecordVO.setEnv(Joiner.on(",").join(env));
             }
-            iamUserDTOS.stream().forEach(iamUserDTO -> {
+            iamUserDTOS.forEach(iamUserDTO -> {
                 if (devopsDeployRecordVO.getDeployCreatedBy().equals(iamUserDTO.getId())) {
                     devopsDeployRecordVO.setUserName(iamUserDTO.getRealName());
                     devopsDeployRecordVO.setUserImage(iamUserDTO.getImageUrl());
@@ -84,12 +84,14 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     @Override
     public PageInfo<DevopsDeployRecordDTO> basePageByProjectId(Long projectId, String params, PageRequest pageRequest) {
 
-        Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
-        }.getType());
+        Map<String, Object> maps = TypeUtil.castMapParams(params);
 
         PageInfo<DevopsDeployRecordDTO> devopsDeployRecordDTOPageInfo =
                 PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(
-                        () -> devopsDeployRecordMapper.listByProjectId(projectId, maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM))));
+                        () -> devopsDeployRecordMapper.listByProjectId(projectId,
+                                maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                                maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAMS)))
+                );
         return devopsDeployRecordDTOPageInfo;
     }
 

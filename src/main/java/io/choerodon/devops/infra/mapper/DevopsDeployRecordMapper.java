@@ -14,6 +14,7 @@ import org.apache.ibatis.annotations.Param;
 public interface DevopsDeployRecordMapper extends Mapper<DevopsDeployRecordDTO> {
 
     List<DevopsDeployRecordDTO> listByProjectId(@Param("projectId") Long projectId,
+                                                @Param("params") List<String> params,
                                                 @Param("searchParam") Map<String, Object> searchParam);
 
 }

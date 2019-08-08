@@ -11,11 +11,11 @@ import org.apache.ibatis.annotations.Param;
  * Created by Sheep on 2019/6/26.
  */
 public interface DevopsCustomizeResourceMapper extends Mapper<DevopsCustomizeResourceDTO> {
-
-
     DevopsCustomizeResourceDTO queryDetail(@Param(value = "resourceId") Long resourceId);
 
-
-    List<DevopsCustomizeResourceDTO> pageResources(@Param(value = "envId") Long envId, @Param(value = "searchParam") Map<String, Object> searchParam, @Param(value = "param") String param);
+    List<DevopsCustomizeResourceDTO> pageResources(
+            @Param(value = "envId") Long envId,
+            @Param(value = "searchParam") Map<String, Object> searchParam,
+            @Param("params") List<String> params);
 
 }
