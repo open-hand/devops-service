@@ -222,7 +222,7 @@ class BranchStore {
       }
     });
 
-  loadBranchByName = (projectId, appId, name) => axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/git/branch?branchName=${name}`)
+  loadBranchByName = (projectId, appId, name) => axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/branch?branchName=${name}`)
     .then((branch) => {
       this.setIssueInitValue(null);
       this.setIssueDto(null);
@@ -251,25 +251,25 @@ class BranchStore {
       return res;
     });
 
-  updateBranchByName = (projectId, appId, postData) => axios.put(`/devops/v1/projects/${projectId}/apps/${appId}/git/branch`, postData)
+  updateBranchByName = (projectId, appId, postData) => axios.put(`/devops/v1/projects/${projectId}/app_service/${appId}/git/branch`, postData)
     .then((datas) => {
       const res = handleProptError(datas);
       return res;
     });
 
-  createBranch =(projectId, appId, postData) => axios.post(`/devops/v1/projects/${projectId}/apps/${appId}/git/branch`, postData)
+  createBranch =(projectId, appId, postData) => axios.post(`/devops/v1/projects/${projectId}/app_service/${appId}/git/branch`, postData)
     .then((datas) => {
       const res = handleProptError(datas);
       return res;
     });
 
-  deleteData = (proId = AppState.currentMenuType.id, appId, name) => axios.delete(`/devops/v1/projects/${proId}/apps/${appId}/git/branch?branch_name=${name}`)
+  deleteData = (proId = AppState.currentMenuType.id, appId, name) => axios.delete(`/devops/v1/projects/${proId}/app_service/${appId}/git/branch?branch_name=${name}`)
     .then((datas) => {
       const res = handleProptError(datas);
       return res;
     });
 
-  checkName = (projectId = AppState.currentMenuType.projectId, appId, name) => axios.get(`/devops/v1/projects/${projectId}/apps/${appId}/git/check_name?branch_name=${name}`)
+  checkName = (projectId = AppState.currentMenuType.projectId, appId, name) => axios.get(`/devops/v1/projects/${projectId}/app_service/${appId}/git/check_name?branch_name=${name}`)
 }
 
 const branchStore = new BranchStore();
