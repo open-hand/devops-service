@@ -16,6 +16,17 @@ const INIT_INDEX = 0;
 
 @store('PipelineCreateStore')
 class PipelineCreateStore {
+  @observable stageList = [
+    {
+      tempId: INIT_INDEX,
+      stageName: '阶段一',
+      triggerType: TRIGGER_TYPE_AUTO,
+      pipelineTaskVOS: null,
+      stageUserRelDTOS: null,
+      isParallel: TASK_SERIAL,
+    },
+  ];
+
   // 第一个任务的任务类型错误禁止提交表单
   @observable isDisabled = false;
 
@@ -81,17 +92,7 @@ class PipelineCreateStore {
   @computed get getStageIndex() {
     return this.stageIndex;
   }
-
-  @observable stageList = [
-    {
-      tempId: INIT_INDEX,
-      stageName: '阶段一',
-      triggerType: TRIGGER_TYPE_AUTO,
-      pipelineTaskDTOS: null,
-      stageUserRelDTOS: null,
-      isParallel: TASK_SERIAL,
-    },
-  ];
+ 
 
   /**
    * 添加阶段
@@ -165,7 +166,7 @@ class PipelineCreateStore {
         tempId: INIT_INDEX,
         stageName: '阶段一',
         triggerType: TRIGGER_TYPE_AUTO,
-        pipelineTaskDTOS: null,
+        pipelineTaskVOS: null,
         stageUserRelDTOS: null,
         isParallel: TASK_SERIAL,
       },
@@ -357,20 +358,20 @@ class PipelineCreateStore {
   }
 
   @action initPipeline(data) {
-    const { pipelineStageDTOS, triggerType } = data;
+    const { pipelineStageVOS, triggerType } = data;
     const taskList = {};
     let stageIndex = INIT_INDEX;
     const taskIndex = { 0: INIT_INDEX };
 
-    const stageList = _.map(pipelineStageDTOS, ({ pipelineTaskDTOS, ...item }) => {
+    const stageList = _.map(pipelineStageVOS, ({ pipelineTaskVOS, ...item }) => {
       let index = 1;
-      const tasks = _.map(pipelineTaskDTOS, task => ({
+      const tasks = _.map(pipelineTaskVOS, task => ({
         ...task,
         isHead: stageIndex === INIT_INDEX && index === 1,
         index: index++,
       }));
 
-      const stage = { ...item, tempId: ++stageIndex, pipelineTaskDTOS: tasks };
+      const stage = { ...item, tempId: ++stageIndex, pipelineTaskVOS: tasks };
       taskList[stageIndex] = tasks;
       taskIndex[stageIndex] = index;
       return stage;
@@ -424,7 +425,7 @@ class PipelineCreateStore {
   async loadEnvData(projectId) {
     this.setLoading('env', true);
     const response = await axios
-      .get(`/devops/v1/projects/${projectId}/envs?active=${true}`)
+      .get(`/devops/v1/projects/${projectId}/envs/list_by_active?active=${true}`)
       .catch((e) => {
         this.setLoading('env', false);
         Choerodon.handleResponseError(e);
@@ -441,7 +442,7 @@ class PipelineCreateStore {
     this.setLoading('app', true);
     const response = await axios
       .post(
-        `/devops/v1/projects/${projectId}/apps/list_by_options?active=true&type=normal&doPage=false&has_version=true&app_market=false`,
+        `/devops/v1/projects/${projectId}/app_service/page_by_options?active=true&type=normal&doPage=false&has_version=true&app_market=false`,
         JSON.stringify({
           searchParam: {},
           param: '',
@@ -538,7 +539,7 @@ class PipelineCreateStore {
   async loadUser(projectId) {
     this.setLoading('user', true);
     const response = await axios
-      .get(`/devops/v1/projects/${projectId}/pipeline/all_users`)
+      .get(`/devops/v1/projects/${projectId}/pipeline/list_users`)
       .catch((e) => {
         this.setLoading('user', false);
         Choerodon.handleResponseError(e);
@@ -559,7 +560,7 @@ class PipelineCreateStore {
    *  - name
    *  - triggerType 触发方式，值为 'auto' 和 'manual'
    *  - pipelineUserRelDTOS 触发人员，id的数组格式，如果 triggerType 是 'auto'， 则值为null
-   *  - pipelineStageDTOS 阶段信息，数组
+   *  - pipelineStageVOS 阶段信息，数组
    */
   createPipeline(projectId, data) {
     return axios.post(
@@ -575,7 +576,7 @@ class PipelineCreateStore {
   async loadDetail(projectId, id) {
     this.setDetailLoading(true);
     const response = await axios
-      .get(`/devops/v1/projects/${projectId}/pipeline/${id}/detail`)
+      .get(`/devops/v1/projects/${projectId}/pipeline/${id}`)
       .catch((e) => {
         this.setPipeline(null);
         this.setDetailLoading(false);
@@ -589,6 +590,20 @@ class PipelineCreateStore {
       this.setTrigger(res.triggerType);
       this.checkCanSubmit();
     }
+  }
+
+  @observable createVisible = false;
+
+  @action
+  setCreateVisible(value) {
+    this.createVisible = value;
+  }
+
+  @observable editVisible = false;
+
+  @action
+  setEditVisible(value) {
+    this.editVisible = value;
   }
 }
 

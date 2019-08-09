@@ -3,15 +3,19 @@ import { observer, inject } from 'mobx-react';
 import { withRouter } from 'react-router-dom';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { Table, Button, Modal, Spin, Select } from 'choerodon-ui';
-import { Permission, Content, Header, Page, Action } from '@choerodon/boot';
+import { Permission, Content, Header, Page, Action, Breadcrumb } from '@choerodon/boot';
 import _ from 'lodash';
 import StatusTags from '../../../components/StatusTags';
 import TimePopover from '../../../components/timePopover';
 import UserInfo from '../../../components/userInfo';
 import { handleCheckerProptError } from '../../../utils';
 import { FAST_SEARCH } from '../components/Constants';
+import PipelineCreate from '../pipeline-create';
+import PipelineCreateStore from '../stores';
 
 import './index.scss';
+import pipelineCreateStore from '../stores/PipelineCreateStore';
+
 
 const { Option } = Select;
 
@@ -155,8 +159,11 @@ export default class Pipeline extends Component {
     );
   };
 
-  /****************** 删除 *********************/
-
+  /**
+   * 删除
+   * @param {} id 
+   * @param {*} name 
+   */
   openRemove(id, name) {
     this.setState({
       showDelete: true,
@@ -179,7 +186,7 @@ export default class Pipeline extends Component {
     const { deleteId } = this.state;
     this.setState({ deleteLoading: true });
     const response = await PipelineStore.deletePipeline(projectId, deleteId)
-      .catch(e => {
+      .catch((e) => {
         this.setState({ deleteLoading: false });
         Choerodon.handleResponseError(e);
       });
@@ -191,7 +198,7 @@ export default class Pipeline extends Component {
     this.setState({ deleteLoading: false });
   };
 
-  /*************** 启用、停用 *****************/
+  /** ************* 启用、停用 **************** */
 
   renderStatus = (record) => {
     const { intl: { formatMessage } } = this.props;
@@ -213,7 +220,7 @@ export default class Pipeline extends Component {
     this.setState({ invalidLoading: true });
     const response = await PipelineStore
       .changeStatus(projectId, invalidId, STATUS_INVALID)
-      .catch(e => {
+      .catch((e) => {
         this.setState({ invalidLoading: false });
         Choerodon.handleResponseError(e);
       });
@@ -246,7 +253,7 @@ export default class Pipeline extends Component {
       invalidId: id,
       invalidName: name,
     });
-  };
+  }
 
   closeInvalid = () => {
     this.setState({
@@ -272,7 +279,7 @@ export default class Pipeline extends Component {
     this.closeExecuteCheck();
 
     this.setState({ executeLoading: true });
-    let response = await PipelineStore
+    const response = await PipelineStore
       .executePipeline(projectId, executeId)
       .catch(e => Choerodon.handleResponseError(e));
     this.setState({ executeLoading: true });
@@ -302,7 +309,7 @@ export default class Pipeline extends Component {
       executeName: name,
       executeId: id,
     });
-    let response = await PipelineStore
+    const response = await PipelineStore
       .checkExecute(projectId, id)
       .catch(e => Choerodon.handleResponseError(e));
 
@@ -325,9 +332,8 @@ export default class Pipeline extends Component {
   /**
    * 跳转到创建页面
    */
-  linkToCreate = () => {
-    const { match } = this.props;
-    this.linkToChange(`${match.url}/create`);
+  showCreate = () => {
+    PipelineCreateStore.setCreateVisible(true);
   };
 
   /**
@@ -350,15 +356,14 @@ export default class Pipeline extends Component {
       search: `?type=${type}&id=${projectId}&name=${projectName}&organizationId=${organizationId}`,
       state: { pipelineId: id, fromPipeline: true },
     });
-  };
+  }
 
   /**
-   * 跳转到编辑页面
+   * 打开编辑页面
    * @param id
    */
   linkToEdit(id) {
-    const { match } = this.props;
-    this.linkToChange(`${match.url}/edit/${id}`);
+    pipelineCreateStore.setEditVisible(true);
   }
 
   /**
@@ -375,11 +380,9 @@ export default class Pipeline extends Component {
     } = this.props;
     const { id, name, isEnabled, triggerType, execute, edit } = record;
 
-    const _filterItem = (collection, predicate) => _.filter(collection, item => {
-      return Array.isArray(predicate) ? !_.includes(predicate, item) : item !== predicate;
-    });
+    const filterItem = (collection, predicate) => _.filter(collection, item => (Array.isArray(predicate) ? !_.includes(predicate, item) : item !== predicate));
 
-    let action = {
+    const action = {
       detail: {
         service: ['devops-service.pipeline.listRecords'],
         text: formatMessage({ id: 'pipeline.action.detail' }),
@@ -413,19 +416,19 @@ export default class Pipeline extends Component {
     };
 
     let actionItem = _.keys(action);
-    actionItem = _filterItem(actionItem, isEnabled ? 'enable' : 'disabled');
+    actionItem = filterItem(actionItem, isEnabled ? 'enable' : 'disabled');
 
     if (triggerType === 'auto' || !execute) {
-      actionItem = _filterItem(actionItem, 'execute');
+      actionItem = filterItem(actionItem, 'execute');
     }
 
     if (!edit) {
-      actionItem = _filterItem(actionItem, ['edit', 'remove']);
+      actionItem = filterItem(actionItem, ['edit', 'remove']);
     }
 
     // 停用的流水线不能修改
     if (!isEnabled) {
-      actionItem = _filterItem(actionItem, 'edit');
+      actionItem = filterItem(actionItem, 'edit');
     }
 
     return (<Action data={_.map(actionItem, item => ({ ...action[item] }))} />);
@@ -453,7 +456,7 @@ export default class Pipeline extends Component {
       sortOrder: columnKey === 'triggerType' && order,
       filters: [],
       filteredValue: filters.triggerType || [],
-      render: _renderTrigger,
+      render: renderTrigger,
     }, {
       title: <FormattedMessage id="name" />,
       key: 'name',
@@ -465,21 +468,21 @@ export default class Pipeline extends Component {
     }, {
       title: <FormattedMessage id="creator" />,
       key: 'createUserRealName',
-      render: _renderUser,
+      render: renderUser,
     }, {
       title: <FormattedMessage id="updateDate" />,
       key: 'lastUpdateDate',
       dataIndex: 'lastUpdateDate',
       sorter: true,
       sortOrder: columnKey === 'lastUpdateDate' && order,
-      render: _renderDate,
+      render: renderDate,
     }, {
       key: 'action',
       align: 'right',
       width: 60,
       render: this.renderAction,
     }];
-  };
+  }
 
   render() {
     const {
@@ -537,19 +540,20 @@ export default class Pipeline extends Component {
           <Button
             funcType="flat"
             icon="playlist_add"
-            onClick={this.linkToCreate}
+            onClick={this.showCreate}
           >
             <FormattedMessage id="pipeline.header.create" />
           </Button>
         </Permission>
         <Button
-          icon='refresh'
+          icon="refresh"
           onClick={this.handleRefresh}
         >
           <FormattedMessage id="refresh" />
         </Button>
       </Header>
-      <Content code="pipeline" values={{ name }}>
+      <Breadcrumb title="流水线" />
+      <Content>
         <Select
           mode="multiple"
           label={formatMessage({ id: 'pipeline.search' })}
@@ -571,17 +575,16 @@ export default class Pipeline extends Component {
         </Select>
         <Select
           mode="multiple"
-          className='c7ncd-pipeline-search'
+          className="c7ncd-pipeline-search"
           label={formatMessage({ id: 'pipeline.deploy.env' })}
           optionFilterProp="children"
           filter
           allowClear
           choiceRemove={false}
           onChange={value => this.handleSearch(value, 'envIds')}
-          filterOption={(input, option) =>
-            option.props.children
-              .toLowerCase()
-              .indexOf(input.toLowerCase()) >= 0
+          filterOption={(input, option) => option.props.children
+            .toLowerCase()
+            .indexOf(input.toLowerCase()) >= 0
           }
         >
           {_.map(getEnvData, ({ name, id }) => (
@@ -604,6 +607,10 @@ export default class Pipeline extends Component {
           rowKey={record => record.id}
         />
       </Content>
+
+      <PipelineCreate visible={PipelineCreateStore.createVisible} PipelineCreateStore={PipelineCreateStore} />
+
+
       {showDelete && (<Modal
         visible={showDelete}
         title={`${formatMessage({ id: 'pipeline.delete' })}“${deleteName}”`}
@@ -648,11 +655,11 @@ export default class Pipeline extends Component {
         <div className="c7n-padding-top_8">
           {executeCheck
             ? (executeEnv
-                ? <FormattedMessage
-                  id={`pipeline.execute.no.permission`}
-                  values={{ envName: executeEnv }}
-                />
-                : <FormattedMessage id={`pipeline.execute.${executeCheck}`} />
+              ? <FormattedMessage
+                id="pipeline.execute.no.permission"
+                values={{ envName: executeEnv }}
+              />
+              : <FormattedMessage id={`pipeline.execute.${executeCheck}`} />
             )
             : <Fragment>
               <Spin size="small" />
@@ -687,14 +694,14 @@ export default class Pipeline extends Component {
   }
 }
 
-function _renderTrigger(data) {
+function renderTrigger(data) {
   return <FormattedMessage id={`pipeline.trigger.${data}`} />;
 }
 
-function _renderDate(record) {
+function renderDate(record) {
   return <TimePopover content={record} />;
 }
 
-function _renderUser({ createUserRealName, createUserName, createUserUrl }) {
+function renderUser({ createUserRealName, createUserName, createUserUrl }) {
   return <UserInfo avatar={createUserUrl} name={createUserRealName} id={createUserName} />;
 }
