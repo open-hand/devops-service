@@ -1,16 +1,14 @@
-import React, { useContext, Fragment, useState, lazy, Suspense, useCallback } from 'react';
+import React, { useContext, Fragment, useState, lazy, Suspense, useCallback, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Tabs, Icon } from 'choerodon-ui';
 import { useApplicationStore } from './stores';
 import { useDeploymentStore } from '../../../stores';
 import PrefixTitle from '../../components/prefix-title';
+import Modals from './modals';
 
 import './index.less';
 
 const { TabPane } = Tabs;
-const NET_TAB = 'net';
-const MAPPING_TAB = 'mapping';
-const CIPHER_TAB = 'cipher';
 
 const CipherContent = lazy(() => import('./cipher'));
 const MappingContent = lazy(() => import('./mapping'));
@@ -19,16 +17,22 @@ const NetContent = lazy(() => import('./net'));
 const AppContent = observer(() => {
   const {
     intl: { formatMessage },
+    tabs: {
+      NET_TAB,
+      MAPPING_TAB,
+      CIPHER_TAB,
+    },
     baseInfoDs,
+    appStore,
   } = useApplicationStore();
   const {
     prefixCls,
     intlPrefix,
   } = useDeploymentStore();
-  const [activeKey, setActiveKey] = useState(NET_TAB);
+
   const handleChange = useCallback((key) => {
-    setActiveKey(key);
-  }, []);
+    appStore.setTabKey(key);
+  }, [appStore]);
 
   const baseInfo = baseInfoDs.data;
 
@@ -45,6 +49,7 @@ const AppContent = observer(() => {
 
   return (
     <div className={`${prefixCls}-application`}>
+      <Modals />
       <PrefixTitle
         prefixCls={prefixCls}
         fallback={!baseInfo.length}
@@ -54,7 +59,7 @@ const AppContent = observer(() => {
       <Tabs
         className={`${prefixCls}-application-tabs`}
         animated={false}
-        activeKey={activeKey}
+        activeKey={appStore.getTabKey}
         onChange={handleChange}
       >
         <TabPane

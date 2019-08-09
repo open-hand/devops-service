@@ -241,6 +241,14 @@ const deployment = {
   'c7ncd.deployment.member.all': '项目下所有成员',
   'c7ncd.deployment.member.specific': '项目下特定成员',
   'c7ncd.deployment.add.member': '添加人员',
+  'c7ncd.deployment.create.network': '创建网络',
+  'c7ncd.deployment.create.ingress': '创建域名',
+  'c7ncd.deployment.create.config-map': '创建配置映射',
+  'c7ncd.deployment.create.secret': '创建密文',
+  'c7ncd.deployment.service.detail': '服务详情',
+  'c7ncd.deployment.service.status': '服务状态',
+  'c7ncd.deployment.service.code': '服务编码',
+  'c7ncd.deployment.service.url': '仓库地址',
 };
 
 const appService = {
