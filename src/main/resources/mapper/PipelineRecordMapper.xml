@@ -155,17 +155,13 @@
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.status != null and searchParam.status.size > 0'>
+            <if test='searchParam.status != null and searchParam.status.length > 0'>
                 AND
-                <foreach collection="searchParam.status" item="status" open="(" separator=" OR " close=")">
-                    dpr.status = #{status, jdbcType=VARCHAR}
-                </foreach>
+                    dpr.status = #{searchParam.status, jdbcType=VARCHAR}
             </if>
-            <if test='searchParam.triggerType != null and searchParam.triggerType.size > 0'>
+            <if test='searchParam.triggerType != null and searchParam.triggerType.length > 0'>
                 AND
-                <foreach collection="searchParam.triggerType" item="triggerType">
-                    dpr.trigger_type = #{triggerType, jdbcType=VARCHAR}
-                </foreach>
+                    dpr.trigger_type = #{searchParam.triggerType, jdbcType=VARCHAR}
             </if>
         </if>
         <if test='params != null and params.size>0'>

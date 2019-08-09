@@ -12,11 +12,9 @@
         WHERE
         dav.app_service_id = #{appServiceId}
         <if test='searchParam != null'>
-            <if test='searchParam.version != null and searchParam.version.size > 0'>
+            <if test='searchParam.version != null and searchParam.version.length > 0'>
                 AND
-                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
-                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dav.version LIKE CONCAT(CONCAT('%', #{searchParam.version, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>
@@ -63,11 +61,9 @@
             </if>
         </if>
         <if test='searchParam != null'>
-            <if test='searchParam.version != null and searchParam.version.size > 0'>
+            <if test='searchParam.version != null and searchParam.version.length > 0'>
                 AND
-                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
-                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dav.version LIKE CONCAT(CONCAT('%', #{searchParam.version, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>

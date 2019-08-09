@@ -22,12 +22,12 @@ public interface DevopsIngressMapper extends Mapper<DevopsIngressDTO> {
 
     DevopsIngressDTO queryById(@Param("id") Long ingressId);
 
-    List<DevopsIngressDTO> selectIngress(
+    List<DevopsIngressDTO> listIngressByOptions(
             @Param("projectId") Long projectId,
             @Param("envId") Long envId,
             @Param("serviceId") Long serviceId,
             @Param("searchParam") Map<String, Object> searchParam,
-            @Param("param") String param);
+            @Param("params") List<String> params);
 
     Boolean checkEnvHasIngress(@Param("envId") Long envId);
 }

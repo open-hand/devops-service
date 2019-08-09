@@ -29,7 +29,8 @@ public interface DevopsClusterMapper extends Mapper<DevopsClusterDTO> {
      */
     List<DevopsEnvPodDTO> pageQueryPodsByNodeName(@Param("clusterId") Long clusterId,
                                                   @Param("nodeName") String nodeName,
-                                                  @Param("searchParam") String searchParam);
+                                                  @Param("searchParam") Map<String, Object> searchParam,
+                                                  @Param("params") List<String> params);
 
     void updateProjectId(@Param("orgId") Long orgId,
                          @Param("proId") Long proId);

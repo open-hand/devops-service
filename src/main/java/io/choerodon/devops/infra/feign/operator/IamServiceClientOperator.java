@@ -87,7 +87,7 @@ public class IamServiceClientOperator {
     public List<ApplicationDTO> listAppsByOrgId(Long orgId, String name) {
         ResponseEntity<List<ApplicationDTO>> apps;
         try {
-            apps = iamServiceClient.queryAppsByOrgId(orgId, name);
+            apps = iamServiceClient.queryAppsByOrgId(orgId, false, 1, 0, name, null, null, null);
         } catch (Exception e) {
             throw new CommonException(e);
         }

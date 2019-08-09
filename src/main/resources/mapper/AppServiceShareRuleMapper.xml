@@ -20,17 +20,13 @@
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.version_type != null and searchParam.version_type.size > 0'>
+            <if test='searchParam.versionType != null and searchParam.versionType.length > 0'>
                 AND
-                <foreach collection="searchParam.version_type" item="versionType" open="(" separator=" OR " close=")">
-                    dasr.version_type LIKE CONCAT(CONCAT('%', #{versionType, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dasr.version_type LIKE CONCAT(CONCAT('%', #{searchParam.versionType, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.version != null and searchParam.version.size > 0'>
+            <if test='searchParam.version != null and searchParam.version.length > 0'>
                 AND
-                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
-                    dasr.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dasr.version LIKE CONCAT(CONCAT('%', #{searchParam.version, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>

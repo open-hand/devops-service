@@ -752,7 +752,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         PageInfo<DevopsIngressDTO> devopsIngressDTOPageInfo =
                 PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(
-                        () -> devopsIngressMapper.selectIngress(projectId, envId, serviceId, maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
+                        () -> devopsIngressMapper.listIngressByOptions(projectId, envId, serviceId, maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), maps == null ? null : TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
         devopsIngressDTOPageInfo.getList().forEach(t -> {
             DevopsIngressVO devopsIngressVO =
                     new DevopsIngressVO(t.getId(), t.getDomain(), t.getName(),

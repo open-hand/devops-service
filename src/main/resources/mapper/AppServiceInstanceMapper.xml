@@ -320,54 +320,33 @@
             AND da.id = #{appServiceId}
         </if>
         <if test='searchParam != null'>
-            <if test='searchParam.code != null and searchParam.code.size > 0'>
-                AND
-                <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
-                    dai.`code` LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
-                </foreach>
+            <if test='searchParam.code != null and searchParam.code.length > 0'>
+                AND dai.`code` LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.appServiceName != null and searchParam.appServiceName.size > 0'>
-                AND
-                <foreach collection="searchParam.appServiceName" item="appServiceName" open="(" separator=" OR " close=")">
-                    da.`name` LIKE CONCAT(CONCAT('%', #{appServiceName, jdbcType=VARCHAR}),'%')
-                </foreach>
+            <if test='searchParam.appServiceName != null and searchParam.appServiceName.length > 0'>
+                AND da.`name` LIKE CONCAT(CONCAT('%', #{searchParam.appServiceName, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.version != null and searchParam.version.size > 0'>
-                AND
-                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
-                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
-                </foreach>
+            <if test='searchParam.version != null and searchParam.version.length > 0'>
+                AND dav.version LIKE CONCAT(CONCAT('%', #{searchParam.version, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.status != null and searchParam.status.size > 0'>
-                AND
-                <foreach collection="searchParam.status" item="status" open="(" separator=" OR " close=")">
-                    dai.status LIKE CONCAT(CONCAT('%', #{status, jdbcType=VARCHAR}),'%')
-                </foreach>
+            <if test='searchParam.status != null and searchParam.status.length > 0'>
+                AND dai.status LIKE CONCAT(CONCAT('%', #{searchParam.status, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.envCode != null and searchParam.envCode.size > 0'>
-                AND
-                <foreach collection="searchParam.envCode" item="envCode" open="(" separator=" OR " close=")">
-                    de.`code` LIKE CONCAT(CONCAT('%', #{envCode, jdbcType=VARCHAR}),'%')
-                </foreach>
+            <if test='searchParam.envCode != null and searchParam.envCode.length > 0'>
+                AND de.`code` LIKE CONCAT(CONCAT('%', #{searchParam.envCode, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.envName != null and searchParam.envName.size > 0'>
-                AND
-                <foreach collection="searchParam.envName" item="envName" open="(" separator=" OR " close=")">
-                    de.`name` LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
-                </foreach>
+            <if test='searchParam.envName != null and searchParam.envName.length > 0'>
+                AND de.`name` LIKE CONCAT(CONCAT('%', #{searchParam.envName, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.podCount != null and searchParam.podCount.size > 0'>
-                AND
-                <foreach collection="searchParam.podCount" item="podCount" open="(" separator=" OR " close=")">
-                    (
-                    SELECT
-                    count(1)
-                    FROM
-                    devops_env_pod dp
-                    WHERE
-                    dp.instance_id = dai.id
-                    ) = #{podCount, jdbcType=BIGINT}
-                </foreach>
+            <if test='searchParam.podCount != null'>
+                AND (
+                SELECT
+                count(1)
+                FROM
+                devops_env_pod dp
+                WHERE
+                dp.instance_id = dai.id
+                ) = #{searchParam.podCount, jdbcType=BIGINT}
             </if>
         </if>
         <if test='params != null and params.size > 0'>

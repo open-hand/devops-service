@@ -70,7 +70,7 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<ApplicationDTO>> queryAppsByOrgId(Long id, String name) {
+    public ResponseEntity<List<ApplicationDTO>> queryAppsByOrgId(Long organizationId, Boolean doPage, int page, int size, String name, String code, String type, String[] params) {
         throw new CommonException("error.app.query.by.org.id.and.app.name");
     }
 

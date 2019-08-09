@@ -62,7 +62,7 @@
         WHERE di.id = #{id}
     </select>
 
-    <select id="selectIngress" resultType="io.choerodon.devops.infra.dto.DevopsIngressDTO">
+    <select id="listIngressByOptions" resultType="io.choerodon.devops.infra.dto.DevopsIngressDTO">
         SELECT DISTINCT
         di.id id,
         di.project_id projectId,
@@ -91,68 +91,53 @@
             AND ds.id = #{serviceId}
         </if>
         <if test='searchParam != null'>
-            <if test='searchParam.domain != null and searchParam.domain.size > 0'>
+            <if test='searchParam.domain != null and searchParam.domain.length > 0'>
                 AND
-                <foreach collection="searchParam.domain" item="domain" open="(" separator=" OR " close=")">
-                    di.domain LIKE CONCAT(CONCAT('%', #{domain, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    di.domain LIKE CONCAT(CONCAT('%', #{searchParam.domain, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    di.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    di.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.envName != null and searchParam.envName.size > 0'>
+            <if test='searchParam.envName != null and searchParam.envName.length > 0'>
                 AND
-                <foreach collection="searchParam.envName" item="envName" open="(" separator=" OR " close=")">
-                    de.name LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    de.name LIKE CONCAT(CONCAT('%', #{searchParam.envName, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.envCode != null and searchParam.envCode.size > 0'>
+            <if test='searchParam.envCode != null and searchParam.envCode.length > 0'>
                 AND
-                <foreach collection="searchParam.envCode" item="envCode" open="(" separator=" OR " close=")">
-                    de.code LIKE CONCAT(CONCAT('%', #{envCode, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    de.code LIKE CONCAT(CONCAT('%', #{searchParam.envCode, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.path != null and searchParam.path.size > 0'>
+            <if test='searchParam.path != null and searchParam.path.length > 0'>
                 AND
-                <foreach collection="searchParam.path" item="path" open="(" separator=" OR " close=")">
-                    dip.path LIKE CONCAT(CONCAT('%', #{path, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dip.path LIKE CONCAT(CONCAT('%', #{searchParam.path, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.serviceName != null and searchParam.serviceName.size > 0'>
+            <if test='searchParam.serviceName != null and searchParam.serviceName.length > 0'>
                 AND
-                <foreach collection="searchParam.serviceName" item="serviceName" open="(" separator=" OR " close=")">
-                    ds.name LIKE CONCAT(CONCAT('%', #{serviceName, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    ds.name LIKE CONCAT(CONCAT('%', #{searchParam.serviceName, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.ingressId != null and searchParam.domainId.size > 0'>
+            <if test='searchParam.ingressId != null'>
                 AND
-                <foreach collection="searchParam.ingressId" item="ingressId" open="(" separator=" OR " close=")">
-                    di.id = #{ingressId}
-                </foreach>
+                    di.id = #{searchParam.ingressId}
             </if>
-            <if test='searchParam.envId != null and searchParam.envId.size > 0'>
+            <if test='searchParam.envId != null'>
                 AND
-                <foreach collection="searchParam.envId" item="envId" open="(" separator=" OR " close=")">
-                    di.env_id = #{envId}
-                </foreach>
+                    di.env_id = #{searchParam.envId}
             </if>
-            <if test='searchParam.serviceId != null and searchParam.serviceId.size > 0'>
+            <if test='searchParam.serviceId != null'>
                 AND
-                <foreach collection="searchParam.serviceId" item="serviceId" open="(" separator=" OR " close=")">
-                    ds.id = #{serviceId}
-                </foreach>
+                    ds.id = #{searchParam.serviceId}
             </if>
         </if>
-        <if test='param != null and param != ""'>
-            AND (di.domain LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR di.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR de.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dip.path LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR ds.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        <if test='params != null and params.size > 0'>
+            AND
+            <foreach collection="params" item="param" open="(" separator=" OR " close=")">
+                (di.domain LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR di.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR de.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dip.path LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR ds.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            </foreach>
         </if>
     </select>
 

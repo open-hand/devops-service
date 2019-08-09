@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
-
 /**
  * Created by Sheep on 2019/7/11.
  */
@@ -84,23 +83,12 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     public PageInfo<DevopsBranchDTO> basePageBranch(Long appServiceId, PageRequest pageRequest, String params) {
 
         PageInfo<DevopsBranchDTO> devopsBranchDTOPageInfo;
-        if (!StringUtils.isEmpty(params)) {
-            Map<String, Object> maps = json.deserialize(params, Map.class);
-            if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
-                devopsBranchDTOPageInfo = PageHelper.startPage(
-                        pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(
-                        appServiceId, null,
-                        TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
-            } else {
-                devopsBranchDTOPageInfo = PageHelper.startPage(
-                        pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(
-                        appServiceId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
-            }
-        } else {
-            devopsBranchDTOPageInfo = PageHelper.startPage(
-                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsBranchMapper.list(appServiceId, null, null));
-        }
+        Map<String, Object> maps = TypeUtil.castMapParams(params);
+        devopsBranchDTOPageInfo = PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+                .doSelectPageInfo(
+                        () -> devopsBranchMapper.list(appServiceId,
+                                TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                                TypeUtil.cast(maps.get(TypeUtil.PARAMS))));
         return devopsBranchDTOPageInfo;
     }
 

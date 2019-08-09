@@ -156,11 +156,11 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
 
     @Override
     public PageInfo<AppServiceInstanceInfoVO> pageInstanceInfoByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
-        Map maps = gson.fromJson(params, Map.class);
-        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        List<String> paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
+        Map<String, Object> maps = TypeUtil.castMapParams(params);
         return ConvertUtils.convertPage(PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
-                .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(envId, searchParamMap, paramList)), AppServiceInstanceInfoVO.class);
+                .doSelectPageInfo(() -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
+                        envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
+                AppServiceInstanceInfoVO.class);
     }
 
     @Override
@@ -690,10 +690,10 @@ public class  AppServiceInstanceServiceImpl implements AppServiceInstanceService
      * @param envId 环境id
      */
     private void createEnvAppRelationShipIfNon(Long appServiceId, Long envId) {
-        DevopsEnvApplicationDTO devopsEnvApplicationDTO = new DevopsEnvApplicationDTO();
-        devopsEnvApplicationDTO.setAppServiceId(appServiceId);
-        devopsEnvApplicationDTO.setEnvId(envId);
-        devopsEnvAppServiceMapper.insertIgnore(devopsEnvApplicationDTO);
+        DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
+        devopsEnvAppServiceDTO.setAppServiceId(appServiceId);
+        devopsEnvAppServiceDTO.setEnvId(envId);
+        devopsEnvAppServiceMapper.insertIgnore(devopsEnvAppServiceDTO);
     }
 
     @Override

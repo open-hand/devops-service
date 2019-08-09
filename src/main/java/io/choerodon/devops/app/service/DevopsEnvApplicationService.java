@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
-import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 
 /**
  * @author lizongwei
@@ -45,7 +45,7 @@ public interface DevopsEnvApplicationService {
      */
     List<DevopsEnvPortVO> listPortByAppAndEnvId(Long envId, Long appServiceId);
 
-    DevopsEnvApplicationDTO baseCreate(DevopsEnvApplicationDTO devopsEnvApplicationDTO);
+    DevopsEnvAppServiceDTO baseCreate(DevopsEnvAppServiceDTO devopsEnvAppServiceDTO);
 
     List<Long> baseListAppByEnvId(Long envId);
 
@@ -58,5 +58,5 @@ public interface DevopsEnvApplicationService {
      * @param envId     环境id
      * @return 应用列表
      */
-    List<BaseApplicationVO> listNonRelatedAppService(Long projectId, Long envId);
+    List<BaseApplicationServiceVO> listNonRelatedAppService(Long projectId, Long envId);
 }

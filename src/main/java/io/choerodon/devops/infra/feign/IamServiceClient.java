@@ -52,9 +52,15 @@ public interface IamServiceClient {
     @GetMapping(value = "/v1/organizations/{id}/projects")
     ResponseEntity<PageInfo<ProjectDTO>> queryProjectByOrgId(@PathVariable("id") Long id, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("name") String name, @RequestParam("params") String[] params);
 
-    // TODO
-    @GetMapping(value = "/v1/organizations/{id}/apps")
-    ResponseEntity<List<ApplicationDTO>> queryAppsByOrgId(@PathVariable("id") Long id, @RequestParam("name") String name);
+    @GetMapping(value = "/v1/organizations/{organization_id}/applications")
+    ResponseEntity<List<ApplicationDTO>> queryAppsByOrgId(@PathVariable("organization_id") Long organizationId,
+                                                          @RequestParam(value = "doPage", required = false) Boolean doPage,
+                                                          @RequestParam("page") int page,
+                                                          @RequestParam("size") int size,
+                                                          @RequestParam(value = "name", required = false) String name,
+                                                          @RequestParam(value = "code", required = false) String code,
+                                                          @RequestParam(value = "type", required = false) String type,
+                                                          @RequestParam(value = "params", required = false) String[] params);
 
     @PostMapping(value = "/v1/users/ids")
     ResponseEntity<List<IamUserDTO>> listUsersByIds(@RequestBody Long[] ids);

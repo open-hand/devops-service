@@ -70,13 +70,13 @@ public interface DevopsGitService {
     /**
      * 获取工程下所有分支名
      *
-     * @param projectId     项目 ID
-     * @param applicationId 应用ID
-     * @param pageRequest   分页参数
-     * @param params        search param
+     * @param projectId    项目 ID
+     * @param appServiceId 应用服务ID
+     * @param pageRequest  分页参数
+     * @param params       search param
      * @return Page
      */
-    PageInfo<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageRequest, Long applicationId, String params);
+    PageInfo<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageRequest, Long appServiceId, String params);
 
     /**
      * 查询单个分支

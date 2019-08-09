@@ -174,7 +174,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         if (!org.apache.commons.lang.StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             devopsEnvPodDOPage = PageHelper.startPage(
-                    pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppPod(
+                    pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppServicePod(
                     projectId,
                     envId,
                     appServiceId,
@@ -183,7 +183,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
         } else {
             devopsEnvPodDOPage = PageHelper.startPage(
-                    pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppPod(projectId, envId, appServiceId, instanceId, null, null));
+                    pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> devopsEnvPodMapper.listAppServicePod(projectId, envId, appServiceId, instanceId, null, null));
         }
 
         return devopsEnvPodDOPage;

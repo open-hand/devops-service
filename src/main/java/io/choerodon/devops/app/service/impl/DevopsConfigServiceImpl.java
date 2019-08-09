@@ -346,8 +346,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
         return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
                 .doSelectPageInfo(() -> devopsConfigMapper.listByOptions(projectId,
-                        (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
-                        (String) mapParams.get(TypeUtil.PARAMS), PageRequestUtil.checkSortIsEmpty(pageRequest)));
+                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageRequest)));
     }
 
     public void baseDelete(Long id) {

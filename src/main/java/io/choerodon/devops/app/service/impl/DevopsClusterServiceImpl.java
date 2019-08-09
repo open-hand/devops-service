@@ -331,16 +331,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public PageInfo<DevopsClusterDTO> basePageClustersByOptions(Long organizationId, Boolean doPage, PageRequest pageRequest, String params) {
-        PageInfo<DevopsClusterDTO> devopsClusterEPage;
-        if (!StringUtils.isEmpty(params)) {
-            Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
-            devopsClusterEPage = PageHelper
-                    .startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsClusterMapper.listClusters(organizationId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
-        } else {
-            devopsClusterEPage = PageHelper.startPage(
-                    pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsClusterMapper.listClusters(organizationId, null, null));
-        }
-        return devopsClusterEPage;
+        Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest))
+                .doSelectPageInfo(
+                        () -> devopsClusterMapper.listClusters(
+                                organizationId,
+                                TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                                TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS))));
     }
 
     @Override
@@ -362,7 +359,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public PageInfo<DevopsEnvPodDTO> basePageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
-        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsClusterMapper.pageQueryPodsByNodeName(clusterId, nodeName, searchParam));
+        Map<String, Object> paramMap = TypeUtil.castMapParams(searchParam);
+        return PageHelper.startPage(pageRequest.getPage(), pageRequest.getSize(), PageRequestUtil.getOrderBy(pageRequest)).doSelectPageInfo(() -> devopsClusterMapper.pageQueryPodsByNodeName(
+                clusterId, nodeName,
+                TypeUtil.cast(paramMap.get(TypeUtil.SEARCH_PARAM)),
+                TypeUtil.cast(paramMap.get(TypeUtil.PARAMS))));
     }
 
     @Override

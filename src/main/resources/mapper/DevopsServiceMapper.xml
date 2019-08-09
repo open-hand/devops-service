@@ -225,38 +225,28 @@
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    ds.`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    ds.`name` LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.appServiceName != null and searchParam.appServiceName.size > 0'>
+            <if test='searchParam.appServiceName != null and searchParam.appServiceName.length > 0'>
                 AND
-                <foreach collection="searchParam.appServiceName" item="appServiceName" open="(" separator=" OR " close=")">
-                    da.`name` LIKE CONCAT(CONCAT('%', #{appServiceName, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    da.`name` LIKE CONCAT(CONCAT('%', #{searchParam.appServiceName, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.envName != null and searchParam.envName.size > 0'>
+            <if test='searchParam.envName != null and searchParam.envName.length > 0'>
                 AND
-                <foreach collection="searchParam.envName" item="envName" open="(" separator=" OR " close=")">
-                    de.`name` LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    de.`name` LIKE CONCAT(CONCAT('%', #{searchParam.envName, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.envCode != null and searchParam.envCode.size > 0'>
+            <if test='searchParam.envCode != null and searchParam.envCode.length > 0'>
                 AND
-                <foreach collection="searchParam.envCode" item="envCode" open="(" separator=" OR " close=")">
-                    de.code LIKE CONCAT(CONCAT('%', #{envCode, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    de.code LIKE CONCAT(CONCAT('%', #{searchParam.envCode, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.externalIp != null and searchParam.externalIp.size > 0'>
+            <if test='searchParam.externalIp != null and searchParam.externalIp.length > 0'>
                 AND
-                <foreach collection="searchParam.externalIp" item="externalIp" open="(" separator=" OR " close=")">
-                    ds.external_ip LIKE CONCAT(CONCAT('%', #{externalIp, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    ds.external_ip LIKE CONCAT(CONCAT('%', #{searchParam.externalIp, jdbcType=VARCHAR}),'%')
             </if>
         </if>
-        <if test='params != null and params.size>0'>
+        <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
                 (ds.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')

@@ -166,7 +166,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private void syncEnvAppRelevance(List<CheckLog> logs) {
-            List<DevopsEnvApplicationDTO> applicationInstanceDTOS = ConvertUtils.convertList(appServiceInstanceMapper.selectAll(), DevopsEnvApplicationDTO.class);
+            List<DevopsEnvAppServiceDTO> applicationInstanceDTOS = ConvertUtils.convertList(appServiceInstanceMapper.selectAll(), DevopsEnvAppServiceDTO.class);
 
             applicationInstanceDTOS.stream().distinct().forEach(v -> {
                 CheckLog checkLog = new CheckLog();
