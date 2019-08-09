@@ -11,7 +11,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
-import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.kubernetes.client.JSON;
@@ -38,7 +38,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Override
     public List<DevopsEnvApplicationVO> batchCreate(DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
         return Stream.of(devopsEnvAppServiceVO.getAppServiceIds())
-                .map(appServiceId -> new DevopsEnvApplicationDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
+                .map(appServiceId -> new DevopsEnvAppServiceDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
                 .peek(e -> devopsEnvAppServiceMapper.insertIgnore(e))
                 .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))
                 .collect(Collectors.toList());
@@ -47,7 +47,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Override
     public void batchDelete(DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
         Stream.of(devopsEnvAppServiceVO.getAppServiceIds())
-                .map(appServiceId -> new DevopsEnvApplicationDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
+                .map(appServiceId -> new DevopsEnvAppServiceDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
                 .forEach((e -> devopsEnvAppServiceMapper.delete(e)));
     }
 
@@ -102,11 +102,11 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     }
 
     @Override
-    public DevopsEnvApplicationDTO baseCreate(DevopsEnvApplicationDTO devopsEnvApplicationDTO) {
-        if (devopsEnvAppServiceMapper.insert(devopsEnvApplicationDTO) != 1) {
+    public DevopsEnvAppServiceDTO baseCreate(DevopsEnvAppServiceDTO devopsEnvAppServiceDTO) {
+        if (devopsEnvAppServiceMapper.insert(devopsEnvAppServiceDTO) != 1) {
             throw new CommonException("error.insert.env.app");
         }
-        return devopsEnvApplicationDTO;
+        return devopsEnvAppServiceDTO;
     }
 
     @Override
@@ -120,7 +120,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     }
 
     @Override
-    public List<BaseApplicationVO> listNonRelatedAppService(Long projectId, Long envId) {
+    public List<BaseApplicationServiceVO> listNonRelatedAppService(Long projectId, Long envId) {
         return devopsEnvAppServiceMapper.listNonRelatedApplications(projectId, envId);
     }
 }

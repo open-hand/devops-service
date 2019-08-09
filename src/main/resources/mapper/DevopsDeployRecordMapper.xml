@@ -44,29 +44,21 @@ WHERE
 
 	<sql id="sqlparam">
 		<if test='searchParam != null'>
-			<if test='searchParam.deployType != null and searchParam.deployType.size > 0'>
+			<if test='searchParam.deployType != null and searchParam.deployType.length > 0'>
 				AND
-				<foreach collection="searchParam.deployType" item="deployType" open="(" separator=" OR " close=")">
-					t.deploy_type LIKE CONCAT(CONCAT('%', #{deployType, jdbcType=VARCHAR}),'%')
-				</foreach>
+					t.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
 			</if>
-			<if test='searchParam.deployStatus != null and searchParam.deployStatus.size > 0'>
+			<if test='searchParam.deployStatus != null and searchParam.deployStatus.length > 0'>
 				AND
-				<foreach collection="searchParam.deployStatus" item="deployStatus" open="(" separator=" OR " close=")">
-					t.deployStatus LIKE CONCAT(CONCAT('%', #{deployStatus, jdbcType=VARCHAR}),'%')
-				</foreach>
+					t.deployStatus LIKE CONCAT(CONCAT('%', #{searchParam.deployStatus, jdbcType=VARCHAR}),'%')
 			</if>
-			<if test='searchParam.pipelineName != null and searchParam.pipelineName.size > 0'>
+			<if test='searchParam.pipelineName != null and searchParam.pipelineName.length > 0'>
 				AND
-				<foreach collection="searchParam.pipelineName" item="pipelineName" open="(" separator=" OR " close=")">
-					t.pipelineName LIKE CONCAT(CONCAT('%', #{pipelineName, jdbcType=VARCHAR}),'%')
-				</foreach>
+					t.pipelineName LIKE CONCAT(CONCAT('%', #{searchParam.pipelineName, jdbcType=VARCHAR}),'%')
 			</if>
-			<if test='searchParam.env != null and searchParam.env.size > 0'>
+			<if test='searchParam.env != null and searchParam.env.length > 0'>
 				AND
-				<foreach collection="searchParam.env" item="env" open="(" separator=" OR " close=")">
-					t.env LIKE CONCAT(CONCAT('%', #{env, jdbcType=VARCHAR}),'%')
-				</foreach>
+					t.env LIKE CONCAT(CONCAT('%', #{searchParam.env, jdbcType=VARCHAR}),'%')
 			</if>
 		</if>
 		<if test='params != null and params.size > 0'>

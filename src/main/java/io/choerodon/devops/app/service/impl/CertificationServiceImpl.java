@@ -343,10 +343,6 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public PageInfo<CertificationVO> pageByOptions(Long projectId, Long envId, PageRequest pageRequest, String params) {
-        if (params == null) {
-            params = "{}";
-        }
-
         PageInfo<CertificationVO> certificationDTOPage = ConvertUtils.convertPage(basePage(projectId, null, envId, pageRequest, params), this::dtoToVo);
         List<Long> connectedEnvList = clusterConnectionHandler.getConnectedEnvList();
         List<Long> updatedEnvList = clusterConnectionHandler.getUpdatedEnvList();
@@ -464,8 +460,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public PageInfo<CertificationDTO> basePage(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params) {
-        Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
-        }.getType());
+        Map<String, Object> maps = TypeUtil.castMapParams(params);
 
         Sort sort = pageRequest.getSort();
         String sortResult = "";

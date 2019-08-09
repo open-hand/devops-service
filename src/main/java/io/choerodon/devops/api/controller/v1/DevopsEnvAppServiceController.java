@@ -131,7 +131,7 @@ public class DevopsEnvAppServiceController {
     @Permission(type = ResourceType.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下可用的且没有与该环境关联的服务")
     @GetMapping("/non_related_app_service")
-    public ResponseEntity<List<BaseApplicationVO>> listNonRelatedAppService(
+    public ResponseEntity<List<BaseApplicationServiceVO>> listNonRelatedAppService(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)

@@ -14,7 +14,7 @@ import retrofit2.Call;
 public class SonarClientFallback implements SonarClient {
 
     @Override
-    public Call<SonarComponent> getSonarComponet(Map<String, String> maps) {
+    public Call<SonarComponent> getSonarComponent(Map<String, String> maps) {
         return null;
     }
 

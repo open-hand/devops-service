@@ -17,7 +17,7 @@ import org.apache.ibatis.annotations.Param;
 public interface DevopsConfigMapper extends Mapper<DevopsConfigDTO> {
     List<AppServiceDTO> listByOptions(@Param("projectId") Long projectId,
                                       @Param("searchParam") Map<String, Object> searchParam,
-                                      @Param("param") String param,
+                                      @Param("params") List<String> params,
                                       @Param("index") String index);
 
     List<DevopsConfigDTO> listByIdAndType(@Param("projectId") Long projectId, @Param("type") String type);

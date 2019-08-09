@@ -489,17 +489,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
 
         PageInfo<AppServiceVersionDTO> applicationVersionDTOPageInfo;
-        if (!StringUtils.isEmpty(searchParam)) {
-            Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
-            applicationVersionDTOPageInfo = PageHelper
-                    .startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper.listApplicationVersion(projectId, appServiceId,
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), isProjectOwner, userId));
-        } else {
-            applicationVersionDTOPageInfo = PageHelper.startPage(
-                    pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper
-                    .listApplicationVersion(projectId, appServiceId, null, null, isProjectOwner, userId));
-        }
+        Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
+        applicationVersionDTOPageInfo = PageHelper
+                .startPage(pageRequest.getPage(), pageRequest.getSize(), sortResult).doSelectPageInfo(() -> appServiceVersionMapper.listApplicationVersion(projectId, appServiceId,
+                        TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS)), isProjectOwner, userId));
         return applicationVersionDTOPageInfo;
     }
 

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsEnvAppServiceVO;
-import io.choerodon.devops.infra.dto.DevopsEnvApplicationDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
@@ -75,7 +75,7 @@ public class EnvironmentApplicationValidator {
         if (appServiceIds == null || appServiceIds.length == 0) {
             throw new CommonException("error.app.ids.null");
         }
-        Stream.of(appServiceIds).map(id -> new DevopsEnvApplicationDTO(id, envId))
+        Stream.of(appServiceIds).map(id -> new DevopsEnvAppServiceDTO(id, envId))
                 .forEach(devopsEnvApplicationDTO -> {
                     if (devopsEnvAppServiceMapper.selectOne(devopsEnvApplicationDTO) == null) {
                         throw new CommonException("error.envAndApp.not.exist", devopsEnvApplicationDTO.getEnvId(),devopsEnvApplicationDTO.getAppServiceId());

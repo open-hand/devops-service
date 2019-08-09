@@ -1,11 +1,11 @@
 package io.choerodon.devops.api.vo;
 
 /**
- * 为了返回应用最基本的信息
+ * 为了返回应用服务最基本的信息
  *
  * @author zmf
  */
-public class BaseApplicationVO {
+public class BaseApplicationServiceVO {
     private Long id;
     private String name;
 

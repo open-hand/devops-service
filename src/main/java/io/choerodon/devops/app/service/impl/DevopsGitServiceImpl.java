@@ -246,10 +246,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public PageInfo<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
+    public PageInfo<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageRequest, Long appServiceId, String params) {
         ProjectDTO projectDTO = iamServiceClientOperator.queryIamProjectById(projectId);
         OrganizationDTO organizationDTO = iamServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-        AppServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
+        AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceId);
         // 查询用户是否在该gitlab project下
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (!iamServiceClientOperator.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectDTO)) {
@@ -263,7 +263,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
         PageInfo<DevopsBranchDTO> devopsBranchDTOPageInfo =
-                devopsBranchService.basePageBranch(applicationId, pageRequest, params);
+                devopsBranchService.basePageBranch(appServiceId, pageRequest, params);
         PageInfo<BranchVO> devopsBranchVOPageInfo = ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
 
         devopsBranchVOPageInfo.setList(devopsBranchDTOPageInfo.getList().stream().map(t -> {
@@ -351,19 +351,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organizationDTO.getCode(), projectDTO.getCode(), applicationDTO.getCode());
-        return ConvertUtils.convertPage(gitlabServiceClientOperator.pageTag(applicationDTO.getGitlabProjectId().intValue(), path, page, params, size, getGitlabUserId()), TagVO.class);
+        return ConvertUtils.convertPage(gitlabServiceClientOperator.pageTag(applicationDTO.getGitlabProjectId(), path, page, params, size, getGitlabUserId()), TagVO.class);
     }
 
     @Override
     public List<TagVO> listTags(Long projectId, Long applicationId) {
         AppServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
-        return ConvertUtils.convertList(gitlabServiceClientOperator.listTag(applicationDTO.getGitlabProjectId().intValue(), getGitlabUserId()), TagVO.class);
+        return ConvertUtils.convertList(gitlabServiceClientOperator.listTag(applicationDTO.getGitlabProjectId(), getGitlabUserId()), TagVO.class);
     }
 
     @Override
     public Boolean checkTag(Long projectId, Long applicationId, String tagName) {
         AppServiceDTO applicationDTO = applicationService.baseQuery(applicationId);
-        return gitlabServiceClientOperator.listTag(applicationDTO.getGitlabProjectId().intValue(), getGitlabUserId()).stream()
+        return gitlabServiceClientOperator.listTag(applicationDTO.getGitlabProjectId(), getGitlabUserId()).stream()
                 .noneMatch(t -> tagName.equals(t.getName()));
     }
 

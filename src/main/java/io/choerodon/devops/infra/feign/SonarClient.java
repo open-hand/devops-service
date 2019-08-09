@@ -14,7 +14,7 @@ import retrofit2.http.QueryMap;
 public interface SonarClient {
 
     @GET("api/measures/component")
-    Call<SonarComponent> getSonarComponet(@QueryMap Map<String, String> maps);
+    Call<SonarComponent> getSonarComponent(@QueryMap Map<String, String> maps);
 
     @GET("api/project_analyses/search")
     Call<SonarAnalyses> getAnalyses(@QueryMap Map<String, String> maps);

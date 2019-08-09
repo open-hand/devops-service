@@ -135,51 +135,42 @@
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.code != null and searchParam.code.size > 0'>
-                AND
-                <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
-                    da.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
-                </foreach>
+            <if test='searchParam.code != null and searchParam.code.length > 0'>
+                AND da.code LIKE CONCAT(CONCAT('%', #{searchParam.code, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.type != null and searchParam.type.size > 0'>
+            <if test='searchParam.type != null'>
                 AND
-                <foreach collection="searchParam.type" item="type">
-                    <if test='type == 0'>
+                    <if test='searchParam.type == 0'>
                         da.type = 'normal'
                     </if>
-                    <if test="type == 1">
+                    <if test="searchParam.type == 1">
                         da.type = 'test'
                     </if>
-                </foreach>
             </if>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
+            <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    da.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    da.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.active != null and searchParam.active.size > 0'>
+            <if test='searchParam.active != null'>
                 AND
-                <foreach collection="searchParam.active" item="active">
-                    <if test='active == -1'>
+                    <if test='searchParam.active == -1'>
                         da.is_failed = 1
                     </if>
-                    <if test="active == 0">
+                    <if test="searchParam.active == 0">
                         da.is_active = 0
                     </if>
-                    <if test="active == 1">
+                    <if test="searchParam.active == 1">
                         da.is_active = 1
                         AND da.is_synchro = 1
                         AND (da.is_failed IS NULL OR is_failed=0)
                     </if>
-                    <if test="active == 2">
+                    <if test="searchParam.active == 2">
                         da.is_synchro = 0
                         AND (da.is_failed IS NULL OR is_failed=0)
                     </if>
-                </foreach>
             </if>
         </if>
-        <if test='params != null and params.size>0'>
+        <if test='params != null and params.size > 0'>
             AND
             <foreach collection="params" item="param" open="(" separator=" OR " close=")">
                  (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')

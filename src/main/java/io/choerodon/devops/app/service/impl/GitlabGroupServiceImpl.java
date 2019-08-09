@@ -61,6 +61,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         DevopsProjectDTO devopsProjectDO = new DevopsProjectDTO(gitlabGroupPayload.getProjectId());
         if (StringUtils.isEmpty(groupCodeSuffix)) {
             devopsProjectDO.setDevopsAppGroupId(TypeUtil.objToLong(groupDTO.getId()));
+            // 创建应用时，创建应用组，并维护应用id
+            devopsProjectDO.setAppId(gitlabGroupPayload.getApplicationEventPayload().getId());
         } else if ("-gitops".equals(groupCodeSuffix)) {
             devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(groupDTO.getId()));
         }

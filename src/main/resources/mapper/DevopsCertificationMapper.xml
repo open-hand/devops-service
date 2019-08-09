@@ -32,23 +32,17 @@
             AND dc.organization_id = #{organizationId}
         </if>
         <if test='searchParam != null'>
-            <if test='searchParam.certName != null and searchParam.certName.size > 0'>
+            <if test='searchParam.certName != null and searchParam.certName.length > 0'>
                 AND
-                <foreach collection="searchParam.certName" item="certName" open="(" separator=" OR " close=")">
-                    dc.`name` LIKE CONCAT(CONCAT('%', #{certName, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dc.`name` LIKE CONCAT(CONCAT('%', #{searchParam.certName, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.envName != null and searchParam.envName.size > 0'>
+            <if test='searchParam.envName != null and searchParam.envName.length > 0'>
                 AND
-                <foreach collection="searchParam.envName" item="envName" open="(" separator=" OR " close=")">
-                    de.`name` LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    de.`name` LIKE CONCAT(CONCAT('%', #{searchParam.envName, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='searchParam.domains != null and searchParam.domains.size > 0'>
+            <if test='searchParam.domains != null and searchParam.domains.length > 0'>
                 AND
-                <foreach collection="searchParam.domains" item="domain" open="(" separator=" OR " close=")">
-                    dc.domains LIKE CONCAT(CONCAT('%', #{domain, jdbcType=VARCHAR}),'%')
-                </foreach>
+                    dc.domains LIKE CONCAT(CONCAT('%', #{searchParam.domains, jdbcType=VARCHAR}),'%')
             </if>
         </if>
         <if test='params != null and params.size > 0'>

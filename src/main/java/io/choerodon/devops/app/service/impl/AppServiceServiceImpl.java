@@ -49,7 +49,6 @@ import io.choerodon.devops.infra.util.*;
 import io.choerodon.websocket.tool.UUIDTool;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -62,6 +61,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -891,7 +891,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,new_bugs,new_vulnerabilities,sqale_index,code_smells,new_technical_debt,new_code_smells,coverage,tests,new_coverage,duplicated_lines_density,duplicated_blocks,new_duplicated_lines_density,ncloc,ncloc_language_distribution");
 
             //根据project-key查询sonarqube项目内容
-            Response<SonarComponent> sonarComponentResponse = sonarClient.getSonarComponet(queryContentMap).execute();
+            Response<SonarComponent> sonarComponentResponse = sonarClient.getSonarComponent(queryContentMap).execute();
             if (sonarComponentResponse.raw().code() != 200) {
                 if (sonarComponentResponse.raw().code() == 404) {
                     return new SonarContentsVO();
@@ -1503,9 +1503,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<ProjectVO> listProjects(Long organizationId, Long projectId, String params) {
         String[] paramsArr = null;
-        if (params != null && !params.isEmpty()) {
-            paramsArr = new String[1];
-            paramsArr[0] = params;
+        if (StringUtils.isEmpty(params)) {
+            Map<String, Object> paramMap = TypeUtil.castMapParams(params);
+            List<String> paramList = TypeUtil.cast(paramMap.get(TypeUtil.PARAMS));
+            paramsArr = paramList.toArray(new String[0]);
         }
         PageInfo<ProjectVO> pageInfo = ConvertUtils.convertPage(iamServiceClientOperator.listProject(organizationId, new PageRequest(0, 0), paramsArr), ProjectVO.class);
         return pageInfo.getList().stream().filter(t -> !t.getId().equals(projectId)).collect(Collectors.toList());
