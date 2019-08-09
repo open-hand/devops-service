@@ -370,7 +370,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         }
     }
 
-    @Autowired
+    @Override
     public DevopsConfigDTO baseQueryByResourceAndType(Long resourceId, String resourceType, String type) {
         DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
         setResourceId(resourceId, resourceType, devopsConfigDTO);
@@ -379,7 +379,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
 
-    @Autowired
     public DevopsConfigDTO baseQueryDefaultConfig(String type) {
         return devopsConfigMapper.queryDefaultConfig(type);
     }
